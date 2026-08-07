@@ -6,8 +6,65 @@
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-<!-- Full original Stitch HTML is large. This is a placeholder marker. The complete organized HTML set (97 screens) is ready but requires either: (1) workspace write access restored, or (2) continued individual pushes. -->
-</head><body>
-<p>Screen code for login_desktop — full content available in organized set.</p>
-<p>See ui-screens/MANIFEST.md for complete organization.</p>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        primary: "#00418f",
+        "on-primary": "#ffffff",
+        "primary-container": "#0058bc",
+        "on-primary-container": "#c3d4ff",
+        secondary: "#565e74",
+        "on-secondary": "#ffffff",
+        "secondary-container": "#d7dff9",
+        surface: "#f8f9ff",
+        "on-surface": "#0b1c30",
+        background: "#f8f9ff",
+        outline: "#727784",
+        error: "#ba1a1a"
+      },
+      fontFamily: { sans: ["Inter", "sans-serif"] }
+    }
+  }
+}
+</script>
+<style>
+.material-symbols-outlined { font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24; }
+body { font-family: Inter, sans-serif; }
+</style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex items-center justify-center p-4">
+<div class="w-full max-w-md">
+  <div class="text-center mb-8">
+    <div class="inline-flex items-center justify-center w-12 h-12 rounded-lg bg-primary text-on-primary font-bold text-xl mb-3">B</div>
+    <h1 class="text-2xl font-bold tracking-tight">Bytevon</h1>
+    <p class="text-sm text-on-surface/60 mt-1">ERP / CRM Platform</p>
+  </div>
+  <div class="bg-white rounded-2xl shadow-sm border border-outline/15 p-8">
+    <h2 class="text-lg font-semibold mb-6">Sign in to your account</h2>
+    <form class="space-y-4" onsubmit="return false;">
+      <div>
+        <label class="block text-sm font-medium mb-1.5">Email address</label>
+        <input type="email" class="w-full rounded-lg border border-outline/30 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary" placeholder="you@company.com"/>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1.5">Password</label>
+        <input type="password" class="w-full rounded-lg border border-outline/30 px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/25 focus:border-primary" placeholder="••••••••"/>
+      </div>
+      <div class="flex items-center justify-between text-sm">
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" class="rounded border-outline/40 text-primary focus:ring-primary/30"/>
+          <span>Remember me</span>
+        </label>
+        <a href="/forgot-password" class="text-primary hover:underline font-medium">Forgot password?</a>
+      </div>
+      <button type="submit" class="w-full bg-primary hover:bg-primary-container text-on-primary font-semibold py-2.5 rounded-lg transition active:scale-[0.98]">
+        Sign in
+      </button>
+    </form>
+  </div>
+  <p class="text-center text-xs text-on-surface/50 mt-6">Protected by Bytevon security</p>
+</div>
 </body></html>
