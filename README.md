@@ -29,6 +29,14 @@ Located in the [`frontend/`](./frontend/) folder:
 | 14 | [Code Generation Rules](./frontend/14_Code_Generation_Rules.md) | Hard rules for converting designs into consistent React code |
 | 15 | [Page State Matrix](./frontend/15_Page_State_Matrix.md) | Required states for List / Detail / Create / Edit pages |
 
+## Screens Organized by Module
+
+See [`screens/00_SCREEN_INDEX.md`](./screens/00_SCREEN_INDEX.md) for the full categorized list of all Stitch screens.
+
+Modules: `auth`, `dashboard`, `sales`, `projects`, `workforce`, `attendance`, `leave`, `approvals`, `admin`, `notifications`, `profile`, `payroll`, `shared_components`.
+
+Each screen uses consistent naming: `screen.html` + `screen.png`.
+
 ## Locked Decisions (Summary)
 
 - **Tech stack**: React + TypeScript + Vite + Tailwind + TanStack (Query/Table/Router) + Zod
