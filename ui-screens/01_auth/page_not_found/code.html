@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Page Not Found | Bytevon</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        primary: "#00418f",
+        "on-primary": "#ffffff",
+        "primary-container": "#0058bc",
+        surface: "#f8f9ff",
+        "on-surface": "#0b1c30",
+        background: "#f8f9ff",
+        outline: "#727784",
+        "on-surface-variant": "#424753"
+      },
+      fontFamily: { sans: ["Inter", "sans-serif"] }
+    }
+  }
+}
+</script>
+<style>
+.material-symbols-outlined { font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24; }
+body { font-family: Inter, sans-serif; }
+</style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col items-center justify-center p-4">
+<main class="w-full max-w-md text-center">
+  <div class="text-8xl font-bold text-primary/20 mb-2">404</div>
+  <div class="w-16 h-16 rounded-full bg-surface border border-outline/20 flex items-center justify-center mx-auto mb-6">
+    <span class="material-symbols-outlined text-3xl text-primary">search_off</span>
+  </div>
+  <h1 class="text-2xl font-bold mb-2">Page not found</h1>
+  <p class="text-on-surface-variant mb-8">The page you are looking for doesn’t exist or has been moved.</p>
+  <a href="/dashboard" class="inline-flex items-center justify-center px-6 py-2.5 rounded-lg bg-primary text-on-primary font-semibold hover:opacity-90 transition">Back to Dashboard</a>
+</main>
+<footer class="mt-12 text-xs text-on-surface-variant">© Bytevon Systems</footer>
+</body></html>
