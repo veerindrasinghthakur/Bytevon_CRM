@@ -60,7 +60,7 @@ export function ProjectsListPage() {
     <div className="space-y-8">
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h2 className="text-[32px] leading-10 font-bold tracking-tight text-on-surface">
+          <h2 className="text-[32px] leading-10 font-bold tracking-tight text-on-background">
             Project Management
           </h2>
           <p className="text-body-md text-on-surface-variant mt-1">
@@ -103,12 +103,12 @@ export function ProjectsListPage() {
             placeholder="Search by Project Name, Client..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent border-none outline-none text-body-sm w-full text-on-surface placeholder:text-on-surface-variant"
+            className="bg-transparent border-none outline-none text-body-sm w-full text-on-background placeholder:text-on-surface-variant"
           />
         </div>
         <div className="flex flex-wrap items-center gap-3 ml-auto">
           <div className="relative min-w-[140px]">
-            <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-surface focus:outline-none focus:border-electric-blue cursor-pointer">
+            <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-background focus:outline-none focus:border-electric-blue cursor-pointer">
               <option>Project Status</option>
               <option>Active</option>
               <option>On Hold</option>
@@ -119,7 +119,7 @@ export function ProjectsListPage() {
             </span>
           </div>
           <div className="relative min-w-[140px]">
-            <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-surface focus:outline-none focus:border-electric-blue cursor-pointer">
+            <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-background focus:outline-none focus:border-electric-blue cursor-pointer">
               <option>Current Phase</option>
               <option>Planning</option>
               <option>Execution</option>
@@ -130,7 +130,7 @@ export function ProjectsListPage() {
             </span>
           </div>
           <div className="relative min-w-[140px]">
-            <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-surface focus:outline-none focus:border-electric-blue cursor-pointer">
+            <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-background focus:outline-none focus:border-electric-blue cursor-pointer">
               <option>Priority Level</option>
               <option>Critical</option>
               <option>High</option>
@@ -162,7 +162,7 @@ export function ProjectsListPage() {
           </div>
           <div>
             <p className="text-label-sm text-on-surface-variant mb-1">Total Projects</p>
-            <h3 className="text-[32px] font-bold text-on-surface leading-none">{total || '—'}</h3>
+            <h3 className="text-[32px] font-bold text-on-background leading-none">{total || '—'}</h3>
           </div>
         </div>
         <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
@@ -174,7 +174,7 @@ export function ProjectsListPage() {
           </div>
           <div>
             <p className="text-label-sm text-on-surface-variant mb-1">Active Projects</p>
-            <h3 className="text-[32px] font-bold text-on-surface leading-none">{active}</h3>
+            <h3 className="text-[32px] font-bold text-on-background leading-none">{active}</h3>
           </div>
         </div>
         <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
@@ -186,7 +186,7 @@ export function ProjectsListPage() {
           </div>
           <div>
             <p className="text-label-sm text-on-surface-variant mb-1">At Risk / Delayed</p>
-            <h3 className="text-[32px] font-bold text-on-surface leading-none">{atRisk}</h3>
+            <h3 className="text-[32px] font-bold text-on-background leading-none">{atRisk}</h3>
           </div>
         </div>
         <div className="bg-deep-navy border border-white/10 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
@@ -257,13 +257,13 @@ export function ProjectsListPage() {
                             {initials}
                           </div>
                           <div>
-                            <p className="text-body-md font-semibold text-on-surface">{project.name}</p>
+                            <p className="text-body-md font-semibold text-on-background">{project.name}</p>
                             <p className="text-[11px] text-on-surface-variant">{project.taskCount ?? 0} tasks</p>
                           </div>
                         </div>
                       </td>
                       <td className="py-2 px-4">
-                        <p className="text-body-md font-semibold text-on-surface">{project.clientName ?? '—'}</p>
+                        <p className="text-body-md font-semibold text-on-background">{project.clientName ?? '—'}</p>
                       </td>
                       <td className="py-2 px-4">
                         <div className="flex flex-col gap-1 items-start">
@@ -325,8 +325,8 @@ export function ProjectsListPage() {
           </div>
           <div className="border-t border-outline-variant/30 p-4 flex items-center justify-between">
             <p className="text-[11px] text-on-surface-variant">
-              Showing <span className="font-semibold text-on-surface">1-{data.items.length}</span> of{' '}
-              <span className="font-semibold text-on-surface">{data.total}</span> Projects
+              Showing <span className="font-semibold text-on-background">1-{data.items.length}</span> of{' '}
+              <span className="font-semibold text-on-background">{data.total}</span> Projects
             </p>
           </div>
         </section>
