@@ -1,10 +1,11 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useNavigate, Link } from '@tanstack/react-router'
+import { useNavigate, Link, useSearch } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { useCreateTask } from '../hooks/use-tasks'
+import { useProject } from '../hooks/use-projects'
 
 const schema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters').max(200),
@@ -16,6 +17,12 @@ type FormValues = z.infer<typeof schema>
 
 export function TaskCreatePage() {
   const navigate = useNavigate()
+  const search = useSearch({ strict: false }) as { projectId?: string }
+  const projectId = search.projectId ? Number(search.projectId) : undefined
+  const { data: project } = useProject(
+    projectId != null && Number.isFinite(projectId) ? projectId : undefined
+  )
+
   const createMutation = useCreateTask()
   const {
     register,
@@ -29,11 +36,23 @@ export function TaskCreatePage() {
   })
 
   const priority = watch('priority')
+  const backTo =
+    projectId != null && Number.isFinite(projectId)
+      ? `/projects/${projectId}`
+      : '/projects/tasks'
 
   const onSubmit = async (data: FormValues) => {
     try {
-      await createMutation.mutateAsync(data)
-      navigate({ to: '/projects/tasks' })
+      await createMutation.mutateAsync({
+        ...data,
+        projectId: projectId && Number.isFinite(projectId) ? projectId : undefined,
+        projectName: project?.name,
+      })
+      if (projectId && Number.isFinite(projectId)) {
+        navigate({ to: '/projects/$projectId', params: { projectId: String(projectId) } })
+      } else {
+        navigate({ to: '/projects/tasks' })
+      }
     } catch {
       // shown below
     }
@@ -42,7 +61,10 @@ export function TaskCreatePage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-4">
-        <BackButton to="/projects/tasks" label="Back to tasks" />
+        <BackButton
+          to={backTo}
+          label={project ? `Back to ${project.name}` : 'Back to tasks'}
+        />
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
@@ -55,11 +77,15 @@ export function TaskCreatePage() {
             </div>
             <div>
               <h2 className="text-headline-md font-bold text-on-surface">Create Task</h2>
-              <p className="text-body-md text-on-surface-variant">Define a new actionable item for your team</p>
+              <p className="text-body-md text-on-surface-variant">
+                {project
+                  ? `For project: ${project.name}`
+                  : 'Define a new actionable item for your team'}
+              </p>
             </div>
           </div>
           <Link
-            to="/projects/tasks"
+            to={backTo as '/projects/tasks'}
             className="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container"
           >
             <span className="material-symbols-outlined">close</span>
@@ -124,12 +150,7 @@ export function TaskCreatePage() {
                     >
                       {p === 'LOW' && 'Low'}
                       {p === 'MEDIUM' && 'Medium'}
-                      {p === 'HIGH' && (
-                        <span className="inline-flex items-center justify-center gap-1">
-                          High{' '}
-                          <span className="material-symbols-outlined text-sm text-error">local_fire_department</span>
-                        </span>
-                      )}
+                      {p === 'HIGH' && 'High'}
                     </button>
                   ))}
                 </div>
@@ -143,7 +164,7 @@ export function TaskCreatePage() {
           </div>
 
           <div className="p-5 border-t border-outline-variant bg-surface flex items-center justify-end gap-3">
-            <Button type="button" variant="outline" onClick={() => navigate({ to: '/projects/tasks' })}>
+            <Button type="button" variant="outline" onClick={() => navigate({ to: backTo as '/projects/tasks' })}>
               Cancel
             </Button>
             <Button

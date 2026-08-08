@@ -44,6 +44,7 @@ function statusTrackLabel(status: ProjectStatus) {
   }
 }
 
+/** Nav list page — no breadcrumbs / back (only nested pages show path + back). */
 export function ProjectsListPage() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
@@ -59,13 +60,6 @@ export function ProjectsListPage() {
     <div className="space-y-8">
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-label-sm text-on-surface-variant mb-2">
-            <span>Dashboard</span>
-            <span className="material-symbols-outlined text-sm">chevron_right</span>
-            <span>Organization</span>
-            <span className="material-symbols-outlined text-sm">chevron_right</span>
-            <span className="text-on-surface font-medium">Projects</span>
-          </div>
           <h2 className="text-[32px] leading-10 font-bold tracking-tight text-on-surface">
             Project Management
           </h2>
@@ -101,7 +95,6 @@ export function ProjectsListPage() {
         </div>
       </section>
 
-      {/* Search left · filters right (user request) */}
       <section className="flex flex-wrap items-center gap-4">
         <div className="flex items-center flex-1 min-w-[200px] max-w-sm bg-surface-container-lowest border border-outline-variant/50 rounded-lg px-3 py-2 focus-within:border-electric-blue">
           <span className="material-symbols-outlined text-on-surface-variant mr-2 text-lg">search</span>
@@ -113,7 +106,6 @@ export function ProjectsListPage() {
             className="bg-transparent border-none outline-none text-body-sm w-full text-on-surface placeholder:text-on-surface-variant"
           />
         </div>
-
         <div className="flex flex-wrap items-center gap-3 ml-auto">
           <div className="relative min-w-[140px]">
             <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-surface focus:outline-none focus:border-electric-blue cursor-pointer">
@@ -293,7 +285,7 @@ export function ProjectsListPage() {
                           <span className="text-body-sm text-on-surface-variant">{project.progress ?? 0}%</span>
                         </div>
                       </td>
-                      <td className="py-2 px-6 text-right" onClick={(e) => e.stopPropagation()}>
+                      <td className="py-2 px-6 text-right">
                         <div className="flex justify-end">
                           <RowActions
                             label={`Actions for ${project.name}`}
