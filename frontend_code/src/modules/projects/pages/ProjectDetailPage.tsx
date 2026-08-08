@@ -6,9 +6,12 @@ import { useProject } from '../hooks/use-projects'
 import { ProjectStatusBadge } from '../components/ProjectStatusBadge'
 
 export function ProjectDetailPage() {
-  const { projectId } = useParams({ from: '/authenticated/projects/$projectId' })
-  const id = Number(projectId)
-  const { data: project, isLoading, isError, refetch } = useProject(id)
+  // Use loose params so we don't depend on route id string
+  const params = useParams({ strict: false }) as { projectId?: string }
+  const id = Number(params.projectId)
+  const { data: project, isLoading, isError, refetch } = useProject(
+    Number.isFinite(id) ? id : undefined
+  )
 
   if (isLoading) {
     return (

@@ -39,7 +39,7 @@ export function IconRail({
 
   const isActive = (to: string) => {
     if (to === '/dashboard') return pathname === '/dashboard' || pathname === '/'
-    return pathname.startsWith(to)
+    return pathname === to || pathname.startsWith(to + '/')
   }
 
   return (
@@ -47,7 +47,7 @@ export function IconRail({
       className={cn(
         'h-full bg-deep-navy flex flex-col items-center py-6 border-r border-sidebar-item-active/30 z-20',
         'transition-all duration-300 ease-in-out shrink-0',
-        isExpanded ? 'w-[220px]' : 'w-sidebar-rail'
+        isExpanded ? 'w-[220px]' : 'w-[80px]'
       )}
       aria-label="Primary navigation"
     >
