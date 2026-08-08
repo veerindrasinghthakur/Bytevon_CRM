@@ -118,7 +118,6 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
       )}
       aria-label="Secondary navigation"
     >
-      {/* Top row height matches Header (h-14 / 56px) */}
       <div
         className={cn(
           'shrink-0 flex items-center border-b border-outline-variant',
@@ -167,8 +166,9 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                     isCollapsed
                       ? 'w-10 h-11 justify-center rounded-lg'
                       : 'w-full px-3 py-3.5 rounded-lg gap-3',
+                    // Stitch: selected = light blue wash + blue text (not dark navy)
                     active
-                      ? 'bg-surface-container-high text-on-surface font-medium'
+                      ? 'bg-electric-blue/10 text-electric-blue font-medium'
                       : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
                   )}
                 >
@@ -185,7 +185,14 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                     <>
                       <span className="text-nav-item flex-1 truncate">{item.label}</span>
                       {item.badge != null && (
-                        <span className="bg-surface-container-highest text-on-surface-variant text-[10px] font-bold px-1.5 py-0.5 rounded">
+                        <span
+                          className={cn(
+                            'text-[10px] font-bold px-1.5 py-0.5 rounded',
+                            active
+                              ? 'bg-electric-blue/15 text-electric-blue'
+                              : 'bg-surface-container-highest text-on-surface-variant'
+                          )}
+                        >
                           {item.badge}
                         </span>
                       )}

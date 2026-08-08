@@ -13,13 +13,17 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
 }
 
+/**
+ * Primary CTA matches Stitch (electric / brand blue — not deep navy).
+ * Deep navy remains for rail / chrome only.
+ */
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-deep-navy text-on-primary hover:bg-sidebar-item-active shadow-sm',
+    'bg-electric-blue text-white hover:bg-secondary shadow-sm',
   secondary:
     'bg-secondary text-on-secondary hover:opacity-90',
   outline:
-    'border border-outline-variant bg-surface-container-lowest text-on-surface hover:bg-surface-container',
+    'border border-outline-variant bg-surface-container-lowest text-on-background hover:bg-surface-container',
   ghost:
     'text-on-surface-variant hover:bg-surface-container hover:text-on-surface',
   danger:
@@ -46,7 +50,7 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all',
+        'inline-flex items-center justify-center gap-2 rounded-lg font-medium',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue focus-visible:ring-offset-2',
         'disabled:opacity-50 disabled:pointer-events-none',
         variantClasses[variant],

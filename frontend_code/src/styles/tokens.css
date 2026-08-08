@@ -4,10 +4,10 @@
 */
 
 :root {
-  /* Brand / Primary */
-  --color-primary: #000000;
+  /* Brand / Primary — action blue (Stitch), not pure black */
+  --color-primary: #0058bc;
   --color-on-primary: #ffffff;
-  --color-primary-container: #121c2a;
+  --color-primary-container: #0070eb;
   --color-deep-navy: #001f3f;
   --color-electric-blue: #007bff;
   --color-sidebar-accent: #0070ea;
@@ -61,6 +61,6 @@
   --radius-lg: 0.75rem;
   --radius-full: 9999px;
 
-  /* Header */
-  --header-height: 64px;
+  /* Header — keep in sync with HEADER_HEIGHT_PX (56) */
+  --header-height: 56px;
 }
