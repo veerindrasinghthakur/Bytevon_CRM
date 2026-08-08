@@ -3,30 +3,29 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 
-export function TeamsListPage() {
+export function LeadsListPage() {
   const navigate = useNavigate()
-
   return (
     <div>
       <PageHeader
-        title="Teams"
-        description="Project teams and members."
+        title="Leads"
+        description="Track and manage sales leads."
         actions={
           <Button
             variant="primary"
             leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
-            onClick={() => navigate({ to: '/projects/teams/new' })}
+            onClick={() => navigate({ to: '/sales/leads/new' })}
           >
-            New Team
+            New Lead
           </Button>
         }
       />
       <EmptyState
-        icon="groups"
-        title="No teams yet"
-        description="Create your first team to start organizing project members."
-        actionLabel="New Team"
-        onAction={() => navigate({ to: '/projects/teams/new' })}
+        icon="person_search"
+        title="No leads yet"
+        description="Create your first lead to start the sales pipeline."
+        actionLabel="New Lead"
+        onAction={() => navigate({ to: '/sales/leads/new' })}
       />
     </div>
   )

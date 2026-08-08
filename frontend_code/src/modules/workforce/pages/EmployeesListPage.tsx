@@ -3,30 +3,29 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 
-export function TeamsListPage() {
+export function EmployeesListPage() {
   const navigate = useNavigate()
-
   return (
     <div>
       <PageHeader
-        title="Teams"
-        description="Project teams and members."
+        title="Employees"
+        description="Manage workforce employees."
         actions={
           <Button
             variant="primary"
             leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
-            onClick={() => navigate({ to: '/projects/teams/new' })}
+            onClick={() => navigate({ to: '/workforce/employees/new' })}
           >
-            New Team
+            New Employee
           </Button>
         }
       />
       <EmptyState
-        icon="groups"
-        title="No teams yet"
-        description="Create your first team to start organizing project members."
-        actionLabel="New Team"
-        onAction={() => navigate({ to: '/projects/teams/new' })}
+        icon="badge"
+        title="No employees yet"
+        description="Add your first employee to the directory."
+        actionLabel="New Employee"
+        onAction={() => navigate({ to: '/workforce/employees/new' })}
       />
     </div>
   )
