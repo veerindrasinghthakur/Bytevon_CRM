@@ -1,11 +1,57 @@
 import type { CreateProjectInput, ProjectDetail, ProjectListItem } from '../schemas/project'
 
-/** Mock data – replace with real API when backend is ready */
+/** Mock aligned with Stitch projects table */
 const MOCK_PROJECTS: ProjectDetail[] = [
   {
-    id: 1,
+    id: 1024,
+    name: 'ERP Migration Phase 2',
+    code: 'PRJ-1024',
+    status: 'IN_PROGRESS',
+    clientName: 'TechNexus Corp.',
+    startDate: '2026-01-15',
+    endDate: '2026-12-15',
+    progress: 65,
+    teamCount: 4,
+    taskCount: 28,
+    description: 'Infrastructure upgrade and data migration for the core ERP system.',
+    repositoryUrl: 'https://github.com/example/erp',
+    createdAt: '2026-01-10T10:00:00Z',
+    updatedAt: '2026-08-07T14:30:00Z',
+  },
+  {
+    id: 1025,
+    name: 'Global Logistics Audit',
+    code: 'PRJ-1025',
+    status: 'PLANNING',
+    clientName: 'Global Logistics Ltd.',
+    startDate: '2026-09-01',
+    endDate: '2026-01-22',
+    progress: 0,
+    teamCount: 2,
+    taskCount: 6,
+    description: 'Consulting audit for logistics operations.',
+    createdAt: '2026-07-20T09:00:00Z',
+    updatedAt: '2026-08-01T11:00:00Z',
+  },
+  {
+    id: 1026,
+    name: 'Fintech Rollout V3',
+    code: 'PRJ-1026',
+    status: 'ON_HOLD',
+    clientName: 'Chen Financial Group',
+    startDate: '2026-03-01',
+    endDate: '2026-02-08',
+    progress: 82,
+    teamCount: 5,
+    taskCount: 41,
+    description: 'Product development rollout for fintech clients.',
+    createdAt: '2026-02-15T08:00:00Z',
+    updatedAt: '2026-05-12T16:00:00Z',
+  },
+  {
+    id: 1027,
     name: 'Bytevon CRM Core',
-    code: 'BV-CRM',
+    code: 'PRJ-1027',
     status: 'IN_PROGRESS',
     clientName: 'Internal',
     startDate: '2026-01-15',
@@ -17,36 +63,6 @@ const MOCK_PROJECTS: ProjectDetail[] = [
     repositoryUrl: 'https://github.com/veerindrasinghthakur/bytevon_documentation',
     createdAt: '2026-01-10T10:00:00Z',
     updatedAt: '2026-08-07T14:30:00Z',
-  },
-  {
-    id: 2,
-    name: 'Client Portal',
-    code: 'BV-PORTAL',
-    status: 'PLANNING',
-    clientName: 'Nexus Global',
-    startDate: '2026-09-01',
-    endDate: null,
-    progress: 5,
-    teamCount: 2,
-    taskCount: 6,
-    description: 'External client self-service portal.',
-    createdAt: '2026-07-20T09:00:00Z',
-    updatedAt: '2026-08-01T11:00:00Z',
-  },
-  {
-    id: 3,
-    name: 'Mobile Attendance',
-    code: 'BV-ATT',
-    status: 'ON_HOLD',
-    clientName: 'Internal',
-    startDate: '2026-03-01',
-    endDate: '2026-06-30',
-    progress: 60,
-    teamCount: 3,
-    taskCount: 15,
-    description: 'Mobile app for attendance marking.',
-    createdAt: '2026-02-15T08:00:00Z',
-    updatedAt: '2026-05-12T16:00:00Z',
   },
 ]
 
@@ -83,9 +99,9 @@ export async function getProjectById(id: number): Promise<ProjectDetail | null> 
 export async function createProject(input: CreateProjectInput): Promise<ProjectDetail> {
   await delay(600)
   const newProject: ProjectDetail = {
-    id: MOCK_PROJECTS.length + 1,
+    id: 2000 + MOCK_PROJECTS.length,
     name: input.name,
-    code: input.code,
+    code: input.code || `PRJ-${2000 + MOCK_PROJECTS.length}`,
     status: 'PLANNING',
     clientName: input.clientName,
     startDate: input.startDate ?? null,
@@ -98,6 +114,6 @@ export async function createProject(input: CreateProjectInput): Promise<ProjectD
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   }
-  MOCK_PROJECTS.push(newProject)
+  MOCK_PROJECTS.unshift(newProject)
   return newProject
 }

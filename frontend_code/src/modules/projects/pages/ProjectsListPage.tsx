@@ -1,11 +1,49 @@
 import { useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { useProjects } from '../hooks/use-projects'
 import { ProjectStatusBadge } from '../components/ProjectStatusBadge'
+import type { ProjectStatus } from '../schemas/project'
+
+/** Priority labels matching Stitch projects table */
+function PriorityBadge({ status }: { status: ProjectStatus }) {
+  if (status === 'IN_PROGRESS') {
+    return (
+      <span className="bg-red-100 text-red-800 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+        Critical
+      </span>
+    )
+  }
+  if (status === 'ON_HOLD') {
+    return (
+      <span className="bg-orange-100 text-orange-800 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+        High
+      </span>
+    )
+  }
+  return (
+    <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+      Medium
+    </span>
+  )
+}
+
+function statusTrackLabel(status: ProjectStatus) {
+  switch (status) {
+    case 'IN_PROGRESS':
+      return { dot: 'bg-emerald-500', text: 'text-emerald-700', label: 'On Track' }
+    case 'PLANNING':
+      return { dot: 'bg-blue-500', text: 'text-blue-700', label: 'Planning' }
+    case 'ON_HOLD':
+      return { dot: 'bg-amber-500', text: 'text-amber-700', label: 'Delayed' }
+    case 'COMPLETED':
+      return { dot: 'bg-emerald-500', text: 'text-emerald-700', label: 'Completed' }
+    default:
+      return { dot: 'bg-gray-400', text: 'text-on-surface-variant', label: status }
+  }
+}
 
 export function ProjectsListPage() {
   const navigate = useNavigate()
@@ -14,49 +52,161 @@ export function ProjectsListPage() {
     search: search || undefined,
   })
 
+  const total = data?.total ?? 0
+  const active = data?.items.filter((p) => p.status === 'IN_PROGRESS').length ?? 0
+  const atRisk = data?.items.filter((p) => p.status === 'ON_HOLD').length ?? 0
+
   return (
-    <div>
-      <PageHeader
-        title="Projects"
-        description="Manage all projects, teams and tasks."
-        actions={
+    <div className="space-y-8">
+      {/* Header – matches Stitch: Project Management */}
+      <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 text-label-sm text-on-surface-variant mb-2">
+            <span>Dashboard</span>
+            <span className="material-symbols-outlined text-sm">chevron_right</span>
+            <span>Organization</span>
+            <span className="material-symbols-outlined text-sm">chevron_right</span>
+            <span className="text-on-surface font-medium">Projects</span>
+          </div>
+          <h2 className="text-[32px] leading-10 font-bold tracking-tight text-on-surface">
+            Project Management
+          </h2>
+          <p className="text-body-md text-on-surface-variant mt-1">
+            Manage projects, assign teams, track milestones and monitor budget burn rates.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">upload</span>}>
+            Import
+          </Button>
+          <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}>
+            Export
+          </Button>
           <Button
             variant="primary"
-            leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
+            size="sm"
+            leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
             onClick={() => navigate({ to: '/projects/new' })}
           >
             New Project
           </Button>
-        }
-      />
+        </div>
+      </section>
 
-      {/* Page-level search (Header search collapses to icon on list pages) */}
-      <div className="mb-6 flex items-center gap-3">
-        <div className="flex items-center flex-1 max-w-sm bg-surface-container-low rounded-lg px-3 py-2 border border-outline-variant focus-within:border-electric-blue focus-within:border-2 transition-colors">
-          <span className="material-symbols-outlined text-on-surface-variant mr-2 text-lg">
-            search
+      {/* Filters */}
+      <section className="flex flex-wrap items-center gap-4">
+        <div className="relative min-w-[160px]">
+          <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-surface focus:outline-none focus:border-electric-blue cursor-pointer">
+            <option>Project Status</option>
+            <option>Active</option>
+            <option>On Hold</option>
+            <option>Completed</option>
+          </select>
+          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
+            expand_more
           </span>
+        </div>
+        <div className="relative min-w-[160px]">
+          <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-surface focus:outline-none focus:border-electric-blue cursor-pointer">
+            <option>Current Phase</option>
+            <option>Planning</option>
+            <option>Execution</option>
+            <option>Review</option>
+          </select>
+          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
+            expand_more
+          </span>
+        </div>
+        <div className="relative min-w-[160px]">
+          <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-surface focus:outline-none focus:border-electric-blue cursor-pointer">
+            <option>Priority Level</option>
+            <option>Critical</option>
+            <option>High</option>
+            <option>Medium</option>
+            <option>Low</option>
+          </select>
+          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
+            expand_more
+          </span>
+        </div>
+        <div className="flex items-center flex-1 max-w-xs ml-auto bg-surface-container-lowest border border-outline-variant/50 rounded-lg px-3 py-2 focus-within:border-electric-blue">
+          <span className="material-symbols-outlined text-on-surface-variant mr-2 text-lg">search</span>
           <input
             type="search"
-            placeholder="Search projects..."
+            placeholder="Search by Project Name, Client..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="bg-transparent border-none outline-none text-body-sm w-full text-on-surface placeholder:text-on-surface-variant"
           />
         </div>
-      </div>
+        <button
+          type="button"
+          onClick={() => refetch()}
+          className="p-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface-variant hover:text-electric-blue transition-colors"
+        >
+          <span className="material-symbols-outlined">refresh</span>
+        </button>
+      </section>
+
+      {/* Metric cards – Stitch layout */}
+      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
+          <div className="flex justify-between items-start">
+            <div className="w-10 h-10 rounded-lg bg-electric-blue/10 flex items-center justify-center text-electric-blue">
+              <span className="material-symbols-outlined filled" style={{ fontVariationSettings: "'FILL' 1" }}>folder_open</span>
+            </div>
+            <div className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-1 rounded">+12%</div>
+          </div>
+          <div>
+            <p className="text-label-sm text-on-surface-variant mb-1">Total Projects</p>
+            <h3 className="text-[32px] font-bold text-on-surface leading-none">{total || '—'}</h3>
+          </div>
+        </div>
+        <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
+          <div className="flex justify-between items-start">
+            <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600">
+              <span className="material-symbols-outlined filled" style={{ fontVariationSettings: "'FILL' 1" }}>trending_up</span>
+            </div>
+            <div className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-1 rounded">+4.2%</div>
+          </div>
+          <div>
+            <p className="text-label-sm text-on-surface-variant mb-1">Active Projects</p>
+            <h3 className="text-[32px] font-bold text-on-surface leading-none">{active}</h3>
+          </div>
+        </div>
+        <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
+          <div className="flex justify-between items-start">
+            <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
+              <span className="material-symbols-outlined filled" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
+            </div>
+            <div className="bg-red-100 text-red-800 text-xs font-bold px-2 py-1 rounded">-2.1%</div>
+          </div>
+          <div>
+            <p className="text-label-sm text-on-surface-variant mb-1">At Risk / Delayed</p>
+            <h3 className="text-[32px] font-bold text-on-surface leading-none">{atRisk}</h3>
+          </div>
+        </div>
+        <div className="bg-deep-navy border border-white/10 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px] relative overflow-hidden">
+          <div className="flex justify-between items-start relative z-10">
+            <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white">
+              <span className="material-symbols-outlined filled" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
+            </div>
+          </div>
+          <div className="relative z-10">
+            <p className="text-label-sm text-white/70 mb-1">Total Managed Budget</p>
+            <h3 className="text-[32px] font-bold text-white leading-none">$12.4M</h3>
+          </div>
+          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-electric-blue/20 rounded-full blur-3xl" />
+        </div>
+      </section>
 
       {isLoading && <TableSkeleton rows={5} />}
-
       {isError && (
         <div className="rounded-lg border border-error/30 bg-error/5 p-6 text-center">
           <p className="text-body-md text-error mb-3">Failed to load projects.</p>
-          <Button variant="outline" onClick={() => refetch()}>
-            Retry
-          </Button>
+          <Button variant="outline" onClick={() => refetch()}>Retry</Button>
         </div>
       )}
-
       {!isLoading && !isError && data?.items.length === 0 && (
         <EmptyState
           icon="folder_off"
@@ -67,71 +217,103 @@ export function ProjectsListPage() {
         />
       )}
 
+      {/* Data table – Stitch columns */}
       {!isLoading && !isError && data && data.items.length > 0 && (
-        <div className="rounded-xl border border-outline-variant bg-surface-container-lowest overflow-hidden">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="border-b border-outline-variant bg-surface-container-low">
-                <th className="px-4 py-3 text-label-sm text-on-surface-variant font-semibold">Name</th>
-                <th className="px-4 py-3 text-label-sm text-on-surface-variant font-semibold">Status</th>
-                <th className="px-4 py-3 text-label-sm text-on-surface-variant font-semibold hidden md:table-cell">Client</th>
-                <th className="px-4 py-3 text-label-sm text-on-surface-variant font-semibold hidden lg:table-cell">Progress</th>
-                <th className="px-4 py-3 text-label-sm text-on-surface-variant font-semibold hidden sm:table-cell">Tasks</th>
-                <th className="px-4 py-3 text-label-sm text-on-surface-variant font-semibold w-10"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.items.map((project) => (
-                <tr
-                  key={project.id}
-                  className="border-b border-outline-variant last:border-0 hover:bg-surface-container-low/50 transition-colors"
-                >
-                  <td className="px-4 py-3">
-                    <Link
-                      to="/projects/$projectId"
-                      params={{ projectId: String(project.id) }}
-                      className="font-medium text-on-background hover:text-electric-blue"
-                    >
-                      {project.name}
-                    </Link>
-                    {project.code && (
-                      <span className="block text-body-sm text-on-surface-variant">{project.code}</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <ProjectStatusBadge status={project.status} />
-                  </td>
-                  <td className="px-4 py-3 text-body-sm text-on-surface-variant hidden md:table-cell">
-                    {project.clientName ?? '—'}
-                  </td>
-                  <td className="px-4 py-3 hidden lg:table-cell">
-                    <div className="flex items-center gap-2">
-                      <div className="h-1.5 w-20 rounded-full bg-surface-container-high overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-electric-blue"
-                          style={{ width: `${project.progress ?? 0}%` }}
-                        />
-                      </div>
-                      <span className="text-body-sm text-on-surface-variant">{project.progress ?? 0}%</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-body-sm text-on-surface-variant hidden sm:table-cell">
-                    {project.taskCount ?? 0}
-                  </td>
-                  <td className="px-4 py-3">
-                    <Link
-                      to="/projects/$projectId"
-                      params={{ projectId: String(project.id) }}
-                      className="text-on-surface-variant hover:text-electric-blue"
-                    >
-                      <span className="material-symbols-outlined text-xl">chevron_right</span>
-                    </Link>
-                  </td>
+        <section className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden flex flex-col">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[1000px]">
+              <thead>
+                <tr className="border-b border-outline-variant/30 bg-surface/50">
+                  <th className="py-4 px-6 w-12">
+                    <input type="checkbox" className="rounded border-outline-variant w-4 h-4" />
+                  </th>
+                  <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Proj ID</th>
+                  <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Project Name</th>
+                  <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Client</th>
+                  <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Priority & Status</th>
+                  <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Progress</th>
+                  <th className="py-4 px-6 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider text-right">Action</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-outline-variant/20">
+                {data.items.map((project) => {
+                  const track = statusTrackLabel(project.status)
+                  const initials = project.name
+                    .split(' ')
+                    .slice(0, 2)
+                    .map((w) => w[0])
+                    .join('')
+                    .toUpperCase()
+                  return (
+                    <tr
+                      key={project.id}
+                      className="h-[72px] hover:bg-surface/30 transition-colors cursor-pointer"
+                      onClick={() =>
+                        navigate({ to: '/projects/$projectId', params: { projectId: String(project.id) } })
+                      }
+                    >
+                      <td className="py-2 px-6" onClick={(e) => e.stopPropagation()}>
+                        <input type="checkbox" className="rounded border-outline-variant w-4 h-4" />
+                      </td>
+                      <td className="py-2 px-4 text-[11px] text-on-surface-variant">#{project.code}</td>
+                      <td className="py-2 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">
+                            {initials}
+                          </div>
+                          <div>
+                            <p className="text-body-md font-semibold text-on-surface">{project.name}</p>
+                            <p className="text-[11px] text-on-surface-variant">{project.taskCount ?? 0} tasks</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-2 px-4">
+                        <p className="text-body-md font-semibold text-on-surface">{project.clientName ?? '—'}</p>
+                      </td>
+                      <td className="py-2 px-4">
+                        <div className="flex flex-col gap-1 items-start">
+                          <PriorityBadge status={project.status} />
+                          <div className="flex items-center gap-1.5">
+                            <span className={`w-1.5 h-1.5 rounded-full ${track.dot}`} />
+                            <span className={`text-[11px] font-medium ${track.text}`}>{track.label}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-2 px-4">
+                        <div className="flex items-center gap-2">
+                          <div className="h-1.5 w-16 rounded-full bg-surface-container-high overflow-hidden">
+                            <div
+                              className="h-full rounded-full bg-electric-blue"
+                              style={{ width: `${project.progress ?? 0}%` }}
+                            />
+                          </div>
+                          <span className="text-body-sm text-on-surface-variant">{project.progress ?? 0}%</span>
+                        </div>
+                      </td>
+                      <td className="py-2 px-6 text-right">
+                        <Link
+                          to="/projects/$projectId"
+                          params={{ projectId: String(project.id) }}
+                          className="text-electric-blue hover:underline flex items-center justify-end gap-1 text-label-sm"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <span className="material-symbols-outlined text-[16px]">description</span>
+                          Details
+                        </Link>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className="border-t border-outline-variant/30 p-4 flex items-center justify-between">
+            <p className="text-[11px] text-on-surface-variant">
+              Showing <span className="font-semibold text-on-surface">1-{data.items.length}</span> of{' '}
+              <span className="font-semibold text-on-surface">{data.total}</span> Projects
+            </p>
+          </div>
+        </section>
       )}
     </div>
   )
