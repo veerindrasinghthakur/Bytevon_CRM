@@ -92,110 +92,140 @@ function getActiveModule(pathname: string): string {
   return 'dashboard'
 }
 
+/** Collapsed secondary sidebar width (icon-only bar) */
+export const SECONDARY_COLLAPSED_WIDTH = 64
+/** Expanded secondary sidebar width */
+export const SECONDARY_EXPANDED_WIDTH = 240
+
 interface SecondarySidebarProps {
   isCollapsed: boolean
   onToggle: () => void
-  railWidth: number
 }
 
 export function SecondarySidebar({
   isCollapsed,
   onToggle,
-  railWidth,
 }: SecondarySidebarProps) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const moduleId = getActiveModule(pathname)
   const group = SECONDARY_NAV[moduleId]
   const items = (group?.items ?? []).filter((i) => i.visible !== false)
 
-  if (items.length === 0 && isCollapsed) {
+  // No secondary items for this module (e.g. dashboard) → don't render bar
+  if (items.length === 0) {
     return null
+  }
+
+  const isItemActive = (to: string) => {
+    if (to === '/projects') return pathname === '/projects'
+    return pathname === to || pathname.startsWith(to + '/')
   }
 
   return (
     <nav
       className={cn(
         'h-full bg-surface-container-lowest border-r border-outline-variant flex flex-col',
-        'transition-all duration-300 ease-in-out overflow-hidden whitespace-nowrap relative shrink-0',
-        isCollapsed ? 'w-0' : 'w-sidebar-secondary'
+        'transition-all duration-300 ease-in-out overflow-hidden shrink-0',
+        isCollapsed ? 'w-16' : 'w-60'
       )}
       aria-label="Secondary navigation"
     >
-      {!isCollapsed && (
-        <div className="w-[240px] flex flex-col h-full">
-          {/* Header */}
-          <div className="px-6 py-5 border-b border-outline-variant shrink-0">
-            <h2 className="text-headline-md text-on-background leading-tight">Bytevon CRM</h2>
+      {/* Header / toggle */}
+      <div
+        className={cn(
+          'border-b border-outline-variant shrink-0 flex items-center',
+          isCollapsed ? 'flex-col py-4 gap-2' : 'px-4 py-4 justify-between'
+        )}
+      >
+        {!isCollapsed && (
+          <div className="min-w-0">
+            <h2 className="text-title-lg text-on-background leading-tight truncate">
+              {group?.title ?? 'Workspace'}
+            </h2>
             <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold mt-0.5">
-              Workspace
+              Module
             </p>
           </div>
-
-          {/* Items */}
-          <div className="flex-1 py-6 overflow-y-auto scrollbar-hide px-2">
-            {group && (
-              <>
-                <h3 className="text-nav-group text-on-surface-variant/70 px-4 mb-2 uppercase">
-                  {group.title}
-                </h3>
-                <ul className="flex flex-col gap-1">
-                  {items.map((item) => {
-                    const active =
-                      pathname === item.to ||
-                      (item.to !== '/projects' && pathname.startsWith(item.to))
-                    return (
-                      <li key={item.id}>
-                        <Link
-                          to={item.to}
-                          className={cn(
-                            'flex items-center px-4 py-3 rounded-lg transition-all duration-200 group',
-                            active
-                              ? 'bg-surface-container-high text-on-surface font-medium'
-                              : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
-                          )}
-                        >
-                          <span
-                            className={cn(
-                              'material-symbols-outlined mr-3 text-lg transition-colors',
-                              active ? 'text-electric-blue' : 'group-hover:text-electric-blue'
-                            )}
-                            style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
-                          >
-                            {item.icon}
-                          </span>
-                          <span className="text-nav-item flex-1">{item.label}</span>
-                          {item.badge != null && (
-                            <span className="bg-surface-container-highest text-on-surface-variant text-[10px] font-bold px-1.5 py-0.5 rounded">
-                              {item.badge}
-                            </span>
-                          )}
-                        </Link>
-                      </li>
-                    )
-                  })}
-                </ul>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Floating toggle when needed */}
-      <button
-        type="button"
-        onClick={onToggle}
-        className={cn(
-          'fixed top-6 z-[60] text-on-surface-variant hover:text-on-surface transition-all duration-300',
-          'p-1 rounded hover:bg-surface-container'
         )}
-        style={{ left: `${railWidth + (isCollapsed ? 16 : 200)}px` }}
-        aria-label={isCollapsed ? 'Expand secondary sidebar' : 'Collapse secondary sidebar'}
-        title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        <button
+          type="button"
+          onClick={onToggle}
+          className={cn(
+            'flex items-center justify-center rounded-lg text-on-surface-variant',
+            'hover:bg-surface-container hover:text-on-surface transition-colors',
+            isCollapsed ? 'w-10 h-10' : 'w-9 h-9'
+          )}
+          aria-label={isCollapsed ? 'Expand secondary sidebar' : 'Collapse secondary sidebar'}
+          title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        >
+          <span className="material-symbols-outlined text-xl">
+            {isCollapsed ? 'menu' : 'menu_open'}
+          </span>
+        </button>
+      </div>
+
+      {/* Nav items – icon only when collapsed, icon + label when expanded */}
+      <div
+        className={cn(
+          'flex-1 overflow-y-auto scrollbar-hide',
+          isCollapsed ? 'py-3 flex flex-col items-center gap-1' : 'py-4 px-2'
+        )}
       >
-        <span className="material-symbols-outlined text-xl">
-          {isCollapsed ? 'menu' : 'menu_open'}
-        </span>
-      </button>
+        {!isCollapsed && group && (
+          <h3 className="text-nav-group text-on-surface-variant/70 px-3 mb-2 uppercase">
+            {group.title}
+          </h3>
+        )}
+
+        <ul className={cn('flex flex-col', isCollapsed ? 'gap-1 w-full items-center' : 'gap-1')}>
+          {items.map((item) => {
+            const active = isItemActive(item.to)
+            return (
+              <li key={item.id} className={isCollapsed ? 'w-full flex justify-center' : undefined}>
+                <Link
+                  to={item.to}
+                  title={isCollapsed ? item.label : undefined}
+                  className={cn(
+                    'flex items-center transition-all duration-200 group relative',
+                    isCollapsed
+                      ? 'w-10 h-10 justify-center rounded-lg'
+                      : 'w-full px-3 py-2.5 rounded-lg gap-3',
+                    active
+                      ? 'bg-surface-container-high text-on-surface font-medium'
+                      : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'material-symbols-outlined text-xl shrink-0 transition-colors',
+                      active ? 'text-electric-blue' : 'group-hover:text-electric-blue'
+                    )}
+                    style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                  >
+                    {item.icon}
+                  </span>
+
+                  {!isCollapsed && (
+                    <>
+                      <span className="text-nav-item flex-1 truncate">{item.label}</span>
+                      {item.badge != null && (
+                        <span className="bg-surface-container-highest text-on-surface-variant text-[10px] font-bold px-1.5 py-0.5 rounded">
+                          {item.badge}
+                        </span>
+                      )}
+                    </>
+                  )}
+
+                  {/* Badge dot when collapsed */}
+                  {isCollapsed && item.badge != null && (
+                    <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-electric-blue" />
+                  )}
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+      </div>
     </nav>
   )
 }

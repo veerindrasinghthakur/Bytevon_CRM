@@ -1,20 +1,42 @@
 import { useState, useMemo } from 'react'
-import { Outlet } from '@tanstack/react-router'
+import { Outlet, useRouterState } from '@tanstack/react-router'
 import { IconRail } from '@/shared/components/layout/IconRail'
-import { SecondarySidebar } from '@/shared/components/layout/SecondarySidebar'
+import {
+  SecondarySidebar,
+  SECONDARY_COLLAPSED_WIDTH,
+  SECONDARY_EXPANDED_WIDTH,
+  SECONDARY_NAV,
+} from '@/shared/components/layout/SecondarySidebar'
 import { Header } from '@/shared/components/layout/Header'
+
+function getActiveModule(pathname: string): string {
+  if (pathname.startsWith('/sales')) return 'sales'
+  if (pathname.startsWith('/projects')) return 'projects'
+  if (pathname.startsWith('/workforce')) return 'workforce'
+  if (pathname.startsWith('/my-work')) return 'my-work'
+  if (pathname.startsWith('/approvals')) return 'approvals'
+  if (pathname.startsWith('/admin')) return 'admin'
+  return 'dashboard'
+}
 
 /**
  * AppShell – main authenticated layout.
- * Icon Rail + Secondary Sidebar (both collapsed by default) + Header + Outlet.
- * Follows locked decisions from 04_AppShell_and_Layout_Components.md
+ * Icon Rail + Secondary Sidebar (both start collapsed / icon-only) + Header + Outlet.
  */
 export function AppShell() {
   const [isRailExpanded, setIsRailExpanded] = useState(false)
   const [isSecondaryCollapsed, setIsSecondaryCollapsed] = useState(true)
 
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const moduleId = getActiveModule(pathname)
+  const hasSecondaryItems = (SECONDARY_NAV[moduleId]?.items?.length ?? 0) > 0
+
   const railWidth = isRailExpanded ? 220 : 80
-  const secondaryWidth = isSecondaryCollapsed ? 0 : 240
+  const secondaryWidth = !hasSecondaryItems
+    ? 0
+    : isSecondaryCollapsed
+      ? SECONDARY_COLLAPSED_WIDTH
+      : SECONDARY_EXPANDED_WIDTH
   const totalSidebarWidth = railWidth + secondaryWidth
 
   const headerStyle = useMemo(
@@ -40,14 +62,12 @@ export function AppShell() {
           isExpanded={isRailExpanded}
           onToggleExpand={() => setIsRailExpanded((v) => !v)}
           onLogout={() => {
-            // Placeholder – wire to Auth later
             console.info('Logout clicked')
           }}
         />
         <SecondarySidebar
           isCollapsed={isSecondaryCollapsed}
           onToggle={() => setIsSecondaryCollapsed((v) => !v)}
-          railWidth={railWidth}
         />
       </div>
 
