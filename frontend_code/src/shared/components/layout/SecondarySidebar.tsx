@@ -142,9 +142,9 @@ export function SecondarySidebar({
             <h2 className="text-title-lg text-on-background leading-tight truncate">
               {group?.title ?? 'Workspace'}
             </h2>
-            <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold mt-0.5">
+            {/* <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold mt-0.5">
               Module
-            </p>
+            </p> */}
           </div>
         )}
         <button
@@ -153,7 +153,7 @@ export function SecondarySidebar({
           className={cn(
             'flex items-center justify-center rounded-lg text-on-surface-variant',
             'hover:bg-surface-container hover:text-on-surface transition-colors',
-            isCollapsed ? 'w-10 h-10' : 'w-9 h-9'
+            isCollapsed ? 'w-10 h-8' : 'w-9 h-8'
           )}
           aria-label={isCollapsed ? 'Expand secondary sidebar' : 'Collapse secondary sidebar'}
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
