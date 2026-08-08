@@ -2,13 +2,10 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate, Link } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
+import { BackButton } from '@/shared/components/layout/BackButton'
 import { createProjectSchema, type CreateProjectInput } from '../schemas/project'
 import { useCreateProject } from '../hooks/use-projects'
 
-/**
- * Create Project — structure from 04_projects/create_new_project_bytevon_crm.html
- * Sections: Core Details, Assignment Strategy, Initial Configuration, Repository.
- */
 export function ProjectCreatePage() {
   const navigate = useNavigate()
   const createMutation = useCreateProject()
@@ -39,8 +36,11 @@ export function ProjectCreatePage() {
 
   return (
     <div className="max-w-3xl mx-auto">
+      <div className="mb-4">
+        <BackButton to="/projects" label="Back to projects" />
+      </div>
+
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
-        {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-outline-variant bg-surface">
           <div>
             <h2 className="text-xl font-bold text-on-background">Create New Project</h2>
@@ -50,7 +50,7 @@ export function ProjectCreatePage() {
           </div>
           <Link
             to="/projects"
-            className="text-on-surface-variant hover:text-error transition-colors p-1 rounded-md hover:bg-surface-container"
+            className="text-on-surface-variant hover:text-error p-1 rounded-md hover:bg-surface-container"
           >
             <span className="material-symbols-outlined">close</span>
           </Link>
@@ -58,7 +58,6 @@ export function ProjectCreatePage() {
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="p-6 space-y-8 bg-background/50">
-            {/* Core Details */}
             <section>
               <h3 className="text-sm font-semibold text-on-background uppercase tracking-wider mb-4 border-b border-outline-variant pb-2">
                 Core Details
@@ -108,7 +107,6 @@ export function ProjectCreatePage() {
             </section>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Assignment Strategy */}
               <section>
                 <h3 className="text-sm font-semibold text-on-background uppercase tracking-wider mb-4 border-b border-outline-variant pb-2">
                   Assignment Strategy
@@ -121,7 +119,7 @@ export function ProjectCreatePage() {
                   ].map((opt, i) => (
                     <label
                       key={opt.id}
-                      className="flex items-start gap-3 p-3 border border-outline-variant rounded-lg cursor-pointer hover:border-electric-blue hover:bg-electric-blue/5 transition-all bg-surface-container-lowest"
+                      className="flex items-start gap-3 p-3 border border-outline-variant rounded-lg cursor-pointer hover:border-electric-blue hover:bg-electric-blue/5 bg-surface-container-lowest"
                     >
                       <input
                         type="radio"
@@ -138,7 +136,6 @@ export function ProjectCreatePage() {
                 </div>
               </section>
 
-              {/* Initial Config + Repo */}
               <div className="space-y-8">
                 <section>
                   <h3 className="text-sm font-semibold text-on-background uppercase tracking-wider mb-4 border-b border-outline-variant pb-2">
@@ -159,7 +156,7 @@ export function ProjectCreatePage() {
                       <select className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue outline-none bg-surface-container-lowest text-on-background">
                         <option>Low</option>
                         <option>Medium</option>
-                        <option selected>High</option>
+                        <option>High</option>
                         <option>Critical</option>
                       </select>
                     </div>

@@ -1,13 +1,12 @@
 import { useState } from 'react'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
+import { RowActions } from '@/shared/components/ui/RowActions'
 import { useProjects } from '../hooks/use-projects'
-import { ProjectStatusBadge } from '../components/ProjectStatusBadge'
 import type { ProjectStatus } from '../schemas/project'
 
-/** Priority labels matching Stitch projects table */
 function PriorityBadge({ status }: { status: ProjectStatus }) {
   if (status === 'IN_PROGRESS') {
     return (
@@ -58,7 +57,6 @@ export function ProjectsListPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header – matches Stitch: Project Management */}
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-label-sm text-on-surface-variant mb-2">
@@ -76,10 +74,20 @@ export function ProjectsListPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">upload</span>}>
+          <Button
+            variant="outline"
+            size="sm"
+            leftIcon={<span className="material-symbols-outlined text-[18px]">upload</span>}
+            onClick={() => console.info('Import projects')}
+          >
             Import
           </Button>
-          <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}>
+          <Button
+            variant="outline"
+            size="sm"
+            leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}
+            onClick={() => console.info('Export projects')}
+          >
             Export
           </Button>
           <Button
@@ -93,43 +101,9 @@ export function ProjectsListPage() {
         </div>
       </section>
 
-      {/* Filters */}
+      {/* Search left · filters right (user request) */}
       <section className="flex flex-wrap items-center gap-4">
-        <div className="relative min-w-[160px]">
-          <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-surface focus:outline-none focus:border-electric-blue cursor-pointer">
-            <option>Project Status</option>
-            <option>Active</option>
-            <option>On Hold</option>
-            <option>Completed</option>
-          </select>
-          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
-            expand_more
-          </span>
-        </div>
-        <div className="relative min-w-[160px]">
-          <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-surface focus:outline-none focus:border-electric-blue cursor-pointer">
-            <option>Current Phase</option>
-            <option>Planning</option>
-            <option>Execution</option>
-            <option>Review</option>
-          </select>
-          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
-            expand_more
-          </span>
-        </div>
-        <div className="relative min-w-[160px]">
-          <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-surface focus:outline-none focus:border-electric-blue cursor-pointer">
-            <option>Priority Level</option>
-            <option>Critical</option>
-            <option>High</option>
-            <option>Medium</option>
-            <option>Low</option>
-          </select>
-          <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
-            expand_more
-          </span>
-        </div>
-        <div className="flex items-center flex-1 max-w-xs ml-auto bg-surface-container-lowest border border-outline-variant/50 rounded-lg px-3 py-2 focus-within:border-electric-blue">
+        <div className="flex items-center flex-1 min-w-[200px] max-w-sm bg-surface-container-lowest border border-outline-variant/50 rounded-lg px-3 py-2 focus-within:border-electric-blue">
           <span className="material-symbols-outlined text-on-surface-variant mr-2 text-lg">search</span>
           <input
             type="search"
@@ -139,21 +113,58 @@ export function ProjectsListPage() {
             className="bg-transparent border-none outline-none text-body-sm w-full text-on-surface placeholder:text-on-surface-variant"
           />
         </div>
-        <button
-          type="button"
-          onClick={() => refetch()}
-          className="p-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface-variant hover:text-electric-blue transition-colors"
-        >
-          <span className="material-symbols-outlined">refresh</span>
-        </button>
+
+        <div className="flex flex-wrap items-center gap-3 ml-auto">
+          <div className="relative min-w-[140px]">
+            <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-surface focus:outline-none focus:border-electric-blue cursor-pointer">
+              <option>Project Status</option>
+              <option>Active</option>
+              <option>On Hold</option>
+              <option>Completed</option>
+            </select>
+            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
+              expand_more
+            </span>
+          </div>
+          <div className="relative min-w-[140px]">
+            <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-surface focus:outline-none focus:border-electric-blue cursor-pointer">
+              <option>Current Phase</option>
+              <option>Planning</option>
+              <option>Execution</option>
+              <option>Review</option>
+            </select>
+            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
+              expand_more
+            </span>
+          </div>
+          <div className="relative min-w-[140px]">
+            <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-surface focus:outline-none focus:border-electric-blue cursor-pointer">
+              <option>Priority Level</option>
+              <option>Critical</option>
+              <option>High</option>
+              <option>Medium</option>
+              <option>Low</option>
+            </select>
+            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
+              expand_more
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="p-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface-variant hover:text-electric-blue"
+            aria-label="Refresh"
+          >
+            <span className="material-symbols-outlined">refresh</span>
+          </button>
+        </div>
       </section>
 
-      {/* Metric cards – Stitch layout */}
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
           <div className="flex justify-between items-start">
             <div className="w-10 h-10 rounded-lg bg-electric-blue/10 flex items-center justify-center text-electric-blue">
-              <span className="material-symbols-outlined filled" style={{ fontVariationSettings: "'FILL' 1" }}>folder_open</span>
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>folder_open</span>
             </div>
             <div className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-1 rounded">+12%</div>
           </div>
@@ -165,7 +176,7 @@ export function ProjectsListPage() {
         <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
           <div className="flex justify-between items-start">
             <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600">
-              <span className="material-symbols-outlined filled" style={{ fontVariationSettings: "'FILL' 1" }}>trending_up</span>
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>trending_up</span>
             </div>
             <div className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-1 rounded">+4.2%</div>
           </div>
@@ -177,7 +188,7 @@ export function ProjectsListPage() {
         <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
           <div className="flex justify-between items-start">
             <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
-              <span className="material-symbols-outlined filled" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
             </div>
             <div className="bg-red-100 text-red-800 text-xs font-bold px-2 py-1 rounded">-2.1%</div>
           </div>
@@ -186,17 +197,16 @@ export function ProjectsListPage() {
             <h3 className="text-[32px] font-bold text-on-surface leading-none">{atRisk}</h3>
           </div>
         </div>
-        <div className="bg-deep-navy border border-white/10 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px] relative overflow-hidden">
-          <div className="flex justify-between items-start relative z-10">
+        <div className="bg-deep-navy border border-white/10 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
+          <div className="flex justify-between items-start">
             <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white">
-              <span className="material-symbols-outlined filled" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
+              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
             </div>
           </div>
-          <div className="relative z-10">
+          <div>
             <p className="text-label-sm text-white/70 mb-1">Total Managed Budget</p>
             <h3 className="text-[32px] font-bold text-white leading-none">$12.4M</h3>
           </div>
-          <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-electric-blue/20 rounded-full blur-3xl" />
         </div>
       </section>
 
@@ -217,7 +227,6 @@ export function ProjectsListPage() {
         />
       )}
 
-      {/* Data table – Stitch columns */}
       {!isLoading && !isError && data && data.items.length > 0 && (
         <section className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden flex flex-col">
           <div className="overflow-x-auto">
@@ -245,14 +254,8 @@ export function ProjectsListPage() {
                     .join('')
                     .toUpperCase()
                   return (
-                    <tr
-                      key={project.id}
-                      className="h-[72px] hover:bg-surface/30 transition-colors cursor-pointer"
-                      onClick={() =>
-                        navigate({ to: '/projects/$projectId', params: { projectId: String(project.id) } })
-                      }
-                    >
-                      <td className="py-2 px-6" onClick={(e) => e.stopPropagation()}>
+                    <tr key={project.id} className="h-[72px]">
+                      <td className="py-2 px-6">
                         <input type="checkbox" className="rounded border-outline-variant w-4 h-4" />
                       </td>
                       <td className="py-2 px-4 text-[11px] text-on-surface-variant">#{project.code}</td>
@@ -290,16 +293,37 @@ export function ProjectsListPage() {
                           <span className="text-body-sm text-on-surface-variant">{project.progress ?? 0}%</span>
                         </div>
                       </td>
-                      <td className="py-2 px-6 text-right">
-                        <Link
-                          to="/projects/$projectId"
-                          params={{ projectId: String(project.id) }}
-                          className="text-electric-blue hover:underline flex items-center justify-end gap-1 text-label-sm"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <span className="material-symbols-outlined text-[16px]">description</span>
-                          Details
-                        </Link>
+                      <td className="py-2 px-6 text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-end">
+                          <RowActions
+                            label={`Actions for ${project.name}`}
+                            actions={[
+                              {
+                                id: 'details',
+                                label: 'View details',
+                                icon: 'description',
+                                onClick: () =>
+                                  navigate({
+                                    to: '/projects/$projectId',
+                                    params: { projectId: String(project.id) },
+                                  }),
+                              },
+                              {
+                                id: 'edit',
+                                label: 'Edit',
+                                icon: 'edit',
+                                onClick: () => console.info('Edit project', project.id),
+                              },
+                              {
+                                id: 'archive',
+                                label: 'Archive',
+                                icon: 'archive',
+                                danger: true,
+                                onClick: () => console.info('Archive project', project.id),
+                              },
+                            ]}
+                          />
+                        </div>
                       </td>
                     </tr>
                   )

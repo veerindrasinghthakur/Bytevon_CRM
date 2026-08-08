@@ -6,7 +6,6 @@ import { useProject } from '../hooks/use-projects'
 import { ProjectStatusBadge } from '../components/ProjectStatusBadge'
 
 export function ProjectDetailPage() {
-  // Use loose params so we don't depend on route id string
   const params = useParams({ strict: false }) as { projectId?: string }
   const id = Number(params.projectId)
   const { data: project, isLoading, isError, refetch } = useProject(
@@ -52,6 +51,9 @@ export function ProjectDetailPage() {
       <PageHeader
         title={project.name}
         description={project.code}
+        showBack
+        backTo="/projects"
+        backLabel="Back to projects"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
             <Link to="/projects" className="hover:text-electric-blue">Projects</Link>
@@ -60,7 +62,11 @@ export function ProjectDetailPage() {
           </nav>
         }
         actions={
-          <Button variant="outline" leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}>
+          <Button
+            variant="outline"
+            leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
+            onClick={() => console.info('Edit project', project.id)}
+          >
             Edit
           </Button>
         }

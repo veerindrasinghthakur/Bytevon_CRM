@@ -7,7 +7,6 @@ import {
 } from '@tanstack/react-router'
 import { AppShell } from '@/app/layouts/AppShell'
 
-// Projects
 import { ProjectsListPage } from '@/modules/projects/pages/ProjectsListPage'
 import { ProjectDetailPage } from '@/modules/projects/pages/ProjectDetailPage'
 import { ProjectCreatePage } from '@/modules/projects/pages/ProjectCreatePage'
@@ -16,17 +15,17 @@ import { TeamCreatePage } from '@/modules/projects/pages/TeamCreatePage'
 import { TasksListPage } from '@/modules/projects/pages/TasksListPage'
 import { TaskCreatePage } from '@/modules/projects/pages/TaskCreatePage'
 
-// Sales
 import { LeadsListPage } from '@/modules/sales/pages/LeadsListPage'
 import { LeadCreatePage } from '@/modules/sales/pages/LeadCreatePage'
 import { ClientsListPage } from '@/modules/sales/pages/ClientsListPage'
 import { ClientCreatePage } from '@/modules/sales/pages/ClientCreatePage'
 
-// Workforce
 import { EmployeesListPage } from '@/modules/workforce/pages/EmployeesListPage'
 import { EmployeeCreatePage } from '@/modules/workforce/pages/EmployeeCreatePage'
 import { DepartmentsListPage } from '@/modules/workforce/pages/DepartmentsListPage'
 import { DepartmentCreatePage } from '@/modules/workforce/pages/DepartmentCreatePage'
+
+import { ProfilePage } from '@/modules/profile/pages/ProfilePage'
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -73,7 +72,12 @@ const dashboardRoute = createRoute({
   ),
 })
 
-// ── Projects ──────────────────────────────────────────────────────────
+const profileRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/profile',
+  component: ProfilePage,
+})
+
 const projectsIndexRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/projects',
@@ -110,7 +114,6 @@ const tasksNewRoute = createRoute({
   component: TaskCreatePage,
 })
 
-// ── Sales ─────────────────────────────────────────────────────────────
 const salesRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/sales',
@@ -147,7 +150,6 @@ const salesActivityRoute = createRoute({
   component: () => <Placeholder title="Sales Activity" />,
 })
 
-// ── Workforce ─────────────────────────────────────────────────────────
 const workforceRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/workforce',
@@ -179,7 +181,6 @@ const workforceAttendanceRoute = createRoute({
   component: () => <Placeholder title="Attendance" />,
 })
 
-// ── My Work ───────────────────────────────────────────────────────────
 const myWorkRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/my-work',
@@ -206,7 +207,6 @@ const myWorkApprovalsRoute = createRoute({
   component: () => <Placeholder title="My Approvals" />,
 })
 
-// ── Approvals ─────────────────────────────────────────────────────────
 const approvalsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/approvals',
@@ -223,7 +223,6 @@ const approvalsMyRequestsRoute = createRoute({
   component: () => <Placeholder title="My Requests" />,
 })
 
-// ── Admin ─────────────────────────────────────────────────────────────
 const adminRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin',
@@ -259,7 +258,7 @@ const routeTree = rootRoute.addChildren([
   indexRoute,
   appLayoutRoute.addChildren([
     dashboardRoute,
-    // Projects
+    profileRoute,
     projectsIndexRoute,
     projectsNewRoute,
     projectDetailRoute,
@@ -267,7 +266,6 @@ const routeTree = rootRoute.addChildren([
     teamsNewRoute,
     tasksRoute,
     tasksNewRoute,
-    // Sales
     salesRoute,
     salesLeadsRoute,
     salesLeadsNewRoute,
@@ -275,24 +273,20 @@ const routeTree = rootRoute.addChildren([
     salesClientsNewRoute,
     salesAnalyticsRoute,
     salesActivityRoute,
-    // Workforce
     workforceRoute,
     workforceEmployeesRoute,
     workforceEmployeesNewRoute,
     workforceDepartmentsRoute,
     workforceDepartmentsNewRoute,
     workforceAttendanceRoute,
-    // My Work
     myWorkRoute,
     myWorkAttendanceRoute,
     myWorkLeaveRoute,
     myWorkTasksRoute,
     myWorkApprovalsRoute,
-    // Approvals
     approvalsRoute,
     approvalsPendingRoute,
     approvalsMyRequestsRoute,
-    // Admin
     adminRoute,
     adminUsersRoute,
     adminRolesRoute,
