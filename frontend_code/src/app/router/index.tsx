@@ -6,11 +6,27 @@ import {
   redirect,
 } from '@tanstack/react-router'
 import { AppShell } from '@/app/layouts/AppShell'
+
+// Projects
 import { ProjectsListPage } from '@/modules/projects/pages/ProjectsListPage'
 import { ProjectDetailPage } from '@/modules/projects/pages/ProjectDetailPage'
 import { ProjectCreatePage } from '@/modules/projects/pages/ProjectCreatePage'
 import { TeamsListPage } from '@/modules/projects/pages/TeamsListPage'
+import { TeamCreatePage } from '@/modules/projects/pages/TeamCreatePage'
 import { TasksListPage } from '@/modules/projects/pages/TasksListPage'
+import { TaskCreatePage } from '@/modules/projects/pages/TaskCreatePage'
+
+// Sales
+import { LeadsListPage } from '@/modules/sales/pages/LeadsListPage'
+import { LeadCreatePage } from '@/modules/sales/pages/LeadCreatePage'
+import { ClientsListPage } from '@/modules/sales/pages/ClientsListPage'
+import { ClientCreatePage } from '@/modules/sales/pages/ClientCreatePage'
+
+// Workforce
+import { EmployeesListPage } from '@/modules/workforce/pages/EmployeesListPage'
+import { EmployeeCreatePage } from '@/modules/workforce/pages/EmployeeCreatePage'
+import { DepartmentsListPage } from '@/modules/workforce/pages/DepartmentsListPage'
+import { DepartmentCreatePage } from '@/modules/workforce/pages/DepartmentCreatePage'
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -23,19 +39,16 @@ function Placeholder({ title }: { title: string }) {
   )
 }
 
-// Root – just renders child outlet
 const rootRoute = createRootRoute({
   component: () => <Outlet />,
 })
 
-// Pathless layout – wraps all app pages with AppShell
 const appLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'app',
   component: AppShell,
 })
 
-// Redirect / → /dashboard
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
@@ -54,44 +67,50 @@ const dashboardRoute = createRoute({
         Executive dashboard will be implemented in a later module.
       </p>
       <p className="text-body-sm text-on-surface-variant mt-4">
-        Click <strong>Projects</strong> (folder icon) in the left rail to open the Projects module.
+        Use the left Icon Rail to open Projects, Sales, Workforce, etc.
       </p>
     </div>
   ),
 })
 
-// Projects
+// ── Projects ──────────────────────────────────────────────────────────
 const projectsIndexRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/projects',
   component: ProjectsListPage,
 })
-
 const projectsNewRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/projects/new',
   component: ProjectCreatePage,
 })
-
 const projectDetailRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/projects/$projectId',
   component: ProjectDetailPage,
 })
-
 const teamsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/projects/teams',
   component: TeamsListPage,
 })
-
+const teamsNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/projects/teams/new',
+  component: TeamCreatePage,
+})
 const tasksRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/projects/tasks',
   component: TasksListPage,
 })
+const tasksNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/projects/tasks/new',
+  component: TaskCreatePage,
+})
 
-// Sales
+// ── Sales ─────────────────────────────────────────────────────────────
 const salesRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/sales',
@@ -100,12 +119,22 @@ const salesRoute = createRoute({
 const salesLeadsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/sales/leads',
-  component: () => <Placeholder title="Leads" />,
+  component: LeadsListPage,
+})
+const salesLeadsNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/sales/leads/new',
+  component: LeadCreatePage,
 })
 const salesClientsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/sales/clients',
-  component: () => <Placeholder title="Clients" />,
+  component: ClientsListPage,
+})
+const salesClientsNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/sales/clients/new',
+  component: ClientCreatePage,
 })
 const salesAnalyticsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
@@ -118,7 +147,7 @@ const salesActivityRoute = createRoute({
   component: () => <Placeholder title="Sales Activity" />,
 })
 
-// Workforce
+// ── Workforce ─────────────────────────────────────────────────────────
 const workforceRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/workforce',
@@ -127,12 +156,22 @@ const workforceRoute = createRoute({
 const workforceEmployeesRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/workforce/employees',
-  component: () => <Placeholder title="Employees" />,
+  component: EmployeesListPage,
+})
+const workforceEmployeesNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/employees/new',
+  component: EmployeeCreatePage,
 })
 const workforceDepartmentsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/workforce/departments',
-  component: () => <Placeholder title="Departments" />,
+  component: DepartmentsListPage,
+})
+const workforceDepartmentsNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/departments/new',
+  component: DepartmentCreatePage,
 })
 const workforceAttendanceRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
@@ -140,7 +179,7 @@ const workforceAttendanceRoute = createRoute({
   component: () => <Placeholder title="Attendance" />,
 })
 
-// My Work
+// ── My Work ───────────────────────────────────────────────────────────
 const myWorkRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/my-work',
@@ -167,7 +206,7 @@ const myWorkApprovalsRoute = createRoute({
   component: () => <Placeholder title="My Approvals" />,
 })
 
-// Approvals
+// ── Approvals ─────────────────────────────────────────────────────────
 const approvalsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/approvals',
@@ -184,7 +223,7 @@ const approvalsMyRequestsRoute = createRoute({
   component: () => <Placeholder title="My Requests" />,
 })
 
-// Admin
+// ── Admin ─────────────────────────────────────────────────────────────
 const adminRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin',
@@ -220,28 +259,40 @@ const routeTree = rootRoute.addChildren([
   indexRoute,
   appLayoutRoute.addChildren([
     dashboardRoute,
+    // Projects
     projectsIndexRoute,
     projectsNewRoute,
     projectDetailRoute,
     teamsRoute,
+    teamsNewRoute,
     tasksRoute,
+    tasksNewRoute,
+    // Sales
     salesRoute,
     salesLeadsRoute,
+    salesLeadsNewRoute,
     salesClientsRoute,
+    salesClientsNewRoute,
     salesAnalyticsRoute,
     salesActivityRoute,
+    // Workforce
     workforceRoute,
     workforceEmployeesRoute,
+    workforceEmployeesNewRoute,
     workforceDepartmentsRoute,
+    workforceDepartmentsNewRoute,
     workforceAttendanceRoute,
+    // My Work
     myWorkRoute,
     myWorkAttendanceRoute,
     myWorkLeaveRoute,
     myWorkTasksRoute,
     myWorkApprovalsRoute,
+    // Approvals
     approvalsRoute,
     approvalsPendingRoute,
     approvalsMyRequestsRoute,
+    // Admin
     adminRoute,
     adminUsersRoute,
     adminRolesRoute,
