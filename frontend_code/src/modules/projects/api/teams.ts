@@ -4,8 +4,12 @@ export interface Team {
   id: number
   name: string
   description?: string
+  department?: string
+  headName?: string
+  headRole?: string
   projectName?: string
   memberCount: number
+  projectCount: number
   status: TeamStatus
   createdAt: string
 }
@@ -14,18 +18,26 @@ const MOCK_TEAMS: Team[] = [
   {
     id: 1,
     name: 'Alpha Engineering',
-    description: 'Core platform development team',
+    description: 'Core backend architecture and API development team.',
+    department: 'Engineering',
+    headName: 'Sarah Jenkins',
+    headRole: 'Tech Lead',
     projectName: 'Bytevon CRM Core',
-    memberCount: 6,
+    memberCount: 12,
+    projectCount: 4,
     status: 'ACTIVE',
     createdAt: '2026-02-01T10:00:00Z',
   },
   {
     id: 2,
-    name: 'Beta Design',
+    name: 'Brand Creative',
     description: 'UI/UX and design system',
-    projectName: 'Bytevon CRM Core',
-    memberCount: 3,
+    department: 'Design',
+    headName: 'David Chen',
+    headRole: 'Design Director',
+    projectName: 'Client Portal',
+    memberCount: 8,
+    projectCount: 2,
     status: 'ACTIVE',
     createdAt: '2026-03-15T09:00:00Z',
   },
@@ -33,8 +45,12 @@ const MOCK_TEAMS: Team[] = [
     id: 3,
     name: 'Client Portal Squad',
     description: 'External portal delivery',
+    department: 'Engineering',
+    headName: 'Marcus Sterling',
+    headRole: 'Project Lead',
     projectName: 'Client Portal',
     memberCount: 4,
+    projectCount: 1,
     status: 'ACTIVE',
     createdAt: '2026-07-01T11:00:00Z',
   },
@@ -42,8 +58,12 @@ const MOCK_TEAMS: Team[] = [
     id: 4,
     name: 'Mobile Ops',
     description: 'Attendance mobile app',
+    department: 'Engineering',
+    headName: 'Elena R.',
+    headRole: 'Mobile Lead',
     projectName: 'Mobile Attendance',
     memberCount: 2,
+    projectCount: 1,
     status: 'INACTIVE',
     createdAt: '2026-04-10T08:00:00Z',
   },
@@ -61,8 +81,8 @@ export async function getTeams(params?: { search?: string }): Promise<{ items: T
     items = items.filter(
       (t) =>
         t.name.toLowerCase().includes(q) ||
-        t.projectName?.toLowerCase().includes(q) ||
-        t.description?.toLowerCase().includes(q)
+        t.department?.toLowerCase().includes(q) ||
+        t.headName?.toLowerCase().includes(q)
     )
   }
   return { items, total: items.length }
@@ -77,8 +97,11 @@ export async function createTeam(input: {
     id: MOCK_TEAMS.length + 1 + Math.floor(Math.random() * 1000),
     name: input.name,
     description: input.description,
-    projectName: undefined,
+    department: 'Engineering',
+    headName: undefined,
+    headRole: undefined,
     memberCount: 0,
+    projectCount: 0,
     status: 'ACTIVE',
     createdAt: new Date().toISOString(),
   }

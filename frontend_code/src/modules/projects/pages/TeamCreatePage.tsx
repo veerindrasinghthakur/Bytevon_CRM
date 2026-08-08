@@ -2,7 +2,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useNavigate, Link } from '@tanstack/react-router'
-import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { useCreateTeam } from '../hooks/use-teams'
 
@@ -13,6 +12,10 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>
 
+/**
+ * Create Team — structure from 05_workforce/create_new_team_bytevon_crm.html
+ * Sections: Team Identity, Leadership (placeholder), Team Composition (placeholder).
+ */
 export function TeamCreatePage() {
   const navigate = useNavigate()
   const createMutation = useCreateTeam()
@@ -30,66 +33,126 @@ export function TeamCreatePage() {
       await createMutation.mutateAsync(data)
       navigate({ to: '/projects/teams' })
     } catch {
-      // mutation error shown below
+      // shown below
     }
   }
 
   return (
-    <div>
-      <PageHeader
-        title="New Team"
-        breadcrumbs={
-          <nav className="text-body-sm text-on-surface-variant">
-            <Link to="/projects/teams" className="hover:text-electric-blue">Teams</Link>
-            <span className="mx-2">/</span>
-            <span className="text-on-surface">New</span>
-          </nav>
-        }
-      />
-
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="max-w-xl space-y-5 rounded-xl border border-outline-variant bg-surface-container-lowest p-6"
-      >
-        <div>
-          <label className="block text-label-md text-on-surface mb-1.5" htmlFor="name">
-            Team name <span className="text-error">*</span>
-          </label>
-          <input
-            id="name"
-            {...register('name')}
-            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-electric-blue focus:border-2"
-            placeholder="e.g. Alpha Engineering"
-          />
-          {errors.name && <p className="mt-1 text-body-sm text-error">{errors.name.message}</p>}
+    <div className="max-w-2xl mx-auto">
+      {/* Modal-style card matching Stitch */}
+      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-outline-variant flex justify-between items-center bg-surface">
+          <div>
+            <h2 className="text-headline-lg font-semibold text-on-surface">Create New Team</h2>
+            <p className="text-body-md text-on-surface-variant mt-1">
+              Define team identity and assign members.
+            </p>
+          </div>
+          <Link
+            to="/projects/teams"
+            className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-full p-2 transition-colors"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </Link>
         </div>
 
-        <div>
-          <label className="block text-label-md text-on-surface mb-1.5" htmlFor="description">
-            Description
-          </label>
-          <textarea
-            id="description"
-            rows={3}
-            {...register('description')}
-            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-electric-blue focus:border-2 resize-y"
-            placeholder="Brief description"
-          />
-        </div>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="p-6 space-y-8 bg-background">
+            {/* Section 1: Team Identity */}
+            <section>
+              <h3 className="text-headline-md font-semibold text-on-surface mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-electric-blue">badge</span>
+                Team Identity
+              </h3>
+              <div className="space-y-4 bg-surface-container-lowest p-5 rounded-lg border border-outline-variant">
+                <div className="space-y-1">
+                  <label className="text-label-sm text-on-surface block" htmlFor="name">
+                    Team Name <span className="text-error">*</span>
+                  </label>
+                  <input
+                    id="name"
+                    {...register('name')}
+                    className="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-3 py-2 text-on-surface text-body-md focus:border-electric-blue focus:ring-1 focus:ring-electric-blue outline-none"
+                    placeholder="e.g., DevOps Team"
+                  />
+                  {errors.name && <p className="text-body-sm text-error">{errors.name.message}</p>}
+                </div>
+                <div className="space-y-1">
+                  <label className="text-label-sm text-on-surface block" htmlFor="description">
+                    Description
+                  </label>
+                  <textarea
+                    id="description"
+                    rows={3}
+                    {...register('description')}
+                    className="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-3 py-2 text-on-surface text-body-md focus:border-electric-blue focus:ring-1 focus:ring-electric-blue outline-none resize-none"
+                    placeholder="e.g., Responsible for infrastructure and CI/CD pipelines"
+                  />
+                </div>
+              </div>
+            </section>
 
-        {createMutation.isError && (
-          <p className="text-body-sm text-error">Failed to create team. Please try again.</p>
-        )}
+            {/* Section 2: Leadership – UI shell (API later) */}
+            <section>
+              <h3 className="text-headline-md font-semibold text-on-surface mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-electric-blue">star</span>
+                Leadership
+              </h3>
+              <div className="bg-surface-container-lowest p-5 rounded-lg border border-outline-variant">
+                <label className="text-label-sm text-on-surface block mb-1">Assign Team Head</label>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">
+                    search
+                  </span>
+                  <input
+                    type="text"
+                    disabled
+                    className="w-full pl-10 pr-4 py-2 bg-surface-container border border-outline-variant rounded-md text-on-surface-variant text-body-md cursor-not-allowed"
+                    placeholder="Search employees by name... (connect API later)"
+                  />
+                </div>
+              </div>
+            </section>
 
-        <div className="flex items-center gap-3 pt-2">
-          <Button type="submit" variant="primary" isLoading={isSubmitting || createMutation.isPending}>
-            Create Team
-          </Button>
-          <Button type="button" variant="ghost" onClick={() => navigate({ to: '/projects/teams' })}>
-            Cancel
-          </Button>
-        </div>
-      </form>
+            {/* Section 3: Composition – UI shell */}
+            <section>
+              <h3 className="text-headline-md font-semibold text-on-surface mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-electric-blue">group_add</span>
+                Team Composition
+              </h3>
+              <div className="bg-surface-container-lowest p-5 rounded-lg border border-outline-variant">
+                <label className="text-label-sm text-on-surface block mb-1">Add Members</label>
+                <div className="relative">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">
+                    person_search
+                  </span>
+                  <input
+                    type="text"
+                    disabled
+                    className="w-full pl-10 pr-4 py-2 bg-surface-container border border-outline-variant rounded-md text-on-surface-variant text-body-md cursor-not-allowed"
+                    placeholder="Search employees... (connect API later)"
+                  />
+                </div>
+              </div>
+            </section>
+
+            {createMutation.isError && (
+              <p className="text-body-sm text-error">Failed to create team. Please try again.</p>
+            )}
+          </div>
+
+          {/* Footer */}
+          <div className="px-6 py-4 border-t border-outline-variant bg-surface flex justify-end gap-3">
+            <Button type="button" variant="outline" onClick={() => navigate({ to: '/projects/teams' })}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" isLoading={isSubmitting || createMutation.isPending}>
+              Create Team
+            </Button>
+          </div>
+        </form>
+      </div>
     </div>
   )
 }
