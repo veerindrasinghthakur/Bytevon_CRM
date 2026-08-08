@@ -162,20 +162,24 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                   to={item.to}
                   title={isCollapsed ? item.label : undefined}
                   className={cn(
-                    'flex items-center group relative',
+                    'flex items-center group relative border-l-4',
                     isCollapsed
-                      ? 'w-10 h-11 justify-center rounded-lg'
-                      : 'w-full px-3 py-3.5 rounded-lg gap-3',
-                    // Stitch: selected = light blue wash + blue text (not dark navy)
+                      ? 'w-10 h-11 justify-center rounded-lg border-transparent'
+                      : 'w-full px-3 py-3.5 rounded-r-lg gap-3',
+                    // Distinct selected state (Stitch secondary-container wash)
                     active
-                      ? 'bg-electric-blue/10 text-electric-blue font-medium'
-                      : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                      ? isCollapsed
+                        ? 'bg-[#e8f1ff] text-secondary border-transparent'
+                        : 'bg-[#e8f1ff] text-secondary font-semibold border-secondary'
+                      : isCollapsed
+                        ? 'text-on-surface-variant hover:bg-surface-container border-transparent'
+                        : 'text-on-surface-variant hover:bg-surface-container hover:text-on-background border-transparent'
                   )}
                 >
                   <span
                     className={cn(
                       'material-symbols-outlined text-2xl shrink-0',
-                      active ? 'text-electric-blue' : ''
+                      active ? 'text-secondary' : ''
                     )}
                     style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
                   >
@@ -189,7 +193,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                           className={cn(
                             'text-[10px] font-bold px-1.5 py-0.5 rounded',
                             active
-                              ? 'bg-electric-blue/15 text-electric-blue'
+                              ? 'bg-secondary/15 text-secondary'
                               : 'bg-surface-container-highest text-on-surface-variant'
                           )}
                         >
@@ -199,7 +203,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                     </>
                   )}
                   {isCollapsed && item.badge != null && (
-                    <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-electric-blue" />
+                    <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-secondary" />
                   )}
                 </Link>
               </li>

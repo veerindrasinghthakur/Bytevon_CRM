@@ -14,20 +14,21 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 /**
- * Primary CTA matches Stitch (electric / brand blue — not deep navy).
- * Deep navy remains for rail / chrome only.
+ * Explicit text vs background contrast:
+ * - Dark / saturated fills → white text
+ * - Light / outlined fills → dark on-background text
  */
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-electric-blue text-white hover:bg-secondary shadow-sm',
+    'bg-electric-blue text-white hover:bg-[#0062cc] shadow-sm',
   secondary:
-    'bg-secondary text-on-secondary hover:opacity-90',
+    'bg-secondary text-white hover:bg-[#004a9e]',
   outline:
     'border border-outline-variant bg-surface-container-lowest text-on-background hover:bg-surface-container',
   ghost:
-    'text-on-surface-variant hover:bg-surface-container hover:text-on-surface',
+    'text-on-surface-variant hover:bg-surface-container hover:text-on-background',
   danger:
-    'bg-error text-on-error hover:opacity-90',
+    'bg-error text-white hover:opacity-90',
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
