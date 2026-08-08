@@ -4,18 +4,19 @@ import { z } from 'zod'
 import { useNavigate, Link } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { useCreateTask } from '../hooks/use-tasks'
 
 const schema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters').max(200),
   description: z.string().max(2000).optional(),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).default('MEDIUM'),
-  projectId: z.string().optional(),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
 })
 
 type FormValues = z.infer<typeof schema>
 
 export function TaskCreatePage() {
   const navigate = useNavigate()
+  const createMutation = useCreateTask()
   const {
     register,
     handleSubmit,
@@ -25,9 +26,13 @@ export function TaskCreatePage() {
     defaultValues: { title: '', description: '', priority: 'MEDIUM' },
   })
 
-  const onSubmit = async (_data: FormValues) => {
-    await new Promise((r) => setTimeout(r, 400))
-    navigate({ to: '/projects/tasks' })
+  const onSubmit = async (data: FormValues) => {
+    try {
+      await createMutation.mutateAsync(data)
+      navigate({ to: '/projects/tasks' })
+    } catch {
+      // shown below
+    }
   }
 
   return (
@@ -89,8 +94,12 @@ export function TaskCreatePage() {
           />
         </div>
 
+        {createMutation.isError && (
+          <p className="text-body-sm text-error">Failed to create task. Please try again.</p>
+        )}
+
         <div className="flex items-center gap-3 pt-2">
-          <Button type="submit" variant="primary" isLoading={isSubmitting}>
+          <Button type="submit" variant="primary" isLoading={isSubmitting || createMutation.isPending}>
             Create Task
           </Button>
           <Button type="button" variant="ghost" onClick={() => navigate({ to: '/projects/tasks' })}>

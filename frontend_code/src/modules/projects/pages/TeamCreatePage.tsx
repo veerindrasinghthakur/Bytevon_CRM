@@ -4,17 +4,18 @@ import { z } from 'zod'
 import { useNavigate, Link } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { useCreateTeam } from '../hooks/use-teams'
 
 const schema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(120),
   description: z.string().max(500).optional(),
-  projectId: z.string().optional(),
 })
 
 type FormValues = z.infer<typeof schema>
 
 export function TeamCreatePage() {
   const navigate = useNavigate()
+  const createMutation = useCreateTeam()
   const {
     register,
     handleSubmit,
@@ -24,10 +25,13 @@ export function TeamCreatePage() {
     defaultValues: { name: '', description: '' },
   })
 
-  const onSubmit = async (_data: FormValues) => {
-    // Mock create – replace with API later
-    await new Promise((r) => setTimeout(r, 400))
-    navigate({ to: '/projects/teams' })
+  const onSubmit = async (data: FormValues) => {
+    try {
+      await createMutation.mutateAsync(data)
+      navigate({ to: '/projects/teams' })
+    } catch {
+      // mutation error shown below
+    }
   }
 
   return (
@@ -73,8 +77,12 @@ export function TeamCreatePage() {
           />
         </div>
 
+        {createMutation.isError && (
+          <p className="text-body-sm text-error">Failed to create team. Please try again.</p>
+        )}
+
         <div className="flex items-center gap-3 pt-2">
-          <Button type="submit" variant="primary" isLoading={isSubmitting}>
+          <Button type="submit" variant="primary" isLoading={isSubmitting || createMutation.isPending}>
             Create Team
           </Button>
           <Button type="button" variant="ghost" onClick={() => navigate({ to: '/projects/teams' })}>
