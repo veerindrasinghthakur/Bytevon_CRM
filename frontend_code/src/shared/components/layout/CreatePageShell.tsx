@@ -24,10 +24,6 @@ interface CreatePageShellProps {
   onSubmit?: (data: DefaultFormValues) => Promise<void>
 }
 
-/**
- * Reusable create-page layout for modules that share a simple name + description form.
- * Used by Leads, Clients, Employees, Departments until full module forms are built.
- */
 export function CreatePageShell({
   title,
   listPath,
@@ -62,6 +58,9 @@ export function CreatePageShell({
     <div>
       <PageHeader
         title={title}
+        showBack
+        backTo={listPath}
+        backLabel={`Back to ${listLabel.toLowerCase()}`}
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
             <Link to={listPath} className="hover:text-electric-blue">{listLabel}</Link>

@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useNavigate, Link } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
+import { BackButton } from '@/shared/components/layout/BackButton'
 import { useCreateTeam } from '../hooks/use-teams'
 
 const schema = z.object({
@@ -12,10 +13,6 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>
 
-/**
- * Create Team — structure from 05_workforce/create_new_team_bytevon_crm.html
- * Sections: Team Identity, Leadership (placeholder), Team Composition (placeholder).
- */
 export function TeamCreatePage() {
   const navigate = useNavigate()
   const createMutation = useCreateTeam()
@@ -39,9 +36,11 @@ export function TeamCreatePage() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      {/* Modal-style card matching Stitch */}
+      <div className="mb-4">
+        <BackButton to="/projects/teams" label="Back to teams" />
+      </div>
+
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
-        {/* Header */}
         <div className="px-6 py-5 border-b border-outline-variant flex justify-between items-center bg-surface">
           <div>
             <h2 className="text-headline-lg font-semibold text-on-surface">Create New Team</h2>
@@ -51,7 +50,7 @@ export function TeamCreatePage() {
           </div>
           <Link
             to="/projects/teams"
-            className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-full p-2 transition-colors"
+            className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-full p-2"
           >
             <span className="material-symbols-outlined">close</span>
           </Link>
@@ -59,7 +58,6 @@ export function TeamCreatePage() {
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="p-6 space-y-8 bg-background">
-            {/* Section 1: Team Identity */}
             <section>
               <h3 className="text-headline-md font-semibold text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-electric-blue">badge</span>
@@ -93,7 +91,6 @@ export function TeamCreatePage() {
               </div>
             </section>
 
-            {/* Section 2: Leadership – UI shell (API later) */}
             <section>
               <h3 className="text-headline-md font-semibold text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-electric-blue">star</span>
@@ -115,7 +112,6 @@ export function TeamCreatePage() {
               </div>
             </section>
 
-            {/* Section 3: Composition – UI shell */}
             <section>
               <h3 className="text-headline-md font-semibold text-on-surface mb-4 flex items-center gap-2">
                 <span className="material-symbols-outlined text-electric-blue">group_add</span>
@@ -142,7 +138,6 @@ export function TeamCreatePage() {
             )}
           </div>
 
-          {/* Footer */}
           <div className="px-6 py-4 border-t border-outline-variant bg-surface flex justify-end gap-3">
             <Button type="button" variant="outline" onClick={() => navigate({ to: '/projects/teams' })}>
               Cancel

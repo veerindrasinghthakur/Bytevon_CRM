@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useNavigate, Link } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
+import { BackButton } from '@/shared/components/layout/BackButton'
 import { useCreateTask } from '../hooks/use-tasks'
 
 const schema = z.object({
@@ -13,10 +14,6 @@ const schema = z.object({
 
 type FormValues = z.infer<typeof schema>
 
-/**
- * Create Task — structure from 04_projects/create_new_task_refreshed_bytevon_crm.html
- * Sections: Task Identity, Assignment & Timeline, Additional Details (priority).
- */
 export function TaskCreatePage() {
   const navigate = useNavigate()
   const createMutation = useCreateTask()
@@ -44,8 +41,11 @@ export function TaskCreatePage() {
 
   return (
     <div className="max-w-2xl mx-auto">
+      <div className="mb-4">
+        <BackButton to="/projects/tasks" label="Back to tasks" />
+      </div>
+
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-outline-variant bg-surface">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-electric-blue/10 flex items-center justify-center text-electric-blue">
@@ -60,7 +60,7 @@ export function TaskCreatePage() {
           </div>
           <Link
             to="/projects/tasks"
-            className="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container"
           >
             <span className="material-symbols-outlined">close</span>
           </Link>
@@ -68,7 +68,6 @@ export function TaskCreatePage() {
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="p-5 space-y-6 bg-background">
-            {/* Task Identity */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b border-outline-variant">
                 <span className="material-symbols-outlined text-electric-blue text-sm">assignment</span>
@@ -102,7 +101,6 @@ export function TaskCreatePage() {
               </div>
             </div>
 
-            {/* Additional Details – Priority segmented control */}
             <div className="space-y-4 pt-2">
               <div className="flex items-center gap-2 pb-2 border-b border-outline-variant">
                 <span className="material-symbols-outlined text-electric-blue text-sm">tune</span>
@@ -118,7 +116,7 @@ export function TaskCreatePage() {
                       key={p}
                       type="button"
                       onClick={() => setValue('priority', p)}
-                      className={`flex-1 py-1.5 px-3 rounded text-center text-body-md font-medium transition-colors ${
+                      className={`flex-1 py-1.5 px-3 rounded text-center text-body-md font-medium ${
                         priority === p
                           ? 'bg-surface text-electric-blue shadow-sm'
                           : 'text-on-surface-variant hover:bg-surface/50'
@@ -152,7 +150,11 @@ export function TaskCreatePage() {
               type="submit"
               variant="primary"
               isLoading={isSubmitting || createMutation.isPending}
-              leftIcon={<span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>check</span>}
+              leftIcon={
+                <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  check
+                </span>
+              }
             >
               Create Task
             </Button>
