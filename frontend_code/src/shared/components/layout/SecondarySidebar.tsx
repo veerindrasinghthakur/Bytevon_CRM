@@ -16,7 +16,6 @@ export interface SecondaryNavGroup {
   items: SecondaryNavItem[]
 }
 
-/** Locked secondary nav content per primary module (from docs) */
 export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
   dashboard: {
     moduleId: 'dashboard',
@@ -92,9 +91,7 @@ function getActiveModule(pathname: string): string {
   return 'dashboard'
 }
 
-/** Collapsed secondary sidebar width (icon-only bar) */
 export const SECONDARY_COLLAPSED_WIDTH = 64
-/** Expanded secondary sidebar width */
 export const SECONDARY_EXPANDED_WIDTH = 240
 
 interface SecondarySidebarProps {
@@ -102,16 +99,16 @@ interface SecondarySidebarProps {
   onToggle: () => void
 }
 
-export function SecondarySidebar({
-  isCollapsed,
-  onToggle,
-}: SecondarySidebarProps) {
+/**
+ * Secondary sidebar — item vertical rhythm aligned with IconRail (py-3.5 / gap-1).
+ * Header block mirrors rail: toggle first, then content margin below collapse control.
+ */
+export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProps) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const moduleId = getActiveModule(pathname)
   const group = SECONDARY_NAV[moduleId]
   const items = (group?.items ?? []).filter((i) => i.visible !== false)
 
-  // No secondary items for this module (e.g. dashboard) → don't render bar
   if (items.length === 0) {
     return null
   }
@@ -125,26 +122,25 @@ export function SecondarySidebar({
     <nav
       className={cn(
         'h-full bg-surface-container-lowest border-r border-outline-variant flex flex-col',
-        'transition-all duration-300 ease-in-out overflow-hidden shrink-0',
+        'overflow-hidden shrink-0',
         isCollapsed ? 'w-16' : 'w-60'
       )}
       aria-label="Secondary navigation"
     >
-      {/* Header / toggle */}
+      {/* Top: collapse control — margin below matches IconRail toggle spacing (mb-4) */}
       <div
         className={cn(
-          'border-b border-outline-variant shrink-0 flex items-center',
-          isCollapsed ? 'flex-col py-4 gap-2' : 'px-4 py-4 justify-between'
+          'shrink-0 flex border-b border-outline-variant',
+          isCollapsed
+            ? 'flex-col items-center pt-6 pb-4'
+            : 'items-center justify-between px-3 pt-6 pb-4'
         )}
       >
         {!isCollapsed && (
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1 pr-2">
             <h2 className="text-title-lg text-on-background leading-tight truncate">
               {group?.title ?? 'Workspace'}
             </h2>
-            {/* <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold mt-0.5">
-              Module
-            </p> */}
           </div>
         )}
         <button
@@ -152,8 +148,8 @@ export function SecondarySidebar({
           onClick={onToggle}
           className={cn(
             'flex items-center justify-center rounded-lg text-on-surface-variant',
-            'hover:bg-surface-container hover:text-on-surface transition-colors',
-            isCollapsed ? 'w-10 h-8' : 'w-9 h-8'
+            'hover:bg-surface-container hover:text-on-surface',
+            isCollapsed ? 'w-10 h-10' : 'w-9 h-9'
           )}
           aria-label={isCollapsed ? 'Expand secondary sidebar' : 'Collapse secondary sidebar'}
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
@@ -164,32 +160,32 @@ export function SecondarySidebar({
         </button>
       </div>
 
-      {/* Nav items – icon only when collapsed, icon + label when expanded */}
+      {/* Nav items — gap/padding parallel to primary rail items */}
       <div
         className={cn(
           'flex-1 overflow-y-auto scrollbar-hide',
-          isCollapsed ? 'py-3 flex flex-col items-center gap-1' : 'py-4 px-2'
+          isCollapsed ? 'pt-2 flex flex-col items-center' : 'pt-2 px-1'
         )}
       >
-        {!isCollapsed && group && (
-          <h3 className="text-nav-group text-on-surface-variant/70 px-3 mb-2 uppercase">
-            {group.title}
-          </h3>
-        )}
-
-        <ul className={cn('flex flex-col', isCollapsed ? 'gap-1 w-full items-center' : 'gap-1')}>
+        <ul
+          className={cn(
+            'flex flex-col gap-1',
+            isCollapsed ? 'w-full items-center' : 'w-full'
+          )}
+        >
           {items.map((item) => {
             const active = isItemActive(item.to)
             return (
-              <li key={item.id} className={isCollapsed ? 'w-full flex justify-center' : undefined}>
+              <li key={item.id} className={isCollapsed ? 'w-full flex justify-center' : 'w-full'}>
                 <Link
                   to={item.to}
                   title={isCollapsed ? item.label : undefined}
                   className={cn(
-                    'flex items-center transition-all duration-200 group relative',
+                    'flex items-center group relative',
+                    // Match IconRail vertical padding (py-3.5)
                     isCollapsed
-                      ? 'w-10 h-10 justify-center rounded-lg'
-                      : 'w-full px-3 py-2.5 rounded-lg gap-3',
+                      ? 'w-10 h-11 justify-center rounded-lg'
+                      : 'w-full px-3 py-3.5 rounded-lg gap-3',
                     active
                       ? 'bg-surface-container-high text-on-surface font-medium'
                       : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
@@ -197,8 +193,8 @@ export function SecondarySidebar({
                 >
                   <span
                     className={cn(
-                      'material-symbols-outlined text-xl shrink-0 transition-colors',
-                      active ? 'text-electric-blue' : 'group-hover:text-electric-blue'
+                      'material-symbols-outlined text-2xl shrink-0',
+                      active ? 'text-electric-blue' : ''
                     )}
                     style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
                   >
@@ -216,9 +212,8 @@ export function SecondarySidebar({
                     </>
                   )}
 
-                  {/* Badge dot when collapsed */}
                   {isCollapsed && item.badge != null && (
-                    <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-electric-blue" />
+                    <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-electric-blue" />
                   )}
                 </Link>
               </li>

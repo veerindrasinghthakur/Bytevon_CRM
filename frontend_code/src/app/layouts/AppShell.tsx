@@ -16,13 +16,24 @@ function getActiveModule(pathname: string): string {
   if (pathname.startsWith('/my-work')) return 'my-work'
   if (pathname.startsWith('/approvals')) return 'approvals'
   if (pathname.startsWith('/admin')) return 'admin'
+  if (pathname.startsWith('/profile')) return 'dashboard'
   return 'dashboard'
 }
 
-/**
- * AppShell – main authenticated layout.
- * Icon Rail + Secondary Sidebar (both start collapsed / icon-only) + Header + Outlet.
- */
+/** List routes that render their own page-level search — header search collapses to icon */
+function pathHasPageSearch(pathname: string): boolean {
+  const listSearchPaths = [
+    '/projects',
+    '/projects/teams',
+    '/projects/tasks',
+    '/sales/leads',
+    '/sales/clients',
+    '/workforce/employees',
+    '/workforce/departments',
+  ]
+  return listSearchPaths.some((p) => pathname === p)
+}
+
 export function AppShell() {
   const [isRailExpanded, setIsRailExpanded] = useState(false)
   const [isSecondaryCollapsed, setIsSecondaryCollapsed] = useState(true)
@@ -30,6 +41,7 @@ export function AppShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const moduleId = getActiveModule(pathname)
   const hasSecondaryItems = (SECONDARY_NAV[moduleId]?.items?.length ?? 0) > 0
+  const collapseSearch = pathHasPageSearch(pathname)
 
   const railWidth = isRailExpanded ? 220 : 80
   const secondaryWidth = !hasSecondaryItems
@@ -56,7 +68,6 @@ export function AppShell() {
 
   return (
     <div className="h-screen overflow-hidden flex bg-background">
-      {/* Dual navigation */}
       <div className="fixed left-0 top-0 h-full flex z-50">
         <IconRail
           isExpanded={isRailExpanded}
@@ -71,12 +82,10 @@ export function AppShell() {
         />
       </div>
 
-      {/* Header */}
-      <Header style={headerStyle} />
+      <Header style={headerStyle} collapseSearch={collapseSearch} />
 
-      {/* Main content */}
       <main
-        className="mt-16 flex-1 bg-background overflow-y-auto p-margin-desktop h-[calc(100vh-64px)] transition-all duration-300 ease-in-out"
+        className="mt-16 flex-1 bg-background overflow-y-auto p-margin-desktop h-[calc(100vh-64px)]"
         style={mainStyle}
       >
         <Outlet />
