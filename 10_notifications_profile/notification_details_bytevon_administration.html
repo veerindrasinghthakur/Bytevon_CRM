@@ -1,0 +1,347 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Notification Details | Bytevon ERP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-tertiary": "#ffffff", "surface-tint": "#476083", "primary-container": "#001f3f", "on-surface-variant": "#43474e", "on-primary-container": "#6f88ad", "outline-variant": "#c4c6cf", "on-tertiary-fixed-variant": "#444749", surface: "#f8f9ff", "on-secondary-fixed-variant": "#004493", "primary-fixed-dim": "#afc8f0", "on-error-container": "#93000a", "inverse-primary": "#afc8f0", "surface-container-highest": "#d3e4fe", "secondary-container": "#0070ea", "on-primary-fixed": "#001c3a", "surface-container-high": "#dce9ff", error: "#ba1a1a", "tertiary-container": "#1c1f21", "on-primary": "#ffffff", "on-secondary": "#ffffff", "on-background": "#0b1c30", "on-secondary-fixed": "#001a41", "surface-dim": "#cbdbf5", "surface-container-low": "#eff4ff", "secondary-fixed": "#d8e2ff", "inverse-surface": "#213145", background: "#f8f9ff", "surface-bright": "#f8f9ff", secondary: "#0059bb", primary: "#000613", "secondary-fixed-dim": "#adc7ff", "primary-fixed": "#d4e3ff", "on-tertiary-fixed": "#191c1e", "on-secondary-container": "#fefcff", outline: "#74777f", tertiary: "#040607", "tertiary-fixed": "#e0e3e5", "tertiary-fixed-dim": "#c4c7c9", "surface-container": "#e5eeff", "on-tertiary-container": "#848789", "on-primary-fixed-variant": "#2f486a", "on-error": "#ffffff", "surface-container-lowest": "#ffffff", "on-surface": "#0b1c30", "inverse-on-surface": "#eaf1ff", "surface-variant": "#d3e4fe", "error-container": "#ffdad6"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-sm": "8px", "container-max": "1440px", gutter: "24px", unit: "4px", "stack-md": "16px", "stack-lg": "32px", "margin-desktop": "40px", "margin-mobile": "16px"}, fontFamily: {"headline-md": ["Inter"], "body-md": ["Inter"], "headline-lg": ["Inter"], "body-sm": ["Inter"], "body-lg": ["Inter"], "title-lg": ["Inter"], "display-lg": ["Inter"], "label-md": ["Inter"], "label-sm": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}]}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .sidebar-transition { transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex overflow-hidden">
+<!-- PRIMARY GLOBAL SIDEBAR (Fixed 72px) -->
+<aside class="w-[72px] h-screen bg-primary flex flex-col items-center py-stack-md shrink-0 z-50">
+<div class="mb-stack-lg">
+<span class="material-symbols-outlined text-on-primary text-headline-md font-bold">factory</span>
+</div>
+<nav class="flex flex-col gap-stack-md flex-1">
+<div class="p-2 bg-secondary text-on-secondary rounded-lg cursor-pointer transition-transform duration-150 active:scale-95">
+<span class="material-symbols-outlined">dashboard</span>
+</div>
+<div class="p-2 text-on-primary-fixed-variant hover:text-on-primary cursor-pointer transition-colors">
+<span class="material-symbols-outlined">groups</span>
+</div>
+<div class="p-2 text-on-primary-fixed-variant hover:text-on-primary cursor-pointer transition-colors">
+<span class="material-symbols-outlined">inventory_2</span>
+</div>
+<div class="p-2 text-on-primary-fixed-variant hover:text-on-primary cursor-pointer transition-colors">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div class="p-2 text-on-primary-fixed-variant hover:text-on-primary cursor-pointer transition-colors">
+<span class="material-symbols-outlined">monitoring</span>
+</div>
+</nav>
+<div class="flex flex-col gap-stack-md mt-auto">
+<span class="material-symbols-outlined text-on-primary-fixed-variant hover:text-on-primary cursor-pointer">settings</span>
+<span class="material-symbols-outlined text-on-primary-fixed-variant hover:text-on-primary cursor-pointer">help_outline</span>
+</div>
+</aside>
+<!-- SECONDARY CONTEXTUAL SIDEBAR (208px) -->
+<aside class="sidebar-transition w-[208px] h-screen bg-primary-container border-r border-outline-variant/10 flex flex-col shrink-0 z-40" id="context-sidebar">
+<div class="p-stack-md border-b border-on-primary-container/10 flex items-center justify-between">
+<div class="overflow-hidden whitespace-nowrap">
+<p class="font-label-md text-on-primary-container opacity-60 uppercase tracking-widest text-[10px]">Administration</p>
+<h2 class="font-title-lg text-on-primary-container font-bold">Settings</h2>
+</div>
+<button class="text-on-primary-container/60 hover:text-on-primary-container" onclick="toggleSidebar()">
+<span class="material-symbols-outlined text-[20px]">first_page</span>
+</button>
+</div>
+<nav class="flex-1 overflow-y-auto custom-scrollbar p-stack-sm space-y-1">
+<a class="flex items-center gap-3 px-stack-md py-2.5 text-on-primary-container/70 hover:bg-secondary-container/20 hover:text-on-primary-container rounded-lg transition-colors font-label-md" href="#">
+<span class="material-symbols-outlined text-xl">corporate_fare</span>
+<span class="nav-text">Organization</span>
+</a>
+<a class="flex items-center gap-3 px-stack-md py-2.5 text-on-primary-container/70 hover:bg-secondary-container/20 hover:text-on-primary-container rounded-lg transition-colors font-label-md" href="#">
+<span class="material-symbols-outlined text-xl">person_search</span>
+<span class="nav-text">User Management</span>
+</a>
+<a class="flex items-center gap-3 px-stack-md py-2.5 text-on-primary-container/70 hover:bg-secondary-container/20 hover:text-on-primary-container rounded-lg transition-colors font-label-md" href="#">
+<span class="material-symbols-outlined text-xl">key</span>
+<span class="nav-text">Roles &amp; Permissions</span>
+</a>
+<a class="flex items-center gap-3 px-stack-md py-2.5 text-on-primary-container/70 hover:bg-secondary-container/20 hover:text-on-primary-container rounded-lg transition-colors font-label-md" href="#">
+<span class="material-symbols-outlined text-xl">security</span>
+<span class="nav-text">Security</span>
+</a>
+<a class="flex items-center gap-3 px-stack-md py-2.5 text-on-primary-container/70 hover:bg-secondary-container/20 hover:text-on-primary-container rounded-lg transition-colors font-label-md" href="#">
+<span class="material-symbols-outlined text-xl">event_available</span>
+<span class="nav-text">Attendance</span>
+</a>
+<a class="flex items-center gap-3 px-stack-md py-2.5 text-on-primary-container/70 hover:bg-secondary-container/20 hover:text-on-primary-container rounded-lg transition-colors font-label-md" href="#">
+<span class="material-symbols-outlined text-xl">flight_takeoff</span>
+<span class="nav-text">Leave</span>
+</a>
+<a class="flex items-center gap-3 px-stack-md py-2.5 bg-secondary text-on-secondary rounded-lg transition-colors font-label-md" href="#">
+<span class="material-symbols-outlined text-xl">notifications_active</span>
+<span class="nav-text">Notification Settings</span>
+</a>
+<a class="flex items-center gap-3 px-stack-md py-2.5 text-on-primary-container/70 hover:bg-secondary-container/20 hover:text-on-primary-container rounded-lg transition-colors font-label-md" href="#">
+<span class="material-symbols-outlined text-xl">history_edu</span>
+<span class="nav-text">Audit Logs</span>
+</a>
+</nav>
+</aside>
+<!-- MAIN APP WRAPPER -->
+<div class="flex-1 flex flex-col min-w-0">
+<!-- TOP APP BAR -->
+<header class="h-16 bg-surface border-b border-outline-variant flex items-center justify-between px-gutter sticky top-0 z-30">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-body-sm focus:ring-2 focus:ring-secondary transition-all" placeholder="Search system activities..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-stack-md">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-highest rounded-full transition-all">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="relative">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-highest rounded-full transition-all">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3 cursor-pointer hover:bg-surface-container-highest p-1 pr-3 rounded-full transition-all">
+<img class="w-8 h-8 rounded-full border border-outline" data-alt="Professional studio portrait of Alex Sterling, a male executive in his 40s with sharp features and a confident expression. He is wearing a tailored charcoal suit and a crisp white shirt. The background is a soft, blurred corporate office setting with cool blue tones, matching the Bytevon brand aesthetic. High-end editorial lighting, sharp focus on eyes, 8k resolution." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6_cHb4vWVLB6LnI0wEkwzbPej18WSCsOPsEJgio7PAGOvi7_R5-WN4YFeSyLJtmuFY-kALMmhwtLVEi6r-krG7G928UNmwjltZevU-SUiYRGWx5g-9lH2hLEZKGlbn-HeqxKI7q8q07RcdC48Rr9UXEydvepqBnB9tA31oFbPj8ULQtP_6ljfHR2o1tHIYckKdegM1muiTi_cf3pCdshhVBkkGiTelHVYumwEe3DhoPG4fMk9bt11Ug">
+<div class="hidden sm:block">
+<p class="font-label-md text-on-surface leading-none">Alex Sterling</p>
+<p class="text-[10px] text-on-surface-variant leading-none mt-1">Admin Executive</p>
+</div>
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</div>
+</div>
+</header>
+<!-- MAIN CONTENT SCROLL AREA -->
+<main class="flex-1 overflow-y-auto bg-surface-bright custom-scrollbar">
+<div class="max-w-container-max mx-auto p-gutter lg:p-margin-desktop">
+<!-- BREADCRUMBS -->
+<nav class="flex items-center gap-2 text-label-md text-on-surface-variant mb-stack-lg">
+<a class="hover:text-primary transition-colors" href="#">Dashboard</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Administration</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Notification Center</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-on-surface font-semibold">Notification Details</span>
+</nav>
+<!-- NOTIFICATION DETAIL CONTAINER -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-stack-lg items-start">
+<!-- LEFT COLUMN: Main Detail -->
+<div class="lg:col-span-8 space-y-stack-lg">
+<!-- NOTIFICATION HEADER CARD -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-stack-lg shadow-sm">
+<div class="flex flex-wrap items-start justify-between gap-4 mb-stack-md">
+<div class="space-y-2">
+<div class="flex items-center gap-3">
+<h1 class="font-headline-md text-on-surface">Security Breach Alert</h1>
+<span class="bg-error-container text-on-error-container px-3 py-1 rounded-full font-label-sm uppercase flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warning</span> Critical
+                                        </span>
+</div>
+<div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-body-sm text-on-surface-variant">
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">verified_user</span> Security Module</span>
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">calendar_today</span> Oct 24, 2023 • 09:12 AM</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 border border-outline-variant hover:bg-surface-container rounded-lg transition-colors" title="Print Notification">
+<span class="material-symbols-outlined">print</span>
+</button>
+<button class="p-2 border border-outline-variant hover:bg-surface-container rounded-lg transition-colors" title="Share">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+<hr class="border-outline-variant my-stack-md">
+<!-- MESSAGE BODY -->
+<div class="mt-stack-md">
+<h3 class="font-label-md text-on-surface-variant uppercase mb-stack-sm tracking-wider">Alert Details</h3>
+<div class="bg-surface-container-low p-stack-md rounded-lg border-l-4 border-error">
+<p class="font-body-md text-on-surface leading-relaxed">
+                                        Multiple failed login attempts detected for user <span class="font-semibold text-secondary">julian.sterling@bytevon.com</span> from an unrecognized IP address: <code class="bg-surface-container px-1.5 py-0.5 rounded text-error font-mono">192.168.1.45</code>. 
+                                    </p>
+<p class="font-body-md text-on-surface mt-stack-sm leading-relaxed">
+                                        The system has temporarily locked the account to prevent unauthorized access. This activity was logged from a geographic location (Lisbon, Portugal) that does not match the user's typical login pattern (New York, USA). Immediate review of security logs is required to determine if a full password reset or multi-factor authentication re-sync is necessary.
+                                    </p>
+</div>
+</div>
+<!-- ATTACHMENTS SECTION -->
+<div class="mt-stack-lg">
+<h3 class="font-label-md text-on-surface-variant uppercase mb-stack-sm tracking-wider">Related Attachments</h3>
+<div class="flex flex-wrap gap-stack-md">
+<div class="group flex items-center gap-4 p-4 border border-outline-variant rounded-xl hover:border-secondary transition-all cursor-pointer bg-surface-container-lowest max-w-sm w-full">
+<div class="w-12 h-12 bg-red-50 text-error rounded-lg flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[32px]">picture_as_pdf</span>
+</div>
+<div class="flex-1 min-w-0">
+<p class="font-label-md text-on-surface truncate">Security Audit Report.pdf</p>
+<p class="text-label-sm text-on-surface-variant">1.4 MB • Generated Oct 24</p>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-secondary">download</span>
+</div>
+</div>
+</div>
+</div>
+<!-- ACTION BAR -->
+<div class="bg-surface border border-outline-variant rounded-xl p-stack-md flex flex-wrap gap-stack-md items-center justify-between">
+<div class="flex flex-wrap gap-stack-md">
+<button class="flex items-center gap-2 bg-primary text-on-primary px-6 py-2.5 rounded-lg font-label-md hover:bg-primary/90 transition-all active:scale-95 shadow-sm">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+                                    Mark as Resolved
+                                </button>
+<button class="flex items-center gap-2 border border-outline text-on-surface px-6 py-2.5 rounded-lg font-label-md hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined text-[20px]">assignment_turned_in</span>
+                                    Open Security Logs
+                                </button>
+</div>
+<div class="flex flex-wrap gap-stack-md">
+<button class="flex items-center gap-2 text-error hover:bg-error/10 px-4 py-2.5 rounded-lg font-label-md transition-all">
+<span class="material-symbols-outlined text-[20px]">no_accounts</span>
+                                    Disable User
+                                </button>
+<button class="flex items-center gap-2 text-on-surface-variant hover:bg-surface-container-high px-4 py-2.5 rounded-lg font-label-md transition-all">
+<span class="material-symbols-outlined text-[20px]">archive</span>
+                                    Archive
+                                </button>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: Metadata & Sidebar Info -->
+<div class="lg:col-span-4 space-y-stack-lg">
+<!-- METADATA CARD -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+<div class="p-stack-md bg-surface-container-low border-b border-outline-variant">
+<h2 class="font-title-lg text-on-surface">Delivery Information</h2>
+</div>
+<div class="p-stack-md space-y-stack-md">
+<div>
+<label class="font-label-sm text-on-surface-variant uppercase tracking-wider block mb-1">Sender</label>
+<div class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-secondary">memory</span>
+<p class="font-body-md font-medium">System Security Engine</p>
+</div>
+</div>
+<div>
+<label class="font-label-sm text-on-surface-variant uppercase tracking-wider block mb-1">Recipients</label>
+<div class="space-y-2">
+<div class="flex items-center gap-2 p-2 bg-surface rounded border border-outline-variant/30">
+<div class="w-6 h-6 bg-secondary text-on-secondary text-[10px] rounded-full flex items-center justify-center font-bold">AE</div>
+<p class="text-body-sm">Admin Executive</p>
+<span class="ml-auto material-symbols-outlined text-success text-[18px] text-green-600">check_circle</span>
+</div>
+<div class="flex items-center gap-2 p-2 bg-surface rounded border border-outline-variant/30">
+<div class="w-6 h-6 bg-primary-container text-on-primary-container text-[10px] rounded-full flex items-center justify-center font-bold">ST</div>
+<p class="text-body-sm">Security Team</p>
+<span class="ml-auto material-symbols-outlined text-on-surface-variant text-[18px]">schedule</span>
+</div>
+</div>
+</div>
+<div>
+<label class="font-label-sm text-on-surface-variant uppercase tracking-wider block mb-1">Delivery Method</label>
+<div class="flex flex-wrap gap-2">
+<span class="bg-surface-container px-2.5 py-1 rounded-full text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">mail</span> Email
+                                        </span>
+<span class="bg-surface-container px-2.5 py-1 rounded-full text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">notifications</span> Push
+                                        </span>
+</div>
+</div>
+<hr class="border-outline-variant">
+<div>
+<label class="font-label-sm text-on-surface-variant uppercase tracking-wider block mb-1">Current Status</label>
+<div class="flex items-center gap-3">
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-surface-container-lowest bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center text-[10px] font-bold">AS</div>
+<div class="w-8 h-8 rounded-full border-2 border-surface-container-lowest bg-primary-fixed text-on-primary-fixed flex items-center justify-center text-[10px] font-bold">JD</div>
+</div>
+<p class="text-body-sm font-medium text-on-surface">Read by 2/4 recipients</p>
+</div>
+<div class="mt-3 w-full bg-surface-container-high rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary h-full" style="width: 50%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- VISUAL ASSET: LOGO / BRANDING -->
+<div class="relative h-48 rounded-xl overflow-hidden group shadow-lg">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-110" data-alt="A sophisticated close-up photograph of a server room with glowing blue fiber optic cables and brushed steel hardware. The lighting is moody and cinematic, dominated by deep navy blue shadows and electric blue highlights. The composition is angled and dynamic, representing high-end enterprise security and high-speed data transmission in the Bytevon ecosystem. Ultra-clear resolution, professional architectural photography style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDVmQClwYK87PeYhrHpuzr-VI-0hx82fZARoKIdqogIvbmj3EhJLIweU4y4AJAQNe7HFxWbFZU7g5ML0xOWHxoKeWn9CCFvFKhsU9IYphb80ti72Ag46KkxP3AaOs9R769qUIbnRQObiyPGlUYQQNBjIfvELfARVkcwPdrz4rgpJPg_ayExgC7Mt8YOYibL4sK53xW6sUOB8OQ2-8cCJ_5gxRB1AhFMkeO8UijZrf_8fZjY76onE18KXQ')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-primary/90 to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4 text-on-primary">
+<p class="font-label-sm text-secondary-fixed uppercase tracking-widest">Enterprise Security</p>
+<h3 class="font-title-lg font-bold">Active Shield Pro</h3>
+<p class="text-label-sm opacity-80 mt-1">Real-time threat monitoring enabled</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- NOTIFICATION TOAST (Interactivity Example) -->
+<div class="fixed bottom-gutter right-gutter translate-y-24 opacity-0 transition-all duration-300 z-50" id="toast">
+<div class="bg-inverse-surface text-inverse-on-surface px-6 py-4 rounded-xl shadow-2xl flex items-center gap-4">
+<span class="material-symbols-outlined text-green-400">check_circle</span>
+<p class="font-label-md" id="toast-message">Success message here</p>
+<button class="text-inverse-on-surface/60 hover:text-inverse-on-surface" onclick="hideToast()">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('context-sidebar');
+            const texts = sidebar.querySelectorAll('.nav-text');
+            const header = sidebar.querySelector('h2');
+            const sub = sidebar.querySelector('p');
+            const toggleIcon = sidebar.querySelector('button span');
+            
+            if (sidebar.classList.contains('w-[208px]')) {
+                sidebar.classList.remove('w-[208px]');
+                sidebar.classList.add('w-[72px]');
+                texts.forEach(t => t.classList.add('hidden'));
+                if(header) header.classList.add('hidden');
+                if(sub) sub.classList.add('hidden');
+                toggleIcon.innerText = 'last_page';
+            } else {
+                sidebar.classList.remove('w-[72px]');
+                sidebar.classList.add('w-[208px]');
+                texts.forEach(t => t.classList.remove('hidden'));
+                if(header) header.classList.remove('hidden');
+                if(sub) sub.classList.remove('hidden');
+                toggleIcon.innerText = 'first_page';
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = message;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            setTimeout(hideToast, 4000);
+        }
+
+        function hideToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('translate-y-24', 'opacity-0');
+        }
+
+        // Add event listeners for the "Mark as Resolved" and "Archive" buttons
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const text = this.innerText.trim().split('\n')[1] || this.innerText.trim();
+                if(text === 'Mark as Resolved') showToast('Security alert marked as resolved and logged.');
+                if(text === 'Archive') showToast('Notification moved to system archives.');
+            });
+        });
+    </script>
+</body></html>

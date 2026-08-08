@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bytevon Enterprise - Shifts Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#adc6ff",
+                        "surface-container-low": "#eff4ff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-dim": "#cbdbf6",
+                        "tertiary-container": "#595c5e",
+                        "inverse-surface": "#213146",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#424753",
+                        "deep-navy": "#0b1c30",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#f8f9ff",
+                        "inverse-primary": "#adc6ff",
+                        "secondary-container": "#d7dff9",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "outline": "#727784",
+                        "on-surface": "#0b1c30",
+                        "surface-container": "#e6eeff",
+                        "on-background": "#0b1c30",
+                        "tertiary": "#414546",
+                        "outline-variant": "#c2c6d5",
+                        "warning-amber": "#f59e0b",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "surface-container-highest": "#d3e3ff",
+                        "on-secondary-container": "#5a6278",
+                        "on-primary": "#ffffff",
+                        "surface-container-high": "#dde9ff",
+                        "success-emerald": "#10b981",
+                        "on-primary-fixed": "#001a41",
+                        "tertiary-fixed": "#e1e3e5",
+                        "surface-variant": "#d3e3ff",
+                        "on-secondary-fixed-variant": "#3e465b",
+                        "surface": "#f8f9ff",
+                        "on-primary-container": "#c3d4ff",
+                        "primary": "#00418f",
+                        "inverse-on-surface": "#ebf1ff",
+                        "error-red": "#ba1a1a",
+                        "outline-subtle": "rgba(113, 119, 134, 0.3)",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#131b2e",
+                        "on-tertiary-fixed": "#191c1e",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "background": "#f8f9ff",
+                        "electric-blue": "#0070eb",
+                        "on-secondary": "#ffffff",
+                        "secondary": "#565e74",
+                        "surface-tint": "#095bbf",
+                        "on-primary-fixed-variant": "#004494",
+                        "secondary-fixed": "#dae2fc",
+                        "primary-fixed": "#d8e2ff",
+                        "primary-container": "#0058bc",
+                        "on-tertiary-container": "#d2d4d7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter-md": "16px",
+                        "sidebar-width": "240px",
+                        "card-padding": "20px",
+                        "section-gap": "32px",
+                        "rail-width": "80px",
+                        "container-margin": "24px",
+                        "table-row-height": "72px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "caption": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-bold": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "micro": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "caption": ["11px", { "lineHeight": "14px", "fontWeight": "400" }],
+                        "headline-md": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-bold": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "micro": ["9px", { "lineHeight": "12px", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom scrollbar for webkit */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c2c6d5;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #727784;
+        }
+    </style>
+</head>
+<body class="bg-surface-bright text-on-surface font-body-md antialiased overflow-hidden flex h-screen">
+<!-- Primary Navigation (Rail) -->
+<nav class="fixed left-0 top-0 h-screen flex w-[80px] z-40 bg-deep-navy shadow-lg flex-col items-center py-6">
+<div class="mb-8">
+<span class="material-symbols-outlined text-surface-bright text-3xl font-bold">domain</span>
+</div>
+<div class="flex flex-col gap-6 w-full items-center flex-1">
+<a class="w-full flex flex-col items-center justify-center p-3 text-on-tertiary-container opacity-70 hover:bg-tertiary-container hover:opacity-100 transition-all duration-300 ease-in-out group relative" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">admin_panel_settings</span>
+<span class="font-micro text-micro">Admin</span>
+</a>
+<a class="w-full flex flex-col items-center justify-center p-3 text-on-tertiary-container opacity-70 hover:bg-tertiary-container hover:opacity-100 transition-all duration-300 ease-in-out group relative" href="#">
+<span class="material-symbols-outlined text-2xl mb-1">payments</span>
+<span class="font-micro text-micro">Sales</span>
+</a>
+<a class="w-full flex flex-col items-center justify-center p-3 bg-primary-container text-surface-bright border-l-4 border-electric-blue transition-all duration-300 ease-in-out group relative" href="#">
+<span class="material-symbols-outlined fill text-2xl mb-1">developer_mode</span>
+<span class="font-micro text-micro">Developer</span>
+</a>
+</div>
+<div class="flex flex-col gap-4 w-full items-center mt-auto pb-4">
+<a class="w-10 h-10 rounded-full overflow-hidden border-2 border-outline-variant mb-2" href="#">
+<img class="object-cover w-full h-full" data-alt="A professional corporate headshot of a mature business man in a modern office environment, wearing a sharp navy suit. High quality, sharp focus, well-lit portrait photography with a subtly blurred background featuring abstract architectural glass structures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyjEdrTcuil00SwqKoTxFzHtaD9eg1ZPq6X7o4aKAjRLVpAmZ4hYq0TxvQJK31M5fdf6263e-IFVLq57_kyzQ1YdbGDneqOtr3XDkty4qQr1SS2rwrL2qCq46epQyCFd-QefkB5lHjeCrIJvN-ZQUwdMNzeNZk-pM_DVkViR_82kM5L0u2RRePT_GbfiBUEZDHX2gy1RfZrYggIyYxPLPlLU5bJQM8qmNA9R7Dv2JR8H3Z43kzd2DM"/>
+</a>
+<a class="w-full flex flex-col items-center justify-center p-2 text-on-tertiary-container opacity-70 hover:bg-tertiary-container hover:opacity-100 transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">settings</span>
+</a>
+<a class="w-full flex flex-col items-center justify-center p-2 text-on-tertiary-container opacity-70 hover:bg-tertiary-container hover:opacity-100 transition-all duration-300 ease-in-out" href="#">
+<span class="material-symbols-outlined">logout</span>
+</a>
+</div>
+</nav>
+<!-- Secondary Sidebar -->
+<nav class="fixed left-[80px] h-full w-sidebar-width flex flex-col p-4 space-y-2 bg-surface-container-low border-r border-outline-subtle z-30">
+<div class="mb-6 px-2 pt-2 flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[20px]">corporate_fare</span>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md text-primary">Bytevon</h2>
+<p class="font-caption text-caption text-on-surface-variant">HR Management</p>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto pr-2 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">home</span>
+<span class="font-body-md text-body-md">Home</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">person</span>
+<span class="font-body-md text-body-md">Employee</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">domain</span>
+<span class="font-body-md text-body-md">Department</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">event_available</span>
+<span class="font-body-md text-body-md">Attendance</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px]">event_busy</span>
+<span class="font-body-md text-body-md">Leave</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 rounded-lg bg-secondary-container text-on-secondary-container font-semibold transition-all duration-200" href="#">
+<span class="material-symbols-outlined text-[20px] fill">schedule</span>
+<span class="font-body-md text-body-md">Shifts</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="ml-[320px] flex-1 flex flex-col h-screen overflow-hidden bg-surface-bright relative">
+<!-- Header -->
+<header class="h-24 px-container-margin flex justify-between items-center shrink-0 border-b border-outline-subtle bg-surface-bright">
+<div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface mb-1">Shifts</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage work shifts, timing rules and grace periods</p>
+</div>
+<button class="bg-primary hover:bg-primary-container text-on-primary font-label-sm text-label-sm px-4 py-2 rounded-lg flex items-center gap-2 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                Add Shift
+            </button>
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-container-margin">
+<!-- Filter & Search Bar -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-section-gap">
+<div class="relative w-full md:w-96">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+<input class="w-full h-10 pl-10 pr-4 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-md font-body-md focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary placeholder:text-outline-variant transition-shadow" placeholder="Search shifts..." type="text"/>
+</div>
+<div class="flex items-center gap-3 w-full md:w-auto">
+<button class="flex items-center gap-2 px-3 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-md text-on-surface-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        Filter
+                    </button>
+<div class="h-6 w-px bg-outline-variant mx-1"></div>
+<div class="flex rounded-lg overflow-hidden border border-outline-variant bg-surface-container-lowest">
+<button class="px-3 py-2 bg-surface-container-low text-on-surface font-label-sm border-r border-outline-variant">All</button>
+<button class="px-3 py-2 text-on-surface-variant font-label-sm hover:bg-surface-container-low transition-colors">Active</button>
+<button class="px-3 py-2 text-on-surface-variant font-label-sm hover:bg-surface-container-low transition-colors">Archived</button>
+</div>
+</div>
+</div>
+<!-- Shifts Table Container -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-subtle shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-subtle bg-surface-bright">
+<th class="py-4 px-6 font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Shift Name</th>
+<th class="py-4 px-6 font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Timing</th>
+<th class="py-4 px-6 font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Rules</th>
+<th class="py-4 px-6 font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="py-4 px-6 font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-subtle">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group h-[72px]">
+<td class="py-3 px-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">light_mode</span>
+</div>
+<div>
+<div class="font-body-md text-body-md font-semibold text-on-surface">Morning Standard</div>
+<div class="font-caption text-caption text-on-surface-variant">ID: SH-1024</div>
+</div>
+</div>
+</td>
+<td class="py-3 px-6">
+<div class="font-body-md text-body-md text-on-surface">09:00 AM – 05:00 PM</div>
+<div class="font-caption text-caption text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px]">timer</span> 8h 00m Total
+                                    </div>
+</td>
+<td class="py-3 px-6">
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-caption text-caption border border-outline-subtle">15m Grace</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-caption text-caption border border-outline-subtle">60m Break</span>
+</div>
+</td>
+<td class="py-3 px-6">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-success-emerald/10 text-success-emerald font-label-sm text-label-sm border border-success-emerald/20">
+<span class="w-1.5 h-1.5 rounded-full bg-success-emerald"></span>
+                                        Active
+                                    </span>
+</td>
+<td class="py-3 px-6 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="w-8 h-8 rounded hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="w-8 h-8 rounded hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-error transition-colors" title="Archive">
+<span class="material-symbols-outlined text-[18px]">archive</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group h-[72px]">
+<td class="py-3 px-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">dark_mode</span>
+</div>
+<div>
+<div class="font-body-md text-body-md font-semibold text-on-surface">Night Guard</div>
+<div class="font-caption text-caption text-on-surface-variant">ID: SH-1025</div>
+</div>
+</div>
+</td>
+<td class="py-3 px-6">
+<div class="font-body-md text-body-md text-on-surface">10:00 PM – 06:00 AM</div>
+<div class="font-caption text-caption text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px]">timer</span> 8h 00m Total
+                                    </div>
+</td>
+<td class="py-3 px-6">
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-primary font-caption text-caption border border-primary-fixed-dim font-medium">Overnight</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-caption text-caption border border-outline-subtle">30m Grace</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-secondary font-caption text-caption border border-secondary-fixed-dim">Flexible</span>
+</div>
+</td>
+<td class="py-3 px-6">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-success-emerald/10 text-success-emerald font-label-sm text-label-sm border border-success-emerald/20">
+<span class="w-1.5 h-1.5 rounded-full bg-success-emerald"></span>
+                                        Active
+                                    </span>
+</td>
+<td class="py-3 px-6 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="w-8 h-8 rounded hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+</button>
+<button class="w-8 h-8 rounded hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-error transition-colors" title="Archive">
+<span class="material-symbols-outlined text-[18px]">archive</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group h-[72px] opacity-70">
+<td class="py-3 px-6">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">partly_cloudy_day</span>
+</div>
+<div>
+<div class="font-body-md text-body-md font-semibold text-on-surface-variant">Evening Flex</div>
+<div class="font-caption text-caption text-on-surface-variant">ID: SH-1026</div>
+</div>
+</div>
+</td>
+<td class="py-3 px-6">
+<div class="font-body-md text-body-md text-on-surface-variant">02:00 PM – 10:00 PM</div>
+<div class="font-caption text-caption text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px]">timer</span> 8h 00m Total
+                                    </div>
+</td>
+<td class="py-3 px-6">
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-caption text-caption border border-outline-subtle">15m Grace</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-caption text-caption border border-outline-subtle">45m Break</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-secondary font-caption text-caption border border-secondary-fixed-dim">Flexible</span>
+</div>
+</td>
+<td class="py-3 px-6">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm border border-outline-subtle">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+                                        Archived
+                                    </span>
+</td>
+<td class="py-3 px-6 text-right">
+<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="w-8 h-8 rounded hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors" title="Restore">
+<span class="material-symbols-outlined text-[18px]">unarchive</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="px-6 py-4 border-t border-outline-subtle bg-surface-bright flex items-center justify-between">
+<div class="font-caption text-caption text-on-surface-variant">
+                        Showing 1 to 3 of 12 shifts
+                    </div>
+<div class="flex gap-1">
+<button class="w-8 h-8 rounded border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors opacity-50 cursor-not-allowed">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded border border-primary bg-primary-fixed-dim flex items-center justify-center text-primary font-label-sm">1</button>
+<button class="w-8 h-8 rounded border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors font-label-sm">2</button>
+<button class="w-8 h-8 rounded border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors font-label-sm">3</button>
+<button class="w-8 h-8 rounded border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

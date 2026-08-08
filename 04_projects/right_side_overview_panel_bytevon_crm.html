@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Right-side Overview Panel - Bytevon CRM</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS Config -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary": "#ffffff",
+                      "on-secondary-container": "#fefcff",
+                      "on-primary-container": "#7a8496",
+                      "primary-fixed-dim": "#bdc7da",
+                      "surface-sidebar": "#000613",
+                      "on-tertiary-container": "#828486",
+                      "error": "#ba1a1a",
+                      "on-surface": "#191c20",
+                      "tertiary": "#000000",
+                      "secondary-fixed": "#d8e2ff",
+                      "secondary-container": "#0170ea",
+                      "primary-fixed": "#d9e3f7",
+                      "surface-variant": "#e1e2e8",
+                      "on-primary-fixed-variant": "#3d4757",
+                      "background": "#f8f9ff",
+                      "on-secondary-fixed": "#001a41",
+                      "error-container": "#ffdad6",
+                      "on-primary": "#ffffff",
+                      "surface-bright": "#f8f9ff",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#444749",
+                      "surface-dim": "#d8dae0",
+                      "surface-container-high": "#e7e8ee",
+                      "surface-container-low": "#f2f3f9",
+                      "surface-container-lowest": "#ffffff",
+                      "primary": "#000000",
+                      "inverse-surface": "#2e3135",
+                      "tertiary-fixed-dim": "#c5c7c8",
+                      "surface-container": "#eceef3",
+                      "sidebar-item-active": "#001f3f",
+                      "surface-tint": "#555f70",
+                      "outline": "#75777d",
+                      "tertiary-fixed": "#e1e3e4",
+                      "sidebar-accent": "#0070ea",
+                      "surface": "#f8f9ff",
+                      "inverse-on-surface": "#eff0f6",
+                      "primary-container": "#121c2a",
+                      "tertiary-container": "#191c1d",
+                      "secondary": "#0058bb",
+                      "on-background": "#191c20",
+                      "deep-navy": "#001f3f",
+                      "on-surface-variant": "#44474c",
+                      "on-error-container": "#93000a",
+                      "secondary-fixed-dim": "#adc6ff",
+                      "on-primary-fixed": "#121c2a",
+                      "surface-container-highest": "#e1e2e8",
+                      "inverse-primary": "#bdc7da",
+                      "on-secondary-fixed-variant": "#004493",
+                      "outline-variant": "#c5c6cc",
+                      "on-tertiary-fixed": "#191c1d",
+                      "electric-blue": "#007bff",
+                      "on-error": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "16px",
+                      "section-gap": "32px",
+                      "sidebar-width": "280px",
+                      "margin-desktop": "40px",
+                      "gutter": "24px",
+                      "unit": "4px",
+                      "nav-gap": "4px"
+              },
+              "fontFamily": {
+                      "nav-item": ["Inter"],
+                      "body-md": ["Inter"],
+                      "nav-group": ["Inter"],
+                      "display-lg": ["Inter"],
+                      "headline-lg": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "body-sm": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "title-lg": ["Inter"],
+                      "label-md": ["Inter"]
+              },
+              "fontSize": {
+                      "nav-item": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "nav-group": ["11px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                      "title-lg": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}]
+              }
+      }
+          }
+        }
+      </script>
+<style>
+        .executive-glow {
+            box-shadow: 0 10px 25px -5px rgba(0, 31, 63, 0.1), 0 8px 10px -6px rgba(0, 31, 63, 0.1);
+        }
+        
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Smooth slide-in animation */
+        @keyframes slideInRight {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        .animate-slide-in {
+            animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      </style>
+</head>
+<body class="bg-background text-on-surface font-body-md h-screen overflow-hidden flex relative">
+<!-- Background Content (Dimmed) -->
+<div class="absolute inset-0 z-0">
+<iframe class="w-full h-full border-none pointer-events-none opacity-40" src="{{DATA:SCREEN:SCREEN_53}}"></iframe>
+</div>
+<!-- Dimmer Overlay -->
+<div class="absolute inset-0 bg-tertiary bg-opacity-20 backdrop-blur-sm z-10 transition-opacity"></div>
+<!-- Right-side Overview Panel -->
+<aside class="absolute top-0 right-0 h-full w-full md:w-[35%] min-w-[400px] max-w-[600px] bg-surface-container-lowest z-20 flex flex-col executive-glow animate-slide-in rounded-l-xl">
+<!-- Header -->
+<header class="flex items-start justify-between p-6 border-b border-outline-variant shrink-0 bg-surface-container-lowest rounded-tl-xl">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined" style="font-size: 28px;">folder_open</span>
+</div>
+<div>
+<div class="flex items-center gap-3 mb-1">
+<h2 class="font-headline-md text-headline-md text-on-surface">Project Alpha</h2>
+<span class="px-2.5 py-1 rounded-full bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm flex items-center gap-1 border border-outline-variant">
+<span class="w-2 h-2 rounded-full bg-electric-blue"></span> Active
+                        </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">ID: PRJ-2024-089A</p>
+</div>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<button class="w-8 h-8 rounded hover:bg-surface-container-low flex items-center justify-center transition-colors" title="Pin Panel">
+<span class="material-symbols-outlined" style="font-size: 20px;">push_pin</span>
+</button>
+<button class="w-8 h-8 rounded hover:bg-surface-container-low flex items-center justify-center transition-colors" title="Expand View">
+<span class="material-symbols-outlined" style="font-size: 20px;">open_in_full</span>
+</button>
+<button class="w-8 h-8 rounded hover:bg-surface-container-low flex items-center justify-center transition-colors" title="Close Panel">
+<span class="material-symbols-outlined" style="font-size: 20px;">close</span>
+</button>
+</div>
+</header>
+<!-- Scrollable Body -->
+<div class="flex-1 overflow-y-auto p-6 space-y-6 bg-background custom-scrollbar">
+<!-- General Info Card -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 shadow-sm">
+<h3 class="font-title-lg text-title-lg text-on-surface mb-4">General Info</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6 leading-relaxed">
+                    A comprehensive overhaul of the core enterprise resource planning architecture for TechNexus Corp, focusing on high-availability cloud migration and secure data pipelines.
+                </p>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-4 rounded-lg border border-surface-dim">
+<div class="flex items-center gap-2 text-on-surface-variant mb-2">
+<span class="material-symbols-outlined" style="font-size: 16px;">calendar_today</span>
+<span class="font-label-md text-label-md">Start Date</span>
+</div>
+<div class="font-body-md text-body-md text-on-surface font-medium">Oct 12, 2024</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg border border-surface-dim">
+<div class="flex items-center gap-2 text-on-surface-variant mb-2">
+<span class="material-symbols-outlined" style="font-size: 16px;">event_available</span>
+<span class="font-label-md text-label-md">End Date</span>
+</div>
+<div class="font-body-md text-body-md text-on-surface font-medium">Mar 30, 2025</div>
+</div>
+</div>
+</section>
+<!-- Quick Statistics Card -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 shadow-sm">
+<h3 class="font-title-lg text-title-lg text-on-surface mb-4">Quick Statistics</h3>
+<div class="grid grid-cols-3 gap-4">
+<!-- Tasks -->
+<div class="flex flex-col items-center justify-center p-4 rounded-lg bg-background border border-surface-variant hover:border-electric-blue transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-electric-blue mb-2 transition-colors">check_circle</span>
+<span class="font-headline-md text-headline-md text-on-surface mb-1">24</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Tasks</span>
+</div>
+<!-- Documents -->
+<div class="flex flex-col items-center justify-center p-4 rounded-lg bg-background border border-surface-variant hover:border-electric-blue transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-electric-blue mb-2 transition-colors">description</span>
+<span class="font-headline-md text-headline-md text-on-surface mb-1">12</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Documents</span>
+</div>
+<!-- Notes -->
+<div class="flex flex-col items-center justify-center p-4 rounded-lg bg-background border border-surface-variant hover:border-electric-blue transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-electric-blue mb-2 transition-colors">notes</span>
+<span class="font-headline-md text-headline-md text-on-surface mb-1">8</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Notes</span>
+</div>
+</div>
+</section>
+<!-- Assignment Information Card -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 shadow-sm">
+<h3 class="font-title-lg text-title-lg text-on-surface mb-4">Assignment Information</h3>
+<div class="space-y-4">
+<div class="flex items-center justify-between p-3 rounded bg-surface-container-low border border-transparent hover:border-outline-variant transition-colors">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-deep-navy text-on-primary flex items-center justify-center font-bold">
+                                AE
+                            </div>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant mb-0.5">Assigned Team</p>
+<p class="font-body-md text-body-md text-on-surface font-medium">Alpha Engineering</p>
+</div>
+</div>
+<button class="text-electric-blue p-2 rounded hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
+</button>
+</div>
+<div class="flex items-center justify-between p-3 rounded bg-surface-container-low border border-transparent hover:border-outline-variant transition-colors">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded object-cover border border-outline-variant" data-alt="Professional headshot of a female engineering lead named Sarah Jenkins. She has short dark hair, wearing a navy blue blazer over a crisp white shirt, standing in a brightly lit modern office environment with a light-mode aesthetic. High quality corporate portrait photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuALrB4Noy875p1k9hLBZ24dmcbUC1Z4uBIvDPaqeJD6yC_P78_xdbtyXs0iIg99we14YYUSTcvgRu7tqnsHY1L2gaKjjxBdnJ7bo4IGLgJPPzU7kUnhsfvsThIfekcELj0eRZMDHsDRET8r-7ixsou7GfBfU3Jmj9HdVdtsk6SJ8G_hVoU1si1U3WVxFLbTwqI3NJFjqf1JjNb8Y6xh10X4XfT1MP413afkjaWTQKs4vFbZCCXRxYRS"/>
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant mb-0.5">Lead</p>
+<p class="font-body-md text-body-md text-on-surface font-medium">Sarah Jenkins</p>
+</div>
+</div>
+<button class="text-electric-blue p-2 rounded hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined" style="font-size: 20px;">mail</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Related Information Card -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 shadow-sm">
+<h3 class="font-title-lg text-title-lg text-on-surface mb-4">Related Information</h3>
+<div class="space-y-3">
+<div class="flex justify-between items-center py-2 border-b border-surface-dim last:border-0">
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 18px;">business</span> Client
+                        </span>
+<span class="font-body-md text-body-md text-on-surface font-medium hover:text-electric-blue cursor-pointer transition-colors">TechNexus Corp</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-surface-dim last:border-0">
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 18px;">corporate_fare</span> Department
+                        </span>
+<span class="font-body-md text-body-md text-on-surface font-medium">Engineering</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-surface-dim last:border-0">
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 18px;">sell</span> Tags
+                        </span>
+<div class="flex gap-2">
+<span class="px-2 py-0.5 bg-surface-container-highest text-on-surface-variant rounded text-xs">Cloud</span>
+<span class="px-2 py-0.5 bg-surface-container-highest text-on-surface-variant rounded text-xs">Migration</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Sticky Action Bar -->
+<footer class="p-6 border-t border-outline-variant bg-surface-container-lowest shrink-0 flex items-center justify-between">
+<div class="flex gap-3">
+<button class="px-4 py-2 rounded border border-outline-variant text-on-surface hover:bg-surface-container-low font-label-md text-label-md transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 18px;">edit</span> Edit
+                </button>
+<button class="px-4 py-2 rounded border border-outline-variant text-on-surface hover:bg-error-container hover:text-error hover:border-error transition-colors font-label-md text-label-md flex items-center gap-2">
+<span class="material-symbols-outlined" style="font-size: 18px;">archive</span> Archive
+                </button>
+</div>
+<button class="px-6 py-2 rounded bg-deep-navy text-on-primary hover:bg-primary-container font-label-md text-label-md transition-colors flex items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined" style="font-size: 18px;">open_in_new</span> Open Workspace
+            </button>
+</footer>
+</aside>
+<style>
+        /* Custom scrollbar for the panel body to match the clean aesthetic */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #d8dae0;
+            border-radius: 20px;
+        }
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+            background-color: #c5c6cc;
+        }
+    </style>
+</body></html>

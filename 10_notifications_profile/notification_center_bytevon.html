@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en" style=""><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Notification Center | Bytevon ERP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {outline: "#74777f", "on-error": "#ffffff", "tertiary-fixed-dim": "#c4c7c9", "on-surface": "#0b1c30", surface: "#f8f9ff", "on-secondary-container": "#fefcff", "secondary-fixed-dim": "#adc7ff", "on-secondary": "#ffffff", "on-background": "#0b1c30", background: "#f8f9ff", "inverse-surface": "#213145", "primary-fixed": "#d4e3ff", "inverse-primary": "#afc8f0", primary: "#000613", "primary-fixed-dim": "#afc8f0", "surface-bright": "#f8f9ff", "on-secondary-fixed-variant": "#004493", "error-container": "#ffdad6", "surface-variant": "#d3e4fe", "secondary-fixed": "#d8e2ff", "on-primary-container": "#6f88ad", "tertiary-fixed": "#e0e3e5", error: "#ba1a1a", "surface-tint": "#476083", "on-primary-fixed-variant": "#2f486a", "surface-container-lowest": "#ffffff", tertiary: "#040607", "surface-dim": "#cbdbf5", "on-error-container": "#93000a", "on-tertiary-fixed-variant": "#444749", "secondary-container": "#0070ea", "tertiary-container": "#1c1f21", "surface-container-highest": "#d3e4fe", "surface-container": "#e5eeff", "on-tertiary": "#ffffff", "on-primary": "#ffffff", "on-tertiary-container": "#848789", "on-secondary-fixed": "#001a41", "on-tertiary-fixed": "#191c1e", "inverse-on-surface": "#eaf1ff", "on-surface-variant": "#43474e", "primary-container": "#001f3f", "on-primary-fixed": "#001c3a", secondary: "#0059bb", "surface-container-low": "#eff4ff", "surface-container-high": "#dce9ff", "outline-variant": "#c4c6cf"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"margin-desktop": "40px", "stack-md": "16px", "stack-lg": "32px", "container-max": "1440px", gutter: "24px", unit: "4px", "margin-mobile": "16px", "stack-sm": "8px"}, fontFamily: {"headline-md": ["Inter"], "label-sm": ["Inter"], "body-sm": ["Inter"], "body-md": ["Inter"], "headline-lg": ["Inter"], "label-md": ["Inter"], "title-lg": ["Inter"], "headline-lg-mobile": ["Inter"], "body-lg": ["Inter"], "display-lg": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}]}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9ff; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .dual-pane-height { height: calc(100vh - 400px); }
+        .active-nav-indicator { position: absolute; left: 0; top: 0; bottom: 0; width: 4px; background-color: #0070ea; border-radius: 0 4px 4px 0; }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased overflow-hidden">
+<!-- Side Navigation Shell -->
+<aside class="fixed h-screen w-[280px] left-0 top-0 bg-primary dark:bg-primary-container text-on-primary dark:text-on-primary-container flex flex-col py-stack-lg shadow-sm z-50">
+<div class="px-6 mb-10 flex items-center gap-3">
+<div class="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center"><img alt="Bytevon Logo" class="w-full h-full object-cover rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPqFQ2hSRvYWXo9bF1dhSYepx7Im0bi2Zl4TOgxzfXfNSqKzNCsnBABsAlou_x-ow4e5yMU2Kgz5pZjywdUMZXdprCp8TGhBxf3K5vcpWo5v6nCYt3Cp2uzRw01OXmM-Xt8kndxpIlZR7j6UT-zbqrn5wDAIkvyYtbwGkSQn2FTrc5pvaCvTKhGsyUv8pGrCTxmw4US7ObLbwLJ3W1Cg_tj3Hj6kksIOD850bMVRdXZ6HIgTO6jswFK25qr7fX21yK1vs"/></div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">Bytevon</h1>
+<p class="text-[10px] opacity-60 uppercase tracking-widest font-bold">Enterprise ERP</p>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto scrollbar-hide space-y-1">
+<!-- Navigation Items Mapping from JSON Logic -->
+<a class="flex items-center gap-4 px-6 py-3 transition-all duration-200 text-on-primary/70 hover:text-on-primary hover:bg-primary-fixed-dim/10" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 transition-all duration-200 text-on-primary/70 hover:text-on-primary hover:bg-primary-fixed-dim/10" href="#">
+<span class="material-symbols-outlined">business</span>
+<span class="font-body-md text-body-md">Organization</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 transition-all duration-200 text-on-primary/70 hover:text-on-primary hover:bg-primary-fixed-dim/10" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-body-md text-body-md">People</span>
+</a>
+<!-- Active Notification Tab -->
+<a class="flex items-center gap-4 px-6 py-3 transition-all duration-200 bg-secondary-container text-on-secondary-container rounded-lg mx-2 my-1" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-body-md text-body-md font-semibold">Notifications</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 transition-all duration-200 text-on-primary/70 hover:text-on-primary hover:bg-primary-fixed-dim/10" href="#">
+<span class="material-symbols-outlined">engineering</span>
+<span class="font-body-md text-body-md">Workforce</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 transition-all duration-200 text-on-primary/70 hover:text-on-primary hover:bg-primary-fixed-dim/10" href="#">
+<span class="material-symbols-outlined">fact_check</span>
+<span class="font-body-md text-body-md">Approvals</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 transition-all duration-200 text-on-primary/70 hover:text-on-primary hover:bg-primary-fixed-dim/10" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="font-body-md text-body-md">CRM</span>
+</a>
+</nav>
+<div class="px-2 pt-6 border-t border-on-primary/10">
+<a class="flex items-center gap-4 px-4 py-3 transition-all duration-200 text-on-primary/70 hover:text-on-primary" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-md text-body-md">Help</span>
+</a>
+<a class="flex items-center gap-4 px-4 py-3 transition-all duration-200 text-on-primary/70 hover:text-on-primary" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</div>
+</aside>
+<!-- Main View Area -->
+<main class="ml-[280px] min-h-screen flex flex-col">
+<!-- Top Nav Bar Shell -->
+<header class="h-16 bg-surface border-b border-outline-variant flex items-center justify-between px-margin-desktop sticky top-0 z-40">
+<div class="flex items-center gap-4">
+<div class="relative flex items-center bg-surface-container-low border border-outline-variant rounded-full px-4 py-1.5 focus-within:ring-2 focus-within:ring-secondary group transition-all">
+<span class="material-symbols-outlined text-outline text-lg">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-label-md font-label-md placeholder:text-outline-variant w-64" placeholder="Search activities..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="bg-secondary text-white px-5 py-2 rounded-lg font-label-md text-label-md font-bold hover:bg-secondary-container hover:text-on-secondary-container transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-base">add</span>
+                    Create New
+                </button>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:text-primary transition-colors">help</span>
+<div class="flex items-center gap-3 ml-2 border-l pl-6 border-outline-variant">
+<div class="text-right">
+<p class="text-label-md font-bold text-on-surface">Alex Thompson</p>
+<p class="text-[10px] text-outline uppercase font-bold">Admin</p>
+</div>
+<img class="w-9 h-9 rounded-full object-cover border-2 border-surface-container-high shadow-sm" data-alt="A professional headshot of a senior executive male in a crisp business suit, set against a blurred modern office background with soft neutral lighting and corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBl7mTMVoOf46kP-0NPL-oefTSSuP09dlS4YnZkowr7jhzQxoTs3q8TzcMhTJsGxgtK_6MsCSBg64CBOl3BwAnD_qDwjZxTHcEk0-ABbC2f_op2UHRPNKLkCJ01PW4f3m4U_xQwpjLAdmX8fU3yzS52MM24eMvxiVtBhJA1x_k3H1Jm0CUIIIN0Svd2y0rjx8J5il13CorjEpkTZ6_59mtGQPd0c2og7pSe9eEw42qtZgbhhIOHYSrp1g"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Notification Content -->
+<div class="p-margin-desktop space-y-stack-lg overflow-y-auto flex-1 scrollbar-hide">
+<!-- Header Section -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-gutter">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary tracking-tight">Notification Center</h2>
+<p class="text-on-surface-variant font-body-md text-body-md mt-1">View, manage and respond to notifications across the organization.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 text-secondary bg-surface-container-high rounded-lg font-label-md text-label-md font-semibold flex items-center gap-2 hover:bg-secondary-container hover:text-white transition-all">
+<span class="material-symbols-outlined text-lg">done_all</span> Mark All Read
+                    </button>
+<button class="px-4 py-2 text-on-surface bg-surface-container-high rounded-lg font-label-md text-label-md font-semibold flex items-center gap-2 hover:bg-outline-variant transition-all">
+<span class="material-symbols-outlined text-lg">settings</span> Preferences
+                    </button>
+<button class="px-4 py-2 text-on-surface bg-surface-container-high rounded-lg font-label-md text-label-md font-semibold flex items-center gap-2 hover:bg-outline-variant transition-all">
+<span class="material-symbols-outlined text-lg">archive</span> Archive Read
+                    </button>
+</div>
+</section>
+<!-- KPI Cards -->
+<section class="grid grid-cols-2 md:grid-cols-5 gap-stack-md">
+<div class="bg-white p-5 rounded-xl border border-outline-variant shadow-sm hover:border-secondary transition-all cursor-default">
+<div class="flex items-center justify-between mb-2">
+<span class="text-outline font-label-md text-label-md">Unread</span>
+<span class="material-symbols-outlined text-secondary text-xl">mark_email_unread</span>
+</div>
+<p class="text-headline-md font-display-lg text-primary">12</p>
+<p class="text-[11px] text-green-600 font-bold mt-1 flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">trending_down</span> -4% from yesterday
+                    </p>
+</div>
+<div class="bg-white p-5 rounded-xl border border-outline-variant shadow-sm hover:border-error transition-all cursor-default">
+<div class="flex items-center justify-between mb-2">
+<span class="text-outline font-label-md text-label-md">High Priority</span>
+<span class="material-symbols-outlined text-error text-xl">warning</span>
+</div>
+<p class="text-headline-md font-display-lg text-primary">3</p>
+<p class="text-[11px] text-error font-bold mt-1">Requires immediate action</p>
+</div>
+<div class="bg-white p-5 rounded-xl border border-outline-variant shadow-sm hover:border-secondary transition-all cursor-default">
+<div class="flex items-center justify-between mb-2">
+<span class="text-outline font-label-md text-label-md">Pending Actions</span>
+<span class="material-symbols-outlined text-primary text-xl">pending_actions</span>
+</div>
+<p class="text-headline-md font-display-lg text-primary">8</p>
+<p class="text-[11px] text-outline font-bold mt-1">Awaiting your response</p>
+</div>
+<div class="bg-white p-5 rounded-xl border border-outline-variant shadow-sm hover:border-secondary transition-all cursor-default">
+<div class="flex items-center justify-between mb-2">
+<span class="text-outline font-label-md text-label-md">Archived</span>
+<span class="material-symbols-outlined text-outline text-xl">inventory_2</span>
+</div>
+<p class="text-headline-md font-display-lg text-primary">156</p>
+<p class="text-[11px] text-outline font-bold mt-1">Last 30 days</p>
+</div>
+<div class="bg-white p-5 rounded-xl border border-outline-variant shadow-sm hover:border-secondary transition-all cursor-default">
+<div class="flex items-center justify-between mb-2">
+<span class="text-outline font-label-md text-label-md">Today</span>
+<span class="material-symbols-outlined text-secondary text-xl">today</span>
+</div>
+<p class="text-headline-md font-display-lg text-primary">24</p>
+<p class="text-[11px] text-green-600 font-bold mt-1">+12% vs avg</p>
+</div>
+</section>
+<!-- Filter & Tabs Bar -->
+<section class="bg-white rounded-xl border border-outline-variant shadow-sm p-2 flex flex-col gap-4">
+<div class="flex items-center justify-between px-4 pt-2">
+<div class="flex items-center gap-1 border-b border-outline-variant w-full">
+<button class="px-6 py-3 border-b-2 border-secondary text-secondary font-bold text-label-md transition-all">All (124)</button>
+<button class="px-6 py-3 text-outline font-medium text-label-md hover:text-primary transition-all">Unread (12)</button>
+<button class="px-6 py-3 text-outline font-medium text-label-md hover:text-primary transition-all">Mentions (5)</button>
+<button class="px-6 py-3 text-outline font-medium text-label-md hover:text-primary transition-all">High Priority (3)</button>
+<button class="px-6 py-3 text-outline font-medium text-label-md hover:text-primary transition-all">Archived</button>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-3 px-4 pb-2">
+<div class="flex items-center bg-surface-container rounded-lg border border-outline-variant px-3 py-1.5 flex-1 max-w-xs">
+<span class="material-symbols-outlined text-outline text-lg">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-sm w-full" placeholder="Filter notifications..." type="text"/>
+</div>
+<select class="bg-white border-outline-variant rounded-lg text-body-sm px-4 py-1.5 focus:ring-secondary">
+<option>Type: All</option>
+<option>System</option>
+<option>Approval</option>
+<option>Mention</option>
+</select>
+<select class="bg-white border-outline-variant rounded-lg text-body-sm px-4 py-1.5 focus:ring-secondary">
+<option>Priority: All</option>
+<option>High</option>
+<option>Medium</option>
+<option>Low</option>
+</select>
+<select class="bg-white border-outline-variant rounded-lg text-body-sm px-4 py-1.5 focus:ring-secondary">
+<option>Module: All</option>
+<option>CRM</option>
+<option>HRM</option>
+<option>Finance</option>
+</select>
+<button class="ml-auto text-outline flex items-center gap-1 text-label-sm font-bold">
+<span class="material-symbols-outlined text-lg">calendar_today</span> Oct 20 - Oct 27
+                    </button>
+</div>
+</section>
+<!-- Dual Pane Layout -->
+<section class="flex gap-gutter dual-pane-height overflow-hidden">
+<!-- Left Pane: Notification List -->
+<div class="w-2/5 flex flex-col gap-stack-md overflow-y-auto pr-2 scrollbar-hide">
+<!-- Notification Card (Unread/Selected) -->
+<div class="bg-surface-container-high border-2 border-secondary rounded-xl p-5 shadow-md relative cursor-pointer transform hover:scale-[1.01] transition-all">
+<div class="active-nav-indicator"></div>
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-white shrink-0">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-black uppercase text-secondary tracking-widest">Employee Management</span>
+<span class="text-[11px] text-outline font-medium">2m ago</span>
+</div>
+<h4 class="font-title-lg text-primary line-clamp-1">New Leave Request: Sarah Jenkins</h4>
+<p class="text-body-sm text-on-surface-variant line-clamp-2 mt-1 leading-relaxed">Annual leave request for 5 days starting Nov 12th. Requires your immediate approval.</p>
+<div class="flex items-center gap-3 mt-4">
+<span class="px-2 py-0.5 bg-error-container text-on-error-container text-[10px] font-bold rounded uppercase">High Priority</span>
+<span class="px-2 py-0.5 bg-surface-variant text-on-surface-variant text-[10px] font-bold rounded uppercase">Pending</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Notification Card (Read/Standard) -->
+<div class="bg-white border border-outline-variant rounded-xl p-5 shadow-sm opacity-80 hover:opacity-100 cursor-pointer transition-all">
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container-highest flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-2xl">account_circle</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-black uppercase text-outline tracking-widest">CRM</span>
+<span class="text-[11px] text-outline font-medium">1h ago</span>
+</div>
+<h4 class="font-title-lg text-primary line-clamp-1">Account Assignment: Tesla Inc.</h4>
+<p class="text-body-sm text-on-surface-variant line-clamp-1 mt-1">You have been assigned as the primary account lead for Tesla Inc.</p>
+<div class="flex items-center gap-3 mt-4">
+<span class="px-2 py-0.5 bg-surface-variant text-on-surface-variant text-[10px] font-bold rounded uppercase">Normal</span>
+<button class="ml-auto flex items-center gap-1 text-secondary text-xs font-bold hover:underline">
+<span class="material-symbols-outlined text-sm">archive</span> Archive
+                                    </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Notification Card (System) -->
+<div class="bg-white border border-outline-variant rounded-xl p-5 shadow-sm hover:border-primary transition-all cursor-pointer">
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-white shrink-0">
+<span class="material-symbols-outlined text-2xl">settings</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-black uppercase text-outline tracking-widest">System</span>
+<span class="text-[11px] text-outline font-medium">4h ago</span>
+</div>
+<h4 class="font-title-lg text-primary line-clamp-1">Maintenance Scheduled</h4>
+<p class="text-body-sm text-on-surface-variant line-clamp-2 mt-1">The ERP core will undergo routine maintenance tonight at 02:00 AM UTC.</p>
+<div class="flex items-center gap-3 mt-4">
+<span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded uppercase">Info</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Notification Card (Developer) -->
+<div class="bg-white border border-outline-variant rounded-xl p-5 shadow-sm hover:border-primary transition-all cursor-pointer">
+<div class="flex items-start gap-4">
+<div class="w-12 h-12 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container shrink-0">
+<span class="material-symbols-outlined text-2xl">code</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-black uppercase text-outline tracking-widest">Developer</span>
+<span class="text-[11px] text-outline font-medium">6h ago</span>
+</div>
+<h4 class="font-title-lg text-primary line-clamp-1">API Error Threshold Exceeded</h4>
+<p class="text-body-sm text-on-surface-variant line-clamp-2 mt-1">Stripe Integration API is reporting 5% failure rate in the last 15 minutes.</p>
+<div class="flex items-center gap-3 mt-4">
+<span class="px-2 py-0.5 bg-error-container text-on-error-container text-[10px] font-bold rounded uppercase">Urgent</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Pane: Notification Details -->
+<div class="flex-1 bg-white border border-outline-variant rounded-xl shadow-sm flex flex-col overflow-hidden">
+<div class="p-8 border-b border-outline-variant flex items-center justify-between bg-surface-container-low">
+<div class="flex items-center gap-5">
+<div class="w-14 h-14 rounded-xl bg-secondary-container flex items-center justify-center text-white">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-primary">New Leave Request: Sarah Jenkins</h3>
+<p class="text-on-surface-variant font-label-md flex items-center gap-2 mt-1">
+<span class="font-bold text-primary">Sarah Jenkins</span> • Employee ID: #EMP-9021 • HR Module
+                                </p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-outline hover:text-primary transition-all"><span class="material-symbols-outlined">star</span></button>
+<button class="p-2 text-outline hover:text-primary transition-all"><span class="material-symbols-outlined">share</span></button>
+<button class="p-2 text-outline hover:text-primary transition-all"><span class="material-symbols-outlined">more_vert</span></button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto p-8 space-y-stack-lg">
+<div class="space-y-4">
+<div class="flex items-center justify-between text-label-md font-bold text-outline border-b pb-2 border-dashed">
+<span class="">Status</span>
+<span class="text-secondary">Awaiting Approval</span>
+</div>
+<div class="flex items-center justify-between text-label-md font-bold text-outline border-b pb-2 border-dashed">
+<span class="">Requested Date</span>
+<span class="text-primary">Oct 26, 2023 at 09:12 AM</span>
+</div>
+<div class="flex items-center justify-between text-label-md font-bold text-outline border-b pb-2 border-dashed">
+<span class="">Leave Category</span>
+<span class="text-primary">Annual Personal Leave</span>
+</div>
+<div class="flex items-center justify-between text-label-md font-bold text-outline border-b pb-2 border-dashed">
+<span class="">Period</span>
+<span class="text-primary">Nov 12, 2023 — Nov 17, 2023 (5 Days)</span>
+</div>
+</div>
+<div class="bg-surface p-6 rounded-xl border-l-4 border-secondary">
+<h5 class="text-label-md font-black uppercase text-secondary mb-3 tracking-wider">Employee Note</h5>
+<p class="text-body-lg font-body-lg text-on-surface leading-relaxed italic">
+                                "Requesting time off for a family event. I have finalized the Q4 forecast reports and Dave will be covering my active support tickets during this period. Thank you for considering."
+                            </p>
+</div>
+<div class="space-y-6">
+<h5 class="text-label-md font-black uppercase text-outline tracking-widest">Activity Timeline</h5>
+<div class="relative pl-8 space-y-8 before:content-[''] before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-outline-variant">
+<div class="relative">
+<div class="absolute -left-8 top-1 w-6 h-6 rounded-full bg-white border-4 border-secondary flex items-center justify-center z-10"></div>
+<p class="text-body-md font-bold text-primary">Notification Generated</p>
+<p class="text-label-sm text-outline">Oct 26, 2023 • 09:12 AM</p>
+<p class="text-body-sm mt-1">Automatic system notification triggered by Sarah Jenkins' portal submission.</p>
+</div>
+<div class="relative">
+<div class="absolute -left-8 top-1 w-6 h-6 rounded-full bg-white border-4 border-outline-variant flex items-center justify-center z-10"></div>
+<p class="text-body-md font-bold text-outline">Manager Review Pending</p>
+<p class="text-label-sm text-outline">Oct 26, 2023 • 09:15 AM</p>
+<p class="text-body-sm mt-1">Assigned to: Alex Thompson (You)</p>
+</div>
+</div>
+</div>
+</div>
+<div class="p-8 border-t border-outline-variant bg-surface-container-low flex items-center gap-4">
+<button class="flex-1 bg-secondary text-white py-4 rounded-xl font-bold text-label-md hover:bg-primary transition-all flex items-center justify-center gap-3">
+                            Open Related Record <span class="material-symbols-outlined">open_in_new</span>
+</button>
+<button class="px-8 py-4 border border-outline text-on-surface font-bold text-label-md rounded-xl hover:bg-white transition-all">
+                            Mark as Read
+                        </button>
+<button class="p-4 bg-error-container text-on-error-container rounded-xl hover:opacity-80 transition-all">
+<span class="material-symbols-outlined">delete_outline</span>
+</button>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Micro-interaction Script -->
+<script>
+        document.querySelectorAll('.cursor-pointer').forEach(item => {
+            item.addEventListener('click', function() {
+                // Mock selection logic
+                if(this.classList.contains('border-outline-variant')) {
+                    document.querySelectorAll('.border-secondary').forEach(el => {
+                        el.classList.remove('border-secondary', 'bg-surface-container-high', 'shadow-md');
+                        el.classList.add('border-outline-variant', 'bg-white', 'shadow-sm', 'opacity-80');
+                        const indicator = el.querySelector('.active-nav-indicator');
+                        if(indicator) indicator.remove();
+                    });
+                    this.classList.remove('border-outline-variant', 'bg-white', 'shadow-sm', 'opacity-80');
+                    this.classList.add('border-2', 'border-secondary', 'bg-surface-container-high', 'shadow-md');
+                    const indicator = document.createElement('div');
+                    indicator.className = 'active-nav-indicator';
+                    this.prepend(indicator);
+                }
+            });
+        });
+    </script>
+</body></html>

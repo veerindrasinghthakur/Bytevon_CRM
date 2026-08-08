@@ -1,0 +1,426 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Sales Dashboard | Bytevon CRM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-tertiary-fixed": "#191c1e", "outline-variant": "#c4c6cf", "on-secondary-fixed": "#001a41", surface: "#f8f9ff", "on-primary-fixed": "#001c3a", "on-primary-fixed-variant": "#2f486a", background: "#f8f9ff", "primary-fixed-dim": "#afc8f0", "on-secondary": "#ffffff", "error-container": "#ffdad6", "surface-container-low": "#eff4ff", "tertiary-fixed-dim": "#c4c7c9", "inverse-surface": "#213145", "secondary-fixed": "#d8e2ff", "tertiary-fixed": "#e0e3e5", "surface-bright": "#f8f9ff", "on-secondary-container": "#fefcff", "surface-container-highest": "#d3e4fe", "on-tertiary-container": "#848789", "secondary-container": "#0070ea", "on-surface-variant": "#43474e", "surface-container-high": "#dce9ff", "surface-container": "#e5eeff", "secondary-fixed-dim": "#adc7ff", "surface-tint": "#476083", "inverse-primary": "#afc8f0", "on-error": "#ffffff", secondary: "#0059bb", tertiary: "#040607", primary: "#000613", "surface-dim": "#cbdbf5", "on-tertiary-fixed-variant": "#444749", "inverse-on-surface": "#eaf1ff", "on-error-container": "#93000a", "primary-container": "#001f3f", outline: "#74777f", "on-surface": "#0b1c30", "surface-container-lowest": "#ffffff", "on-secondary-fixed-variant": "#004493", "on-primary-container": "#6f88ad", "primary-fixed": "#d4e3ff", "surface-variant": "#d3e4fe", "on-background": "#0b1c30", "tertiary-container": "#1c1f21", error: "#ba1a1a", "on-primary": "#ffffff", "on-tertiary": "#ffffff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-sm": "8px", "stack-md": "16px", "margin-desktop": "40px", "margin-mobile": "16px", "container-max": "1440px", gutter: "24px", unit: "4px", "stack-lg": "32px"}, fontFamily: {"headline-lg-mobile": ["Inter"], "label-sm": ["Inter"], "body-sm": ["Inter"], "title-lg": ["Inter"], "body-lg": ["Inter"], "display-lg": ["Inter"], "headline-md": ["Inter"], "body-md": ["Inter"], "headline-lg": ["Inter"], "label-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}]}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9ff; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c4c6cf; border-radius: 10px; }
+        .funnel-step { clip-path: polygon(0% 0%, 95% 0%, 100% 50%, 95% 100%, 0% 100%, 5% 50%); }
+        .funnel-step:first-child { clip-path: polygon(0% 0%, 95% 0%, 100% 50%, 95% 100%, 0% 100%); }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-screen w-[280px] bg-primary dark:bg-primary-container flex flex-col py-stack-lg px-stack-md z-50">
+<div class="mb-stack-lg px-4">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary dark:text-on-primary-container">Bytevon CRM</h1>
+<p class="font-label-md text-label-md text-on-primary/60">Enterprise Resource</p>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary hover:bg-on-primary/10 transition-colors rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg font-bold font-label-md text-label-md transition-all duration-200" href="#">
+<span class="material-symbols-outlined">payments</span> Sales
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary hover:bg-on-primary/10 transition-colors rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">groups</span> Workforce
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary hover:bg-on-primary/10 transition-colors rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">fact_check</span> Approvals
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary hover:bg-on-primary/10 transition-colors rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">settings</span> Administration
+            </a>
+</nav>
+<div class="mt-auto space-y-2">
+<button class="w-full bg-secondary text-on-secondary py-3 rounded-lg font-bold flex items-center justify-center gap-2 mb-stack-md active:scale-95 transition-transform">
+<span class="material-symbols-outlined">add</span> Create Lead
+            </button>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">help</span> Help
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary/70 hover:text-on-primary transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">settings</span> Settings
+            </a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] min-h-screen">
+<!-- Top Navigation Bar -->
+<header class="sticky top-0 z-40 w-full bg-surface border-b border-outline-variant flex justify-between items-center h-16 px-margin-desktop">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full pl-10 pr-4 py-2 focus:ring-2 focus:ring-secondary text-body-md font-body-md" placeholder="Search leads, clients, or revenue..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="h-8 w-px bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-right hidden lg:block">
+<p class="text-label-md font-bold text-on-surface">Alex Mercer</p>
+<p class="text-xs text-on-surface-variant">Sales Director</p>
+</div>
+<img class="w-10 h-10 rounded-full border-2 border-secondary object-cover" data-alt="Professional headshot of a corporate executive in a crisp navy suit, set against a clean, minimalist studio background with soft natural lighting. The style is high-end corporate photography, focusing on confidence and approachability with sharp focus and neutral professional tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZeyrp9-iXWHDjvJncGlIixnnvEgVju7ngtckBqZZD985tS8q5woe_jRVTkmOhsMLgTR3fJXiRew_hh3f9LPafz-oCzZhIKaluSIp2QDEVaf15v3hAoGolC70l1Vfy_yyHW7MtOhguFhN9bRXuYjhjQj-OeC1s4KZ3ByiQqBx8nfVNctmJ9eLpiWGVXIiUY2L_xh58C1z0WGNBjGTiFp_cuMpE8GPJNpxFYBT_qFNAQEgsdnwUniOVsQ">
+</div>
+</div>
+</header>
+<div class="p-stack-lg max-w-[1440px] mx-auto">
+<div class="flex flex-col lg:flex-row gap-gutter">
+<!-- Left Column: Dashboard Hub -->
+<div class="flex-1 space-y-gutter">
+<!-- KPI Scorecard Row -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="bg-surface-container-lowest p-stack-md rounded-lg border border-outline-variant shadow-sm flex flex-col justify-between h-32">
+<span class="text-label-md font-medium text-on-surface-variant">Total Leads</span>
+<div class="flex items-end justify-between">
+<h2 class="text-headline-md font-bold text-primary">2,840</h2>
+<span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full">+12%</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-stack-md rounded-lg border border-outline-variant shadow-sm flex flex-col justify-between h-32">
+<span class="text-label-md font-medium text-on-surface-variant">Won Leads</span>
+<div class="flex items-end justify-between">
+<h2 class="text-headline-md font-bold text-primary">18</h2>
+<span class="text-xs font-bold text-on-surface-variant">Target: 25</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-stack-md rounded-lg border border-outline-variant shadow-sm flex flex-col justify-between h-32">
+<span class="text-label-md font-medium text-on-surface-variant">Active Clients</span>
+<div class="flex items-end justify-between">
+<h2 class="text-headline-md font-bold text-primary">1,150</h2>
+<div class="w-12 h-1 bg-secondary rounded-full"></div>
+</div>
+</div>
+<div class="bg-primary p-stack-md rounded-lg border border-primary shadow-sm flex flex-col justify-between h-32 text-on-primary">
+<span class="text-label-md font-medium text-on-primary/60">Estimated Revenue</span>
+<div class="flex items-end justify-between">
+<h2 class="text-headline-md font-bold">$4.2M</h2>
+<span class="material-symbols-outlined text-secondary-fixed">trending_up</span>
+</div>
+</div>
+</section>
+<!-- Mini KPI Summary -->
+<div class="flex flex-wrap gap-4 px-2">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="text-xs text-on-surface-variant">New Leads: <b>142</b></span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="text-xs text-on-surface-variant">Qualified Leads: <b>86</b></span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="text-xs text-on-surface-variant">Lost Leads: <b>12</b></span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-surface-dim"></span>
+<span class="text-xs text-on-surface-variant">Projects Generated: <b>24</b></span>
+</div>
+</div>
+<!-- Lead Pipeline Visualization -->
+<section class="bg-surface-container-lowest p-stack-lg rounded-lg border border-outline-variant shadow-sm">
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-title-lg font-bold text-primary">Sales Pipeline Funnel</h3>
+<button class="text-label-md text-secondary font-bold flex items-center gap-1 hover:underline">
+                                Full Report <span class="material-symbols-outlined text-sm">open_in_new</span>
+</button>
+</div>
+<div class="flex items-center w-full h-16 overflow-x-auto custom-scrollbar pb-2">
+<!-- Funnel Stages -->
+<div class="flex-1 min-w-[120px] funnel-step bg-primary/10 flex items-center justify-center border-y border-outline-variant relative">
+<div class="text-center">
+<p class="text-[10px] font-bold text-primary uppercase tracking-wider">New</p>
+<p class="text-sm font-black text-primary">142</p>
+</div>
+</div>
+<div class="flex-1 min-w-[120px] funnel-step bg-primary/20 flex items-center justify-center border-y border-outline-variant">
+<div class="text-center">
+<p class="text-[10px] font-bold text-primary uppercase tracking-wider">Contacted</p>
+<p class="text-sm font-black text-primary">98</p>
+</div>
+</div>
+<div class="flex-1 min-w-[120px] funnel-step bg-primary/30 flex items-center justify-center border-y border-outline-variant">
+<div class="text-center">
+<p class="text-[10px] font-bold text-primary uppercase tracking-wider">Qualified</p>
+<p class="text-sm font-black text-primary">86</p>
+</div>
+</div>
+<div class="flex-1 min-w-[120px] funnel-step bg-secondary/40 flex items-center justify-center border-y border-outline-variant">
+<div class="text-center">
+<p class="text-[10px] font-bold text-primary uppercase tracking-wider">Proposal</p>
+<p class="text-sm font-black text-primary">54</p>
+</div>
+</div>
+<div class="flex-1 min-w-[120px] funnel-step bg-secondary/60 flex items-center justify-center border-y border-outline-variant">
+<div class="text-center">
+<p class="text-[10px] font-bold text-primary uppercase tracking-wider">Negotiation</p>
+<p class="text-sm font-black text-primary">32</p>
+</div>
+</div>
+<div class="flex-1 min-w-[120px] funnel-step bg-secondary text-on-secondary flex items-center justify-center border-y border-secondary">
+<div class="text-center">
+<p class="text-[10px] font-bold uppercase tracking-wider">Won</p>
+<p class="text-sm font-black">18</p>
+</div>
+</div>
+</div>
+<div class="mt-4 flex justify-end gap-4">
+<div class="flex items-center gap-1 text-xs text-on-surface-variant">
+<span class="w-3 h-3 rounded bg-red-100 border border-red-200"></span> Lost (12)
+                            </div>
+<div class="flex items-center gap-1 text-xs text-on-surface-variant">
+<span class="w-3 h-3 rounded bg-gray-100 border border-gray-200"></span> Closed (6)
+                            </div>
+</div>
+</section>
+<!-- Recent Leads Table -->
+<section class="bg-surface-container-lowest rounded-lg border border-outline-variant shadow-sm overflow-hidden">
+<div class="p-stack-md border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<h3 class="text-title-lg font-bold text-primary">Recent Leads</h3>
+<div class="flex gap-2">
+<button class="p-2 bg-surface-container-lowest border border-outline-variant rounded-md hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+</button>
+<button class="p-2 bg-surface-container-lowest border border-outline-variant rounded-md hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined text-sm">download</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-6 py-4 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Lead Title</th>
+<th class="px-6 py-4 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Client</th>
+<th class="px-6 py-4 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Platform</th>
+<th class="px-6 py-4 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Assigned</th>
+<th class="px-6 py-4 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Budget</th>
+<th class="px-6 py-4 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<p class="text-body-md font-bold text-primary group-hover:text-secondary">Cloud ERP Migration</p>
+<span class="text-xs text-on-surface-variant">ID: #L-4421</span>
+</td>
+<td class="px-6 py-4 text-body-md font-medium">Nexus Global</td>
+<td class="px-6 py-4 text-body-sm text-on-surface-variant">Web</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<img class="w-7 h-7 rounded-full object-cover border border-outline" data-alt="Close-up portrait of a female software architect in a professional studio setting. She is wearing modern eyewear and a charcoal blazer. The background is a clean, neutral gray with soft rim lighting, emphasizing a high-end, expert professional vibe aligned with an enterprise CRM aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBt8KXaZ9sSbFBQoE4UpifZqRj_bcSPYJs32u-wgdkomIZi8vxjJWPfNqGkW79qbAH0hydWpITntKdJ8dP27kBhAJXZ8PkdUbvY7zyaLaKAw2LLOcZ8krCW83XJRBq-8B2nLImzQ66xlDgYHZAaHOm9JEeX8cyTK7URyeGLomeOb8NwwS16GiIajfdvkKcFOczTRygHSyedlDLYWeUXR3k7znk1q725AKgn6rguLzdx9b2Bh_WaqPitRg">
+<span class="text-body-sm">Sarah Chen</span>
+</div>
+</td>
+<td class="px-6 py-4 text-body-md font-bold text-primary">$120,000</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-blue-100 text-blue-700 text-[10px] font-black rounded-full uppercase">PROPOSAL_SENT</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<p class="text-body-md font-bold text-primary group-hover:text-secondary">Mobile POS System</p>
+<span class="text-xs text-on-surface-variant">ID: #L-4422</span>
+</td>
+<td class="px-6 py-4 text-body-md font-medium">RetailFlow Ltd.</td>
+<td class="px-6 py-4 text-body-sm text-on-surface-variant">Mobile</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<img class="w-7 h-7 rounded-full object-cover border border-outline" data-alt="A professional headshot of a mid-40s male sales executive with a friendly, confident expression. He is wearing a light blue dress shirt and a silver watch. The background is a blurred high-end office interior with warm wooden accents and soft corporate lighting. Executive style photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaKaJnCsttU57aUQ6WmqU2VK54Le1GoVJmHDxEUSv_RWJGABNPYZJdAr_kUWWRMeRbh8zHT2JmIMii2r7XpHahnHtiZaHA0y1KNwbnc6-TvkVSqOgtdodXfpD4nXPU2f66GJvxeVCborcT1Jnt7Stx7tzZS94lIYuvGX4G2ZV0BJHv-HawpL6xl6ZvPSz4DeW7xGEzR_5uZ_ByLB58VDzm_W_R4u5rEFzf9gdLC4jdAs8OwdDM2F-fUQ">
+<span class="text-body-sm">James Wilson</span>
+</div>
+</td>
+<td class="px-6 py-4 text-body-md font-bold text-primary">$85,000</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-amber-100 text-amber-700 text-[10px] font-black rounded-full uppercase">NEGOTIATION</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<p class="text-body-md font-bold text-primary group-hover:text-secondary">Cybersecurity Audit</p>
+<span class="text-xs text-on-surface-variant">ID: #L-4423</span>
+</td>
+<td class="px-6 py-4 text-body-md font-medium">SafeBank Corp</td>
+<td class="px-6 py-4 text-body-sm text-on-surface-variant">Desktop</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<img class="w-7 h-7 rounded-full object-cover border border-outline" data-alt="Portrait of a young, ambitious male account manager with a sharp undercut and a modern business-casual outfit. He is looking directly at the camera with a slight smile. The background is a minimalist, brightly lit workspace with abstract architectural lines. Professional, modern executive aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcV2hrvZItKIjQaF8lc880eJB5c4g8mxKx3lIL-B7WTSPO4ek0wu9NRk5SXO4ahfFkzMtZtnMfNMvdgW1tXR7xjpuIyrKfgQtRKWFn_duRgXcBpxkhWqEnz-jbJ4Ymi8FJvK6LAkSX3Z182ZSxkjDYo4cMfa2Yx4ZkrPCDtFGbEaZo8B_UUwxQWZN1JK2nXV5wl_Jn3NBmngckLs0_0JCaBY8aYZVYMdgjhFws7scuK7c0jtomDSZoOQ">
+<span class="text-body-sm">Liam O'Brien</span>
+</div>
+</td>
+<td class="px-6 py-4 text-body-md font-bold text-primary">$45,000</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-green-100 text-green-700 text-[10px] font-black rounded-full uppercase">WON</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<p class="text-body-md font-bold text-primary group-hover:text-secondary">AI Chatbot Integration</p>
+<span class="text-xs text-on-surface-variant">ID: #L-4424</span>
+</td>
+<td class="px-6 py-4 text-body-md font-medium">TechNexus</td>
+<td class="px-6 py-4 text-body-sm text-on-surface-variant">Web/API</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<img class="w-7 h-7 rounded-full object-cover border border-outline" data-alt="Professional portrait of a senior consultant with a sophisticated look, silver hair, and a dark navy blazer. The lighting is focused and cinematic, creating a sense of authority and wisdom. High-quality corporate executive photography style with a focus on institutional trust." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9TpuEHzZlnYtTKFFeIqdoY_1mDF6tBkltkr_Zt6TRRWy9ejmMU0T4jtUg_h73c-UmcnEtEDSXF6P0wAYz3E6KXfaIgtyTW4DoQr-DlyIvSWiYGc-MVE5acYgqmlUEhZPRXSSbsaJaLA3Yjm0ku2Gv1_mu1-gybZ76t38pgX51CRX4sFkDRJaqZOmZGIBIhFJKgsEN-SaWL0I4gWwFJYsfPV-jMc5PAaer8CfSk55o_b0jCyAsNmgqzA">
+<span class="text-body-sm">Elena Rodriguez</span>
+</div>
+</td>
+<td class="px-6 py-4 text-body-md font-bold text-primary">$210,000</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-purple-100 text-purple-700 text-[10px] font-black rounded-full uppercase">QUALIFIED</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 bg-surface-container-low flex justify-between items-center">
+<span class="text-label-md text-on-surface-variant">Showing 4 of 142 leads</span>
+<div class="flex gap-2">
+<button class="px-3 py-1 border border-outline-variant rounded hover:bg-surface-container-highest transition-colors">Previous</button>
+<button class="px-3 py-1 bg-secondary text-on-secondary rounded hover:opacity-90 transition-opacity">Next</button>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Sidebar Column -->
+<aside class="w-full lg:w-80 space-y-gutter">
+<!-- Quick Actions -->
+<section class="space-y-3">
+<button class="w-full flex items-center justify-between p-4 bg-primary text-on-primary rounded-lg shadow-md hover:translate-x-1 transition-all duration-200 group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined p-2 bg-on-primary/10 rounded-full">person_add</span>
+<span class="font-bold">Create Lead</span>
+</div>
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 bg-surface-container-lowest border border-outline-variant text-primary rounded-lg shadow-sm hover:bg-surface-container-high transition-all group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined p-2 bg-secondary/10 text-secondary rounded-full">business</span>
+<span class="font-bold">Add Client</span>
+</div>
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform text-outline">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 bg-surface-container-lowest border border-outline-variant text-primary rounded-lg shadow-sm hover:bg-surface-container-high transition-all group">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined p-2 bg-secondary/10 text-secondary rounded-full">calendar_today</span>
+<span class="font-bold">Schedule Meeting</span>
+</div>
+<span class="material-symbols-outlined group-hover:translate-x-1 transition-transform text-outline">chevron_right</span>
+</button>
+</section>
+<!-- Upcoming Meetings -->
+<section>
+<h4 class="text-label-sm font-bold text-on-surface-variant uppercase tracking-widest mb-4">Upcoming Meetings</h4>
+<div class="space-y-3">
+<div class="p-stack-md bg-surface-container-lowest border border-outline-variant rounded-lg hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-2">
+<h5 class="font-bold text-primary text-body-md">Discovery Call</h5>
+<span class="material-symbols-outlined text-secondary text-sm">video_camera_front</span>
+</div>
+<div class="space-y-1 mb-3">
+<p class="text-xs font-medium text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">link</span> TechNexus Lead
+                                    </p>
+<p class="text-xs font-bold text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> Oct 28, 10:00 AM
+                                    </p>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-outline-variant/30">
+<span class="text-[10px] text-on-surface-variant uppercase font-bold">Organizer</span>
+<img class="w-6 h-6 rounded-full" data-alt="Close up of a professional male project manager with a calm and organized expression. He is wearing a clean white shirt and dark glasses. Minimalist corporate setting with high-key lighting, soft white and gray palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8_Kw80-YrPUyZxhZMfgt0bt2GM3CRLJ_Ua5mhcHRnyLINTMT5roRfUyb22SLRQq1RBw8b19nJ5bJUgu7yMP8PODSkCX0X0dKno5rvDVEvzyiZSh_MpVRGew9oHm8g2_Zx85HukD0LSqGpIhpKB_Hu54ASRHUoZPSqTkLiFnhEghvtqspHOXfjA2MW6FEkDtJQ8dzd55_KUv_wtgJahsYO7lC0Z4AooF9HnwmboCDJleENL0XlXNJSZg">
+</div>
+</div>
+<div class="p-stack-md bg-surface-container-lowest border border-outline-variant rounded-lg opacity-80 hover:opacity-100 transition-opacity">
+<div class="flex justify-between items-start mb-2">
+<h5 class="font-bold text-primary text-body-md">Price Negotiation</h5>
+<span class="material-symbols-outlined text-secondary text-sm">handshake</span>
+</div>
+<div class="space-y-1 mb-3">
+<p class="text-xs font-medium text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">link</span> RetailFlow POS
+                                    </p>
+<p class="text-xs font-bold text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span> Oct 29, 02:30 PM
+                                    </p>
+</div>
+<div class="flex items-center justify-between pt-2 border-t border-outline-variant/30">
+<span class="text-[10px] text-on-surface-variant uppercase font-bold">Organizer</span>
+<img class="w-6 h-6 rounded-full" data-alt="Portrait of a young female coordinator with a modern professional style, wearing a tailored blazer. The background is a clean, bright architectural space with soft daylight. Sophisticated and efficient corporate executive feel." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC7MoQX9BYl4XN16-22twI2fr0srx9X_rqQaMETqZK74QmMpW-R11XW1lPsCmqpSl1M_2cBawL8uEouYEnaCQnkot2imqVyps4xoHe_ypjC2Ajq49Eo3LGxBSv5D_-1e7AIf9t4aA9PW7F_o3VHBj8hUfAKSuopGobidx21GayYF7fRoIR-AsZc21mbedUaZ5tlfDkf7S3rmecn_LGxEbzq7sg8LAFWlY0gvJFz3Bh97dBXgob115lY_w">
+</div>
+</div>
+</div>
+</section>
+<!-- Recent Clients -->
+<section>
+<h4 class="text-label-sm font-bold text-on-surface-variant uppercase tracking-widest mb-4">Recent Clients</h4>
+<div class="space-y-2 bg-surface-container-lowest border border-outline-variant rounded-lg p-2">
+<div class="flex items-center gap-3 p-2 hover:bg-surface-container-low rounded-md transition-colors cursor-pointer group">
+<div class="w-10 h-10 bg-primary/5 rounded flex items-center justify-center text-primary font-bold border border-outline-variant">NG</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold text-primary truncate group-hover:text-secondary">Nexus Global</p>
+<p class="text-[10px] text-on-surface-variant">3 Active Projects</p>
+</div>
+<span class="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded">Active</span>
+</div>
+<div class="flex items-center gap-3 p-2 hover:bg-surface-container-low rounded-md transition-colors cursor-pointer group">
+<div class="w-10 h-10 bg-primary/5 rounded flex items-center justify-center text-primary font-bold border border-outline-variant">RF</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold text-primary truncate group-hover:text-secondary">RetailFlow Ltd.</p>
+<p class="text-[10px] text-on-surface-variant">1 Active Project</p>
+</div>
+<span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Proposal Signed</span>
+</div>
+<div class="flex items-center gap-3 p-2 hover:bg-surface-container-low rounded-md transition-colors cursor-pointer group">
+<div class="w-10 h-10 bg-primary/5 rounded flex items-center justify-center text-primary font-bold border border-outline-variant">SB</div>
+<div class="flex-1 min-w-0">
+<p class="text-sm font-bold text-primary truncate group-hover:text-secondary">SafeBank Corp</p>
+<p class="text-[10px] text-on-surface-variant">5 Active Projects</p>
+</div>
+<span class="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded">Active</span>
+</div>
+</div>
+<button class="w-full mt-4 text-center py-2 text-label-md font-bold text-on-surface-variant hover:text-primary transition-colors border-t border-outline-variant">
+                            View All Clients
+                        </button>
+</section>
+</aside>
+</div>
+</div>
+</main>
+<script>
+        // Micro-interactions for dashboard elements
+        document.querySelectorAll('section').forEach(section => {
+            section.addEventListener('mouseenter', () => {
+                section.style.borderColor = 'rgba(0, 112, 234, 0.3)';
+            });
+            section.addEventListener('mouseleave', () => {
+                section.style.borderColor = '';
+            });
+        });
+
+        // Simple Lead Status Filter Simulation
+        const tableRows = document.querySelectorAll('tbody tr');
+        console.log('Bytevon Sales Dashboard Initialized: ' + tableRows.length + ' leads loaded.');
+    </script>
+</body></html>

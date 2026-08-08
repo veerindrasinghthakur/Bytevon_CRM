@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bytevon Security Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-variant": "#d3e4fe", "inverse-on-surface": "#eaf1ff", "on-surface-variant": "#43474e", "on-secondary": "#ffffff", outline: "#74777f", "on-secondary-container": "#fefcff", "tertiary-fixed-dim": "#c4c7c9", "surface-container-low": "#eff4ff", "on-tertiary-fixed-variant": "#444749", "surface-container-high": "#dce9ff", "primary-fixed": "#d4e3ff", "primary-container": "#001f3f", "on-tertiary-container": "#848789", "tertiary-container": "#1c1f21", "surface-container": "#e5eeff", "secondary-fixed": "#d8e2ff", "inverse-primary": "#afc8f0", background: "#f8f9ff", secondary: "#0059bb", "on-error-container": "#93000a", error: "#ba1a1a", "on-primary-fixed": "#001c3a", "inverse-surface": "#213145", "secondary-fixed-dim": "#adc7ff", "on-tertiary-fixed": "#191c1e", "surface-tint": "#476083", "on-primary-container": "#6f88ad", "tertiary-fixed": "#e0e3e5", "on-error": "#ffffff", "on-background": "#0b1c30", "on-secondary-fixed-variant": "#004493", surface: "#f8f9ff", tertiary: "#040607", "on-secondary-fixed": "#001a41", "surface-dim": "#cbdbf5", "error-container": "#ffdad6", "surface-container-lowest": "#ffffff", "on-primary": "#ffffff", "on-primary-fixed-variant": "#2f486a", "outline-variant": "#c4c6cf", "on-tertiary": "#ffffff", "surface-bright": "#f8f9ff", "primary-fixed-dim": "#afc8f0", "surface-container-highest": "#d3e4fe", primary: "#000613", "secondary-container": "#0070ea", "on-surface": "#0b1c30"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-lg": "32px", "container-max": "1440px", "margin-desktop": "40px", "margin-mobile": "16px", gutter: "24px", "stack-md": "16px", unit: "4px", "stack-sm": "8px"}, fontFamily: {"label-md": ["Inter"], "body-md": ["Inter"], "display-lg": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-md": ["Inter"], "headline-lg": ["Inter"], "body-sm": ["Inter"], "label-sm": ["Inter"], "body-lg": ["Inter"], "title-lg": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}]}}}};</script>
+<style>
+        body { background-color: #f8f9ff; font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .sidebar-narrow { width: 64px; }
+        .sidebar-wide { width: 280px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .health-gauge {
+            background: conic-gradient(#0070ea 94%, #e2e8f0 0);
+        }
+    </style>
+</head>
+<body class="flex min-h-screen overflow-hidden">
+<!-- Primary Global Sidebar (Icons Only) -->
+<aside class="sidebar-narrow flex flex-col items-center py-stack-lg bg-primary text-white z-20">
+<div class="mb-stack-lg">
+<span class="material-symbols-outlined text-headline-md text-secondary-container" style="font-variation-settings: 'FILL' 1;">shield</span>
+</div>
+<nav class="flex flex-col gap-gutter flex-1">
+<button class="p-2 rounded-lg hover:bg-white/10 transition-colors" title="Home">
+<span class="material-symbols-outlined">home</span>
+</button>
+<button class="p-2 rounded-lg bg-secondary-container text-white" title="Security Management">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">security</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-white/10 transition-colors" title="Analytics">
+<span class="material-symbols-outlined">analytics</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-white/10 transition-colors" title="User Management">
+<span class="material-symbols-outlined">group</span>
+</button>
+</nav>
+<div class="mt-auto flex flex-col gap-gutter">
+<button class="p-2 rounded-lg hover:bg-white/10 transition-colors" title="Settings">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-white/20">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate IT administrator with a focused, friendly expression, set against a blurred high-tech data center background. The lighting is crisp and cool-toned, aligning with a high-stakes security software aesthetic. The individual is wearing a modern charcoal suit, emphasizing institutional trust and executive precision." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDF-KvxBlJz8zZopGM7p1Vhlv-YIUxVSiQaDe5-zYv9V2bMCGm7Jmw5_MTIbt4FyYNDkvwo10hM7FEDAoWxphsTlQ7HUhsx-mU8SFo3NqSwaxzF8r5JwOLPuO16E7wLlEXxUpMn8ZO4M_5D_YQir-Kf_4EkPYsEa3roK3xPK8phD_ZRSQlqnxpPOcGErgMnY6uCQO57_BYtoWCp6HM-722mPwt1bnRUQQP5-KaYeYxhjR6a6FhfBZVFDA"/>
+</div>
+</div>
+</aside>
+<!-- Secondary Administration Sidebar -->
+<aside class="sidebar-wide bg-primary-container border-r border-outline-variant/10 flex flex-col py-stack-lg px-stack-md text-on-primary-container z-10">
+<div class="px-2 mb-stack-lg">
+<h2 class="text-title-lg font-title-lg text-white">Bytevon Admin</h2>
+<p class="text-label-sm opacity-60">Enterprise Security</p>
+</div>
+<nav class="flex flex-col gap-unit flex-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-on-primary-container/10 rounded-lg transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 bg-secondary-container text-on-secondary-container rounded-lg font-bold shadow-sm transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+                Security Center
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-on-primary-container/10 rounded-lg transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">vpn_key</span>
+                SSO Config
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-on-primary-container/10 rounded-lg transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">lock_reset</span>
+                Password Policy
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-on-primary-container/10 rounded-lg transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">lan</span>
+                IP Whitelisting
+            </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-on-primary-container/10 rounded-lg transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+                Audit Logs
+            </a>
+</nav>
+<div class="mt-auto border-t border-white/10 pt-stack-md flex flex-col gap-unit">
+<button class="w-full text-left flex items-center gap-3 px-3 py-2 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-on-primary-container/10 rounded-lg transition-all font-label-md text-label-md">
+<span class="material-symbols-outlined text-[20px]">support_agent</span>
+                Support
+            </button>
+<button class="w-full text-left flex items-center gap-3 px-3 py-2 text-on-primary-container opacity-80 hover:opacity-100 hover:bg-on-primary-container/10 rounded-lg transition-all font-label-md text-label-md">
+<span class="material-symbols-outlined text-[20px]">menu_book</span>
+                Documentation
+            </button>
+<button class="mt-stack-sm w-full bg-error text-white font-bold py-2 rounded-lg flex items-center justify-center gap-2 active:scale-[0.98] transition-transform">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+                Lock System
+            </button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col h-screen overflow-y-auto custom-scrollbar relative">
+<!-- Top Navigation Bar -->
+<header class="h-16 flex justify-between items-center px-margin-desktop bg-surface-container-lowest border-b border-outline-variant sticky top-0 z-10">
+<div class="flex items-center gap-stack-md">
+<h1 class="text-headline-md font-headline-md font-black text-primary">Security Center</h1>
+<span class="h-6 w-px bg-outline-variant mx-2"></span>
+<div class="flex items-center gap-2 px-3 py-1 bg-surface-container-low rounded-full border border-outline-variant/30">
+<div class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+<span class="text-label-md font-label-md text-on-surface">System Live</span>
+</div>
+</div>
+<div class="flex items-center gap-stack-lg">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container rounded-lg border-none focus:ring-2 focus:ring-secondary text-body-sm w-64 transition-all" placeholder="Search security logs..." type="text"/>
+</div>
+<div class="flex items-center gap-stack-sm">
+<button class="p-2 text-on-surface-variant hover:text-secondary transition-colors cursor-pointer"><span class="material-symbols-outlined">notifications</span></button>
+<button class="p-2 text-on-surface-variant hover:text-secondary transition-colors cursor-pointer"><span class="material-symbols-outlined">help</span></button>
+<button class="p-2 text-on-surface-variant hover:text-secondary transition-colors cursor-pointer"><span class="material-symbols-outlined">settings</span></button>
+</div>
+</div>
+</header>
+<!-- Dashboard Body -->
+<div class="p-margin-desktop max-w-container-max mx-auto w-full space-y-stack-lg">
+<!-- Header Widget: Health Score -->
+<section class="flex flex-col md:flex-row items-center justify-between bg-white p-stack-lg rounded-xl border border-outline-variant shadow-sm">
+<div class="flex items-center gap-stack-lg">
+<div class="relative w-24 h-24 flex items-center justify-center rounded-full health-gauge p-1" style="background: conic-gradient(rgb(0, 112, 234) 1%, rgb(226, 232, 240) 0deg);">
+<div class="w-full h-full bg-white rounded-full flex flex-col items-center justify-center">
+<span class="text-headline-md font-black text-primary leading-none">94</span>
+<span class="text-[10px] uppercase font-bold text-on-surface-variant">/ 100</span>
+</div>
+</div>
+<div>
+<h2 class="text-title-lg font-title-lg text-primary">Security Health Score</h2>
+<p class="text-body-md text-on-surface-variant max-w-md">Your security posture is strong. 2 minor optimizations available in Infrastructure Security settings.</p>
+</div>
+</div>
+<button class="mt-stack-md md:mt-0 px-6 py-3 bg-secondary text-white font-bold rounded-lg hover:bg-secondary/90 transition-all active:scale-95 shadow-lg shadow-secondary/20">
+                    Run Vulnerability Scan
+                </button>
+</section>
+<!-- Grid 1: Overview Cards -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<div class="bg-white p-stack-md rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-all group">
+<div class="flex justify-between items-start mb-stack-sm">
+<span class="material-symbols-outlined p-2 bg-secondary/10 text-secondary rounded-lg">fingerprint</span>
+<span class="text-green-600 font-bold text-label-sm">+2% vs LW</span>
+</div>
+<p class="text-on-surface-variant text-label-md">MFA Adoption</p>
+<h3 class="text-headline-md font-black text-primary">88%</h3>
+<div class="mt-stack-md w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
+<div class="bg-secondary h-full rounded-full group-hover:scale-x-105 transition-transform origin-left" style="width: 88%"></div>
+</div>
+</div>
+<div class="bg-white p-stack-md rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-all group">
+<div class="flex justify-between items-start mb-stack-sm">
+<span class="material-symbols-outlined p-2 bg-blue-100 text-blue-600 rounded-lg">hub</span>
+</div>
+<p class="text-on-surface-variant text-label-md">Active SSO Sessions</p>
+<h3 class="text-headline-md font-black text-primary">1,240</h3>
+<p class="text-label-sm text-on-surface-variant/60 mt-1">Global coverage active</p>
+</div>
+<div class="bg-white p-stack-md rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-all group">
+<div class="flex justify-between items-start mb-stack-sm">
+<span class="material-symbols-outlined p-2 bg-green-100 text-green-600 rounded-lg">check_circle</span>
+</div>
+<p class="text-on-surface-variant text-label-md">Open Security Alerts</p>
+<h3 class="text-headline-md font-black text-green-600">0</h3>
+<p class="text-label-sm text-green-600/80 mt-1">All threats mitigated</p>
+</div>
+<div class="bg-white p-stack-md rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-all group">
+<div class="flex justify-between items-start mb-stack-sm">
+<span class="material-symbols-outlined p-2 bg-amber-100 text-amber-600 rounded-lg">history</span>
+</div>
+<p class="text-on-surface-variant text-label-md">Last System Audit</p>
+<h3 class="text-headline-md font-black text-primary">2h ago</h3>
+<p class="text-label-sm text-amber-600 mt-1">Full integrity report ready</p>
+</div>
+</section>
+<!-- Grid 2: Authentication & Infrastructure (Bento style) -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Authentication Protocols -->
+<div class="lg:col-span-7 bg-white rounded-xl border border-outline-variant shadow-sm p-stack-lg">
+<div class="flex items-center justify-between mb-stack-lg">
+<h3 class="text-title-lg font-title-lg text-primary">Authentication Protocols</h3>
+<button class="text-secondary text-label-md font-bold hover:underline">Advanced Rules</button>
+</div>
+<div class="space-y-stack-md">
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest border border-outline-variant rounded-lg">
+<div class="flex gap-4 items-center">
+<div class="p-3 bg-primary-container text-white rounded-lg">
+<span class="material-symbols-outlined">security</span>
+</div>
+<div>
+<p class="font-bold text-primary">Global MFA Enforcement</p>
+<p class="text-body-sm text-on-surface-variant">Require multi-factor for all user levels.</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest border border-outline-variant rounded-lg">
+<div class="flex gap-4 items-center">
+<div class="p-3 bg-surface-container text-primary rounded-lg">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<div>
+<p class="font-bold text-primary">Adaptive Authentication</p>
+<p class="text-body-sm text-on-surface-variant">Step-up auth based on risk signals.</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface-container-lowest border border-outline-variant rounded-lg">
+<div class="flex gap-4 items-center">
+<div class="p-3 bg-surface-container text-primary rounded-lg">
+<span class="material-symbols-outlined">timer</span>
+</div>
+<div>
+<p class="font-bold text-primary">Session Timeout Rules</p>
+<p class="text-body-sm text-on-surface-variant">Force re-auth after 30 mins of inactivity.</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+</div>
+</div>
+<!-- Infrastructure Security -->
+<div class="lg:col-span-5 bg-primary-container text-on-primary-container rounded-xl shadow-sm p-stack-lg flex flex-col">
+<h3 class="text-title-lg font-title-lg text-white mb-stack-lg">Infrastructure Security</h3>
+<div class="space-y-stack-md flex-1">
+<div class="p-4 bg-white/5 rounded-lg border border-white/10">
+<div class="flex justify-between items-center mb-stack-sm">
+<p class="font-bold text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">dns</span>
+                                    IP Whitelisting
+                                </p>
+<span class="text-label-sm bg-secondary px-2 py-0.5 rounded text-white">Active</span>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-body-sm opacity-80">
+<span>Primary HQ</span>
+<code>192.168.1.0/24</code>
+</div>
+<div class="flex justify-between text-body-sm opacity-80">
+<span>Cloud Relay</span>
+<code>10.0.4.15/32</code>
+</div>
+</div>
+<button class="w-full mt-4 py-2 border border-white/20 rounded hover:bg-white/10 transition-all text-label-md">Manage Ranges</button>
+</div>
+<div class="p-4 bg-white/5 rounded-lg border border-white/10">
+<div class="flex justify-between items-center mb-stack-sm">
+<p class="font-bold text-white flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">public</span>
+                                    Login Geo-fencing
+                                </p>
+<span class="text-label-sm bg-white/20 px-2 py-0.5 rounded text-white">Restricted</span>
+</div>
+<p class="text-body-sm opacity-70">Blocking 14 unauthorized regions. Active policy: <strong>Strict-North-America</strong></p>
+<div class="mt-3 h-16 w-full rounded overflow-hidden opacity-50 grayscale contrast-125">
+<div class="w-full h-full bg-cover bg-center" data-alt="A minimalist digital world map with glowing nodes over North America and Western Europe, designed in a high-tech security interface style. The map uses a deep navy and electric blue color scheme with subtle grid lines, conveying a sense of global infrastructure monitoring and controlled access zones." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBuObza_t59B7QuXkFv0_yl2kHjqa-gdXQd-um3ZZ69ToKKp2GQPwxODUwVFBJ5Lib1rMJZs66x32Jsdz0xT1ncfRxAax7Y0cbGW1XjyPMIwxDde-qaIgyqPetth2011By_STINBH_2VNheElsHmP-nGSV1h54imcj64Fnn67gddtDVYXnrqqy4tFCSOtD_A9FiteKT0_9zPMhJYM9bRoBy3Ivir_qYPekIcfUxAv1oo1DN4zAFntZXQQ')"></div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Security Log Snippet -->
+<section class="bg-white rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="flex items-center justify-between p-stack-lg border-b border-outline-variant">
+<h3 class="text-title-lg font-title-lg text-primary">Recent Security Events</h3>
+<div class="flex gap-2">
+<span class="px-3 py-1 bg-surface-container rounded text-label-md cursor-pointer hover:bg-surface-variant transition-colors">All Logs</span>
+<span class="px-3 py-1 bg-surface-container rounded text-label-md cursor-pointer hover:bg-surface-variant transition-colors">Errors Only</span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-lowest border-b border-outline-variant text-on-surface-variant text-label-sm uppercase tracking-wider">
+<tr>
+<th class="px-stack-lg py-3 font-bold">Event Type</th>
+<th class="px-stack-lg py-3 font-bold">Identity</th>
+<th class="px-stack-lg py-3 font-bold">Source</th>
+<th class="px-stack-lg py-3 font-bold">Timestamp</th>
+<th class="px-stack-lg py-3 font-bold">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-stack-lg py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-[20px]">report</span>
+<span class="font-medium text-primary">Failed Login Attempt</span>
+</div>
+</td>
+<td class="px-stack-lg py-4 text-on-surface-variant">unknown_admin_92</td>
+<td class="px-stack-lg py-4 text-on-surface-variant font-mono text-sm">45.22.112.9</td>
+<td class="px-stack-lg py-4 text-on-surface-variant">2023-10-27 14:22:01</td>
+<td class="px-stack-lg py-4"><span class="px-2 py-0.5 bg-red-100 text-red-700 rounded text-label-sm font-bold">Blocked</span></td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-stack-lg py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-amber-500 text-[20px]">bolt</span>
+<span class="font-medium text-primary">Privilege Escalation</span>
+</div>
+</td>
+<td class="px-stack-lg py-4 text-on-surface-variant">j.doe@bytevon.com</td>
+<td class="px-stack-lg py-4 text-on-surface-variant font-mono text-sm">192.168.1.15</td>
+<td class="px-stack-lg py-4 text-on-surface-variant">2023-10-27 13:45:55</td>
+<td class="px-stack-lg py-4"><span class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-label-sm font-bold">Manual Review</span></td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-stack-lg py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">sync</span>
+<span class="font-medium text-primary">Policy Update</span>
+</div>
+</td>
+<td class="px-stack-lg py-4 text-on-surface-variant">System-Automator</td>
+<td class="px-stack-lg py-4 text-on-surface-variant font-mono text-sm">Internal</td>
+<td class="px-stack-lg py-4 text-on-surface-variant">2023-10-27 12:00:00</td>
+<td class="px-stack-lg py-4"><span class="px-2 py-0.5 bg-green-100 text-green-700 rounded text-label-sm font-bold">Success</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-stack-md bg-surface-container-lowest flex justify-center">
+<button class="text-secondary font-bold text-label-md flex items-center gap-1 hover:gap-2 transition-all">
+                        View Audit Vault
+                        <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+</section>
+</div>
+<!-- Footer -->
+<footer class="mt-auto p-margin-desktop border-t border-outline-variant/30 flex justify-between items-center text-on-surface-variant opacity-60">
+<p class="text-label-sm">© 2023 Bytevon Security Systems. All rights reserved.</p>
+<div class="flex gap-stack-md text-label-sm">
+<a class="hover:text-primary" href="#">Policy</a>
+<a class="hover:text-primary" href="#">Compliance</a>
+<a class="hover:text-primary" href="#">Support</a>
+</div>
+</footer>
+</main>
+<script>
+        // Micro-interactions for toggle switches
+        document.querySelectorAll('input[type="checkbox"]').forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                const parent = this.closest('.flex');
+                if(this.checked) {
+                    console.log('Security Feature Enabled');
+                } else {
+                    console.log('Security Feature Disabled - Warning Logged');
+                }
+            });
+        });
+
+        // Simple animation for the health gauge on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const gauge = document.querySelector('.health-gauge');
+            let progress = 0;
+            const target = 94;
+            const interval = setInterval(() => {
+                if (progress >= target) {
+                    clearInterval(interval);
+                } else {
+                    progress++;
+                    gauge.style.background = `conic-gradient(#0070ea ${progress}%, #e2e8f0 0)`;
+                }
+            }, 10);
+        });
+    </script>
+</body></html>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Approval Details | Enterprise Core</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"inverse-primary": "#afc8f0", "surface-container-lowest": "#ffffff", primary: "#000613", "surface-container-highest": "#d3e4fe", "tertiary-fixed": "#e0e3e5", "surface-container": "#e5eeff", "on-primary-fixed-variant": "#2f486a", "inverse-on-surface": "#eaf1ff", background: "#f8f9ff", "surface-dim": "#cbdbf5", "primary-fixed-dim": "#afc8f0", outline: "#74777f", "on-tertiary-fixed-variant": "#444749", "on-secondary-fixed-variant": "#004493", "surface-container-low": "#eff4ff", "surface-variant": "#d3e4fe", secondary: "#0059bb", "surface-container-high": "#dce9ff", "on-secondary-fixed": "#001a41", "secondary-container": "#0070ea", "on-background": "#0b1c30", error: "#ba1a1a", "on-tertiary": "#ffffff", "on-primary": "#ffffff", "inverse-surface": "#213145", surface: "#f8f9ff", "primary-fixed": "#d4e3ff", "on-tertiary-container": "#848789", "secondary-fixed-dim": "#adc7ff", "secondary-fixed": "#d8e2ff", "outline-variant": "#c4c6cf", "on-secondary-container": "#fefcff", tertiary: "#040607", "on-secondary": "#ffffff", "surface-bright": "#f8f9ff", "on-error-container": "#93000a", "surface-tint": "#476083", "tertiary-fixed-dim": "#c4c7c9", "on-tertiary-fixed": "#191c1e", "on-primary-fixed": "#001c3a", "error-container": "#ffdad6", "on-surface": "#0b1c30", "on-error": "#ffffff", "primary-container": "#001f3f", "on-surface-variant": "#43474e", "tertiary-container": "#1c1f21", "on-primary-container": "#6f88ad"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-lg": "32px", "margin-mobile": "16px", unit: "4px", "stack-sm": "8px", "stack-md": "16px", "margin-desktop": "40px", gutter: "24px", "container-max": "1440px"}, fontFamily: {"headline-md": ["Inter"], "headline-lg": ["Inter"], "body-lg": ["Inter"], "label-sm": ["Inter"], "title-lg": ["Inter"], "body-sm": ["Inter"], "label-md": ["Inter"], "body-md": ["Inter"], "display-lg": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}]}}}};</script>
+</head>
+<body class="bg-background text-on-background selection:bg-secondary-fixed selection:text-on-secondary-fixed">
+<!-- Double Sidebar Shell Structure -->
+<div class="flex min-h-screen">
+<!-- SideNavBar (from JSON) -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary dark:bg-primary flex flex-col h-full border-r border-outline-variant z-50">
+<div class="p-6">
+<div class="flex items-center gap-3 mb-8">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center overflow-hidden">
+<img class="w-8 h-8 object-contain" data-alt="A clean, minimalist logo for a high-end corporate enterprise. The design is geometric and uses a monochromatic palette of blacks and whites, conveying executive precision and institutional trust. It is set against a brightly lit, high-key studio background with professional softbox lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUjNnxSufkT4rrRVA-Ov4d292r0DYpEcAZwko3oo2oqtnMB_NGMaWZofcV1qTWZWcW6IdlkU9eEgB1sDZFpr7PVITsXaflDkKCwqlK4PdF5w86Pxswpv-gvlfM27FEG3wVV4xMQyGLfAl2PUUSbuBp1aFTfbYAjQMHLkR37hl7YpS9CL8Z3kpGtRrXrfiRiFrZED356AyfhGfqcky9mDZmgCzMbeSn2V4H8ZUCUYfJteKDP2vfeQhPHQ"/>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary leading-tight">Enterprise Core</h1>
+<p class="text-on-primary-container text-label-sm">v2.4.0</p>
+</div>
+</div>
+<nav class="space-y-1">
+<!-- Dashboard -->
+<a class="flex items-center gap-3 px-4 py-3 text-surface-variant hover:text-on-primary hover:bg-on-primary-fixed-variant transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<!-- Approvals (Active) -->
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">rule</span>
+<span class="font-body-md text-body-md">Approvals</span>
+</a>
+<!-- CRM -->
+<a class="flex items-center gap-3 px-4 py-3 text-surface-variant hover:text-on-primary hover:bg-on-primary-fixed-variant transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-body-md text-body-md">CRM</span>
+</a>
+<!-- Resources -->
+<a class="flex items-center gap-3 px-4 py-3 text-surface-variant hover:text-on-primary hover:bg-on-primary-fixed-variant transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-body-md text-body-md">Resources</span>
+</a>
+<!-- Analytics -->
+<a class="flex items-center gap-3 px-4 py-3 text-surface-variant hover:text-on-primary hover:bg-on-primary-fixed-variant transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="font-body-md text-body-md">Analytics</span>
+</a>
+<!-- Settings -->
+<a class="flex items-center gap-3 px-4 py-3 text-surface-variant hover:text-on-primary hover:bg-on-primary-fixed-variant transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</nav>
+<div class="mt-8">
+<button class="w-full bg-secondary-fixed text-on-secondary-fixed py-3 rounded-lg font-label-md flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined">add</span>
+                        New Request
+                    </button>
+</div>
+</div>
+<div class="mt-auto p-6 border-t border-on-primary-fixed-variant">
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 text-surface-variant hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-md text-body-md">Support</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-surface-variant hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-body-md text-body-md">Logout</span>
+</a>
+</nav>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 ml-[280px] bg-background">
+<!-- TopAppBar (from JSON) -->
+<header class="sticky top-0 w-full border-b border-outline-variant bg-surface flex justify-between items-center h-16 px-margin-desktop z-40">
+<div class="flex items-center gap-6 flex-1">
+<h2 class="font-headline-md text-headline-md font-black text-primary">Approvals</h2>
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 focus:ring-2 focus:ring-secondary text-label-md" placeholder="Search approvals..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-8">
+<nav class="flex items-center gap-6">
+<a class="text-on-surface-variant hover:text-primary font-label-md transition-all duration-200" href="#">Pending</a>
+<a class="text-on-surface-variant hover:text-primary font-label-md transition-all duration-200" href="#">History</a>
+<a class="text-on-surface-variant hover:text-primary font-label-md transition-all duration-200" href="#">Delegations</a>
+</nav>
+<div class="flex items-center gap-4 border-l border-outline-variant pl-8">
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-all">apps</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a senior executive in a modern business suit. The lighting is crisp and soft, emphasizing authority and competence. The background is a blurred office environment with a neutral color palette of grays and blues, aligning with an executive professional aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCf81eHCAuJqexRtUvKm21d5JkBYHsXnrR9Dxz-LEV2_yuSK9c75MZ3DXsIOg4n6uWVoEnCJ0UBCHaCFlAbjQ8cCGqOJiUknVTlePyz-7e4G0mmHHseJOKvA26J0nSVfmEXfi0OgcaZD92-dyuAOBwgau3ZvYpFqS-ZXdO6nT8o78FSD8ucSuyIsc9hXnJ-BgpeNPLGRti7ZP00hQviM4GYJ7Q8oNqkSHokcYdwW1c-rvmfOvpotF51A"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Page Canvas -->
+<div class="max-w-[1440px] px-margin-desktop py-stack-lg space-y-gutter">
+<!-- Request Header Info -->
+<div class="flex justify-between items-end">
+<div class="space-y-1">
+<div class="flex items-center gap-3">
+<span class="text-label-sm font-bold text-on-surface-variant tracking-wider uppercase">Request ID</span>
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-label-sm font-bold">REQ-9284-A</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg text-primary">High-Priority Sabbatical Leave Request</h3>
+</div>
+<div class="flex items-center gap-3">
+<span class="bg-surface-container-highest text-secondary flex items-center gap-2 px-4 py-2 rounded-lg font-label-md">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">hourglass_empty</span>
+                            Pending Approval
+                        </span>
+</div>
+</div>
+<!-- Two-Column Grid -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Left Column (8/12) -->
+<div class="col-span-8 space-y-gutter">
+<!-- Requester Info Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-secondary-container">
+<img class="w-full h-full object-cover" data-alt="A high-quality portrait of a focused mid-career professional woman with a confident expression. She is wearing elegant business attire. The photograph is shot in a high-key lighting style with a pristine white background, maintaining a clean and modern corporate aesthetic with a professional mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3eXRT6TbfOsf-R-KqKj9fQZxl8xcxIhgdPAA3rCRfZAm2a_NhJdLtM77qMaYV32YAFwQWcj0UTf3xS3Kndk2Pk6D-7Vagd2ECeCSesoWL328rVH5CjPGOZHOnxoiLQtLBa5F5sx-NqSCMey9Wp4_QJfOZGO5vOBt-h30iSSTXOEMVOUtEDHkecWOcn5YPZmL5gHuIguw5qLfDUGjc6NXM5KcLrjNQ9ujRm1bsXHCRfXm_R5pPh3Xx2Q"/>
+</div>
+<div>
+<h4 class="font-title-lg text-title-lg text-primary">Elena Rodriguez</h4>
+<p class="text-on-surface-variant font-body-md">Senior Creative Director • Design Department</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-label-sm text-on-surface-variant uppercase tracking-widest">Employee Level</p>
+<p class="font-headline-md text-headline-md text-primary">L7 Executive</p>
+</div>
+</div>
+<!-- Request Details Bento -->
+<div class="grid grid-cols-2 gap-gutter">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm space-y-4">
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined">calendar_today</span>
+<h4 class="font-label-md text-label-md font-bold uppercase">Requested Period</h4>
+</div>
+<div class="space-y-1">
+<p class="text-title-lg font-title-lg text-primary">Oct 12, 2024 - Dec 15, 2024</p>
+<p class="text-on-surface-variant font-body-sm">Total duration: 64 business days</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm space-y-4">
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined">description</span>
+<h4 class="font-label-md text-label-md font-bold uppercase">Leave Type</h4>
+</div>
+<div class="space-y-1">
+<p class="text-title-lg font-title-lg text-primary">Personal Sabbatical</p>
+<p class="text-on-surface-variant font-body-sm">Policy: Global Leadership Program</p>
+</div>
+</div>
+<div class="col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm space-y-4">
+<div class="flex items-center gap-2 text-secondary">
+<span class="material-symbols-outlined">subject</span>
+<h4 class="font-label-md text-label-md font-bold uppercase">Reason for Request</h4>
+</div>
+<p class="text-on-surface font-body-md leading-relaxed">
+                                    Requesting professional sabbatical for international research on sustainable design systems in Scandinavia. This aligns with our 2025 'Eco-Lead' initiative. Handover plans for all current projects (Vortex-7, Luna-UI) are attached and approved by direct reports.
+                                </p>
+</div>
+<div class="col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm">
+<h4 class="font-label-md text-label-md font-bold uppercase text-on-surface-variant mb-4">Attached Documents (2)</h4>
+<div class="flex gap-4">
+<div class="flex-1 flex items-center gap-3 p-3 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="w-10 h-10 bg-error-container rounded flex items-center justify-center text-error">
+<span class="material-symbols-outlined">picture_as_pdf</span>
+</div>
+<div class="overflow-hidden">
+<p class="font-label-md text-label-md truncate">Handover_Plan_Vortex.pdf</p>
+<p class="text-label-sm text-on-surface-variant">2.4 MB</p>
+</div>
+<span class="material-symbols-outlined ml-auto text-on-surface-variant group-hover:text-primary">download</span>
+</div>
+<div class="flex-1 flex items-center gap-3 p-3 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="w-10 h-10 bg-secondary-fixed rounded flex items-center justify-center text-on-secondary-fixed">
+<span class="material-symbols-outlined">description</span>
+</div>
+<div class="overflow-hidden">
+<p class="font-label-md text-label-md truncate">Research_Proposal_Scand.docx</p>
+<p class="text-label-sm text-on-surface-variant">1.1 MB</p>
+</div>
+<span class="material-symbols-outlined ml-auto text-on-surface-variant group-hover:text-primary">download</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Approval Timeline -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm">
+<h4 class="font-title-lg text-title-lg text-primary mb-8">Approval Timeline</h4>
+<div class="relative space-y-8 pl-10 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-outline-variant">
+<!-- Step 1: Submission -->
+<div class="relative">
+<div class="absolute -left-[37px] top-0 w-7 h-7 bg-on-secondary-fixed text-white rounded-full flex items-center justify-center border-4 border-surface-container-lowest z-10">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-md text-label-md text-primary">Request Submitted</p>
+<p class="text-body-sm text-on-surface-variant">Elena Rodriguez submitted the request for review.</p>
+</div>
+<p class="text-label-sm text-on-surface-variant">Sept 12, 10:45 AM</p>
+</div>
+</div>
+<!-- Step 2: HR Verification -->
+<div class="relative">
+<div class="absolute -left-[37px] top-0 w-7 h-7 bg-on-secondary-fixed text-white rounded-full flex items-center justify-center border-4 border-surface-container-lowest z-10">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-md text-label-md text-primary">HR Policy Verification</p>
+<p class="text-body-sm text-on-surface-variant">Verified by Marcus Thorne. Policy compliance confirmed.</p>
+</div>
+<p class="text-label-sm text-on-surface-variant">Sept 12, 2:30 PM</p>
+</div>
+</div>
+<!-- Step 3: Current Stage -->
+<div class="relative">
+<div class="absolute -left-[37px] top-0 w-7 h-7 bg-secondary-container text-white rounded-full flex items-center justify-center border-4 border-surface-container-lowest z-10 animate-pulse">
+<span class="material-symbols-outlined text-[14px]">pending</span>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-md text-label-md text-secondary font-bold">Executive Review Required</p>
+<p class="text-body-sm text-on-surface-variant">Assigned to: Marcus Aurelius (Chief Operations Officer)</p>
+</div>
+<p class="text-label-sm text-on-surface-variant">Awaiting action</p>
+</div>
+</div>
+<!-- Step 4: Final Step -->
+<div class="relative opacity-40">
+<div class="absolute -left-[37px] top-0 w-7 h-7 bg-outline-variant text-white rounded-full flex items-center justify-center border-4 border-surface-container-lowest z-10">
+<span class="material-symbols-outlined text-[14px]">radio_button_unchecked</span>
+</div>
+<div class="flex justify-between items-start">
+<div>
+<p class="font-label-md text-label-md text-on-surface-variant">Final Notification</p>
+<p class="text-body-sm text-on-surface-variant">Automated system update &amp; calendar sync.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column (4/12) -->
+<div class="col-span-4 space-y-gutter">
+<!-- Actions Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm sticky top-24">
+<h4 class="font-title-lg text-title-lg text-primary mb-6">Decision Center</h4>
+<div class="space-y-3">
+<button class="w-full bg-primary text-on-primary py-4 rounded-lg font-label-md flex items-center justify-center gap-2 hover:bg-opacity-90 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                                    Approve Request
+                                </button>
+<button class="w-full border border-secondary text-secondary py-4 rounded-lg font-label-md flex items-center justify-center gap-2 hover:bg-surface-container transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined">edit_square</span>
+                                    Request Revision
+                                </button>
+<button class="w-full border border-error text-error py-4 rounded-lg font-label-md flex items-center justify-center gap-2 hover:bg-error-container transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined">cancel</span>
+                                    Reject Request
+                                </button>
+</div>
+<hr class="my-8 border-outline-variant"/>
+<div class="space-y-6">
+<h4 class="font-label-md text-label-md font-bold uppercase text-on-surface-variant">Discussion</h4>
+<div class="space-y-4">
+<div class="flex gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate manager in high-end office attire. The image uses soft studio lighting and a clean, light gray background to convey authority and precision. The aesthetic is modern and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoC2I-MCI17TgSt-yLBPW9p1tZAbYRrLVuBFlbIMxfUjkVC4s9rno-ldGGQLtabRcmcYi5EoQxi1wtVPrjePC2fUo5RgggyX8UrArObu_MDnkxxHj6jbbVSihl5oCoc7QnMLmCJI6ee_SCJHu8XqReb_ANQ5fT6qpQ_FqHkhoCKyB9znrC5xNU1Xf7F15XW6YmvDJ7zdUpl2R39XulUn9tXSjz70-2Ym1Gm6sn_rssUPy_hd84BKmJUg"/>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg flex-1">
+<div class="flex justify-between items-center mb-1">
+<span class="font-label-md text-label-md text-primary">Marcus Thorne</span>
+<span class="text-label-sm text-on-surface-variant">2h ago</span>
+</div>
+<p class="text-body-sm text-on-surface">Initial handover plan looks robust. Ensure Vortex-7 project milestones are locked before departure.</p>
+</div>
+</div>
+<div class="flex gap-3">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-[10px] flex-shrink-0">
+                                            MA
+                                        </div>
+<div class="flex-1 space-y-3">
+<textarea class="w-full border border-outline-variant rounded-lg p-3 text-body-sm focus:ring-2 focus:ring-secondary min-h-[100px] bg-transparent" placeholder="Add a comment or instruction..."></textarea>
+<div class="flex justify-between items-center">
+<button class="material-symbols-outlined text-on-surface-variant hover:text-primary">attach_file</button>
+<button class="bg-secondary-container text-on-secondary-container px-4 py-2 rounded-lg font-label-md text-label-sm">Post Comment</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Contextual Info -->
+<div class="mt-8 pt-8 border-t border-outline-variant">
+<div class="flex items-center gap-2 mb-4 text-on-surface-variant">
+<span class="material-symbols-outlined text-[18px]">info</span>
+<span class="text-label-sm uppercase tracking-widest font-bold">Policy Note</span>
+</div>
+<p class="text-body-sm text-on-surface-variant leading-relaxed italic">
+                                    "Leadership sabbaticals over 60 days require explicit COO sign-off and secondary HR verification for continuity planning."
+                                </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        document.querySelectorAll('button, a').forEach(el => {
+            el.addEventListener('mousedown', () => {
+                el.style.transform = 'scale(0.98)';
+            });
+            el.addEventListener('mouseup', () => {
+                el.style.transform = 'scale(1)';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body></html>

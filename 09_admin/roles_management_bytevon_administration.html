@@ -1,0 +1,524 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Roles Management | Bytevon Enterprise ERP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"inverse-on-surface": "#eaf1ff", "on-secondary-fixed": "#001a41", "on-primary-fixed": "#001c3a", "tertiary-container": "#1c1f21", "surface-container-low": "#eff4ff", "surface-container-lowest": "#ffffff", "on-primary-fixed-variant": "#2f486a", "on-secondary-fixed-variant": "#004493", "primary-fixed-dim": "#afc8f0", "on-tertiary-container": "#848789", "on-surface-variant": "#43474e", "primary-fixed": "#d4e3ff", "on-error-container": "#93000a", "on-surface": "#0b1c30", "outline-variant": "#c4c6cf", "on-background": "#0b1c30", "secondary-container": "#0070ea", "on-secondary-container": "#fefcff", "on-primary-container": "#6f88ad", background: "#f8f9ff", tertiary: "#040607", secondary: "#0059bb", "surface-container-high": "#dce9ff", "surface-tint": "#476083", "primary-container": "#001f3f", "on-primary": "#ffffff", "inverse-surface": "#213145", primary: "#000613", "surface-container-highest": "#d3e4fe", "on-tertiary-fixed": "#191c1e", "on-tertiary": "#ffffff", "surface-container": "#e5eeff", "surface-variant": "#d3e4fe", "secondary-fixed": "#d8e2ff", "secondary-fixed-dim": "#adc7ff", "on-secondary": "#ffffff", outline: "#74777f", "tertiary-fixed-dim": "#c4c7c9", "surface-bright": "#f8f9ff", surface: "#f8f9ff", "tertiary-fixed": "#e0e3e5", "inverse-primary": "#afc8f0", "on-error": "#ffffff", "surface-dim": "#cbdbf5", "on-tertiary-fixed-variant": "#444749", "error-container": "#ffdad6", error: "#ba1a1a"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {unit: "4px", "stack-md": "16px", "stack-lg": "32px", "margin-mobile": "16px", gutter: "24px", "container-max": "1440px", "stack-sm": "8px", "margin-desktop": "40px"}, fontFamily: {"label-md": ["Inter"], "body-lg": ["Inter"], "title-lg": ["Inter"], "headline-lg": ["Inter"], "body-md": ["Inter"], "display-lg": ["Inter"], "label-sm": ["Inter"], "body-sm": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}]}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9ff; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        .card-hover:hover { transform: translateY(-2px); transition: all 0.2s ease; }
+        .sidebar-active { position: relative; }
+        .sidebar-active::after { content: ''; position: absolute; left: 0; top: 20%; bottom: 20%; width: 4px; border-radius: 0 4px 4px 0; background-color: #0070ea; }
+    </style>
+</head>
+<body class="flex min-h-screen">
+<!-- PRIMARY SIDENAV -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary dark:bg-primary-container shadow-sm flex flex-col py-stack-md px-stack-sm z-50">
+<div class="flex items-center px-4 mb-8">
+<div class="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center mr-3">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1">terminal</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary leading-none">Bytevon</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-primary-container opacity-60 mt-1">Enterprise ERP</p>
+</div>
+</div>
+<nav class="flex-grow space-y-1">
+<!-- Navigation Items Mapping from JSON -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-secondary-container hover:text-on-secondary-container rounded-lg transition-colors scale-95 active:scale-90 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-secondary-container hover:text-on-secondary-container rounded-lg transition-colors scale-95 active:scale-90 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">groups</span> Employees
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-secondary-container hover:text-on-secondary-container rounded-lg transition-colors scale-95 active:scale-90 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">handshake</span> CRM
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-secondary-container hover:text-on-secondary-container rounded-lg transition-colors scale-95 active:scale-90 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">inventory_2</span> ERP
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-secondary-container hover:text-on-secondary-container rounded-lg transition-colors scale-95 active:scale-90 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">assessment</span> Reports
+            </a>
+<!-- Active State Logic Applied to Administration -->
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary text-on-secondary rounded-lg font-label-md text-label-md scale-95" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span> Administration
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-secondary-container hover:text-on-secondary-container rounded-lg transition-colors scale-95 active:scale-90 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">help</span> Help
+            </a>
+</nav>
+<div class="mt-auto px-4 py-4 border-t border-white/10">
+<a class="flex items-center gap-3 text-on-primary-container opacity-70 hover:text-on-secondary-container font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">logout</span> Logout
+            </a>
+</div>
+</aside>
+<!-- ADMINISTRATION SUB-SIDEBAR (Right of primary) -->
+<aside class="fixed left-[280px] top-0 h-full w-[240px] bg-surface-container-low border-r border-outline-variant z-40 hidden md:flex flex-col py-stack-md">
+<div class="px-6 mb-6">
+<h2 class="font-title-lg text-title-lg text-on-surface">Administration</h2>
+<p class="text-label-sm text-on-surface-variant">Manage organization settings</p>
+</div>
+<nav class="space-y-1">
+<a class="flex items-center px-6 py-2.5 text-on-surface-variant hover:bg-surface-container transition-colors font-label-md text-label-md" href="#">General Settings</a>
+<a class="flex items-center px-6 py-2.5 text-on-surface-variant hover:bg-surface-container transition-colors font-label-md text-label-md" href="#">User Management</a>
+<a class="flex items-center px-6 py-2.5 bg-surface-container-highest text-secondary font-bold sidebar-active font-label-md text-label-md" href="#">Roles &amp; Permissions</a>
+<a class="flex items-center px-6 py-2.5 text-on-surface-variant hover:bg-surface-container transition-colors font-label-md text-label-md" href="#">Security Policy</a>
+<a class="flex items-center px-6 py-2.5 text-on-surface-variant hover:bg-surface-container transition-colors font-label-md text-label-md" href="#">API Access</a>
+<a class="flex items-center px-6 py-2.5 text-on-surface-variant hover:bg-surface-container transition-colors font-label-md text-label-md" href="#">Audit Logs</a>
+</nav>
+</aside>
+<!-- MAIN CONTENT AREA -->
+<main class="flex-1 ml-[280px] md:ml-[520px] min-h-screen flex flex-col">
+<!-- TOP APP BAR -->
+<header class="h-16 bg-surface flex justify-between items-center px-margin-desktop sticky top-0 z-30 border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="bg-surface-container-lowest border border-outline-variant rounded-full pl-10 pr-4 py-2 w-64 focus:ring-2 focus:ring-secondary focus:border-transparent outline-none text-body-sm transition-all" placeholder="Search roles..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-on-surface-variant hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant cursor-pointer">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate administrator in a high-key office environment. The lighting is bright and clean, emphasizing a modern light-mode interface aesthetic. The subject is wearing business casual attire, looking directly at the camera with a confident and helpful expression. High-resolution digital photography with soft bokeh." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsMx0ImLcdBA7Omoc1nMskyorXgqZ4LeSF382x2tl6cTk5HKApNfDWHSySXQHIUKqfX6RfNXs1U4oL2xAkjWbqSroTK8bEYv9xg-XiffrtTTXnl8iwM8X8DA89AEboiJoymUNOesF99dSlu_cazG1BMMIZ0mmJBmIY2ru8mE1fYPNpXobCpJgEtuLxzeZOYJEQe8e5c2GtEk9cXWtV4YKbb4i2vGTTE8RvKGfTrs2ysQgFD2DwY8YdHA">
+</div>
+</div>
+</header>
+<!-- CONTENT CANVAS -->
+<div class="p-margin-desktop space-y-stack-lg max-w-container-max mx-auto w-full">
+<!-- BREADCRUMBS & HEADER -->
+<section class="space-y-2">
+<nav class="flex items-center gap-2 text-label-sm text-on-surface-variant">
+<span>Administration</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span>Roles &amp; Permissions</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-secondary font-bold">Roles Management</span>
+</nav>
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Roles Management</h2>
+<p class="text-body-md text-on-surface-variant">Define and manage granular access controls for your organization.</p>
+</div>
+<button class="bg-primary text-on-primary px-6 py-2.5 rounded-lg flex items-center gap-2 font-label-md text-label-md hover:opacity-90 active:scale-95 transition-all shadow-sm">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                        Create New Role
+                    </button>
+</div>
+</section>
+<!-- FILTERS BAR -->
+<section class="flex flex-wrap items-center gap-stack-md bg-surface-container-lowest p-4 rounded-xl border border-outline-variant shadow-sm">
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container text-on-surface-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+                    Filters:
+                </div>
+<select class="bg-transparent border-outline-variant rounded-lg text-body-sm px-3 py-1.5 focus:ring-secondary">
+<option>Status: All</option>
+<option>Active Only</option>
+<option>Inactive Only</option>
+</select>
+<select class="bg-transparent border-outline-variant rounded-lg text-body-sm px-3 py-1.5 focus:ring-secondary">
+<option>Date Created: Newest</option>
+<option>Date Created: Oldest</option>
+</select>
+<select class="bg-transparent border-outline-variant rounded-lg text-body-sm px-3 py-1.5 focus:ring-secondary">
+<option>User Count: High to Low</option>
+<option>User Count: Low to High</option>
+</select>
+<div class="flex-grow"></div>
+<p class="text-label-sm text-on-surface-variant">Showing 8 of 12 roles</p>
+</section>
+<!-- ROLES BENTO/CARD GRID -->
+<section class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-gutter">
+<!-- Role Card 1: Senior Administrator -->
+<div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm card-hover flex flex-col justify-between relative group">
+<div class="absolute top-4 right-4">
+<button class="p-1.5 hover:bg-surface-container rounded-full transition-colors relative overflow-visible" onclick="this.nextElementSibling.classList.toggle('hidden')">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+<!-- Overflow Menu -->
+<div class="hidden absolute right-0 top-10 w-48 bg-white border border-outline-variant rounded-lg shadow-lg z-20 py-2">
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">visibility</span> View Details</button>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">edit</span> Edit</button>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">content_copy</span> Duplicate</button>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">block</span> Disable</button>
+<div class="h-px bg-outline-variant my-1"></div>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-error-container text-error flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">delete</span> Delete</button>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex items-start justify-between">
+<div>
+<span class="bg-secondary/10 text-secondary text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">Core Role</span>
+<h3 class="font-title-lg text-title-lg text-on-surface mt-2">Senior Administrator</h3>
+</div>
+</div>
+<p class="text-body-sm text-on-surface-variant line-clamp-2">Complete access to all system modules, financial reporting, and high-level user governance settings.</p>
+<div class="flex items-center gap-4 py-2 border-y border-outline-variant/30">
+<div class="flex-1">
+<p class="text-[10px] text-on-surface-variant uppercase font-semibold">Users</p>
+<p class="font-title-lg text-title-lg text-on-surface">04</p>
+</div>
+<div class="flex-1 border-l border-outline-variant/30 pl-4">
+<p class="text-[10px] text-on-surface-variant uppercase font-semibold">Permissions</p>
+<div class="flex items-center gap-1">
+<span class="text-body-sm font-bold text-secondary">Full Access</span>
+</div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-label-sm">
+<span class="text-on-surface-variant">System Health Check</span>
+<span class="text-on-surface">100% Secure</span>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-full"></div>
+</div>
+</div>
+</div>
+<div class="mt-6 flex items-center justify-between pt-4 border-t border-outline-variant/30">
+<div class="flex flex-col">
+<span class="text-[10px] text-on-surface-variant">Created: Jan 12, 2024</span>
+<span class="text-[10px] text-on-surface-variant">Updated: 2h ago</span>
+</div>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 text-green-700 text-[11px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>
+                            ACTIVE
+                        </div>
+</div>
+</div>
+<!-- Role Card 2: Sales Manager -->
+<div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm card-hover flex flex-col justify-between relative group">
+<div class="absolute top-4 right-4">
+<button class="p-1.5 hover:bg-surface-container rounded-full transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+<div class="hidden absolute right-0 top-10 w-48 bg-white border border-outline-variant rounded-lg shadow-lg z-20 py-2">
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">visibility</span> View Details</button>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">edit</span> Edit</button>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">content_copy</span> Duplicate</button>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">block</span> Disable</button>
+<div class="h-px bg-outline-variant my-1"></div>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-error-container text-error flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">delete</span> Delete</button>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex items-start justify-between">
+<div>
+<span class="bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">Operational</span>
+<h3 class="font-title-lg text-title-lg text-on-surface mt-2">Sales Manager</h3>
+</div>
+</div>
+<p class="text-body-sm text-on-surface-variant line-clamp-2">Management of sales pipelines, CRM data entry, lead assignment, and regional sales reporting.</p>
+<div class="flex items-center gap-4 py-2 border-y border-outline-variant/30">
+<div class="flex-1">
+<p class="text-[10px] text-on-surface-variant uppercase font-semibold">Users</p>
+<p class="font-title-lg text-title-lg text-on-surface">12</p>
+</div>
+<div class="flex-1 border-l border-outline-variant/30 pl-4">
+<p class="text-[10px] text-on-surface-variant uppercase font-semibold">Permissions</p>
+<div class="flex items-center gap-1">
+<span class="text-body-sm font-bold text-on-surface">12/18 Modules</span>
+</div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-label-sm">
+<span class="text-on-surface-variant">Access Coverage</span>
+<span class="text-on-surface">66%</span>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-2/3"></div>
+</div>
+</div>
+</div>
+<div class="mt-6 flex items-center justify-between pt-4 border-t border-outline-variant/30">
+<div class="flex flex-col">
+<span class="text-[10px] text-on-surface-variant">Created: Feb 05, 2024</span>
+<span class="text-[10px] text-on-surface-variant">Updated: Mar 01, 2024</span>
+</div>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 text-green-700 text-[11px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>
+                            ACTIVE
+                        </div>
+</div>
+</div>
+<!-- Role Card 3: Junior Accountant -->
+<div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm card-hover flex flex-col justify-between relative group">
+<div class="absolute top-4 right-4">
+<button class="p-1.5 hover:bg-surface-container rounded-full transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+<div class="hidden absolute right-0 top-10 w-48 bg-white border border-outline-variant rounded-lg shadow-lg z-20 py-2">
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">visibility</span> View Details</button>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">edit</span> Edit</button>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">content_copy</span> Duplicate</button>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">check_circle</span> Enable</button>
+<div class="h-px bg-outline-variant my-1"></div>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-error-container text-error flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">delete</span> Delete</button>
+</div>
+</div>
+<div class="space-y-4 opacity-75 grayscale-[0.5]">
+<div class="flex items-start justify-between">
+<div>
+<span class="bg-tertiary-container text-on-tertiary-container text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">Financial</span>
+<h3 class="font-title-lg text-title-lg text-on-surface mt-2">Junior Accountant</h3>
+</div>
+</div>
+<p class="text-body-sm text-on-surface-variant line-clamp-2">Restricted access to ledger entry and accounts payable. No authorization for payment approval.</p>
+<div class="flex items-center gap-4 py-2 border-y border-outline-variant/30">
+<div class="flex-1">
+<p class="text-[10px] text-on-surface-variant uppercase font-semibold">Users</p>
+<p class="font-title-lg text-title-lg text-on-surface">00</p>
+</div>
+<div class="flex-1 border-l border-outline-variant/30 pl-4">
+<p class="text-[10px] text-on-surface-variant uppercase font-semibold">Permissions</p>
+<div class="flex items-center gap-1">
+<span class="text-body-sm font-bold text-on-surface">5/18 Modules</span>
+</div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-label-sm">
+<span class="text-on-surface-variant">Access Coverage</span>
+<span class="text-on-surface">27%</span>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[27%]"></div>
+</div>
+</div>
+</div>
+<div class="mt-6 flex items-center justify-between pt-4 border-t border-outline-variant/30">
+<div class="flex flex-col">
+<span class="text-[10px] text-on-surface-variant">Created: Mar 15, 2024</span>
+<span class="text-[10px] text-on-surface-variant">Updated: Mar 15, 2024</span>
+</div>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-variant text-on-surface-variant text-[11px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-on-surface-variant"></span>
+                            INACTIVE
+                        </div>
+</div>
+</div>
+<!-- Role Card 4: HR Associate -->
+<div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm card-hover flex flex-col justify-between relative group">
+<div class="absolute top-4 right-4">
+<button class="p-1.5 hover:bg-surface-container rounded-full transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+<div class="hidden absolute right-0 top-10 w-48 bg-white border border-outline-variant rounded-lg shadow-lg z-20 py-2">
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">visibility</span> View Details</button>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">edit</span> Edit</button>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">content_copy</span> Duplicate</button>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">block</span> Disable</button>
+<div class="h-px bg-outline-variant my-1"></div>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-error-container text-error flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">delete</span> Delete</button>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex items-start justify-between">
+<div>
+<span class="bg-secondary-container/10 text-secondary text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">People Ops</span>
+<h3 class="font-title-lg text-title-lg text-on-surface mt-2">HR Associate</h3>
+</div>
+</div>
+<p class="text-body-sm text-on-surface-variant line-clamp-2">Employee record management, payroll data entry, and vacation request processing.</p>
+<div class="flex items-center gap-4 py-2 border-y border-outline-variant/30">
+<div class="flex-1">
+<p class="text-[10px] text-on-surface-variant uppercase font-semibold">Users</p>
+<p class="font-title-lg text-title-lg text-on-surface">06</p>
+</div>
+<div class="flex-1 border-l border-outline-variant/30 pl-4">
+<p class="text-[10px] text-on-surface-variant uppercase font-semibold">Permissions</p>
+<div class="flex items-center gap-1">
+<span class="text-body-sm font-bold text-on-surface">8/18 Modules</span>
+</div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-label-sm">
+<span class="text-on-surface-variant">Access Coverage</span>
+<span class="text-on-surface">44%</span>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[44%]"></div>
+</div>
+</div>
+</div>
+<div class="mt-6 flex items-center justify-between pt-4 border-t border-outline-variant/30">
+<div class="flex flex-col">
+<span class="text-[10px] text-on-surface-variant">Created: Nov 20, 2023</span>
+<span class="text-[10px] text-on-surface-variant">Updated: yesterday</span>
+</div>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 text-green-700 text-[11px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>
+                            ACTIVE
+                        </div>
+</div>
+</div>
+<!-- Role Card 5: Inventory Clerk -->
+<div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm card-hover flex flex-col justify-between relative group">
+<div class="absolute top-4 right-4">
+<button class="p-1.5 hover:bg-surface-container rounded-full transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+<div class="hidden absolute right-0 top-10 w-48 bg-white border border-outline-variant rounded-lg shadow-lg z-20 py-2">
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">visibility</span> View Details</button>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">edit</span> Edit</button>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">content_copy</span> Duplicate</button>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">block</span> Disable</button>
+<div class="h-px bg-outline-variant my-1"></div>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-error-container text-error flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">delete</span> Delete</button>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex items-start justify-between">
+<div>
+<span class="bg-secondary-fixed text-on-secondary-fixed text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">Logistics</span>
+<h3 class="font-title-lg text-title-lg text-on-surface mt-2">Inventory Clerk</h3>
+</div>
+</div>
+<p class="text-body-sm text-on-surface-variant line-clamp-2">Stock level monitoring, warehouse SKU tracking, and shipping/receiving data logging.</p>
+<div class="flex items-center gap-4 py-2 border-y border-outline-variant/30">
+<div class="flex-1">
+<p class="text-[10px] text-on-surface-variant uppercase font-semibold">Users</p>
+<p class="font-title-lg text-title-lg text-on-surface">32</p>
+</div>
+<div class="flex-1 border-l border-outline-variant/30 pl-4">
+<p class="text-[10px] text-on-surface-variant uppercase font-semibold">Permissions</p>
+<div class="flex items-center gap-1">
+<span class="text-body-sm font-bold text-on-surface">4/18 Modules</span>
+</div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-label-sm">
+<span class="text-on-surface-variant">Access Coverage</span>
+<span class="text-on-surface">22%</span>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[22%]"></div>
+</div>
+</div>
+</div>
+<div class="mt-6 flex items-center justify-between pt-4 border-t border-outline-variant/30">
+<div class="flex flex-col">
+<span class="text-[10px] text-on-surface-variant">Created: Dec 01, 2023</span>
+<span class="text-[10px] text-on-surface-variant">Updated: Mar 20, 2024</span>
+</div>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 text-green-700 text-[11px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>
+                            ACTIVE
+                        </div>
+</div>
+</div>
+<!-- Role Card 6: External Auditor -->
+<div class="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm card-hover flex flex-col justify-between relative group">
+<div class="absolute top-4 right-4">
+<button class="p-1.5 hover:bg-surface-container rounded-full transition-colors" onclick="this.nextElementSibling.classList.toggle('hidden')">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+<div class="hidden absolute right-0 top-10 w-48 bg-white border border-outline-variant rounded-lg shadow-lg z-20 py-2">
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">visibility</span> View Details</button>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">edit</span> Edit</button>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">content_copy</span> Duplicate</button>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">block</span> Disable</button>
+<div class="h-px bg-outline-variant my-1"></div>
+<button class="w-full text-left px-4 py-2 text-body-sm hover:bg-error-container text-error flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">delete</span> Delete</button>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex items-start justify-between">
+<div>
+<span class="bg-outline-variant/30 text-on-surface-variant text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded">External</span>
+<h3 class="font-title-lg text-title-lg text-on-surface mt-2">External Auditor</h3>
+</div>
+</div>
+<p class="text-body-sm text-on-surface-variant line-clamp-2">Read-only access to financial reports and transaction logs. No data entry or modification rights.</p>
+<div class="flex items-center gap-4 py-2 border-y border-outline-variant/30">
+<div class="flex-1">
+<p class="text-[10px] text-on-surface-variant uppercase font-semibold">Users</p>
+<p class="font-title-lg text-title-lg text-on-surface">02</p>
+</div>
+<div class="flex-1 border-l border-outline-variant/30 pl-4">
+<p class="text-[10px] text-on-surface-variant uppercase font-semibold">Permissions</p>
+<div class="flex items-center gap-1">
+<span class="text-body-sm font-bold text-on-surface">3/18 Modules</span>
+</div>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between text-label-sm">
+<span class="text-on-surface-variant">Access Coverage</span>
+<span class="text-on-surface">16%</span>
+</div>
+<div class="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-[16%]"></div>
+</div>
+</div>
+</div>
+<div class="mt-6 flex items-center justify-between pt-4 border-t border-outline-variant/30">
+<div class="flex flex-col">
+<span class="text-[10px] text-on-surface-variant">Created: Mar 20, 2024</span>
+<span class="text-[10px] text-on-surface-variant">Updated: Mar 20, 2024</span>
+</div>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-100 text-green-700 text-[11px] font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-green-600"></span>
+                            ACTIVE
+                        </div>
+</div>
+</div>
+</section>
+<!-- PAGINATION -->
+<section class="flex items-center justify-between py-10">
+<div class="text-label-sm text-on-surface-variant">
+                    Showing <span class="font-bold text-on-surface">1-6</span> of 12 roles
+                </div>
+<div class="flex gap-2">
+<button class="w-10 h-10 border border-outline-variant rounded-lg flex items-center justify-center hover:bg-surface-container transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 bg-secondary text-on-secondary rounded-lg flex items-center justify-center font-bold">1</button>
+<button class="w-10 h-10 border border-outline-variant rounded-lg flex items-center justify-center hover:bg-surface-container transition-colors">2</button>
+<button class="w-10 h-10 border border-outline-variant rounded-lg flex items-center justify-center hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</section>
+</div>
+</main>
+<!-- FLOATING BACKGROUND EFFECT -->
+<div class="fixed inset-0 pointer-events-none z-[-1] opacity-30">
+</div>
+<script>
+        // Micro-interaction for closing dropdowns when clicking outside
+        document.addEventListener('click', function(e) {
+            const dropdowns = document.querySelectorAll('.group .absolute.hidden.bg-white');
+            const buttons = document.querySelectorAll('.group button');
+            
+            let isClickInside = false;
+            buttons.forEach(btn => {
+                if (btn.contains(e.target)) isClickInside = true;
+            });
+
+            if (!isClickInside) {
+                document.querySelectorAll('.absolute.z-20.py-2:not(.hidden)').forEach(menu => {
+                    menu.classList.add('hidden');
+                });
+            }
+        });
+    </script>
+</body></html>

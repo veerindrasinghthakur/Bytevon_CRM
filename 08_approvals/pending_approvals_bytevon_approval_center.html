@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pending Approvals | Enterprise Core</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"inverse-primary": "#afc8f0", "surface-container-lowest": "#ffffff", primary: "#000613", "surface-container-highest": "#d3e4fe", "tertiary-fixed": "#e0e3e5", "surface-container": "#e5eeff", "on-primary-fixed-variant": "#2f486a", "inverse-on-surface": "#eaf1ff", background: "#f8f9ff", "surface-dim": "#cbdbf5", "primary-fixed-dim": "#afc8f0", outline: "#74777f", "on-tertiary-fixed-variant": "#444749", "on-secondary-fixed-variant": "#004493", "surface-container-low": "#eff4ff", "surface-variant": "#d3e4fe", secondary: "#0059bb", "surface-container-high": "#dce9ff", "on-secondary-fixed": "#001a41", "secondary-container": "#0070ea", "on-background": "#0b1c30", error: "#ba1a1a", "on-tertiary": "#ffffff", "on-primary": "#ffffff", "inverse-surface": "#213145", surface: "#f8f9ff", "primary-fixed": "#d4e3ff", "on-tertiary-container": "#848789", "secondary-fixed-dim": "#adc7ff", "secondary-fixed": "#d8e2ff", "outline-variant": "#c4c6cf", "on-secondary-container": "#fefcff", tertiary: "#040607", "on-secondary": "#ffffff", "surface-bright": "#f8f9ff", "on-error-container": "#93000a", "surface-tint": "#476083", "tertiary-fixed-dim": "#c4c7c9", "on-tertiary-fixed": "#191c1e", "on-primary-fixed": "#001c3a", "error-container": "#ffdad6", "on-surface": "#0b1c30", "on-error": "#ffffff", "primary-container": "#001f3f", "on-surface-variant": "#43474e", "tertiary-container": "#1c1f21", "on-primary-container": "#6f88ad"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-lg": "32px", "margin-mobile": "16px", unit: "4px", "stack-sm": "8px", "stack-md": "16px", "margin-desktop": "40px", gutter: "24px", "container-max": "1440px"}, fontFamily: {"headline-md": ["Inter"], "headline-lg": ["Inter"], "body-lg": ["Inter"], "label-sm": ["Inter"], "title-lg": ["Inter"], "body-sm": ["Inter"], "label-md": ["Inter"], "body-md": ["Inter"], "display-lg": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c4c6cf; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background text-on-background overflow-hidden h-screen flex">
+<!-- PRIMARY SIDEBAR (SideNavBar Component) -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary text-on-primary flex flex-col border-r border-outline-variant shadow-sm z-50">
+<!-- Header -->
+<div class="p-stack-md flex items-center gap-stack-sm mt-stack-sm">
+<div class="w-10 h-10 bg-on-primary rounded-lg flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_tree</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary leading-tight">Enterprise Core</h1>
+<p class="font-body-md text-body-md opacity-70">v2.4.0</p>
+</div>
+</div>
+<!-- Main Nav -->
+<nav class="flex-1 mt-stack-lg px-stack-sm space-y-1">
+<button class="w-full flex items-center gap-4 px-4 py-3 text-surface-variant hover:text-on-primary hover:bg-on-primary-fixed-variant transition-colors rounded-lg active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</button>
+<button class="w-full flex items-center gap-4 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="rule">rule</span>
+<span class="font-label-md text-label-md">Approvals</span>
+</button>
+<button class="w-full flex items-center gap-4 px-4 py-3 text-surface-variant hover:text-on-primary hover:bg-on-primary-fixed-variant transition-colors rounded-lg active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-label-md text-label-md">CRM</span>
+</button>
+<button class="w-full flex items-center gap-4 px-4 py-3 text-surface-variant hover:text-on-primary hover:bg-on-primary-fixed-variant transition-colors rounded-lg active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="inventory_2">inventory_2</span>
+<span class="font-label-md text-label-md">Resources</span>
+</button>
+<button class="w-full flex items-center gap-4 px-4 py-3 text-surface-variant hover:text-on-primary hover:bg-on-primary-fixed-variant transition-colors rounded-lg active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="leaderboard">leaderboard</span>
+<span class="font-label-md text-label-md">Analytics</span>
+</button>
+<button class="w-full flex items-center gap-4 px-4 py-3 text-surface-variant hover:text-on-primary hover:bg-on-primary-fixed-variant transition-colors rounded-lg active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</button>
+</nav>
+<!-- CTA & Footer -->
+<div class="p-stack-md border-t border-on-primary/10">
+<button class="w-full bg-secondary text-on-secondary py-3 rounded-lg font-label-md text-label-md shadow-sm hover:brightness-110 active:scale-95 transition-all mb-4">
+                New Request
+            </button>
+<div class="space-y-1">
+<button class="w-full flex items-center gap-4 px-4 py-2 text-surface-variant hover:text-on-primary hover:bg-on-primary-fixed-variant rounded-lg transition-colors">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-label-md text-label-md">Support</span>
+</button>
+<button class="w-full flex items-center gap-4 px-4 py-2 text-surface-variant hover:text-on-primary hover:bg-on-primary-fixed-variant rounded-lg transition-colors">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- SECONDARY SIDEBAR (Approvals Context) -->
+<!-- MAIN CANVAS -->
+<main class="ml-[280px] flex-1 flex flex-col h-full bg-background overflow-y-auto custom-scrollbar">
+<!-- TOP APP BAR -->
+<header class="sticky top-0 w-full flex justify-between items-center h-16 px-margin-desktop bg-surface border-b border-outline-variant z-30">
+<div class="flex items-center gap-stack-lg">
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full text-body-sm focus:ring-2 focus:ring-secondary focus:border-secondary outline-none w-80" placeholder="Search approvals..." type="text"/>
+</div>
+<nav class="flex gap-stack-md">
+<a class="font-label-md text-label-md text-secondary border-b-2 border-secondary pb-1" href="#">Pending</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all duration-200" href="#">History</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all duration-200" href="#">Delegations</a>
+</nav>
+</div>
+<div class="flex items-center gap-stack-md">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-all">
+<span class="material-symbols-outlined">apps</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-surface-container-highest overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional studio portrait of a high-level executive with a confident expression, wearing a tailored navy blue suit against a clean, soft-lit gray background. The lighting is sophisticated and directional, emphasizing facial structure and a polished, institutional presence consistent with a modern minimalist enterprise software aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAuO0vApL0udPmPdinUBVFXVtWO3sy_AoySZf7YLrJ-kDNoA30KCdjqtZFCLUDG3PPElGSFd3QrE8_5PBoeHK1wsUiTV9fnhugmxb7JlX6q8fIp9Sc_JKhtjsxCHhTkPxkUSINvZcDvwi5T3TXLkuK3u8ILD4OcMgDYatm6GipoZ_SinS-VNlubZ1RTEHZ7cB2h8Co5ulnUG7-xkzVj41-5-i6c_C6HAMeYRO6gurj9W5WOEwV15hEmXw"/>
+</div>
+</div>
+</header>
+<!-- CONTENT CONTAINER -->
+<div class="p-margin-desktop max-w-[1440px] mx-auto w-full space-y-stack-lg">
+<!-- Executive Summary (Bento-style Grid) -->
+<section class="grid grid-cols-1 md:grid-cols-4 gap-gutter">
+<div class="bg-white p-stack-md rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-2">
+<span class="p-2 bg-surface-container text-secondary rounded-lg material-symbols-outlined">pending_actions</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">+12%</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant">Pending</p>
+<h3 class="font-headline-lg text-headline-lg text-primary mt-1">24</h3>
+</div>
+<div class="bg-white p-stack-md rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-2">
+<span class="p-2 bg-green-50 text-green-700 rounded-lg material-symbols-outlined">check_circle</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Today</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant">Approved Today</p>
+<h3 class="font-headline-lg text-headline-lg text-primary mt-1">156</h3>
+</div>
+<div class="bg-white p-stack-md rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-2">
+<span class="p-2 bg-red-50 text-error rounded-lg material-symbols-outlined">cancel</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Today</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant">Rejected Today</p>
+<h3 class="font-headline-lg text-headline-lg text-primary mt-1">4</h3>
+</div>
+<div class="bg-secondary-container p-stack-md rounded-xl border border-outline-variant shadow-sm hover:brightness-110 transition-all">
+<div class="flex justify-between items-start mb-2 text-white">
+<span class="p-2 bg-white/20 rounded-lg material-symbols-outlined">priority_high</span>
+</div>
+<p class="font-label-md text-label-md text-on-secondary-container opacity-80">Action Required</p>
+<h3 class="font-headline-lg text-headline-lg text-white mt-1">08</h3>
+</div>
+</section>
+<!-- Data Table Section -->
+<section class="bg-white rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<!-- Table Header Actions -->
+<div class="p-stack-md border-b border-outline-variant flex flex-col md:flex-row justify-between items-center gap-stack-md">
+<button class="flex items-center gap-2 text-secondary hover:text-primary transition-colors mb-2 group">
+<span class="material-symbols-outlined text-[18px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="font-label-md text-label-md">Back to Approval Center</span>
+</button><h4 class="font-title-lg text-title-lg text-primary">Pending Requests</h4>
+<div class="flex gap-stack-sm">
+<button class="flex items-center gap-2 px-4 py-2 border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+                            Filter
+                        </button>
+<button class="flex items-center gap-2 px-4 py-2 border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[20px]">download</span>
+                            Export
+                        </button>
+</div>
+</div>
+<!-- Table Content -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low border-b border-outline-variant">
+<tr>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">ID</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Type</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Requester</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Date</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Priority</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Status</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-6 py-4 font-body-sm text-body-sm font-medium">#REQ-8291</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="p-1.5 bg-blue-50 text-blue-600 rounded-md material-symbols-outlined text-[18px]">flight_takeoff</span>
+<span class="font-body-sm text-body-sm">Travel Expense</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-surface-variant overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A focused headshot of a female software engineer in her late 20s, wearing casual modern office attire. The image is set in a vibrant, naturally lit creative studio environment with soft bokeh in the background. The visual style is clean, corporate but friendly, adhering to the Modern Minimalist enterprise design language." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_VyJVj4xsP5oN0nfBq7aNqdI98OexFFW3GFMOMieib87LgvXxXyA4HBxik8O7LwilaLxP36UwsKPnRalfWuIXron4bQN0NlIZAZ3xCoy1enXXX_bqqydhej9J8r4m0QpW38kt3YZuVbr5UsZCHtbUi6eNCJfiXs-kibLgIKWD2XTG8O7UNMo8F_RtUsbQRKujGX0jJ7pkpJFkImyzwPhlK6W7dDCU9JRg8vqB5vPLCfixVtkXiBV7AQ"/>
+</div>
+<span class="font-body-sm text-body-sm">Elena Rodriguez</span>
+</div>
+</td>
+<td class="px-6 py-4 font-body-sm text-body-sm text-on-surface-variant">Oct 24, 2023</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 bg-red-50 text-error font-label-sm text-label-sm rounded-full">High</span>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 bg-surface-container text-secondary font-label-sm text-label-sm rounded-full">Pending</span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Approve">
+<span class="material-symbols-outlined">check</span>
+</button>
+<button class="p-2 text-error hover:bg-red-50 rounded-lg transition-colors" title="Reject">
+<span class="material-symbols-outlined">close</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors" title="View Details">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-6 py-4 font-body-sm text-body-sm font-medium">#REQ-8290</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="p-1.5 bg-purple-50 text-purple-600 rounded-md material-symbols-outlined text-[18px]">calendar_month</span>
+<span class="font-body-sm text-body-sm">Leave Request</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-surface-variant overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A portrait of a male product manager in his mid-30s with a professional and approachable demeanor, wearing a light gray linen shirt. The background is a blurred office interior with glass walls and minimalist furniture, conveying a high-end corporate environment. The image is bright, high-contrast, and fits perfectly into an enterprise resource planning UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBewun5f_h27YNYIdIlYS7cmIdWWu6KGLhtANfvLyhzfVPLJXZsQ_hyDNMaGihhqte7wf-dqs4yViCbk0vn8A1Up1tDGwX6O-rDu7_ld3hMRGvYSPZLRBc_1eOd6Mo71esaWsmKgyIcOGFJ2NWvMq5y9deoC1qr5AakHfg1uAZ1rkGbWuGPdKH6FzmAUl_4yGvS9LHoHaRU43-RGSc1_4c7iRQmU0AFDXoxud-FutQaZHRIqPo7__R6VQ"/>
+</div>
+<span class="font-body-sm text-body-sm">Marcus Chen</span>
+</div>
+</td>
+<td class="px-6 py-4 font-body-sm text-body-sm text-on-surface-variant">Oct 23, 2023</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm rounded-full">Medium</span>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 bg-surface-container text-secondary font-label-sm text-label-sm rounded-full">Pending</span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Approve">
+<span class="material-symbols-outlined">check</span>
+</button>
+<button class="p-2 text-error hover:bg-red-50 rounded-lg transition-colors" title="Reject">
+<span class="material-symbols-outlined">close</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors" title="View Details">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-6 py-4 font-body-sm text-body-sm font-medium">#REQ-8285</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<span class="p-1.5 bg-orange-50 text-orange-600 rounded-md material-symbols-outlined text-[18px]">shopping_cart</span>
+<span class="font-body-sm text-body-sm">Procurement</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="h-8 w-8 rounded-full bg-surface-variant overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A portrait of a diverse female operations lead in an enterprise setting, looking optimistic and smart. She is wearing a modern charcoal blazer over a white blouse. The lighting is crisp and cool-toned, set against an architectural white wall. The visual aesthetic is institutional, high-precision, and aligns with professional CRM dashboard standards." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDU27zIxP9OC5_a1wZ2r_7muOuV7GHTLXAvJNbEqkyBnq7QnJA42K5xjtew3sjkAM0_ibSEL62Rzm_rxxgmqEXWvcJPBv0NBDEmiXmrPTzjMlo417I510_ZN8ihtquV-Hz1EM47YS7SkqkMqgpUHa4BbOrYAAqrSgKPkh4WbWksuYHJWk1qT-tkrr2K_Bpgu35L4SH42YhFIqKnA5Xa4Ln7cj22zaesfGZ5OSae-O8yMPpyU4MuG0KruA"/>
+</div>
+<span class="font-body-sm text-body-sm">Sarah Jenkins</span>
+</div>
+</td>
+<td class="px-6 py-4 font-body-sm text-body-sm text-on-surface-variant">Oct 22, 2023</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 bg-blue-50 text-blue-600 font-label-sm text-label-sm rounded-full">Normal</span>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 bg-surface-container text-secondary font-label-sm text-label-sm rounded-full">Pending</span>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Approve">
+<span class="material-symbols-outlined">check</span>
+</button>
+<button class="p-2 text-error hover:bg-red-50 rounded-lg transition-colors" title="Reject">
+<span class="material-symbols-outlined">close</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors" title="View Details">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer -->
+<div class="p-stack-md border-t border-outline-variant flex justify-between items-center bg-surface-container-low">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Showing 3 of 24 pending requests</span>
+<div class="flex items-center gap-stack-sm">
+<button class="p-1 hover:bg-white rounded border border-outline-variant disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<span class="font-label-md text-label-md px-2">1</span>
+<button class="p-1 hover:bg-white rounded border border-outline-variant">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Bottom CTA Section (Atmospheric) -->
+<section class="relative bg-primary rounded-2xl overflow-hidden p-stack-lg min-h-[200px] flex flex-col justify-center border border-outline-variant">
+<div class="absolute inset-0 opacity-20">
+<div class="absolute top-0 right-0 w-64 h-64 bg-secondary-container rounded-full blur-[80px] -mr-32 -mt-32"></div>
+<div class="absolute bottom-0 left-0 w-64 h-64 bg-secondary rounded-full blur-[100px] -ml-32 -mb-32"></div>
+</div>
+<div class="relative z-10 flex flex-col md:flex-row justify-between items-center gap-stack-md">
+<div>
+<h2 class="font-headline-md text-headline-md text-white">Delegation Active</h2>
+<p class="text-white/70 font-body-md text-body-md mt-2 max-w-xl">Your approval rights are currently shared with the Regional Director until Oct 31st. You will still receive notifications for high-priority items.</p>
+</div>
+<button class="px-8 py-3 bg-white text-primary font-label-md text-label-md rounded-lg shadow-xl hover:scale-105 active:scale-95 transition-all">
+                        Manage Delegation
+                    </button>
+</div>
+</section>
+</div>
+</main>
+<script>
+        // Micro-interactions for table rows
+        document.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('mouseenter', () => {
+                row.querySelector('td:last-child div')?.classList.remove('opacity-0');
+            });
+        });
+
+        // Search highlight simulation
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('input', (e) => {
+            const value = e.target.value.toLowerCase();
+            document.querySelectorAll('tbody tr').forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(value) ? '' : 'none';
+            });
+        });
+
+        // Toggle Active State
+        const navButtons = document.querySelectorAll('aside nav button, aside div button.w-full.text-left');
+        navButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                navButtons.forEach(b => {
+                    b.classList.remove('bg-secondary-container', 'text-on-secondary-container', 'bg-white', 'border', 'border-outline-variant', 'text-secondary');
+                    if (b.closest('aside.bg-primary')) {
+                        b.classList.add('text-surface-variant');
+                    } else {
+                        b.classList.add('text-on-surface-variant');
+                    }
+                });
+                
+                if (btn.closest('aside.bg-primary')) {
+                    btn.classList.add('bg-secondary-container', 'text-on-secondary-container');
+                    btn.classList.remove('text-surface-variant');
+                } else {
+                    btn.classList.add('bg-white', 'border', 'border-outline-variant', 'text-secondary');
+                    btn.classList.remove('text-on-surface-variant');
+                }
+            });
+        });
+    </script>
+</body></html>

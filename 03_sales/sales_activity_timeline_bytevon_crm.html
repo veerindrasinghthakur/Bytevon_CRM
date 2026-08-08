@@ -1,0 +1,374 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Activity Timeline | Bytevon Enterprise Suite</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-primary-fixed": "#001c3a", "on-primary": "#ffffff", "on-error": "#ffffff", "surface-dim": "#cbdbf5", "surface-container": "#e5eeff", "tertiary-container": "#1c1f21", "tertiary-fixed-dim": "#c4c7c9", background: "#f8f9ff", secondary: "#0059bb", "on-secondary-fixed": "#001a41", "on-primary-container": "#6f88ad", "secondary-fixed-dim": "#adc7ff", "inverse-surface": "#213145", "on-secondary-fixed-variant": "#004493", "surface-container-low": "#eff4ff", "outline-variant": "#c4c6cf", "surface-variant": "#d3e4fe", tertiary: "#040607", "on-tertiary-fixed": "#191c1e", "on-surface": "#0b1c30", "on-tertiary-fixed-variant": "#444749", "tertiary-fixed": "#e0e3e5", "surface-tint": "#476083", "on-surface-variant": "#43474e", "on-tertiary-container": "#848789", "primary-fixed": "#d4e3ff", "on-error-container": "#93000a", "inverse-primary": "#afc8f0", surface: "#f8f9ff", "error-container": "#ffdad6", "on-primary-fixed-variant": "#2f486a", "secondary-container": "#0070ea", "on-secondary": "#ffffff", "on-background": "#0b1c30", "secondary-fixed": "#d8e2ff", "on-tertiary": "#ffffff", "surface-container-lowest": "#ffffff", "primary-fixed-dim": "#afc8f0", "on-secondary-container": "#fefcff", error: "#ba1a1a", "surface-container-high": "#dce9ff", "surface-bright": "#f8f9ff", outline: "#74777f", primary: "#000613", "primary-container": "#001f3f", "surface-container-highest": "#d3e4fe", "inverse-on-surface": "#eaf1ff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-md": "16px", "stack-lg": "32px", "margin-desktop": "40px", gutter: "24px", "stack-sm": "8px", unit: "4px", "margin-mobile": "16px", "container-max": "1440px"}, fontFamily: {"headline-lg-mobile": ["Inter"], "body-sm": ["Inter"], "label-sm": ["Inter"], "display-lg": ["Inter"], "label-md": ["Inter"], "headline-md": ["Inter"], "body-md": ["Inter"], "title-lg": ["Inter"], "headline-lg": ["Inter"], "body-lg": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}]}}}};</script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      line-height: 1;
+      text-transform: none;
+      letter-spacing: normal;
+      word-wrap: normal;
+      white-space: nowrap;
+      direction: ltr;
+    }
+    .timeline-container::before {
+      content: '';
+      position: absolute;
+      left: 23px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: #e2e8f0;
+      z-index: 0;
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="bg-background text-on-background font-body-md selection:bg-secondary/30">
+<!-- Primary SideNavBar (Level 1) -->
+<aside class="w-[280px] h-screen fixed left-0 top-0 bg-primary dark:bg-primary-container shadow-sm flex flex-col h-full py-stack-lg px-stack-md z-50">
+<div class="mb-stack-lg">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center text-on-secondary shadow-lg">
+<span class="material-symbols-outlined text-headline-md" style="font-variation-settings: 'FILL' 1;">dataset</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary leading-tight">Bytevon</h1>
+<p class="text-label-sm text-on-primary/60 uppercase tracking-widest">Enterprise Suite</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-stack-md p-stack-md text-on-primary/70 hover:text-on-primary hover:bg-secondary/20 transition-colors rounded-lg font-body-md duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+      </a>
+<a class="flex items-center gap-stack-md p-stack-md text-on-primary/70 hover:text-on-primary hover:bg-secondary/20 transition-colors rounded-lg font-body-md duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">group</span> Employees
+      </a>
+<a class="flex items-center gap-stack-md p-stack-md bg-secondary text-on-secondary rounded-lg font-bold duration-200 ease-in-out shadow-md" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">handshake</span> CRM
+      </a>
+<a class="flex items-center gap-stack-md p-stack-md text-on-primary/70 hover:text-on-primary hover:bg-secondary/20 transition-colors rounded-lg font-body-md duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">factory</span> ERP
+      </a>
+<a class="flex items-center gap-stack-md p-stack-md text-on-primary/70 hover:text-on-primary hover:bg-secondary/20 transition-colors rounded-lg font-body-md duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">assessment</span> Reports
+      </a>
+<a class="flex items-center gap-stack-md p-stack-md text-on-primary/70 hover:text-on-primary hover:bg-secondary/20 transition-colors rounded-lg font-body-md duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">settings</span> Administration
+      </a>
+</nav>
+<div class="mt-auto pt-stack-lg space-y-1 border-t border-on-primary/10">
+<button class="w-full flex items-center justify-center gap-2 py-3 bg-secondary-container text-on-secondary-container rounded-xl font-bold hover:brightness-110 transition-all shadow-sm">
+<span class="material-symbols-outlined">add</span> New Record
+      </button>
+<div class="pt-4 space-y-1">
+<a class="flex items-center gap-stack-md p-stack-md text-on-primary/70 hover:text-on-primary hover:bg-secondary/20 transition-colors rounded-lg font-body-md duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">help</span> Support
+        </a>
+<a class="flex items-center gap-stack-md p-stack-md text-on-primary/70 hover:text-on-primary hover:bg-secondary/20 transition-colors rounded-lg font-body-md duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">settings</span> Settings
+        </a>
+</div>
+</div>
+</aside>
+<!-- Secondary SideNavBar (CRM Specific) -->
+<aside class="w-[240px] h-screen fixed left-[280px] top-0 bg-surface-container-low border-r border-outline-variant py-stack-lg px-stack-md z-40 hidden md:block">
+<div class="mb-stack-lg px-2">
+<span class="text-label-sm font-bold text-secondary uppercase tracking-widest">CRM Management</span>
+</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">grid_view</span> Dashboard
+      </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">person</span> Clients
+      </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">filter_alt</span> Leads
+      </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">monetization_on</span> Opportunities
+      </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">calendar_month</span> Meetings
+      </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high rounded-lg transition-all font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">bar_chart</span> Analytics
+      </a>
+<a class="flex items-center gap-3 px-3 py-2 text-secondary font-bold bg-secondary/10 rounded-lg transition-all font-label-md border-r-4 border-secondary" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">history</span> Timeline
+      </a>
+</nav>
+</aside>
+<!-- TopAppBar -->
+<header class="h-16 fixed top-0 right-0 left-[520px] bg-surface dark:bg-background border-b border-outline-variant flex items-center justify-between px-margin-desktop z-30">
+<div class="flex-1 max-w-2xl">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-secondary transition-colors">search</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-full py-2 pl-10 pr-4 text-body-sm focus:ring-2 focus:ring-secondary/20 focus:border-secondary outline-none transition-all" placeholder="Search records, events, or employees..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-stack-md ml-stack-lg">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-all relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-all">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-all">
+<span class="material-symbols-outlined">apps</span>
+</button>
+<div class="h-8 w-px bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3 cursor-pointer hover:bg-surface-container-low p-1 pr-3 rounded-full transition-all">
+<img class="w-8 h-8 rounded-full border-2 border-secondary shadow-sm" data-alt="Professional headshot of a senior sales executive with a confident smile, wearing a dark navy tailored blazer against a clean, neutral studio background. The lighting is soft and corporate-style, reflecting professional authority and institutional trust in a high-stakes enterprise setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAYaZl_ieZYIoZNR8Zxf7X7I9r4WlgI6gfpdbHJyoxaVQGIvAXyQ0XB7eSSk0tP3iLfBK3EU1LsXfTO1nzX76wsrJuUgyw0iFQnFgkggiUm-eDMPLTQJzLtUFidvE1ZQIY1UQSql_nuFUlk26L_fOQD2rgQRjIuPETaqyyi0Ij99-BP_PLcbjarDTYi9uZfksvMUQU7PKt-r3JiQ_biJWZVM_MT9cieN_DK1AgQC6gl3i6FcHA9SZrYQ">
+<div class="hidden lg:block text-left">
+<p class="text-label-md font-bold text-on-surface leading-none">Marcus Thorne</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-tighter">VP of Sales</p>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="ml-[520px] mt-16 p-stack-lg min-h-screen">
+<div class="max-w-container-max mx-auto">
+<!-- Page Header -->
+<div class="mb-stack-lg flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-2">Activity Timeline</h2>
+<p class="text-body-md text-on-surface-variant">Monitor real-time sales events and organizational updates across the ecosystem.</p>
+</div>
+<div class="flex gap-2">
+<button class="flex items-center gap-2 px-4 py-2 bg-secondary text-on-secondary rounded-lg font-bold hover:brightness-110 shadow-sm transition-all">
+<span class="material-symbols-outlined text-[20px]">download</span> Export Report
+          </button>
+</div>
+</div>
+<!-- Sticky Filter Bar -->
+<div class="sticky top-[64px] z-20 bg-background/80 backdrop-blur-md py-4 mb-stack-lg border-b border-outline-variant/30">
+<div class="flex flex-wrap items-center gap-stack-md bg-surface border border-outline-variant p-2 rounded-xl shadow-sm">
+<div class="flex items-center gap-2 px-3 border-r border-outline-variant">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">filter_list</span>
+<span class="text-label-md font-bold text-on-surface">Filters:</span>
+</div>
+<!-- Employee Filter -->
+<div class="relative">
+<select class="appearance-none bg-surface-container-low border border-outline-variant rounded-lg pl-3 pr-10 py-1.5 text-label-md text-on-surface-variant focus:border-secondary focus:ring-0 cursor-pointer">
+<option>All Employees</option>
+<option>Marcus Thorne</option>
+<option>Sarah Jenkins</option>
+<option>Alex Rivera</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+<!-- Activity Type -->
+<div class="relative">
+<select class="appearance-none bg-surface-container-low border border-outline-variant rounded-lg pl-3 pr-10 py-1.5 text-label-md text-on-surface-variant focus:border-secondary focus:ring-0 cursor-pointer">
+<option>All Activity Types</option>
+<option>Lead Created</option>
+<option>Client Won</option>
+<option>Meeting Held</option>
+<option>Project Update</option>
+<option>System Alert</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">expand_more</span>
+</div>
+<!-- Date Range -->
+<div class="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low border border-outline-variant rounded-lg text-label-md text-on-surface-variant cursor-pointer hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+<span>Oct 17, 2023 - Oct 24, 2023</span>
+</div>
+<button class="ml-auto text-label-md text-secondary font-bold hover:underline px-4">Clear All</button>
+</div>
+</div>
+<!-- Timeline View -->
+<div class="space-y-stack-lg relative timeline-container pb-stack-lg">
+<!-- Date Group: Today -->
+<section>
+<div class="relative z-10 flex items-center gap-4 mb-stack-md">
+<div class="w-12 h-12 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shadow-md">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">today</span>
+</div>
+<h3 class="font-title-lg text-title-lg text-on-surface">Today, October 24, 2023</h3>
+</div>
+<div class="ml-[23px] pl-10 space-y-stack-md">
+<!-- Activity Card 1 -->
+<div class="bg-surface border border-outline-variant rounded-xl p-stack-md hover:shadow-md transition-shadow group">
+<div class="flex flex-col md:flex-row gap-stack-md">
+<div class="flex-1">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary bg-secondary/10 p-2 rounded-lg">person_add</span>
+<div>
+<h4 class="font-bold text-on-surface font-body-md group-hover:text-secondary transition-colors">Lead Created</h4>
+<p class="text-label-sm text-on-surface-variant">10:45 AM</p>
+</div>
+</div>
+<span class="px-2 py-1 bg-surface-container text-secondary text-label-sm rounded font-bold uppercase tracking-tighter">Lead</span>
+</div>
+<div class="flex items-center gap-3 mb-3">
+<img class="w-6 h-6 rounded-full" data-alt="A close-up professional portrait of a woman in her early 30s, Sarah Jenkins, smiling warmly. She is wearing a modern charcoal suit jacket and standing in a brightly lit, high-end office lobby with architectural glass elements in the background. The style is sharp, corporate, and clean-cut." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZveLCclATDFaQ0ZuAV3_MHfWEAThTZxSc3-LKVMhFPoQ4PtYE_h-fRG23MOXMZE7VTfD7JVpcj_-TFqErp6DIArUhqzgh_Y261oPs-46B8wkOWazwbDR0bVj7-JhkjLx7a38rthOv1W-ZPRAXVlFju7nZEuy0LTzmYXRH4dk3e8uzSt1kN3C07Pxn_cJhqPtSqBu7CJahBQbRnw1o2sT-UQd5KAckw-Mub0usc-Z9VsReeyQkdW_CRA">
+<span class="text-body-sm font-medium text-on-surface">Sarah Jenkins</span>
+</div>
+<p class="text-body-sm text-on-surface-variant mb-3 leading-relaxed">
+                    Identified and onboarded a new high-potential lead from the Asia-Pacific regional summit. Initial qualification scores indicate 85% conversion probability.
+                  </p>
+<a class="inline-flex items-center gap-1 text-secondary font-bold text-label-md hover:gap-2 transition-all" href="#">
+                    Nexus Global Holdings <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Activity Card 2 -->
+<div class="bg-surface border border-outline-variant rounded-xl p-stack-md hover:shadow-md transition-shadow group">
+<div class="flex flex-col md:flex-row gap-stack-md">
+<div class="flex-1">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary bg-secondary/10 p-2 rounded-lg">handshake</span>
+<div>
+<h4 class="font-bold text-on-surface font-body-md group-hover:text-secondary transition-colors">Lead Won</h4>
+<p class="text-label-sm text-on-surface-variant">09:12 AM</p>
+</div>
+</div>
+<span class="px-2 py-1 bg-green-100 text-green-700 text-label-sm rounded font-bold uppercase tracking-tighter">Client</span>
+</div>
+<div class="flex items-center gap-3 mb-3">
+<img class="w-6 h-6 rounded-full" data-alt="A portrait of Alex Rivera, a professional Hispanic male in a business casual light blue shirt. He is sitting in a minimalist tech office workspace with blurred plants and modern furniture in the background. The lighting is bright and natural, projecting an image of reliability and professional approachability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4HktApHgyt52uqfl4W1ss6SxC3JZEhPO2a_ZJoLNn2WaYufYcNLuDgCr32QKRXuWo6lQNY3MNggJVDovSj0KZyIpGJPnXIZYGYBbSU7G_g8L_lZZo1UiIxJIGQtAB_k9HzVsm6i2HaivkQx2crubwnZlHrA0t0m9bf8KVRHA8bTh9YPlA2xiBRU18oghvtXBm9oLDGCVSufDXG0JEphdtNP_5VSbTtwdd9M1Lr9T6qPYUjuMEaSydcQ">
+<span class="text-body-sm font-medium text-on-surface">Alex Rivera</span>
+</div>
+<p class="text-body-sm text-on-surface-variant mb-3 leading-relaxed">
+                    Closed the contract negotiation for the multi-year ERP migration. Final agreement signed and sent to legal for filing.
+                  </p>
+<a class="inline-flex items-center gap-1 text-secondary font-bold text-label-md hover:gap-2 transition-all" href="#">
+                    Global Logistics ERP Migration <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Date Group: Yesterday -->
+<section>
+<div class="relative z-10 flex items-center gap-4 mb-stack-md">
+<div class="w-12 h-12 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined">event_repeat</span>
+</div>
+<h3 class="font-title-lg text-title-lg text-on-surface">Yesterday, October 23, 2023</h3>
+</div>
+<div class="ml-[23px] pl-10 space-y-stack-md">
+<!-- Activity Card 3 -->
+<div class="bg-surface border border-outline-variant rounded-xl p-stack-md hover:shadow-md transition-shadow group">
+<div class="flex flex-col md:flex-row gap-stack-md">
+<div class="flex-1">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary bg-secondary/10 p-2 rounded-lg">event</span>
+<div>
+<h4 class="font-bold text-on-surface font-body-md group-hover:text-secondary transition-colors">Meeting Scheduled</h4>
+<p class="text-label-sm text-on-surface-variant">04:30 PM</p>
+</div>
+</div>
+<span class="px-2 py-1 bg-surface-container text-secondary text-label-sm rounded font-bold uppercase tracking-tighter">Meeting</span>
+</div>
+<div class="flex items-center gap-3 mb-3">
+<img class="w-6 h-6 rounded-full" data-alt="A professional headshot of a senior sales executive with a confident smile, wearing a dark navy tailored blazer against a clean, neutral studio background. The lighting is soft and corporate-style, reflecting professional authority and institutional trust." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAKTjtWItKUYCButtK6liJSjCm_oYtr6X2PlxeFUVbZWn0depNIhESqLqgGaFZejiS09Zf2Ma2hnekZRoqWoSrRxlD5repC_lNPPluXYCsulecOlFpAms1CSUcV4pp1pfwezPznJ4zCfS7A3B2zKanPwpiWRM1CPW2FqxFgaZkECQ3nKqz_7PbNe7A8vSGG94ea9XBSLAIXJ1jlqhv24uzrZM8O2FIVqVEVD9XQ0KbmjqboS5NXfOAcg">
+<span class="text-body-sm font-medium text-on-surface">Marcus Thorne</span>
+</div>
+<p class="text-body-sm text-on-surface-variant mb-3 leading-relaxed">
+                    Discovery call scheduled with the CTO of FinTech Solutions to discuss modular architecture implementation and scalability requirements.
+                  </p>
+<a class="inline-flex items-center gap-1 text-secondary font-bold text-label-md hover:gap-2 transition-all" href="#">
+                    FinTech Solutions Q4 Discovery <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Activity Card 4 -->
+<div class="bg-surface border border-outline-variant rounded-xl p-stack-md hover:shadow-md transition-shadow group border-l-4 border-l-error">
+<div class="flex flex-col md:flex-row gap-stack-md">
+<div class="flex-1">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-error bg-error/10 p-2 rounded-lg">priority_high</span>
+<div>
+<h4 class="font-bold text-on-surface font-body-md">System Alert: Database Latency</h4>
+<p class="text-label-sm text-on-surface-variant">11:15 AM</p>
+</div>
+</div>
+<span class="px-2 py-1 bg-error-container text-on-error-container text-label-sm rounded font-bold uppercase tracking-tighter">System</span>
+</div>
+<div class="flex items-center gap-3 mb-3">
+<div class="w-6 h-6 rounded-full bg-on-tertiary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px] text-white">memory</span>
+</div>
+<span class="text-body-sm font-medium text-on-surface">Bytevon Automations</span>
+</div>
+<p class="text-body-sm text-on-surface-variant mb-3 leading-relaxed">
+                    Automated performance monitoring detected unusual spikes in CRM query response times. Optimized index execution plan automatically deployed to mitigate issues.
+                  </p>
+<a class="inline-flex items-center gap-1 text-secondary font-bold text-label-md hover:gap-2 transition-all" href="#">
+                    Performance Logs <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- Load More -->
+<div class="mt-stack-lg flex justify-center pb-stack-lg">
+<button class="flex items-center gap-2 px-8 py-3 border-2 border-outline-variant text-on-surface-variant rounded-xl font-bold hover:bg-surface-container-low transition-all">
+<span class="material-symbols-outlined">expand_more</span> Load Previous Activities
+        </button>
+</div>
+</div>
+</main>
+<!-- Contextual Floating Action Button (FAB) -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-secondary text-on-secondary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 group">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">add</span>
+<span class="absolute right-16 bg-on-surface text-on-primary px-3 py-1.5 rounded-lg text-label-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-lg">New Activity Log</span>
+</button>
+<script>
+    // Simple micro-interaction for filter chips
+    document.querySelectorAll('select').forEach(select => {
+      select.addEventListener('change', (e) => {
+        const val = e.target.value;
+        console.log(`Filtering by: ${val}`);
+        // Visual feedback
+        e.target.closest('div').classList.add('ring-2', 'ring-secondary/50');
+        setTimeout(() => {
+          e.target.closest('div').classList.remove('ring-2', 'ring-secondary/50');
+        }, 300);
+      });
+    });
+
+    // Intersection observer for timeline animation
+    const observerOptions = {
+      threshold: 0.1
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('opacity-100', 'translate-y-0');
+          entry.target.classList.remove('opacity-0', 'translate-y-4');
+        }
+      });
+    }, observerOptions);
+
+    document.querySelectorAll('.bg-surface.border.border-outline-variant').forEach(card => {
+      card.classList.add('transition-all', 'duration-500', 'opacity-0', 'translate-y-4');
+      observer.observe(card);
+    });
+  </script>
+</body></html>

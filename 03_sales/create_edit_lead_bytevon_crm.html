@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bytevon CRM - Create Lead</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-tint": "#476083", "secondary-container": "#0070ea", "tertiary-fixed-dim": "#c4c7c9", tertiary: "#040607", "surface-dim": "#cbdbf5", surface: "#f8f9ff", "on-background": "#0b1c30", "on-tertiary": "#ffffff", "inverse-surface": "#213145", "on-secondary-container": "#fefcff", "on-primary-container": "#6f88ad", "tertiary-container": "#1c1f21", "surface-bright": "#f8f9ff", secondary: "#0059bb", "on-tertiary-fixed-variant": "#444749", error: "#ba1a1a", "error-container": "#ffdad6", "inverse-on-surface": "#eaf1ff", "surface-container-high": "#dce9ff", "secondary-fixed-dim": "#adc7ff", "on-error-container": "#93000a", "on-secondary": "#ffffff", "on-secondary-fixed": "#001a41", "surface-variant": "#d3e4fe", "secondary-fixed": "#d8e2ff", "on-tertiary-fixed": "#191c1e", "primary-fixed": "#d4e3ff", "on-secondary-fixed-variant": "#004493", "surface-container-lowest": "#ffffff", "on-surface": "#0b1c30", "surface-container-low": "#eff4ff", "on-primary-fixed": "#001c3a", "on-primary-fixed-variant": "#2f486a", "on-primary": "#ffffff", "surface-container": "#e5eeff", "primary-fixed-dim": "#afc8f0", "inverse-primary": "#afc8f0", outline: "#74777f", "surface-container-highest": "#d3e4fe", background: "#f8f9ff", "tertiary-fixed": "#e0e3e5", "primary-container": "#001f3f", primary: "#000613", "on-tertiary-container": "#848789", "on-error": "#ffffff", "on-surface-variant": "#43474e", "outline-variant": "#c4c6cf"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"margin-mobile": "16px", "stack-md": "16px", gutter: "24px", "stack-sm": "8px", "stack-lg": "32px", "margin-desktop": "40px", "container-max": "1440px", unit: "4px"}, fontFamily: {"headline-lg": ["Inter"], "display-lg": ["Inter"], "body-lg": ["Inter"], "body-md": ["Inter"], "label-sm": ["Inter"], "label-md": ["Inter"], "headline-lg-mobile": ["Inter"], "body-sm": ["Inter"], "title-lg": ["Inter"], "headline-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .custom-shadow { box-shadow: 0 4px 6px -1px rgba(0, 31, 63, 0.05), 0 2px 4px -2px rgba(0, 31, 63, 0.05); }
+        .border-subtle { border: 1px solid #E2E8F0; }
+        input:focus, select:focus, textarea:focus { 
+            outline: none; 
+            border-color: #0070ea !important;
+            box-shadow: 0 0 0 2px rgba(0, 112, 234, 0.1);
+        }
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .expanded .collapsible-content {
+            max-height: 2000px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- Sidebar Navigation -->
+<aside class="fixed left-0 top-0 h-screen w-[280px] bg-primary-container flex flex-col h-full py-6 z-50">
+<div class="px-6 mb-8">
+<h1 class="font-headline-md text-headline-md font-bold text-on-secondary-container">Bytevon</h1>
+<p class="text-on-primary-container text-label-md">Enterprise Resource Planning</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Dashboard (Inactive) -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/70 hover:text-on-primary-container mx-2 hover:bg-on-primary-fixed-variant/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<!-- CRM (Active) -->
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg mx-2 transition-all duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="font-body-md text-body-md">CRM</span>
+</a>
+<!-- ERP (Inactive) -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/70 hover:text-on-primary-container mx-2 hover:bg-on-primary-fixed-variant/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="factory">factory</span>
+<span class="font-body-md text-body-md">ERP</span>
+</a>
+<!-- Reports (Inactive) -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/70 hover:text-on-primary-container mx-2 hover:bg-on-primary-fixed-variant/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-body-md text-body-md">Reports</span>
+</a>
+<!-- Administration (Inactive) -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/70 hover:text-on-primary-container mx-2 hover:bg-on-primary-fixed-variant/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-md text-body-md">Administration</span>
+</a>
+</nav>
+<div class="mt-auto px-2">
+<button class="w-full flex items-center justify-center gap-2 py-3 mb-4 bg-on-secondary-container text-primary-container rounded-lg font-bold transition-all duration-200 active:scale-95">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                New Record
+            </button>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container/70 hover:text-on-primary-container mx-2 hover:bg-on-primary-fixed-variant/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-body-md text-body-md">Help Center</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Shell -->
+<div class="ml-[280px] min-h-screen flex flex-col">
+<!-- Top Navigation Bar -->
+<header class="flex justify-between items-center h-16 px-gutter bg-surface border-b border-outline-variant sticky top-0 z-40 shadow-sm">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="search">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg text-label-md focus:ring-1 focus:ring-secondary" placeholder="Search system records..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4 text-on-surface-variant">
+<button class="material-symbols-outlined cursor-pointer hover:text-secondary transition-colors" data-icon="notifications">notifications</button>
+<button class="material-symbols-outlined cursor-pointer hover:text-secondary transition-colors" data-icon="chat_bubble">chat_bubble</button>
+<div class="h-8 w-px bg-outline-variant"></div>
+</div>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface leading-none">Alexander Pierce</p>
+<p class="text-xs text-on-surface-variant">Senior Sales Lead</p>
+</div>
+<img class="w-10 h-10 rounded-full border border-outline-variant object-cover" data-alt="A clean professional headshot of a corporate male executive with short brown hair, wearing a navy blue blazer over a crisp white shirt, photographed against a neutral architectural office background with soft bokeh. The lighting is professional and high-key, conveying authority and trust." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjCn1xoYM8y60Zkzgn8HriQdc0UaGvXLStzbU-bvkQWACr0-rpxjZtduWlfPhIjw-E0XM0vy4tVxupBtxhhW0E9bfTxZs3AR4Uuo_YCHpNQekNzExIdLdMTPXDi12r_XHM1QUnI397cbU7oh6m1REncboEkc6U9DicC4huxruS0IBAn2DQwF7RrNdAC_TP06GsIEJgc6-Sh3h9lVdSe-qFaKOxU0bBE87LMQbSajw12GmbIJyCNJpQxQ"/>
+</div>
+</div>
+</header>
+<!-- Canvas Area -->
+<main class="p-gutter max-w-container-max mx-auto w-full pb-32">
+<!-- Breadcrumbs & Header -->
+<div class="flex justify-between items-end mb-stack-lg">
+<div>
+<nav class="flex items-center gap-2 text-on-surface-variant text-label-md mb-2">
+<span>CRM</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+<span>Leads</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+<span class="text-secondary font-semibold">Create Lead</span>
+</nav>
+<h2 class="font-headline-lg text-headline-lg text-primary">Register New Lead</h2>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-6 py-2.5 rounded-lg border border-outline text-on-surface font-label-md hover:bg-surface-container transition-colors">Cancel</button>
+<button class="px-6 py-2.5 rounded-lg border border-secondary text-secondary font-semibold hover:bg-secondary/5 transition-colors">Save Draft</button>
+<button class="px-8 py-2.5 rounded-lg bg-secondary text-white font-bold hover:bg-secondary/90 transition-all custom-shadow">Save Lead</button>
+</div>
+</div>
+<!-- Form Content (Asymmetric Grid Layout) -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Left Column: Main Form Data -->
+<div class="col-span-12 lg:col-span-8 space-y-gutter">
+<!-- Section 1: Basic Information -->
+<section class="bg-surface-container-lowest rounded-xl border border-subtle custom-shadow p-6 expanded" id="section-basic">
+<div class="flex justify-between items-center mb-6 cursor-pointer" onclick="this.parentElement.classList.toggle('expanded')">
+<h3 class="font-title-lg text-title-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="info">info</span>
+                                Basic Information
+                            </h3>
+<span class="material-symbols-outlined text-on-surface-variant transition-transform" data-icon="expand_more">expand_more</span>
+</div>
+<div class="collapsible-content">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-lg">
+<div class="col-span-1 md:col-span-2">
+<label class="block text-label-md text-on-surface-variant mb-2">Lead Title</label>
+<input class="w-full border-subtle rounded-lg p-3 text-body-md" placeholder="e.g. Nexus Global ERP Implementation" type="text"/>
+</div>
+<div>
+<label class="block text-label-md text-on-surface-variant mb-2">Lead Source</label>
+<select class="w-full border-subtle rounded-lg p-3 text-body-md appearance-none bg-no-repeat bg-[right_12px_center]" style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2343474e%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E')">
+<option>Referral</option>
+<option>Website</option>
+<option>LinkedIn</option>
+<option>Event</option>
+<option>Other</option>
+</select>
+</div>
+<div>
+<label class="block text-label-md text-on-surface-variant mb-2">Lead Priority</label>
+<div class="flex gap-2">
+<button class="flex-1 py-3 border border-subtle rounded-lg text-label-md hover:border-secondary transition-all">Low</button>
+<button class="flex-1 py-3 border-2 border-secondary bg-secondary/5 rounded-lg text-secondary font-bold transition-all">Medium</button>
+<button class="flex-1 py-3 border border-subtle rounded-lg text-label-md hover:border-secondary transition-all">High</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 2: Client Information -->
+<section class="bg-surface-container-lowest rounded-xl border border-subtle custom-shadow p-6 expanded">
+<div class="flex justify-between items-center mb-6 cursor-pointer" onclick="this.parentElement.classList.toggle('expanded')">
+<h3 class="font-title-lg text-title-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="corporate_fare">corporate_fare</span>
+                                Client Information
+                            </h3>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="expand_more">expand_more</span>
+</div>
+<div class="collapsible-content">
+<div class="mb-stack-lg">
+<label class="block text-label-md text-on-surface-variant mb-3">Client Type</label>
+<div class="inline-flex p-1 bg-surface-container rounded-lg">
+<button class="px-6 py-2 rounded-md bg-white shadow-sm font-label-md text-secondary">New Client</button>
+<button class="px-6 py-2 rounded-md font-label-md text-on-surface-variant hover:text-on-surface">Existing Client</button>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-lg">
+<div>
+<label class="block text-label-md text-on-surface-variant mb-2">Company Name</label>
+<input class="w-full border-subtle rounded-lg p-3 text-body-md" placeholder="Acme Dynamics Ltd." type="text"/>
+</div>
+<div>
+<label class="block text-label-md text-on-surface-variant mb-2">Website</label>
+<input class="w-full border-subtle rounded-lg p-3 text-body-md" placeholder="https://www.acmedynamics.com" type="url"/>
+</div>
+<div>
+<label class="block text-label-md text-on-surface-variant mb-2">Industry</label>
+<input class="w-full border-subtle rounded-lg p-3 text-body-md" placeholder="Information Technology" type="text"/>
+</div>
+<div>
+<label class="block text-label-md text-on-surface-variant mb-2">Country</label>
+<select class="w-full border-subtle rounded-lg p-3 text-body-md appearance-none bg-no-repeat bg-[right_12px_center]" style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2343474e%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E')">
+<option>United States</option>
+<option>United Kingdom</option>
+<option>Germany</option>
+<option>Singapore</option>
+</select>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 3: Contact Information -->
+<section class="bg-surface-container-lowest rounded-xl border border-subtle custom-shadow p-6 expanded">
+<div class="flex justify-between items-center mb-6 cursor-pointer" onclick="this.parentElement.classList.toggle('expanded')">
+<h3 class="font-title-lg text-title-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="person">person</span>
+                                Contact Information
+                            </h3>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="expand_more">expand_more</span>
+</div>
+<div class="collapsible-content">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-lg">
+<div>
+<label class="block text-label-md text-on-surface-variant mb-2">First Name</label>
+<input class="w-full border-subtle rounded-lg p-3 text-body-md" placeholder="Sarah" type="text"/>
+</div>
+<div>
+<label class="block text-label-md text-on-surface-variant mb-2">Last Name</label>
+<input class="w-full border-subtle rounded-lg p-3 text-body-md" placeholder="Jenkins" type="text"/>
+</div>
+<div>
+<label class="block text-label-md text-on-surface-variant mb-2">Job Title</label>
+<input class="w-full border-subtle rounded-lg p-3 text-body-md" placeholder="Chief Operating Officer" type="text"/>
+</div>
+<div>
+<label class="block text-label-md text-on-surface-variant mb-2">Email Address</label>
+<div class="relative">
+<input class="w-full border-subtle rounded-lg p-3 text-body-md" placeholder="s.jenkins@acmedynamics.com" type="email"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-emerald-500 text-[20px]" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<div>
+<label class="block text-label-md text-on-surface-variant mb-2">Phone Number</label>
+<input class="w-full border-subtle rounded-lg p-3 text-body-md" placeholder="+1 (555) 000-0000" type="tel"/>
+</div>
+<div>
+<label class="block text-label-md text-on-surface-variant mb-2">Preferred Contact Method</label>
+<div class="flex flex-wrap gap-2">
+<label class="flex-1 min-w-[80px] cursor-pointer">
+<input checked="" class="hidden peer" name="contact_pref" type="radio"/>
+<div class="py-3 text-center border border-subtle rounded-lg text-label-md peer-checked:border-secondary peer-checked:bg-secondary/5 peer-checked:text-secondary font-medium transition-all">Email</div>
+</label>
+<label class="flex-1 min-w-[80px] cursor-pointer">
+<input class="hidden peer" name="contact_pref" type="radio"/>
+<div class="py-3 text-center border border-subtle rounded-lg text-label-md peer-checked:border-secondary peer-checked:bg-secondary/5 peer-checked:text-secondary font-medium transition-all">Phone</div>
+</label>
+<label class="flex-1 min-w-[80px] cursor-pointer">
+<input class="hidden peer" name="contact_pref" type="radio"/>
+<div class="py-3 text-center border border-subtle rounded-lg text-label-md peer-checked:border-secondary peer-checked:bg-secondary/5 peer-checked:text-secondary font-medium transition-all">Video</div>
+</label>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 6: Notes -->
+<section class="bg-surface-container-lowest rounded-xl border border-subtle custom-shadow p-6 expanded">
+<div class="flex justify-between items-center mb-6 cursor-pointer" onclick="this.parentElement.classList.toggle('expanded')">
+<h3 class="font-title-lg text-title-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="notes">notes</span>
+                                Lead Background &amp; Context
+                            </h3>
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="expand_more">expand_more</span>
+</div>
+<div class="collapsible-content">
+<div class="border-subtle rounded-lg overflow-hidden">
+<div class="bg-surface-container px-4 py-2 flex items-center gap-4 border-b border-subtle">
+<button class="material-symbols-outlined text-[20px] text-on-surface-variant hover:text-primary" data-icon="format_bold">format_bold</button>
+<button class="material-symbols-outlined text-[20px] text-on-surface-variant hover:text-primary" data-icon="format_italic">format_italic</button>
+<button class="material-symbols-outlined text-[20px] text-on-surface-variant hover:text-primary" data-icon="format_list_bulleted">format_list_bulleted</button>
+<button class="material-symbols-outlined text-[20px] text-on-surface-variant hover:text-primary" data-icon="link">link</button>
+</div>
+<textarea class="w-full p-4 text-body-md border-none" placeholder="Enter background details, discovery call notes, or internal context..." rows="6"></textarea>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Contextual Data -->
+<div class="col-span-12 lg:col-span-4 space-y-gutter">
+<!-- Section 4: Sales Information -->
+<section class="bg-surface-container-lowest rounded-xl border border-subtle custom-shadow p-6 expanded">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-title-lg text-title-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="payments">payments</span>
+                                Sales Data
+                            </h3>
+</div>
+<div class="space-y-stack-lg">
+<div>
+<label class="block text-label-md text-on-surface-variant mb-2">Estimated Budget</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">$</span>
+<input class="w-full pl-8 pr-4 py-3 border-subtle rounded-lg text-body-md" placeholder="0.00" type="number"/>
+</div>
+</div>
+<div>
+<label class="block text-label-md text-on-surface-variant mb-2">Expected Close Date</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant" data-icon="calendar_today">calendar_today</span>
+<input class="w-full p-3 border-subtle rounded-lg text-body-md" type="date"/>
+</div>
+</div>
+<div>
+<label class="block text-label-md text-on-surface-variant mb-2">Platform Interest</label>
+<select class="w-full border-subtle rounded-lg p-3 text-body-md appearance-none bg-no-repeat bg-[right_12px_center]" style="background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%2343474e%22%20stroke-width%3D%222%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%3E%3Cpolyline%20points%3D%226%209%2012%2015%2018%209%22%3E%3C/polyline%3E%3C/svg%3E')">
+<option>Enterprise ERP Suite</option>
+<option>CRM Pro Module</option>
+<option>Supply Chain Orchestrator</option>
+<option>Custom Implementation</option>
+</select>
+</div>
+<div class="p-4 bg-surface-container rounded-lg">
+<p class="text-label-md text-on-surface-variant mb-1">Projected Opportunity Value</p>
+<p class="text-headline-md font-bold text-primary">$0.00</p>
+<p class="text-[10px] text-on-surface-variant uppercase mt-2 tracking-widest">Weighted by probability (10%)</p>
+</div>
+</div>
+</section>
+<!-- Section 5: Assignment -->
+<section class="bg-surface-container-lowest rounded-xl border border-subtle custom-shadow p-6 expanded">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-title-lg text-title-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="assignment_ind">assignment_ind</span>
+                                Assignment
+                            </h3>
+</div>
+<div class="space-y-stack-lg">
+<div>
+<label class="block text-label-md text-on-surface-variant mb-2">Assigned Sales Rep</label>
+<div class="relative group">
+<div class="flex items-center gap-3 p-3 border border-subtle rounded-lg cursor-pointer hover:border-secondary transition-all">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="A portrait of a young female professional with blonde hair, wearing a grey blazer, smiling warmly. Professional corporate profile style with soft studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2tlQXAcieiYqwP59z-91rc7ib9BYwtVAZ3hykSJ_wcvtM2_q6BGEmguR3m3CRzTXFpnFBTrwlN1GF59tjskRpZXCc4o7hT3gUz-BO8prev8a0H9PhnOVT9GZN9J2qPb7frT8ljMcNk__hO7yZ-U0RA2LeQ8kQAlki6jzSwto0ZyxpXijiQW9EBvC5K_Pq2ycd_UZHn0Uk5_j3q02f_cKVBJTENhsBNDTKXggdTXAlKkaMiz8coTXToQ"/>
+<span class="text-body-md">Julia Montgomery</span>
+<span class="material-symbols-outlined ml-auto text-on-surface-variant" data-icon="unfold_more">unfold_more</span>
+</div>
+</div>
+</div>
+<div>
+<label class="block text-label-md text-on-surface-variant mb-2">Region / Territory</label>
+<select class="w-full border-subtle rounded-lg p-3 text-body-md">
+<option>North America (East)</option>
+<option>EMEA Central</option>
+<option>APAC Emerging</option>
+</select>
+</div>
+<div>
+<label class="block text-label-md text-on-surface-variant mb-2">Assigned Team</label>
+<div class="flex items-center gap-2 px-3 py-2 bg-surface-container-low rounded-lg text-body-md border border-subtle">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+                                    Strategic Accounts Team B
+                                </div>
+</div>
+</div>
+</section>
+<!-- Section 7: Documents -->
+<section class="bg-surface-container-lowest rounded-xl border border-subtle custom-shadow p-6 expanded">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-title-lg text-title-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="upload_file">upload_file</span>
+                                Attachments
+                            </h3>
+</div>
+<div class="border-2 border-dashed border-outline-variant rounded-xl p-8 text-center bg-surface-container-low hover:bg-surface-container transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-[48px] text-on-surface-variant group-hover:text-secondary transition-colors" data-icon="cloud_upload">cloud_upload</span>
+<p class="mt-4 font-label-md text-on-surface">Drag &amp; Drop RFP or Brochures</p>
+<p class="text-xs text-on-surface-variant mt-1">PDF, DOCX, XLSX (Max 25MB)</p>
+<button class="mt-6 px-4 py-2 bg-white border border-outline rounded-lg text-label-md hover:bg-surface-container-highest transition-colors">Browse Files</button>
+</div>
+</section>
+</div>
+</div>
+</main>
+</div>
+<!-- Floating Action Feedback Area (Toast Notification Simulation) -->
+<div class="fixed bottom-gutter right-gutter translate-y-24 opacity-0 transition-all duration-300 pointer-events-none" id="toast">
+<div class="bg-primary text-white px-6 py-4 rounded-xl shadow-2xl flex items-center gap-4">
+<span class="material-symbols-outlined text-emerald-400" data-icon="check_circle">check_circle</span>
+<div>
+<p class="font-bold">Draft Saved</p>
+<p class="text-sm text-white/70">The lead has been securely stored in your local queue.</p>
+</div>
+</div>
+</div>
+<script>
+        // Simple micro-interaction for Save Draft
+        document.querySelectorAll('button').forEach(btn => {
+            if(btn.textContent.includes('Save Draft')) {
+                btn.addEventListener('click', () => {
+                    const toast = document.getElementById('toast');
+                    toast.classList.remove('translate-y-24', 'opacity-0');
+                    toast.classList.add('translate-y-0', 'opacity-100');
+                    setTimeout(() => {
+                        toast.classList.add('translate-y-24', 'opacity-0');
+                        toast.classList.remove('translate-y-0', 'opacity-100');
+                    }, 3000);
+                });
+            }
+        });
+
+        // Collapsible sections Logic
+        function toggleSection(id) {
+            const el = document.getElementById(id);
+            el.classList.toggle('expanded');
+        }
+
+        // Search Bar Focus Effect
+        const searchInput = document.querySelector('input[placeholder="Search system records..."]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('ring-2', 'ring-secondary/20');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('ring-2', 'ring-secondary/20');
+        });
+    </script>
+</body></html>

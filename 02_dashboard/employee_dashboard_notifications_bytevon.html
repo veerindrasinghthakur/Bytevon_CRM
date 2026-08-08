@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bytevon - Employee Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-variant": "#d3e4fe", "secondary-container": "#0070ea", "on-tertiary-fixed": "#191c1e", "error-container": "#ffdad6", "tertiary-container": "#1c1f21", secondary: "#0059bb", "primary-fixed": "#d4e3ff", "on-surface": "#0b1c30", "on-tertiary-fixed-variant": "#444749", "tertiary-fixed-dim": "#c4c7c9", "surface-container-highest": "#d3e4fe", "on-secondary-container": "#fefcff", "on-primary-fixed-variant": "#2f486a", "primary-fixed-dim": "#afc8f0", outline: "#74777f", "surface-container": "#e5eeff", "surface-container-lowest": "#ffffff", "surface-container-low": "#eff4ff", "on-primary": "#ffffff", "secondary-fixed-dim": "#adc7ff", error: "#ba1a1a", tertiary: "#040607", "inverse-surface": "#213145", "primary-container": "#001f3f", "surface-container-high": "#dce9ff", surface: "#f8f9ff", "outline-variant": "#c4c6cf", primary: "#000613", "inverse-primary": "#afc8f0", "tertiary-fixed": "#e0e3e5", "on-background": "#0b1c30", "surface-dim": "#cbdbf5", "on-secondary-fixed-variant": "#004493", "on-tertiary-container": "#848789", background: "#f8f9ff", "surface-bright": "#f8f9ff", "on-error": "#ffffff", "inverse-on-surface": "#eaf1ff", "on-primary-container": "#6f88ad", "on-tertiary": "#ffffff", "on-secondary": "#ffffff", "secondary-fixed": "#d8e2ff", "on-secondary-fixed": "#001a41", "surface-tint": "#476083", "on-surface-variant": "#43474e", "on-error-container": "#93000a", "on-primary-fixed": "#001c3a"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"container-max": "1440px", unit: "4px", "stack-md": "16px", "stack-lg": "32px", "margin-mobile": "16px", gutter: "24px", "margin-desktop": "40px", "stack-sm": "8px"}, fontFamily: {"label-md": ["Inter"], "headline-lg": ["Inter"], "display-lg": ["Inter"], "body-md": ["Inter"], "headline-md": ["Inter"], "headline-lg-mobile": ["Inter"], "label-sm": ["Inter"], "title-lg": ["Inter"], "body-sm": ["Inter"], "body-lg": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}]}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .dim-overlay {
+            background-color: rgba(11, 28, 48, 0.4);
+            backdrop-filter: blur(2px);
+        }
+        .bento-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .bento-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background overflow-hidden">
+<!-- Sidebar Component (Mapped from JSON) -->
+<aside class="fixed left-0 top-0 h-full w-72 bg-primary-container dark:bg-tertiary-container shadow-sm flex flex-col p-4 gap-2 z-30">
+<div class="flex flex-col gap-1 mb-8 px-4">
+<div class="flex items-center gap-3"><img alt="Bytevon Logo" class="w-8 h-8 rounded-lg object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGtpnSKqc0jw4-b-72-MLUCCVV3MYIrrMnmUPVSN739jUG99_0RV42cauw7gubk0f15yp6Beve8xpvOOKcGK-bmPfN74XiDsQvy3cr2dMAxhyfnCP0sfw1zUydQByDtVeXAP8eTFU5SitOUrRJMUlGwZymFg0yILSeBPUuAZium25KvMOz25sE8E_SX3HjnGdVBU6YUenSfJRPF2CPTMtaZ3J_31IgL3Uobrq7n78uPA7O5RLMJIWIOCIYxpt40MEy20o"/><h1 class="font-headline-md text-headline-md text-on-primary dark:text-on-tertiary font-bold">Bytevon</h1></div>
+<p class="font-label-sm text-label-sm text-on-primary-container opacity-70">Enterprise ERP</p>
+</div>
+<nav class="flex-grow flex flex-col gap-1">
+<!-- Active: Dashboard -->
+<div class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg cursor-pointer select-none">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-on-primary-container/10 transition-all cursor-pointer select-none">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md">My Attendance</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-on-primary-container/10 transition-all cursor-pointer select-none">
+<span class="material-symbols-outlined">event_busy</span>
+<span class="font-label-md text-label-md">My Leave</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-on-primary-container/10 transition-all cursor-pointer select-none">
+<span class="material-symbols-outlined">assignment</span>
+<span class="font-label-md text-label-md">My Tasks</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-on-primary-container/10 transition-all cursor-pointer select-none">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-md text-label-md">Notifications</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-on-primary-container/10 transition-all cursor-pointer select-none">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="font-label-md text-label-md">My Profile</span>
+</div>
+</nav>
+<div class="mt-auto border-t border-on-primary-container/10 pt-4 flex flex-col gap-1">
+<div class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-on-primary-container/10 transition-all cursor-pointer select-none">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</div>
+<div class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-on-primary-container/10 transition-all cursor-pointer select-none">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</div>
+</div>
+</aside>
+<!-- TopNavBar Component (Mapped from JSON) -->
+<header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest border-b border-outline-variant flex justify-between items-center px-gutter z-20">
+<div class="flex items-center flex-1">
+<div class="relative w-96 max-w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container text-on-surface font-body-sm text-body-sm pl-10 pr-4 py-2 rounded-lg border-none focus:ring-2 focus:ring-secondary-container" placeholder="Search dashboard..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="p-2 rounded-full hover:bg-surface-container transition-colors cursor-pointer text-on-surface-variant">
+<span class="material-symbols-outlined">help</span>
+</div>
+<!-- Highlighted Notification Bell -->
+<div class="p-2 rounded-full bg-secondary-container text-on-secondary-container transition-colors cursor-pointer relative shadow-md">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">notifications</span>
+<span class="absolute top-1 right-1 w-2.5 h-2.5 bg-error rounded-full border-2 border-surface-container-lowest"></span>
+</div>
+<div class="p-2 rounded-full hover:bg-surface-container transition-colors cursor-pointer text-on-surface-variant">
+<span class="material-symbols-outlined">settings</span>
+</div>
+<div class="w-8 h-8 rounded-full bg-surface-container overflow-hidden border border-outline-variant cursor-pointer">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate employee in a clean, modern business setting. The lighting is bright and even, highlighting a confident but approachable expression. The background is a soft-focus office interior with minimalist decor, maintaining a high-contrast and professional ERP aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEruiDAoCt6Mv5kPR2crd_zxhxK56xpmqVndAQ09437kzgUfi2qpXTyeGR8eFJPJ0o4gfsp1b36X2hQc0elu9cVW9Y5bPA2qrdURsh8bFuVQfDf5qXJVCGLpgwJOUxJw7ragcFipG78ZAbOQkTR6eTDCSaiBJrjdsqhKNapBqxFyRvnG-ijKxPs8o9CHKmkKC4l3iE--dTlFfGPr7-fBvPy3BQkEbUgQ5FjBrPud2plC7rTTmYAQ56ew"/>
+</div>
+</div>
+</header>
+<!-- Main Content (Dimmed) -->
+<main class="ml-72 pt-16 h-screen overflow-y-auto">
+<div class="p-margin-desktop relative">
+<!-- Dimming Overlay -->
+<div class="absolute inset-0 z-40 dim-overlay pointer-events-auto"></div>
+<div class="max-w-container-max mx-auto space-y-stack-lg">
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary">Executive Dashboard</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Overview of your enterprise activities</p>
+</div>
+<button class="bg-primary text-on-primary px-6 py-2.5 rounded-lg font-label-md text-label-md flex items-center gap-2 shadow-sm hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined">add</span>
+                        New Request
+                    </button>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Key Metric 1 -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant p-6 rounded-xl bento-card">
+<div class="flex justify-between items-start mb-4">
+<span class="p-2 bg-secondary/10 text-secondary rounded-lg"><span class="material-symbols-outlined">payments</span></span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">+12% vs last month</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Total Earnings</p>
+<p class="font-display-lg text-display-lg text-primary mt-1">$4,250.00</p>
+</div>
+<!-- Key Metric 2 -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant p-6 rounded-xl bento-card">
+<div class="flex justify-between items-start mb-4">
+<span class="p-2 bg-secondary/10 text-secondary rounded-lg"><span class="material-symbols-outlined">schedule</span></span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Next shift in 2h</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Attendance Rate</p>
+<p class="font-display-lg text-display-lg text-primary mt-1">98.4%</p>
+</div>
+<!-- Key Metric 3 -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant p-6 rounded-xl bento-card">
+<div class="flex justify-between items-start mb-4">
+<span class="p-2 bg-secondary/10 text-secondary rounded-lg"><span class="material-symbols-outlined">task_alt</span></span>
+<span class="text-on-surface-variant font-label-sm text-label-sm">4 pending</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Tasks Completed</p>
+<p class="font-display-lg text-display-lg text-primary mt-1">24/28</p>
+</div>
+<!-- Large Chart Area -->
+<div class="col-span-12 lg:col-span-8 h-80 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 relative overflow-hidden bento-card">
+<h3 class="font-title-lg text-title-lg text-primary mb-6">Performance Trend</h3>
+<div class="absolute inset-0 top-16 flex items-center justify-center">
+<div class="w-full h-full flex items-end justify-between px-8 pb-8 gap-4">
+<div class="w-full bg-surface-container-high rounded-t-lg transition-all hover:bg-secondary-container" style="height: 40%"></div>
+<div class="w-full bg-surface-container-high rounded-t-lg transition-all hover:bg-secondary-container" style="height: 65%"></div>
+<div class="w-full bg-secondary-container rounded-t-lg shadow-lg" style="height: 85%"></div>
+<div class="w-full bg-surface-container-high rounded-t-lg transition-all hover:bg-secondary-container" style="height: 50%"></div>
+<div class="w-full bg-surface-container-high rounded-t-lg transition-all hover:bg-secondary-container" style="height: 70%"></div>
+<div class="w-full bg-surface-container-high rounded-t-lg transition-all hover:bg-secondary-container" style="height: 90%"></div>
+</div>
+</div>
+</div>
+<!-- Side Action List -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 bento-card">
+<h3 class="font-title-lg text-title-lg text-primary mb-4">Upcoming Events</h3>
+<div class="space-y-4">
+<div class="flex items-center gap-4 p-3 rounded-lg border border-outline-variant/50 hover:bg-surface-container transition-colors">
+<div class="bg-surface-container-high w-10 h-10 rounded flex flex-col items-center justify-center">
+<span class="text-[10px] font-bold text-on-surface-variant">OCT</span>
+<span class="text-sm font-bold text-primary">12</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-primary">Quarterly Review</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">2:00 PM • Room 4B</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-3 rounded-lg border border-outline-variant/50 hover:bg-surface-container transition-colors">
+<div class="bg-surface-container-high w-10 h-10 rounded flex flex-col items-center justify-center">
+<span class="text-[10px] font-bold text-on-surface-variant">OCT</span>
+<span class="text-sm font-bold text-primary">14</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-primary">All Hands Meeting</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">10:00 AM • Main Hall</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Notification Center Overlay -->
+<div class="fixed top-16 right-0 h-[calc(100vh-4rem)] w-96 bg-surface-container-lowest shadow-2xl z-50 transform transition-transform duration-300 ease-out translate-x-0 border-l border-outline-variant" id="notification-center">
+<div class="p-6 h-full flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-headline-md text-headline-md text-primary">Notifications</h3>
+<button class="text-secondary font-label-sm text-label-sm hover:underline">Mark all as read</button>
+</div>
+<div class="flex-grow space-y-4 overflow-y-auto pr-2 custom-scrollbar">
+<!-- Leave Approval Notification -->
+<div class="p-4 bg-surface-container-low rounded-xl border border-secondary/10 hover:border-secondary transition-all cursor-pointer relative overflow-hidden group">
+<div class="absolute left-0 top-0 w-1 h-full bg-secondary"></div>
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<div class="flex justify-between items-start gap-2">
+<p class="font-label-md text-label-md text-primary">Leave Approved</p>
+<span class="text-[10px] text-on-surface-variant mt-1">2m ago</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Your request for annual leave from Oct 20 to Oct 25 has been approved by HR.</p>
+<div class="mt-3 flex gap-2">
+<button class="px-3 py-1 bg-primary text-on-primary font-label-sm text-label-sm rounded-lg">View Details</button>
+</div>
+</div>
+</div>
+</div>
+<!-- System Announcement -->
+<div class="p-4 bg-surface-container-low rounded-xl border border-transparent hover:border-outline-variant transition-all cursor-pointer">
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">campaign</span>
+</div>
+<div>
+<div class="flex justify-between items-start gap-2">
+<p class="font-label-md text-label-md text-primary">System Maintenance</p>
+<span class="text-[10px] text-on-surface-variant mt-1">1h ago</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Bytevon ERP will undergo scheduled maintenance tonight at 11:00 PM EST.</p>
+</div>
+</div>
+</div>
+<!-- Task Assignment -->
+<div class="p-4 bg-surface-container-low rounded-xl border border-transparent hover:border-outline-variant transition-all cursor-pointer">
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">assignment_late</span>
+</div>
+<div>
+<div class="flex justify-between items-start gap-2">
+<p class="font-label-md text-label-md text-primary">New Task Assigned</p>
+<span class="text-[10px] text-on-surface-variant mt-1">3h ago</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Sarah Mitchell assigned you to: <span class="font-bold">Q4 Performance Audit Preparation</span>.</p>
+<div class="mt-3 flex gap-2">
+<button class="px-3 py-1 bg-surface-container-highest text-primary border border-outline-variant font-label-sm text-label-sm rounded-lg">Dismiss</button>
+<button class="px-3 py-1 bg-primary text-on-primary font-label-sm text-label-sm rounded-lg">Start Task</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Older notification (less prominent) -->
+<div class="p-4 bg-surface-container-lowest opacity-60 grayscale-[0.5] rounded-xl border border-transparent transition-all">
+<div class="flex gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-on-surface-variant">history</span>
+</div>
+<div>
+<div class="flex justify-between items-start gap-2">
+<p class="font-label-md text-label-md text-on-surface-variant">Profile Updated</p>
+<span class="text-[10px] text-on-surface-variant mt-1">Yesterday</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">You successfully updated your professional certification details.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="pt-6 border-t border-outline-variant mt-auto">
+<button class="w-full py-3 text-center bg-surface-container-high text-primary font-label-md text-label-md rounded-xl hover:bg-surface-container-highest transition-colors">
+                    See All Notifications
+                </button>
+</div>
+</div>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        // Simple logic for future expansion - handles overlay behavior if clicked outside
+        document.querySelector('.dim-overlay').addEventListener('click', () => {
+            // This would normally close the notification panel
+            console.log('User clicked outside notification panel.');
+        });
+    </script>
+</body></html>

@@ -1,0 +1,620 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Bytevon Approval Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {surface: "#f8f9ff", "on-error": "#ffffff", "secondary-fixed": "#d8e2ff", "surface-tint": "#476083", "on-secondary": "#ffffff", "primary-fixed-dim": "#afc8f0", "on-primary-container": "#6f88ad", "on-tertiary-fixed-variant": "#444749", "inverse-surface": "#213145", "error-container": "#ffdad6", "surface-container-lowest": "#ffffff", "tertiary-fixed": "#e0e3e5", "surface-variant": "#d3e4fe", "surface-bright": "#f8f9ff", primary: "#000613", "inverse-primary": "#afc8f0", "inverse-on-surface": "#eaf1ff", "surface-container-highest": "#d3e4fe", "primary-fixed": "#d4e3ff", "on-tertiary-fixed": "#191c1e", "on-tertiary-container": "#848789", tertiary: "#040607", "surface-container-low": "#eff4ff", "on-surface-variant": "#43474e", "surface-dim": "#cbdbf5", "tertiary-fixed-dim": "#c4c7c9", "secondary-container": "#0070ea", "on-primary-fixed": "#001c3a", "surface-container-high": "#dce9ff", "surface-container": "#e5eeff", "secondary-fixed-dim": "#adc7ff", "on-primary": "#ffffff", "on-secondary-container": "#fefcff", secondary: "#0059bb", background: "#f8f9ff", "tertiary-container": "#1c1f21", "on-tertiary": "#ffffff", "primary-container": "#001f3f", outline: "#74777f", "on-secondary-fixed": "#001a41", error: "#ba1a1a", "on-primary-fixed-variant": "#2f486a", "outline-variant": "#c4c6cf", "on-error-container": "#93000a", "on-background": "#0b1c30", "on-surface": "#0b1c30", "on-secondary-fixed-variant": "#004493"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-sm": "8px", "stack-md": "16px", "stack-lg": "32px", "container-max": "1440px", "margin-desktop": "40px", unit: "4px", "margin-mobile": "16px", gutter: "24px"}, fontFamily: {"title-lg": ["Inter"], "label-md": ["Inter"], "headline-lg": ["Inter"], "headline-lg-mobile": ["Inter"], "display-lg": ["Inter"], "headline-md": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "body-sm": ["Inter"], "label-sm": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}]}, animation: {shimmer: "shimmer 2s infinite linear", "pulse-rotate": "pulse-rotate 2s cubic-bezier(0.4, 0, 0.6, 1) infinite", "slide-up": "slide-up 0.5s ease-out forwards", "fade-in": "fade-in 0.8s ease-out forwards"}, keyframes: {shimmer: {"0%": {"background-position": "-200% 0"}, "100%": {"background-position": "200% 0"}}, "pulse-rotate": {"0%, 100%": {transform: "scale(1) rotate(0deg)", opacity: "1"}, "50%": {transform: "scale(1.2) rotate(5deg)", opacity: "0.7"}}, "slide-up": {"0%": {transform: "translateY(20px)", opacity: "0"}, "100%": {transform: "translateY(0)", opacity: "1"}}, "fade-in": {"0%": {opacity: "0"}, "100%": {opacity: "1"}}}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-interact {
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .btn-interact:active {
+            transform: scale(0.95);
+        }
+
+        .shimmer-badge {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite linear;
+        }
+
+        .table-row-hover {
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .table-row-hover:hover {
+            transform: scale(1.005);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            z-index: 10;
+        }
+
+        .entrance-stagger-1 { animation: slide-up 0.5s ease-out 0.1s forwards; opacity: 0; }
+        .entrance-stagger-2 { animation: slide-up 0.5s ease-out 0.2s forwards; opacity: 0; }
+        .entrance-stagger-3 { animation: slide-up 0.5s ease-out 0.3s forwards; opacity: 0; }
+        .entrance-stagger-4 { animation: slide-up 0.5s ease-out 0.4s forwards; opacity: 0; }
+        .entrance-fade { animation: fade-in 0.8s ease-out 0.5s forwards; opacity: 0; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen flex overflow-hidden">
+<!-- STITCH_SHADER_START:ANIMATION_71 class="fixed inset-0 w-full h-full -z-10" -->
+<div class="fixed inset-0 w-full h-full -z-10" style="display:block;">
+<canvas height="1024" id="shader-canvas-ANIMATION_71" style="display:block;width:100%;height:100%" width="1280"></canvas>
+<script>
+(function() {
+  const canvas = document.getElementById('shader-canvas-ANIMATION_71');
+
+  // Sync the WebGL drawing-buffer size with the CSS-driven layout size.
+  // This fires on initial layout and whenever the element is resized.
+  function syncSize() {
+    const w = canvas.clientWidth  || 1280;
+    const h = canvas.clientHeight || 720;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width  = w;
+      canvas.height = h;
+    }
+  }
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(syncSize).observe(canvas);
+  }
+  syncSize();
+
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  if (!gl) return;
+  const vs = `attribute vec2 a_position;
+varying vec2 v_texCoord;
+void main() {
+  v_texCoord = a_position * 0.5 + 0.5;
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}`;
+  const fs = `precision highp float;
+varying vec2 v_texCoord;
+uniform float u_time;
+uniform vec2 u_resolution;
+
+void main() {
+    vec2 uv = v_texCoord;
+    
+    // Subtle flowing gradient using Bytevon colors
+    // Deep Navy: #001f3f -> (0.0, 0.12, 0.25)
+    // Surface: #f8f9ff -> (0.97, 0.98, 1.0)
+    
+    float noise = sin(uv.x * 3.0 + u_time * 0.2) * cos(uv.y * 2.0 + u_time * 0.3) * 0.5 + 0.5;
+    
+    vec3 color1 = vec3(0.97, 0.98, 1.0); // Surface
+    vec3 color2 = vec3(0.92, 0.94, 0.98); // Surface Dim / Light Blue tint
+    
+    vec3 finalColor = mix(color1, color2, noise * 0.3);
+    
+    // Add a very subtle vignette
+    float vignette = distance(uv, vec2(0.5));
+    finalColor *= 1.0 - vignette * 0.1;
+
+    gl_FragColor = vec4(finalColor, 1.0);
+}`;
+  function cs(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const pos = gl.getAttribLocation(prog, 'a_position');
+  gl.enableVertexAttribArray(pos);
+  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+  const uTime = gl.getUniformLocation(prog, 'u_time');
+  const uRes = gl.getUniformLocation(prog, 'u_resolution');
+  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+  // u_mouse is in pixel coordinates matching u_resolution (ShaderToy convention).
+  // Shaders that need normalized coords should use: u_mouse / u_resolution.
+  let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+  window.addEventListener('mousemove', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width && rect.height) {
+      const nx = (event.clientX - rect.left) / rect.width;
+      const ny = 1.0 - (event.clientY - rect.top) / rect.height;
+      mouse.x = nx * canvas.width;
+      mouse.y = ny * canvas.height;
+    }
+  });
+
+  function render(t) {
+    if (typeof ResizeObserver === 'undefined') syncSize();
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    if (uTime) gl.uniform1f(uTime, t * 0.001);
+    if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
+    if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(render);
+  }
+  render(0);
+})();
+</script>
+</div>
+<!-- STITCH_SHADER_END:ANIMATION_71 -->
+<!-- SideNavBar (Shell) -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary text-on-primary flex flex-col py-stack-md border-r border-outline-variant/10 z-50 shadow-sm">
+<div class="px-6 mb-stack-lg">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-secondary-container rounded-lg flex items-center justify-center text-on-primary-container"><img alt="Bytevon Logo" class="w-full h-full object-cover rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCImWGII_X9B5zdcwdGCJ77umVZUutjkQ9jHI-JP7tdzLrUJd4qxxhcByVQ9ASmM73uBKs9Av0NbUTLuq5Gx2dFF-n8Vzs4gcDVAVPIvNK4bkrc-LCcRxiqAy-A9HqMr7C42FARyxlfWUPt5p5sjJYwD5vAR_CT46tyOMkNJ5iHEpY76vVsxLSj3ql7EuSIsO7h9I7h2VOakwmtLe2UrruwAMOSK1Mhf3wg1qg-NOyN9CABlIRPmd7uPvuVTKiYWmf011w"></div>
+<div>
+<h1 class="text-title-lg font-title-lg font-bold text-on-primary">Bytevon</h1>
+<p class="text-label-sm opacity-60">Enterprise ERP</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 px-2 space-y-1 sidebar-scroll overflow-y-auto">
+<div class="px-4 py-2 text-label-sm uppercase tracking-wider opacity-40">Main Navigation</div>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-on-primary-fixed-variant/20 rounded-lg mx-2 transition-colors btn-interact" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-on-primary-fixed-variant/20 rounded-lg mx-2 transition-colors btn-interact" href="#">
+<span class="material-symbols-outlined">corporate_fare</span>
+<span class="font-label-md text-label-md">Organization</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-on-primary-fixed-variant/20 rounded-lg mx-2 transition-colors btn-interact" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-md text-label-md">People</span>
+</a>
+<!-- Active Navigation -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed bg-secondary-container rounded-lg font-bold mx-2 scale-[0.98] transition-transform btn-interact" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">approval_delegation</span>
+<span class="font-label-md text-label-md">Approvals</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-on-primary-fixed-variant/20 rounded-lg mx-2 transition-colors btn-interact" href="#">
+<span class="material-symbols-outlined">badge</span>
+<span class="font-label-md text-label-md">Workforce</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-on-primary-fixed-variant/20 rounded-lg mx-2 transition-colors btn-interact" href="#">
+<span class="material-symbols-outlined">handshake</span>
+<span class="font-label-md text-label-md">CRM</span>
+</a>
+<div class="px-4 py-6 text-label-sm uppercase tracking-wider opacity-40">System</div>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-on-primary-fixed-variant/20 rounded-lg mx-2 transition-colors btn-interact" href="#">
+<span class="material-symbols-outlined">developer_mode</span>
+<span class="font-label-md text-label-md">Developer</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-on-primary-fixed-variant/20 rounded-lg mx-2 transition-colors btn-interact" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Administration</span>
+</a>
+</nav>
+<div class="mt-auto px-4 py-4 border-t border-white/10 mx-2">
+<button class="w-full bg-secondary py-3 px-4 rounded-xl flex items-center justify-center gap-2 text-on-primary font-bold hover:bg-secondary-container transition-all btn-interact">
+<span class="material-symbols-outlined text-md">add</span>
+<span class="text-label-md font-label-md">Quick Create</span>
+</button>
+<div class="mt-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 text-on-primary-fixed-variant hover:text-on-primary transition-colors btn-interact" href="#">
+<span class="material-symbols-outlined text-[20px]">help</span>
+<span class="text-label-md">Help</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-on-primary-fixed-variant hover:text-on-primary transition-colors btn-interact" href="#">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span class="text-label-md">Logout</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-[280px] h-screen overflow-y-auto bg-transparent flex flex-col relative">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center h-16 px-margin-desktop sticky top-0 z-40 bg-surface/60 backdrop-blur-md border-b border-outline-variant">
+<div class="flex items-center gap-6 flex-1">
+<div class="relative w-96 group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low/50 border border-outline-variant rounded-full text-body-sm focus:ring-2 focus:ring-secondary focus:border-transparent outline-none transition-all" placeholder="Search approvals..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex gap-1 border-r border-outline-variant pr-4">
+<button class="p-2 hover:bg-surface-container rounded-full relative btn-interact">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 hover:bg-surface-container rounded-full btn-interact">
+<span class="material-symbols-outlined text-on-surface-variant">apps</span>
+</button>
+</div>
+<div class="flex items-center gap-3 pl-2 cursor-pointer group">
+<div class="text-right hidden sm:block">
+<p class="text-label-md font-bold leading-tight group-hover:text-primary transition-colors">Jordan Vance</p>
+<p class="text-label-sm text-on-surface-variant">Admin Executive</p>
+</div>
+<img class="w-10 h-10 rounded-full border border-outline-variant object-cover btn-interact" data-alt="A clean professional studio portrait" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4mIRLQPCNg30-126pNFAg-49E3nKOQCRBfdADukYelfk9JlNk8DHOq8UCO6SiNmYcsYdx91mCLgymqjsu8KzFv5kMcYXv68cMi-AnLSENjuCO_2smPDmJd4uhgUnNpd2z1PQM8uvAA0bZLNo6b8iaCq4219PIrQ8op_-7VfZKObbTAhzNjJ1anwwCBo2q9rNXRyd8DtUyhQE3nj_0gtA3uA7KkaSW-9hxLXGs8jfKoY91slcvNIVaTQ">
+</div>
+</div>
+</header>
+<!-- View Content -->
+<div class="flex-1 px-margin-desktop py-stack-lg">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-stack-lg gap-4 entrance-fade">
+<div>
+<h2 class="text-headline-lg font-headline-lg text-primary">Approval Center</h2>
+<p class="text-body-md text-on-surface-variant max-w-2xl">Review, approve or reject pending business requests across the organization.</p>
+</div>
+<div class="flex gap-stack-sm">
+<button class="flex items-center gap-2 px-4 py-2.5 bg-surface-container-high/80 text-on-surface-variant font-label-md rounded-lg hover:bg-surface-container-highest transition-colors btn-interact">
+<span class="material-symbols-outlined text-[20px]">rule</span>
+<span class="">Approval Rules</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2.5 bg-surface-container-high/80 text-on-surface-variant font-label-md rounded-lg hover:bg-surface-container-highest transition-colors btn-interact">
+<span class="material-symbols-outlined text-[20px]">history</span>
+<span class="">Approval History</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2.5 bg-primary text-on-primary font-label-md rounded-lg hover:bg-primary-container transition-all btn-interact">
+<span class="material-symbols-outlined text-[20px]">file_export</span>
+<span class="">Export</span>
+</button>
+</div>
+</div>
+<!-- KPI Bento Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-stack-md mb-stack-lg">
+<div class="bg-surface-container-lowest/80 backdrop-blur-sm border border-outline-variant p-stack-md rounded-xl shadow-sm hover:shadow-md transition-all entrance-stagger-1">
+<div class="flex justify-between items-start mb-2">
+<span class="p-2 bg-secondary-fixed text-on-secondary-fixed-variant rounded-lg">
+<span class="material-symbols-outlined">pending_actions</span>
+</span>
+<div class="flex items-center gap-1 text-on-secondary-fixed-variant font-label-sm">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+<span class="">12%</span>
+</div>
+</div>
+<p class="text-label-sm text-on-surface-variant">Pending Approvals</p>
+<h3 class="text-headline-md font-headline-md">42</h3>
+<div class="h-10 mt-2 bg-surface-container flex items-end gap-0.5 rounded overflow-hidden">
+<div class="bg-secondary/40 w-full h-1/2"></div>
+<div class="bg-secondary/40 w-full h-3/4"></div>
+<div class="bg-secondary w-full h-full"></div>
+<div class="bg-secondary/60 w-full h-2/3"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest/80 backdrop-blur-sm border border-outline-variant p-stack-md rounded-xl shadow-sm hover:shadow-md transition-all entrance-stagger-2">
+<div class="flex justify-between items-start mb-2">
+<span class="p-2 bg-green-100 text-green-700 rounded-lg">
+<span class="material-symbols-outlined">task_alt</span>
+</span>
+<div class="flex items-center gap-1 text-green-600 font-label-sm">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+<span class="">8%</span>
+</div>
+</div>
+<p class="text-label-sm text-on-surface-variant">Approved Today</p>
+<h3 class="text-headline-md font-headline-md">156</h3>
+<div class="h-10 mt-2 bg-surface-container flex items-end gap-0.5 rounded overflow-hidden">
+<div class="bg-green-400 w-full h-2/3"></div>
+<div class="bg-green-500 w-full h-full"></div>
+<div class="bg-green-400 w-full h-3/4"></div>
+<div class="bg-green-500 w-full h-4/5"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest/80 backdrop-blur-sm border border-outline-variant p-stack-md rounded-xl shadow-sm hover:shadow-md transition-all entrance-stagger-3">
+<div class="flex justify-between items-start mb-2">
+<span class="p-2 bg-red-100 text-red-700 rounded-lg">
+<span class="material-symbols-outlined">cancel</span>
+</span>
+<div class="flex items-center gap-1 text-on-surface-variant font-label-sm">
+<span class="material-symbols-outlined text-[14px]">trending_flat</span>
+<span class="">Stable</span>
+</div>
+</div>
+<p class="text-label-sm text-on-surface-variant">Rejected Today</p>
+<h3 class="text-headline-md font-headline-md">12</h3>
+<div class="h-10 mt-2 bg-surface-container flex items-end gap-0.5 rounded overflow-hidden">
+<div class="bg-red-300 w-full h-1/4"></div>
+<div class="bg-red-400 w-full h-1/3"></div>
+<div class="bg-red-400 w-full h-1/4"></div>
+<div class="bg-red-300 w-full h-1/5"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest/80 backdrop-blur-sm border border-outline-variant p-stack-md rounded-xl shadow-sm hover:shadow-md transition-all entrance-stagger-4">
+<div class="flex justify-between items-start mb-2">
+<span class="p-2 bg-amber-100 text-amber-700 rounded-lg animate-pulse-rotate">
+<span class="material-symbols-outlined">warning</span>
+</span>
+<div class="flex items-center gap-1 text-red-600 font-label-sm font-bold">
+<span class="material-symbols-outlined text-[14px]">priority_high</span>
+<span class="">Action Required</span>
+</div>
+</div>
+<p class="text-label-sm text-on-surface-variant">Overdue Requests</p>
+<h3 class="text-headline-md font-headline-md">08</h3>
+<div class="h-10 mt-2 bg-surface-container flex items-end gap-0.5 rounded overflow-hidden">
+<div class="bg-amber-400 w-full h-full"></div>
+<div class="bg-amber-400 w-full h-full"></div>
+<div class="bg-amber-400 w-full h-full"></div>
+<div class="bg-amber-400 w-full h-full"></div>
+</div>
+</div>
+</div>
+<!-- Content Area: Filters + Table -->
+<div class="bg-surface-container-lowest/70 backdrop-blur-md border border-outline-variant rounded-2xl overflow-hidden shadow-sm entrance-fade">
+<!-- Filters Bar -->
+<div class="px-6 py-4 border-b border-outline-variant flex flex-wrap gap-stack-md items-center justify-between">
+<div class="flex flex-wrap gap-4 items-center">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">filter_list</span>
+<select class="w-full pl-10 pr-4 py-2 bg-surface/50 border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-secondary outline-none appearance-none">
+<option>Type: All Requests</option>
+<option>Leave Request</option>
+<option>Expense Claim</option>
+<option>Purchase Order</option>
+</select>
+</div>
+<select class="pl-4 pr-10 py-2 bg-surface/50 border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-secondary outline-none appearance-none">
+<option>Status: Pending</option>
+<option>Approved</option>
+<option>Rejected</option>
+</select>
+<select class="pl-4 pr-10 py-2 bg-surface/50 border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-secondary outline-none appearance-none">
+<option>Priority: High First</option>
+<option>Normal</option>
+<option>Low</option>
+</select>
+<button class="flex items-center gap-2 px-3 py-2 text-label-md text-secondary hover:bg-secondary/5 rounded-lg btn-interact">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span>
+<span class="">Last 30 Days</span>
+</button>
+</div>
+<p class="text-label-sm text-on-surface-variant">Showing 1-10 of 42 requests</p>
+</div>
+<!-- Approval Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50 border-b border-outline-variant">
+<th class="px-6 py-4 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Request ID</th>
+<th class="px-6 py-4 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Type</th>
+<th class="px-6 py-4 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Requester</th>
+<th class="px-6 py-4 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Submitted On</th>
+<th class="px-6 py-4 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Priority</th>
+<th class="px-6 py-4 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="table-row-hover hover:bg-secondary/10 transition-all cursor-pointer bg-secondary/5" onclick="toggleDetail()">
+<td class="px-6 py-4 font-label-md text-primary">#REQ-8902</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="p-1.5 bg-blue-100 text-blue-700 rounded-md">
+<span class="material-symbols-outlined text-[16px]">flight_takeoff</span>
+</span>
+<span class="text-body-sm font-medium">Leave Request</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center font-bold text-label-sm text-secondary border border-outline-variant">SA</div>
+<span class="text-body-sm">Sarah Adams</span>
+</div>
+</td>
+<td class="px-6 py-4 text-body-sm text-on-surface-variant">Oct 24, 2023 · 09:12 AM</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-[11px] font-bold uppercase tracking-wide">High</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-amber-700 font-bold text-label-sm px-2 py-1 rounded relative overflow-hidden">
+<div class="absolute inset-0 shimmer-badge opacity-30"></div>
+<span class="material-symbols-outlined text-[18px]">hourglass_empty</span>
+<span class="relative">Pending</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<button class="p-2 hover:bg-green-100 text-green-700 rounded-lg transition-colors btn-interact" title="Quick Approve">
+<span class="material-symbols-outlined">check_circle</span>
+</button>
+<button class="p-2 hover:bg-red-100 text-red-700 rounded-lg transition-colors btn-interact" title="Quick Reject">
+<span class="material-symbols-outlined">cancel</span>
+</button>
+<button class="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors btn-interact">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="table-row-hover hover:bg-surface-container-low transition-all cursor-pointer group">
+<td class="px-6 py-4 font-label-md text-primary">#REQ-8901</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="p-1.5 bg-purple-100 text-purple-700 rounded-md">
+<span class="material-symbols-outlined text-[16px]">receipt_long</span>
+</span>
+<span class="text-body-sm font-medium">Expense Claim</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<img class="w-8 h-8 rounded-full border border-outline-variant object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDdAAga9sSFsxsI5k-NXYP76gIL6zPAKrTQg7pmteiv1Q90qpYecq7q6mCaVaXsI1QIsehz9Rjpgxe99BSbDdEDERHAOevvKXA93E4bXV_1XeIX6p-vCpekpwF_I3jUL5A54uwWNbBbWjDXS0baRqNSexCG7t9xwEFYAglyGOj0Nb_rIhDwb_5mQxXRsb4-JZFmQ7Ur4t5LwYUuS_rhxuOvlv09JdiQBromBRCx36k-Zu1d6hD_dNhtFQ">
+<span class="text-body-sm">Marcus Chen</span>
+</div>
+</td>
+<td class="px-6 py-4 text-body-sm text-on-surface-variant">Oct 23, 2023 · 04:45 PM</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-[11px] font-bold uppercase tracking-wide">Medium</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-amber-700 font-bold text-label-sm px-2 py-1 rounded relative overflow-hidden">
+<div class="absolute inset-0 shimmer-badge opacity-30"></div>
+<span class="material-symbols-outlined text-[18px]">hourglass_empty</span>
+<span class="relative">Pending</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-green-100 text-green-700 rounded-lg transition-colors btn-interact">
+<span class="material-symbols-outlined">check_circle</span>
+</button>
+<button class="p-2 hover:bg-red-100 text-red-700 rounded-lg transition-colors btn-interact">
+<span class="material-symbols-outlined">cancel</span>
+</button>
+<button class="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors btn-interact">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="table-row-hover hover:bg-surface-container-low transition-all cursor-pointer opacity-60">
+<td class="px-6 py-4 font-label-md text-primary">#REQ-8899</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="p-1.5 bg-emerald-100 text-emerald-700 rounded-md">
+<span class="material-symbols-outlined text-[16px]">shopping_cart</span>
+</span>
+<span class="text-body-sm font-medium">Purchase Order</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center font-bold text-label-sm text-secondary border border-outline-variant">EL</div>
+<span class="text-body-sm">Elena Lopez</span>
+</div>
+</td>
+<td class="px-6 py-4 text-body-sm text-on-surface-variant">Oct 23, 2023 · 11:20 AM</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-[11px] font-bold uppercase tracking-wide">Normal</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-green-700 font-bold text-label-sm">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="">Approved</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant italic text-label-sm">Auto-archived</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 border-t border-outline-variant flex items-center justify-between">
+<button class="px-4 py-2 text-label-md text-on-surface-variant bg-surface/50 hover:bg-surface-container border border-outline-variant rounded-lg transition-colors btn-interact">Previous</button>
+<div class="flex gap-2">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary text-on-primary font-bold btn-interact">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors btn-interact">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors btn-interact">3</button>
+<span class="px-2">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors btn-interact">5</button>
+</div>
+<button class="px-4 py-2 text-label-md text-on-surface-variant bg-surface/50 hover:bg-surface-container border border-outline-variant rounded-lg transition-colors btn-interact">Next</button>
+</div>
+</div>
+</div>
+<!-- Detail Side Drawer -->
+<div class="fixed right-0 top-0 h-full w-[480px] bg-white shadow-2xl z-[60] translate-x-full transition-transform duration-500 cubic-bezier(0.16, 1, 0.3, 1) border-l border-outline-variant flex flex-col" id="detailPanel">
+<!-- Panel Header -->
+<div class="p-6 border-b border-outline-variant flex items-center justify-between bg-surface-container-low">
+<div>
+<span class="text-label-sm uppercase tracking-widest text-on-surface-variant font-bold">Request Detail</span>
+<h3 class="text-title-lg font-headline-md text-primary">Leave Request #REQ-8902</h3>
+</div>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors btn-interact" onclick="toggleDetail()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Panel Scrollable Content -->
+<div class="flex-1 overflow-y-auto p-6 space-y-8">
+<div class="flex items-center gap-4 p-4 bg-surface rounded-xl border border-outline-variant">
+<div class="w-16 h-16 rounded-full bg-secondary-container flex items-center justify-center text-on-primary-container font-bold text-headline-md shadow-sm">SA</div>
+<div>
+<h4 class="text-body-lg font-bold">Sarah Adams</h4>
+<p class="text-label-md text-on-surface-variant">Senior Product Designer · Engineering</p>
+<div class="flex gap-2 mt-2">
+<span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-bold uppercase">FT Employee</span>
+<span class="px-2 py-0.5 bg-surface-container-highest text-on-surface-variant rounded text-[10px] font-bold uppercase">ID: 10429</span>
+</div>
+</div>
+</div>
+<!-- Request Info Grid -->
+<div class="grid grid-cols-2 gap-6">
+<div>
+<p class="text-label-sm text-on-surface-variant uppercase mb-1">Leave Dates</p>
+<p class="text-body-md font-bold text-primary">Nov 12 — Nov 18, 2023</p>
+</div>
+<div>
+<p class="text-label-sm text-on-surface-variant uppercase mb-1">Duration</p>
+<p class="text-body-md font-bold text-primary">5 Business Days</p>
+</div>
+</div>
+<!-- Workflow -->
+<div>
+<h5 class="text-label-md font-bold text-primary mb-4">Approval Workflow</h5>
+<div class="relative pl-8 space-y-8 before:content-[''] before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-outline-variant">
+<div class="relative">
+<div class="absolute -left-8 w-6 h-6 rounded-full bg-green-500 flex items-center justify-center text-white ring-4 ring-white z-10">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<p class="text-body-sm font-bold">Request Submitted</p>
+<p class="text-label-sm text-on-surface-variant">Oct 24, 09:12 AM</p>
+</div>
+<div class="relative">
+<div class="absolute -left-8 w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center text-white ring-4 ring-white z-10 animate-pulse">
+<span class="material-symbols-outlined text-[14px]">hourglass_empty</span>
+</div>
+<p class="text-body-sm font-bold text-amber-700">HR Verification</p>
+<p class="text-label-sm text-on-surface-variant">Pending your approval</p>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="pt-6 border-t border-outline-variant space-y-4">
+<div>
+<label class="text-label-md font-bold mb-2 block">Reviewer Comments</label>
+<textarea class="w-full bg-surface border border-outline-variant rounded-xl p-4 text-body-sm focus:ring-2 focus:ring-secondary outline-none transition-all resize-none" placeholder="Add notes..." rows="3"></textarea>
+</div>
+<div class="flex gap-3">
+<button class="flex-1 py-3 bg-error text-on-error font-bold rounded-xl hover:bg-red-700 transition-colors btn-interact">Reject</button>
+<button class="flex-1 py-3 bg-surface-container-high text-primary font-bold rounded-xl hover:bg-surface-container-highest transition-colors btn-interact">Request Info</button>
+</div>
+<button class="w-full py-4 bg-secondary text-on-primary font-bold rounded-xl hover:bg-secondary-container transition-all flex items-center justify-center gap-2 shadow-lg btn-interact">
+<span class="material-symbols-outlined">verified</span>
+<span class="">Approve Request</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<script>
+        let detailOpen = false;
+        function toggleDetail() {
+            const panel = document.getElementById('detailPanel');
+            detailOpen = !detailOpen;
+            if (detailOpen) {
+                panel.classList.remove('translate-x-full');
+            } else {
+                panel.classList.add('translate-x-full');
+            }
+        }
+
+        // Close on escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && detailOpen) toggleDetail();
+        });
+
+        // WebGL Shader fallback for environments that don't support custom elements
+        if (!customElements.get('webgl-shader')) {
+            console.warn('WebGL-Shader custom element not defined. Background effect might be missing.');
+        }
+    </script>
+</body></html>

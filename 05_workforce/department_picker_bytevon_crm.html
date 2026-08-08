@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface dark:bg-surface" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Department Selection Utility</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-fixed-variant": "#004493",
+                    "secondary-fixed": "#dae2fd",
+                    "outline-variant": "#c1c6d7",
+                    "inverse-on-surface": "#eaf1ff",
+                    "on-secondary-container": "#5c647a",
+                    "on-primary-fixed": "#001a41",
+                    "surface-variant": "#d3e4fe",
+                    "surface": "#f8f9ff",
+                    "secondary": "#565e74",
+                    "on-secondary-fixed-variant": "#3f465c",
+                    "surface-container-low": "#eff4ff",
+                    "surface-container-high": "#dce9ff",
+                    "surface-container": "#e5eeff",
+                    "on-error-container": "#93000a",
+                    "on-error": "#ffffff",
+                    "surface-container-highest": "#d3e4fe",
+                    "on-background": "#0b1c30",
+                    "surface-bright": "#f8f9ff",
+                    "on-tertiary-fixed-variant": "#444749",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed-dim": "#bec6e0",
+                    "primary": "#0058bc",
+                    "inverse-surface": "#213145",
+                    "on-secondary": "#ffffff",
+                    "on-surface-variant": "#414755",
+                    "tertiary": "#595c5e",
+                    "outline": "#717786",
+                    "on-surface": "#0b1c30",
+                    "background": "#f8f9ff",
+                    "on-tertiary-container": "#fbfdff",
+                    "secondary-container": "#dae2fd",
+                    "tertiary-container": "#727577",
+                    "on-secondary-fixed": "#131b2e",
+                    "tertiary-fixed": "#e0e3e5",
+                    "surface-tint": "#005bc1",
+                    "on-tertiary-fixed": "#191c1e",
+                    "tertiary-fixed-dim": "#c4c7c9",
+                    "surface-container-lowest": "#ffffff",
+                    "error": "#ba1a1a",
+                    "primary-fixed-dim": "#adc6ff",
+                    "on-primary": "#ffffff",
+                    "inverse-primary": "#adc6ff",
+                    "error-container": "#ffdad6",
+                    "primary-container": "#0070eb",
+                    "surface-dim": "#cbdbf5",
+                    "primary-fixed": "#d8e2ff",
+                    "on-primary-container": "#fefcff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "table-row-height": "72px",
+                    "gutter-md": "16px",
+                    "container-margin": "24px",
+                    "card-padding": "20px",
+                    "section-gap": "32px"
+            },
+            "fontFamily": {
+                    "headline-lg": ["Inter"],
+                    "label-bold": ["Inter"],
+                    "headline-xl": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "caption": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "label-bold": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                    "headline-xl": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "caption": ["11px", {"lineHeight": "14px", "fontWeight": "400"}],
+                    "headline-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="h-full bg-background font-body-md text-on-surface flex items-center justify-center p-4">
+<!-- Modal Backdrop -->
+<div aria-hidden="true" class="fixed inset-0 bg-on-surface/20 backdrop-blur-sm z-40 transition-opacity"></div>
+<!-- Modal Container -->
+<div class="relative bg-surface-container-lowest w-full max-w-md rounded-xl shadow-[0px_4px_20px_rgba(0,0,0,0.08),0px_1px_3px_rgba(0,0,0,0.05)] border border-outline-variant/30 flex flex-col z-50 overflow-hidden transform transition-all">
+<!-- Header -->
+<div class="px-card-padding py-4 border-b border-outline-variant/50 flex justify-between items-center bg-surface-bright">
+<h2 class="font-headline-md text-headline-md text-on-surface">Select Department</h2>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors p-1 rounded-full hover:bg-surface-variant/50">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">close</span>
+</button>
+</div>
+<!-- Search Bar -->
+<div class="p-card-padding border-b border-outline-variant/30 bg-surface">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline" style="font-variation-settings: 'FILL' 0;">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-shadow" placeholder="Search departments..." type="text"/>
+</div>
+</div>
+<!-- Department List -->
+<div class="overflow-y-auto max-h-[400px] custom-scrollbar p-2 flex flex-col gap-1 bg-surface-bright">
+<!-- Item: Engineering -->
+<button class="w-full text-left p-3 rounded-lg hover:bg-surface-container-low focus:bg-surface-container-low transition-colors group border border-transparent focus:border-primary outline-none flex items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">code</span>
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center h-10">
+<div class="flex justify-between items-baseline w-full">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface truncate">Engineering</span>
+<span class="font-caption text-caption text-on-surface-variant ml-2 shrink-0 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 0;">group</span> 142
+                        </span>
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant truncate">Sarah Jenkins</span>
+</div>
+</button>
+<!-- Item: Sales -->
+<button class="w-full text-left p-3 rounded-lg hover:bg-surface-container-low focus:bg-surface-container-low transition-colors group border border-transparent focus:border-primary outline-none flex items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">trending_up</span>
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center h-10">
+<div class="flex justify-between items-baseline w-full">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface truncate">Sales</span>
+<span class="font-caption text-caption text-on-surface-variant ml-2 shrink-0 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 0;">group</span> 85
+                        </span>
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant truncate">Marcus Chen</span>
+</div>
+</button>
+<!-- Item: Marketing -->
+<button class="w-full text-left p-3 rounded-lg hover:bg-surface-container-low focus:bg-surface-container-low transition-colors group border border-transparent focus:border-primary outline-none flex items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">campaign</span>
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center h-10">
+<div class="flex justify-between items-baseline w-full">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface truncate">Marketing</span>
+<span class="font-caption text-caption text-on-surface-variant ml-2 shrink-0 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 0;">group</span> 43
+                        </span>
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant truncate">Elena Rodriguez</span>
+</div>
+</button>
+<!-- Item: HR -->
+<button class="w-full text-left p-3 rounded-lg hover:bg-surface-container-low focus:bg-surface-container-low transition-colors group border border-transparent focus:border-primary outline-none flex items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">badge</span>
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center h-10">
+<div class="flex justify-between items-baseline w-full">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface truncate">HR</span>
+<span class="font-caption text-caption text-on-surface-variant ml-2 shrink-0 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 0;">group</span> 18
+                        </span>
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant truncate">David Kim</span>
+</div>
+</button>
+<!-- Item: Finance -->
+<button class="w-full text-left p-3 rounded-lg hover:bg-surface-container-low focus:bg-surface-container-low transition-colors group border border-transparent focus:border-primary outline-none flex items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center h-10">
+<div class="flex justify-between items-baseline w-full">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface truncate">Finance</span>
+<span class="font-caption text-caption text-on-surface-variant ml-2 shrink-0 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 0;">group</span> 24
+                        </span>
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant truncate">Amanda Lewis</span>
+</div>
+</button>
+<!-- Item: Operations -->
+<button class="w-full text-left p-3 rounded-lg hover:bg-surface-container-low focus:bg-surface-container-low transition-colors group border border-transparent focus:border-primary outline-none flex items-start gap-4">
+<div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">settings</span>
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center h-10">
+<div class="flex justify-between items-baseline w-full">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface truncate">Operations</span>
+<span class="font-caption text-caption text-on-surface-variant ml-2 shrink-0 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 0;">group</span> 56
+                        </span>
+</div>
+<span class="font-body-md text-body-md text-on-surface-variant truncate">James Wilson</span>
+</div>
+</button>
+</div>
+<!-- Footer / Action Area (Optional, for context) -->
+<div class="px-card-padding py-3 border-t border-outline-variant/30 bg-surface-container-lowest text-center">
+<span class="font-caption text-caption text-outline">Press ESC to cancel</span>
+</div>
+</div>
+</body></html>

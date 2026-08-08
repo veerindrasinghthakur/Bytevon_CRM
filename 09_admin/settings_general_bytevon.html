@@ -1,0 +1,304 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Bytevon Enterprise Suite - Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"tertiary-fixed-dim": "#c4c7c9", "primary-fixed-dim": "#afc8f0", "on-tertiary-fixed-variant": "#444749", "on-secondary": "#ffffff", "surface-container-lowest": "#ffffff", "on-background": "#0b1c30", "on-surface-variant": "#43474e", "surface-container-low": "#eff4ff", "tertiary-container": "#1c1f21", "surface-container": "#e5eeff", "primary-fixed": "#d4e3ff", "surface-container-high": "#dce9ff", surface: "#f8f9ff", "surface-dim": "#cbdbf5", "surface-container-highest": "#d3e4fe", "on-secondary-fixed": "#001a41", "on-primary-fixed-variant": "#2f486a", "on-error-container": "#93000a", "on-secondary-container": "#fefcff", "surface-tint": "#476083", background: "#f8f9ff", "tertiary-fixed": "#e0e3e5", error: "#ba1a1a", "on-tertiary": "#ffffff", outline: "#74777f", "secondary-fixed-dim": "#adc7ff", "on-error": "#ffffff", "primary-container": "#001f3f", "error-container": "#ffdad6", "inverse-on-surface": "#eaf1ff", "on-primary": "#ffffff", secondary: "#0059bb", "secondary-container": "#0070ea", "on-tertiary-fixed": "#191c1e", "on-primary-fixed": "#001c3a", primary: "#000613", "inverse-surface": "#213145", tertiary: "#040607", "on-surface": "#0b1c30", "secondary-fixed": "#d8e2ff", "outline-variant": "#c4c6cf", "on-tertiary-container": "#848789", "surface-bright": "#f8f9ff", "on-secondary-fixed-variant": "#004493", "on-primary-container": "#6f88ad", "inverse-primary": "#afc8f0", "surface-variant": "#d3e4fe"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {unit: "4px", "margin-mobile": "16px", "margin-desktop": "40px", "stack-lg": "32px", "stack-sm": "8px", "stack-md": "16px", "container-max": "1440px", gutter: "24px"}, fontFamily: {"label-sm": ["Inter"], "body-sm": ["Inter"], "body-md": ["Inter"], "headline-lg-mobile": ["Inter"], "label-md": ["Inter"], "display-lg": ["Inter"], "title-lg": ["Inter"], "headline-lg": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}]}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .transition-standard { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md">
+<!-- Global Layout Shell -->
+<div class="flex h-screen max-w-container-max mx-auto w-full">
+<!-- Shared Component: SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary dark:bg-primary-container shadow-md flex flex-col py-stack-md z-50">
+<div class="px-6 mb-stack-lg">
+<div class="flex items-center gap-3">
+<img alt="Bytevon Logo" class="h-10 w-auto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlv5kUpJuZbx5dm3kHlrID6UheaxUNiTTBi7U69m7ZSk6d-IbwbWApsJqUXynSTsRFfoWlePsAbfrRDcx_B3pWG18x4ZrZmJjminIFbtssm6l0CZQdgrNkJ3pHx91h755GwJU09iVJFXaP_nva7Ix98TMWyLdCgEvxZkBWmLYsXEHnLfh3-71GKSpjbh6rtZC8FlqDlO_c6Uxk5B_AkQ-FE266kWptM6UHVgt54osApGKbNtCTiO-MHYOTw8mHIrLwCec">
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md font-bold text-on-primary">Bytevon</span>
+<span class="font-label-sm text-label-sm text-on-primary-container tracking-wider">Enterprise Suite</span>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1 px-2"><!-- Active Item -->
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="{{DATA:SCREEN:SCREEN_100}}">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+<span class="font-label-md text-label-md">Employees</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span class="font-label-md text-label-md">CRM</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings_applications</span>
+<span class="font-label-md text-label-md">ERP</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">bar_chart</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+<a class="bg-secondary-container text-on-secondary-container rounded-lg mx-2 flex items-center px-4 py-3 gap-3 group transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a></nav>
+<div class="mt-auto px-4 py-4">
+<button class="w-full bg-secondary text-on-secondary py-3 px-4 rounded-lg flex items-center justify-center gap-2 font-label-md hover:bg-opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined">add</span>
+        Quick Create
+      </button>
+<div class="mt-4 pt-4 border-t border-on-primary-container/20">
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">help_outline</span>
+<span class="font-label-md text-label-md">Help Center</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] w-[calc(100%-280px)] flex flex-col relative max-w-[calc(1440px-280px)]">
+<!-- Shared Component: TopNavBar -->
+<header class="h-16 flex justify-between items-center px-margin-desktop bg-surface border-b border-outline-variant z-40 fixed top-0 right-0 w-[calc(100%-280px)] max-w-[calc(1440px-280px)]"><div class="flex items-center gap-6">
+<nav class="flex items-center text-on-surface-variant font-body-md text-body-md gap-2">
+<span class="hover:text-secondary cursor-pointer">Main</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-secondary font-semibold">Settings</span>
+</nav>
+<div class="relative w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-highest/30 border border-outline-variant rounded-full py-2 pl-10 pr-4 focus:outline-none focus:border-secondary transition-all font-body-sm text-body-sm" placeholder="Search enterprise..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="relative p-2 text-on-surface-variant hover:text-secondary transition-colors cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="flex items-center gap-3 cursor-pointer group">
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface">Marcus Vane</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">System Administrator</p>
+</div>
+<img class="w-10 h-10 rounded-full border border-outline-variant object-cover group-hover:border-secondary transition-colors" data-alt="A professional headshot of a senior system administrator in his late 40s, wearing a charcoal business suit, photographed in a high-key studio with soft neutral lighting to match a corporate minimalist aesthetic. The background is a clean, slightly out-of-focus modern office environment with hints of Deep Navy blue branding elements." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhmRmJJBSf7ysvkMeff_n0uMtdeXI96rm2pxz7qqBSUvTNvRth5frFxky7XPnfv28jFU8QpSLREVfOO8GTSfDDzC1ZLqpRiYgsQDoEt34k3t0DiaOxsuQ-UosvNX-2mJvJ-jSfJ9ZIP_pSmahDRxGpx1IRW-ECZE_qjtnxlbIbK-OggMtyGXonjj7aE4dZtfqoijPPlM8Pm_l4NaH28fDT6iwgetMffEP15VonHaYxJtAJyWh6lmkLbw">
+</div>
+</div></header>
+<!-- Settings Workspace -->
+<section class="flex-1 flex bg-surface">
+<!-- Settings Local Side Nav -->
+<nav class="w-64 border-r border-outline-variant bg-surface-container-lowest overflow-y-auto flex flex-col p-stack-md">
+<div class="px-4 py-2 mb-4">
+<h2 class="text-label-sm uppercase tracking-widest text-on-surface-variant/70">Configuration</h2>
+</div>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg bg-surface-container text-secondary font-semibold group transition-standard" href="#">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">tune</span>
+<span class="font-label-md">General</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface group transition-standard" href="#">
+<span class="material-symbols-outlined text-[20px]">corporate_fare</span>
+<span class="font-label-md">Organization</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface group transition-standard" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span class="font-label-md">Users</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface group transition-standard" href="#">
+<span class="material-symbols-outlined text-[20px]">shield_person</span>
+<span class="font-label-md">Roles</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface group transition-standard" href="#">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+<span class="font-label-md">Permissions</span>
+</a>
+</div>
+<div class="px-4 py-2 mt-8 mb-4">
+<h2 class="text-label-sm uppercase tracking-widest text-on-surface-variant/70">System</h2>
+</div>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface group transition-standard" href="#">
+<span class="material-symbols-outlined text-[20px]">notifications_active</span>
+<span class="font-label-md">Notifications</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface group transition-standard" href="#">
+<span class="material-symbols-outlined text-[20px]">palette</span>
+<span class="font-label-md">Appearance</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface group transition-standard" href="#">
+<span class="material-symbols-outlined text-[20px]">integration_instructions</span>
+<span class="font-label-md">Integrations</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface group transition-standard" href="#">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+<span class="font-label-md">Security</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface group transition-standard" href="#">
+<span class="material-symbols-outlined text-[20px]">history</span>
+<span class="font-label-md">Audit Logs</span>
+</a>
+</div>
+</nav>
+<!-- Settings Content: General -->
+<div class="flex-1 overflow-y-auto p-margin-desktop">
+<div class="max-w-4xl mx-auto">
+<div class="mb-10">
+<h1 class="font-headline-lg text-headline-lg text-on-surface mb-2">General Settings</h1>
+<p class="text-body-md text-on-surface-variant">Manage your personal profile, regional preferences, and core system interaction options.</p>
+</div>
+<!-- Section: Profile Information -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 mb-gutter shadow-sm">
+<div class="flex justify-between items-start mb-8">
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface mb-1">Profile Information</h3>
+<p class="text-body-sm text-on-surface-variant">Update your account photo and personal details.</p>
+</div>
+<button class="px-6 py-2 bg-primary text-on-primary rounded-lg font-label-md hover:bg-primary/90 transition-all">Save Changes</button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+<div class="md:col-span-3 flex flex-col items-center gap-4">
+<div class="relative group cursor-pointer">
+<img class="w-32 h-32 rounded-full border-4 border-surface-container-high object-cover shadow-md group-hover:opacity-80 transition-opacity" data-alt="A professional high-fidelity avatar of a system administrator in an enterprise context. The image shows a close-up of a person's face with a neutral, professional expression, set against a clean studio background with cool blue and slate grey tones, echoing a high-stakes tech environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfZCfb_EjDp2s045HPfdUZV8nRFbzzknYQzKjv7V-zA05tKexLPfS7ZrXAWeuppz1c_UcpNCwLejrmP9uGZD314EhSTb5W0VpU16QKlKG-EOMNwO9kjSHD2dZrQV7Re-QZmBdIT5nMDSMqRBJHAUhSFeOzHxP8mTZDPp09kmR_jOvnTZPQbQL5RToMfv__3PJNhFUocbyw-4VOvBUK2gLJ0aaBjc3Vi9vWjycHV1CK5S97mipNpVKEMA">
+<div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-white text-3xl">photo_camera</span>
+</div>
+</div>
+<span class="text-label-sm text-secondary cursor-pointer hover:underline">Change Photo</span>
+</div>
+<div class="md:col-span-9 grid grid-cols-1 sm:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="block font-label-md text-label-md text-on-surface-variant">Full Name</label>
+<input class="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-body-md focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-standard outline-none" type="text" value="Marcus Vane">
+</div>
+<div class="space-y-2">
+<label class="block font-label-md text-label-md text-on-surface-variant">Job Title</label>
+<input class="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-body-md focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-standard outline-none" type="text" value="System Administrator">
+</div>
+<div class="space-y-2 sm:col-span-2">
+<label class="block font-label-md text-label-md text-on-surface-variant">Email Address</label>
+<input class="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-body-md focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-standard outline-none" type="email" value="m.vane@bytevon.enterprise">
+</div>
+</div>
+</div>
+</div>
+<!-- Section: Regional Settings -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 mb-gutter shadow-sm">
+<h3 class="font-title-lg text-title-lg text-on-surface mb-1">Regional Settings</h3>
+<p class="text-body-sm text-on-surface-variant mb-8">Adjust how dates, times, and language are displayed across the platform.</p>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+<div class="space-y-2">
+<label class="block font-label-md text-label-md text-on-surface-variant">Language</label>
+<select class="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-body-md focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-standard outline-none appearance-none">
+<option>English (US)</option>
+<option>English (UK)</option>
+<option>German</option>
+<option>Japanese</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="block font-label-md text-label-md text-on-surface-variant">Timezone</label>
+<select class="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-body-md focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-standard outline-none">
+<option>(GMT-08:00) Pacific Time</option>
+<option>(GMT-05:00) Eastern Time</option>
+<option>(GMT+00:00) London</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="block font-label-md text-label-md text-on-surface-variant">Date Format</label>
+<select class="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-body-md focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-standard outline-none">
+<option>MM/DD/YYYY</option>
+<option>DD/MM/YYYY</option>
+<option>YYYY-MM-DD</option>
+</select>
+</div>
+</div>
+</div>
+<!-- Section: System Preferences -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-8 shadow-sm">
+<h3 class="font-title-lg text-title-lg text-on-surface mb-1">System Preferences</h3>
+<p class="text-body-sm text-on-surface-variant mb-8">Personalize your interaction with the Bytevon interface.</p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-4">Interface Theme</label>
+<div class="grid grid-cols-3 gap-4">
+<button class="border-2 border-secondary rounded-lg p-2 text-center bg-white shadow-inner group">
+<div class="h-12 bg-surface-container-low rounded mb-2 flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary">light_mode</span>
+</div>
+<span class="text-label-sm font-bold text-secondary">Light</span>
+</button>
+<button class="border border-outline-variant rounded-lg p-2 text-center hover:border-secondary/40 transition-standard group">
+<div class="h-12 bg-primary-container rounded mb-2 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container">dark_mode</span>
+</div>
+<span class="text-label-sm text-on-surface-variant group-hover:text-secondary">Dark</span>
+</button>
+<button class="border border-outline-variant rounded-lg p-2 text-center hover:border-secondary/40 transition-standard group">
+<div class="h-12 bg-gradient-to-br from-white to-primary-container rounded mb-2 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant">settings_brightness</span>
+</div>
+<span class="text-label-sm text-on-surface-variant group-hover:text-secondary">System</span>
+</button>
+</div>
+</div>
+<div class="space-y-6">
+<div class="space-y-2">
+<label class="block font-label-md text-label-md text-on-surface-variant">Default Landing Page</label>
+<select class="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2.5 text-body-md focus:border-secondary focus:ring-2 focus:ring-secondary/10 transition-standard outline-none">
+<option>Executive Dashboard</option>
+<option>CRM Overview</option>
+<option>Employee Directory</option>
+<option>Financial Reports</option>
+</select>
+</div>
+
+</div>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="mt-stack-lg pt-stack-lg border-t border-outline-variant flex justify-end gap-4 pb-20 px-0">
+<button class="px-6 py-2 border border-outline-variant text-on-surface rounded-lg font-label-md hover:bg-surface-container transition-standard">Reset to Default</button>
+<button class="px-6 py-2 bg-secondary text-white rounded-lg font-label-md shadow-md hover:shadow-lg transition-standard">Apply &amp; Synchronize</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        document.querySelectorAll('button[class*="rounded-full relative"]').forEach(toggle => {
+            toggle.addEventListener('click', function() {
+                const dot = this.querySelector('span');
+                const isActive = this.classList.contains('bg-secondary');
+                dot.style.transform = isActive ? 'translateX(24px)' : 'translateX(0px)';
+            });
+        });
+
+        // Search bar focus effect
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('scale-[1.01]');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('scale-[1.01]');
+        });
+    </script>
+
+
+</body></html>

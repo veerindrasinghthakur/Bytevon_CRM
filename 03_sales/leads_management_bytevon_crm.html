@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en" style=""><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bytevon CRM - Leads Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        /* Custom scrollbar for data-heavy sections */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #c4c6cf; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #74777f; }
+    </style>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"inverse-on-surface": "#eaf1ff", "primary-container": "#001f3f", "surface-container-highest": "#d3e4fe", "on-tertiary-fixed-variant": "#444749", "on-surface-variant": "#43474e", "on-primary-container": "#6f88ad", "on-error-container": "#93000a", "tertiary-container": "#1c1f21", secondary: "#0059bb", "primary-fixed-dim": "#afc8f0", "error-container": "#ffdad6", "secondary-fixed": "#d8e2ff", outline: "#74777f", error: "#ba1a1a", "primary-fixed": "#d4e3ff", "on-tertiary": "#ffffff", "on-error": "#ffffff", surface: "#f8f9ff", "on-primary-fixed": "#001c3a", "surface-variant": "#d3e4fe", "outline-variant": "#c4c6cf", "surface-container": "#e5eeff", "on-secondary-container": "#fefcff", "on-background": "#0b1c30", background: "#f8f9ff", "tertiary-fixed": "#e0e3e5", "on-tertiary-fixed": "#191c1e", "surface-dim": "#cbdbf5", tertiary: "#040607", "secondary-fixed-dim": "#adc7ff", "on-tertiary-container": "#848789", "surface-container-lowest": "#ffffff", "on-primary-fixed-variant": "#2f486a", "inverse-primary": "#afc8f0", "on-secondary-fixed-variant": "#004493", "inverse-surface": "#213145", "secondary-container": "#0070ea", "on-primary": "#ffffff", "surface-tint": "#476083", "on-secondary-fixed": "#001a41", "surface-bright": "#f8f9ff", "on-secondary": "#ffffff", "on-surface": "#0b1c30", "surface-container-high": "#dce9ff", "tertiary-fixed-dim": "#c4c7c9", "surface-container-low": "#eff4ff", primary: "#000613"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-lg": "32px", "container-max": "1440px", "stack-md": "16px", unit: "4px", "margin-desktop": "40px", gutter: "24px", "stack-sm": "8px", "margin-mobile": "16px"}, fontFamily: {"headline-md": ["Inter"], "body-md": ["Inter"], "title-lg": ["Inter"], "headline-lg-mobile": ["Inter"], "label-md": ["Inter"], "body-lg": ["Inter"], "display-lg": ["Inter"], "label-sm": ["Inter"], "body-sm": ["Inter"], "headline-lg": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}]}}}};</script>
+</head>
+<body class="bg-background text-on-background min-h-screen h-auto">
+<!-- Side Navigation Shell -->
+<aside class="w-[280px] h-screen fixed left-0 top-0 bg-primary-container border-r border-outline-variant flex flex-col py-spacing-stack-md z-20">
+<div class="px-6 mb-stack-lg">
+<div class="flex items-center gap-3">
+<img alt="Bytevon Logo" class="h-10 w-auto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4U9aFlvBLhjeLSp0sZeSae_y4zUDiZ3xU5W6UQrmYtvOeGujOzI3DmmjmTHEo_yu2-5lDtg5jqqns7X-_je1YGxuO5WzF7u_LpOyZC3aMkcPYEOoammuNyGE5x9wpKrmsCK1L9nwVT2dRvkyum5KqqPvkK1odgOiQfV_l12o8VK7bCoONwFMK70qTk_tAg-hgnvmoJacGxKk7ntxZrtbwM22XX14c02wYfLsqmHW31OKo-fbc6hMFv8pRAf1mloSSJXY"/>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md font-bold text-on-primary">Bytevon</span>
+<span class="font-label-sm text-label-sm text-on-primary-container tracking-wider">Enterprise Suite</span>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1"><!-- Active Item -->
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="{{DATA:SCREEN:SCREEN_100}}">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+<span class="font-label-md text-label-md">Employees</span>
+</a>
+<a class="bg-secondary-container text-on-secondary-container rounded-lg mx-2 flex items-center px-4 py-3 gap-3 group transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+<span class="font-label-md text-label-md">CRM</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings_applications</span>
+<span class="font-label-md text-label-md">ERP</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">bar_chart</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a></nav>
+<div class="mt-auto px-4 py-4">
+<button class="w-full bg-secondary text-on-secondary py-3 px-4 rounded-lg flex items-center justify-center gap-2 font-label-md hover:bg-opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined">add</span>
+        Quick Create
+      </button>
+<div class="mt-4 pt-4 border-t border-on-primary-container/20">
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">help_outline</span>
+<span class="font-label-md text-label-md">Help Center</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Top Navigation Bar -->
+<header class="h-16 fixed top-0 right-0 left-[280px] z-10 bg-surface border-b border-outline-variant flex justify-between items-center px-margin-desktop shadow-sm max-w-container-max mx-auto w-auto"><div class="flex items-center gap-6">
+<nav class="flex items-center text-on-surface-variant font-body-md text-body-md gap-2">
+<span class="hover:text-secondary cursor-pointer">CRM</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-secondary font-semibold">Leads Management</span>
+</nav>
+<div class="relative w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-highest/30 border border-outline-variant rounded-full py-2 pl-10 pr-4 focus:outline-none focus:border-secondary transition-all font-body-sm text-body-sm" placeholder="Search enterprise..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="relative p-2 text-on-surface-variant hover:text-secondary transition-colors cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="flex items-center gap-3 cursor-pointer group">
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface">Alex Rivera</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Sales Director</p>
+</div>
+<img class="w-10 h-10 rounded-full border border-outline-variant object-cover group-hover:border-secondary transition-colors" data-alt="Professional headshot of a Hispanic male sales executive with a friendly expression, set against a blurred office background, high-end corporate photography style with natural lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC1bxmt0nOgbzvWdMOICYerAApbaPDT9RkDZclosR2eUR7beZr8HdZHBn2k8moU1a40KweQ6pFxRZbnhAgiBQKnpY0k7t3pwwLzTk3MmnV8z39VN-zwyWjAQiJacu1uylb6nuNihil9l3rt--E-RDm4PeY3ijGyidP6hG9uQF0w-WEPyS9JQE_uf7TjDqlHGzWs_pg1HT8ytNhRU7s3LuRVsVtIhBrUIWxuQL4SFpLEydYSoqVJurAuVA"/>
+</div>
+</div></header>
+<!-- Main Content Canvas -->
+<main class="pt-16 p-margin-desktop max-w-container-max mx-auto pl-[280px]">
+<!-- Dashboard Header -->
+<div class="flex justify-between items-end mb-stack-lg">
+<div>
+<nav class="flex items-center gap-2 text-outline mb-2">
+<span class="font-label-sm text-label-sm">CRM</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="font-label-sm text-label-sm text-secondary">Leads Management</span>
+</nav>
+<h2 class="font-headline-lg text-headline-lg text-primary tracking-tight">Leads Dashboard</h2>
+</div>
+<button class="flex items-center gap-2 bg-secondary text-on-secondary px-6 py-2.5 rounded-lg font-label-md text-label-md hover:opacity-90 active:scale-[0.98] transition-all shadow-md">
+<span class="material-symbols-outlined">add_circle</span>
+                Add Lead
+            </button>
+</div>
+<!-- KPI Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-5 gap-gutter mb-stack-lg">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-1 hover:border-secondary/30 transition-colors">
+<span class="text-outline font-label-sm text-label-sm">New Leads</span>
+<div class="flex items-baseline gap-2">
+<span class="text-headline-md font-headline-md text-primary">142</span>
+<span class="text-[12px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded flex items-center">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> 12%
+                    </span>
+</div>
+<p class="text-[11px] text-outline mt-2">v.s. last month</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-1">
+<span class="text-outline font-label-sm text-label-sm">Qualified</span>
+<span class="text-headline-md font-headline-md text-primary">86</span>
+<div class="w-full bg-surface-variant/30 h-1 rounded-full mt-3 overflow-hidden">
+<div class="bg-blue-400 h-full w-[60%]"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-1">
+<span class="text-outline font-label-sm text-label-sm">Proposal</span>
+<span class="text-headline-md font-headline-md text-primary">34</span>
+<div class="w-full bg-surface-variant/30 h-1 rounded-full mt-3 overflow-hidden">
+<div class="bg-orange-400 h-full w-[24%]"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-1">
+<span class="text-outline font-label-sm text-label-sm">Won</span>
+<div class="flex flex-col">
+<span class="text-headline-md font-headline-md text-primary">18</span>
+<span class="text-[12px] font-semibold text-secondary">$1.2M value</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-1">
+<span class="text-outline font-label-sm text-label-sm">Lost</span>
+<span class="text-headline-md font-headline-md text-error">12</span>
+<p class="text-[11px] text-outline mt-2">Conversion: 62%</p>
+</div>
+</div>
+<!-- Action Bar & Filter Section -->
+<div class="bg-surface-container-low border border-outline-variant rounded-xl p-4 mb-gutter flex flex-wrap items-center gap-4">
+<div class="relative min-w-[300px] flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-2 pl-10 pr-4 text-body-sm font-body-sm focus:ring-1 focus:ring-secondary focus:border-secondary transition-all" placeholder="Search leads..." type="text"/>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex flex-col">
+<label class="font-label-sm text-[10px] text-outline uppercase ml-1 mb-1">Pipeline</label>
+<select class="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-secondary min-w-[140px]">
+<option>All Pipelines</option>
+<option>Sales</option>
+<option>Marketing</option>
+<option>Enterprise</option>
+</select>
+</div>
+<div class="flex flex-col">
+<label class="font-label-sm text-[10px] text-outline uppercase ml-1 mb-1">Owner</label>
+<select class="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-secondary min-w-[140px]">
+<option>All Owners</option>
+<option>Alex Rivera</option>
+<option>Sarah Chen</option>
+<option>Michael Scott</option>
+</select>
+</div>
+<div class="flex flex-col">
+<label class="font-label-sm text-[10px] text-outline uppercase ml-1 mb-1">Date</label>
+<select class="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-body-sm focus:ring-1 focus:ring-secondary min-w-[140px]">
+<option>This Month</option>
+<option>Last Quarter</option>
+<option>Year to Date</option>
+<option>Custom Range</option>
+</select>
+</div>
+</div>
+<div class="ml-auto flex items-center gap-2">
+<button class="p-2 border border-outline-variant rounded-lg bg-surface-container-lowest hover:bg-surface-container text-outline transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+<button class="p-2 border border-outline-variant rounded-lg bg-surface-container-lowest hover:bg-surface-container text-outline transition-colors">
+<span class="material-symbols-outlined">download</span>
+</button>
+</div>
+</div>
+<!-- Pipeline Distribution Progress -->
+<div class="mb-gutter">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-md text-label-md text-on-surface-variant">Pipeline Distribution</span>
+<span class="text-body-sm text-outline">Total Active Value: $4.8M</span>
+</div>
+<div class="flex w-full h-3 rounded-full overflow-hidden">
+<div class="h-full bg-blue-600 w-[35%] hover:opacity-90 transition-opacity cursor-pointer" title="Discovery: 35%"></div>
+<div class="h-full bg-blue-400 w-[25%] hover:opacity-90 transition-opacity cursor-pointer" title="Qualified: 25%"></div>
+<div class="h-full bg-orange-400 w-[20%] hover:opacity-90 transition-opacity cursor-pointer" title="Proposal: 20%"></div>
+<div class="h-full bg-green-500 w-[15%] hover:opacity-90 transition-opacity cursor-pointer" title="Negotiation: 15%"></div>
+<div class="h-full bg-surface-variant w-[5%]"></div>
+</div>
+<div class="flex gap-4 mt-3">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-blue-600"></span>
+<span class="text-[11px] text-outline">Discovery (35%)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-blue-400"></span>
+<span class="text-[11px] text-outline">Qualified (25%)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-orange-400"></span>
+<span class="text-[11px] text-outline">Proposal (20%)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+<span class="text-[11px] text-outline">Negotiation (15%)</span>
+</div>
+</div>
+</div>
+<!-- Enterprise Data Table -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Lead Name</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Company</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Contact</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Owner</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Source</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Pipeline Stage</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Status</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Value</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant text-center">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- Lead Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-primary-container text-white flex items-center justify-center font-bold text-[12px]">JS</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Jonathan Smith</p>
+<p class="text-[11px] text-outline">Added 2 days ago</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-body-sm text-on-surface font-medium">Starlight Tech</td>
+<td class="px-6 py-4">
+<p class="text-body-sm text-secondary">j.smith@starlight.com</p>
+<p class="text-[11px] text-outline">+1 (555) 123-4567</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="Portrait of Sarah Chen, a professional female executive with a confident smile, wearing a blazer, minimalist corporate setting with warm, soft-focus studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1m-WWAnSjYgcy4KzsA9a0Pujm7zpHKctXorn5rfIDC63m0_B-pRyCOGvFrYlD6o1-HwuhNz-hQaZkjsqXCyG0Keosr-XoO4L584itVKOZ4mZXgU-_u4DGtN8IMfoRxJGeKAuE0mKb7txYZ6BnJUachefWciOfSCASPOH6q5r-nxRqq5CgetheUfjLApYC_vEEuesUAY6_SQswBj72boCV7Po3EfDrvtGxevK1SSQl0BYfL-n2mbcCsg"/>
+<span class="text-body-sm">Sarah Chen</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-surface-container border border-outline-variant px-2 py-0.5 rounded text-[11px] font-medium text-outline">LinkedIn</span>
+</td>
+<td class="px-6 py-4">
+<span class="bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full text-[11px] font-bold">Negotiation</span>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-body-sm text-green-600 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-green-600"></span> Active
+                                </span>
+</td>
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface">$120,000</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-surface-variant/20 rounded transition-colors text-outline"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+<button class="p-1.5 hover:bg-error/10 rounded transition-colors text-error"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+<button class="p-1.5 hover:bg-surface-variant/20 rounded transition-colors text-outline"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Lead Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-secondary text-white flex items-center justify-center font-bold text-[12px]">MB</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Maria Benson</p>
+<p class="text-[11px] text-outline">Added 5 hours ago</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-body-sm text-on-surface font-medium">Cloud9 Systems</td>
+<td class="px-6 py-4">
+<p class="text-body-sm text-secondary">m.benson@cloud9.io</p>
+<p class="text-[11px] text-outline">+1 (555) 987-6543</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="Close up portrait of a male professional executive with short hair, smiling warmly in a bright office environment, high resolution corporate profile style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAret3O5WoGWEvRlc_HEOVI4EOym0YHRwfPwjtr-5tZfLNUt548dGmFnakW04pmE6N99QSbyOfZbz_WGmRPYHTAlWnK5UmbGOapprDqyFXeM6KqsJuJ4mSGBablXExeM7JBHrioYnrclak-LWYTswQghMHldquNGEch4eWeyE0r-cDqGb03bxTqgnLYp1ZRMXaaEfmAP8rwCxZ3diyCk9eAHtEvDJuylCjmM5W2KYqLI393ix2vCCu4Sw"/>
+<span class="text-body-sm">Alex Rivera</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-surface-container border border-outline-variant px-2 py-0.5 rounded text-[11px] font-medium text-outline">Website</span>
+</td>
+<td class="px-6 py-4">
+<span class="bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full text-[11px] font-bold">Proposal</span>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-body-sm text-green-600 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-green-600"></span> Active
+                                </span>
+</td>
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface">$45,000</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-surface-variant/20 rounded transition-colors text-outline"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+<button class="p-1.5 hover:bg-error/10 rounded transition-colors text-error"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+<button class="p-1.5 hover:bg-surface-variant/20 rounded transition-colors text-outline"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Lead Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-highest text-primary flex items-center justify-center font-bold text-[12px]">KW</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Kevin Wright</p>
+<p class="text-[11px] text-outline">Added 1 week ago</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-body-sm text-on-surface font-medium">Global Logistics</td>
+<td class="px-6 py-4">
+<p class="text-body-sm text-secondary">k.wright@global-log.com</p>
+<p class="text-[11px] text-outline">+1 (555) 444-2211</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-surface-container flex items-center justify-center"><span class="material-symbols-outlined text-[14px]">person</span></div>
+<span class="text-body-sm">Unassigned</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-surface-container border border-outline-variant px-2 py-0.5 rounded text-[11px] font-medium text-outline">Referral</span>
+</td>
+<td class="px-6 py-4">
+<span class="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full text-[11px] font-bold">Discovery</span>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-body-sm text-outline font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span> Inactive
+                                </span>
+</td>
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface">$850,000</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-surface-variant/20 rounded transition-colors text-outline"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+<button class="p-1.5 hover:bg-error/10 rounded transition-colors text-error"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+<button class="p-1.5 hover:bg-surface-variant/20 rounded transition-colors text-outline"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+<!-- Lead Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-green-900 text-white flex items-center justify-center font-bold text-[12px]">RM</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Rachel Meyer</p>
+<p class="text-[11px] text-outline">Added Yesterday</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 text-body-sm text-on-surface font-medium">EcoBuild Solutions</td>
+<td class="px-6 py-4">
+<p class="text-body-sm text-secondary">rmeyer@ecobuild.com</p>
+<p class="text-[11px] text-outline">+1 (555) 777-8899</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="Portrait of Sarah Chen, a professional female executive with a confident smile, wearing a blazer, minimalist corporate setting with warm, soft-focus studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwgFvIX_3LnglNiQjHDLZqxPk__jb13haIU0KsXu8-9lcos-1XtIBb0Ohf4Z_iWIht2yylU-w6p7Ty75ifrZV3iDJXyTLC-jTmfqiZUG9XCQzx-s74JcwGzxBl79ZKOQU3vKWBjd3Zyl6abKw2xRp26Cn8RLS_k3vkhc-JHc5VvvkfenBLXGhav76-vdJAJz1pg7wuCBrxY6E5MjtXHELI86qKY1Lx2uPFQw9wME0wX4H0eXXPiGIsFg"/>
+<span class="text-body-sm">Sarah Chen</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-surface-container border border-outline-variant px-2 py-0.5 rounded text-[11px] font-medium text-outline">LinkedIn</span>
+</td>
+<td class="px-6 py-4">
+<span class="bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full text-[11px] font-bold">Qualified</span>
+</td>
+<td class="px-6 py-4">
+<span class="flex items-center gap-1.5 text-body-sm text-green-600 font-medium">
+<span class="w-1.5 h-1.5 rounded-full bg-green-600"></span> Active
+                                </span>
+</td>
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface">$28,000</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-1.5 hover:bg-surface-variant/20 rounded transition-colors text-outline"><span class="material-symbols-outlined text-[20px]">edit</span></button>
+<button class="p-1.5 hover:bg-error/10 rounded transition-colors text-error"><span class="material-symbols-outlined text-[20px]">delete</span></button>
+<button class="p-1.5 hover:bg-surface-variant/20 rounded transition-colors text-outline"><span class="material-symbols-outlined text-[20px]">more_vert</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="px-6 py-4 bg-surface-container-low flex justify-between items-center border-t border-outline-variant">
+<span class="text-body-sm text-outline">Showing 1-10 of 428 leads</span>
+<div class="flex items-center gap-2">
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-surface-container-lowest text-outline hover:bg-surface-container transition-colors disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded bg-secondary text-on-secondary text-body-sm font-bold">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container transition-colors text-body-sm font-medium">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container transition-colors text-body-sm font-medium">3</button>
+<span class="text-outline mx-1">...</span>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container transition-colors text-body-sm font-medium">43</button>
+<button class="w-8 h-8 flex items-center justify-center rounded border border-outline-variant bg-surface-container-lowest text-outline hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Micro-interaction Script -->
+<script>
+        // Simple hover effect for table rows if needed beyond CSS
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', () => {
+                // Future implementation for lead details modal
+                console.log('Lead clicked:', row.querySelector('.font-label-md').innerText);
+            });
+        });
+    </script>
+</body></html>

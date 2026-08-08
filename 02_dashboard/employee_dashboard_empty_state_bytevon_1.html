@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bytevon Employee Dashboard - Welcome</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-variant": "#d3e4fe", "secondary-container": "#0070ea", "on-tertiary-fixed": "#191c1e", "error-container": "#ffdad6", "tertiary-container": "#1c1f21", secondary: "#0059bb", "primary-fixed": "#d4e3ff", "on-surface": "#0b1c30", "on-tertiary-fixed-variant": "#444749", "tertiary-fixed-dim": "#c4c7c9", "surface-container-highest": "#d3e4fe", "on-secondary-container": "#fefcff", "on-primary-fixed-variant": "#2f486a", "primary-fixed-dim": "#afc8f0", outline: "#74777f", "surface-container": "#e5eeff", "surface-container-lowest": "#ffffff", "surface-container-low": "#eff4ff", "on-primary": "#ffffff", "secondary-fixed-dim": "#adc7ff", error: "#ba1a1a", tertiary: "#040607", "inverse-surface": "#213145", "primary-container": "#001f3f", "surface-container-high": "#dce9ff", surface: "#f8f9ff", "outline-variant": "#c4c6cf", primary: "#000613", "inverse-primary": "#afc8f0", "tertiary-fixed": "#e0e3e5", "on-background": "#0b1c30", "surface-dim": "#cbdbf5", "on-secondary-fixed-variant": "#004493", "on-tertiary-container": "#848789", background: "#f8f9ff", "surface-bright": "#f8f9ff", "on-error": "#ffffff", "inverse-on-surface": "#eaf1ff", "on-primary-container": "#6f88ad", "on-tertiary": "#ffffff", "on-secondary": "#ffffff", "secondary-fixed": "#d8e2ff", "on-secondary-fixed": "#001a41", "surface-tint": "#476083", "on-surface-variant": "#43474e", "on-error-container": "#93000a", "on-primary-fixed": "#001c3a"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"container-max": "1440px", unit: "4px", "stack-md": "16px", "stack-lg": "32px", "margin-mobile": "16px", gutter: "24px", "margin-desktop": "40px", "stack-sm": "8px"}, fontFamily: {"label-md": ["Inter"], "headline-lg": ["Inter"], "display-lg": ["Inter"], "body-md": ["Inter"], "headline-md": ["Inter"], "headline-lg-mobile": ["Inter"], "label-sm": ["Inter"], "title-lg": ["Inter"], "body-sm": ["Inter"], "body-lg": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}]}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9ff;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid #E2E8F0;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="flex min-h-screen text-on-surface">
+<!-- SideNavBar Anchor -->
+<aside class="fixed left-0 top-0 h-full w-72 bg-primary-container dark:bg-tertiary-container shadow-sm flex flex-col h-full p-4 gap-2 z-50">
+<div class="flex items-center gap-3 px-2 mb-8">
+<div class="w-10 h-10 bg-on-secondary-container rounded-lg flex items-center justify-center"><img alt="Bytevon Logo" class="w-full h-full object-contain rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDtAzR_XPmGYTSBa-ursaPByRMX57fqG3Q3fQE89zL-yUnwiyqcIaF_HTMOH-j3Xpc3rVPuTVB41O7JkHe35OCsNERkZaZaPteLR0QAzQkuaIlLIVtK6c5pb2OeI-q6pkvvD7Lc18hCR4Bm3mgByls8QUFnC08ekT5ozpMg6glvakmU01dOmqEqRBQZ4UeNtYNop_mMEBcPlRrRleHj1SZxLmA3ntjObxof0lx_0UxsLhwaPTAgyxaftRU2zPuRmIhrIs"/></div>
+<div>
+<h1 class="font-headline-md text-headline-md text-on-primary font-bold">Bytevon</h1>
+<p class="font-label-sm text-label-sm text-on-primary-container opacity-70">Enterprise ERP</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg cursor-pointer select-none transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-on-primary-container/10 transition-all cursor-pointer select-none" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md">My Attendance</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-on-primary-container/10 transition-all cursor-pointer select-none" href="#">
+<span class="material-symbols-outlined">event_busy</span>
+<span class="font-label-md text-label-md">My Leave</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-on-primary-container/10 transition-all cursor-pointer select-none" href="#">
+<span class="material-symbols-outlined">assignment</span>
+<span class="font-label-md text-label-md">My Tasks</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-on-primary-container/10 transition-all cursor-pointer select-none" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-md text-label-md">Notifications</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-on-primary-container/10 transition-all cursor-pointer select-none" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="font-label-md text-label-md">My Profile</span>
+</a>
+</nav>
+<div class="pt-4 border-t border-on-primary-container/10 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-on-primary-container/10 transition-all cursor-pointer select-none" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-70 hover:bg-on-primary-container/10 transition-all cursor-pointer select-none" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-72 flex-1 flex flex-col min-h-screen">
+<!-- TopNavBar Anchor -->
+<header class="bg-surface-container-lowest border-b border-outline-variant w-full h-16 flex justify-between items-center px-gutter sticky top-0 z-40">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full pl-10 pr-4 py-2 text-label-md focus:ring-2 focus:ring-secondary" placeholder="Search tasks, docs, or people..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full hover:bg-surface-container transition-colors flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 rounded-full hover:bg-surface-container transition-colors flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3 cursor-pointer">
+<div class="text-right hidden sm:block">
+<p class="font-label-md text-label-md font-bold">New Employee</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Onboarding Phase</p>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Professional headshot of a person with a friendly expression, soft studio lighting, high-end corporate photography style. The background is a clean, neutral gray to maintain a minimalist and professional enterprise aesthetic. The individual is wearing professional attire, representing the Bytevon brand's authoritative yet approachable identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCRz5OgIFQb1LGj_1JaRrlps4siWFLjvgHdMkBN6hlHZy9vEA0y5mV2yYFAbXHMEpIR2Aekj_TW43KOVLOOSNR3c_io09HstpwqT3I8ZVZpknvJvGQODZiS23lb8Lwe7jjHyQNs_E9nET-1EYCWt1jr5s3PHmBi4i_IPT4ZU23s9G6Muwaf4efH05nP5HwYIsmt-_Mw-7z0LOw8WZNlAjzG-K7GBb5n8gsBEC50VsoJMAzj7EqmmtF0BA"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<div class="p-10 max-w-[1440px] mx-auto w-full">
+<!-- Welcome Header -->
+<section class="mb-10">
+<h2 class="font-display-lg text-display-lg text-primary mb-2">Welcome to Bytevon, Alexander.</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Your workplace management hub is ready. Let's get your profile set up so you can start tracking your progress and collaborating with your team.</p>
+</section>
+<!-- Zero State Bento Grid -->
+<div class="bento-grid">
+<!-- Main Welcome & Guide -->
+<div class="col-span-8 space-y-6">
+<!-- Onboarding Card -->
+<div class="glass-card rounded-xl p-8 flex gap-8 items-center overflow-hidden relative">
+<div class="flex-1 z-10">
+<span class="inline-block px-3 py-1 bg-secondary-container/10 text-secondary text-label-sm rounded-full mb-4">ONBOARDING 0%</span>
+<h3 class="font-headline-md text-headline-md mb-4">Complete your workspace setup</h3>
+<div class="space-y-4">
+<div class="flex items-center gap-4 p-4 rounded-lg bg-surface-container-lowest border border-outline-variant/30 hover:border-secondary transition-colors cursor-pointer group">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center group-hover:bg-secondary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">person_edit</span>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md font-bold">Complete your Profile</p>
+<p class="text-body-sm text-on-surface-variant">Add your photo and professional details.</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</div>
+<div class="flex items-center gap-4 p-4 rounded-lg bg-surface-container-lowest border border-outline-variant/30 hover:border-secondary transition-colors cursor-pointer group">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center group-hover:bg-secondary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">fingerprint</span>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md font-bold">Register Attendance Bio</p>
+<p class="text-body-sm text-on-surface-variant">Link your biometric data for seamless check-ins.</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</div>
+<div class="flex items-center gap-4 p-4 rounded-lg bg-surface-container-lowest border border-outline-variant/30 hover:border-secondary transition-colors cursor-pointer group">
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center group-hover:bg-secondary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">assignment_ind</span>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md font-bold">Submit Documents</p>
+<p class="text-body-sm text-on-surface-variant">Upload necessary identification for HR approval.</p>
+</div>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</div>
+</div>
+</div>
+<div class="hidden lg:block w-72 h-72 flex-shrink-0">
+<img class="w-full h-full object-contain" data-alt="A minimalist 3D isometric illustration of a sleek, modern workstation with a floating holographic interface. The style is clean and high-tech, using a palette of deep navy and electric blue accents against a soft white background. The composition is spacious and calm, reflecting a new, organized beginning in a professional environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBZHfURXup89GtnqzOuJGp9jH4tqNFci1C6sf-3DlZVeuFBXtzCz7lgMhJgHMPh5RlQyEdpfEkruDXJjJKh1y1ntr2Dcicbte6OE6l8bKeVcfkhQVty0AXnrG9LO-7gO1vssErI5nQS8WJ1htY_ZjundRi54azQtjjzl3bhKY1MamiE3qHH7QVRFO7zEUJZ-E7x1T0Jz_OdJ9dOyf1RrlgBH__ptJtXb9Wf-kyJdP2gk2MZdISnhZKOCw"/>
+</div>
+</div>
+<!-- Empty State KPIs -->
+<div class="grid grid-cols-3 gap-6">
+<div class="glass-card rounded-xl p-6">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-on-surface-variant">schedule</span>
+<span class="text-label-sm text-on-surface-variant bg-surface-container-high px-2 py-1 rounded">This Month</span>
+</div>
+<p class="font-display-lg text-display-lg text-outline-variant">0h</p>
+<p class="font-label-md text-label-md text-on-surface-variant">Work Hours</p>
+</div>
+<div class="glass-card rounded-xl p-6">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-on-surface-variant">beach_access</span>
+<span class="text-label-sm text-on-surface-variant bg-surface-container-high px-2 py-1 rounded">Available</span>
+</div>
+<p class="font-display-lg text-display-lg text-outline-variant">12</p>
+<p class="font-label-md text-label-md text-on-surface-variant">Leave Balance</p>
+</div>
+<div class="glass-card rounded-xl p-6">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined text-on-surface-variant">task_alt</span>
+<span class="text-label-sm text-on-surface-variant bg-surface-container-high px-2 py-1 rounded">Active</span>
+</div>
+<p class="font-display-lg text-display-lg text-outline-variant">0</p>
+<p class="font-label-md text-label-md text-on-surface-variant">Tasks Assigned</p>
+</div>
+</div>
+</div>
+<!-- Quick Actions & Secondary Empty States -->
+<div class="col-span-4 space-y-6">
+<!-- Quick Actions -->
+<div class="bg-primary-container rounded-xl p-6 text-white shadow-lg shadow-primary-container/20">
+<h3 class="font-title-lg text-title-lg mb-6">Quick Actions</h3>
+<div class="grid grid-cols-2 gap-4">
+<button class="bg-white/10 hover:bg-white/20 transition-all p-4 rounded-lg flex flex-col items-center gap-2 border border-white/5">
+<span class="material-symbols-outlined text-secondary-fixed">timer</span>
+<span class="font-label-md text-label-md">Check In</span>
+</button>
+<button class="bg-white/10 hover:bg-white/20 transition-all p-4 rounded-lg flex flex-col items-center gap-2 border border-white/5">
+<span class="material-symbols-outlined text-secondary-fixed">add_circle</span>
+<span class="font-label-md text-label-md">New Task</span>
+</button>
+<button class="bg-white/10 hover:bg-white/20 transition-all p-4 rounded-lg flex flex-col items-center gap-2 border border-white/5">
+<span class="material-symbols-outlined text-secondary-fixed">event</span>
+<span class="font-label-md text-label-md">Leave Request</span>
+</button>
+<button class="bg-white/10 hover:bg-white/20 transition-all p-4 rounded-lg flex flex-col items-center gap-2 border border-white/5">
+<span class="material-symbols-outlined text-secondary-fixed">contact_support</span>
+<span class="font-label-md text-label-md">HR Support</span>
+</button>
+</div>
+</div>
+<!-- Attendance Overview Empty State -->
+<div class="glass-card rounded-xl p-6">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-title-lg text-title-lg">Attendance Log</h3>
+<button class="text-secondary font-label-md text-label-md">View All</button>
+</div>
+<div class="flex flex-col items-center justify-center py-12 text-center">
+<div class="w-16 h-16 bg-surface-container rounded-full flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-outline-variant" style="font-size: 32px;">history</span>
+</div>
+<p class="font-label-md text-label-md font-bold mb-1">No Activity Yet</p>
+<p class="text-body-sm text-on-surface-variant">Records of your clock-ins will appear here once you begin.</p>
+</div>
+</div>
+<!-- Team Status Empty State -->
+<div class="glass-card rounded-xl p-6">
+<h3 class="font-title-lg text-title-lg mb-6">Team Presence</h3>
+<div class="space-y-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high animate-pulse"></div>
+<div class="h-4 w-32 bg-surface-container-high rounded-full animate-pulse"></div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high animate-pulse"></div>
+<div class="h-4 w-24 bg-surface-container-high rounded-full animate-pulse"></div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high animate-pulse"></div>
+<div class="h-4 w-28 bg-surface-container-high rounded-full animate-pulse"></div>
+</div>
+<p class="text-body-sm text-on-surface-variant pt-2 border-t border-outline-variant/30 text-center">Team members list will sync soon.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Contextual FAB (Suppressed on Empty State for focus, but adding for interaction demonstration) -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-secondary text-white rounded-full shadow-xl flex items-center justify-center hover:scale-110 transition-transform active:scale-95 z-50" id="mainFab">
+<span class="material-symbols-outlined">add</span>
+</button>
+<script>
+        // Simple Interaction: Ripple effect on FAB
+        const fab = document.getElementById('mainFab');
+        fab.addEventListener('click', () => {
+            const ripple = document.createElement('span');
+            ripple.classList.add('absolute', 'w-2', 'h-2', 'bg-white/30', 'rounded-full', 'animate-ping');
+            fab.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 1000);
+            
+            // Interaction: Open guide
+            alert("Ready to start? Let's begin with your profile setup.");
+        });
+
+        // Hover animations for the onboarding items
+        const onboardingItems = document.querySelectorAll('.group');
+        onboardingItems.forEach(item => {
+            item.addEventListener('mouseenter', () => {
+                item.style.transform = 'translateX(4px)';
+            });
+            item.addEventListener('mouseleave', () => {
+                item.style.transform = 'translateX(0)';
+            });
+        });
+    </script>
+</body></html>

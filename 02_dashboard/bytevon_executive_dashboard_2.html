@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bytevon - Enterprise Suite Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      line-height: 1;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8f9ff;
+    }
+    /* Tonal Layers & Soft Shadows */
+    .glass-card {
+      background: #ffffff;
+      border: 1px solid #E2E8F0;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+    .trend-up { color: #10b981; }
+    .trend-down { color: #ef4444; }
+  </style>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-container-highest": "#d3e4fe", "on-background": "#0b1c30", "surface-variant": "#d3e4fe", "surface-container-low": "#eff4ff", "on-secondary-container": "#fefcff", "error-container": "#ffdad6", error: "#ba1a1a", "tertiary-fixed": "#e0e3e5", "surface-container": "#e5eeff", "secondary-fixed-dim": "#adc7ff", "primary-container": "#001f3f", "on-primary-fixed-variant": "#2f486a", background: "#f8f9ff", "tertiary-fixed-dim": "#c4c7c9", "inverse-on-surface": "#eaf1ff", "on-primary": "#ffffff", "on-secondary-fixed-variant": "#004493", "on-secondary": "#ffffff", primary: "#000613", "on-primary-container": "#6f88ad", "tertiary-container": "#1c1f21", "surface-bright": "#f8f9ff", "on-tertiary": "#ffffff", "surface-container-lowest": "#ffffff", "primary-fixed": "#d4e3ff", "secondary-fixed": "#d8e2ff", "on-primary-fixed": "#001c3a", surface: "#f8f9ff", "inverse-surface": "#213145", tertiary: "#040607", "surface-container-high": "#dce9ff", "on-tertiary-fixed": "#191c1e", "on-surface-variant": "#43474e", "secondary-container": "#0070ea", "inverse-primary": "#afc8f0", "primary-fixed-dim": "#afc8f0", "outline-variant": "#c4c6cf", "on-secondary-fixed": "#001a41", "on-surface": "#0b1c30", "on-tertiary-fixed-variant": "#444749", "on-tertiary-container": "#848789", "surface-dim": "#cbdbf5", "surface-tint": "#476083", "on-error-container": "#93000a", outline: "#74777f", "on-error": "#ffffff", secondary: "#0059bb"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {unit: "4px", "stack-md": "16px", "stack-lg": "32px", "stack-sm": "8px", "margin-mobile": "16px", gutter: "24px", "container-max": "1440px", "margin-desktop": "40px"}, fontFamily: {"label-md": ["Inter"], "body-lg": ["Inter"], "headline-lg": ["Inter"], "body-sm": ["Inter"], "title-lg": ["Inter"], "label-sm": ["Inter"], "headline-md": ["Inter"], "body-md": ["Inter"], "display-lg": ["Inter"], "headline-lg-mobile": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}]}}}};</script>
+</head>
+<body class="bg-background text-on-surface overflow-x-hidden">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary dark:bg-primary-container shadow-md flex flex-col py-stack-md z-50 transition-all duration-300 ease-in-out">
+<div class="px-6 mb-stack-lg">
+<div class="flex items-center gap-3">
+<img alt="Bytevon Logo" class="h-10 w-auto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6N1qbRwohdMZPVLqIWZ6LP-VrxEXCF-H4nTcAZP8G48G-XBaa5JRAXJ95IW01qFlTZ45X1dDKGcp3Gwt2HI81mJIjfW3s2r0ieRkJc9ybH89Rvmpn0qjBrS716rDyoWoWlYU1BiruNIkImFEs_3fTg9IbKjLJqwUXjhHipieLfNiUdgCNwDVDiVzd3GJWVtfDlYSHZz-a-2oi4s-8jYy5WEHUqxseFZmh10PGCjgW7ULHDiJODogSmpFdt5RchSvnndA"/>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md font-bold text-on-primary">Bytevon</span>
+<span class="font-label-sm text-label-sm text-on-primary-container tracking-wider">Enterprise Suite</span>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1 px-2">
+<!-- Active Item -->
+<a class="bg-secondary-container text-on-secondary-container rounded-lg mx-2 flex items-center px-4 py-3 gap-3 group transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="{{DATA:SCREEN:SCREEN_96}}">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+<span class="font-label-md text-label-md">Employees</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="{{DATA:SCREEN:SCREEN_83}}">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span class="font-label-md text-label-md">CRM</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="{{DATA:SCREEN:SCREEN_85}}">
+<span class="material-symbols-outlined text-[20px]">settings_applications</span>
+<span class="font-label-md text-label-md">ERP</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">bar_chart</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto px-4 py-4">
+<button class="w-full bg-secondary text-on-secondary py-3 px-4 rounded-lg flex items-center justify-center gap-2 font-label-md hover:bg-opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined">add</span>
+        Quick Create
+      </button>
+<div class="mt-4 pt-4 border-t border-on-primary-container/20">
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">help_outline</span>
+<span class="font-label-md text-label-md">Help Center</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Wrapper -->
+<div class="ml-[280px] min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] bg-surface dark:bg-surface-container-low h-16 px-margin-desktop flex justify-between items-center z-40 border-b border-outline-variant max-w-[calc(1440px-280px)] left-[280px]">
+<div class="flex items-center gap-6">
+<nav class="flex items-center text-on-surface-variant font-body-md text-body-md gap-2">
+<span class="hover:text-secondary cursor-pointer">Main</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-secondary font-semibold">Dashboard</span>
+</nav>
+<div class="relative w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-highest/30 border border-outline-variant rounded-full py-2 pl-10 pr-4 focus:outline-none focus:border-secondary transition-all font-body-sm text-body-sm" placeholder="Search enterprise..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="relative p-2 text-on-surface-variant hover:text-secondary transition-colors cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="flex items-center gap-3 cursor-pointer group">
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface">Alex Thompson</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Administrator</p>
+</div>
+<img class="w-10 h-10 rounded-full border border-outline-variant object-cover group-hover:border-secondary transition-colors" data-alt="A professional headshot of a middle-aged executive man with a friendly expression, wearing a navy blue tailored suit. The background is a clean, bright minimalist office environment with soft natural light, following the executive modern professional aesthetic of Bytevon software." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuftfoGx7qUsmhyHhXCNiQ7SHfeyLRoZyAsKEUvbvb7P9pfvpGd09niOp7z4ZhAqQTh_9c3yBPAG2_6UOoJ96LcoFilw12VePlLvdICC-_Evb-nrKpQgXtesNfegxMqxzp6gWfBvl4wxD5V2D_BXPkbzbOyrk-V3kQwtNRwFDlU5RnU_dYK92yP6v2qafEqG2kH8DPRYzBRX4KfapoaDFc687xRzkEWJS_1WUKVKlQdyMxUdUoTkbfpQ"/>
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<main class="mt-16 p-margin-desktop space-y-stack-lg max-w-container-max mx-auto w-full">
+<!-- Welcome Banner -->
+<section class="relative overflow-hidden rounded-xl bg-primary-container p-stack-lg text-on-primary">
+<div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+<div>
+<h1 class="font-headline-lg text-headline-lg mb-unit">Welcome back, Alex</h1>
+<p class="font-body-md text-body-md text-on-primary-container max-w-xl opacity-90">Today is October 24th. You have 3 pending employee approvals and your quarterly revenue targets are trending 12% above forecast. Systems are optimal.</p>
+</div>
+<div class="flex gap-stack-md">
+<div class="glass-card bg-white/10 border-white/20 p-4 rounded-lg backdrop-blur-sm min-w-[140px]">
+<p class="text-label-sm font-label-sm uppercase tracking-wider opacity-70">Uptime</p>
+<p class="text-headline-md font-bold">99.98%</p>
+</div>
+<div class="glass-card bg-white/10 border-white/20 p-4 rounded-lg backdrop-blur-sm min-w-[140px]">
+<p class="text-label-sm font-label-sm uppercase tracking-wider opacity-70">Active Users</p>
+<p class="text-headline-md font-bold">1,242</p>
+</div>
+</div>
+</div>
+<!-- Subtle Background Animation Decor -->
+<div class="absolute right-0 top-0 w-64 h-64 bg-secondary/20 blur-3xl -mr-32 -mt-32 rounded-full"></div>
+</section>
+<!-- Quick Actions -->
+<section class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-stack-md">
+<button class="glass-card p-4 rounded-xl flex flex-col items-center gap-2 hover:border-secondary transition-all group active:scale-95">
+<div class="w-10 h-10 bg-secondary-container/10 text-secondary rounded-full flex items-center justify-center group-hover:bg-secondary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">person_add</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">Add Employee</span>
+</button>
+<button class="glass-card p-4 rounded-xl flex flex-col items-center gap-2 hover:border-secondary transition-all group active:scale-95">
+<div class="w-10 h-10 bg-secondary-container/10 text-secondary rounded-full flex items-center justify-center group-hover:bg-secondary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">receipt_long</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">Create Invoice</span>
+</button>
+<button class="glass-card p-4 rounded-xl flex flex-col items-center gap-2 hover:border-secondary transition-all group active:scale-95">
+<div class="w-10 h-10 bg-secondary-container/10 text-secondary rounded-full flex items-center justify-center group-hover:bg-secondary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">assignment</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">New Task</span>
+</button><button class="glass-card p-4 rounded-xl flex flex-col items-center gap-2 hover:border-secondary transition-all group active:scale-95">
+<div class="w-10 h-10 bg-secondary-container/10 text-secondary rounded-full flex items-center justify-center group-hover:bg-secondary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">event</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">Schedule Meet</span>
+</button>
+<button class="glass-card p-4 rounded-xl flex flex-col items-center gap-2 hover:border-secondary transition-all group active:scale-95">
+<div class="w-10 h-10 bg-secondary-container/10 text-secondary rounded-full flex items-center justify-center group-hover:bg-secondary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">upload_file</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">Import Data</span>
+</button>
+<button class="glass-card p-4 rounded-xl flex flex-col items-center gap-2 hover:border-secondary transition-all group active:scale-95">
+<div class="w-10 h-10 bg-secondary-container/10 text-secondary rounded-full flex items-center justify-center group-hover:bg-secondary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">View All</span>
+</button>
+</section>
+<!-- KPI Cards Row -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-stack-md">
+<!-- Employees -->
+<div class="glass-card p-5 rounded-xl">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Employees</span>
+<span class="text-secondary material-symbols-outlined">groups</span>
+</div>
+<div class="flex items-end gap-2 mb-4">
+<span class="font-headline-md text-headline-md font-bold">1,482</span>
+<span class="font-label-sm text-label-sm trend-up mb-1">+4.2%</span>
+</div>
+<div class="h-10 w-full bg-surface-container rounded flex items-end overflow-hidden">
+<div class="h-1/2 w-full bg-secondary/10 flex items-end">
+<svg class="w-full h-full preserve-3d" preserveaspectratio="none" viewbox="0 0 100 40">
+<path d="M0 40 Q 10 35, 20 38 T 40 30 T 60 35 T 80 20 T 100 25 L 100 40 L 0 40 Z" fill="rgba(0, 89, 187, 0.2)"></path>
+<path d="M0 40 Q 10 35, 20 38 T 40 30 T 60 35 T 80 20 T 100 25" fill="transparent" stroke="#0059bb" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+</div>
+<!-- Attendance -->
+<div class="glass-card p-5 rounded-xl">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Attendance</span>
+<span class="text-secondary material-symbols-outlined">how_to_reg</span>
+</div>
+<div class="flex items-end gap-2 mb-4">
+<span class="font-headline-md text-headline-md font-bold">96.8%</span>
+<span class="font-label-sm text-label-sm trend-up mb-1">+0.5%</span>
+</div>
+<div class="h-10 w-full bg-surface-container rounded overflow-hidden">
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 100 40">
+<path d="M0 30 L 15 28 L 30 32 L 45 25 L 60 22 L 75 28 L 100 20" fill="transparent" stroke="#0059bb" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<!-- Leave -->
+<div class="glass-card p-5 rounded-xl">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Leave Requests</span>
+<span class="text-secondary material-symbols-outlined">event_busy</span>
+</div>
+<div class="flex items-end gap-2 mb-4">
+<span class="font-headline-md text-headline-md font-bold">14</span>
+<span class="font-label-sm text-label-sm trend-down mb-1">-2.1%</span>
+</div>
+<div class="h-10 w-full bg-surface-container rounded overflow-hidden">
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 100 40">
+<path d="M0 20 L 20 25 L 40 22 L 60 35 L 80 30 L 100 38" fill="transparent" stroke="#ef4444" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<!-- Revenue -->
+<div class="glass-card p-5 rounded-xl">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Revenue</span>
+<span class="text-secondary material-symbols-outlined">payments</span>
+</div>
+<div class="flex items-end gap-2 mb-4">
+<span class="font-headline-md text-headline-md font-bold">$42.8M</span>
+<span class="font-label-sm text-label-sm trend-up mb-1">+12.4%</span>
+</div>
+<div class="h-10 w-full bg-surface-container rounded overflow-hidden">
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 100 40">
+<path d="M0 38 L 20 30 L 40 32 L 60 20 L 80 15 L 100 5" fill="transparent" stroke="#10b981" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<!-- Open Tasks -->
+<div class="glass-card p-5 rounded-xl">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Open Tasks</span>
+<span class="text-secondary material-symbols-outlined">task_alt</span>
+</div>
+<div class="flex items-end gap-2 mb-4">
+<span class="font-headline-md text-headline-md font-bold">245</span>
+<span class="font-label-sm text-label-sm trend-up mb-1">+8%</span>
+</div>
+<div class="h-10 w-full bg-surface-container rounded overflow-hidden">
+<svg class="w-full h-full" preserveaspectratio="none" viewbox="0 0 100 40">
+<path d="M0 35 L 10 30 L 30 35 L 50 20 L 70 15 L 100 10" fill="transparent" stroke="#0059bb" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+</section>
+<!-- Analytics Grid -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-stack-lg">
+<div class="glass-card p-stack-lg rounded-xl flex flex-col gap-6">
+<div class="flex justify-between items-center">
+<h2 class="font-title-lg text-title-lg text-on-surface">Attendance Trend</h2>
+<select class="bg-surface border-outline-variant text-label-sm font-label-sm rounded-lg px-3 py-1.5 focus:border-secondary outline-none">
+<option>Last 30 Days</option>
+<option>Last Quarter</option>
+<option>Year to Date</option>
+</select>
+</div>
+<div class="flex-1 min-h-[300px] flex items-center justify-center bg-surface-container-lowest/50 rounded-lg relative overflow-hidden group">
+<div class="absolute inset-0 flex flex-col justify-between p-6 opacity-40">
+<div class="border-b border-outline-variant w-full h-1"></div>
+<div class="border-b border-outline-variant w-full h-1"></div>
+<div class="border-b border-outline-variant w-full h-1"></div>
+<div class="border-b border-outline-variant w-full h-1"></div>
+</div>
+<svg class="w-full h-full px-4 drop-shadow-xl z-10" preserveaspectratio="none" viewbox="0 0 500 200">
+<defs>
+<lineargradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#0059bb" stop-opacity="0.3"></stop>
+<stop offset="100%" stop-color="#0059bb" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<path d="M0 180 C 50 170, 80 140, 120 150 S 180 100, 250 110 S 350 40, 420 60 S 500 20, 500 20 L 500 200 L 0 200 Z" fill="url(#chartGradient)"></path>
+<path d="M0 180 C 50 170, 80 140, 120 150 S 180 100, 250 110 S 350 40, 420 60 S 500 20, 500 20" fill="none" stroke="#0059bb" stroke-linecap="round" stroke-width="3"></path>
+</svg>
+<!-- Hover marker fake-out -->
+<div class="absolute left-1/2 top-1/4 -translate-x-1/2 group-hover:scale-110 transition-transform bg-secondary text-on-secondary px-3 py-1 rounded text-label-sm font-bold shadow-lg z-20">98.2% Oct 22</div>
+</div>
+</div>
+<div class="glass-card p-stack-lg rounded-xl flex flex-col gap-6">
+<div class="flex justify-between items-center">
+<h2 class="font-title-lg text-title-lg text-on-surface">Revenue Trend</h2>
+<div class="flex gap-2">
+<span class="flex items-center gap-1.5 text-label-sm font-label-sm">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span> Actual
+              </span>
+<span class="flex items-center gap-1.5 text-label-sm font-label-sm text-on-surface-variant">
+<span class="w-2.5 h-2.5 rounded-full bg-outline"></span> Target
+              </span>
+</div>
+</div>
+<div class="flex-1 min-h-[300px] flex items-end justify-between px-6 pb-6 pt-10">
+<!-- Simulated Bar Chart -->
+<div class="w-8 bg-surface-container-highest rounded-t-sm h-[60%] relative group cursor-pointer transition-all hover:bg-secondary">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 text-label-sm font-bold text-on-surface opacity-0 group-hover:opacity-100 transition-opacity">$4.2M</div>
+</div>
+<div class="w-8 bg-secondary rounded-t-sm h-[85%] relative group cursor-pointer">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 text-label-sm font-bold text-on-surface">$5.8M</div>
+</div>
+<div class="w-8 bg-surface-container-highest rounded-t-sm h-[45%] relative group cursor-pointer transition-all hover:bg-secondary"></div>
+<div class="w-8 bg-surface-container-highest rounded-t-sm h-[70%] relative group cursor-pointer transition-all hover:bg-secondary"></div>
+<div class="w-8 bg-secondary rounded-t-sm h-[95%] relative group cursor-pointer">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 text-label-sm font-bold text-on-surface">$6.4M</div>
+</div>
+<div class="w-8 bg-surface-container-highest rounded-t-sm h-[55%] relative group cursor-pointer transition-all hover:bg-secondary"></div>
+<div class="w-8 bg-surface-container-highest rounded-t-sm h-[80%] relative group cursor-pointer transition-all hover:bg-secondary"></div>
+<div class="w-8 bg-secondary rounded-t-sm h-[90%] relative group cursor-pointer"></div>
+<div class="w-8 bg-surface-container-highest rounded-t-sm h-[65%] relative group cursor-pointer transition-all hover:bg-secondary"></div>
+<div class="w-8 bg-secondary rounded-t-sm h-[100%] relative group cursor-pointer">
+<div class="absolute -top-8 left-1/2 -translate-x-1/2 text-label-sm font-bold text-on-surface">$7.2M</div>
+</div>
+</div>
+<div class="flex justify-between px-6 border-t border-outline-variant pt-4 text-label-sm text-on-surface-variant">
+<span class="">Jan</span><span class="">Feb</span><span class="">Mar</span><span class="">Apr</span><span class="">May</span><span class="">Jun</span><span class="">Jul</span><span class="">Aug</span><span class="">Sep</span><span class="">Oct</span>
+</div>
+</div>
+</section>
+<!-- Bottom Grid -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-stack-lg pb-stack-lg">
+<!-- Pending Approvals -->
+<div class="glass-card p-stack-lg rounded-xl flex flex-col gap-4 lg:col-span-1">
+<div class="flex justify-between items-center mb-2">
+<h3 class="font-title-lg text-title-lg text-on-surface">Pending Approvals</h3>
+<span class="bg-error-container text-on-error-container text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-widest">3 New</span>
+</div>
+<div class="space-y-4">
+<!-- Approval Item -->
+<div class="flex items-center gap-3 p-3 hover:bg-surface-container-low rounded-lg transition-colors border-l-4 border-secondary">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A portrait photo of a young professional woman with glasses and an energetic expression, representing a modern corporate employee at Bytevon. Studio lighting, soft depth of field, high-end professional aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTi7vsGXjYZ7rACKTE9YT_VvvsA2a7sD76VcGANGCmXceAhnbTEjQFQcb1yT8PJAwLuP9gD7spp_bc8R_Bl9PUEwGszpVbRuanIzyXULYZJUFN9g21R91jQdzwEi63tzuCs0Drru0C8HK5b2KtHuVMnhfmX-BfVzbitHYbjf5iUAfow3vjMh3uhsBjdmR2PWGtxYJ-tF-YKa5BD6e3pgPKfn9mVtInIBRUSUC2oavc8Cm1IL6L-y-LvA"/>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface leading-tight">Sarah Chen</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Annual Leave • 3 Days</p>
+</div>
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded-full bg-secondary text-white flex items-center justify-center hover:bg-opacity-90 active:scale-90 transition-all">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</button>
+<button class="w-8 h-8 rounded-full border border-outline text-on-surface-variant flex items-center justify-center hover:bg-error hover:text-white hover:border-error active:scale-90 transition-all">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+<!-- Approval Item -->
+<div class="flex items-center gap-3 p-3 hover:bg-surface-container-low rounded-lg transition-colors border-l-4 border-secondary">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A portrait of a male professional in a smart-casual blazer, appearing confident and focused. High quality commercial corporate photography style, bright background, professional color grading consistent with the Bytevon design system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCj4HPQCtKUBJEYkaJhNU-eaAH3F0yC3kJb-MWMhQQ4XD1vdgUtjYbmgazEvYZ554mmmchrOE3O98mAUvnhIT1IilbKYaVtip3A0jYqCBGzkQggT-7OCHuigOZHCr5seycbuGmdtptqPA--zEjY-WncgOkCyhp1Ihs6fQUhTCbHpZZOjSy3TGeuWxbTU3ynehx5NBKQRb-fFIWpW5_KByXuRfR2nIakjDz4t1YeOl6KJ3AMNuhfvwm_Xg"/>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface leading-tight">Marcus Miller</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Expense Claim • $1,240</p>
+</div>
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded-full bg-secondary text-white flex items-center justify-center hover:bg-opacity-90 active:scale-90 transition-all">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</button>
+</div>
+</div>
+<!-- Approval Item -->
+<div class="flex items-center gap-3 p-3 hover:bg-surface-container-low rounded-lg transition-colors border-l-4 border-secondary">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="Corporate headshot of a diverse woman with a smiling, trustworthy professional demeanor. Clean lighting, modern office background blur, high resolution digital photography for a high-end enterprise software interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAY7e71oGwD1cAEf-moIo4toN2Tfgbt4tln7zqTvqyaaG5ZIHqK50p4oTbmVt5PCRP2toJlQZ444mS9nKdEDFvXzCQbSBXFYhFfR8dzPCZca4BU-vz26nDN1YuZiZZvgMvA5beFPhAzgk8M150Lb-jfaHW4bPloekt19lGG72YNZwtddg71EAlIV9ipvt5MkPIOM8OXPzyImPZeR-mlhc7YisRLVc9QFkHskGDokXG-Cki4u2T3DFkh-Q"/>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface leading-tight">Elena Rossi</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Training Request • AI Ethics</p>
+</div>
+<div class="flex gap-2">
+<button class="w-8 h-8 rounded-full bg-secondary text-white flex items-center justify-center hover:bg-opacity-90 active:scale-90 transition-all">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</button>
+</div>
+</div>
+</div>
+<button class="mt-2 text-secondary font-label-md text-label-md hover:underline w-full text-center py-2">View all requests</button>
+</div>
+<!-- Recent Activities Feed -->
+<div class="glass-card p-stack-lg rounded-xl flex flex-col gap-4 lg:col-span-1">
+<h3 class="font-title-lg text-title-lg text-on-surface mb-2">Recent Activities</h3>
+<div class="space-y-6 relative before:content-[''] before:absolute before:left-[19px] before:top-4 before:bottom-4 before:w-[1px] before:bg-outline-variant">
+<!-- Feed Item -->
+<div class="relative flex gap-4 pl-10">
+<div class="absolute left-0 w-10 h-10 bg-surface-container-high rounded-full flex items-center justify-center z-10 border border-white">
+<span class="material-symbols-outlined text-secondary text-[20px]">person_add</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">New employee onboarded</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Jordan Smith added to Engineering team</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">10 minutes ago</p>
+</div>
+</div>
+<!-- Feed Item -->
+<div class="relative flex gap-4 pl-10">
+<div class="absolute left-0 w-10 h-10 bg-surface-container-high rounded-full flex items-center justify-center z-10 border border-white">
+<span class="material-symbols-outlined text-secondary text-[20px]">security</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Security Policy Updated</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">2FA enforcement enabled for all Admin accounts</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">1 hour ago</p>
+</div>
+</div>
+<!-- Feed Item -->
+<div class="relative flex gap-4 pl-10">
+<div class="absolute left-0 w-10 h-10 bg-surface-container-high rounded-full flex items-center justify-center z-10 border border-white">
+<span class="material-symbols-outlined text-secondary text-[20px]">database</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Cloud Backup Completed</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">ERP primary database successfully mirrored to AWS-West</p>
+<p class="font-label-sm text-label-sm text-outline mt-1">4 hours ago</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Calendar Widget -->
+<div class="glass-card p-stack-lg rounded-xl flex flex-col gap-4 lg:col-span-1">
+<div class="flex justify-between items-center mb-2">
+<h3 class="font-title-lg text-title-lg text-on-surface">Calendar</h3>
+<button class="text-secondary material-symbols-outlined">chevron_right</button>
+</div>
+<div class="grid grid-cols-7 gap-2 text-center text-label-sm text-on-surface-variant mb-2">
+<span class="">S</span><span class="">M</span><span class="">T</span><span class="">W</span><span class="">T</span><span class="">F</span><span class="">S</span>
+</div>
+<div class="grid grid-cols-7 gap-2 text-center font-label-md text-label-md">
+<span class="py-2 text-outline">28</span><span class="py-2 text-outline">29</span><span class="py-2 text-outline">30</span><span class="py-2 text-outline">31</span>
+<span class="py-2 bg-surface-container-low rounded-lg font-bold">1</span><span class="py-2">2</span><span class="py-2">3</span>
+<span class="py-2">4</span><span class="py-2">5</span><span class="py-2">6</span><span class="py-2">7</span><span class="py-2">8</span><span class="py-2">9</span><span class="py-2">10</span>
+<span class="py-2">11</span><span class="py-2">12</span><span class="py-2">13</span><span class="py-2">14</span><span class="py-2">15</span><span class="py-2">16</span><span class="py-2">17</span>
+<span class="py-2">18</span><span class="py-2">19</span><span class="py-2">20</span><span class="py-2">21</span><span class="py-2">22</span><span class="py-2">23</span><span class="py-2 bg-secondary text-on-secondary rounded-lg font-bold">24</span>
+<span class="py-2">25</span><span class="py-2 border border-secondary text-secondary rounded-lg">26</span><span class="py-2">27</span><span class="py-2">28</span><span class="py-2">29</span><span class="py-2">30</span><span class="py-2">31</span>
+</div>
+<div class="mt-6 space-y-3">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Upcoming Deadlines</p>
+<div class="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg border-l-4 border-error">
+<div class="flex flex-col items-center justify-center bg-white rounded p-1.5 min-w-[40px] shadow-sm">
+<span class="text-label-sm font-bold text-error">OCT</span>
+<span class="text-title-lg font-bold">26</span>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface">Q3 Tax Filing</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Due at 5:00 PM EST</p>
+</div>
+</div>
+<div class="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg border-l-4 border-secondary">
+<div class="flex flex-col items-center justify-center bg-white rounded p-1.5 min-w-[40px] shadow-sm">
+<span class="text-label-sm font-bold text-secondary">OCT</span>
+<span class="text-title-lg font-bold">28</span>
+</div>
+<div class="flex-1">
+<p class="font-label-md text-label-md text-on-surface">Strategy Meet</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Boardroom A</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="mt-auto py-stack-md px-margin-desktop border-t border-outline-variant flex justify-between items-center text-on-surface-variant font-label-sm text-label-sm max-w-container-max mx-auto w-full">
+<div class="flex items-center gap-2">
+<img alt="Bytevon Logo" class="h-6 opacity-60" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0k4NQrFFedAYnWL47ZOpiclC1kXyOm0m9Tann08XIOZFxkhSgZa3PJ0nmY10oW58LRs2yz76nCcrAvhbwbCV3w0d2-8JXt9uiRtYr3IXIXiWGWneuS1R6jo6CVolzkVY3m6P9KfI2r5nRL68pLUw-rYAhIsNeQDNn5PenYln20PKFiF_VDWOXug6guT9ql79FQeBEW56mVIm_LEEREr62fHi-rhvWR9pbR5u5Y7IONfhihFSwquljM8ureEZd8USXNlE"/>
+<span class="">© 2024 Bytevon Enterprise Systems Inc.</span>
+</div>
+<div class="flex gap-6">
+<a class="hover:text-secondary" href="#">Security Status</a>
+<a class="hover:text-secondary" href="#">API Docs</a>
+<a class="hover:text-secondary" href="#">Privacy Center</a>
+</div>
+</footer>
+</div>
+<script>
+    // Micro-interaction for cards
+    document.querySelectorAll('.glass-card').forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        card.style.transform = 'translateY(-2px)';
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'translateY(0)';
+      });
+    });
+
+    // Quick notification animation simulation
+    const notifyBtn = document.querySelector('button .material-symbols-outlined:contains("notifications")')?.parentElement;
+    if(notifyBtn) {
+        setInterval(() => {
+            notifyBtn.classList.toggle('animate-pulse');
+        }, 5000);
+    }
+  </script>
+</body></html>

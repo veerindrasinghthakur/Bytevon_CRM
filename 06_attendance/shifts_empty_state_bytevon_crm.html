@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bytevon Enterprise - Shifts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed-dim": "#adc6ff",
+                      "surface-container-low": "#eff4ff",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-dim": "#cbdbf6",
+                      "tertiary-container": "#595c5e",
+                      "inverse-surface": "#213146",
+                      "on-tertiary": "#ffffff",
+                      "on-surface-variant": "#424753",
+                      "deep-navy": "#0b1c30",
+                      "error-container": "#ffdad6",
+                      "error": "#ba1a1a",
+                      "surface-bright": "#f8f9ff",
+                      "inverse-primary": "#adc6ff",
+                      "secondary-container": "#d7dff9",
+                      "on-error": "#ffffff",
+                      "on-tertiary-fixed-variant": "#444749",
+                      "outline": "#727784",
+                      "on-surface": "#0b1c30",
+                      "surface-container": "#e6eeff",
+                      "on-background": "#0b1c30",
+                      "tertiary": "#414546",
+                      "outline-variant": "#c2c6d5",
+                      "warning-amber": "#f59e0b",
+                      "tertiary-fixed-dim": "#c4c7c9",
+                      "surface-container-highest": "#d3e3ff",
+                      "on-secondary-container": "#5a6278",
+                      "on-primary": "#ffffff",
+                      "surface-container-high": "#dde9ff",
+                      "success-emerald": "#10b981",
+                      "on-primary-fixed": "#001a41",
+                      "tertiary-fixed": "#e1e3e5",
+                      "surface-variant": "#d3e3ff",
+                      "on-secondary-fixed-variant": "#3e465b",
+                      "surface": "#f8f9ff",
+                      "on-primary-container": "#c3d4ff",
+                      "primary": "#00418f",
+                      "inverse-on-surface": "#ebf1ff",
+                      "error-red": "#ba1a1a",
+                      "outline-subtle": "rgba(113, 119, 134, 0.3)",
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed": "#131b2e",
+                      "on-tertiary-fixed": "#191c1e",
+                      "secondary-fixed-dim": "#bec6e0",
+                      "background": "#f8f9ff",
+                      "electric-blue": "#0070eb",
+                      "on-secondary": "#ffffff",
+                      "secondary": "#565e74",
+                      "surface-tint": "#095bbf",
+                      "on-primary-fixed-variant": "#004494",
+                      "secondary-fixed": "#dae2fc",
+                      "primary-fixed": "#d8e2ff",
+                      "primary-container": "#0058bc",
+                      "on-tertiary-container": "#d2d4d7"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter-md": "16px",
+                      "sidebar-width": "240px",
+                      "card-padding": "20px",
+                      "section-gap": "32px",
+                      "rail-width": "80px",
+                      "container-margin": "24px",
+                      "table-row-height": "72px"
+              },
+              "fontFamily": {
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "caption": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "label-bold": [
+                              "Inter"
+                      ],
+                      "headline-xl": [
+                              "Inter"
+                      ],
+                      "micro": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "caption": [
+                              "11px",
+                              {
+                                      "lineHeight": "14px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-bold": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-xl": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "micro": [
+                              "9px",
+                              {
+                                      "lineHeight": "12px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+      </style>
+</head>
+<body class="bg-background text-on-background h-full overflow-hidden flex flex-col md:flex-row">
+<!-- Mobile Nav Header -->
+<header class="md:hidden flex justify-between items-center h-16 px-6 w-full sticky top-0 z-50 bg-surface-bright border-b border-outline-subtle flat no shadows">
+<div class="font-headline-md text-headline-md font-bold text-deep-navy">Bytevon Enterprise</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 cursor-pointer rounded-full p-2" data-icon="notifications">notifications</span>
+<span class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 cursor-pointer rounded-full p-2" data-icon="settings">settings</span>
+<img alt="Marcus Sterling" class="w-8 h-8 rounded-full object-cover" data-alt="A small, circular profile portrait of a professional man, Marcus Sterling, with a neutral expression, dressed in modern corporate attire against a light studio background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAnoJ3TCz7h1u91WIoKQoL7ncsKgNJGgzlQxXpLho28t4GYhx0rMbLGEqdj7W3PrezO-0DPvvb3py_GnFejY7kXL8b0MqW0IDGJtEf9YABN00sxJlQ_srsnm6BYgzzjoXDqw2Y30qUuUfvDC34iRnMfEVpNsrVGEyVAGYbeuvq_OeYsW2nnzIAMsQ3fHTys_M9oPUx-wuPdbTvc9a-Sz6F2LMe84Sf0MMsyFJocvwqnHkOgiK2qPOH"/>
+</div>
+</header>
+<!-- Side Nav Rail (Desktop) -->
+<nav class="hidden md:flex fixed left-0 top-0 h-screen w-rail-width z-40 bg-deep-navy shadow-lg flex-col items-center py-6">
+<div class="font-headline-xl text-headline-xl text-surface-bright mb-8 rotate-90 whitespace-nowrap opacity-50 tracking-widest mt-12">B V</div>
+<div class="flex-1 flex flex-col items-center gap-6 w-full mt-4">
+<a class="w-full flex flex-col items-center justify-center p-3 text-on-tertiary-container opacity-70 hover:bg-tertiary-container hover:opacity-100 transition-all duration-300 ease-in-out group" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="admin_panel_settings">admin_panel_settings</span>
+<span class="font-label-sm text-label-sm hidden group-hover:block absolute left-full ml-2 bg-inverse-surface text-surface-bright px-2 py-1 rounded">Admin</span>
+</a>
+<a class="w-full flex flex-col items-center justify-center p-3 text-on-tertiary-container opacity-70 hover:bg-tertiary-container hover:opacity-100 transition-all duration-300 ease-in-out group" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="payments">payments</span>
+<span class="font-label-sm text-label-sm hidden group-hover:block absolute left-full ml-2 bg-inverse-surface text-surface-bright px-2 py-1 rounded">Sales</span>
+</a>
+<a class="w-full flex flex-col items-center justify-center p-3 text-on-tertiary-container opacity-70 hover:bg-tertiary-container hover:opacity-100 transition-all duration-300 ease-in-out group" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="developer_mode">developer_mode</span>
+<span class="font-label-sm text-label-sm hidden group-hover:block absolute left-full ml-2 bg-inverse-surface text-surface-bright px-2 py-1 rounded">Developer</span>
+</a>
+</div>
+<div class="flex flex-col items-center gap-4 w-full mt-auto mb-6">
+<a class="text-on-tertiary-container opacity-70 hover:bg-tertiary-container hover:opacity-100 p-2 rounded transition-all duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</a>
+<a class="text-on-tertiary-container opacity-70 hover:bg-tertiary-container hover:opacity-100 p-2 rounded transition-all duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+</a>
+</div>
+</nav>
+<!-- Contextual Sidebar (Desktop) -->
+<aside class="hidden md:flex w-sidebar-width flex-col p-4 space-y-2 bg-surface-container-low docked h-full border-r border-outline-subtle flat ml-[80px]">
+<div class="px-4 py-6">
+<div class="font-headline-md text-headline-md text-primary font-bold">Bytevon</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="home">home</span>
+<span class="font-body-md text-body-md">Home</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="person">person</span>
+<span class="font-body-md text-body-md">Employee</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="domain">domain</span>
+<span class="font-body-md text-body-md">Department</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="event_available">event_available</span>
+<span class="font-body-md text-body-md">Attendance</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="event_busy">event_busy</span>
+<span class="font-body-md text-body-md">Leave</span>
+</a>
+<a class="flex items-center px-4 py-3 rounded-lg bg-secondary-container text-on-secondary-container font-semibold transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3" data-icon="schedule" data-weight="fill" style="font-variation-settings: 'FILL' 1;">schedule</span>
+<span class="font-body-md text-body-md">Shifts</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 h-full overflow-y-auto flex flex-col bg-surface-bright">
+<!-- Top App Bar (Desktop) -->
+<div class="hidden md:flex justify-between items-center h-16 px-8 w-full sticky top-0 z-30 bg-surface-bright border-b border-outline-subtle">
+<div class="flex items-center bg-surface-container-lowest border border-outline-variant rounded-full px-4 py-2 w-96 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary transition-all">
+<span class="material-symbols-outlined text-outline mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:outline-none focus:ring-0 w-full font-body-md text-body-md text-on-surface" placeholder="Search..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-low transition-colors duration-200 cursor-pointer rounded-full p-2" data-icon="notifications">notifications</span>
+<div class="w-px h-6 bg-outline-variant"></div>
+<div class="flex items-center gap-3 cursor-pointer">
+<img alt="Marcus Sterling" class="w-8 h-8 rounded-full object-cover" data-alt="A small, circular profile portrait of a professional man, Marcus Sterling, with a neutral expression, dressed in modern corporate attire against a light studio background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0rDf9RKXa6qXSjLcz8jWHdHfjuJ98obOVEOYOn5OEi5t8Tbo_HWJTqV9t7Xd4prwvBZQofbytIGH5rJk45hrMxaknhgnO2Yt6mQzKAmE1QHskJiKKxFVSo6u6f7kbFnObLxApEhwcfBP9E0xPsgvpf8XVCkr0sVQ319CqxnbLPMO8bga_jbHh-N1F9-GKNQwlNQrXlR8expDO-uULkhiioQtgfqZ9_xHfjaAf1FhzurMZEUG5ETJa"/>
+<span class="font-body-md text-body-md font-medium text-on-surface">Marcus Sterling</span>
+</div>
+</div>
+</div>
+<!-- Empty State Container -->
+<div class="flex-1 flex flex-col items-center justify-center p-container-margin w-full max-w-4xl mx-auto h-full">
+<div class="flex flex-col items-center text-center max-w-md bg-surface-container-lowest p-12 rounded-2xl border border-outline-subtle shadow-sm relative overflow-hidden group">
+<!-- Decorative background elements -->
+<div class="absolute -top-24 -right-24 w-48 h-48 bg-primary-fixed-dim rounded-full opacity-20 blur-3xl group-hover:opacity-30 transition-opacity duration-500"></div>
+<div class="absolute -bottom-24 -left-24 w-48 h-48 bg-secondary-fixed-dim rounded-full opacity-20 blur-3xl group-hover:opacity-30 transition-opacity duration-500"></div>
+<!-- Icon/Illustration area -->
+<div class="w-24 h-24 mb-6 rounded-full bg-surface-container-low flex items-center justify-center relative z-10">
+<span class="material-symbols-outlined text-6xl text-primary opacity-80" data-icon="pending_actions">pending_actions</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-3 relative z-10">No Shifts Defined</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-8 relative z-10">
+                    Start by creating your first work shift to manage employee schedules and attendance rules.
+                </p>
+<button class="bg-primary hover:bg-primary-container text-on-primary font-body-lg text-body-lg font-medium py-3 px-6 rounded-lg shadow-sm transition-all duration-200 flex items-center gap-2 relative z-10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                    Add Shift
+                </button>
+</div>
+</div>
+</main>
+<!-- Mobile Bottom Navigation (Visible only on md:hidden) -->
+<div class="md:hidden fixed bottom-0 w-full bg-surface-bright border-t border-outline-subtle flex justify-around items-center py-2 z-50 px-2 pb-safe">
+<a class="flex flex-col items-center p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-caption text-caption mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-caption text-caption mt-1">Employee</span>
+</a>
+<a class="flex flex-col items-center p-2 bg-secondary-container text-on-secondary-container rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="schedule" data-weight="fill" style="font-variation-settings: 'FILL' 1;">schedule</span>
+<span class="font-caption text-caption mt-1 font-semibold">Shifts</span>
+</a>
+<a class="flex flex-col items-center p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="event_available">event_available</span>
+<span class="font-caption text-caption mt-1">Time</span>
+</a>
+</div>
+</body></html>

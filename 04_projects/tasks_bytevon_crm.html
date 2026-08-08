@@ -1,0 +1,565 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Tasks - Bytevon CRM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed": "#d8e2ff",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "surface-tint": "#005bc1",
+                        "error": "#ba1a1a",
+                        "inverse-surface": "#213145",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "on-primary-fixed": "#001a41",
+                        "secondary": "#565e74",
+                        "on-secondary-container": "#5c647a",
+                        "on-tertiary-container": "#fbfdff",
+                        "on-secondary-fixed": "#131b2e",
+                        "inverse-primary": "#adc6ff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "on-tertiary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "tertiary": "#595c5e",
+                        "surface-dim": "#cbdbf5",
+                        "on-primary-container": "#fefcff",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "on-error": "#ffffff",
+                        "on-background": "#0b1c30",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container": "#e5eeff",
+                        "primary": "#0058bc",
+                        "tertiary-fixed": "#e0e3e5",
+                        "tertiary-container": "#727577",
+                        "outline": "#717786",
+                        "on-surface": "#0b1c30",
+                        "surface-bright": "#f8f9ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "primary-container": "#0070eb",
+                        "outline-variant": "#c1c6d7",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-surface-variant": "#414755",
+                        "surface-container-high": "#dce9ff",
+                        "on-error-container": "#93000a",
+                        "on-secondary": "#ffffff",
+                        "surface-container-low": "#eff4ff",
+                        "secondary-fixed": "#dae2fd",
+                        "background": "#f8f9ff",
+                        "on-tertiary-fixed": "#191c1e",
+                        "surface-variant": "#d3e4fe",
+                        "surface": "#f8f9ff",
+                        "secondary-container": "#dae2fd",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed-variant": "#004493"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-gap": "32px",
+                        "gutter-md": "16px",
+                        "container-margin": "24px",
+                        "card-padding": "20px",
+                        "table-row-height": "72px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "label-bold": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "caption": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "label-bold": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "caption": ["11px", { "lineHeight": "14px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-md": ["18px", { "lineHeight": "24px", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script><script>
+        function switchMenu(menuId, button) {
+            document.querySelectorAll('.secondary-menu').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(menuId);
+            if (target) target.classList.remove('hidden');
+            
+            document.querySelectorAll('.rail-item').forEach(el => {
+                el.classList.remove('bg-on-primary-fixed-variant', 'text-primary-fixed', 'border-primary-container');
+                el.classList.add('text-surface-variant', 'hover:bg-on-tertiary-fixed-variant', 'hover:text-primary-fixed', 'border-transparent');
+            });
+            
+            button.classList.remove('text-surface-variant', 'hover:bg-on-tertiary-fixed-variant', 'hover:text-primary-fixed', 'border-transparent');
+            button.classList.add('bg-on-primary-fixed-variant', 'text-primary-fixed', 'border-primary-container');
+        }
+
+        let isSidebarCollapsed = false;
+        let isRailExpanded = false;
+
+        function updateLayout() {
+            const primaryRail = document.getElementById('primary-rail');
+            const sidebar = document.getElementById('secondary-sidebar');
+            const topNav = document.querySelector('header');
+            const mainContent = document.querySelector('main');
+            const railLabels = document.querySelectorAll('.rail-label');
+            const railToggleIcon = document.getElementById('rail-toggle-icon');
+            const sidebarToggleIcon = document.getElementById('sidebar-toggle-icon');
+            
+            const secLabels = document.querySelectorAll('.sec-label');
+            const secHeaders = document.querySelectorAll('.sec-header');
+            const secIcons = document.querySelectorAll('.sec-icon');
+            
+            const primaryWidth = isRailExpanded ? 240 : 80;
+            const secondaryWidth = isSidebarCollapsed ? 80 : 240;
+            const totalWidth = primaryWidth + secondaryWidth;
+
+            primaryRail.style.width = `${primaryWidth}px`;
+            if (isRailExpanded) {
+                railToggleIcon.textContent = 'menu_open';
+                railLabels.forEach(el => el.classList.remove('hidden'));
+            } else {
+                railToggleIcon.textContent = 'menu';
+                railLabels.forEach(el => el.classList.add('hidden'));
+            }
+
+            sidebar.style.width = `${secondaryWidth}px`;
+            if (isSidebarCollapsed) {
+                sidebarToggleIcon.textContent = 'chevron_right';
+                secLabels.forEach(el => el.classList.add('hidden'));
+                secHeaders.forEach(el => el.classList.add('hidden'));
+                secIcons.forEach(el => {
+                    el.classList.remove('mr-3');
+                    el.classList.add('mx-auto');
+                });
+            } else {
+                sidebarToggleIcon.textContent = 'chevron_left';
+                secLabels.forEach(el => el.classList.remove('hidden'));
+                secHeaders.forEach(el => el.classList.remove('hidden'));
+                secIcons.forEach(el => {
+                    el.classList.add('mr-3');
+                    el.classList.remove('mx-auto');
+                });
+            }
+
+            topNav.style.marginLeft = `${totalWidth}px`;
+            topNav.style.width = `calc(100% - ${totalWidth}px)`;
+            mainContent.style.marginLeft = `${totalWidth}px`;
+        }
+
+        function toggleSidebar() {
+            isSidebarCollapsed = !isSidebarCollapsed;
+            updateLayout();
+        }
+
+        function toggleRailExpansion() {
+            isRailExpanded = !isRailExpanded;
+            updateLayout();
+        }
+    </script>
+<style>
+        .drawer-open { transform: translateX(0); }
+        .drawer-closed { transform: translateX(100%); }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-sans antialiased overflow-hidden flex h-screen">
+<!-- SideNavBar (Shared Component) -->
+<div class="fixed left-0 top-0 h-full flex z-50 shadow-md"><nav class="w-[80px] h-full bg-inverse-surface flex flex-col items-center py-6 border-r border-on-primary-fixed-variant/30 z-20 transition-all duration-500 ease-in-out" id="primary-rail"><button class="w-10 h-10 mb-6 flex items-center justify-center text-surface-variant hover:text-primary-fixed transition-colors" id="rail-expand-toggle" onclick="toggleRailExpansion()"><span class="material-symbols-outlined" id="rail-toggle-icon">menu</span></button><div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-on-primary shadow-sm shadow-black/20 mb-8 shrink-0"><span class="material-symbols-outlined text-2xl font-bold" style="font-variation-settings: 'FILL' 1;">dataset</span></div><div class="flex-1 w-full flex flex-col gap-2"><button class="rail-item w-full flex items-center px-6 py-4 gap-4 transition-all duration-200 text-surface-variant hover:bg-on-tertiary-fixed-variant hover:text-primary-fixed border-transparent border-l-4" onclick="switchMenu('menu-admin', this)"><span class="material-symbols-outlined text-2xl">shield_person</span><span class="rail-label hidden text-sm font-medium whitespace-nowrap">Admin</span></button><button class="rail-item w-full flex items-center px-6 py-4 gap-4 transition-all duration-200 text-surface-variant hover:bg-on-tertiary-fixed-variant hover:text-primary-fixed border-transparent border-l-4" onclick="switchMenu('menu-settings', this)"><span class="material-symbols-outlined text-2xl">admin_panel_settings</span><span class="rail-label hidden text-sm font-medium whitespace-nowrap">Settings</span></button><button class="rail-item w-full flex items-center px-6 py-4 gap-4 transition-all duration-200 text-surface-variant hover:bg-on-tertiary-fixed-variant hover:text-primary-fixed border-l-4 border-transparent" onclick="switchMenu('menu-sales', this)"><span class="material-symbols-outlined text-2xl">point_of_sale</span><span class="rail-label hidden text-sm font-medium whitespace-nowrap">Sales</span></button><button class="rail-item w-full flex items-center px-6 py-4 gap-4 transition-all duration-200 border-l-4 bg-on-primary-fixed-variant text-primary-fixed border-primary-container" onclick="switchMenu('menu-dev', this)"><span class="material-symbols-outlined text-2xl">engineering</span><span class="rail-label hidden text-sm font-medium whitespace-nowrap">Workforce</span></button></div><div class="mt-auto pt-6 flex flex-col items-center gap-4 border-t border-on-primary-fixed-variant/30 w-full shrink-0"><button class="text-surface-variant hover:text-primary-fixed transition-colors mb-2 flex items-center justify-center w-full py-2" onclick="toggleRailExpansion()" title="Collapse Rail"><span class="material-symbols-outlined text-xl">chevron_left</span></button><div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface cursor-pointer hover:ring-2 hover:ring-primary-container transition-all"><span class="material-symbols-outlined">person</span></div><button class="text-surface-variant hover:text-primary-fixed transition-colors pb-4 flex items-center gap-4 px-6 w-full justify-center"><span class="material-symbols-outlined text-xl">logout</span><span class="rail-label hidden text-sm font-medium whitespace-nowrap">Logout</span></button></div></nav><nav class="w-[240px] h-full bg-surface-container-lowest border-r border-outline-variant flex flex-col transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap z-10 relative" id="secondary-sidebar"><div class="w-full flex flex-col h-full"><div class="px-4 py-6 border-b border-outline-variant shrink-0 relative flex items-center justify-between min-h-[88px]"><div class="sec-header flex-1"><h1 class="text-headline-md font-headline-md text-on-surface leading-tight truncate">Bytevon</h1><p class="text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold">Enterprise ERP</p></div><button class="text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-lg hover:bg-surface-container mx-auto" onclick="toggleSidebar()" title="Toggle Sidebar"><span class="material-symbols-outlined text-xl" id="sidebar-toggle-icon">chevron_left</span></button></div><div class="flex-1 py-4 overflow-y-auto px-2 w-full"><div class="secondary-menu w-full" id="menu-dev"><h2 class="sec-header text-label-bold font-label-bold text-on-surface-variant/70 px-4 mb-2 uppercase">Workforce</h2><ul class="flex flex-col gap-1 w-full"><li class="w-full"><a class="bg-on-primary-fixed-variant text-primary-fixed rounded-lg flex items-center px-4 py-3 duration-200 ease-in-out cursor-pointer font-medium w-full" href="#"><span class="sec-icon material-symbols-outlined mr-3 text-lg transition-all">dashboard</span><span class="sec-label text-label-bold font-label-bold">Dashboard</span></a></li><li class="w-full"><a class="text-on-surface-variant flex items-center px-4 py-3 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all duration-200 ease-in-out cursor-pointer group w-full" href="#"><span class="sec-icon material-symbols-outlined mr-3 text-lg group-hover:text-primary transition-all">payments</span><span class="sec-label text-label-bold font-label-bold">Sales</span></a></li><li class="w-full"><a class="text-on-surface-variant flex items-center px-4 py-3 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all duration-200 ease-in-out cursor-pointer group w-full" href="#"><span class="sec-icon material-symbols-outlined mr-3 text-lg group-hover:text-primary transition-all">corporate_fare</span><span class="sec-label text-label-bold font-label-bold">Organization</span></a></li><li class="w-full"><a class="text-on-surface-variant flex items-center px-4 py-3 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all duration-200 ease-in-out cursor-pointer group w-full" href="#"><span class="sec-icon material-symbols-outlined mr-3 text-lg group-hover:text-primary transition-all">groups</span><span class="sec-label text-label-bold font-label-bold">People</span></a></li></ul></div></div></div></nav></div>
+<!-- Main Content Area -->
+<main class="flex-1 ml-0 flex flex-col h-full bg-background relative overflow-y-auto ml-[320px] transition-all duration-500 ease-in-out">
+<!-- TopNavBar (Shared Component) -->
+<header class="flex justify-between items-center w-full px-gutter-md h-16 bg-surface border-b border-outline-variant sticky top-0 z-40 transition-all duration-500 ease-in-out" style="margin-left: 320px; width: calc(100% - 320px);">
+<div class="flex items-center w-1/3">
+<div class="relative w-full max-w-md hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="w-full pl-9 pr-4 py-1.5 bg-surface-container-low border border-outline-variant rounded-full font-body-md text-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="Search tasks, projects..." type="text">
+</div>
+<!-- Mobile menu button -->
+<button class="md:hidden text-on-surface-variant hover:bg-surface-container-low p-2 rounded-full transition-colors mr-2">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+<div class="flex items-center space-x-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="h-8 w-8 ml-2 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container font-label-bold overflow-hidden border border-outline-variant">
+<img alt="User avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a corporate executive in a modern office, sharp lighting, realistic, high quality. The image conveys authority and approachability in a modern business setting, aligning with a high-end enterprise CRM interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB25VCoWMWHPnk-9D1ksy0r3SSpfOzozVAJzdR0iUps1PfIa8KZlAMt8qy_eAYWBdGhfNIm1GwSJ6M2sM1b_Ju9yjuc7IIOpYan81DrbQkM16ZA7ppQZFO-Ir1XOspa_xwEputOLaDlA0Vhqpn9ie90ZbiM-kcbnZRD0_SwbdIkMklXhDM4fOOWmf7SEfly_mdbYMrgHNX8OHqVqGWNTh_3ExmNTX2K-L8IYlv-GIorJGqEKP9im6G1">
+</div>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-container-margin max-w-7xl mx-auto w-full space-y-section-gap pb-24">
+<!-- Page Header & Actions -->
+<div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
+<div>
+<h2 class="font-headline-xl text-headline-xl text-on-surface mb-1">Tasks</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage and track project tasks across your organization.</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-4 py-2 bg-surface border border-outline-variant text-on-surface font-label-sm text-label-sm rounded-lg hover:bg-surface-container-low transition-colors flex items-center">
+<span class="material-symbols-outlined text-sm mr-2">download</span>
+                        Export
+                    </button>
+<button class="px-4 py-2 bg-primary text-on-primary font-label-sm text-label-sm rounded-lg hover:bg-on-primary-fixed-variant transition-colors flex items-center shadow-sm">
+<span class="material-symbols-outlined text-sm mr-2">add</span>
+                        New Task
+                    </button>
+</div>
+</div>
+<!-- Metric Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter-md">
+<!-- Total Tasks -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-card-padding shadow-[0px_1px_3px_rgba(0,0,0,0.05),_0px_10px_15px_-3px_rgba(0,0,0,0.02)] hover:shadow-md transition-shadow relative overflow-hidden group cursor-pointer">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">task</span>
+</div>
+<div class="flex items-center text-primary-container bg-surface-container-low px-2 py-1 rounded text-xs font-label-bold">
+<span class="material-symbols-outlined text-xs mr-1">trending_up</span>
+                            +8%
+                        </div>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">Total Tasks</p>
+<h3 class="font-headline-xl text-headline-xl text-on-surface">4,820</h3>
+</div>
+</div>
+<!-- Pending -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-card-padding shadow-[0px_1px_3px_rgba(0,0,0,0.05),_0px_10px_15px_-3px_rgba(0,0,0,0.02)] hover:shadow-md transition-shadow relative overflow-hidden group cursor-pointer">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">hourglass_empty</span>
+</div>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">Pending</p>
+<h3 class="font-headline-xl text-headline-xl text-on-surface">1,240</h3>
+</div>
+</div>
+<!-- Overdue (Critical) -->
+<div class="bg-error-container border border-error/20 rounded-xl p-card-padding shadow-[0px_1px_3px_rgba(0,0,0,0.05),_0px_10px_15px_-3px_rgba(0,0,0,0.02)] hover:shadow-md transition-shadow relative overflow-hidden group cursor-pointer">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-lg bg-error/10 flex items-center justify-center text-on-error-container">
+<span class="material-symbols-outlined">warning</span>
+</div>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-error-container mb-1 uppercase tracking-wider">Overdue</p>
+<h3 class="font-headline-xl text-headline-xl text-on-error-container">42</h3>
+</div>
+</div>
+<!-- Completed -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-card-padding shadow-[0px_1px_3px_rgba(0,0,0,0.05),_0px_10px_15px_-3px_rgba(0,0,0,0.02)] hover:shadow-md transition-shadow relative overflow-hidden group cursor-pointer">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-lg bg-[#E6F4EA] flex items-center justify-center text-[#137333]">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-1 uppercase tracking-wider">Completed</p>
+<h3 class="font-headline-xl text-headline-xl text-on-surface">3,538</h3>
+</div>
+</div>
+</div>
+<!-- Main Content Area: Filters & Table -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-[0px_1px_3px_rgba(0,0,0,0.05),_0px_10px_15px_-3px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col">
+<!-- Filter Bar -->
+<div class="p-4 border-b border-outline-variant bg-surface-bright flex flex-col lg:flex-row gap-4 justify-between items-center">
+<div class="w-full lg:w-1/3 relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="w-full pl-9 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="Search task name..." type="text">
+</div>
+<div class="flex flex-wrap w-full lg:w-auto gap-2 items-center">
+<select class="py-2 pl-3 pr-8 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors appearance-none cursor-pointer">
+<option>All Projects</option>
+<option>Project Alpha</option>
+<option>Project Beta</option>
+</select>
+<select class="py-2 pl-3 pr-8 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors appearance-none cursor-pointer">
+<option>All Employees</option>
+<option>John Doe</option>
+<option>Jane Smith</option>
+</select>
+<select class="py-2 pl-3 pr-8 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors appearance-none cursor-pointer">
+<option>Priority: All</option>
+<option>High</option>
+<option>Medium</option>
+<option>Low</option>
+</select>
+<select class="py-2 pl-3 pr-8 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors appearance-none cursor-pointer">
+<option>Status: All</option>
+<option>In Progress</option>
+<option>Pending</option>
+<option>Completed</option>
+</select>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors border border-outline-variant">
+<span class="material-symbols-outlined text-sm">filter_list</span>
+</button>
+</div>
+</div>
+<!-- Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface border-b border-outline-variant">
+<th class="pl-6 pr-4 py-3 w-12"><input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"></th>
+<th class="px-4 py-3 font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Task Name</th>
+<th class="px-4 py-3 font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Project</th>
+<th class="px-4 py-3 font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Assignee</th>
+<th class="px-4 py-3 font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Priority</th>
+<th class="px-4 py-3 font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="px-4 py-3 font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider">Due Date</th>
+<th class="px-4 py-3 w-12"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="h-table-row-height hover:bg-surface-container-low transition-colors cursor-pointer group" onclick="toggleDrawer()">
+<td class="pl-6 pr-4 py-3" onclick="event.stopPropagation()"><input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"></td>
+<td class="px-4 py-3">
+<div class="font-body-md text-body-md font-semibold text-on-surface">Update Database Schema</div>
+<div class="font-caption text-caption text-on-surface-variant truncate w-48">Modify user tables for SSO integration.</div>
+</td>
+<td class="px-4 py-3 font-body-md text-body-md text-on-surface">Project Alpha</td>
+<td class="px-4 py-3">
+<div class="flex items-center">
+<img alt="Assignee" class="w-6 h-6 rounded-full mr-2 object-cover" data-alt="Small round avatar of a young male software developer with glasses, realistic, professional lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCT8GIu79GzDa97iWLFZovRK_t7bK3y_ov6VfZjVn0i6bXn9uT8ugkLBKj3r04jxTNPBxdbHIwTArpYnjC4wH9pkJSn4HeOl-k-2o6weRiA6bFALwNCrmFLgXcObcsyQqXNDarqqXU986kBoj8c0S9sknH0hbeohxFhQxPbPQLwYjpg3k8MPe1VMRBQ850AC98KFov2xqYLsxn4PERIjaTFG_qM0NxCW6sQzPei6DBZID_ApwhD85Gg">
+<span class="font-body-md text-body-md text-on-surface">Alex Chen</span>
+</div>
+</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-label-bold bg-error-container text-on-error-container border border-error/20">High</span>
+</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-label-bold bg-surface-container-high text-on-surface border border-outline-variant">In Progress</span>
+</td>
+<td class="px-4 py-3 font-body-md text-body-md text-on-surface">Oct 24, 2023</td>
+<td class="px-4 py-3 text-right">
+<button class="text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
+<span class="material-symbols-outlined text-sm">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="h-table-row-height hover:bg-surface-container-low transition-colors cursor-pointer group" onclick="toggleDrawer()">
+<td class="pl-6 pr-4 py-3" onclick="event.stopPropagation()"><input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"></td>
+<td class="px-4 py-3">
+<div class="font-body-md text-body-md font-semibold text-on-surface">Client Presentation Draft</div>
+<div class="font-caption text-caption text-on-surface-variant truncate w-48">Prepare Q3 earnings slides.</div>
+</td>
+<td class="px-4 py-3 font-body-md text-body-md text-on-surface">Project Beta</td>
+<td class="px-4 py-3">
+<div class="flex items-center">
+<div class="w-6 h-6 rounded-full mr-2 bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-bold text-[10px]">SJ</div>
+<span class="font-body-md text-body-md text-on-surface">Sarah Jones</span>
+</div>
+</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-label-bold bg-[#FFF8E1] text-[#F57F17] border border-[#F57F17]/20">Medium</span>
+</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-label-bold bg-surface-container text-on-surface-variant border border-outline-variant">Pending</span>
+</td>
+<td class="px-4 py-3 font-body-md text-body-md text-error">Oct 22, 2023</td>
+<td class="px-4 py-3 text-right">
+<button class="text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
+<span class="material-symbols-outlined text-sm">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="h-table-row-height hover:bg-surface-container-low transition-colors cursor-pointer group" onclick="toggleDrawer()">
+<td class="pl-6 pr-4 py-3" onclick="event.stopPropagation()"><input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"></td>
+<td class="px-4 py-3">
+<div class="font-body-md text-body-md font-semibold text-on-surface text-on-surface-variant line-through">Server Maintenance</div>
+<div class="font-caption text-caption text-on-surface-variant truncate w-48">Routine updates and patching.</div>
+</td>
+<td class="px-4 py-3 font-body-md text-body-md text-on-surface-variant">Infra Ops</td>
+<td class="px-4 py-3">
+<div class="flex items-center">
+<img alt="Assignee" class="w-6 h-6 rounded-full mr-2 object-cover" data-alt="Small round avatar of a middle-aged female IT manager, confident smile, realistic, professional lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDYayHEnPjGHd02Jqomov_sXol1gnbp3hrLctsCLce5DH3eCRU60vyXS4wt4nbNVnFzkUZscPra3lA4mtWeHTk0VzCdiWnqbTiM36pQLTiLUxlUJsZonL1mBSLSHyeQXGuluV51y8ttNeHM3tfqviTG6Gd4pb9QghpiIPxAHR03adbAWvbQ4W1p69-gfoR3uuJs2ih_McQa7CudGQmsN_HM1JeqwrIOP8uPUHsZwGkXMQi-19g2tBTc">
+<span class="font-body-md text-body-md text-on-surface-variant">Mike T.</span>
+</div>
+</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-label-bold bg-surface-variant text-on-surface-variant border border-outline-variant">Low</span>
+</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-label-bold bg-[#E6F4EA] text-[#137333] border border-[#137333]/20">Completed</span>
+</td>
+<td class="px-4 py-3 font-body-md text-body-md text-on-surface-variant">Oct 20, 2023</td>
+<td class="px-4 py-3 text-right">
+<button class="text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
+<span class="material-symbols-outlined text-sm">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="h-table-row-height hover:bg-surface-container-low transition-colors cursor-pointer group" onclick="toggleDrawer()">
+<td class="pl-6 pr-4 py-3" onclick="event.stopPropagation()"><input class="rounded border-outline-variant text-primary focus:ring-primary" type="checkbox"></td>
+<td class="px-4 py-3">
+<div class="font-body-md text-body-md font-semibold text-on-surface">API Documentation</div>
+<div class="font-caption text-caption text-on-surface-variant truncate w-48">Review and publish v2 endpoints.</div>
+</td>
+<td class="px-4 py-3 font-body-md text-body-md text-on-surface">Project Alpha</td>
+<td class="px-4 py-3">
+<div class="flex items-center">
+<img alt="Assignee" class="w-6 h-6 rounded-full mr-2 object-cover" data-alt="Small round avatar of a female technical writer, professional, modern office background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCx6M5AsJq9MJAvfSdBjPysL8LkC6uMezR18H0-Mdj4hkd3l-G1palcu2fdvBBqb00Nk4bwyMMZ9ngZKhkgJnRXQZnKIDrzNY-QiWGQ5F16brHTlQqplKrQf0eA_Jc3n0ZZq3oqDzFdjy4bAlcyuHydekDXi6J7lr4zNBvmH9DP8oQCT_Wqt8pcTXxVCgcKDqb2IuPFKnUvk_nL3zAPVo0qiSLTmBOUeJD4zQzNCbWz28EaFFows9om">
+<span class="font-body-md text-body-md text-on-surface">Elena R.</span>
+</div>
+</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-label-bold bg-error-container text-on-error-container border border-error/20">High</span>
+</td>
+<td class="px-4 py-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-label-bold bg-error-container text-error border border-error/20">Blocked</span>
+</td>
+<td class="px-4 py-3 font-body-md text-body-md text-on-surface">Oct 26, 2023</td>
+<td class="px-4 py-3 text-right">
+<button class="text-on-surface-variant hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity" onclick="event.stopPropagation()">
+<span class="material-symbols-outlined text-sm">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="p-4 border-t border-outline-variant flex items-center justify-between bg-surface-bright">
+<span class="font-body-md text-body-md text-on-surface-variant">Showing 1 to 10 of 4,820 entries</span>
+<div class="flex space-x-1">
+<button class="px-3 py-1 border border-outline-variant rounded bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low disabled:opacity-50" disabled="">Prev</button>
+<button class="px-3 py-1 border border-primary rounded bg-primary text-on-primary">1</button>
+<button class="px-3 py-1 border border-outline-variant rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container-low">2</button>
+<button class="px-3 py-1 border border-outline-variant rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container-low">3</button>
+<span class="px-2 py-1 text-on-surface-variant">...</span>
+<button class="px-3 py-1 border border-outline-variant rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container-low">Next</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Task Overview Drawer (Right Side) -->
+<div class="fixed inset-0 bg-on-background/50 z-50 hidden transition-opacity" id="taskDrawerOverlay" onclick="toggleDrawer()"></div>
+<div class="fixed right-0 top-0 h-full w-full max-w-md bg-surface border-l border-outline-variant shadow-2xl z-50 drawer-closed transition-transform duration-300 ease-in-out flex flex-col" id="taskDrawer">
+<!-- Drawer Header -->
+<div class="flex justify-between items-center p-6 border-b border-outline-variant">
+<h3 class="font-headline-md text-headline-md font-bold text-on-surface">Task Overview</h3>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors" onclick="toggleDrawer()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Drawer Content (Scrollable) -->
+<div class="flex-1 overflow-y-auto p-6 space-y-8">
+<!-- General Info -->
+<section>
+<div class="flex justify-between items-start mb-2">
+<h4 class="font-headline-lg text-headline-lg text-on-surface">Update Database Schema</h4>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-label-bold bg-error-container text-on-error-container border border-error/20">High</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">Modify user tables for SSO integration. Ensure backward compatibility with existing auth tokens.</p>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-lowest p-3 border border-outline-variant rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase block mb-1">Project</span>
+<span class="font-body-md text-body-md font-semibold text-on-surface">Project Alpha</span>
+</div>
+<div class="bg-surface-container-lowest p-3 border border-outline-variant rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase block mb-1">Status</span>
+<span class="font-body-md text-body-md font-semibold text-on-surface text-primary">In Progress</span>
+</div>
+<div class="bg-surface-container-lowest p-3 border border-outline-variant rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase block mb-1">Due Date</span>
+<span class="font-body-md text-body-md font-semibold text-on-surface">Oct 24, 2023</span>
+</div>
+<div class="bg-surface-container-lowest p-3 border border-outline-variant rounded-lg">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase block mb-1">Created</span>
+<span class="font-body-md text-body-md font-semibold text-on-surface">Oct 10, 2023</span>
+</div>
+</div>
+</section>
+<!-- Assignee -->
+<section>
+<h5 class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider mb-3">Assignee</h5>
+<div class="flex items-center bg-surface-container-lowest border border-outline-variant rounded-lg p-3">
+<img alt="Assignee Large" class="w-10 h-10 rounded-full mr-3 object-cover" data-alt="Small round avatar of a young male software developer with glasses, realistic, professional lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDULsUWWDksygVtHopiCpKlYgd7WPUmOE8g5uwAtJ4dbiHXveb5TCRpvN6fS-wCbiABZqdM_pBj83GBNIjkMSZS_IqpNtcH2b0FTFIDv1bQPXgyEpla1kzhLgVaRIifP8o0WGF5jEgspRyUsQGPAB1CAhIa7IR2rQckKVJu7uBP7bX5bprVlTB7D4VfXAUmti1pPi7MC5y7yOQjIlHbh5uwSahMrwpLfodL0qecEASnx4M6Vkr6k5QM">
+<div class="flex-1">
+<p class="font-body-md text-body-md font-semibold text-on-surface">Alex Chen</p>
+<p class="font-caption text-caption text-on-surface-variant">Senior Backend Engineer</p>
+</div>
+<button class="text-primary hover:text-primary-container font-label-sm text-label-sm">Reassign</button>
+</div>
+</section>
+<!-- Quick Actions -->
+<section>
+<h5 class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider mb-3">Quick Actions</h5>
+<div class="space-y-2">
+<button class="w-full flex items-center justify-between px-4 py-3 bg-surface border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors text-on-surface font-body-md text-body-md">
+<div class="flex items-center"><span class="material-symbols-outlined text-sm mr-3">edit</span> Edit Task Details</div>
+<span class="material-symbols-outlined text-sm text-on-surface-variant">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between px-4 py-3 bg-surface border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors text-on-surface font-body-md text-body-md">
+<div class="flex items-center"><span class="material-symbols-outlined text-sm mr-3">archive</span> Archive Task</div>
+<span class="material-symbols-outlined text-sm text-on-surface-variant">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between px-4 py-3 bg-error-container/20 border border-error/30 rounded-lg hover:bg-error-container/40 transition-colors text-error font-body-md text-body-md">
+<div class="flex items-center"><span class="material-symbols-outlined text-sm mr-3">delete</span> Delete Task</div>
+</button>
+</div>
+</section>
+</div>
+<!-- Drawer Footer -->
+<div class="p-6 border-t border-outline-variant bg-surface flex justify-end gap-3">
+<button class="px-4 py-2 border border-outline-variant text-on-surface font-label-sm text-label-sm rounded-lg hover:bg-surface-container-low transition-colors" onclick="toggleDrawer()">Close</button>
+<button class="px-4 py-2 bg-primary text-on-primary font-label-sm text-label-sm rounded-lg hover:bg-on-primary-fixed-variant transition-colors shadow-sm">Save Changes</button>
+</div>
+</div>
+<script>
+        function toggleDrawer() {
+            const drawer = document.getElementById('taskDrawer');
+            const overlay = document.getElementById('taskDrawerOverlay');
+            
+            if (drawer.classList.contains('drawer-closed')) {
+                drawer.classList.remove('drawer-closed');
+                drawer.classList.add('drawer-open');
+                overlay.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            } else {
+                drawer.classList.remove('drawer-open');
+                drawer.classList.add('drawer-closed');
+                overlay.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        }
+    </script>
+
+
+</body></html>

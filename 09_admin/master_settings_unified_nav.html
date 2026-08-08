@@ -1,0 +1,539 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Master Settings | Bytevon ERP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-primary-fixed-variant": "#2f486a", "on-secondary-container": "#fefcff", "tertiary-container": "#1c1f21", tertiary: "#040607", "surface-container-lowest": "#ffffff", secondary: "#0059bb", "secondary-fixed-dim": "#adc7ff", "on-primary-container": "#6f88ad", "surface-dim": "#cbdbf5", background: "#f8f9ff", "surface-container-highest": "#d3e4fe", "on-secondary": "#ffffff", outline: "#74777f", error: "#ba1a1a", "primary-fixed": "#d4e3ff", "on-surface": "#0b1c30", "tertiary-fixed": "#e0e3e5", "on-surface-variant": "#43474e", "on-tertiary-container": "#848789", "surface-tint": "#476083", "inverse-primary": "#afc8f0", "on-tertiary-fixed": "#191c1e", "surface-variant": "#d3e4fe", "on-error-container": "#93000a", surface: "#f8f9ff", "on-tertiary": "#ffffff", "surface-container": "#e5eeff", "inverse-surface": "#213145", "primary-container": "#001f3f", "on-primary": "#ffffff", "error-container": "#ffdad6", "surface-container-high": "#dce9ff", "on-secondary-fixed": "#001a41", "on-tertiary-fixed-variant": "#444749", "on-error": "#ffffff", "tertiary-fixed-dim": "#c4c7c9", primary: "#000613", "on-background": "#0b1c30", "surface-bright": "#f8f9ff", "inverse-on-surface": "#eaf1ff", "outline-variant": "#c4c6cf", "on-primary-fixed": "#001c3a", "secondary-container": "#0070ea", "on-secondary-fixed-variant": "#004493", "surface-container-low": "#eff4ff", "secondary-fixed": "#d8e2ff", "primary-fixed-dim": "#afc8f0"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {unit: "4px", "stack-sm": "8px", gutter: "24px", "container-max": "1440px", "stack-md": "16px", "stack-lg": "32px", "margin-mobile": "16px", "margin-desktop": "40px"}, fontFamily: {"label-md": ["Inter"], "headline-lg": ["Inter"], "body-lg": ["Inter"], "body-md": ["Inter"], "title-lg": ["Inter"], "label-sm": ["Inter"], "headline-md": ["Inter"], "headline-lg-mobile": ["Inter"], "display-lg": ["Inter"], "body-sm": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}]}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .premium-input {
+            @apply w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-3 text-on-surface font-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none transition-all;
+        }
+        .section-card {
+            @apply bg-surface-container-lowest border border-outline-variant rounded-xl p-stack-lg mb-stack-lg shadow-sm transition-all;
+        }
+
+        #primary-sidebar.collapsed { width: 80px; }
+        #primary-sidebar.collapsed .nav-text { display: none; }
+        #primary-sidebar.collapsed .sidebar-header-text { display: none; }
+        #primary-sidebar.collapsed .sidebar-footer-text { display: none; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-surface-container-low border-b border-outline-variant flex justify-between items-center px-margin-desktop w-full h-16 max-w-container-max mx-auto sticky top-0 z-50">
+<div class="flex items-center gap-stack-lg">
+<button class="material-symbols-outlined p-2 hover:bg-surface-container rounded-lg cursor-pointer transition-colors text-on-surface" id="sidebar-toggle">menu</button>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-on-primary-fixed">Bytevon ERP</span>
+<nav class="hidden md:flex gap-stack-md ml-stack-lg">
+<a class="text-on-surface-variant dark:text-on-surface-variant font-label-md text-label-md hover:text-secondary transition-colors duration-200 cursor-pointer active:opacity-80" href="#">Dashboard</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant font-label-md text-label-md hover:text-secondary transition-colors duration-200 cursor-pointer active:opacity-80" href="#">Reports</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant font-label-md text-label-md hover:text-secondary transition-colors duration-200 cursor-pointer active:opacity-80" href="#">Inventory</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant font-label-md text-label-md hover:text-secondary transition-colors duration-200 cursor-pointer active:opacity-80" href="#">CRM</a>
+</nav>
+</div>
+<div class="flex items-center gap-stack-md">
+<button class="material-symbols-outlined text-secondary p-2 cursor-pointer active:opacity-80">notifications</button>
+<button class="material-symbols-outlined text-secondary p-2 cursor-pointer active:opacity-80">help</button>
+<button class="material-symbols-outlined text-secondary p-2 cursor-pointer active:opacity-80 border-b-2 border-secondary pb-1 font-bold">settings</button>
+<div class="h-10 w-10 rounded-full overflow-hidden border border-outline-variant cursor-pointer active:opacity-80">
+<img class="h-full w-full object-cover" data-alt="A professional headshot of an executive administrator" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBStSkqkkV7cqUhFF86qsIOVtypGyeN3WAaSya61W72p7K60bQpD7RuYXcWcJ31xKW7vEKzgcifrHRkcYE6y0WkHTh8RHMjyvMETA6pyklB-4--_6Ko4VNB3OfVImzbbcYSi9cJhhv_b4QgUgUzrS5rDf1V_yH5ePjs5xUHrW6rLasKCcDzmppccMG3HkWqwv5wRAxFFlWVAfSXQZFgaPBRl7d_yMuCjz4NcvrV4k89tg5nVd9i_2bEIQ">
+</div>
+</div>
+</header>
+<div class="max-w-container-max mx-auto flex h-[calc(100vh-64px)] w-full overflow-hidden">
+<!-- Primary Sidebar (Left) -->
+<aside class="flex flex-col h-full w-[260px] flex-shrink-0 z-40 bg-primary dark:bg-primary-container border-r border-outline-variant transition-all duration-300" id="primary-sidebar">
+<div class="p-6">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-secondary rounded-lg flex-shrink-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary" style="font-variation-settings: &quot;FILL&quot; 1;">grid_view</span>
+</div>
+<div class="sidebar-header-text overflow-hidden whitespace-nowrap">
+<h2 class="font-headline-sm text-headline-sm font-black text-on-primary">Modules</h2>
+<p class="text-[10px] text-on-primary-container opacity-80 uppercase tracking-widest font-bold">System Core</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1 overflow-y-auto scrollbar-hide">
+<a class="text-on-primary-container dark:text-on-primary-fixed-variant mx-2 my-1 flex items-center gap-4 px-4 py-3 font-label-md hover:bg-on-primary-fixed-variant hover:text-on-primary transition-all cursor-pointer rounded-lg" href="#">
+<span class="material-symbols-outlined flex-shrink-0">dashboard</span>
+<span class="nav-text whitespace-nowrap">Dashboard</span>
+</a>
+<a class="text-on-primary-container dark:text-on-primary-fixed-variant mx-2 my-1 flex items-center gap-4 px-4 py-3 font-label-md hover:bg-on-primary-fixed-variant hover:text-on-primary transition-all cursor-pointer rounded-lg" href="#">
+<span class="material-symbols-outlined flex-shrink-0">inventory</span>
+<span class="nav-text whitespace-nowrap">Inventory</span>
+</a>
+<a class="text-on-primary-container dark:text-on-primary-fixed-variant mx-2 my-1 flex items-center gap-4 px-4 py-3 font-label-md hover:bg-on-primary-fixed-variant hover:text-on-primary transition-all cursor-pointer rounded-lg" href="#">
+<span class="material-symbols-outlined flex-shrink-0">group</span>
+<span class="nav-text whitespace-nowrap">Human Resources</span>
+</a>
+<a class="bg-secondary text-on-secondary rounded-lg mx-2 my-1 flex items-center gap-4 px-4 py-3 font-label-md transition-all" href="#">
+<span class="material-symbols-outlined flex-shrink-0">admin_panel_settings</span>
+<span class="nav-text whitespace-nowrap">Administration Settings<br></span>
+</a>
+<a class="text-on-primary-container dark:text-on-primary-fixed-variant mx-2 my-1 flex items-center gap-4 px-4 py-3 font-label-md hover:bg-on-primary-fixed-variant hover:text-on-primary transition-all cursor-pointer rounded-lg" href="#">
+<span class="material-symbols-outlined flex-shrink-0">payments</span>
+<span class="nav-text whitespace-nowrap">Finance</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-on-primary-container border-opacity-10 py-4">
+<a class="text-on-primary-container dark:text-on-primary-fixed-variant mx-2 my-1 flex items-center gap-4 px-4 py-3 font-label-md hover:bg-on-primary-fixed-variant hover:text-on-primary transition-all rounded-lg" href="#">
+<span class="material-symbols-outlined flex-shrink-0">contact_support</span>
+<span class="sidebar-footer-text whitespace-nowrap">Support</span>
+</a>
+</div>
+</aside>
+<!-- Secondary Sidebar (Sub-sidebar) -->
+<aside class="flex flex-col h-full w-[240px] flex-shrink-0 z-30 bg-surface-container-low border-r border-outline-variant py-stack-lg" id="secondary-sidebar">
+<div class="px-6 mb-8">
+<h3 class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Administration</h3>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg font-label-md text-on-surface-variant" href="#organization">
+<span class="material-symbols-outlined text-[20px]">corporate_fare</span>
+                    Organization
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors font-label-md" href="#user-management">
+<span class="material-symbols-outlined text-[20px]">group</span>
+                    User Management
+                </a><a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors font-label-md" href="#roles-permissions">
+<span class="material-symbols-outlined text-[20px]">shield_person</span>
+                    Roles &amp; Permissions
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors font-label-md" href="#security">
+<span class="material-symbols-outlined text-[20px]">security</span>
+                    Security
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors font-label-md" href="#audit-logs">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+                    Audit Logs
+                </a>
+</nav>
+</div>
+<div class="px-6 mt-8">
+<h3 class="text-xs font-bold text-on-surface-variant uppercase tracking-widest mb-4">Other Settings</h3>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors font-label-md" href="#notifications">
+<span class="material-symbols-outlined text-[20px]">notifications_active</span>
+                    Notifications
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors font-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">extension</span>
+                    Plugins
+                </a>
+</nav>
+</div>
+</aside>
+<!-- Right Panel: Content -->
+<main class="flex-1 overflow-y-auto bg-background p-margin-desktop relative scroll-smooth">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-stack-lg gap-4">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="text-on-surface-variant font-label-sm text-label-sm">Administration</span>
+<span class="material-symbols-outlined text-sm text-outline">chevron_right</span>
+<span class="text-secondary font-label-sm text-label-sm">Organization Profile</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Organization Settings</h1>
+<p class="text-on-surface-variant font-body-md text-body-md max-w-2xl mt-1">Configure your corporate identity, regional preferences, and operational parameters.</p>
+</div>
+<div class="flex gap-stack-sm shrink-0">
+<button class="px-5 py-2.5 rounded-lg border border-outline-variant text-on-surface font-label-md hover:bg-surface-container transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">history</span>
+                    System Audit Log
+                </button>
+<button class="px-5 py-2.5 rounded-lg border border-outline-variant text-on-surface font-label-md hover:bg-surface-container transition-all">Discard</button>
+<button class="px-5 py-2.5 rounded-lg bg-primary text-on-primary font-label-md hover:bg-opacity-90 shadow-sm transition-all">Save Changes</button>
+</div>
+</div>
+<!-- Bento Layout Sections -->
+<div class="space-y-stack-lg">
+<!-- Section 1: Organization -->
+<section class="section-card" id="organization">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-title-lg text-title-lg text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">corporate_fare</span>
+                        Organization Profile
+                    </h3>
+<span class="text-xs bg-surface-container px-2 py-1 rounded text-secondary font-bold">PRIMARY ENTITY</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Logo Upload -->
+<div class="md:col-span-1">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Company Logo</label>
+<div class="relative group cursor-pointer border-2 border-dashed border-outline-variant rounded-xl aspect-square flex flex-col items-center justify-center hover:border-secondary transition-all bg-surface">
+<img alt="Bytevon Logo" class="w-24 h-24 mb-4 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPsuaXWIaaR4OUE1dmYkWHec-DIsr3OXYwlQZN2jH117pY9dimmNjuFv2am5cgzGPkMYZVe3KndUtU8aYxVV7Q53Kn8RoeoTv5NkaWeXkGysWl8KGoPV4nVp33gIRslFOLPLkp0weFOtO7zGr5A_iSVu2OigrOnjPjE8QqUwu_vthoyMU2rLElFGM8Z89-buFKftjbvFj0Ng18FzbGwLIyQFZlGZSlUuubzz8R2Cs2EXaPXFhGn7MXqgRJMUYH1ROjTxE">
+<p class="text-label-sm text-on-surface-variant group-hover:text-secondary transition-colors">Replace Logo</p>
+<input class="absolute inset-0 opacity-0 cursor-pointer" type="file">
+</div>
+<p class="text-[11px] text-on-surface-variant mt-3 leading-relaxed">Accepted formats: .png, .svg, .jpg. Max size: 2MB. Recommended dimensions: 512x512px.</p>
+</div>
+<!-- Form Fields -->
+<div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-stack-lg">
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant">Organization Name</label>
+<input class="premium-input" type="text" value="Bytevon Global Holdings">
+</div>
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant">Corporate Email</label>
+<input class="premium-input" type="email" value="admin@bytevon.com">
+</div>
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant">Contact Number</label>
+<input class="premium-input" type="tel" value="+1 (555) 012-3456">
+</div>
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant">Official Website</label>
+<input class="premium-input" type="url" value="https://bytevon.com">
+</div>
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant">Timezone</label>
+<select class="premium-input appearance-none">
+<option>UTC-05:00 Eastern Time (US &amp; Canada)</option>
+<option>UTC+00:00 Greenwich Mean Time</option>
+<option>UTC+01:00 Central European Time</option>
+</select>
+</div>
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant">Date Format</label>
+<select class="premium-input appearance-none">
+<option>DD/MM/YYYY</option>
+<option>MM/DD/YYYY</option>
+<option>YYYY-MM-DD</option>
+</select>
+</div>
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant">Base Currency</label>
+<select class="premium-input appearance-none">
+<option>USD ($)</option>
+<option>EUR (€)</option>
+<option>GBP (£)</option>
+</select>
+</div>
+<div class="space-y-1">
+<label class="font-label-md text-label-md text-on-surface-variant">System Language</label>
+<select class="premium-input appearance-none">
+<option>English (US)</option>
+<option>German (DE)</option>
+<option>French (FR)</option>
+</select>
+</div>
+</div>
+</div>
+<div class="mt-8 pt-6 border-t border-outline-variant">
+<h4 class="font-label-md text-label-md text-on-surface mb-4">Operational Parameters</h4>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-lg">
+<div class="flex items-center justify-between p-4 bg-surface rounded-lg">
+<div>
+<p class="font-label-md text-on-surface">Working Days</p>
+<p class="text-xs text-on-surface-variant">Mon, Tue, Wed, Thu, Fri</p>
+</div>
+<button class="text-secondary font-label-sm">Edit</button>
+</div>
+<div class="flex items-center justify-between p-4 bg-surface rounded-lg">
+<div>
+<p class="font-label-md text-on-surface">Office Hours</p>
+<p class="text-xs text-on-surface-variant">09:00 AM - 06:00 PM (EST)</p>
+</div>
+<button class="text-secondary font-label-sm">Edit</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 2: Integrations -->
+<section class="section-card" id="integrations">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-title-lg text-title-lg text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">hub</span>
+                        Integrations
+                    </h3>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span>
+                        Explore Marketplace
+                    </button>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Google Calendar -->
+<div class="border border-outline-variant rounded-xl p-5 hover:shadow-md transition-all group">
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 rounded-lg bg-surface border border-outline-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-red-500">calendar_month</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-0.5 bg-green-50 text-green-700 rounded-full">
+<div class="w-1.5 h-1.5 bg-green-600 rounded-full animate-pulse"></div>
+<span class="text-[10px] font-bold">ACTIVE</span>
+</div>
+</div>
+<h4 class="font-title-lg text-on-surface mb-1">Google Calendar</h4>
+<p class="text-xs text-on-surface-variant mb-4">Sync meetings and schedules across platforms.</p>
+<div class="pt-4 border-t border-outline-variant flex flex-col gap-2">
+<div class="flex justify-between text-[11px] mb-2">
+<span class="text-outline">Last Sync:</span>
+<span class="text-on-surface font-medium">2 mins ago</span>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 text-[11px] font-bold text-secondary border border-secondary/20 py-2 rounded hover:bg-secondary/5">Configure</button>
+<button class="p-2 border border-outline-variant rounded text-on-surface-variant"><span class="material-symbols-outlined text-sm">settings</span></button>
+</div>
+</div>
+</div>
+<!-- Microsoft 365 -->
+<div class="border border-outline-variant rounded-xl p-5 hover:shadow-md transition-all group">
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 rounded-lg bg-surface border border-outline-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-blue-600">work</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-0.5 bg-green-50 text-green-700 rounded-full">
+<div class="w-1.5 h-1.5 bg-green-600 rounded-full"></div>
+<span class="text-[10px] font-bold">ACTIVE</span>
+</div>
+</div>
+<h4 class="font-title-lg text-on-surface mb-1">Microsoft 365</h4>
+<p class="text-xs text-on-surface-variant mb-4">Enterprise email and document collaboration.</p>
+<div class="pt-4 border-t border-outline-variant flex flex-col gap-2">
+<div class="flex justify-between text-[11px] mb-2">
+<span class="text-outline">Last Sync:</span>
+<span class="text-on-surface font-medium">1 hour ago</span>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 text-[11px] font-bold text-secondary border border-secondary/20 py-2 rounded hover:bg-secondary/5">Configure</button>
+<button class="p-2 border border-outline-variant rounded text-on-surface-variant"><span class="material-symbols-outlined text-sm">settings</span></button>
+</div>
+</div>
+</div>
+<!-- Slack -->
+<div class="border border-outline-variant rounded-xl p-5 hover:shadow-md transition-all group">
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 rounded-lg bg-surface border border-outline-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-purple-600">forum</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full">
+<div class="w-1.5 h-1.5 bg-amber-600 rounded-full"></div>
+<span class="text-[10px] font-bold">PENDING</span>
+</div>
+</div>
+<h4 class="font-title-lg text-on-surface mb-1">Slack</h4>
+<p class="text-xs text-on-surface-variant mb-4">Automated alerts and team communication.</p>
+<div class="pt-4 border-t border-outline-variant flex flex-col gap-2">
+<div class="flex justify-between text-[11px] mb-2">
+<span class="text-outline">Last Sync:</span>
+<span class="text-on-surface font-medium">Never</span>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 text-[11px] font-bold bg-secondary text-on-secondary py-2 rounded shadow-sm">Reconnect</button>
+</div>
+</div>
+</div>
+<!-- Teams -->
+<div class="border border-outline-variant rounded-xl p-5 hover:shadow-md transition-all group">
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 rounded-lg bg-surface border border-outline-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-indigo-700" style="font-variation-settings: &quot;FILL&quot; 1;">groups</span>
+</div>
+<div class="flex items-center gap-1.5 px-2 py-0.5 bg-surface-container text-on-surface-variant rounded-full">
+<div class="w-1.5 h-1.5 bg-outline rounded-full"></div>
+<span class="text-[10px] font-bold">DISABLED</span>
+</div>
+</div>
+<h4 class="font-title-lg text-on-surface mb-1">MS Teams</h4>
+<p class="text-xs text-on-surface-variant mb-4">Video conferencing and direct messaging.</p>
+<div class="pt-4 border-t border-outline-variant flex flex-col gap-2">
+<div class="flex justify-between text-[11px] mb-2">
+<span class="text-outline">Status:</span>
+<span class="text-on-surface font-medium">Inactive</span>
+</div>
+<div class="flex gap-2">
+<button class="flex-1 text-[11px] font-bold text-secondary border border-secondary/20 py-2 rounded hover:bg-secondary/5">Enable</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 3: Audit Logs -->
+<section class="section-card" id="audit-logs">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-title-lg text-title-lg text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">history</span>
+                        System Audit Logs
+                    </h3>
+<div class="flex gap-stack-sm">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-2 text-outline text-lg">search</span>
+<input class="pl-10 pr-4 py-1.5 border border-outline-variant rounded-lg text-xs bg-surface focus:ring-secondary focus:border-secondary outline-none" placeholder="Filter logs..." type="text">
+</div>
+<button class="px-3 py-1.5 border border-outline-variant rounded-lg text-xs font-bold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-xs">download</span>
+                            Export CSV
+                        </button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface border-y border-outline-variant">
+<th class="px-4 py-3 font-label-sm text-on-surface-variant uppercase tracking-wider">User</th>
+<th class="px-4 py-3 font-label-sm text-on-surface-variant uppercase tracking-wider">Module</th>
+<th class="px-4 py-3 font-label-sm text-on-surface-variant uppercase tracking-wider">Action</th>
+<th class="px-4 py-3 font-label-sm text-on-surface-variant uppercase tracking-wider">Previous Value</th>
+<th class="px-4 py-3 font-label-sm text-on-surface-variant uppercase tracking-wider">New Value</th>
+<th class="px-4 py-3 font-label-sm text-on-surface-variant uppercase tracking-wider">Date</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center text-[10px] font-bold">SJ</div>
+<div>
+<p class="font-label-md text-on-surface">Sarah Jenkins</p>
+<p class="text-[10px] text-on-surface-variant">Administrator</p>
+</div>
+</div>
+</td>
+<td class="px-4 py-4"><span class="px-2 py-1 bg-surface-container rounded text-xs font-medium">Organization</span></td>
+<td class="px-4 py-4 font-body-sm">Update Profile</td>
+<td class="px-4 py-4 font-body-sm text-on-surface-variant italic">Bytevon Ltd</td>
+<td class="px-4 py-4 font-body-sm font-semibold text-secondary">Bytevon Global Holdings</td>
+<td class="px-4 py-4 font-body-sm whitespace-nowrap">Oct 24, 2023 • 14:22</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center text-[10px] font-bold">MK</div>
+<div>
+<p class="font-label-md text-on-surface">Mark Kovacs</p>
+<p class="text-[10px] text-on-surface-variant">Security Lead</p>
+</div>
+</div>
+</td>
+<td class="px-4 py-4"><span class="px-2 py-1 bg-surface-container rounded text-xs font-medium">Security</span></td>
+<td class="px-4 py-4 font-body-sm">2FA Enforcement</td>
+<td class="px-4 py-4 font-body-sm text-on-surface-variant italic">Disabled</td>
+<td class="px-4 py-4 font-body-sm font-semibold text-green-600">Enabled (Mandatory)</td>
+<td class="px-4 py-4 font-body-sm whitespace-nowrap">Oct 24, 2023 • 11:05</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-4 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center text-[10px] font-bold">SYS</div>
+<div>
+<p class="font-label-md text-on-surface">System Process</p>
+<p class="text-[10px] text-on-surface-variant">Automated</p>
+</div>
+</div>
+</td>
+<td class="px-4 py-4"><span class="px-2 py-1 bg-surface-container rounded text-xs font-medium">Integrations</span></td>
+<td class="px-4 py-4 font-body-sm">Token Refresh</td>
+<td class="px-4 py-4 font-body-sm text-on-surface-variant italic">Token_Exp_24</td>
+<td class="px-4 py-4 font-body-sm font-semibold text-on-surface">Token_Exp_90</td>
+<td class="px-4 py-4 font-body-sm whitespace-nowrap">Oct 24, 2023 • 00:01</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="mt-4 flex items-center justify-between text-xs text-on-surface-variant">
+<span class="">Showing 3 of 1,248 entries</span>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 border border-outline-variant rounded hover:bg-surface">Previous</button>
+<button class="px-3 py-1.5 border border-outline-variant rounded bg-secondary text-on-secondary">1</button>
+<button class="px-3 py-1.5 border border-outline-variant rounded hover:bg-surface">2</button>
+<button class="px-3 py-1.5 border border-outline-variant rounded hover:bg-surface">Next</button>
+</div>
+</div>
+</section>
+</div>
+<!-- Content Bottom Spacer -->
+<div class="h-32"></div>
+</main>
+</div>
+<!-- Sticky Footer -->
+<footer class="fixed bottom-6 left-1/2 -translate-x-1/2 w-full max-w-2xl bg-primary text-on-primary py-4 px-8 rounded-2xl shadow-2xl z-[60] flex items-center justify-between transform translate-y-32 transition-transform duration-500 border border-on-primary-fixed-variant" id="change-footer">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary">edit_document</span>
+</div>
+<div>
+<p class="font-bold text-sm">Unsaved Changes</p>
+<p class="text-[11px] opacity-80">You have modified organization settings.</p>
+</div>
+</div>
+<div class="flex gap-stack-sm">
+<button class="px-4 py-2 text-xs font-bold hover:bg-white/10 rounded transition-colors" onclick="hideFooter()">Discard</button>
+<button class="px-6 py-2 bg-secondary text-on-secondary text-xs font-black rounded-lg shadow-lg hover:shadow-secondary/20 transition-all">Save All Changes</button>
+</div>
+</footer>
+<script>
+    // Sidebar Toggle Logic
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const primarySidebar = document.getElementById('primary-sidebar');
+    
+    sidebarToggle.addEventListener('click', () => {
+        primarySidebar.classList.toggle('collapsed');
+    });
+
+    // Micro-interaction: Show sticky footer when inputs change
+    const inputs = document.querySelectorAll('input, select');
+    const footer = document.getElementById('change-footer');
+    let changesDetected = false;
+
+    inputs.forEach(input => {
+        input.addEventListener('change', () => {
+            if(!changesDetected) {
+                footer.classList.remove('translate-y-32');
+                footer.classList.add('translate-y-0');
+                changesDetected = true;
+            }
+        });
+    });
+
+    function hideFooter() {
+        footer.classList.add('translate-y-32');
+        footer.classList.remove('translate-y-0');
+        changesDetected = false;
+    }
+
+    // Secondary Sidebar Active State Logic
+    const subNavLinks = document.querySelectorAll('#secondary-sidebar nav a');
+    subNavLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            subNavLinks.forEach(l => {
+                l.classList.remove('bg-secondary/10', 'text-secondary');
+                l.classList.add('text-on-surface-variant');
+            });
+            link.classList.remove('text-on-surface-variant');
+            link.classList.add('bg-secondary/10', 'text-secondary');
+        });
+    });
+
+    // Intersection Observer to update sub-nav based on scroll
+    const sections = document.querySelectorAll('section[id]');
+    const observerOptions = {
+        root: document.querySelector('main'),
+        threshold: 0.5
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const id = entry.target.getAttribute('id');
+                subNavLinks.forEach(link => {
+                    const isActive = link.getAttribute('href') === `#${id}`;
+                    link.classList.toggle('bg-secondary/10', isActive);
+                    link.classList.toggle('text-secondary', isActive);
+                    link.classList.toggle('text-on-surface-variant', !isActive);
+                });
+            }
+        });
+    }, observerOptions);
+
+    sections.forEach(section => observer.observe(section));
+</script>
+</body></html>

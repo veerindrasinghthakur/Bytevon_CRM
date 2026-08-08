@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Leave Settings | Bytevon ERP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"primary-fixed-dim": "#afc8f0", "on-secondary": "#ffffff", "on-surface-variant": "#43474e", "on-secondary-fixed-variant": "#004493", "on-error": "#ffffff", "surface-container-low": "#eff4ff", "primary-container": "#001f3f", "error-container": "#ffdad6", "surface-tint": "#476083", "surface-container-highest": "#d3e4fe", "on-primary-container": "#6f88ad", "secondary-fixed": "#d8e2ff", "inverse-primary": "#afc8f0", "on-secondary-fixed": "#001a41", "surface-container-high": "#dce9ff", "surface-container": "#e5eeff", "tertiary-container": "#1c1f21", "on-primary-fixed": "#001c3a", "on-tertiary-container": "#848789", "tertiary-fixed-dim": "#c4c7c9", "surface-container-lowest": "#ffffff", "on-tertiary-fixed-variant": "#444749", "on-background": "#0b1c30", "on-primary": "#ffffff", primary: "#000613", secondary: "#0059bb", "inverse-on-surface": "#eaf1ff", error: "#ba1a1a", "outline-variant": "#c4c6cf", "on-secondary-container": "#fefcff", surface: "#f8f9ff", "surface-dim": "#cbdbf5", "secondary-fixed-dim": "#adc7ff", "on-primary-fixed-variant": "#2f486a", tertiary: "#040607", "on-tertiary-fixed": "#191c1e", "secondary-container": "#0070ea", "on-error-container": "#93000a", "on-surface": "#0b1c30", "inverse-surface": "#213145", "tertiary-fixed": "#e0e3e5", "primary-fixed": "#d4e3ff", background: "#f8f9ff", "surface-variant": "#d3e4fe", outline: "#74777f", "surface-bright": "#f8f9ff", "on-tertiary": "#ffffff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-md": "16px", "stack-lg": "32px", "margin-desktop": "40px", gutter: "24px", "container-max": "1440px", unit: "4px", "stack-sm": "8px", "margin-mobile": "16px"}, fontFamily: {"label-sm": ["Inter"], "body-lg": ["Inter"], "title-lg": ["Inter"], "headline-lg": ["Inter"], "body-md": ["Inter"], "label-md": ["Inter"], "display-lg": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-md": ["Inter"], "body-sm": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}]}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .bento-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .bento-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
+    </style>
+</head>
+<body class="bg-background text-on-surface overflow-x-hidden">
+<!-- Primary SideNavBar (Global Nav) -->
+<aside class="flex h-full z-40 fixed left-0 top-0">
+<!-- Primary Global Sidebar -->
+<div class="w-16 flex flex-col items-center py-4 bg-primary border-r border-outline-variant shrink-0">
+<div class="mb-8">
+<div class="w-10 h-10 bg-secondary rounded flex items-center justify-center text-on-secondary font-black text-xl">bv</div>
+</div>
+<nav class="flex flex-col gap-4">
+<button class="material-symbols-outlined text-on-primary-container hover:text-on-primary p-2">menu_open</button>
+<a class="material-symbols-outlined text-on-primary-container hover:text-on-primary p-2" href="#">dashboard</a>
+<a class="material-symbols-outlined text-on-primary-container hover:text-on-primary p-2" href="#">payments</a>
+<a class="material-symbols-outlined text-on-primary-container hover:text-on-primary p-2" href="#">groups</a>
+<a class="material-symbols-outlined text-on-primary-container hover:text-on-primary p-2" href="#">engineering</a>
+<a class="material-symbols-outlined text-on-primary-container hover:text-on-primary p-2" href="#">fact_check</a>
+<a class="material-symbols-outlined text-on-primary-container hover:text-on-primary p-2" href="#">hub</a>
+<a class="material-symbols-outlined text-secondary p-2 bg-on-primary-fixed-variant rounded" href="#">admin_panel_settings</a>
+</nav>
+<div class="mt-auto flex flex-col gap-4">
+<a class="material-symbols-outlined text-on-primary-container hover:text-on-primary p-2" href="#">contact_support</a>
+<a class="material-symbols-outlined text-on-primary-container hover:text-on-primary p-2" href="#">logout</a>
+</div>
+</div>
+<!-- Secondary Contextual Sidebar (Administration) -->
+<div class="w-64 flex flex-col bg-surface-container-low border-r border-outline-variant">
+<div class="p-6 flex justify-between items-center">
+<h2 class="font-label-md text-on-surface-variant uppercase tracking-wider">Administration</h2>
+<button class="material-symbols-outlined text-on-surface-variant text-sm">chevron_left</button>
+</div>
+<nav class="flex-1 px-2 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 text-on-surface-variant hover:bg-surface-container font-label-md transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">corporate_fare</span>
+        Organization Settings
+      </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-on-surface-variant hover:bg-surface-container font-label-md transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">group</span>
+        User Management
+      </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-on-surface-variant hover:bg-surface-container font-label-md transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">rule</span>
+        Roles &amp; Permissions
+      </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-on-surface-variant hover:bg-surface-container font-label-md transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">security</span>
+        Security
+      </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-on-surface-variant hover:bg-surface-container font-label-md transition-colors" href="#attendance">
+<span class="material-symbols-outlined text-lg">calendar_today</span>
+        Attendance
+      </a>
+<a class="flex items-center gap-3 px-4 py-2.5 bg-secondary text-on-secondary rounded-lg shadow-sm font-label-md" href="#leave">
+<span class="material-symbols-outlined text-lg">event_busy</span>
+        Leave
+      </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-on-surface-variant hover:bg-surface-container font-label-md transition-colors" href="#">
+<span class="material-symbols-outlined text-lg">receipt_long</span>
+        Audit Logs
+      </a>
+</nav>
+</div>
+</aside>
+<!-- Content Wrapper -->
+<div class="ml-[280px] min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-40 bg-surface dark:bg-surface-container-low border-b border-outline-variant h-16 flex items-center justify-between px-margin-desktop w-full max-w-container-max mx-auto">
+<div class="flex items-center gap-stack-lg">
+<h2 class="font-headline-md text-headline-md font-bold text-primary dark:text-on-primary-fixed">Bytevon ERP</h2>
+<nav class="hidden md:flex items-center gap-6">
+<a class="text-on-surface-variant font-label-md text-label-md hover:text-secondary transition-colors" href="#">Dashboard</a>
+<a class="text-on-surface-variant font-label-md text-label-md hover:text-secondary transition-colors" href="#">Reports</a>
+<a class="text-on-surface-variant font-label-md text-label-md hover:text-secondary transition-colors" href="#">Inventory</a>
+<a class="text-on-surface-variant font-label-md text-label-md hover:text-secondary transition-colors" href="#">CRM</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative w-64 mr-4">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2 rounded-lg bg-surface-container border border-outline-variant focus:border-secondary outline-none text-label-md" placeholder="Search parameters..." type="text"/>
+</div>
+<button class="material-symbols-outlined text-secondary hover:opacity-80">notifications</button>
+<button class="material-symbols-outlined text-secondary hover:opacity-80">help</button>
+<button class="material-symbols-outlined text-secondary hover:opacity-80">settings</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest overflow-hidden ml-2 border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a senior HR administrator in a modern office, wearing professional corporate attire. High-quality lighting, soft-focus background, clean architectural lines of a tech headquarters. Executive and trustworthy aesthetic consistent with high-stakes enterprise software." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2BrpWNP4TD6vjriQydeKQqv3qjtccitIY_ZycqwI7Nsh4lkOw4sA1QvSzMqKQSVytsdcDIfEjqxCbs4O8sHVbJUw1C2DAjJIUQHsZ48w7tEpRP5tfy3eA_JyXyhUKMEk--CBbEuZfLcLdMCOIZxFXVwlgU0s2EU5vZ4YK20CGQ6wQ_uxMWsNyiUvy7Wj0CEApzvvMXP16WKJjEtAz1fvNIdiavZfshGFNbQiJ93nziXDl4Q4VIv3hAw"/>
+</div>
+</div>
+</header>
+<!-- Main Workspace -->
+<main class="flex-1 p-margin-desktop max-w-container-max w-full mx-auto">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-10">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-primary">Leave Settings</h1>
+<p class="text-body-md text-on-surface-variant max-w-2xl mt-1">Manage leave types, entitlements, and global accrual policies for all organizational entities.</p>
+</div>
+<div class="flex gap-4">
+<button class="px-6 py-2.5 rounded-lg border border-outline text-on-surface font-label-md text-label-md hover:bg-surface-variant transition-colors">Discard</button>
+<button class="px-6 py-2.5 rounded-lg bg-secondary text-on-secondary font-label-md text-label-md hover:opacity-90 shadow-sm">Save Changes</button>
+</div>
+</div>
+<!-- Dashboard Content: Bento Layout -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Section 1: Leave Types & Entitlements -->
+<section class="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 bento-card">
+<div class="flex justify-between items-center mb-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">ballot</span>
+<h3 class="font-title-lg text-title-lg">Leave Types &amp; Entitlements</h3>
+</div>
+<button class="flex items-center gap-1 text-secondary font-label-md text-label-md hover:underline">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+                            Add New Type
+                        </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full">
+<thead>
+<tr class="text-left border-b border-outline-variant">
+<th class="pb-3 font-label-md text-label-md text-on-surface-variant">Leave Type</th>
+<th class="pb-3 font-label-md text-label-md text-on-surface-variant">Base Days/Year</th>
+<th class="pb-3 font-label-md text-label-md text-on-surface-variant">Gender/Eligibility</th>
+<th class="pb-3 font-label-md text-label-md text-on-surface-variant">Status</th>
+<th class="pb-3 font-label-md text-label-md text-on-surface-variant"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-4">
+<div class="font-body-md font-semibold">Annual Leave</div>
+<div class="text-label-sm text-on-surface-variant">Standard paid vacation</div>
+</td>
+<td class="py-4 font-body-md">21 Days</td>
+<td class="py-4"><span class="px-2 py-1 rounded bg-secondary-fixed text-on-secondary-fixed text-label-sm">All Employees</span></td>
+<td class="py-4"><span class="flex items-center gap-1 text-label-sm text-secondary font-bold"><span class="w-2 h-2 rounded-full bg-secondary"></span> Active</span></td>
+<td class="py-4 text-right"><span class="material-symbols-outlined text-outline cursor-pointer hover:text-primary">more_vert</span></td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-4">
+<div class="font-body-md font-semibold">Sick Leave</div>
+<div class="text-label-sm text-on-surface-variant">Medical and health related</div>
+</td>
+<td class="py-4 font-body-md">10 Days</td>
+<td class="py-4"><span class="px-2 py-1 rounded bg-secondary-fixed text-on-secondary-fixed text-label-sm">All Employees</span></td>
+<td class="py-4"><span class="flex items-center gap-1 text-label-sm text-secondary font-bold"><span class="w-2 h-2 rounded-full bg-secondary"></span> Active</span></td>
+<td class="py-4 text-right"><span class="material-symbols-outlined text-outline cursor-pointer hover:text-primary">more_vert</span></td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-4">
+<div class="font-body-md font-semibold">Maternity Leave</div>
+<div class="text-label-sm text-on-surface-variant">Parental support leave</div>
+</td>
+<td class="py-4 font-body-md">90 Days</td>
+<td class="py-4"><span class="px-2 py-1 rounded bg-surface-container text-on-surface-variant text-label-sm">Female only</span></td>
+<td class="py-4"><span class="flex items-center gap-1 text-label-sm text-secondary font-bold"><span class="w-2 h-2 rounded-full bg-secondary"></span> Active</span></td>
+<td class="py-4 text-right"><span class="material-symbols-outlined text-outline cursor-pointer hover:text-primary">more_vert</span></td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-4">
+<div class="font-body-md font-semibold">Casual Leave</div>
+<div class="text-label-sm text-on-surface-variant">Unplanned personal matters</div>
+</td>
+<td class="py-4 font-body-md">5 Days</td>
+<td class="py-4"><span class="px-2 py-1 rounded bg-secondary-fixed text-on-secondary-fixed text-label-sm">Full-time</span></td>
+<td class="py-4"><span class="flex items-center gap-1 text-label-sm text-secondary font-bold"><span class="w-2 h-2 rounded-full bg-secondary"></span> Active</span></td>
+<td class="py-4 text-right"><span class="material-symbols-outlined text-outline cursor-pointer hover:text-primary">more_vert</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Section 2: Accrual & Carry-Forward -->
+<section class="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 bento-card">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-secondary">update</span>
+<h3 class="font-title-lg text-title-lg">Accrual Policy</h3>
+</div>
+<div class="space-y-6">
+<div>
+<label class="block font-label-md text-label-md mb-2">Max Carry-over Limits (Days)</label>
+<input class="w-full px-4 py-2.5 rounded-lg bg-surface border border-outline-variant focus:border-secondary outline-none font-body-md" type="number" value="10"/>
+<p class="mt-1.5 text-label-sm text-on-surface-variant italic">Days automatically transferred to next cycle.</p>
+</div>
+<div>
+<label class="block font-label-md text-label-md mb-2">Cycle Reset Date</label>
+<select class="w-full px-4 py-2.5 rounded-lg bg-surface border border-outline-variant focus:border-secondary outline-none font-body-md">
+<option>January 1st (Calendar Year)</option>
+<option>April 1st (Fiscal Year)</option>
+<option>Employee Anniversary</option>
+</select>
+</div>
+<div class="pt-4 border-t border-outline-variant">
+<div class="flex items-center justify-between mb-4">
+<span class="font-label-md text-label-md">Enable Prorated Accrual</span>
+<div class="w-10 h-5 bg-secondary rounded-full relative cursor-pointer">
+<div class="absolute right-1 top-1 w-3 h-3 bg-white rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md">Accrual Frequency</span>
+<span class="font-body-sm text-secondary font-bold">Monthly</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 3: Application Restrictions -->
+<section class="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 bento-card">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-secondary">block</span>
+<h3 class="font-title-lg text-title-lg">Application Restrictions</h3>
+</div>
+<div class="space-y-4">
+<div class="p-4 bg-surface rounded-lg border border-outline-variant">
+<label class="block font-label-md text-label-md mb-2">Minimum Notice Period</label>
+<div class="flex items-center gap-2">
+<input class="w-20 px-3 py-2 rounded border border-outline-variant focus:border-secondary" type="number" value="7"/>
+<span class="text-body-sm">Days before start date</span>
+</div>
+</div>
+<div class="p-4 bg-surface rounded-lg border border-outline-variant">
+<div class="flex justify-between items-center mb-2">
+<label class="font-label-md text-label-md">Blackout Dates</label>
+<button class="text-secondary text-label-sm font-bold">Manage</button>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-error-container text-on-error-container text-[11px] rounded flex items-center gap-1">
+                                    Dec 15 - Jan 05 <span class="material-symbols-outlined text-[14px]">close</span>
+</span>
+<span class="px-2 py-1 bg-error-container text-on-error-container text-[11px] rounded flex items-center gap-1">
+                                    Quarter End <span class="material-symbols-outlined text-[14px]">close</span>
+</span>
+</div>
+</div>
+<div class="flex items-start gap-3 mt-4">
+<input checked="" class="mt-1 rounded text-secondary border-outline-variant" type="checkbox"/>
+<span class="text-body-sm text-on-surface-variant">Prevent applications if balance is insufficient (No negative balance).</span>
+</div>
+</div>
+</section>
+<!-- Section 4: Approval & Workflow -->
+<section class="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 bento-card">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-secondary">workflow</span>
+<h3 class="font-title-lg text-title-lg">Approval Workflow</h3>
+</div>
+<div class="space-y-4">
+<div class="relative pl-6 border-l-2 border-secondary-fixed">
+<div class="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-secondary border-2 border-white"></div>
+<div class="mb-6">
+<div class="font-label-md text-label-md text-secondary">Step 1: Direct Manager</div>
+<p class="text-label-sm text-on-surface-variant">Automatic routing to immediate supervisor.</p>
+</div>
+<div class="absolute -left-[9px] top-[75px] w-4 h-4 rounded-full bg-secondary border-2 border-white"></div>
+<div class="mb-2">
+<div class="font-label-md text-label-md text-secondary">Step 2: Department Head</div>
+<p class="text-label-sm text-on-surface-variant">Required for leaves exceeding 5 days.</p>
+</div>
+</div>
+<button class="w-full py-2 bg-surface-container text-secondary font-label-md text-label-md rounded border border-secondary border-dashed hover:bg-surface-variant">
+                            + Add Approval Level
+                        </button>
+<div class="pt-4 mt-2">
+<label class="block font-label-md text-label-md mb-2">Notification Triggers</label>
+<div class="grid grid-cols-2 gap-2">
+<div class="flex items-center gap-2 text-label-sm text-on-surface-variant">
+<input checked="" class="rounded text-secondary" type="checkbox"/> Slack / Teams
+                                </div>
+<div class="flex items-center gap-2 text-label-sm text-on-surface-variant">
+<input checked="" class="rounded text-secondary" type="checkbox"/> Email
+                                </div>
+<div class="flex items-center gap-2 text-label-sm text-on-surface-variant">
+<input class="rounded text-secondary" type="checkbox"/> In-App Push
+                                </div>
+<div class="flex items-center gap-2 text-label-sm text-on-surface-variant">
+<input class="rounded text-secondary" type="checkbox"/> SMS
+                                </div>
+</div>
+</div>
+</div>
+</section>
+<!-- Section 5: Holiday Interaction -->
+<section class="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 bento-card">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-secondary">calendar_month</span>
+<h3 class="font-title-lg text-title-lg">Holiday Interaction</h3>
+</div>
+<div class="space-y-6">
+<div class="space-y-3">
+<div class="flex items-start gap-4 p-4 rounded-lg bg-surface border border-outline-variant">
+<div class="material-symbols-outlined text-outline">weekend</div>
+<div>
+<div class="font-label-md text-label-md">Include Weekends</div>
+<p class="text-label-sm text-on-surface-variant mb-3">Count Saturday/Sunday as leave days if part of a range.</p>
+<div class="inline-flex rounded-md shadow-sm">
+<button class="px-4 py-1.5 bg-surface-container border border-outline-variant text-label-sm rounded-l-md font-bold">No</button>
+<button class="px-4 py-1.5 bg-secondary text-on-secondary border border-secondary text-label-sm rounded-r-md font-bold">Yes</button>
+</div>
+</div>
+</div>
+<div class="flex items-start gap-4 p-4 rounded-lg bg-surface border border-outline-variant">
+<div class="material-symbols-outlined text-outline">event_available</div>
+<div>
+<div class="font-label-md text-label-md">Statutory Holidays</div>
+<p class="text-label-sm text-on-surface-variant mb-3">Automatically exclude public holidays from leave deductions.</p>
+<div class="inline-flex rounded-md shadow-sm">
+<button class="px-4 py-1.5 bg-secondary text-on-secondary border border-secondary text-label-sm rounded-l-md font-bold">No</button>
+<button class="px-4 py-1.5 bg-surface-container border border-outline-variant text-label-sm rounded-r-md font-bold">Yes</button>
+</div>
+</div>
+</div>
+</div>
+<div class="p-4 bg-primary-container text-on-primary-container rounded-lg">
+<div class="flex items-center gap-2 mb-2 font-label-md">
+<span class="material-symbols-outlined text-primary-fixed-dim text-sm">info</span>
+                                Configuration Audit
+                            </div>
+<p class="text-[12px] opacity-80 leading-relaxed">Changes to these settings will not retroactively affect existing approved leave requests but will apply to all pending and future applications.</p>
+</div>
+</div>
+</section>
+</div>
+</main>
+</div>
+<!-- Micro-interaction Scripts -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebarLinks = document.querySelectorAll('aside nav a');
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    sidebarLinks.forEach(l => {
+                        l.classList.remove('bg-secondary', 'text-on-secondary');
+                        l.classList.add('text-on-primary-container');
+                    });
+                    link.classList.add('bg-secondary', 'text-on-secondary');
+                    link.classList.remove('text-on-primary-container');
+                });
+            });
+
+            // Toggle Switches logic
+            const toggles = document.querySelectorAll('.relative.cursor-pointer');
+            toggles.forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    const knob = toggle.querySelector('div');
+                    if (knob.classList.contains('right-1')) {
+                        knob.classList.remove('right-1');
+                        knob.classList.add('left-1');
+                        toggle.classList.replace('bg-secondary', 'bg-outline');
+                    } else {
+                        knob.classList.remove('left-1');
+                        knob.classList.add('right-1');
+                        toggle.classList.replace('bg-outline', 'bg-secondary');
+                    }
+                });
+            });
+        });
+    </script>
+</body></html>

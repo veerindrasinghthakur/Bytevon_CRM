@@ -1,0 +1,530 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Project Detail - Project Alpha</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-variant": "#d3e4fe",
+                      "surface-container": "#e5eeff",
+                      "on-background": "#0b1c30",
+                      "secondary-fixed-dim": "#bec6e0",
+                      "surface": "#f8f9ff",
+                      "secondary-fixed": "#dae2fd",
+                      "primary-fixed-dim": "#adc6ff",
+                      "on-surface": "#0b1c30",
+                      "on-error": "#ffffff",
+                      "tertiary-fixed-dim": "#c4c7c9",
+                      "primary-fixed": "#d8e2ff",
+                      "inverse-surface": "#213145",
+                      "on-primary": "#ffffff",
+                      "secondary-container": "#dae2fd",
+                      "inverse-primary": "#adc6ff",
+                      "surface-container-high": "#dce9ff",
+                      "surface-bright": "#f8f9ff",
+                      "on-secondary-fixed-variant": "#3f465c",
+                      "error-container": "#ffdad6",
+                      "on-secondary-container": "#5c647a",
+                      "on-primary-fixed": "#001a41",
+                      "outline-variant": "#c1c6d7",
+                      "on-primary-container": "#fefcff",
+                      "tertiary-container": "#727577",
+                      "on-tertiary-container": "#fbfdff",
+                      "on-secondary": "#ffffff",
+                      "primary": "#0058bc",
+                      "on-secondary-fixed": "#131b2e",
+                      "inverse-on-surface": "#eaf1ff",
+                      "outline": "#717786",
+                      "tertiary": "#595c5e",
+                      "surface-container-highest": "#d3e4fe",
+                      "on-tertiary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "surface-dim": "#cbdbf5",
+                      "secondary": "#565e74",
+                      "on-tertiary-fixed-variant": "#444749",
+                      "tertiary-fixed": "#e0e3e5",
+                      "surface-container-low": "#eff4ff",
+                      "on-surface-variant": "#414755",
+                      "on-tertiary-fixed": "#191c1e",
+                      "on-primary-fixed-variant": "#004493",
+                      "background": "#f8f9ff",
+                      "error": "#ba1a1a",
+                      "surface-tint": "#005bc1",
+                      "primary-container": "#0070eb",
+                      "surface-container-lowest": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "card-padding": "20px",
+                      "section-gap": "32px",
+                      "gutter-md": "16px",
+                      "container-margin": "24px",
+                      "table-row-height": "72px"
+              },
+              "fontFamily": {
+                      "caption": [
+                              "Inter"
+                      ],
+                      "label-bold": [
+                              "Inter"
+                      ],
+                      "headline-xl": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "caption": [
+                              "11px",
+                              {
+                                      "lineHeight": "14px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-bold": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-xl": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9ff; }
+        .shadow-soft { box-shadow: 0px 1px 3px rgba(0,0,0,0.05), 0px 10px 15px -3px rgba(0,0,0,0.02); }
+        
+        /* Sidebar Collapse Styles */
+        #sidebar, #main-content { transition: width 0.3s ease, margin 0.3s ease; }
+        #sidebar.collapsed .nav-text { display: none; }
+        #sidebar.collapsed .user-info { display: none; }
+        #sidebar.collapsed .sidebar-header { justify-content: center; padding-left: 0; padding-right: 0; }
+        #sidebar.collapsed a { justify-content: center; padding-left: 0; padding-right: 0; }
+        #sidebar.collapsed a span.material-symbols-outlined { margin-right: 0; }
+        #sidebar.collapsed button { padding-left: 0; padding-right: 0; justify-content: center; }
+        #sidebar.collapsed button .nav-text { display: none; }
+        #sidebar.collapsed button span.material-symbols-outlined { margin-right: 0; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden bg-background text-on-background">
+<!-- SideNavBar -->
+<nav class="hidden md:flex h-screen fixed left-0 top-0 flex-col bg-on-background shadow-xl py-6 px-4 space-y-2 z-40 transition-all duration-300 w-64" id="sidebar">
+<button class="absolute -right-3 top-6 bg-surface-variant text-on-surface-variant rounded-full p-1 shadow hover:bg-surface-container-high transition-colors z-50 flex items-center justify-center" id="sidebar-toggle">
+<span class="material-symbols-outlined text-[18px]" id="sidebar-toggle-icon">chevron_left</span>
+</button>
+<div class="sidebar-header flex items-center space-x-3 px-4 mb-6 transition-all duration-300">
+<img class="w-10 h-10 rounded-full object-cover shrink-0" data-alt="A small, professional avatar image of a project lead, wearing business casual attire, well-lit studio background, high quality portrait suitable for corporate software UI." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3w5aWcsJJvucuO2ja2rRZK94qfah_ILEHQsqZ5HUjVYv234y6sy190nLu5gwK0oNOwfNzdCt3Jm3ttSplyPi9iXIUHm7uua5SPMBoeAoYrj_K5-SQagimSC02YxPtQwd5hDa7hh74s-2dLJFE2MQiooQuEK-38N9iJWnGgfNSRFk4yNdHdQqaUODqK1809Wg-rvrRRD27n1mArmo3bYWGX6FUYT697jm04wIqCHcafMJIii8Du4mW">
+<div class="user-info whitespace-nowrap overflow-hidden">
+<h2 class="font-headline-md text-headline-md font-bold text-primary-fixed">Simran</h2>
+<p class="font-caption text-caption text-secondary-fixed-dim">Enterprise Tier</p>
+</div>
+</div>
+<div class="flex-1 space-y-1">
+<a class="text-secondary-fixed-dim hover:text-secondary-fixed flex items-center px-4 py-3 hover:bg-secondary-container/10 transition-all rounded-lg scale-100 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined mr-3 shrink-0 transition-all duration-300">dashboard</span>
+<span class="nav-text font-label-sm text-label-sm whitespace-nowrap">Dashboard</span>
+</a>
+<a class="bg-primary-container text-on-primary-container flex items-center px-4 py-3 rounded-lg font-bold scale-100 active:scale-[0.98] transition-transform" href="#">
+<span class="material-symbols-outlined mr-3 shrink-0 transition-all duration-300" style="font-variation-settings: 'FILL' 1;">assignment</span>
+<span class="nav-text font-label-sm text-label-sm whitespace-nowrap">Projects</span>
+</a>
+<a class="text-secondary-fixed-dim hover:text-secondary-fixed flex items-center px-4 py-3 hover:bg-secondary-container/10 transition-all rounded-lg scale-100 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined mr-3 shrink-0 transition-all duration-300">business_center</span>
+<span class="nav-text font-label-sm text-label-sm whitespace-nowrap">Clients</span>
+</a>
+<a class="text-secondary-fixed-dim hover:text-secondary-fixed flex items-center px-4 py-3 hover:bg-secondary-container/10 transition-all rounded-lg scale-100 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined mr-3 shrink-0 transition-all duration-300">analytics</span>
+<span class="nav-text font-label-sm text-label-sm whitespace-nowrap">Reports</span>
+</a>
+<a class="text-secondary-fixed-dim hover:text-secondary-fixed flex items-center px-4 py-3 hover:bg-secondary-container/10 transition-all rounded-lg scale-100 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined mr-3 shrink-0 transition-all duration-300">inventory_2</span>
+<span class="nav-text font-label-sm text-label-sm whitespace-nowrap">Archive</span>
+</a>
+</div>
+<div class="mt-auto space-y-1 pt-4 border-t border-outline/20">
+<button class="w-full flex items-center justify-center px-4 py-2 bg-primary text-on-primary rounded-lg font-label-sm text-label-sm hover:bg-primary/90 transition-colors mb-4">
+<span class="material-symbols-outlined text-[18px] mr-2 shrink-0 transition-all duration-300">add</span>
+<span class="nav-text whitespace-nowrap">New Project</span>
+</button>
+<a class="text-secondary-fixed-dim hover:text-secondary-fixed flex items-center px-4 py-3 hover:bg-secondary-container/10 transition-all rounded-lg scale-100 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined mr-3 shrink-0 transition-all duration-300">help</span>
+<span class="nav-text font-label-sm text-label-sm whitespace-nowrap">Help</span>
+</a>
+<a class="text-secondary-fixed-dim hover:text-secondary-fixed flex items-center px-4 py-3 hover:bg-secondary-container/10 transition-all rounded-lg scale-100 active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined mr-3 shrink-0 transition-all duration-300">logout</span>
+<span class="nav-text font-label-sm text-label-sm whitespace-nowrap">Logout</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-screen overflow-y-auto transition-all duration-300 md:ml-64" id="main-content">
+<!-- TopNavBar (Mobile) -->
+<header class="md:hidden flex justify-between items-center w-full px-container-margin h-16 bg-surface-container-lowest border-b border-outline-variant shadow-sm sticky top-0 z-50">
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-black text-primary">Bytevon CRM</span>
+<div class="flex items-center space-x-4">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer">search</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer">menu</span>
+</div>
+</header>
+<!-- TopNavBar (Desktop - Contextual Header for Project Detail) -->
+<header class="hidden md:flex justify-between items-center w-full px-container-margin py-4 bg-surface-container-lowest border-b border-outline-variant sticky top-0 z-30">
+<div class="flex items-center space-x-4">
+<a class="text-on-surface-variant hover:text-primary transition-colors flex items-center" href="#">
+<span class="material-symbols-outlined">arrow_back</span>
+</a>
+<div class="flex flex-col">
+<div class="flex items-center space-x-3">
+<h1 class="font-headline-lg text-headline-lg text-on-background font-bold">Project Alpha</h1>
+<span class="px-2 py-0.5 rounded text-[11px] font-semibold tracking-wide bg-surface-container-high text-primary uppercase border border-primary/20">Active</span>
+</div>
+<div class="flex items-center space-x-2 mt-1">
+<span class="font-caption text-caption text-on-surface-variant">Progress: 75%</span>
+<div class="w-32 h-1.5 bg-surface-variant rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 75%"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex items-center space-x-3">
+<div class="relative mr-4">
+<span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-outline text-[18px]">search</span>
+<input class="pl-9 pr-4 py-1.5 bg-surface rounded-lg border border-outline-variant text-body-md font-body-md focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary w-64" placeholder="Search project..." type="text">
+</div>
+<button class="px-4 py-2 border border-outline-variant text-on-background rounded-lg font-label-sm text-label-sm hover:bg-surface-variant transition-colors flex items-center">
+<span class="material-symbols-outlined text-[18px] mr-2">edit</span>
+                    Edit Project
+                </button>
+<button class="px-4 py-2 border border-outline-variant text-on-background rounded-lg font-label-sm text-label-sm hover:bg-surface-variant transition-colors flex items-center">
+<span class="material-symbols-outlined text-[18px] mr-2">group</span>
+                    Manage Team
+                </button>
+<button class="p-2 border border-outline-variant text-on-background rounded-lg hover:bg-surface-variant transition-colors flex items-center">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Page Content -->
+<div class="p-container-margin max-w-[1400px] mx-auto w-full flex flex-col lg:flex-row gap-section-gap">
+<!-- Left Column: Main Detail Area -->
+<div class="flex-1 space-y-6">
+<!-- Tab Navigation -->
+<div class="border-b border-outline-variant">
+<nav class="flex space-x-8 -mb-px">
+<a class="text-primary border-b-2 border-primary py-4 px-1 font-label-sm text-label-sm font-bold flex items-center" href="#">
+                            Overview
+                        </a>
+<a class="text-on-surface-variant hover:text-on-background py-4 px-1 font-label-sm text-label-sm font-medium flex items-center group" href="#">
+                            Tasks
+                            <span class="ml-2 bg-surface-variant text-on-surface-variant group-hover:bg-outline-variant py-0.5 px-2 rounded-full text-[10px]">42</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-background py-4 px-1 font-label-sm text-label-sm font-medium flex items-center" href="#">
+                            Team
+                        </a>
+<a class="text-on-surface-variant hover:text-on-background py-4 px-1 font-label-sm text-label-sm font-medium flex items-center" href="#">
+                            Timeline
+                        </a>
+<a class="text-on-surface-variant hover:text-on-background py-4 px-1 font-label-sm text-label-sm font-medium flex items-center" href="#">
+                            Documents
+                        </a>
+</nav>
+</div>
+<!-- Metrics Grid -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="bg-surface-container-lowest p-card-padding rounded-lg border border-outline-variant shadow-soft flex flex-col justify-between hover:border-primary/30 transition-colors">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Open Tasks</span>
+<div class="w-8 h-8 rounded bg-error-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-error-container text-[18px]">format_list_bulleted</span>
+</div>
+</div>
+<div class="flex items-baseline space-x-2">
+<span class="font-headline-xl text-headline-xl text-on-background">12</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-card-padding rounded-lg border border-outline-variant shadow-soft flex flex-col justify-between hover:border-primary/30 transition-colors">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Days to Deadline</span>
+<div class="w-8 h-8 rounded bg-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[18px]">calendar_today</span>
+</div>
+</div>
+<div class="flex items-baseline space-x-2">
+<span class="font-headline-xl text-headline-xl text-on-background">18</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-card-padding rounded-lg border border-outline-variant shadow-soft flex flex-col justify-between hover:border-primary/30 transition-colors">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Team Velocity</span>
+<div class="w-8 h-8 rounded bg-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[18px]">speed</span>
+</div>
+</div>
+<div class="flex items-baseline space-x-2">
+<span class="font-headline-xl text-headline-xl text-on-background">94%</span>
+<span class="material-symbols-outlined text-primary text-[16px]">trending_up</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-card-padding rounded-lg border border-outline-variant shadow-soft flex flex-col justify-between hover:border-primary/30 transition-colors">
+<div class="flex justify-between items-start mb-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Budget Utilized</span>
+<div class="w-8 h-8 rounded bg-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-[18px]">payments</span>
+</div>
+</div>
+<div class="flex items-baseline space-x-2">
+<span class="font-headline-xl text-headline-xl text-on-background">68%</span>
+</div>
+<div class="w-full bg-surface-variant h-1 rounded-full mt-3 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 68%"></div>
+</div>
+</div>
+</div>
+<!-- Description & Activity Layout -->
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-section-gap">
+<!-- Left: Details -->
+<div class="xl:col-span-2 space-y-6">
+<!-- Description -->
+<div class="bg-surface-container-lowest p-card-padding rounded-lg border border-outline-variant shadow-soft">
+<h3 class="font-headline-md text-headline-md text-on-background mb-4">Project Description</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4 leading-relaxed">
+                                Project Alpha is a critical modernization initiative focused on upgrading our core infrastructure to support the upcoming v3 API rollout. This involves migrating legacy microservices, implementing robust caching layers, and refactoring authentication endpoints to ensure high availability and improved response times for enterprise clients.
+                            </p>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                                The success of this project is paramount for Q1 targets, enabling onboarding of higher-tier customers expecting strict SLAs.
+                            </p>
+</div>
+<!-- Team Summary -->
+<div class="bg-surface-container-lowest p-card-padding rounded-lg border border-outline-variant shadow-soft">
+<div class="flex justify-between items-center mb-4">
+<h3 class="font-headline-md text-headline-md text-on-background">Assigned Team</h3>
+<a class="font-label-sm text-label-sm text-primary hover:underline" href="#">View All</a>
+</div>
+<div class="flex items-center space-x-4 p-4 border border-outline-variant rounded-lg bg-surface">
+<div class="w-12 h-12 bg-primary-fixed rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-fixed-variant">engineering</span>
+</div>
+<div class="flex-1">
+<h4 class="font-body-lg text-body-lg font-semibold text-on-background">Alpha Engineering</h4>
+<p class="font-caption text-caption text-on-surface-variant">8 Members • Cross-functional</p>
+</div>
+<div class="text-right">
+<p class="font-caption text-caption text-on-surface-variant mb-1">Lead</p>
+<div class="flex items-center space-x-2">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="Small avatar of Sarah Jenkins, professional software engineering lead, smiling mildly, well-lit studio headshot." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZScIFHxRdmGlO8iw0_lkWQoVUiu_QisCJ4R_mdZO69C4IjP4BcHz6QQL4um4-beKprVPzQwMBVRNIk2QvszuAvMnYmMhDnr-AkM4VXuJ3KOwGJKp8EihCvxvn-UB0zbsDpw4Y0S8eyV71qgbpIT6N_OumtR0KOATO8lDzBrvhvuf42sLcokKkl3pU7kq15ZRkJuwpwsS8RiUm0iFJc8y977A1y9O8fd2fhkPbccem4KIgPFUP7FW-">
+<span class="font-label-sm text-label-sm text-on-background">Sarah Jenkins</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Activity Feed -->
+<div class="xl:col-span-1">
+<div class="bg-surface-container-lowest p-card-padding rounded-lg border border-outline-variant shadow-soft h-full">
+<h3 class="font-headline-md text-headline-md text-on-background mb-6">Recent Activity</h3>
+<div class="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-outline-variant before:to-transparent">
+<!-- Item 1 -->
+<div class="relative flex items-start space-x-3">
+<div class="w-10 h-10 rounded-full bg-primary-container border-4 border-surface-container-lowest flex items-center justify-center z-10 shrink-0">
+<span class="material-symbols-outlined text-on-primary-container text-[16px]">check_circle</span>
+</div>
+<div class="pt-2">
+<p class="font-label-sm text-label-sm font-semibold text-on-background">Architecture Review Completed</p>
+<p class="font-caption text-caption text-on-surface-variant mt-1">Sarah Jenkins approved the final draft.</p>
+<p class="font-caption text-caption text-outline mt-2">2 hours ago</p>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="relative flex items-start space-x-3">
+<div class="w-10 h-10 rounded-full bg-surface-variant border-4 border-surface-container-lowest flex items-center justify-center z-10 shrink-0">
+<span class="material-symbols-outlined text-primary text-[16px]">bug_report</span>
+</div>
+<div class="pt-2">
+<p class="font-label-sm text-label-sm font-semibold text-on-background">Task #124 Fixed</p>
+<p class="font-caption text-caption text-on-surface-variant mt-1">Authentication bug in staging resolved.</p>
+<p class="font-caption text-caption text-outline mt-2">Yesterday, 4:30 PM</p>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="relative flex items-start space-x-3">
+<div class="w-10 h-10 rounded-full bg-surface-variant border-4 border-surface-container-lowest flex items-center justify-center z-10 shrink-0">
+<span class="material-symbols-outlined text-primary text-[16px]">commit</span>
+</div>
+<div class="pt-2">
+<p class="font-label-sm text-label-sm font-semibold text-on-background">Code Merged to Main</p>
+<p class="font-caption text-caption text-on-surface-variant mt-1">PR #89 - Caching layer implementation.</p>
+<p class="font-caption text-caption text-outline mt-2">Oct 24, 2023</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Contextual Sidebar -->
+<div class="w-full lg:w-72 shrink-0 space-y-6">
+<!-- Client Info Card -->
+<div class="bg-on-background text-on-primary rounded-lg p-card-padding shadow-soft">
+<h4 class="font-label-bold text-label-bold text-secondary-fixed-dim uppercase tracking-wider mb-4">Client</h4>
+<div class="flex items-center space-x-3">
+<div class="w-10 h-10 rounded bg-inverse-surface flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-fixed text-[20px]">domain</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg font-bold text-on-primary">TechNexus Corp.</p>
+<a class="font-caption text-caption text-primary-fixed hover:underline flex items-center mt-1" href="#">
+                                View Profile <span class="material-symbols-outlined text-[14px] ml-1">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Key Dates -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-card-padding shadow-soft">
+<h4 class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider mb-4">Key Dates</h4>
+<div class="space-y-4">
+<div class="flex justify-between items-center">
+<div class="flex items-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] mr-2">flag</span>
+<span class="font-label-sm text-label-sm">Start Date</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-background font-semibold">Oct 12, 2023</span>
+</div>
+<div class="flex justify-between items-center">
+<div class="flex items-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] mr-2">event_available</span>
+<span class="font-label-sm text-label-sm">Target End</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-background font-semibold">Jan 15, 2024</span>
+</div>
+</div>
+</div>
+<!-- Resources -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-card-padding shadow-soft">
+<h4 class="font-label-bold text-label-bold text-on-surface-variant uppercase tracking-wider mb-4">Resources</h4>
+<div class="space-y-2">
+<a class="flex items-center p-2 rounded hover:bg-surface-variant transition-colors group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary text-[20px] mr-3">code</span>
+<span class="font-label-sm text-label-sm text-on-background group-hover:text-primary">GitHub Repository</span>
+</a>
+<a class="flex items-center p-2 rounded hover:bg-surface-variant transition-colors group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary text-[20px] mr-3">forum</span>
+<span class="font-label-sm text-label-sm text-on-background group-hover:text-primary">#project-alpha Slack</span>
+</a>
+<a class="flex items-center p-2 rounded hover:bg-surface-variant transition-colors group" href="#">
+<span class="material-symbols-outlined text-outline group-hover:text-primary text-[20px] mr-3">description</span>
+<span class="font-label-sm text-label-sm text-on-background group-hover:text-primary">PRD Document</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        const toggleBtn = document.getElementById('sidebar-toggle');
+        const toggleIcon = document.getElementById('sidebar-toggle-icon');
+        
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('w-64');
+            sidebar.classList.toggle('w-20');
+            mainContent.classList.toggle('md:ml-64');
+            mainContent.classList.toggle('md:ml-20');
+            
+            sidebar.classList.toggle('collapsed');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                toggleIcon.textContent = 'chevron_right';
+            } else {
+                toggleIcon.textContent = 'chevron_left';
+            }
+        });
+    });
+</script>
+
+
+</body></html>

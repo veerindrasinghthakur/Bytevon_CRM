@@ -1,0 +1,420 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Bytevon Approval Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {surface: "#f8f9ff", "on-error": "#ffffff", "secondary-fixed": "#d8e2ff", "surface-tint": "#476083", "on-secondary": "#ffffff", "primary-fixed-dim": "#afc8f0", "on-primary-container": "#6f88ad", "on-tertiary-fixed-variant": "#444749", "inverse-surface": "#213145", "error-container": "#ffdad6", "surface-container-lowest": "#ffffff", "tertiary-fixed": "#e0e3e5", "surface-variant": "#d3e4fe", "surface-bright": "#f8f9ff", primary: "#000613", "inverse-primary": "#afc8f0", "inverse-on-surface": "#eaf1ff", "surface-container-highest": "#d3e4fe", "primary-fixed": "#d4e3ff", "on-tertiary-fixed": "#191c1e", "on-tertiary-container": "#848789", tertiary: "#040607", "surface-container-low": "#eff4ff", "on-surface-variant": "#43474e", "surface-dim": "#cbdbf5", "tertiary-fixed-dim": "#c4c7c9", "secondary-container": "#0070ea", "on-primary-fixed": "#001c3a", "surface-container-high": "#dce9ff", "surface-container": "#e5eeff", "secondary-fixed-dim": "#adc7ff", "on-primary": "#ffffff", "on-secondary-container": "#fefcff", secondary: "#0059bb", background: "#f8f9ff", "tertiary-container": "#1c1f21", "on-tertiary": "#ffffff", "primary-container": "#001f3f", outline: "#74777f", "on-secondary-fixed": "#001a41", error: "#ba1a1a", "on-primary-fixed-variant": "#2f486a", "outline-variant": "#c4c6cf", "on-error-container": "#93000a", "on-background": "#0b1c30", "on-surface": "#0b1c30", "on-secondary-fixed-variant": "#004493"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-sm": "8px", "stack-md": "16px", "stack-lg": "32px", "container-max": "1440px", "margin-desktop": "40px", unit: "4px", "margin-mobile": "16px", gutter: "24px"}, fontFamily: {"title-lg": ["Inter"], "label-md": ["Inter"], "headline-lg": ["Inter"], "headline-lg-mobile": ["Inter"], "display-lg": ["Inter"], "headline-md": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "body-sm": ["Inter"], "label-sm": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}]}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-scroll::-webkit-scrollbar { width: 4px; }
+        .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+        .sidebar-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        
+        #primarySidebar.collapsed { width: 80px; }
+        #primarySidebar.collapsed .nav-text,
+        #primarySidebar.collapsed .nav-header,
+        #primarySidebar.collapsed .branding-text { display: none; }
+        #primarySidebar.collapsed .px-6 { px-4; justify-content: center; }
+        #primarySidebar.collapsed .nav-item { justify-content: center; padding-left: 0; padding-right: 0; }
+        #primarySidebar.collapsed .branding-container { justify-content: center; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen flex overflow-hidden">
+<!-- Primary Sidebar (Left) -->
+<aside class="h-full w-[260px] bg-primary text-on-primary flex flex-col py-stack-md border-r border-outline-variant/10 z-50 shadow-sm transition-all duration-300" id="primarySidebar">
+<div class="px-6 mb-stack-lg flex items-center branding-container">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-secondary-container rounded-lg flex-shrink-0 flex items-center justify-center text-on-primary-container overflow-hidden">
+<img alt="Bytevon Logo" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDjskOiX1T5hJnhZvlnnhO7DkU9TlIg4NiZi_5oqPxVUWUw3SlPRfwLTuaCgpfZng2HRETfNpmi6NFBQ1fB9HyxhxXR0R1WvBix6Lmvc3m5BQIdle9JFx7GVWYIuCDNtbp-k4nF0C55RwUFofudLW-h4LA6AkEleppYErFg278l4nD_KTDYLyBIKRNwJA20KxLAcnQWMVO4WPf8RW2zNyjh4BJ9H914foPydTza9d6gRcjdWslzKxhMnv8ia_BJt9ytJ5Y">
+</div>
+<h1 class="text-title-lg font-bold text-on-primary branding-text">Bytevon</h1>
+</div>
+</div>
+<nav class="flex-1 px-2 space-y-1 sidebar-scroll overflow-y-auto">
+<div class="px-4 py-2 text-label-sm uppercase tracking-wider opacity-40 nav-header">Main</div>
+<a class="nav-item flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-on-primary-fixed-variant/20 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md nav-text">Dashboard</span>
+</a>
+<a class="nav-item flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-on-primary-fixed-variant/20 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined">corporate_fare</span>
+<span class="font-label-md text-label-md nav-text">Organization</span>
+</a>
+<!-- Active Primary Module -->
+<a class="nav-item flex items-center gap-3 px-4 py-3 text-on-primary bg-secondary/30 rounded-lg mx-2 font-bold transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">approval_delegation</span>
+<span class="font-label-md text-label-md nav-text">Approvals</span>
+</a>
+<a class="nav-item flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-on-primary-fixed-variant/20 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-md text-label-md nav-text">People</span>
+</a>
+<a class="nav-item flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-on-primary-fixed-variant/20 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined">badge</span>
+<span class="font-label-md text-label-md nav-text">Workforce</span>
+</a>
+<div class="px-4 py-6 text-label-sm uppercase tracking-wider opacity-40 nav-header">System</div>
+<a class="nav-item flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-on-primary-fixed-variant/20 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md nav-text">Admin</span>
+</a>
+</nav>
+<div class="mt-auto px-4 py-4 border-t border-white/10 mx-2">
+<button class="w-full flex items-center justify-center p-2 text-on-primary-fixed-variant hover:text-on-primary hover:bg-white/5 rounded-lg transition-colors" onclick="togglePrimarySidebar()">
+<span class="material-symbols-outlined" id="collapseIcon">keyboard_double_arrow_left</span>
+</button>
+</div>
+</aside>
+<!-- Secondary Sub-sidebar (Module Specific) -->
+<!-- Main Content Canvas -->
+<main class="flex-1 h-screen overflow-y-auto bg-surface flex flex-col relative">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center h-16 px-margin-desktop sticky top-0 z-40 bg-surface/80 backdrop-blur-md border-b border-outline-variant">
+<div class="flex items-center gap-6 flex-1">
+<div class="relative w-96 group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full text-body-sm focus:ring-2 focus:ring-secondary focus:border-transparent outline-none transition-all" placeholder="Search requests..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex gap-1 border-r border-outline-variant pr-4">
+<button class="p-2 hover:bg-surface-container rounded-full relative">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 hover:bg-surface-container rounded-full">
+<span class="material-symbols-outlined text-on-surface-variant">apps</span>
+</button>
+</div>
+<div class="flex items-center gap-3 pl-2 cursor-pointer group">
+<div class="text-right hidden sm:block">
+<p class="text-label-md font-bold leading-tight group-hover:text-primary transition-colors">Jordan Vance</p>
+<p class="text-label-sm text-on-surface-variant">Admin Executive</p>
+</div>
+<img class="w-10 h-10 rounded-full border border-outline-variant object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4mIRLQPCNg30-126pNFAg-49E3nKOQCRBfdADukYelfk9JlNk8DHOq8UCO6SiNmYcsYdx91mCLgymqjsu8KzFv5kMcYXv68cMi-AnLSENjuCO_2smPDmJd4uhgUnNpd2z1PQM8uvAA0bZLNo6b8iaCq4219PIrQ8op_-7VfZKObbTAhzNjJ1anwwCBo2q9rNXRyd8DtUyhQE3nj_0gtA3uA7KkaSW-9hxLXGs8jfKoY91slcvNIVaTQ">
+</div>
+</div>
+</header>
+<!-- View Content -->
+<div class="flex-1 px-margin-desktop py-stack-lg">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-stack-lg gap-4">
+<div>
+<h2 class="text-headline-lg font-headline-lg text-primary">Approval Center</h2>
+<p class="text-body-md text-on-surface-variant max-w-2xl">Manage and process organizational requests.</p>
+</div>
+<div class="flex gap-stack-sm">
+<button class="flex items-center gap-2 px-4 py-2.5 bg-surface-container-high text-on-surface-variant font-label-md rounded-lg hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-[20px]">history</span>
+<span class="">Log</span>
+</button>
+<button class="flex items-center gap-2 px-4 py-2.5 bg-primary text-on-primary font-label-md rounded-lg hover:bg-primary-container transition-all">
+<span class="material-symbols-outlined text-[20px]">file_export</span>
+<span class="">Export</span>
+</button>
+</div>
+</div>
+<!-- KPI Bento Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-stack-md mb-stack-lg"><div class="bg-surface-container-lowest border border-outline-variant p-stack-md rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-2">
+<span class="p-2 bg-secondary/5 text-secondary rounded-lg">
+<span class="material-symbols-outlined">stacks</span>
+</span>
+<div class="flex items-center gap-1 text-on-surface-variant font-label-sm">
+<span class="material-symbols-outlined text-[14px]">trending_flat</span>
+<span class="">Stable</span>
+</div>
+</div>
+<p class="text-label-sm text-on-surface-variant">Total Approvals</p>
+<h3 class="text-headline-md font-headline-md">210</h3>
+<div class="h-10 mt-2 bg-surface-container flex items-end gap-0.5 rounded overflow-hidden">
+<div class="bg-secondary/20 w-full h-1/2"></div>
+<div class="bg-secondary/20 w-full h-2/3"></div>
+<div class="bg-secondary/20 w-full h-3/4"></div>
+<div class="bg-secondary/20 w-full h-full"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-stack-md rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-2">
+<span class="p-2 bg-secondary-fixed text-on-secondary-fixed-variant rounded-lg">
+<span class="material-symbols-outlined">pending_actions</span>
+</span>
+<div class="flex items-center gap-1 text-on-secondary-fixed-variant font-label-sm">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+<span class="">12%</span>
+</div>
+</div>
+<p class="text-label-sm text-on-surface-variant">Pending Approvals</p>
+<h3 class="text-headline-md font-headline-md">42</h3>
+<div class="h-10 mt-2 bg-surface-container flex items-end gap-0.5 rounded overflow-hidden">
+<div class="bg-secondary/40 w-full h-1/2"></div>
+<div class="bg-secondary/40 w-full h-3/4"></div>
+<div class="bg-secondary w-full h-full"></div>
+<div class="bg-secondary/60 w-full h-2/3"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-stack-md rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-2">
+<span class="p-2 bg-green-100 text-green-700 rounded-lg">
+<span class="material-symbols-outlined">task_alt</span>
+</span>
+<div class="flex items-center gap-1 text-green-600 font-label-sm">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+<span class="">8%</span>
+</div>
+</div>
+<p class="text-label-sm text-on-surface-variant">Approved Today</p>
+<h3 class="text-headline-md font-headline-md">156</h3>
+<div class="h-10 mt-2 bg-surface-container flex items-end gap-0.5 rounded overflow-hidden">
+<div class="bg-green-400 w-full h-2/3"></div>
+<div class="bg-green-500 w-full h-full"></div>
+<div class="bg-green-400 w-full h-3/4"></div>
+<div class="bg-green-500 w-full h-4/5"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-stack-md rounded-xl shadow-sm hover:shadow-md transition-all cursor-pointer">
+<div class="flex justify-between items-start mb-2">
+<span class="p-2 bg-red-100 text-red-700 rounded-lg">
+<span class="material-symbols-outlined">cancel</span>
+</span>
+<div class="flex items-center gap-1 text-on-surface-variant font-label-sm">
+<span class="material-symbols-outlined text-[14px]">trending_flat</span>
+<span class="">Stable</span>
+</div>
+</div>
+<p class="text-label-sm text-on-surface-variant">Rejected Today</p>
+<h3 class="text-headline-md font-headline-md">12</h3>
+<div class="h-10 mt-2 bg-surface-container flex items-end gap-0.5 rounded overflow-hidden">
+<div class="bg-red-300 w-full h-1/4"></div>
+<div class="bg-red-400 w-full h-1/3"></div>
+<div class="bg-red-400 w-full h-1/4"></div>
+<div class="bg-red-300 w-full h-1/5"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-stack-md rounded-xl shadow-sm hover:shadow-md transition-all">
+<div class="flex justify-between items-start mb-2">
+<span class="p-2 bg-amber-100 text-amber-700 rounded-lg">
+<span class="material-symbols-outlined">warning</span>
+</span>
+<div class="flex items-center gap-1 text-red-600 font-label-sm font-bold">
+<span class="material-symbols-outlined text-[14px]">priority_high</span>
+<span class="">Critical</span>
+</div>
+</div>
+<p class="text-label-sm text-on-surface-variant">Overdue Requests</p>
+<h3 class="text-headline-md font-headline-md">08</h3>
+<div class="h-10 mt-2 bg-surface-container flex items-end gap-0.5 rounded overflow-hidden">
+<div class="bg-amber-400 w-full h-full"></div>
+<div class="bg-amber-400 w-full h-full"></div>
+<div class="bg-amber-400 w-full h-full"></div>
+<div class="bg-amber-400 w-full h-full"></div>
+</div>
+</div>
+</div>
+<!-- Content Area: Filters + Table -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-2xl overflow-hidden shadow-sm">
+<!-- Filters Bar -->
+<div class="px-6 py-4 border-b border-outline-variant flex flex-wrap gap-stack-md items-center justify-between">
+<div class="flex flex-wrap gap-4 items-center">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">filter_list</span>
+<select class="w-full pl-10 pr-4 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-secondary outline-none appearance-none">
+<option>All Request Types</option>
+<option>Leave Request</option>
+<option>Expense Claim</option>
+<option>Purchase Order</option>
+</select>
+</div>
+<select class="pl-4 pr-10 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-secondary outline-none appearance-none">
+<option>Status: Pending</option>
+<option>Approved</option>
+<option>Rejected</option>
+</select>
+<button class="flex items-center gap-2 px-3 py-2 text-label-md text-secondary hover:bg-secondary/5 rounded-lg">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span>
+<span class="">Last 30 Days</span>
+</button>
+</div>
+<p class="text-label-sm text-on-surface-variant">Showing 1-10 of 42 requests</p>
+</div>
+<!-- Approval Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="px-6 py-4 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">ID</th>
+<th class="px-6 py-4 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Type</th>
+<th class="px-6 py-4 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Requester</th>
+<th class="px-6 py-4 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Date</th>
+<th class="px-6 py-4 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Priority</th>
+<th class="px-6 py-4 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="hover:bg-surface-container-low/50 transition-colors cursor-pointer group bg-secondary/5" onclick="toggleDetail()">
+<td class="px-6 py-4 font-label-md text-primary">#REQ-8902</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="p-1.5 bg-blue-100 text-blue-700 rounded-md">
+<span class="material-symbols-outlined text-[16px]">flight_takeoff</span>
+</span>
+<span class="text-body-sm font-medium">Leave Request</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center font-bold text-label-sm text-secondary border border-outline-variant">SA</div>
+<span class="text-body-sm">Sarah Adams</span>
+</div>
+</td>
+<td class="px-6 py-4 text-body-sm text-on-surface-variant">Oct 24, 2023</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-[11px] font-bold uppercase tracking-wide">High</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-amber-700 font-bold text-label-sm">
+<span class="material-symbols-outlined text-[18px]">hourglass_empty</span>
+<span class="">Pending</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<button class="p-2 hover:bg-green-100 text-green-700 rounded-lg transition-colors" title="Quick Approve">
+<span class="material-symbols-outlined">check_circle</span>
+</button>
+<button class="p-2 hover:bg-red-100 text-red-700 rounded-lg transition-colors" title="Quick Reject">
+<span class="material-symbols-outlined">cancel</span>
+</button>
+<button class="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors cursor-pointer group">
+<td class="px-6 py-4 font-label-md text-primary">#REQ-8901</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="p-1.5 bg-purple-100 text-purple-700 rounded-md">
+<span class="material-symbols-outlined text-[16px]">receipt_long</span>
+</span>
+<span class="text-body-sm font-medium">Expense Claim</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center font-bold text-label-sm text-secondary border border-outline-variant">MC</div>
+<span class="text-body-sm">Marcus Chen</span>
+</div>
+</td>
+<td class="px-6 py-4 text-body-sm text-on-surface-variant">Oct 23, 2023</td>
+<td class="px-6 py-4">
+<span class="px-2 py-1 bg-amber-100 text-amber-700 rounded-full text-[11px] font-bold uppercase tracking-wide">Medium</span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-1.5 text-amber-700 font-bold text-label-sm">
+<span class="material-symbols-outlined text-[18px]">hourglass_empty</span>
+<span class="">Pending</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-green-100 text-green-700 rounded-lg transition-colors">
+<span class="material-symbols-outlined">check_circle</span>
+</button>
+<button class="p-2 hover:bg-red-100 text-red-700 rounded-lg transition-colors">
+<span class="material-symbols-outlined">cancel</span>
+</button>
+<button class="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined">visibility</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 border-t border-outline-variant flex items-center justify-between">
+<button class="px-4 py-2 text-label-md text-on-surface-variant bg-surface hover:bg-surface-container border border-outline-variant rounded-lg transition-colors">Previous</button>
+<div class="flex gap-2">
+<button class="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary text-on-primary font-bold">1</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors">2</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors">3</button>
+</div>
+<button class="px-4 py-2 text-label-md text-on-surface-variant bg-surface hover:bg-surface-container border border-outline-variant rounded-lg transition-colors">Next</button>
+</div>
+</div>
+</div>
+<!-- Detail Side Drawer (Hidden by default) -->
+<div class="fixed right-0 top-0 h-full w-[480px] bg-white shadow-2xl z-[60] transition-transform duration-300 ease-in-out border-l border-outline-variant flex flex-col translate-x-full" id="detailPanel">
+<!-- Panel Header -->
+<div class="p-6 border-b border-outline-variant flex items-center justify-between bg-surface-container-low">
+<div>
+<span class="text-label-sm uppercase tracking-widest text-on-surface-variant font-bold">Request Detail</span>
+<h3 class="text-title-lg font-headline-md text-primary">#REQ-8902</h3>
+</div>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors" onclick="toggleDetail()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Panel Content placeholder -->
+<div class="flex-1 overflow-y-auto p-6 space-y-6">
+<div class="p-4 bg-surface rounded-xl border border-outline-variant flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center text-on-primary-container font-bold">SA</div>
+<div>
+<h4 class="font-bold">Sarah Adams</h4>
+<p class="text-label-sm text-on-surface-variant">Engineering · Senior Designer</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4 text-body-sm">
+<div>
+<p class="text-on-surface-variant uppercase text-[10px] font-bold">Type</p>
+<p class="font-medium">Leave Request</p>
+</div>
+<div>
+<p class="text-on-surface-variant uppercase text-[10px] font-bold">Priority</p>
+<p class="font-medium text-red-600">High</p>
+</div>
+</div>
+</div>
+<div class="p-6 border-t border-outline-variant bg-surface-container-low flex gap-3">
+<button class="flex-1 py-3 bg-secondary text-on-primary font-bold rounded-xl hover:bg-secondary-container">Approve</button>
+<button class="flex-1 py-3 bg-surface text-primary font-bold border border-outline-variant rounded-xl hover:bg-surface-container">Reject</button>
+</div>
+</div>
+</main>
+<script>
+    let detailOpen = false;
+    function toggleDetail() {
+        const panel = document.getElementById('detailPanel');
+        detailOpen = !detailOpen;
+        if (detailOpen) {
+            panel.classList.remove('translate-x-full');
+        } else {
+            panel.classList.add('translate-x-full');
+        }
+    }
+
+    function togglePrimarySidebar() {
+        const sidebar = document.getElementById('primarySidebar');
+        const icon = document.getElementById('collapseIcon');
+        const isCollapsed = sidebar.classList.toggle('collapsed');
+        
+        if (isCollapsed) {
+            icon.innerText = 'keyboard_double_arrow_right';
+        } else {
+            icon.innerText = 'keyboard_double_arrow_left';
+        }
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && detailOpen) toggleDetail();
+    });
+</script>
+</body></html>

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Edit Role: Sales Executive | Bytevon</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"inverse-on-surface": "#eaf1ff", "on-secondary-fixed": "#001a41", "on-primary-fixed": "#001c3a", "tertiary-container": "#1c1f21", "surface-container-low": "#eff4ff", "surface-container-lowest": "#ffffff", "on-primary-fixed-variant": "#2f486a", "on-secondary-fixed-variant": "#004493", "primary-fixed-dim": "#afc8f0", "on-tertiary-container": "#848789", "on-surface-variant": "#43474e", "primary-fixed": "#d4e3ff", "on-error-container": "#93000a", "on-surface": "#0b1c30", "outline-variant": "#c4c6cf", "on-background": "#0b1c30", "secondary-container": "#0070ea", "on-secondary-container": "#fefcff", "on-primary-container": "#6f88ad", background: "#f8f9ff", tertiary: "#040607", secondary: "#0059bb", "surface-container-high": "#dce9ff", "surface-tint": "#476083", "primary-container": "#001f3f", "on-primary": "#ffffff", "inverse-surface": "#213145", primary: "#000613", "surface-container-highest": "#d3e4fe", "on-tertiary-fixed": "#191c1e", "on-tertiary": "#ffffff", "surface-container": "#e5eeff", "surface-variant": "#d3e4fe", "secondary-fixed": "#d8e2ff", "secondary-fixed-dim": "#adc7ff", "on-secondary": "#ffffff", outline: "#74777f", "tertiary-fixed-dim": "#c4c7c9", "surface-bright": "#f8f9ff", surface: "#f8f9ff", "tertiary-fixed": "#e0e3e5", "inverse-primary": "#afc8f0", "on-error": "#ffffff", "surface-dim": "#cbdbf5", "on-tertiary-fixed-variant": "#444749", "error-container": "#ffdad6", error: "#ba1a1a"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {unit: "4px", "stack-md": "16px", "stack-lg": "32px", "margin-mobile": "16px", gutter: "24px", "container-max": "1440px", "stack-sm": "8px", "margin-desktop": "40px"}, fontFamily: {"label-md": ["Inter"], "body-lg": ["Inter"], "title-lg": ["Inter"], "headline-lg": ["Inter"], "body-md": ["Inter"], "display-lg": ["Inter"], "label-sm": ["Inter"], "body-sm": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}]}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Custom switch styling */
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #0070ea;
+        }
+        .toggle-checkbox:checked + .toggle-label:before {
+            transform: translateX(20px);
+        }
+        .toggle-label:before {
+            content: "";
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.2s ease;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background overflow-hidden flex h-screen">
+<!-- PRIMARY SIDEBAR (SideNavBar) -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary dark:bg-primary-container shadow-sm flex flex-col py-stack-md px-stack-sm z-30">
+<div class="px-stack-md py-4 mb-stack-lg">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">Bytevon</h1>
+<p class="text-on-primary-container opacity-70 text-label-sm font-label-sm">Enterprise ERP</p>
+</div>
+<nav class="flex-1 space-y-1 overflow-y-auto hide-scrollbar">
+<!-- Dashboard -->
+<a class="flex items-center gap-3 px-stack-md py-3 text-on-primary-container opacity-70 hover:bg-secondary-container hover:text-on-secondary-container transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<!-- Employees -->
+<a class="flex items-center gap-3 px-stack-md py-3 text-on-primary-container opacity-70 hover:bg-secondary-container hover:text-on-secondary-container transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-md text-label-md">Employees</span>
+</a>
+<!-- CRM -->
+<a class="flex items-center gap-3 px-stack-md py-3 text-on-primary-container opacity-70 hover:bg-secondary-container hover:text-on-secondary-container transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined">handshake</span>
+<span class="font-label-md text-label-md">CRM</span>
+</a>
+<!-- ERP -->
+<a class="flex items-center gap-3 px-stack-md py-3 text-on-primary-container opacity-70 hover:bg-secondary-container hover:text-on-secondary-container transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-md text-label-md">ERP</span>
+</a>
+<!-- Reports -->
+<a class="flex items-center gap-3 px-stack-md py-3 text-on-primary-container opacity-70 hover:bg-secondary-container hover:text-on-secondary-container transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+<!-- Administration (Active) -->
+<a class="flex items-center gap-3 px-stack-md py-3 bg-secondary text-on-secondary rounded-lg scale-95 active:scale-90 transition-all" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+<span class="font-label-md text-label-md">Administration</span>
+</a>
+</nav>
+<div class="mt-auto pt-stack-md border-t border-on-primary-container/10">
+<a class="flex items-center gap-3 px-stack-md py-3 text-on-primary-container opacity-70 hover:bg-secondary-container hover:text-on-secondary-container transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-md text-label-md">Help</span>
+</a>
+<a class="flex items-center gap-3 px-stack-md py-3 text-on-primary-container opacity-70 hover:bg-secondary-container hover:text-on-secondary-container transition-colors rounded-lg group" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- SECONDARY SIDEBAR (Sub-navigation) -->
+<aside class="fixed left-[280px] top-0 h-full w-[240px] bg-surface-container-low border-r border-outline-variant z-20 pt-16">
+<div class="px-stack-md py-stack-lg">
+<h2 class="text-label-sm font-label-sm uppercase tracking-wider text-on-surface-variant mb-4 px-2">Admin Panel</h2>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">manage_accounts</span>
+                    User Management
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 bg-secondary-container text-on-secondary-container font-bold rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">security</span>
+                    Roles &amp; Permissions
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">settings_ethernet</span>
+                    API Keys
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">history</span>
+                    Audit Logs
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined text-[20px]">settings_suggest</span>
+                    System Config
+                </a>
+</nav>
+</div>
+</aside>
+<!-- MAIN CONTENT WRAPPER -->
+<div class="flex-1 ml-[520px] flex flex-col h-full bg-background overflow-hidden relative">
+<!-- TOP APP BAR -->
+<header class="h-16 bg-surface dark:bg-surface-dim border-b border-outline-variant flex justify-between items-center px-margin-desktop z-10">
+<div class="flex items-center gap-4">
+<div class="relative w-96">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-outline">search</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-full py-1.5 pl-10 pr-4 text-body-sm font-body-sm focus:ring-2 focus:ring-secondary focus:border-secondary outline-none transition-all" placeholder="Search resources..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden md:flex items-center gap-8 mr-4">
+<a class="text-on-surface-variant hover:text-secondary transition-colors font-label-md text-label-md" href="#">Administration</a>
+<a class="text-secondary font-bold border-b-2 border-secondary font-label-md text-label-md cursor-pointer h-16 flex items-center" href="#">User Management</a>
+</nav>
+<div class="flex items-center gap-3 border-l border-outline-variant pl-6">
+<button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:bg-surface-container rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2.5 right-2.5 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center text-on-surface-variant hover:bg-surface-container rounded-full transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-secondary overflow-hidden ml-2 cursor-pointer border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a senior system administrator in a high-tech corporate office, with soft cinematic lighting and a blurred background of data center racks. The aesthetic is clean and modern, following the deep navy and electric blue palette of the enterprise ERP software. High contrast and premium commercial photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA32Zh0SVYFd9rSQvX-lCPbe95NN0aErohdBbm8bGfLrhAjr-oTinLRYrNJqf8eLZwTfmlZt7sJN7RwciLs36cFA3_YkPkkVnmmnpik-R2beTgB_XLNm51ZqyVBsNp53m8DjBhhliZwLY0Xacfdh8exS8MIgeL0UiEWkUVI8NsfVJCwM99XJm5CPGFJf5Lt_yTXs-4AijqRKSKd1viaA5JRKtWEtm0yq9uFTYKoyg_1kIlrafGjDQHpaA"/>
+</div>
+</div>
+</div>
+</header>
+<!-- MAIN SCROLLABLE CONTENT -->
+<main class="flex-1 overflow-y-auto hide-scrollbar p-margin-desktop">
+<div class="max-w-container-max mx-auto">
+<!-- Breadcrumbs & Header -->
+<div class="mb-stack-lg">
+<nav class="flex items-center gap-2 text-label-sm font-label-sm text-on-surface-variant mb-2">
+<a class="hover:text-secondary" href="#">Administration</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<a class="hover:text-secondary" href="#">Roles &amp; Permissions</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-on-surface font-semibold">Edit Role</span>
+</nav>
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Edit Role: Sales Executive</h2>
+<p class="text-on-surface-variant font-body-sm text-body-sm mt-1">
+                                Update functional access levels and module permissions for sales leadership.
+                            </p>
+</div>
+<div class="text-right">
+<span class="text-label-sm font-label-sm text-on-surface-variant bg-surface-container px-3 py-1.5 rounded-full flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">history</span>
+                                Last modified: Oct 24, 2023 • 02:14 PM
+                            </span>
+</div>
+</div>
+</div>
+<!-- FORM SECTION -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- General Details Card -->
+<div class="col-span-12 lg:col-span-8 space-y-gutter">
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-stack-lg shadow-sm">
+<h3 class="font-title-lg text-title-lg text-on-surface mb-stack-lg flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">info</span>
+                                Role Details
+                            </h3>
+<div class="grid grid-cols-2 gap-stack-lg">
+<div class="col-span-2 md:col-span-1">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Role Name</label>
+<input class="w-full bg-surface border border-outline-variant rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary focus:border-secondary outline-none font-body-md text-body-md transition-all" type="text" value="Sales Executive"/>
+</div>
+<div class="col-span-2 md:col-span-1">
+<div class="flex justify-between items-center mb-2">
+<label class="block font-label-md text-label-md text-on-surface-variant">Status</label>
+<span class="text-label-sm font-label-sm text-on-secondary-container bg-secondary-container px-2 py-0.5 rounded">ACTIVE</span>
+</div>
+<div class="flex items-center h-[50px]">
+<div class="relative inline-block w-10 h-5 mr-3 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-5 h-5 rounded-full bg-white border-2 border-outline appearance-none cursor-pointer checked:border-secondary" id="toggle" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-5 rounded-full bg-outline-variant cursor-pointer transition-colors duration-200" for="toggle"></label>
+</div>
+<span class="text-body-sm font-body-sm text-on-surface">Disable this role to restrict all assigned users</span>
+</div>
+</div>
+<div class="col-span-2">
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Description</label>
+<textarea class="w-full bg-surface border border-outline-variant rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary focus:border-secondary outline-none font-body-md text-body-md transition-all resize-none" rows="3">Standard sales role with access to CRM leads, opportunities, and personal reporting dashboard. Includes limited export rights.</textarea>
+</div>
+</div>
+</section>
+<!-- Permissions Matrix Card -->
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<div class="p-stack-lg border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-title-lg text-title-lg text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">verified_user</span>
+                                    Module Permissions Matrix
+                                </h3>
+<div class="flex items-center gap-3">
+<button class="text-label-sm font-label-sm text-secondary hover:underline">Select All View</button>
+<div class="w-px h-4 bg-outline-variant"></div>
+<button class="text-label-sm font-label-sm text-error hover:underline">Revoke All</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full border-collapse">
+<thead class="bg-surface-container">
+<tr>
+<th class="px-6 py-4 text-left font-label-md text-label-md text-on-surface-variant sticky left-0 bg-surface-container z-10 w-48">Module</th>
+<th class="px-3 py-4 text-center font-label-sm text-label-sm text-on-surface-variant">View</th>
+<th class="px-3 py-4 text-center font-label-sm text-label-sm text-on-surface-variant">Create</th>
+<th class="px-3 py-4 text-center font-label-sm text-label-sm text-on-surface-variant">Edit</th>
+<th class="px-3 py-4 text-center font-label-sm text-label-sm text-on-surface-variant">Delete</th>
+<th class="px-3 py-4 text-center font-label-sm text-label-sm text-on-surface-variant">Approve</th>
+<th class="px-3 py-4 text-center font-label-sm text-label-sm text-on-surface-variant">Export</th>
+<th class="px-3 py-4 text-center font-label-sm text-label-sm text-on-surface-variant">Import</th>
+<th class="px-3 py-4 text-center font-label-sm text-label-sm text-on-surface-variant">Manage</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<!-- Row Dashboard -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface sticky left-0 bg-surface-container-lowest group-hover:bg-surface-container-low">Dashboard</td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" disabled="" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" disabled="" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+</tr>
+<!-- Row Employees -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface sticky left-0 bg-surface-container-lowest group-hover:bg-surface-container-low">Employees</td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+</tr>
+<!-- Row CRM -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface sticky left-0 bg-surface-container-lowest group-hover:bg-surface-container-low">CRM</td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+</tr>
+<!-- Row Sales -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface sticky left-0 bg-surface-container-lowest group-hover:bg-surface-container-low">Sales</td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+</tr>
+<!-- Row Inventory -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface sticky left-0 bg-surface-container-lowest group-hover:bg-surface-container-low">Inventory</td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+</tr>
+<!-- Row Reports -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface sticky left-0 bg-surface-container-lowest group-hover:bg-surface-container-low">Reports</td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+</tr>
+<!-- Row Administration -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface sticky left-0 bg-surface-container-lowest group-hover:bg-surface-container-low">Administration</td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+<td class="px-3 py-4 text-center"><input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox"/></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+<!-- Sidebar Configuration -->
+<div class="col-span-12 lg:col-span-4 space-y-gutter">
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-stack-lg shadow-sm">
+<h3 class="font-title-lg text-title-lg text-on-surface mb-stack-lg">Structure &amp; Hierarchy</h3>
+<div class="space-y-stack-lg">
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Hierarchy Level</label>
+<select class="w-full bg-surface border border-outline-variant rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary focus:border-secondary outline-none font-body-md text-body-md transition-all appearance-none cursor-pointer">
+<option>Level 3 (Departmental Executive)</option>
+<option>Level 2 (Regional Manager)</option>
+<option>Level 1 (Global Administrator)</option>
+<option>Level 4 (Standard Contributor)</option>
+</select>
+<p class="mt-2 text-label-sm font-label-sm text-on-surface-variant">Defines visibility in organizational charts and reporting lines.</p>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Inherit permissions from</label>
+<select class="w-full bg-surface border border-outline-variant rounded-lg py-3 px-4 focus:ring-2 focus:ring-secondary focus:border-secondary outline-none font-body-md text-body-md transition-all appearance-none cursor-pointer">
+<option>Standard Employee Base</option>
+<option>Marketing Associate</option>
+<option>System Default</option>
+<option>None (Custom Build)</option>
+</select>
+<div class="mt-3 p-3 bg-secondary-fixed/30 rounded-lg border border-secondary-fixed">
+<p class="text-label-sm font-label-sm text-on-secondary-fixed-variant">
+<span class="font-bold">Info:</span> This role currently inherits 42 base permissions from "Standard Employee Base".
+                                        </p>
+</div>
+</div>
+</div>
+</section>
+<section class="bg-surface-container-lowest border border-outline-variant rounded-xl p-stack-lg shadow-sm">
+<h3 class="font-title-lg text-title-lg text-on-surface mb-stack-lg">User Assignment</h3>
+<div class="flex flex-col gap-3">
+<div class="flex items-center justify-between p-3 bg-surface rounded-lg border border-outline-variant">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center text-[10px] font-bold">JD</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface leading-none">James Donovan</p>
+<p class="text-[10px] text-on-surface-variant">Regional Head</p>
+</div>
+</div>
+<button class="material-symbols-outlined text-outline hover:text-error transition-colors">close</button>
+</div>
+<div class="flex items-center justify-between p-3 bg-surface rounded-lg border border-outline-variant">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center text-[10px] font-bold">SM</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface leading-none">Sarah Miller</p>
+<p class="text-[10px] text-on-surface-variant">Lead Sales</p>
+</div>
+</div>
+<button class="material-symbols-outlined text-outline hover:text-error transition-colors">close</button>
+</div>
+<button class="w-full mt-2 flex items-center justify-center gap-2 py-2 border-2 border-dashed border-outline-variant rounded-lg text-label-md font-label-md text-on-surface-variant hover:border-secondary hover:text-secondary transition-all">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+                                    Add Users
+                                </button>
+</div>
+</section>
+</div>
+</div>
+<div class="h-stack-lg"></div><!-- Padding for footer -->
+</div>
+</main>
+<!-- FOOTER ACTIONS -->
+<footer class="h-20 bg-surface-container-lowest border-t border-outline-variant flex items-center justify-between px-margin-desktop sticky bottom-0 left-0 right-0 z-20">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary">cloud_done</span>
+<p class="text-label-sm font-label-sm">Autosave is active</p>
+</div>
+<div class="flex items-center gap-stack-md">
+<button class="px-6 py-2.5 rounded-lg border border-outline-variant text-on-surface-variant font-label-md text-label-md hover:bg-surface-container transition-colors">
+                    Cancel
+                </button>
+<button class="px-8 py-2.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md hover:bg-secondary active:scale-95 transition-all shadow-md">
+                    Save Changes
+                </button>
+</div>
+</footer>
+</div>
+<script>
+        // Simple Micro-interactions
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if(this.id === 'toggle') return; // Skip main status toggle
+                const row = this.closest('tr');
+                if (this.checked) {
+                    this.classList.add('animate-pulse');
+                    setTimeout(() => this.classList.remove('animate-pulse'), 500);
+                }
+            });
+        });
+
+        // Toggle state text change example
+        const statusToggle = document.getElementById('toggle');
+        const statusText = statusToggle.closest('.flex').querySelector('.text-on-secondary-container');
+        statusToggle.addEventListener('change', function() {
+            if(this.checked) {
+                statusText.innerText = 'ACTIVE';
+                statusText.className = 'text-label-sm font-label-sm text-on-secondary-container bg-secondary-container px-2 py-0.5 rounded';
+            } else {
+                statusText.innerText = 'INACTIVE';
+                statusText.className = 'text-label-sm font-label-sm text-on-surface-variant bg-surface-container-highest px-2 py-0.5 rounded';
+            }
+        });
+    </script>
+</body></html>

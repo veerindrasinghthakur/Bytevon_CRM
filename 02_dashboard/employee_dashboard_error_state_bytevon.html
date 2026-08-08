@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bytevon - System Sync Interrupted</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .error-shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+    </style>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"secondary-fixed": "#d8e2ff", "inverse-on-surface": "#eaf1ff", "on-surface-variant": "#43474e", "on-primary-fixed": "#001c3a", "surface-container": "#e5eeff", surface: "#f8f9ff", "on-error": "#ffffff", "surface-bright": "#f8f9ff", "inverse-surface": "#213145", tertiary: "#040607", "primary-container": "#001f3f", "on-tertiary-fixed": "#191c1e", "surface-container-low": "#eff4ff", "on-primary-fixed-variant": "#2f486a", "tertiary-container": "#1c1f21", outline: "#74777f", "surface-variant": "#d3e4fe", "surface-container-lowest": "#ffffff", "surface-dim": "#cbdbf5", "on-tertiary-fixed-variant": "#444749", "on-tertiary-container": "#848789", "surface-container-highest": "#d3e4fe", "on-secondary-fixed": "#001a41", background: "#f8f9ff", "outline-variant": "#c4c6cf", "secondary-fixed-dim": "#adc7ff", secondary: "#0059bb", "error-container": "#ffdad6", primary: "#000613", "on-primary": "#ffffff", "secondary-container": "#0070ea", "on-surface": "#0b1c30", "surface-tint": "#476083", "inverse-primary": "#afc8f0", "on-secondary": "#ffffff", "on-tertiary": "#ffffff", "tertiary-fixed-dim": "#c4c7c9", "primary-fixed": "#d4e3ff", "surface-container-high": "#dce9ff", "on-error-container": "#93000a", "tertiary-fixed": "#e0e3e5", "on-background": "#0b1c30", "primary-fixed-dim": "#afc8f0", "on-secondary-fixed-variant": "#004493", "on-primary-container": "#6f88ad", error: "#ba1a1a", "on-secondary-container": "#fefcff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-lg": "32px", gutter: "24px", "margin-mobile": "16px", "stack-sm": "8px", unit: "4px", "stack-md": "16px", "margin-desktop": "40px", "container-max": "1440px"}, fontFamily: {"headline-lg": ["Inter"], "display-lg": ["Inter"], "body-sm": ["Inter"], "label-md": ["Inter"], "headline-md": ["Inter"], "body-lg": ["Inter"], "body-md": ["Inter"], "title-lg": ["Inter"], "label-sm": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}]}}}};</script>
+</head>
+<body class="bg-background text-on-surface flex overflow-hidden">
+<!-- SideNavBar (Authority: Shared Components JSON) -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary-container flex flex-col p-6 shadow-sm z-50">
+<div class="mb-10">
+<span class="text-headline-md font-bold text-white block">Bytevon</span>
+<span class="text-label-md font-label-md text-on-primary-container opacity-80">Enterprise Resource</span>
+</div>
+<nav class="flex-1 space-y-2">
+<!-- Active State Logic: Dashboard is current -->
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg font-bold transition-transform active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-on-primary-fixed-variant/20 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="text-label-md font-label-md">Employees</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-on-primary-fixed-variant/20 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="handshake">handshake</span>
+<span class="text-label-md font-label-md">CRM</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-on-primary-fixed-variant/20 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+<span class="text-label-md font-label-md">ERP</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-on-primary-fixed-variant/20 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="text-label-md font-label-md">Reports</span>
+</a>
+</nav>
+<div class="pt-6 border-t border-on-primary-fixed-variant/20 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-on-primary-fixed-variant/10 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="text-label-md font-label-md">Help</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-on-primary-fixed-variant/10 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="text-label-md font-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-[280px] flex flex-col min-h-screen">
+<!-- TopNavBar (Authority: Shared Components JSON) -->
+<header class="h-16 w-full flex justify-between items-center bg-surface border-b border-outline-variant/30 px-margin-desktop sticky top-0 z-40">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg py-2 pl-10 pr-4 text-body-md focus:ring-2 focus:ring-secondary-container focus:border-secondary transition-all outline-none" placeholder="Search resources..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-secondary transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+<button class="text-on-surface-variant hover:text-secondary transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</div>
+<div class="flex items-center gap-3 pl-6 border-l border-outline-variant/30">
+<div class="text-right">
+<p class="text-label-md font-bold text-on-surface">Alex Stratton</p>
+<p class="text-label-sm text-on-surface-variant">Executive Admin</p>
+</div>
+<img class="w-10 h-10 rounded-full border border-outline-variant object-cover" data-alt="A professional headshot of a middle-aged executive with a confident smile, wearing a sharp navy blue suit. The background is a blurred, high-end modern office with glass walls and neutral tones. The lighting is sophisticated, using soft-key studio techniques to highlight features against the clean, light-mode interface aesthetic of the Bytevon dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAyJxtG_84Y5nDqCYhlESIdjFSxkVMyQH4v7E_cT7D0SSCZilwhTuh2qD_ujKA6D6NrkMiLcswHPabrlOxTqVXZtt4Dk2mn12pyIamYshn_xJwka8yLvrJFg418zYT8aV-_HDJHz66Pn5tMOeTZmdZZcoJWUzVFbrHFMCD9jecVtiVVCkELae-ooDjmCu3FViX5metwnvym5CNARU7F2p28A9ZdWcxwVkoqx7NI_rDtTyttK6o4kxFPMA"/>
+</div>
+</div>
+</header>
+<!-- Error Banner: System Sync Interrupted -->
+<div class="bg-error-container text-on-error-container px-margin-desktop py-4 flex items-center justify-between border-b border-error/10 animate-pulse-subtle">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">warning</span>
+<div>
+<p class="font-bold text-label-md">System Sync Interrupted - Some data may be outdated</p>
+<p class="text-body-sm opacity-90">Last successful connection was 42 minutes ago. Network stability fluctuating.</p>
+</div>
+</div>
+<button class="bg-error text-on-error px-6 py-2 rounded-lg font-bold text-label-md hover:bg-error/90 transition-all flex items-center gap-2 active:scale-95" onclick="retrySync(this)">
+<span class="material-symbols-outlined text-[18px]" id="sync-icon">sync</span>
+                Retry Sync
+            </button>
+</div>
+<!-- Dashboard Body -->
+<div class="p-margin-desktop space-y-stack-lg max-w-container-max mx-auto w-full">
+<!-- Header Section -->
+<div class="flex justify-between items-end">
+<div>
+<h1 class="text-headline-lg font-headline-lg text-primary">Employee Overview</h1>
+<p class="text-body-md text-on-surface-variant">Real-time resource allocation and performance tracking.</p>
+</div>
+<div class="flex gap-stack-md">
+<button class="flex items-center gap-2 px-4 py-2 border border-outline rounded-lg text-label-md font-bold hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+                        Filters
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded-lg text-label-md font-bold hover:bg-primary-container transition-transform active:scale-95">
+<span class="material-symbols-outlined">add</span>
+                        Quick Action
+                    </button>
+</div>
+</div>
+<!-- Bento Grid Content -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Main Analytics Section (ERROR STATE) -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-gutter shadow-sm min-h-[400px] flex flex-col">
+<div class="flex justify-between items-center mb-6">
+<h2 class="text-title-lg font-title-lg text-primary">Utilization Metrics</h2>
+<span class="text-label-sm font-bold text-error bg-error-container px-2 py-1 rounded">Sync Failed</span>
+</div>
+<!-- Chart Fallback UI -->
+<div class="flex-1 flex flex-col items-center justify-center bg-surface-container-low rounded-lg border border-dashed border-outline-variant space-y-4">
+<div class="w-16 h-16 rounded-full bg-surface-variant flex items-center justify-center error-shake">
+<span class="material-symbols-outlined text-error text-4xl">cloud_off</span>
+</div>
+<div class="text-center">
+<h3 class="text-title-lg font-bold text-on-surface">Failed to load chart</h3>
+<p class="text-body-md text-on-surface-variant max-w-xs mx-auto">We encountered a protocol error while fetching the latest analytics data.</p>
+</div>
+<button class="flex items-center gap-2 text-secondary font-bold text-label-md hover:underline group">
+<span class="material-symbols-outlined group-hover:rotate-180 transition-transform duration-500">refresh</span>
+                            Refresh Component
+                        </button>
+</div>
+</div>
+<!-- Side Stats -->
+<div class="col-span-12 lg:col-span-4 space-y-gutter">
+<!-- Stat Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-gutter shadow-sm relative overflow-hidden">
+<div class="absolute top-0 right-0 p-4">
+<span class="material-symbols-outlined text-secondary opacity-20 text-4xl">person_add</span>
+</div>
+<p class="text-label-md text-on-surface-variant">Active Recruitment</p>
+<h3 class="text-display-lg font-display-lg text-primary">124</h3>
+<p class="text-label-sm text-secondary font-bold mt-2 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span> +12% from last month
+                        </p>
+</div>
+<!-- Stat Card 2 (Incomplete Data Style) -->
+<div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-gutter shadow-sm opacity-80">
+<p class="text-label-md text-on-surface-variant">System Latency</p>
+<div class="flex items-baseline gap-2">
+<h3 class="text-display-lg font-display-lg text-error">--</h3>
+<span class="text-body-sm text-on-surface-variant italic">Data unavailable</span>
+</div>
+<div class="mt-4 h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-error-container w-1/3 animate-pulse"></div>
+</div>
+</div>
+</div>
+<!-- Bottom Row Detail Lists -->
+<div class="col-span-12 bg-surface-container-lowest border border-outline-variant/30 rounded-xl overflow-hidden shadow-sm">
+<div class="px-gutter py-4 border-b border-outline-variant/30 flex justify-between items-center">
+<h2 class="text-title-lg font-title-lg text-primary">Recent Incident Logs</h2>
+<button class="text-secondary font-bold text-label-md">View All Logs</button>
+</div>
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container text-on-surface-variant text-label-sm uppercase tracking-wider">
+<th class="px-gutter py-3">Timestamp</th>
+<th class="px-gutter py-3">Service</th>
+<th class="px-gutter py-3">Description</th>
+<th class="px-gutter py-3">Status</th>
+</tr>
+</thead>
+<tbody class="text-body-md">
+<tr class="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors">
+<td class="px-gutter py-4 font-mono text-body-sm">14:22:10 UTC</td>
+<td class="px-gutter py-4 font-bold text-primary">ERP_GATEWAY_01</td>
+<td class="px-gutter py-4">Database sync failed: Timed out waiting for response</td>
+<td class="px-gutter py-4">
+<span class="bg-error-container text-error px-3 py-1 rounded-full text-label-sm font-bold">CRITICAL</span>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors">
+<td class="px-gutter py-4 font-mono text-body-sm">14:15:05 UTC</td>
+<td class="px-gutter py-4 font-bold text-primary">CRM_BRIDGE_ALPHA</td>
+<td class="px-gutter py-4">Socket connection dropped unexpectedly</td>
+<td class="px-gutter py-4">
+<span class="bg-error-container text-error px-3 py-1 rounded-full text-label-sm font-bold">DISCONNECTED</span>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/10 hover:bg-surface-container-low transition-colors opacity-50">
+<td class="px-gutter py-4 font-mono text-body-sm">13:50:22 UTC</td>
+<td class="px-gutter py-4 font-bold text-primary">AUTH_MASTER_DB</td>
+<td class="px-gutter py-4">Verification successful</td>
+<td class="px-gutter py-4">
+<span class="bg-secondary-fixed text-on-secondary-fixed-variant px-3 py-1 rounded-full text-label-sm font-bold">SUCCESS</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</main>
+<script>
+        function retrySync(btn) {
+            const icon = document.getElementById('sync-icon');
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            btn.disabled = true;
+            icon.classList.add('animate-spin');
+            btn.innerHTML = `<span class="material-symbols-outlined text-[18px] animate-spin">sync</span> Re-establishing...`;
+
+            // Artificial delay to simulate sync attempt
+            setTimeout(() => {
+                icon.classList.remove('animate-spin');
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                btn.disabled = false;
+                btn.innerHTML = `<span class="material-symbols-outlined text-[18px]">sync</span> Retry Sync`;
+                
+                // Trigger a shake effect on the error banner to show it failed again
+                const banner = btn.closest('div');
+                banner.classList.add('error-shake');
+                setTimeout(() => banner.classList.remove('error-shake'), 500);
+            }, 2500);
+        }
+
+        // Ambient micro-interaction for failed chart
+        document.querySelectorAll('.material-symbols-outlined').forEach(icon => {
+            icon.addEventListener('mouseover', () => {
+                if (icon.textContent === 'cloud_off') {
+                    icon.style.transform = 'scale(1.1) rotate(5deg)';
+                    icon.style.transition = 'transform 0.2s ease';
+                }
+            });
+            icon.addEventListener('mouseout', () => {
+                icon.style.transform = 'scale(1) rotate(0deg)';
+            });
+        });
+    </script>
+</body></html>

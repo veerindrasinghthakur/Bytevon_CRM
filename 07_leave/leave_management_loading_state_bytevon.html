@@ -1,0 +1,331 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Leave Management - Loading State | Bytevon</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-container": "#e5eeff", "surface-container-high": "#dce9ff", surface: "#f8f9ff", "on-secondary-fixed": "#001a41", "tertiary-fixed-dim": "#c4c7c9", "secondary-container": "#0070ea", "tertiary-fixed": "#e0e3e5", background: "#f8f9ff", "inverse-surface": "#213145", "surface-container-low": "#eff4ff", "on-secondary": "#ffffff", "on-background": "#0b1c30", "outline-variant": "#c4c6cf", outline: "#74777f", "on-primary": "#ffffff", "on-surface": "#0b1c30", "surface-container-lowest": "#ffffff", "on-primary-container": "#6f88ad", "on-tertiary-fixed-variant": "#444749", "on-primary-fixed-variant": "#2f486a", "error-container": "#ffdad6", "on-error": "#ffffff", "primary-container": "#001f3f", "secondary-fixed-dim": "#adc7ff", "primary-fixed-dim": "#afc8f0", tertiary: "#040607", "inverse-primary": "#afc8f0", error: "#ba1a1a", "surface-dim": "#cbdbf5", "on-surface-variant": "#43474e", "on-error-container": "#93000a", "surface-tint": "#476083", "surface-container-highest": "#d3e4fe", "tertiary-container": "#1c1f21", "on-tertiary": "#ffffff", "secondary-fixed": "#d8e2ff", "on-tertiary-fixed": "#191c1e", primary: "#000613", "surface-variant": "#d3e4fe", secondary: "#0059bb", "on-secondary-fixed-variant": "#004493", "on-primary-fixed": "#001c3a", "surface-bright": "#f8f9ff", "primary-fixed": "#d4e3ff", "on-tertiary-container": "#848789", "inverse-on-surface": "#eaf1ff", "on-secondary-container": "#fefcff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {gutter: "24px", "container-max": "1440px", "stack-md": "16px", "stack-sm": "8px", "margin-desktop": "40px", unit: "4px", "margin-mobile": "16px", "stack-lg": "32px"}, fontFamily: {"headline-lg": ["Inter"], "body-lg": ["Inter"], "label-sm": ["Inter"], "body-sm": ["Inter"], "headline-md": ["Inter"], "display-lg": ["Inter"], "body-md": ["Inter"], "label-md": ["Inter"], "title-lg": ["Inter"], "headline-lg-mobile": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}]}}}};</script>
+<style>
+      @keyframes shimmer {
+        0% { background-position: -1000px 0; }
+        100% { background-position: 1000px 0; }
+      }
+      .animate-shimmer {
+        background: linear-gradient(90deg, #f0f4f8 25%, #e2e8f0 50%, #f0f4f8 75%);
+        background-size: 1000px 100%;
+        animation: shimmer 2s infinite linear;
+      }
+      .dark .animate-shimmer {
+        background: linear-gradient(90deg, #1c1f21 25%, #2a2d30 50%, #1c1f21 75%);
+        background-size: 1000px 100%;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<!-- SideNavBar Component -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary flex flex-col py-stack-md z-50 shadow-sm">
+<div class="px-6 mb-stack-lg">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-secondary-container rounded-lg flex items-center justify-center"><img alt="Bytevon Logo" class="w-full h-full object-cover rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBDXDZsFRdFbp84YihGe2w4gJOwwyrk7qgdccvQKLwzK0nsSr3Ir8I53lAn99xQ8-A6PuOFdWyxOn0fkIpTpcrjHvyamv-gBUh_Ik2Ba0yWUL8BVHQO7fs-gAmk7uuyqSfqqSGIWKdhAvbvQ-QqVTfNBaLU3s_zOxzkMTu5oKw57vKZEDBrBhFMv12f0ONAVDx7mxF-vCYtzdZnUz75cs9bIg7sT6WNOQYzMocGEAf5cLoxP4QHJHmRvS_j-nB7MGxVB2I"></div>
+<div>
+<h1 class="font-headline-md text-headline-md text-on-primary">Bytevon</h1>
+<p class="font-label-sm text-label-sm text-on-primary-container opacity-80">Enterprise Resource</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 text-surface-variant hover:text-on-primary-fixed-variant px-6 py-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 text-surface-variant hover:text-on-primary-fixed-variant px-6 py-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">corporate_fare</span>
+<span class="font-label-md text-label-md">Organization</span>
+</a>
+<a class="flex items-center gap-3 text-surface-variant hover:text-on-primary-fixed-variant px-6 py-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-md text-label-md">People</span>
+</a>
+<a class="flex items-center gap-3 bg-secondary-container text-on-secondary-container rounded-lg mx-2 px-4 py-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">engineering</span>
+<span class="font-label-md text-label-md">Workforce</span>
+</a>
+<a class="flex items-center gap-3 text-surface-variant hover:text-on-primary-fixed-variant px-6 py-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">fact_check</span>
+<span class="font-label-md text-label-md">Approvals</span>
+</a>
+<a class="flex items-center gap-3 text-surface-variant hover:text-on-primary-fixed-variant px-6 py-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">diversity_3</span>
+<span class="font-label-md text-label-md">CRM</span>
+</a>
+<a class="flex items-center gap-3 text-surface-variant hover:text-on-primary-fixed-variant px-6 py-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">code</span>
+<span class="font-label-md text-label-md">Developer</span>
+</a>
+<a class="flex items-center gap-3 text-surface-variant hover:text-on-primary-fixed-variant px-6 py-3 transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">admin_panel_settings</span>
+<span class="font-label-md text-label-md">Administration</span>
+</a>
+</nav>
+<div class="px-4 mt-auto border-t border-on-primary/10 pt-4">
+<button class="w-full bg-primary-container text-on-primary-container font-label-md py-3 rounded-lg mb-4 hover:bg-inverse-surface transition-colors">
+                Support Center
+            </button>
+<div class="space-y-1">
+<a class="flex items-center gap-3 text-surface-variant px-4 py-2 hover:text-on-primary-fixed-variant transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-sm text-label-sm">Settings</span>
+</a>
+<a class="flex items-center gap-3 text-surface-variant px-4 py-2 hover:text-on-primary-fixed-variant transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-sm text-label-sm">Logout</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="flex-1 ml-[280px] flex flex-col min-h-screen bg-surface">
+<!-- TopNavBar Component -->
+<header class="sticky top-0 z-40 h-16 w-full bg-surface border-b border-outline-variant flex justify-between items-center px-margin-desktop shadow-none">
+<div class="flex items-center gap-4 flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-secondary text-body-sm font-body-sm" placeholder="Search leave records..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="bg-primary text-white px-4 py-2 rounded-lg font-label-md flex items-center gap-2 hover:opacity-90 active:opacity-80 transition-all">
+<span class="material-symbols-outlined text-[20px]">add</span>
+                    Quick Create
+                </button>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<span class="material-symbols-outlined cursor-pointer hover:bg-surface-container-low p-2 rounded-full transition-colors">notifications</span>
+<span class="material-symbols-outlined cursor-pointer hover:bg-surface-container-low p-2 rounded-full transition-colors">settings</span>
+</div>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate manager in a bright office setting with soft natural lighting, emphasizing the premium and trustworthy tone of the Bytevon enterprise dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCK6xQyh_WgyOo-tTbEUjzJQGIxyAE9sOk6qWDJfJydhhEyF0Eu_odYDBqtOKlhCpNXT7OLa2oVEOQBOCJ_oAXAUgL_B8pt6pl8ECE3e65w1ZtrFpPM5Vz81SbiXT6eAd7LofHbcxHY62MQjjZ3Mzp--BGCNfQYUmO8C2rDGP3leZOi3-9lBUZ_4ztbeHskt5FyOIIOFUn5jhdMDzvnTIOFjk0aYnK3F0XdcNBDoCrjyGW3MMRqzjIpSw">
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<div class="p-margin-desktop max-w-[1440px] w-full mx-auto space-y-stack-lg">
+<!-- Page Header -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Leave Management</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Monitor, approve, and track employee absence requests.</p>
+</div>
+<div class="flex gap-3">
+<div class="h-10 w-32 animate-shimmer rounded-lg"></div>
+<div class="h-10 w-32 animate-shimmer rounded-lg"></div>
+</div>
+</div>
+<!-- KPI Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter">
+<!-- Pending KPI -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col gap-2 shadow-sm">
+<div class="flex justify-between items-start">
+<span class="font-label-md text-label-md text-on-surface-variant">Pending Requests</span>
+<div class="w-8 h-8 animate-shimmer rounded-full"></div>
+</div>
+<div class="h-10 w-16 animate-shimmer rounded-lg mt-2"></div>
+<div class="h-4 w-24 animate-shimmer rounded-md mt-1"></div>
+</div>
+<!-- Approved KPI -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col gap-2 shadow-sm">
+<div class="flex justify-between items-start">
+<span class="font-label-md text-label-md text-on-surface-variant">Approved Today</span>
+<div class="w-8 h-8 animate-shimmer rounded-full"></div>
+</div>
+<div class="h-10 w-16 animate-shimmer rounded-lg mt-2"></div>
+<div class="h-4 w-32 animate-shimmer rounded-md mt-1"></div>
+</div>
+<!-- On Leave KPI -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col gap-2 shadow-sm">
+<div class="flex justify-between items-start">
+<span class="font-label-md text-label-md text-on-surface-variant">Currently on Leave</span>
+<div class="w-8 h-8 animate-shimmer rounded-full"></div>
+</div>
+<div class="h-10 w-16 animate-shimmer rounded-lg mt-2"></div>
+<div class="h-4 w-20 animate-shimmer rounded-md mt-1"></div>
+</div>
+<!-- Rejected KPI -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 flex flex-col gap-2 shadow-sm">
+<div class="flex justify-between items-start">
+<span class="font-label-md text-label-md text-on-surface-variant">Rejected (MTD)</span>
+<div class="w-8 h-8 animate-shimmer rounded-full"></div>
+</div>
+<div class="h-10 w-16 animate-shimmer rounded-lg mt-2"></div>
+<div class="h-4 w-28 animate-shimmer rounded-md mt-1"></div>
+</div>
+</div>
+<!-- Bento Grid Main Content -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Leave Balance Overview (Bento Large) -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm">
+<div class="flex justify-between items-center mb-6">
+<h3 class="font-title-lg text-title-lg text-on-surface">Leave Balance Overview</h3>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer">more_horiz</span>
+</div>
+<div class="space-y-6">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 animate-shimmer rounded-full shrink-0"></div>
+<div class="flex-1 space-y-2">
+<div class="h-4 w-3/4 animate-shimmer rounded-md"></div>
+<div class="h-3 w-1/2 animate-shimmer rounded-md"></div>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between">
+<div class="h-4 w-24 animate-shimmer rounded-md"></div>
+<div class="h-4 w-12 animate-shimmer rounded-md"></div>
+</div>
+<div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full w-2/3 animate-shimmer rounded-full"></div>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between">
+<div class="h-4 w-24 animate-shimmer rounded-md"></div>
+<div class="h-4 w-12 animate-shimmer rounded-md"></div>
+</div>
+<div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full w-1/3 animate-shimmer rounded-full"></div>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between">
+<div class="h-4 w-24 animate-shimmer rounded-md"></div>
+<div class="h-4 w-12 animate-shimmer rounded-md"></div>
+</div>
+<div class="w-full h-3 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full w-4/5 animate-shimmer rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Leave Requests Table (Bento Giant) -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<div class="p-6 border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-title-lg text-title-lg text-on-surface">Recent Requests</h3>
+<div class="flex gap-2">
+<div class="h-8 w-24 animate-shimmer rounded-md"></div>
+<div class="h-8 w-8 animate-shimmer rounded-md"></div>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-container-low">
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Employee</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Leave Type</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Duration</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Status</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Table Row Skeletons -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 animate-shimmer rounded-full shrink-0"></div>
+<div class="h-4 w-32 animate-shimmer rounded-md"></div>
+</div>
+</td>
+<td class="px-6 py-4"><div class="h-4 w-20 animate-shimmer rounded-md"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-24 animate-shimmer rounded-md"></div></td>
+<td class="px-6 py-4"><div class="h-6 w-16 animate-shimmer rounded-full"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-8 animate-shimmer rounded-md"></div></td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 animate-shimmer rounded-full shrink-0"></div>
+<div class="h-4 w-28 animate-shimmer rounded-md"></div>
+</div>
+</td>
+<td class="px-6 py-4"><div class="h-4 w-16 animate-shimmer rounded-md"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-20 animate-shimmer rounded-md"></div></td>
+<td class="px-6 py-4"><div class="h-6 w-16 animate-shimmer rounded-full"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-8 animate-shimmer rounded-md"></div></td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 animate-shimmer rounded-full shrink-0"></div>
+<div class="h-4 w-36 animate-shimmer rounded-md"></div>
+</div>
+</td>
+<td class="px-6 py-4"><div class="h-4 w-24 animate-shimmer rounded-md"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-24 animate-shimmer rounded-md"></div></td>
+<td class="px-6 py-4"><div class="h-6 w-16 animate-shimmer rounded-full"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-8 animate-shimmer rounded-md"></div></td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 animate-shimmer rounded-full shrink-0"></div>
+<div class="h-4 w-24 animate-shimmer rounded-md"></div>
+</div>
+</td>
+<td class="px-6 py-4"><div class="h-4 w-16 animate-shimmer rounded-md"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-28 animate-shimmer rounded-md"></div></td>
+<td class="px-6 py-4"><div class="h-6 w-16 animate-shimmer rounded-full"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-8 animate-shimmer rounded-md"></div></td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 animate-shimmer rounded-full shrink-0"></div>
+<div class="h-4 w-40 animate-shimmer rounded-md"></div>
+</div>
+</td>
+<td class="px-6 py-4"><div class="h-4 w-16 animate-shimmer rounded-md"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-20 animate-shimmer rounded-md"></div></td>
+<td class="px-6 py-4"><div class="h-6 w-16 animate-shimmer rounded-full"></div></td>
+<td class="px-6 py-4"><div class="h-4 w-8 animate-shimmer rounded-md"></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 border-t border-outline-variant flex justify-center">
+<div class="h-8 w-32 animate-shimmer rounded-md"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Component -->
+<footer class="mt-auto w-full px-margin-desktop py-stack-md border-t border-outline-variant bg-surface flex justify-between items-center text-on-surface-variant font-label-sm text-label-sm">
+<p class="">© 2024 Bytevon Enterprise. All rights reserved.</p>
+<div class="flex gap-6">
+<a class="hover:text-secondary transition-opacity duration-150" href="#">Privacy Policy</a>
+<a class="hover:text-secondary transition-opacity duration-150" href="#">Terms of Service</a>
+<a class="hover:text-secondary transition-opacity duration-150" href="#">Security</a>
+</div>
+</footer>
+</main>
+<script>
+        // Micro-interaction for sidebar expansion/hover effects
+        document.querySelectorAll('aside nav a').forEach(link => {
+            link.addEventListener('mouseenter', () => {
+                if (!link.classList.contains('bg-secondary-container')) {
+                    link.style.transform = 'translateX(4px)';
+                }
+            });
+            link.addEventListener('mouseleave', () => {
+                link.style.transform = 'translateX(0)';
+            });
+        });
+
+        // Simulate data loading completion after 5 seconds (visual only)
+        setTimeout(() => {
+            console.log("Loading state demonstration active. In a real app, data would swap in now.");
+        }, 5000);
+    </script>
+</body></html>

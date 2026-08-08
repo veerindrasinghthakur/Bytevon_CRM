@@ -1,0 +1,280 @@
+<!DOCTYPE html><html class="h-full bg-background light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Task Detail - Bytevon CRM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-container": "#dae2fd",
+                      "tertiary-fixed": "#e0e3e5",
+                      "inverse-on-surface": "#eaf1ff",
+                      "secondary-fixed": "#dae2fd",
+                      "outline-variant": "#c1c6d7",
+                      "tertiary-container": "#727577",
+                      "primary": "#0058bc",
+                      "on-tertiary-fixed": "#191c1e",
+                      "on-primary": "#ffffff",
+                      "surface-container-highest": "#d3e4fe",
+                      "tertiary": "#595c5e",
+                      "secondary-fixed-dim": "#bec6e0",
+                      "on-error": "#ffffff",
+                      "inverse-primary": "#adc6ff",
+                      "error": "#ba1a1a",
+                      "on-error-container": "#93000a",
+                      "surface-variant": "#d3e4fe",
+                      "primary-fixed": "#d8e2ff",
+                      "outline": "#717786",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "on-secondary-fixed": "#131b2e",
+                      "inverse-surface": "#213145",
+                      "error-container": "#ffdad6",
+                      "surface-container-low": "#eff4ff",
+                      "surface-bright": "#f8f9ff",
+                      "on-tertiary-fixed-variant": "#444749",
+                      "on-secondary-container": "#5c647a",
+                      "on-background": "#0b1c30",
+                      "on-primary-fixed": "#001a41",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed-dim": "#adc6ff",
+                      "tertiary-fixed-dim": "#c4c7c9",
+                      "background": "#f8f9ff",
+                      "surface-tint": "#005bc1",
+                      "on-secondary-fixed-variant": "#3f465c",
+                      "secondary": "#565e74",
+                      "surface-dim": "#cbdbf5",
+                      "on-primary-container": "#fefcff",
+                      "surface": "#f8f9ff",
+                      "surface-container-high": "#dce9ff",
+                      "on-surface-variant": "#414755",
+                      "surface-container": "#e5eeff",
+                      "on-surface": "#0b1c30",
+                      "on-tertiary-container": "#fbfdff",
+                      "on-primary-fixed-variant": "#004493",
+                      "primary-container": "#0070eb"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "gutter-md": "16px",
+                      "table-row-height": "72px",
+                      "card-padding": "20px",
+                      "section-gap": "32px",
+                      "container-margin": "24px"
+              },
+              "fontFamily": {
+                      "body-lg": ["Inter"],
+                      "headline-lg-mobile": ["Inter"],
+                      "headline-md": ["Inter"],
+                      "body-md": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "caption": ["Inter"],
+                      "headline-xl": ["Inter"],
+                      "label-bold": ["Inter"],
+                      "headline-lg": ["Inter"]
+              },
+              "fontSize": {
+                      "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "500"}],
+                      "headline-lg-mobile": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                      "headline-md": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                      "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                      "caption": ["11px", {"lineHeight": "14px", "fontWeight": "400"}],
+                      "headline-xl": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "label-bold": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "headline-lg": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        /* Custom scrollbar for timeline */
+        .timeline-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .timeline-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .timeline-scroll::-webkit-scrollbar-thumb {
+            background-color: #c1c6d7;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="h-full flex overflow-hidden font-body-md text-on-surface bg-background"><nav class="w-[80px] h-full bg-on-background flex flex-col items-center py-6 border-r border-outline-variant/20 z-50 transition-all duration-500 ease-in-out" id="primary-rail"><button class="w-10 h-10 mb-6 flex items-center justify-center text-on-primary/60 hover:text-on-primary transition-colors" id="rail-expand-toggle" onclick="toggleRailExpansion()"><span class="material-symbols-outlined" id="rail-toggle-icon">menu</span></button><div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-on-primary shadow-sm mb-8 shrink-0"><span class="material-symbols-outlined text-2xl font-bold" style="font-variation-settings: 'FILL' 1;">dataset</span></div><div class="flex-1 w-full flex flex-col gap-2"><button class="rail-item w-full flex items-center px-6 py-4 gap-4 transition-all duration-200 text-on-primary/60 hover:bg-primary-container/20 hover:text-on-primary border-transparent border-l-4" onclick="switchMenu('menu-admin', this)"><span class="material-symbols-outlined text-2xl">shield_person</span><span class="rail-label hidden text-sm font-medium whitespace-nowrap">Admin</span></button><button class="rail-item w-full flex items-center px-6 py-4 gap-4 transition-all duration-200 text-on-primary/60 hover:bg-primary-container/20 hover:text-on-primary border-transparent border-l-4" onclick="switchMenu('menu-settings', this)"><span class="material-symbols-outlined text-2xl">admin_panel_settings</span><span class="rail-label hidden text-sm font-medium whitespace-nowrap">Settings</span></button><button class="rail-item w-full flex items-center px-6 py-4 gap-4 transition-all duration-200 text-on-primary/60 hover:bg-primary-container/20 hover:text-on-primary border-l-4 border-transparent" onclick="switchMenu('menu-sales', this)"><span class="material-symbols-outlined text-2xl">point_of_sale</span><span class="rail-label hidden text-sm font-medium whitespace-nowrap">Sales</span></button><button class="rail-item w-full flex items-center px-6 py-4 gap-4 transition-all duration-200 border-l-4 bg-primary-container/20 text-on-primary border-primary" onclick="switchMenu('menu-dev', this)"><span class="material-symbols-outlined text-2xl">terminal</span><span class="rail-label hidden text-sm font-medium whitespace-nowrap">Dev</span></button></div><div class="mt-auto pt-6 flex flex-col items-center gap-4 border-t border-outline-variant/10 w-full shrink-0"><button class="text-on-primary/60 hover:text-on-primary transition-colors mb-2 flex items-center justify-center w-full py-2" onclick="toggleRailExpansion()" title="Collapse Rail"><span class="material-symbols-outlined text-xl">chevron_left</span></button><div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface cursor-pointer hover:ring-2 hover:ring-primary transition-all"><span class="material-symbols-outlined">person</span></div><button class="text-on-primary/60 hover:text-on-primary transition-colors pb-4 flex items-center gap-4 px-6 w-full justify-center"><span class="material-symbols-outlined text-xl">logout</span><span class="rail-label hidden text-sm font-medium whitespace-nowrap">Logout</span></button></div></nav>
+<!-- SideNavBar -->
+<nav class="w-[240px] h-full bg-surface-container-lowest border-r border-outline-variant flex flex-col transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap z-10 relative" id="secondary-sidebar"><div class="w-full flex flex-col h-full"><div class="px-4 py-6 border-b border-outline-variant shrink-0 relative flex items-center justify-between min-h-[88px]"><div class="sec-header flex-1"><h1 class="text-headline-md font-headline-md text-on-background leading-tight truncate">Bytevon CRM</h1><p class="text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold">Workspace</p></div><button class="text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-lg hover:bg-surface-container mx-auto" onclick="toggleSidebar()" title="Toggle Sidebar"><span class="material-symbols-outlined text-xl" id="sidebar-toggle-icon">chevron_left</span></button></div><div class="flex-1 py-6 overflow-y-auto px-2 w-full"><div class="secondary-menu w-full" id="menu-dev"><h2 class="sec-header text-label-bold font-label-bold text-on-surface-variant/70 px-4 mb-2 uppercase">Developer</h2><ul class="flex flex-col gap-1 w-full"><li class="w-full"><a class="text-on-surface-variant flex items-center px-4 py-3 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all duration-200 ease-in-out cursor-pointer group w-full" href="#"><span class="sec-icon material-symbols-outlined mr-3 text-lg group-hover:text-primary transition-all">dashboard</span><span class="sec-label text-body-md font-body-md">Dashboard</span></a></li><li class="w-full"><a class="bg-primary/10 text-primary rounded-lg flex items-center px-4 py-3 duration-200 ease-in-out cursor-pointer font-medium w-full" href="#"><span class="sec-icon material-symbols-outlined mr-3 text-lg transition-all" style="font-variation-settings: 'FILL' 1;">engineering</span><span class="sec-label text-body-md font-body-md">Workforce</span></a></li><li class="w-full"><a class="text-on-surface-variant flex items-center px-4 py-3 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all duration-200 ease-in-out cursor-pointer group w-full" href="#"><span class="sec-icon material-symbols-outlined mr-3 text-lg group-hover:text-primary transition-all">corporate_fare</span><span class="sec-label text-body-md font-body-md">Organization</span></a></li><li class="w-full"><a class="text-on-surface-variant flex items-center px-4 py-3 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all duration-200 ease-in-out cursor-pointer group w-full" href="#"><span class="sec-icon material-symbols-outlined mr-3 text-lg group-hover:text-primary transition-all">groups</span><span class="sec-label text-body-md font-body-md">People</span></a></li></ul></div></div></div></nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full overflow-hidden bg-background ml-[320px]">
+<!-- TopNavBar -->
+<header class="flex items-center justify-between px-container-margin h-20 w-full ml-auto bg-surface-bright dark:bg-surface-container-low text-primary dark:text-inverse-primary border-b border-outline-variant/30 flat no shadows shrink-0 z-10" style="margin-left: 320px; width: calc(100% - 320px);">
+<!-- Left: Search -->
+<div class="flex-1 flex items-center">
+<div class="relative w-full max-w-md hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/50 text-[20px]">search</span>
+<input class="w-full bg-surface container-lowest border border-outline-variant/40 rounded-full py-2 pl-10 pr-4 text-body-md font-body-md focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-shadow placeholder:text-on-surface-variant/50" placeholder="Search tasks, projects, or users..." type="text">
+</div>
+<!-- Mobile Menu Button -->
+<button class="md:hidden p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</div>
+<!-- Center: Mobile Brand (Hidden on Desktop) -->
+<div class="md:hidden flex-1 flex justify-center hidden">
+<span class="text-headline-md font-headline-md text-on-background font-bold tracking-tight">Bytevon</span>
+</div>
+<!-- Right: Actions & Profile -->
+<div class="flex-1 flex items-center justify-end gap-2 md:gap-4">
+<div class="hidden lg:flex items-center gap-1 mr-4">
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors cursor-pointer px-3 py-2 text-label-bold font-label-bold" href="#">Dashboard</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors cursor-pointer px-3 py-2 text-label-bold font-label-bold" href="#">Sales</a>
+<a class="text-on-surface-variant font-medium hover:text-primary transition-colors cursor-pointer px-3 py-2 text-label-bold font-label-bold" href="#">Leads</a>
+</div>
+<button class="hidden md:flex items-center gap-2 text-on-surface hover:bg-surface-variant/30 px-3 py-1.5 rounded-md border border-outline-variant/50 transition-colors text-label-bold font-label-bold">
+<span class="material-symbols-outlined text-[16px]">download</span>
+                    Export
+                </button>
+<button class="hidden md:flex bg-primary hover:bg-primary-container text-on-primary px-4 py-1.5 rounded-md transition-colors text-label-bold font-label-bold items-center gap-2 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">add</span>
+                    New Lead
+                </button>
+<div class="flex items-center gap-1 border-l border-outline-variant/30 pl-2 md:pl-4 ml-2 md:ml-0">
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant/20 rounded-full transition-colors clickable icons scale-95 duration-100 relative">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full border border-surface-bright"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant/20 rounded-full transition-colors clickable icons scale-95 duration-100 hidden sm:block">
+<span class="material-symbols-outlined text-[22px]">help</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-variant/20 rounded-full transition-colors clickable icons scale-95 duration-100 sm:hidden">
+<img alt="Marcus Sterling Avatar" class="w-7 h-7 rounded-full object-cover" data-alt="A professional headshot of a corporate executive, Marcus Sterling, wearing a dark navy suit against a clean, bright light-mode office background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQICRRvzVuL64jOOXuS4_2TEJgxqCoMy9WKgdymglnYXVC9D0QEDHpp0hs9ApkRuUysF59eMpSO-1o19UwB-YzxGYfLSM9VXqJyD0Dc6qTaGNc_P-tq4wjfK6y9cOMHzDFKhmhf0c6braUNIDFFxf_cUYewyOc54iwUBMstMCCcgH6PteQ19odBVQ4Hv1IzLaEOEJpDJNs8U7JFD3Q7f9pQd8FmYImP5zHMTTFiSI49ENOc_45t2K0">
+</button>
+</div>
+</div>
+</header>
+<!-- Scrollable Page Content -->
+<div class="flex-1 overflow-y-auto p-4 md:p-container-margin">
+<div class="max-w-7xl mx-auto flex flex-col gap-section-gap">
+<!-- Task Header Section -->
+<div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-2">
+<span class="text-label-bold font-label-bold text-on-surface-variant uppercase tracking-wider bg-surface-container-high px-2 py-0.5 rounded text-[11px]">TASK-8492</span>
+<span class="flex items-center gap-1 text-label-sm font-label-sm text-primary bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/20">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+                                High Priority
+                            </span>
+<span class="flex items-center gap-1 text-label-sm font-label-sm text-secondary bg-secondary-container px-2.5 py-0.5 rounded-full border border-secondary/20">
+<span class="material-symbols-outlined text-[14px]">sync</span>
+                                In Progress
+                            </span>
+</div>
+<h1 class="text-headline-xl font-headline-xl text-on-surface mt-1 text-balance">API Integration Refactoring</h1>
+<p class="text-body-md font-body-md text-on-surface-variant mt-2 max-w-3xl">Modernize the legacy REST endpoints to support GraphQL queries and improve response times for the mobile client data synchronization pipeline.</p>
+</div>
+<div class="flex items-center gap-2 shrink-0 self-start">
+<button class="flex items-center gap-2 px-3 py-1.5 rounded bg-surface border border-outline-variant hover:bg-surface-container transition-colors text-label-bold font-label-bold text-on-surface">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+                            Edit
+                        </button>
+<button class="flex items-center gap-2 px-3 py-1.5 rounded bg-surface border border-outline-variant hover:bg-surface-container transition-colors text-label-bold font-label-bold text-on-surface">
+<span class="material-symbols-outlined text-[16px]">archive</span>
+                            Archive
+                        </button>
+<button class="flex items-center justify-center p-1.5 rounded bg-error/10 border border-error/20 text-error hover:bg-error hover:text-on-error transition-colors" title="Delete Task">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</div>
+<!-- Two Column Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+<!-- Left Column: Main Detail Area -->
+<div class="lg:col-span-2 flex flex-col gap-6">
+<!-- Description Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 shadow-sm p-card-padding">
+<h2 class="text-headline-md font-headline-md text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">description</span>
+                                Description
+                            </h2>
+<div class="prose prose-sm max-w-none text-body-md font-body-md text-on-surface-variant leading-relaxed space-y-4">
+<p class="">The current REST API endpoints for user synchronization are experiencing significant latency during peak load times. This task involves refactoring the underlying data access layer and implementing a GraphQL interface to allow the mobile application to request only the necessary fields, reducing payload size by an estimated 40%.</p>
+<h4 class="text-body-lg font-body-lg text-on-surface font-semibold mt-6 mb-2">Key Objectives:</h4>
+<ul class="list-disc pl-5 space-y-1">
+<li class="">Audit existing <code>/api/v2/sync</code> endpoints for N+1 query issues.</li>
+<li class="">Design schema for User, Preference, and Device object types in GraphQL.</li>
+<li class="">Implement Apollo Server middleware in the Node.js backend.</li>
+<li class="">Ensure backward compatibility for legacy clients (v1.8 and older).</li>
+</ul>
+<h4 class="text-body-lg font-body-lg text-on-surface font-semibold mt-6 mb-2">Acceptance Criteria:</h4>
+<div class="space-y-2">
+<label class="flex items-start gap-3 cursor-pointer group">
+<input checked="" class="mt-0.5 rounded border-outline-variant text-primary focus:ring-primary h-4 w-4" type="checkbox">
+<span class="text-on-surface group-hover:text-primary transition-colors">Schema definition approved by Mobile Lead.</span>
+</label>
+<label class="flex items-start gap-3 cursor-pointer group">
+<input class="mt-0.5 rounded border-outline-variant text-primary focus:ring-primary h-4 w-4" type="checkbox">
+<span class="text-on-surface group-hover:text-primary transition-colors">GraphQL endpoint deployed to staging environment.</span>
+</label>
+<label class="flex items-start gap-3 cursor-pointer group">
+<input class="mt-0.5 rounded border-outline-variant text-primary focus:ring-primary h-4 w-4" type="checkbox">
+<span class="text-on-surface group-hover:text-primary transition-colors">Response time under load testing &lt; 200ms at 95th percentile.</span>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Metadata Sidebar -->
+<div class="lg:col-span-1 flex flex-col gap-6">
+<!-- Metadata Card -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/40 shadow-sm overflow-hidden">
+<div class="p-card-padding border-b border-outline-variant/20 bg-surface-bright">
+<h3 class="text-headline-md font-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">info</span>
+                                    Task Details
+                                </h3>
+</div>
+<div class="p-card-padding flex flex-col gap-5">
+<!-- Assignee -->
+<div>
+<label class="text-caption font-caption text-on-surface-variant uppercase tracking-wider mb-2 block">Assignee</label>
+<div class="flex items-center justify-between p-2 rounded-lg border border-outline-variant/30 hover:border-primary/50 transition-colors bg-surface-container-low/50 group cursor-pointer">
+<div class="flex items-center gap-3">
+<img alt="Sarah Jenkins" class="w-8 h-8 rounded-full object-cover shadow-sm" data-alt="A portrait of a female software engineer, Sarah Jenkins, looking focused in a brightly lit modern tech office setting. Light mode aesthetic, professional styling." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiO9WDAQI84Z0tYmj9OvE9Q-igwZkHGyFAFqIpBmp_P0ru7mR3Z1-tjsIldJ2uO8PYzWlhp7nZTxGKVVeo_np0XQSxsHT2_s8LB1qsXst7LWUlINS3taY2koQZHFQFlbZvvmbVx5xr4mfxYv5PiAHW1txJHxg9z9jjL3s5841WNM26rzYzvmGeX-zKxfLaqBGn_ucw-RXASkxvX8Td9Y7mbxV3j5XlGWCEWXJau0zJJOM6bVvL3-nG">
+<div>
+<div class="text-label-sm font-label-sm text-on-surface font-semibold">Sarah Jenkins</div>
+<div class="text-caption font-caption text-on-surface-variant">Senior Backend Eng</div>
+</div>
+</div>
+<button class="text-on-surface-variant group-hover:text-primary p-1 rounded hover:bg-surface-variant transition-colors" title="Reassign">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+
+</body></html>

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>My Requests | Enterprise Core</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"inverse-primary": "#afc8f0", "surface-container-lowest": "#ffffff", primary: "#000613", "surface-container-highest": "#d3e4fe", "tertiary-fixed": "#e0e3e5", "surface-container": "#e5eeff", "on-primary-fixed-variant": "#2f486a", "inverse-on-surface": "#eaf1ff", background: "#f8f9ff", "surface-dim": "#cbdbf5", "primary-fixed-dim": "#afc8f0", outline: "#74777f", "on-tertiary-fixed-variant": "#444749", "on-secondary-fixed-variant": "#004493", "surface-container-low": "#eff4ff", "surface-variant": "#d3e4fe", secondary: "#0059bb", "surface-container-high": "#dce9ff", "on-secondary-fixed": "#001a41", "secondary-container": "#0070ea", "on-background": "#0b1c30", error: "#ba1a1a", "on-tertiary": "#ffffff", "on-primary": "#ffffff", "inverse-surface": "#213145", surface: "#f8f9ff", "primary-fixed": "#d4e3ff", "on-tertiary-container": "#848789", "secondary-fixed-dim": "#adc7ff", "secondary-fixed": "#d8e2ff", "outline-variant": "#c4c6cf", "on-secondary-container": "#fefcff", tertiary: "#040607", "on-secondary": "#ffffff", "surface-bright": "#f8f9ff", "on-error-container": "#93000a", "surface-tint": "#476083", "tertiary-fixed-dim": "#c4c7c9", "on-tertiary-fixed": "#191c1e", "on-primary-fixed": "#001c3a", "error-container": "#ffdad6", "on-surface": "#0b1c30", "on-error": "#ffffff", "primary-container": "#001f3f", "on-surface-variant": "#43474e", "tertiary-container": "#1c1f21", "on-primary-container": "#6f88ad"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-lg": "32px", "margin-mobile": "16px", unit: "4px", "stack-sm": "8px", "stack-md": "16px", "margin-desktop": "40px", gutter: "24px", "container-max": "1440px"}, fontFamily: {"headline-md": ["Inter"], "headline-lg": ["Inter"], "body-lg": ["Inter"], "label-sm": ["Inter"], "title-lg": ["Inter"], "body-sm": ["Inter"], "label-md": ["Inter"], "body-md": ["Inter"], "display-lg": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex">
+<!-- SideNavBar (Source of Truth Mapping) -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary text-on-primary flex flex-col shadow-sm border-r border-outline-variant z-50">
+<!-- Brand Header -->
+<div class="px-6 py-8 flex flex-col gap-1">
+<span class="font-headline-md text-headline-md font-bold text-on-primary">Enterprise Core</span>
+<span class="font-body-md text-body-md opacity-70">v2.4.0</span>
+</div>
+<!-- Navigation Tabs -->
+<nav class="flex-1 px-4 space-y-2 mt-4">
+<a class="flex items-center gap-3 px-4 py-3 text-surface-variant hover:text-on-primary hover:bg-on-primary-fixed-variant transition-colors active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<!-- Active Mapping: This is the Approvals/Requests page -->
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">rule</span>
+<span class="font-body-md text-body-md">Approvals</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-surface-variant hover:text-on-primary hover:bg-on-primary-fixed-variant transition-colors active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-body-md text-body-md">CRM</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-surface-variant hover:text-on-primary hover:bg-on-primary-fixed-variant transition-colors active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-body-md text-body-md">Resources</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-surface-variant hover:text-on-primary hover:bg-on-primary-fixed-variant transition-colors active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="font-body-md text-body-md">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-surface-variant hover:text-on-primary hover:bg-on-primary-fixed-variant transition-colors active:scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</nav>
+<!-- CTA & Footer -->
+<div class="p-6 border-t border-on-primary-fixed-variant space-y-6">
+<button class="w-full py-3 bg-secondary-container text-on-secondary-container font-label-md text-label-md rounded-lg shadow-sm hover:brightness-110 transition-all active:scale-95 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">add</span>
+                New Request
+            </button>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 text-surface-variant hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-body-md text-body-md">Support</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-surface-variant hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-body-md text-body-md">Logout</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] flex-1 flex flex-col min-w-0">
+<!-- TopAppBar (Source of Truth Mapping) -->
+<header class="sticky top-0 w-full flex justify-between items-center h-16 px-margin-desktop bg-surface border-b border-outline-variant z-40">
+<div class="flex items-center gap-8">
+<h1 class="font-headline-md text-headline-md font-black text-primary">Approvals</h1>
+<nav class="flex gap-6">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all duration-200" href="#">Pending</a>
+<a class="font-label-md text-label-md text-secondary border-b-2 border-secondary pb-1 transition-all duration-200" href="#">History</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all duration-200" href="#">Delegations</a>
+</nav>
+</div>
+<div class="flex items-center gap-6">
+<!-- Search Component (Left of profile icons as per JSON on_left) -->
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-body-sm text-on-surface focus:ring-2 focus:ring-secondary transition-all" placeholder="Search requests..." type="text"/>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">apps</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant cursor-pointer">
+<img class="w-full h-full object-cover" data-alt="A professional executive headshot of a middle-aged woman with a sharp, intelligent gaze. She is wearing a tailored charcoal suit against a clean, soft-lit architectural office background. The lighting is crisp and cool, maintaining the enterprise core aesthetic of clarity and institutional trust." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDc20_5uVkK3icNRS5aRrC4wycEJTqD4mnTKXxRyTjF1E0Ad8nGo1-0zdEQQUysBxpMY9zDpF4S52uaL9rtBmVSyJ3G8gMnpvmamftBFMx36a8xjrqipX_APtPIr8hAwjptdmTQ8v6aef8Tk1xoQPZPhTfeZyujoMC0x5NH1YJ1VDhablnZ-dzsF3j5aXuPq2gcbKsIuvDIUHdjixMynK-64Xgn-VB-xFZbNS9dZwBA3HqJ-ZHPwH2F5w"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Canvas Content -->
+<div class="flex-1 p-margin-desktop max-w-container-max mx-auto w-full">
+<!-- Page Header Section -->
+<div class="mb-stack-lg flex flex-col md:flex-row md:items-end justify-between gap-gutter">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary mb-2">My Requests</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Track and manage your submitted organizational requests and their real-time statuses.</p>
+</div>
+<div class="flex flex-wrap gap-3">
+<button class="px-4 py-2 bg-surface-container-highest text-on-primary-fixed-variant rounded-lg font-label-md text-label-md border border-outline-variant hover:bg-surface-variant transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined">filter_list</span>
+                        Filter
+                    </button>
+<button class="px-4 py-2 bg-surface-container-highest text-on-primary-fixed-variant rounded-lg font-label-md text-label-md border border-outline-variant hover:bg-surface-variant transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined">download</span>
+                        Export
+                    </button>
+</div>
+</div>
+<!-- Dashboard Stats Bento Grid (Modern UI Pattern) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-stack-lg">
+<div class="p-6 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined p-2 bg-secondary/10 text-secondary rounded-lg">assignment</span>
+<span class="text-label-sm font-label-sm text-green-600 bg-green-50 px-2 py-0.5 rounded-full">+2 this week</span>
+</div>
+<p class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider mb-1">Total Requests</p>
+<h3 class="text-display-lg font-display-lg text-primary">24</h3>
+</div>
+<div class="p-6 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined p-2 bg-amber-100 text-amber-700 rounded-lg">pending_actions</span>
+</div>
+<p class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider mb-1">In Progress</p>
+<h3 class="text-display-lg font-display-lg text-primary">08</h3>
+</div>
+<div class="p-6 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined p-2 bg-blue-100 text-blue-700 rounded-lg">verified</span>
+</div>
+<p class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider mb-1">Approved</p>
+<h3 class="text-display-lg font-display-lg text-primary">12</h3>
+</div>
+<div class="p-6 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined p-2 bg-red-100 text-red-700 rounded-lg">cancel</span>
+</div>
+<p class="text-label-md font-label-md text-on-surface-variant uppercase tracking-wider mb-1">Rejected</p>
+<h3 class="text-display-lg font-display-lg text-primary">04</h3>
+</div>
+</div>
+<!-- Requests Table Container -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<!-- Status Filters -->
+<div class="p-6 border-b border-outline-variant flex items-center justify-between">
+<div class="flex gap-2">
+<button class="px-4 py-1.5 rounded-full bg-primary text-on-primary text-label-md font-label-md">All Requests</button>
+<button class="px-4 py-1.5 rounded-full hover:bg-surface-container-low text-on-surface-variant text-label-md font-label-md transition-colors">In-Progress</button>
+<button class="px-4 py-1.5 rounded-full hover:bg-surface-container-low text-on-surface-variant text-label-md font-label-md transition-colors">Approved</button>
+<button class="px-4 py-1.5 rounded-full hover:bg-surface-container-low text-on-surface-variant text-label-md font-label-md transition-colors">Rejected</button>
+</div>
+<button class="text-secondary text-label-md font-label-md flex items-center gap-1 hover:underline">
+                        View Archive <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<!-- Main List -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low">
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Request ID</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Type</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Date Submitted</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Current Stage</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Assigned Approver</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Status</th>
+<th class="px-6 py-4"></th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-5 font-label-md text-label-md text-primary font-bold">#REQ-8821</td>
+<td class="px-6 py-5 font-body-md text-body-md">Hardware Upgrade</td>
+<td class="px-6 py-5 font-body-sm text-body-sm text-on-surface-variant">Oct 12, 2023</td>
+<td class="px-6 py-5">
+<span class="flex items-center gap-2 font-body-sm text-body-sm text-primary">
+<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                                        With Manager
+                                    </span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a senior executive male in his 50s, wearing classic glasses and a blue button-down shirt. The background is a soft-focus corporate lobby with warm wood tones and elegant minimalist lighting, fitting the authoritative and institutional trust personality of the brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBxXMVMYGCwwdq7lF0Sbnj623sODtCbFr9r26soOtxr51nMBbno8pVttDPzvTlyat8PBjv8eAsxKBuRTtNKMU2MMwi4uF3zOs6ioMIgnvi22X6wwvore_fqA_ruVMC-jNUO96KNWo8PkbX_6CNFlNemMrCtPl0bHWi2MsxBOtcgTsibJfVUqUYyxSL1J_X5LVsqbD11zIE6Fm47-7oOevolNeNf309QiSm3sJd0RVDlX7x4HG37OUzORw"/>
+</div>
+<span class="font-label-md text-label-md text-primary">Robert Chen</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-label-sm font-label-sm border border-amber-200">In-Progress</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="opacity-0 group-hover:opacity-100 p-2 hover:bg-surface-variant rounded-lg transition-all">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-5 font-label-md text-label-md text-primary font-bold">#REQ-8794</td>
+<td class="px-6 py-5 font-body-md text-body-md">Annual Leave</td>
+<td class="px-6 py-5 font-body-sm text-body-sm text-on-surface-variant">Oct 08, 2023</td>
+<td class="px-6 py-5">
+<span class="flex items-center gap-2 font-body-sm text-body-sm text-primary">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                        Completed
+                                    </span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A portrait of a young professional woman with a welcoming smile, styled in a modern business-casual outfit. The lighting is bright and natural, coming from a large office window. The background is clean and slightly blurred, showing a contemporary workspace with a focus on efficiency and approachability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUEsjPtRVbJzowRJsg4lTUIxZ7_NEc-TUoU1F4VgZii-7MiKXboewbhk2n6Kxg850vA744Ag2NLwpdYXZLQgMu6m4Iitk11OowseF0nPupIwl8GZDK6U2uvjJscneutHndh5xa8aph2Mh894ACiX5eBd1RIt_QGC9tJK40cxjYYSoPPoNI39nNnnPJ_rjw5L2OOsavd8wZEKwKBOrlM-qtiExbkm78mo2HJlipYd3xcC6zb3ksDQ9n8A"/>
+</div>
+<span class="font-label-md text-label-md text-primary">Sarah Miller</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 rounded-full bg-green-50 text-green-700 text-label-sm font-label-sm border border-green-200">Approved</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="opacity-0 group-hover:opacity-100 p-2 hover:bg-surface-variant rounded-lg transition-all">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-5 font-label-md text-label-md text-primary font-bold">#REQ-8750</td>
+<td class="px-6 py-5 font-body-md text-body-md">SaaS Subscription</td>
+<td class="px-6 py-5 font-body-sm text-body-sm text-on-surface-variant">Oct 05, 2023</td>
+<td class="px-6 py-5">
+<span class="flex items-center gap-2 font-body-sm text-body-sm text-primary">
+<span class="w-2 h-2 rounded-full bg-primary/20"></span>
+                                        HR Review
+                                    </span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A sharp, high-contrast headshot of a male HR executive in a high-tech corporate office. The aesthetic is extremely modern and minimalist, featuring clean lines and a palette of cool grays and deep navies. The lighting is sophisticated and highlights his composed, professional demeanor." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiVHpZ8oH24G0d5y0UcWeBCOEO6CxwN5-gBqL8X1du6wF_gOw7BnfiQ7ofcJSJJGeCickIWLadaTw3kj4yO5ZzE0YxfG1-ELSDlT6yj_h-yHooJ7IMRRfsYvuhuKB3XVu01ljLfjAyx0luW0E1orlJneAY64P-wcqDvPJpfIxzPY56sE2bFzMGBlIons29W7R8zhr3dU_iCC3T-a5ieC6V44WDyMM5Xcr0ZpYQHe7NkBz29f_J1JjNtA"/>
+</div>
+<span class="font-label-md text-label-md text-primary">David Wilson</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 rounded-full bg-amber-50 text-amber-700 text-label-sm font-label-sm border border-amber-200">In-Progress</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="opacity-0 group-hover:opacity-100 p-2 hover:bg-surface-variant rounded-lg transition-all">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low transition-colors group">
+<td class="px-6 py-5 font-label-md text-label-md text-primary font-bold">#REQ-8622</td>
+<td class="px-6 py-5 font-body-md text-body-md">Project Budget Up</td>
+<td class="px-6 py-5 font-body-sm text-body-sm text-on-surface-variant">Sep 28, 2023</td>
+<td class="px-6 py-5">
+<span class="flex items-center gap-2 font-body-sm text-body-sm text-primary">
+<span class="w-2 h-2 rounded-full bg-red-500"></span>
+                                        Finance Denied
+                                    </span>
+</td>
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional portrait of a senior finance officer, exhibiting calm authority. The setting is a minimalist boardroom with glass partitions and soft overhead lighting. The color scheme is professional and muted, focusing on whites, blacks, and subtle metallic tones to maintain the Executive Precision look." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD3519GFHBzCbhCEVaGvDL4YDOAYVdZ43LorQdJdWLqQ6zdaGBB2WrO_aAOpPMQD67xAa7h2Dih8EszbJWmiqJC8bdMt0yeuUdc4lyyGe_Zb5aqYKgKWPdGxt7MOBZr1lrhu8y9d00ntpkLMhFfWEjsRjtvgtdXjpC535DP1LVuNJZwEY1hw5kQFKCmaNXRRIKfRWNPMUPaxzovrhlz2D8ano6OipZKoMTmqnalQvtct5mDJJHUd6N8bg"/>
+</div>
+<span class="font-label-md text-label-md text-primary">Elena Rodriguez</span>
+</div>
+</td>
+<td class="px-6 py-5">
+<span class="px-3 py-1 rounded-full bg-red-50 text-red-700 text-label-sm font-label-sm border border-red-200">Rejected</span>
+</td>
+<td class="px-6 py-5 text-right">
+<button class="opacity-0 group-hover:opacity-100 p-2 hover:bg-surface-variant rounded-lg transition-all">
+<span class="material-symbols-outlined text-on-surface-variant">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 border-t border-outline-variant flex items-center justify-between">
+<p class="font-body-sm text-body-sm text-on-surface-variant">Showing 1 to 4 of 24 entries</p>
+<div class="flex gap-2">
+<button class="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-on-primary font-label-md text-label-md">1</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-low font-label-md text-label-md transition-colors">2</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-low font-label-md text-label-md transition-colors">3</button>
+<button class="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Contextual Information Card (Modern/Personal) -->
+<div class="mt-stack-lg grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<div class="md:col-span-2 relative overflow-hidden rounded-xl bg-primary text-on-primary p-8 shadow-lg">
+<div class="relative z-10">
+<h4 class="font-headline-md text-headline-md mb-2">Need a faster approval?</h4>
+<p class="font-body-md text-body-md opacity-80 mb-6 max-w-lg">Complete the Request Documentation profile to provide your approvers with all the context they need before they even open the ticket.</p>
+<button class="px-6 py-3 bg-secondary text-on-secondary rounded-lg font-label-md text-label-md hover:brightness-110 transition-all flex items-center gap-2">
+                            Update My Profile
+                            <span class="material-symbols-outlined text-sm">arrow_outward</span>
+</button>
+</div>
+<!-- Subtle Abstract Decoration -->
+<div class="absolute -right-20 -bottom-20 w-80 h-80 bg-secondary/20 rounded-full blur-3xl"></div>
+</div>
+<div class="bg-surface-container border border-outline-variant rounded-xl p-6 flex flex-col justify-between">
+<div>
+<h4 class="font-label-md text-label-md uppercase tracking-wider text-on-surface-variant mb-4">Request Policy v2</h4>
+<ul class="space-y-3">
+<li class="flex items-start gap-2 text-body-sm text-body-sm text-primary">
+<span class="material-symbols-outlined text-sm mt-1">info</span>
+                                Standard SLA is 48 business hours.
+                            </li>
+<li class="flex items-start gap-2 text-body-sm text-body-sm text-primary">
+<span class="material-symbols-outlined text-sm mt-1">info</span>
+                                Budget requests over $500 require Director sign-off.
+                            </li>
+</ul>
+</div>
+<a class="font-label-md text-label-md text-secondary hover:underline mt-4" href="#">Download Guidelines (PDF)</a>
+</div>
+</div>
+</div>
+<!-- System Status Footer (Subtle) -->
+<footer class="mt-auto px-margin-desktop py-6 flex justify-between items-center text-label-sm font-label-sm text-on-surface-variant/60 border-t border-outline-variant/30">
+<span>© 2024 Enterprise Core Solutions Inc.</span>
+<div class="flex gap-4">
+<span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> API Status: Optimal</span>
+<span>Latency: 24ms</span>
+</div>
+</footer>
+</main>
+<!-- Floating Action Button (FAB) - Relevant to Dashboard -->
+<button class="fixed bottom-10 right-10 w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center active:scale-90 transition-transform group hover:w-48 overflow-hidden">
+<span class="material-symbols-outlined transition-transform group-hover:-translate-x-12">add</span>
+<span class="absolute left-12 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap font-label-md text-label-md">New Request</span>
+</button>
+<script>
+        // Micro-interactions for table rows
+        document.querySelectorAll('tbody tr').forEach(row => {
+            row.addEventListener('click', () => {
+                // Future: open detail drawer
+                console.log('Row clicked');
+            });
+        });
+
+        // Search highlight effect
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('w-80');
+        });
+        searchInput.addEventListener('blur', () => {
+            if(searchInput.value === '') {
+                searchInput.parentElement.classList.remove('w-80');
+            }
+        });
+    </script>
+</body></html>

@@ -1,0 +1,429 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Sent Notifications | Bytevon ERP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-tertiary": "#ffffff", "surface-tint": "#476083", "primary-container": "#001f3f", "on-surface-variant": "#43474e", "on-primary-container": "#6f88ad", "outline-variant": "#c4c6cf", "on-tertiary-fixed-variant": "#444749", surface: "#f8f9ff", "on-secondary-fixed-variant": "#004493", "primary-fixed-dim": "#afc8f0", "on-error-container": "#93000a", "inverse-primary": "#afc8f0", "surface-container-highest": "#d3e4fe", "secondary-container": "#0070ea", "on-primary-fixed": "#001c3a", "surface-container-high": "#dce9ff", error: "#ba1a1a", "tertiary-container": "#1c1f21", "on-primary": "#ffffff", "on-secondary": "#ffffff", "on-background": "#0b1c30", "on-secondary-fixed": "#001a41", "surface-dim": "#cbdbf5", "surface-container-low": "#eff4ff", "secondary-fixed": "#d8e2ff", "inverse-surface": "#213145", background: "#f8f9ff", "surface-bright": "#f8f9ff", secondary: "#0059bb", primary: "#000613", "secondary-fixed-dim": "#adc7ff", "primary-fixed": "#d4e3ff", "on-tertiary-fixed": "#191c1e", "on-secondary-container": "#fefcff", outline: "#74777f", tertiary: "#040607", "tertiary-fixed": "#e0e3e5", "tertiary-fixed-dim": "#c4c7c9", "surface-container": "#e5eeff", "on-tertiary-container": "#848789", "on-primary-fixed-variant": "#2f486a", "on-error": "#ffffff", "surface-container-lowest": "#ffffff", "on-surface": "#0b1c30", "inverse-on-surface": "#eaf1ff", "surface-variant": "#d3e4fe", "error-container": "#ffdad6"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-sm": "8px", "container-max": "1440px", gutter: "24px", unit: "4px", "stack-md": "16px", "stack-lg": "32px", "margin-desktop": "40px", "margin-mobile": "16px"}, fontFamily: {"headline-md": ["Inter"], "body-md": ["Inter"], "headline-lg": ["Inter"], "body-sm": ["Inter"], "body-lg": ["Inter"], "title-lg": ["Inter"], "display-lg": ["Inter"], "label-md": ["Inter"], "label-sm": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-hidden">
+<!-- Sidebar Wrapper -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary flex flex-col z-50">
+<!-- Brand Header -->
+<div class="p-stack-md flex items-center gap-3">
+<div class="w-10 h-10 bg-on-primary-container rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: &quot;FILL&quot; 1;">factory</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary leading-none">Bytevon</h1>
+<p class="font-label-sm text-label-sm text-on-primary-fixed-variant">Enterprise ERP</p>
+</div>
+</div>
+<!-- Global Nav Icons (Simulated) -->
+<div class="flex-1 px-stack-md mt-4 space-y-1">
+<nav class="space-y-1">
+<!-- Dashboard Active Link -->
+<a class="flex items-center gap-3 p-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-secondary-container/20 rounded-lg transition-colors group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-secondary-container/20 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-md">CRM</span>
+</a>
+<!-- Administration Sub-Sidebar (Internal List) -->
+<div class="pt-6 pb-2">
+<p class="px-3 text-[10px] uppercase tracking-widest text-on-primary-fixed-variant/50 font-bold mb-2">Administration</p>
+<a class="flex items-center gap-3 p-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-secondary-container/20 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span class="font-label-md">Organization</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-secondary-container/20 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">person_search</span>
+<span class="font-label-md">User Management</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-secondary-container/20 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">policy</span>
+<span class="font-label-md">Roles &amp; Permissions</span>
+</a>
+<a class="flex items-center gap-3 p-3 bg-secondary text-on-secondary rounded-lg transition-all scale-95 duration-150" href="#">
+<span class="material-symbols-outlined">notifications_active</span>
+<span class="font-label-md">Notification Settings</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-secondary-container/20 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">shield</span>
+<span class="font-label-md">Security</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-secondary-container/20 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">history_edu</span>
+<span class="font-label-md">Audit Logs</span>
+</a>
+</div>
+</nav>
+</div>
+<!-- Footer Actions -->
+<div class="p-stack-md mt-auto space-y-1">
+<a class="flex items-center gap-3 p-3 text-on-primary-fixed-variant hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 p-3 text-on-primary-fixed-variant hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="font-label-md">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Wrapper -->
+<main class="ml-[280px] min-h-screen flex flex-col">
+<!-- Top App Bar -->
+<header class="h-16 flex justify-between items-center px-gutter bg-surface border-b border-outline-variant z-40 sticky top-0">
+<div class="flex items-center flex-1 max-w-xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-lg focus:ring-2 focus:ring-secondary text-on-surface font-body-sm transition-all duration-200" placeholder="Search across Bytevon..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-highest rounded-full transition-all duration-200">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="relative">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-highest rounded-full transition-all duration-200 relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border-2 border-surface"></span>
+</button>
+</div>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-highest rounded-full transition-all duration-200">
+<span class="material-symbols-outlined">apps</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3 pl-2 group cursor-pointer">
+<div class="text-right">
+<p class="font-label-md text-on-surface font-bold">Admin User</p>
+<p class="font-label-sm text-on-surface-variant">System Architect</p>
+</div>
+<img class="w-10 h-10 rounded-full border border-outline-variant object-cover" data-alt="A professional headshot of an executive in a well-lit modern corporate setting. The lighting is soft and flattering, emphasizing a clean and authoritative atmosphere. The color palette is minimal with deep navy and professional gray tones, reflecting high-stakes enterprise leadership and modern minimalist design aesthetics." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPtJndsP0iJ7FOf3c76JWjwUQ1mzm60BXRRq_Ws7bBKFKPQSdyOYQoWPpoZocL_EE-GRUeiTho0QrD8MRiHZTWOwFZEa5qv6L6ulg5l2yuu7HhHNkQpnCTwm5vZdudslbgNCS6SsCO6xOLQ4UUbVDSLXiKWgNZBLgzSuu-K76X9CmoOnQb761OHxl5NKAVmw0cAld5WN_z3BgVSnRUoYCgkZcOgTDKRET7XMrW4X97Sfi7FbXgdUiDSQ">
+</div>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="p-stack-lg flex-1 overflow-y-auto bg-surface-bright">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-stack-lg">
+<div>
+<h2 class="font-headline-lg text-headline-lg font-bold text-primary tracking-tight">Sent Notifications</h2>
+<p class="text-on-surface-variant font-body-md mt-1">Monitor delivery performance and engagement for all outgoing system communications.</p>
+</div>
+<button class="flex items-center gap-2 bg-secondary text-on-secondary px-6 py-3 rounded-lg font-label-md font-bold shadow-lg shadow-secondary/20 hover:bg-secondary-container transition-all active:scale-95 duration-150">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">add_circle</span>
+                    Compose Notification
+                </button>
+</div>
+<!-- Metric Cards (Bento Style) -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-gutter mb-stack-lg">
+<div class="glass-card p-6 rounded-xl flex flex-col justify-between hover:border-secondary/30 transition-all cursor-default">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-label-md uppercase tracking-wider">Total Sent</span>
+<div class="p-2 bg-surface-container-highest text-secondary rounded-lg">
+<span class="material-symbols-outlined">send</span>
+</div>
+</div>
+<div class="mt-4">
+<h3 class="font-display-lg text-display-lg text-primary tracking-tighter">1,248</h3>
+<p class="text-secondary font-label-sm flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined !text-sm">trending_up</span> +12% from last month
+                        </p>
+</div>
+</div>
+<div class="glass-card p-6 rounded-xl flex flex-col justify-between hover:border-secondary/30 transition-all cursor-default">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-label-md uppercase tracking-wider">Delivery Rate</span>
+<div class="p-2 bg-surface-container-highest text-secondary rounded-lg">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+</div>
+<div class="mt-4">
+<h3 class="font-display-lg text-display-lg text-primary tracking-tighter">99.8%</h3>
+<div class="w-full h-1 bg-surface-container rounded-full mt-2 overflow-hidden">
+<div class="h-full bg-secondary w-[99.8%]"></div>
+</div>
+</div>
+</div>
+<div class="glass-card p-6 rounded-xl flex flex-col justify-between hover:border-secondary/30 transition-all cursor-default">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-label-md uppercase tracking-wider">Open Rate</span>
+<div class="p-2 bg-surface-container-highest text-secondary rounded-lg">
+<span class="material-symbols-outlined">visibility</span>
+</div>
+</div>
+<div class="mt-4">
+<h3 class="font-display-lg text-display-lg text-primary tracking-tighter">84%</h3>
+<p class="text-on-surface-variant font-label-sm mt-1">Industry Avg: 22.4%</p>
+</div>
+</div>
+<div class="glass-card p-6 rounded-xl border-l-4 border-l-error flex flex-col justify-between hover:border-error/30 transition-all cursor-default">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-label-md uppercase tracking-wider">Failed Delivery</span>
+<div class="p-2 bg-error-container text-error rounded-lg">
+<span class="material-symbols-outlined">error</span>
+</div>
+</div>
+<div class="mt-4">
+<h3 class="font-display-lg text-display-lg text-error tracking-tighter">3</h3>
+<p class="text-error font-label-sm font-bold flex items-center gap-1 mt-1">Requires Attention</p>
+</div>
+</div>
+</div>
+<!-- Table Filters -->
+<div class="bg-surface p-4 rounded-t-xl border-x border-t border-outline-variant flex flex-wrap items-center gap-4">
+<div class="flex-1 min-w-[300px] relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-white border border-outline rounded-lg focus:ring-1 focus:ring-secondary text-on-surface font-body-sm transition-all duration-200" placeholder="Search by recipient or title..." type="text">
+</div>
+<div class="flex items-center gap-2">
+<select class="bg-white border border-outline rounded-lg px-4 py-2 font-label-md text-on-surface outline-none focus:ring-1 focus:ring-secondary">
+<option>All Types</option>
+<option>Email</option>
+<option>Push</option>
+<option>SMS</option>
+</select>
+<select class="bg-white border border-outline rounded-lg px-4 py-2 font-label-md text-on-surface outline-none focus:ring-1 focus:ring-secondary">
+<option>All Status</option>
+<option>Delivered</option>
+<option>Pending</option>
+<option>Failed</option>
+</select>
+<button class="flex items-center gap-2 border border-outline px-4 py-2 rounded-lg font-label-md hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined">calendar_today</span>
+                        Date Range
+                    </button>
+<button class="p-2 border border-outline rounded-lg hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</div>
+<!-- Data Table -->
+<div class="bg-white border border-outline-variant rounded-b-xl overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low border-b border-outline-variant">
+<tr>
+<th class="px-6 py-4 font-label-md text-on-surface-variant font-bold uppercase tracking-wider">Recipient</th>
+<th class="px-6 py-4 font-label-md text-on-surface-variant font-bold uppercase tracking-wider">Notification Title</th>
+<th class="px-6 py-4 font-label-md text-on-surface-variant font-bold uppercase tracking-wider">Status</th>
+<th class="px-6 py-4 font-label-md text-on-surface-variant font-bold uppercase tracking-wider">Type</th>
+<th class="px-6 py-4 font-label-md text-on-surface-variant font-bold uppercase tracking-wider">Sent Date/Time</th>
+<th class="px-6 py-4 font-label-md text-on-surface-variant font-bold uppercase tracking-wider text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Table Row 1 -->
+<tr class="hover:bg-surface-container-lowest transition-all group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="A detailed corporate headshot of a professional female executive, featuring soft backlighting and a clean architectural background. The palette consists of muted blues, whites, and charcoal grays, embodying an elite enterprise software user interface aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWZ18EjCxASpdnfMewBwiYl7-7H_yDiUqwiDmYPny-9Fr1AYO-sUN7VR19vFDTF9JcQYL8DffhV25n31AKjyJJOVeCc_Zzjyoo-MZ9MNVoSRh4sPHSxMVWNKduU8R-K-HjOb98CIGSdCwLV-AIWE7lIlzdPK4VIrB-kuv29c_Cxk99KCVmpoRNj6_Xqrbg-8NJM3U8PPWoSOqQTp_a6wmbZ2V30vyzTXrDUEX4BgLPLNZ3VCWs-pb1cw">
+<div>
+<p class="font-label-md font-bold text-on-surface">Elena Rodriguez</p>
+<p class="font-label-sm text-on-surface-variant">e.rodriguez@bytevon.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-label-md text-primary font-medium">Q4 Security Audit Requirement</p>
+<p class="text-on-surface-variant text-[11px] truncate w-48">Please complete the mandatory quarterly security assessment...</p>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800">
+<span class="w-1.5 h-1.5 rounded-full bg-green-600 mr-1.5"></span>
+                                    Delivered
+                                </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined !text-lg">mail</span>
+<span class="font-label-sm">Email</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-sm">
+                                Oct 12, 2023 <span class="text-on-surface-variant/60 ml-1">09:42 AM</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1 hover:bg-surface-container rounded transition-all opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Table Row 2 -->
+<tr class="hover:bg-surface-container-lowest transition-all group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container/20 flex items-center justify-center text-secondary font-bold text-xs">MW</div>
+<div>
+<p class="font-label-md font-bold text-on-surface">Marcus Webb</p>
+<p class="font-label-sm text-on-surface-variant">+1 (555) 012-9988</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-label-md text-primary font-medium">Server Maintenance Alert</p>
+<p class="text-on-surface-variant text-[11px] truncate w-48">Emergency patching scheduled for Cluster B-4 nodes...</p>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-error-container text-error">
+<span class="w-1.5 h-1.5 rounded-full bg-error mr-1.5"></span>
+                                    Failed
+                                </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined !text-lg">sms</span>
+<span class="font-label-sm">SMS</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-sm">
+                                Oct 12, 2023 <span class="text-on-surface-variant/60 ml-1">08:15 AM</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1 hover:bg-surface-container rounded transition-all opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Table Row 3 -->
+<tr class="hover:bg-surface-container-lowest transition-all group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full object-cover" data-alt="Close up of a professional male tech lead with glasses, smiling confidently against a minimalist blurred office background. The lighting is crisp and cool, utilizing a high-contrast corporate palette of navy, arctic blue, and white for a sophisticated enterprise UI appearance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1qfavmgG_QTKZHsZ3DXLcOfaPNVIFZUHhnjQu-Kb62n9lhQtUumsK4HuKFKN9N4BADaRjxPkdqEwYYTZcPMrHm2kudS7WKDjKpaZu_hTRsPlBfLBVFq2ao4h-3bZkcjAjaMry5PEgKwyRblzx4h6rWEIIdT5PQwX8sA_99HV19Bqvq9TE1FA0vzgBt9uqsf2l5szAItEv6BR6ZZZ-KcqwEC9Y_tCrWEqm5-sggZqRtIGOmsSXfxuUqQ">
+<div>
+<p class="font-label-md font-bold text-on-surface">Julian Chen</p>
+<p class="font-label-sm text-on-surface-variant">j.chen@bytevon.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-label-md text-primary font-medium">Inventory Threshold Reached</p>
+<p class="text-on-surface-variant text-[11px] truncate w-48">Warehouse SE-01 reports low stock for SKU #992...</p>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
+<span class="w-1.5 h-1.5 rounded-full bg-blue-600 mr-1.5"></span>
+                                    Pending
+                                </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined !text-lg">notifications</span>
+<span class="font-label-sm">Push</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-sm">
+                                Oct 11, 2023 <span class="text-on-surface-variant/60 ml-1">04:22 PM</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1 hover:bg-surface-container rounded transition-all opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Table Row 4 -->
+<tr class="hover:bg-surface-container-lowest transition-all group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-tertiary-container/10 flex items-center justify-center text-on-surface font-bold text-xs">SL</div>
+<div>
+<p class="font-label-md font-bold text-on-surface">Sarah Lowndes</p>
+<p class="font-label-sm text-on-surface-variant">s.lowndes@bytevon.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<p class="font-label-md text-primary font-medium">Leave Request Approved</p>
+<p class="text-on-surface-variant text-[11px] truncate w-48">Your request for Oct 20-25 has been approved by HR...</p>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800">
+<span class="w-1.5 h-1.5 rounded-full bg-green-600 mr-1.5"></span>
+                                    Delivered
+                                </span>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined !text-lg">mail</span>
+<span class="font-label-sm">Email</span>
+</div>
+</td>
+<td class="px-6 py-4 text-on-surface-variant font-label-sm">
+                                Oct 11, 2023 <span class="text-on-surface-variant/60 ml-1">02:10 PM</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-1 hover:bg-surface-container rounded transition-all opacity-0 group-hover:opacity-100">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Pagination -->
+<div class="px-6 py-4 bg-surface border-t border-outline-variant flex justify-between items-center">
+<p class="font-label-sm text-on-surface-variant">Showing <span class="font-bold text-on-surface">1 - 25</span> of <span class="font-bold text-on-surface">1,248</span> notifications</p>
+<div class="flex gap-2">
+<button class="p-2 border border-outline rounded-lg hover:bg-surface-container transition-all disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="px-4 py-2 bg-primary text-on-primary rounded-lg font-label-sm font-bold">1</button>
+<button class="px-4 py-2 hover:bg-surface-container rounded-lg font-label-sm">2</button>
+<button class="px-4 py-2 hover:bg-surface-container rounded-lg font-label-sm">3</button>
+<span class="px-2 self-center">...</span>
+<button class="px-4 py-2 hover:bg-surface-container rounded-lg font-label-sm">50</button>
+<button class="p-2 border border-outline rounded-lg hover:bg-surface-container transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Footer Meta -->
+<footer class="mt-stack-lg flex justify-between items-center text-on-surface-variant font-label-sm">
+<p class="">© 2023 Bytevon Enterprise Solution v4.2.0-stable</p>
+<div class="flex gap-6">
+<a class="hover:text-secondary transition-colors underline decoration-outline-variant underline-offset-4" href="#">Terms of Service</a>
+<a class="hover:text-secondary transition-colors underline decoration-outline-variant underline-offset-4" href="#">Security Policy</a>
+<a class="hover:text-secondary transition-colors underline decoration-outline-variant underline-offset-4" href="#">API Documentation</a>
+</div>
+</footer>
+</div>
+</main>
+<script>
+        // Micro-interactions and effects
+        document.querySelectorAll('tr').forEach(row => {
+            row.addEventListener('click', () => {
+                // Future implementation: Open detail panel
+                console.log('Opening notification detail...');
+            });
+        });
+
+        // Search highlight effect
+        const searchInput = document.querySelector('input[placeholder*="recipient"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('ring-2', 'ring-secondary/20');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('ring-2', 'ring-secondary/20');
+        });
+    </script>
+</body></html>

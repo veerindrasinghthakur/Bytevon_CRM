@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add Department | Bytevon Enterprise Suite</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"primary-fixed": "#d4e3ff", "on-surface-variant": "#43474e", secondary: "#0059bb", "tertiary-fixed-dim": "#c4c7c9", "on-error-container": "#93000a", "primary-container": "#001f3f", "on-surface": "#0b1c30", "tertiary-container": "#1c1f21", "on-secondary": "#ffffff", "surface-bright": "#f8f9ff", "on-tertiary": "#ffffff", "on-tertiary-fixed": "#191c1e", surface: "#f8f9ff", "on-secondary-fixed": "#001a41", tertiary: "#040607", "surface-dim": "#cbdbf5", "surface-container": "#e5eeff", "inverse-primary": "#afc8f0", "surface-variant": "#d3e4fe", "secondary-fixed-dim": "#adc7ff", "primary-fixed-dim": "#afc8f0", outline: "#74777f", "surface-container-lowest": "#ffffff", "on-secondary-fixed-variant": "#004493", "on-primary": "#ffffff", "surface-container-highest": "#d3e4fe", "on-tertiary-fixed-variant": "#444749", "inverse-surface": "#213145", "inverse-on-surface": "#eaf1ff", "on-primary-fixed": "#001c3a", "surface-tint": "#476083", "secondary-container": "#0070ea", "error-container": "#ffdad6", background: "#f8f9ff", "on-tertiary-container": "#848789", "on-primary-fixed-variant": "#2f486a", error: "#ba1a1a", "on-error": "#ffffff", "surface-container-high": "#dce9ff", "on-secondary-container": "#fefcff", "on-background": "#0b1c30", "secondary-fixed": "#d8e2ff", primary: "#000613", "tertiary-fixed": "#e0e3e5", "on-primary-container": "#6f88ad", "outline-variant": "#c4c6cf", "surface-container-low": "#eff4ff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-sm": "8px", "container-max": "1440px", unit: "4px", "stack-lg": "32px", "stack-md": "16px", "margin-mobile": "16px", "margin-desktop": "40px", gutter: "24px"}, fontFamily: {"headline-md": ["Inter"], "body-lg": ["Inter"], "headline-lg-mobile": ["Inter"], "body-md": ["Inter"], "body-sm": ["Inter"], "title-lg": ["Inter"], "label-md": ["Inter"], "display-lg": ["Inter"], "headline-lg": ["Inter"], "label-sm": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}]}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .sidebar-item { transition: all 0.2s ease-in-out; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #6f88ad; border-radius: 10px; }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        .toast-animate { animation: slideIn 0.3s ease-out; }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #0070ea !important;
+            box-shadow: 0 0 0 2px rgba(0, 112, 234, 0.1);
+        }
+        
+        .loading-spinner {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 2px solid #fff;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen overflow-x-hidden">
+<!-- Side Navigation -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary dark:bg-primary-container shadow-md flex flex-col py-stack-md z-50">
+<div class="px-6 mb-stack-lg">
+<div class="flex items-center gap-3">
+<img alt="Bytevon Logo" class="h-10 w-auto" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaG7pisKjXhVv8qmeHXnoCj8hXQCSkAWIH2ealJkAHA-vpy0A1K99R2PS1d74e7F14CBXAqRkDwSGNzJMqZ_ZYDGBfv_1jEZLNUzOvrGlgeUMk6Y8XrILvEfeJO2sbdWqebLtnHmgbzHh_aptkH1PRnfBjk0OKte8uhrIWpPd6AlxXVwDTujLnll5IsWqgGNjZhEZpcSVlfzckb6GTfku98GQMq0vRvRGPobODkD1UJME7GQHli6oCNzv6Fp9q1j3Ou4E"/>
+<div class="flex flex-col">
+<span class="font-headline-md text-headline-md font-bold text-on-primary">Bytevon</span>
+<span class="font-label-sm text-label-sm text-on-primary-container tracking-wider">Enterprise Suite</span>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1 px-2 overflow-y-auto custom-scrollbar"><a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="bg-secondary-container text-on-secondary-container rounded-lg mx-2 flex items-center px-4 py-3 gap-3 group transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">badge</span>
+<span class="font-label-md text-label-md">Employees</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">group</span>
+<span class="font-label-md text-label-md">CRM</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings_applications</span>
+<span class="font-label-md text-label-md">ERP</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">bar_chart</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a></nav>
+<div class="mt-auto px-4 py-4">
+<button class="w-full bg-secondary text-on-secondary py-3 px-4 rounded-lg flex items-center justify-center gap-2 font-label-md hover:bg-opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined">add</span>
+        Quick Create
+      </button>
+<div class="mt-4 pt-4 border-t border-on-primary-container/20">
+<a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]">help_outline</span>
+<span class="font-label-md text-label-md">Help Center</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] min-h-screen flex flex-col max-w-container-max mx-auto">
+<!-- Top Navbar -->
+<header class="h-16 bg-surface dark:bg-surface-container-low border-b border-outline-variant flex justify-between items-center px-margin-desktop sticky top-0 z-40 max-w-container-max mx-auto"><div class="flex items-center gap-6">
+<nav class="flex items-center text-on-surface-variant font-body-md text-body-md gap-2">
+<span class="hover:text-secondary cursor-pointer">Main</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-secondary font-semibold">Employees</span>
+</nav>
+<div class="relative w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-highest/30 border border-outline-variant rounded-full py-2 pl-10 pr-4 focus:outline-none focus:border-secondary transition-all font-body-sm text-body-sm" placeholder="Search enterprise..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="relative p-2 text-on-surface-variant hover:text-secondary transition-colors cursor-pointer active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<div class="flex items-center gap-3 cursor-pointer group">
+<div class="text-right">
+<p class="font-label-md text-label-md text-on-surface">Alex Thompson</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Administrator</p>
+</div>
+<img class="w-10 h-10 rounded-full border border-outline-variant object-cover group-hover:border-secondary transition-colors" data-alt="A professional headshot of a middle-aged executive man with a friendly expression, wearing a navy blue tailored suit. The background is a clean, bright minimalist office environment with soft natural light, following the executive modern professional aesthetic of Bytevon software." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBuftfoGx7qUsmhyHhXCNiQ7SHfeyLRoZyAsKEUvbvb7P9pfvpGd09niOp7z4ZhAqQTh_9c3yBPAG2_6UOoJ96LcoFilw12VePlLvdICC-_Evb-nrKpQgXtesNfegxMqxzp6gWfBvl4wxD5V2D_BXPkbzbOyrk-V3kQwtNRwFDlU5RnU_dYK92yP6v2qafEqG2kH8DPRYzBRX4KfapoaDFc687xRzkEWJS_1WUKVKlQdyMxUdUoTkbfpQ"/>
+</div>
+</div></header>
+<!-- Canvas -->
+<div class="p-margin-desktop flex-1 max-w-container-max mx-auto w-full pb-32">
+<!-- Breadcrumbs & Title -->
+<div class="mb-stack-lg">
+<button class="flex items-center gap-2 text-secondary font-label-md text-label-md hover:underline mb-2 cursor-pointer transition-all active:scale-95" onclick="window.history.back()">
+<span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    Back to Department List
+                </button>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Add New Department</h2>
+<p class="text-on-surface-variant font-body-md text-body-md mt-1">Configure your organization's structural units and reporting lines.</p>
+</div>
+<!-- Form Body - Bento Grid Style -->
+<form class="grid grid-cols-12 gap-gutter" id="departmentForm">
+<!-- Section 1: Department Info -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl p-8 shadow-sm">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">info</span>
+<h3 class="font-title-lg text-title-lg text-on-surface">Department Information</h3>
+</div>
+<div class="space-y-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface flex items-center justify-between">
+<span class="">Department Name <span class="text-error">*</span></span>
+</label>
+<input class="w-full px-4 py-3 rounded-lg border border-outline-variant text-body-md bg-transparent focus:ring-0 transition-all" placeholder="e.g. Engineering, Sales, Human Resources" required="" type="text"/>
+<p class="text-error text-[12px] hidden" id="nameError">Department name is required</p>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface">Department Code <span class="text-error">*</span></label>
+<input class="w-full px-4 py-3 rounded-lg border border-outline-variant text-body-md bg-transparent focus:ring-0 transition-all" placeholder="e.g. DEPT-001" required="" type="text"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface">Description</label>
+<textarea class="w-full px-4 py-3 rounded-lg border border-outline-variant text-body-md bg-transparent focus:ring-0 transition-all resize-none" placeholder="Briefly describe the purpose and scope of this department..." rows="4"></textarea>
+</div>
+</div>
+</div>
+<!-- Section 2: Management -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-8 shadow-sm">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">manage_accounts</span>
+<h3 class="font-title-lg text-title-lg text-on-surface">Management</h3>
+</div>
+<div class="space-y-6">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface">Department Head</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">search</span>
+<select class="w-full pl-10 pr-4 py-3 rounded-lg border border-outline-variant text-body-md bg-transparent focus:ring-0 appearance-none transition-all">
+<option disabled="" selected="" value="">Search for head...</option>
+<option>Sarah Jenkins (ID: 4492)</option>
+<option>Michael Chen (ID: 1022)</option>
+<option>Elena Rodriguez (ID: 5521)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface">Parent Department</label>
+<div class="relative">
+<select class="w-full px-4 py-3 rounded-lg border border-outline-variant text-body-md bg-transparent focus:ring-0 appearance-none transition-all">
+<option value="none">None (Top Level)</option>
+<option>Operations</option>
+<option>Executive Office</option>
+<option>Global Services</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 3: Settings -->
+<div class="col-span-12 bg-surface-container-lowest border border-outline-variant rounded-xl p-8 shadow-sm">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">settings</span>
+<h3 class="font-title-lg text-title-lg text-on-surface">Settings &amp; Identity</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+<div class="space-y-4">
+<label class="font-label-md text-label-md text-on-surface block">Status</label>
+<div class="flex items-center gap-6">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input checked="" class="w-5 h-5 text-secondary border-outline focus:ring-secondary/20" name="status" type="radio"/>
+<span class="font-body-md text-body-md text-on-surface">Active</span>
+</label>
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="w-5 h-5 text-secondary border-outline focus:ring-secondary/20" name="status" type="radio"/>
+<span class="font-body-md text-body-md text-on-surface-variant group-hover:text-on-surface transition-colors">Inactive</span>
+</label>
+</div>
+<p class="text-body-sm text-on-surface-variant opacity-70">Inactive departments are hidden from active resource allocation views.</p>
+</div>
+<div class="space-y-4">
+<label class="font-label-md text-label-md text-on-surface block">Department Color Tag</label>
+<div class="flex flex-wrap gap-3">
+<button class="w-10 h-10 rounded-lg bg-secondary ring-offset-2 ring-2 ring-secondary transition-all" onclick="selectColor(this, '#0059bb')" title="Electric Blue" type="button"></button>
+<button class="w-10 h-10 rounded-lg bg-error hover:scale-110 transition-all" onclick="selectColor(this, '#ba1a1a')" title="Deep Red" type="button"></button>
+<button class="w-10 h-10 rounded-lg bg-on-secondary-fixed hover:scale-110 transition-all" onclick="selectColor(this, '#001a41')" title="Midnight" type="button"></button>
+<button class="w-10 h-10 rounded-lg bg-on-tertiary-fixed-variant hover:scale-110 transition-all" onclick="selectColor(this, '#444749')" title="Graphite" type="button"></button>
+<button class="w-10 h-10 rounded-lg bg-secondary-container hover:scale-110 transition-all" onclick="selectColor(this, '#0070ea')" title="Azure" type="button"></button>
+<button class="w-10 h-10 rounded-lg border-2 border-dashed border-outline-variant flex items-center justify-center hover:bg-surface-container transition-all" type="button">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant">add</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</form>
+</div>
+<!-- Sticky Bottom Bar -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-280px)] bg-surface-container-lowest border-t border-outline-variant py-4 px-margin-desktop shadow-2xl flex justify-between items-center z-40 max-w-container-max mx-auto left-[280px]">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<p class="text-body-sm">All changes will be logged to system audit</p>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-6 py-2.5 rounded-lg font-label-md text-label-md border border-outline-variant text-on-surface hover:bg-surface-container transition-all active:scale-95" type="button">
+                    Cancel
+                </button>
+<button class="px-6 py-2.5 rounded-lg font-label-md text-label-md border border-secondary text-secondary hover:bg-secondary/5 transition-all active:scale-95" type="button">
+                    Save Draft
+                </button>
+<button class="px-8 py-2.5 rounded-lg font-label-md text-label-md bg-primary-container text-on-primary flex items-center gap-2 hover:brightness-125 shadow-lg shadow-primary-container/20 transition-all active:scale-95" id="saveBtn" onclick="handleSave()" type="button">
+<span class="" id="saveLabel">Save Department</span>
+<span class="loading-spinner hidden" id="saveSpinner"></span>
+</button>
+</div>
+</footer>
+</main>
+<!-- Toast Feedback Container -->
+<div class="fixed top-20 right-8 z-[100] space-y-4" id="toastContainer"></div>
+<script>
+        function selectColor(btn, color) {
+            // Remove rings from all buttons
+            const buttons = btn.parentElement.querySelectorAll('button');
+            buttons.forEach(b => {
+                b.classList.remove('ring-2', 'ring-offset-2', 'ring-secondary');
+                b.classList.add('hover:scale-110');
+            });
+            // Add ring to selected
+            btn.classList.add('ring-2', 'ring-offset-2', 'ring-secondary');
+            btn.classList.remove('hover:scale-110');
+        }
+
+        function handleSave() {
+            const btn = document.getElementById('saveBtn');
+            const label = document.getElementById('saveLabel');
+            const spinner = document.getElementById('saveSpinner');
+            
+            // Validate first required field as example
+            const deptName = document.querySelector('input[placeholder*="Engineering"]');
+            if(!deptName.value) {
+                deptName.classList.add('border-error', 'bg-error-container/10');
+                document.getElementById('nameError').classList.remove('hidden');
+                showToast('Please fill in all required fields', 'error');
+                return;
+            } else {
+                deptName.classList.remove('border-error', 'bg-error-container/10');
+                document.getElementById('nameError').classList.add('hidden');
+            }
+
+            // UI State change
+            btn.disabled = true;
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+            label.textContent = 'Saving...';
+            spinner.classList.remove('hidden');
+
+            // Simulate API Call
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.classList.remove('opacity-80', 'cursor-not-allowed');
+                label.textContent = 'Save Department';
+                spinner.classList.add('hidden');
+                showToast('Department "Engineering" created successfully!', 'success');
+            }, 2000);
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast-animate flex items-center gap-3 px-6 py-4 rounded-xl shadow-xl border min-w-[320px] ${
+                type === 'success' ? 'bg-primary-container text-on-primary border-primary-container' : 'bg-error-container text-on-error-container border-error'
+            }`;
+            
+            const icon = type === 'success' ? 'check_circle' : 'error';
+            
+            toast.innerHTML = `
+                <span class="material-symbols-outlined">${icon}</span>
+                <div class="flex-1">
+                    <p class="font-label-md text-label-md">${message}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="opacity-70 hover:opacity-100">
+                    <span class="material-symbols-outlined text-[18px]">close</span>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(20px)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // micro-interaction for sidebar items
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                if(!this.classList.contains('bg-secondary-container')) {
+                    document.querySelectorAll('.sidebar-item').forEach(i => {
+                        i.classList.remove('bg-secondary-container', 'text-on-secondary-container', 'rounded-lg', 'mx-2');
+                        i.classList.add('text-on-primary-container', 'hover:text-on-primary', 'px-4');
+                    });
+                    this.classList.add('bg-secondary-container', 'text-on-secondary-container', 'rounded-lg', 'mx-2');
+                    this.classList.remove('text-on-primary-container', 'hover:text-on-primary', 'px-4');
+                }
+            });
+        });
+    </script>
+</body></html>

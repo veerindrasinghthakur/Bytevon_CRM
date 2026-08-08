@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bytevon CRM - Forms &amp; Interactive Elements</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#717786",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#131b2e",
+                        "outline-variant": "#c1c6d7",
+                        "on-background": "#0b1c30",
+                        "background": "#f8f9ff",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "secondary-fixed": "#dae2fd",
+                        "primary-fixed-dim": "#adc6ff",
+                        "on-tertiary-container": "#fbfdff",
+                        "tertiary-container": "#727577",
+                        "surface-variant": "#d3e4fe",
+                        "surface-dim": "#cbdbf5",
+                        "surface-container-highest": "#d3e4fe",
+                        "primary": "#0058bc",
+                        "on-surface": "#0b1c30",
+                        "surface-tint": "#005bc1",
+                        "primary-container": "#0070eb",
+                        "surface-container": "#e5eeff",
+                        "inverse-on-surface": "#eaf1ff",
+                        "inverse-primary": "#adc6ff",
+                        "surface-container-low": "#eff4ff",
+                        "tertiary-fixed": "#e0e3e5",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#001a41",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed": "#191c1e",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#fefcff",
+                        "tertiary": "#595c5e",
+                        "on-surface-variant": "#414755",
+                        "on-secondary-container": "#5c647a",
+                        "secondary-container": "#dae2fd",
+                        "on-primary": "#ffffff",
+                        "inverse-surface": "#213145",
+                        "error-container": "#ffdad6",
+                        "on-primary-fixed-variant": "#004493",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "surface": "#f8f9ff",
+                        "secondary": "#565e74",
+                        "primary-fixed": "#d8e2ff",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "surface-container-high": "#dce9ff",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "surface-bright": "#f8f9ff",
+                        "error": "#ba1a1a",
+                        "surface-container-lowest": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "table-row-height": "72px",
+                        "card-padding": "20px",
+                        "gutter-md": "16px",
+                        "container-margin": "24px",
+                        "section-gap": "32px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "caption": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "label-bold": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }],
+                        "headline-md": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "caption": ["11px", { "lineHeight": "14px", "fontWeight": "400" }],
+                        "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-bold": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex">
+<!-- SideNavBar (Suppressed for Component Reference intent, but included as structural requirement for a top-level view if it were one. Given instructions: "Suppress navigation to prioritize the content canvas" if intent is a sub-page or non-standard flow. We will assume this is a raw reference view, but we'll include a minimal header.) -->
+<main class="flex-1 flex flex-col w-full h-screen overflow-hidden">
+<!-- Header Reference -->
+<header class="bg-surface-container-lowest border-b border-outline-variant shadow-sm w-full h-16 flex items-center justify-between px-gutter-md z-30 shrink-0">
+<div class="flex items-center gap-4">
+<span class="font-headline-md text-headline-md font-extrabold text-on-background">Bytevon CRM</span>
+<span class="text-outline mx-2">|</span>
+<span class="font-headline-md text-headline-md text-on-surface-variant">Forms &amp; Interactions</span>
+</div>
+</header>
+<div class="flex-1 overflow-auto p-container-margin">
+<div class="max-w-6xl mx-auto space-y-section-gap pb-24">
+<!-- Typography & Brand Anchor Reference (Just a small nod to context) -->
+<div>
+<h1 class="font-headline-xl text-headline-xl text-on-background mb-2">Component Library</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Standardized interactive elements and form patterns for Bytevon CRM.</p>
+</div>
+<!-- Input Fields Section -->
+<section class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_10px_15px_-3px_rgba(0,0,0,0.02)] p-card-padding">
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-6 border-b border-outline-variant pb-2">Input Fields</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<!-- Standard Text Input -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1">Project Name</label>
+<input class="w-full h-10 px-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder:text-outline" placeholder="Enter project name..." type="text"/>
+</div>
+<!-- Search Input -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1">Search Directory</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+<input class="w-full h-10 pl-10 pr-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder:text-outline" placeholder="Search..." type="text"/>
+</div>
+</div>
+<!-- Date Picker (Simulated) -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1">Target Launch Date</label>
+<div class="relative">
+<input class="w-full h-10 pl-3 pr-10 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="MM/DD/YYYY" type="text" value="10/24/2024"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline text-[20px] cursor-pointer hover:text-primary transition-colors">calendar_today</span>
+</div>
+</div>
+<!-- Select / Dropdown -->
+<div>
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1">Assigned Lead</label>
+<div class="relative">
+<select class="w-full h-10 pl-3 pr-10 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background appearance-none focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors">
+<option>Sarah Jenkins</option>
+<option>Marcus Chen</option>
+<option>Elena Rodriguez</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline text-[20px] pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- Textarea -->
+<div class="md:col-span-2">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1">Project Scope Brief</label>
+<textarea class="w-full p-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder:text-outline resize-none" placeholder="Detail the core objectives..." rows="3"></textarea>
+</div>
+</div>
+</section>
+<!-- Buttons & Actions Section -->
+<section class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_10px_15px_-3px_rgba(0,0,0,0.02)] p-card-padding">
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-6 border-b border-outline-variant pb-2">Actions &amp; Buttons</h2>
+<div class="flex flex-wrap gap-6 items-end">
+<!-- Primary Button -->
+<div class="flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Primary Action</span>
+<button class="bg-primary hover:bg-primary-container text-on-primary font-body-lg text-body-lg px-6 py-2 rounded-lg transition-colors flex items-center justify-center h-10">
+                                Create Project
+                            </button>
+</div>
+<!-- Primary with Icon -->
+<div class="flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Primary + Icon</span>
+<button class="bg-primary hover:bg-primary-container text-on-primary font-body-lg text-body-lg px-6 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 h-10">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                                New Client
+                            </button>
+</div>
+<!-- Secondary / Outline -->
+<div class="flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Secondary / Outline</span>
+<button class="bg-transparent border border-outline-variant hover:bg-surface-container text-on-background font-body-lg text-body-lg px-6 py-2 rounded-lg transition-colors flex items-center justify-center h-10">
+                                Cancel
+                            </button>
+</div>
+<!-- Ghost Button -->
+<div class="flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Ghost</span>
+<button class="bg-transparent hover:bg-surface-container text-primary font-body-lg text-body-lg px-4 py-2 rounded-lg transition-colors flex items-center justify-center h-10">
+                                View Details
+                            </button>
+</div>
+<!-- Icon Only Utilities -->
+<div class="flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Icon Utilities</span>
+<div class="flex gap-2">
+<button class="w-10 h-10 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+<button class="w-10 h-10 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Complex Forms / Layouts -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-section-gap">
+<!-- Example: Inline Creation Form -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_10px_15px_-3px_rgba(0,0,0,0.02)] p-card-padding">
+<h3 class="font-headline-md text-headline-md text-on-background mb-4">Quick Add Task</h3>
+<form class="flex items-end gap-3">
+<div class="flex-1">
+<input class="w-full h-10 px-3 bg-surface-container-lowest border border-outline-variant rounded-lg font-body-md text-body-md text-on-background focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors" placeholder="Task description..." type="text"/>
+</div>
+<button class="bg-primary hover:bg-primary-container text-on-primary w-10 h-10 rounded-lg flex items-center justify-center shrink-0 transition-colors" type="button">
+<span class="material-symbols-outlined">send</span>
+</button>
+</form>
+</div>
+<!-- Priority Toggles -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-[0px_1px_3px_rgba(0,0,0,0.05),0px_10px_15px_-3px_rgba(0,0,0,0.02)] p-card-padding">
+<h3 class="font-headline-md text-headline-md text-on-background mb-4">Priority Selection</h3>
+<div class="flex gap-2 p-1 bg-surface-container rounded-lg w-fit">
+<button class="px-4 py-1.5 rounded-md font-label-sm text-label-sm bg-surface-container-lowest shadow-sm text-on-background border border-outline-variant transition-all">
+                                High
+                            </button>
+<button class="px-4 py-1.5 rounded-md font-label-sm text-label-sm text-on-surface-variant hover:text-on-background transition-all">
+                                Medium
+                            </button>
+<button class="px-4 py-1.5 rounded-md font-label-sm text-label-sm text-on-surface-variant hover:text-on-background transition-all">
+                                Low
+                            </button>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+</body></html>

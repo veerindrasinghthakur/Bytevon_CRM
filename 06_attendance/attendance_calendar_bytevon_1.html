@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Attendance Calendar | Bytevon</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-tertiary-fixed": "#191c1e", "tertiary-container": "#1c1f21", "on-background": "#0b1c30", "error-container": "#ffdad6", "secondary-fixed-dim": "#adc7ff", "on-primary": "#ffffff", "on-surface": "#0b1c30", "primary-fixed-dim": "#afc8f0", "outline-variant": "#c4c6cf", "primary-fixed": "#d4e3ff", surface: "#f8f9ff", "on-primary-fixed-variant": "#2f486a", "inverse-on-surface": "#eaf1ff", "on-secondary-container": "#fefcff", error: "#ba1a1a", "surface-tint": "#476083", "on-tertiary-fixed-variant": "#444749", "on-error-container": "#93000a", "inverse-surface": "#213145", "secondary-fixed": "#d8e2ff", "surface-container-high": "#dce9ff", "on-primary-container": "#6f88ad", "surface-container-lowest": "#ffffff", "surface-container": "#e5eeff", "on-tertiary-container": "#848789", "on-surface-variant": "#43474e", outline: "#74777f", "tertiary-fixed-dim": "#c4c7c9", "surface-container-highest": "#d3e4fe", "inverse-primary": "#afc8f0", tertiary: "#040607", "surface-dim": "#cbdbf5", "on-error": "#ffffff", "primary-container": "#001f3f", "tertiary-fixed": "#e0e3e5", "surface-variant": "#d3e4fe", "surface-bright": "#f8f9ff", "on-secondary-fixed-variant": "#004493", "on-primary-fixed": "#001c3a", "surface-container-low": "#eff4ff", "on-tertiary": "#ffffff", secondary: "#0059bb", background: "#f8f9ff", "secondary-container": "#0070ea", "on-secondary-fixed": "#001a41", "on-secondary": "#ffffff", primary: "#000613"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {unit: "4px", "margin-mobile": "16px", "container-max": "1440px", "stack-lg": "32px", gutter: "24px", "stack-sm": "8px", "stack-md": "16px", "margin-desktop": "40px"}, fontFamily: {"headline-lg": ["Inter"], "label-sm": ["Inter"], "display-lg": ["Inter"], "body-md": ["Inter"], "title-lg": ["Inter"], "headline-md": ["Inter"], "body-lg": ["Inter"], "label-md": ["Inter"], "body-sm": ["Inter"], "headline-lg-mobile": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}]}}}};</script>
+<style>
+    body { font-family: 'Inter', sans-serif; }
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+    }
+    .attendance-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #c4c6cf; border-radius: 10px; }
+  </style>
+</head>
+<body class="bg-background text-on-background overflow-hidden">
+<!-- SideNavBar Anchor -->
+<aside class="fixed left-0 top-0 h-screen w-[280px] bg-primary dark:bg-tertiary-container flex flex-col py-stack-lg px-stack-md shrink-0 z-50">
+<div class="mb-stack-lg px-4 flex items-center space-x-3">
+<div class="w-10 h-10 bg-secondary-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1">cloud_done</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary dark:text-on-tertiary leading-tight">Bytevon</h1>
+<p class="text-xs text-on-primary-container dark:text-on-tertiary-container uppercase tracking-widest font-semibold opacity-70">ERP Enterprise</p>
+</div>
+</div>
+<nav class="flex-grow space-y-1 overflow-y-auto">
+<div class="px-4 py-2 text-on-primary-container opacity-50 text-[10px] font-bold uppercase tracking-widest">Main Menu</div>
+<!-- Nav Item: Dashboard -->
+<a class="flex items-center space-x-3 px-4 py-3 text-on-primary-container dark:text-on-tertiary-container opacity-80 hover:bg-secondary-container hover:text-on-secondary-container transition-colors font-label-md text-label-md rounded-lg group" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<!-- Nav Item: Workforce (Active State for Attendance Calendar) -->
+<div class="flex flex-col">
+<a class="flex items-center space-x-3 px-4 py-3 bg-secondary text-on-secondary-container font-bold rounded-lg transition-colors font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" data-icon="calendar_today">calendar_today</span>
+<span>Workforce</span>
+</a>
+<!-- Sub-sidebar active link -->
+<div class="ml-10 mt-1 space-y-1">
+<a class="block py-2 text-on-secondary-container font-bold text-sm" href="#">Attendance Calendar</a>
+<a class="block py-2 text-on-primary-container opacity-60 hover:opacity-100 text-sm" href="#">Shift Rosters</a>
+<a class="block py-2 text-on-primary-container opacity-60 hover:opacity-100 text-sm" href="#">Leave Requests</a>
+</div>
+</div>
+<a class="flex items-center space-x-3 px-4 py-3 text-on-primary-container dark:text-on-tertiary-container opacity-80 hover:bg-secondary-container hover:text-on-secondary-container transition-colors font-label-md text-label-md rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="domain">domain</span>
+<span>Organization</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 text-on-primary-container dark:text-on-tertiary-container opacity-80 hover:bg-secondary-container hover:text-on-secondary-container transition-colors font-label-md text-label-md rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span>People</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 text-on-primary-container dark:text-on-tertiary-container opacity-80 hover:bg-secondary-container hover:text-on-secondary-container transition-colors font-label-md text-label-md rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="fact_check">fact_check</span>
+<span>Approvals</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-3 text-on-primary-container dark:text-on-tertiary-container opacity-80 hover:bg-secondary-container hover:text-on-secondary-container transition-colors font-label-md text-label-md rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="contact_page">contact_page</span>
+<span>CRM</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-white/10 pt-4 space-y-1">
+<button class="w-full flex items-center justify-center bg-secondary-container text-white py-3 px-4 rounded-xl font-bold mb-4 active:scale-[0.98] transition-transform duration-150">
+<span class="material-symbols-outlined mr-2">add</span>
+        Quick Create
+      </button>
+<a class="flex items-center space-x-3 px-4 py-2 text-on-primary-container opacity-80 hover:bg-secondary-container hover:text-on-secondary-container transition-colors font-label-md text-label-md rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span>Help Center</span>
+</a>
+<a class="flex items-center space-x-3 px-4 py-2 text-on-primary-container opacity-80 hover:bg-secondary-container hover:text-on-secondary-container transition-colors font-label-md text-label-md rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span>Log Out</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Shell -->
+<main class="ml-[280px] min-h-screen flex flex-col bg-surface overflow-hidden">
+<!-- TopNavBar Anchor -->
+<header class="flex justify-between items-center w-full h-16 px-gutter border-b border-outline-variant bg-surface sticky top-0 z-40">
+<div class="flex items-center flex-1 max-w-2xl">
+<div class="relative w-full focus-within:ring-2 focus-within:ring-secondary-container rounded-lg bg-surface-container-low px-4 flex items-center h-10">
+<span class="material-symbols-outlined text-outline">search</span>
+<input class="bg-transparent border-none focus:ring-0 w-full text-body-sm font-body-sm text-on-surface ml-2" placeholder="Search employees, reports, or settings..." type="text"/>
+<span class="text-[10px] font-bold text-outline border border-outline px-1 rounded ml-2">CMD + K</span>
+</div>
+</div>
+<div class="flex items-center space-x-stack-md">
+<button class="p-2 text-on-surface-variant hover:text-secondary transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<button class="flex items-center space-x-3 px-3 py-1.5 rounded-full hover:bg-surface-container transition-colors border border-outline-variant">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-secondary-fixed">
+<img class="w-full h-full object-cover" data-alt="A professional high-resolution headshot of a corporate executive in their late 30s, wearing a tailored navy blue blazer. The lighting is soft and cinematic, with a clean architectural background of a modern glass office. The aesthetic is clean, sharp, and authoritative, matching an enterprise software profile image." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCHk4NJZDhBhf-G1ZMUdHI0t1lzY8ExDVqvGs6QvkJVirAOUg4d-FbhBG0sI_DqTvJUlCz7GolLbTIlnpXC3eXePiCMa1ivlv4G1vAkUNGKmSNzXn5MC678E6oLuF-pNOE0evY7Z_SOJI1S9ysaH59ACflWV7XmwKpK0NslSqZBcFb42p7hvyGczklRVvV8YSjdmn3hXA1aLeHmBBaDz4gZJs3_GLJLlTpiFy1dzV1pgebfsMy5a9O0rA"/>
+</div>
+<span class="text-label-md font-label-md text-on-surface font-bold">Alexander Vance</span>
+</button>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="p-gutter flex-1 flex flex-col overflow-y-auto">
+<!-- Page Header & Filters -->
+<section class="flex flex-col md:flex-row md:items-end justify-between mb-stack-lg space-y-4 md:space-y-0">
+<div>
+<nav class="flex items-center space-x-2 text-label-sm font-label-sm text-on-surface-variant mb-2">
+<span>Workforce</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-secondary font-bold">Attendance Calendar</span>
+</nav>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Attendance Overview</h2>
+<p class="text-body-md text-on-surface-variant">Monitoring enterprise-wide reliability and punctuality for October 2024.</p>
+</div>
+<div class="flex items-center space-x-stack-md">
+<div class="flex bg-surface-container rounded-lg p-1">
+<button class="px-4 py-2 rounded-md bg-white shadow-sm text-label-md font-bold text-secondary">Month</button>
+<button class="px-4 py-2 rounded-md text-label-md font-medium text-on-surface-variant hover:text-on-surface">Week</button>
+<button class="px-4 py-2 rounded-md text-label-md font-medium text-on-surface-variant hover:text-on-surface">Day</button>
+</div>
+<div class="flex items-center space-x-2">
+<button class="h-10 px-4 flex items-center border border-outline-variant rounded-lg bg-white text-on-surface hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined mr-2">filter_list</span>
+<span class="text-label-md font-bold">Filter By Department</span>
+</button>
+<button class="h-10 px-4 flex items-center border border-outline-variant rounded-lg bg-white text-on-surface hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined mr-2">person_search</span>
+<span class="text-label-md font-bold">Employee</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-gutter flex-1">
+<!-- Main Calendar Card -->
+<div class="col-span-12 lg:col-span-9 flex flex-col">
+<div class="bg-white rounded-xl border border-outline-variant shadow-sm flex flex-col flex-1 overflow-hidden">
+<!-- Calendar Navigation -->
+<div class="p-gutter border-b border-outline-variant flex items-center justify-between">
+<div class="flex items-center space-x-4">
+<h3 class="font-title-lg text-title-lg text-on-surface font-bold">October 2024</h3>
+<div class="flex space-x-1">
+<button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Legend -->
+<div class="flex items-center space-x-stack-md">
+<div class="flex items-center space-x-1.5">
+<span class="attendance-indicator bg-secondary"></span>
+<span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Present</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="attendance-indicator bg-error"></span>
+<span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Absence</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="attendance-indicator bg-[#EAB308]"></span>
+<span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Holiday</span>
+</div>
+<div class="flex items-center space-x-1.5">
+<span class="attendance-indicator bg-[#F97316]"></span>
+<span class="text-[11px] font-bold text-on-surface-variant uppercase tracking-wider">Half Day</span>
+</div>
+</div>
+</div>
+<!-- Calendar Body -->
+<div class="calendar-grid flex-1 overflow-y-auto">
+<!-- Week Days -->
+<div class="border-b border-r border-outline-variant bg-surface-container-low p-2 text-center text-[11px] font-black text-outline uppercase tracking-widest">Sun</div>
+<div class="border-b border-r border-outline-variant bg-surface-container-low p-2 text-center text-[11px] font-black text-outline uppercase tracking-widest">Mon</div>
+<div class="border-b border-r border-outline-variant bg-surface-container-low p-2 text-center text-[11px] font-black text-outline uppercase tracking-widest">Tue</div>
+<div class="border-b border-r border-outline-variant bg-surface-container-low p-2 text-center text-[11px] font-black text-outline uppercase tracking-widest">Wed</div>
+<div class="border-b border-r border-outline-variant bg-surface-container-low p-2 text-center text-[11px] font-black text-outline uppercase tracking-widest">Thu</div>
+<div class="border-b border-r border-outline-variant bg-surface-container-low p-2 text-center text-[11px] font-black text-outline uppercase tracking-widest">Fri</div>
+<div class="border-b border-outline-variant bg-surface-container-low p-2 text-center text-[11px] font-black text-outline uppercase tracking-widest">Sat</div>
+<!-- Days (Sample for October 2024 starting on Tuesday) -->
+<!-- Empty slots -->
+<div class="border-b border-r border-outline-variant p-4 bg-surface-container-lowest opacity-40 min-h-[120px]"></div>
+<div class="border-b border-r border-outline-variant p-4 bg-surface-container-lowest opacity-40 min-h-[120px]"></div>
+<!-- Oct 1 -->
+<div class="border-b border-r border-outline-variant p-4 hover:bg-surface-container-low transition-colors group relative min-h-[120px]">
+<span class="text-label-md font-bold text-on-surface">1</span>
+<div class="mt-2 space-y-1">
+<div class="bg-secondary/10 border-l-4 border-secondary p-1 rounded-sm">
+<p class="text-[10px] font-bold text-secondary truncate">98% Present</p>
+</div>
+</div>
+</div>
+<!-- Oct 2 -->
+<div class="border-b border-r border-outline-variant p-4 hover:bg-surface-container-low transition-colors group relative min-h-[120px]">
+<span class="text-label-md font-bold text-on-surface">2</span>
+<div class="mt-2 space-y-1">
+<div class="bg-secondary/10 border-l-4 border-secondary p-1 rounded-sm">
+<p class="text-[10px] font-bold text-secondary truncate">94% Present</p>
+</div>
+<div class="bg-error/10 border-l-4 border-error p-1 rounded-sm">
+<p class="text-[10px] font-bold text-error truncate">4 Absences</p>
+</div>
+</div>
+</div>
+<!-- Oct 3 -->
+<div class="border-b border-r border-outline-variant p-4 hover:bg-surface-container-low transition-colors group relative min-h-[120px]">
+<span class="text-label-md font-bold text-on-surface">3</span>
+<div class="mt-2 space-y-1">
+<div class="bg-[#EAB308]/10 border-l-4 border-[#EAB308] p-1 rounded-sm">
+<p class="text-[10px] font-bold text-[#854D0E] truncate">Unity Day</p>
+</div>
+</div>
+</div>
+<!-- Oct 4 -->
+<div class="border-b border-r border-outline-variant p-4 hover:bg-surface-container-low transition-colors group relative min-h-[120px]">
+<span class="text-label-md font-bold text-on-surface">4</span>
+<div class="mt-2 space-y-1">
+<div class="bg-secondary/10 border-l-4 border-secondary p-1 rounded-sm">
+<p class="text-[10px] font-bold text-secondary truncate">96% Present</p>
+</div>
+</div>
+</div>
+<!-- Oct 5 -->
+<div class="border-b border-outline-variant p-4 bg-surface-container-low/30 min-h-[120px]">
+<span class="text-label-md font-bold text-outline opacity-60">5</span>
+</div>
+<!-- Oct 6 -->
+<div class="border-b border-r border-outline-variant p-4 bg-surface-container-low/30 min-h-[120px]">
+<span class="text-label-md font-bold text-outline opacity-60">6</span>
+</div>
+<!-- Oct 7 -->
+<div class="border-b border-r border-outline-variant p-4 hover:bg-surface-container-low transition-colors group relative min-h-[120px]">
+<span class="text-label-md font-bold text-on-surface">7</span>
+<div class="mt-2 space-y-1">
+<div class="bg-secondary/10 border-l-4 border-secondary p-1 rounded-sm">
+<p class="text-[10px] font-bold text-secondary truncate">100% Present</p>
+</div>
+</div>
+</div>
+<!-- Oct 8 -->
+<div class="border-b border-r border-outline-variant p-4 hover:bg-surface-container-low transition-colors group relative min-h-[120px]">
+<span class="text-label-md font-bold text-on-surface">8</span>
+<div class="mt-2 space-y-1">
+<div class="bg-secondary/10 border-l-4 border-secondary p-1 rounded-sm">
+<p class="text-[10px] font-bold text-secondary truncate">92% Present</p>
+</div>
+<div class="bg-error/10 border-l-4 border-error p-1 rounded-sm">
+<p class="text-[10px] font-bold text-error truncate">8 Absences</p>
+</div>
+</div>
+</div>
+<!-- Oct 9 -->
+<div class="border-b border-r border-outline-variant p-4 hover:bg-surface-container-low transition-colors group relative min-h-[120px]">
+<span class="text-label-md font-bold text-on-surface">9</span>
+<div class="mt-2 space-y-1">
+<div class="bg-[#F97316]/10 border-l-4 border-[#F97316] p-1 rounded-sm">
+<p class="text-[10px] font-bold text-[#9A3412] truncate">Half Day (Training)</p>
+</div>
+</div>
+</div>
+<!-- Oct 10 -->
+<div class="border-b border-r border-outline-variant p-4 hover:bg-surface-container-low transition-colors group bg-secondary-container/5 min-h-[120px]">
+<span class="text-label-md font-bold text-on-surface">10</span>
+<div class="mt-2 space-y-1">
+<div class="bg-secondary/20 border-l-4 border-secondary p-1 rounded-sm">
+<p class="text-[10px] font-bold text-secondary truncate">Current Day</p>
+</div>
+<div class="bg-[#0EA5E9]/10 border-l-4 border-[#0EA5E9] p-1 rounded-sm">
+<p class="text-[10px] font-bold text-[#0369A1] truncate">12 Late Arrivals</p>
+</div>
+</div>
+<div class="absolute inset-0 border-2 border-secondary rounded-sm pointer-events-none"></div>
+</div>
+<!-- Rest of calendar days simplified -->
+<div class="border-b border-r border-outline-variant p-4 min-h-[120px]"><span class="text-label-md font-bold text-on-surface">11</span></div>
+<div class="border-b border-outline-variant p-4 bg-surface-container-low/30 min-h-[120px]"><span class="text-label-md font-bold text-outline opacity-60">12</span></div>
+<div class="border-b border-r border-outline-variant p-4 bg-surface-container-low/30 min-h-[120px]"><span class="text-label-md font-bold text-outline opacity-60">13</span></div>
+<div class="border-b border-r border-outline-variant p-4 min-h-[120px]"><span class="text-label-md font-bold text-on-surface">14</span></div>
+<div class="border-b border-r border-outline-variant p-4 min-h-[120px]"><span class="text-label-md font-bold text-on-surface">15</span></div>
+<div class="border-b border-r border-outline-variant p-4 min-h-[120px]"><span class="text-label-md font-bold text-on-surface">16</span></div>
+<div class="border-b border-r border-outline-variant p-4 min-h-[120px]"><span class="text-label-md font-bold text-on-surface">17</span></div>
+<div class="border-b border-r border-outline-variant p-4 min-h-[120px]"><span class="text-label-md font-bold text-on-surface">18</span></div>
+<div class="border-b border-outline-variant p-4 bg-surface-container-low/30 min-h-[120px]"><span class="text-label-md font-bold text-outline opacity-60">19</span></div>
+<div class="border-b border-r border-outline-variant p-4 bg-surface-container-low/30 min-h-[120px]"><span class="text-label-md font-bold text-outline opacity-60">20</span></div>
+<div class="border-b border-r border-outline-variant p-4 min-h-[120px]"><span class="text-label-md font-bold text-on-surface">21</span></div>
+</div>
+</div>
+</div>
+<!-- Sidebar Widgets -->
+<div class="col-span-12 lg:col-span-3 space-y-gutter">
+<!-- Summary Stats Card -->
+<div class="bg-white rounded-xl border border-outline-variant shadow-sm p-stack-md">
+<h4 class="text-label-sm font-bold text-outline uppercase tracking-wider mb-stack-md">Monthly Metrics</h4>
+<div class="space-y-stack-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<div class="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+</div>
+<span class="text-body-sm font-medium">Avg. Presence</span>
+</div>
+<span class="text-title-lg font-black text-secondary">96.4%</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<div class="w-8 h-8 rounded-lg bg-error/10 flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-[18px]">event_busy</span>
+</div>
+<span class="text-body-sm font-medium">Total Absences</span>
+</div>
+<span class="text-title-lg font-black text-error">28</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<div class="w-8 h-8 rounded-lg bg-[#0EA5E9]/10 flex items-center justify-center text-[#0EA5E9]">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+</div>
+<span class="text-body-sm font-medium">Late Ingress</span>
+</div>
+<span class="text-title-lg font-black text-[#0EA5E9]">42</span>
+</div>
+</div>
+<button class="w-full mt-stack-lg py-2 text-label-md font-bold text-secondary hover:bg-secondary-container/5 rounded-lg transition-colors border border-secondary/20">
+              Download Full Report
+            </button>
+</div>
+<!-- Department Reliability Widget -->
+<div class="bg-white rounded-xl border border-outline-variant shadow-sm p-stack-md">
+<h4 class="text-label-sm font-bold text-outline uppercase tracking-wider mb-stack-md">Department Reliability</h4>
+<div class="space-y-4">
+<div class="space-y-1">
+<div class="flex justify-between text-label-sm">
+<span class="font-bold">Engineering</span>
+<span class="text-secondary">99%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[99%]"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-label-sm">
+<span class="font-bold">Sales &amp; Marketing</span>
+<span class="text-secondary">92%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[92%]"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between text-label-sm">
+<span class="font-bold">Operations</span>
+<span class="text-secondary">94%</span>
+</div>
+<div class="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-[94%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Pending Alerts -->
+<div class="bg-primary-container rounded-xl p-stack-md text-white">
+<div class="flex items-center space-x-2 mb-2">
+<span class="material-symbols-outlined text-secondary-fixed">warning</span>
+<h4 class="text-label-sm font-bold uppercase tracking-wider">Anomalies Detected</h4>
+</div>
+<p class="text-body-sm opacity-80 mb-stack-md">3 employees have exceeded the standard absence threshold this month.</p>
+<div class="flex -space-x-2">
+<div class="w-8 h-8 rounded-full border-2 border-primary-container bg-surface-dim overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A detailed headshot of a smiling professional woman with short brown hair, wearing glasses and a gray business suit, clean modern studio lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBtRfXeKzWNFp9ePYaQR826EYO4-b3WyoXwPxZSDwNrglq2vSZn5JxlQW53o8F0qZXwPCZZ7LxzVkq_zAuxvCzIqFsSgjis54uthiysv7kyOEBK9G8w43n6mn39WmSD_V4v6k8ZSVkV0aUtakeTUNKkBLruICuIP0mSTKRkf7XsDNtUKmluvlBdnNVY_BDuq_3UzzTQaQfSF7fc4NgPq86h15ILCB1OHGY_-A9Bhmm4ds9naeRwXFlLIw"/>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-primary-container bg-surface-dim overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A close-up portrait of a young professional man with a neat beard and stylish haircut, wearing a white dress shirt, soft natural lighting in an office environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuARWAwDbaNjvU0bn0MB4_ewDHgyhPKiKukCyiE1ItAr_5X6qFaKu6DSn1OP2nxmW7_Hi-8Om-5T34o-u7h_ZLEuNhcTr68cHXcMGi2AQ7Ky-3Dia62PrwEZEgDe9u7qgSlnLceGdYP2IqkRfWQnBkB6xdVY1NkKrgnIyfP76MWkhq5QpDO8OaHnn5YU5N_in-E5_pQT68frsrnAImBKUb8EarVfBCH3IglUjoRI9_SJsqOjB8Ysd2j8Jw"/>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-primary-container bg-surface-dim overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A portrait of a senior professional woman with salt-and-pepper hair, confident expression, wearing a navy silk blouse, bright and clear minimalist office setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3QbtLFu0WTQ66K-mVUOWlmML8BHmInpvFsrU5T9Y3UpxJwawEguZ-7TwQHIeVS6FaHKuo5rCYktAmZGPWBXx5zoskcHeZJ_Q2G1IRd0THFISnFppVZTjL3GSsb-9H4wnL42Mpc88bnFLo1KEfLHx58RVwUPGQxomX1qOttp9JFQkdRvY94KJOv-YbgD3MLwgupJvZlhUHiKZ46hDNkq7I6PMsWwKaBTyFjmgAWn1anJpJSDw82NXMJQ"/>
+</div>
+<div class="w-8 h-8 rounded-full border-2 border-primary-container bg-secondary-container flex items-center justify-center text-[10px] font-bold">
+                +1
+              </div>
+</div>
+<button class="mt-4 w-full py-2 bg-secondary text-white rounded-lg font-bold text-label-md active:scale-95 transition-all">
+              Review Cases
+            </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+    // Micro-interactions and subtle effects
+    document.querySelectorAll('.calendar-grid > div').forEach(day => {
+      day.addEventListener('mouseenter', () => {
+        if (!day.classList.contains('opacity-40')) {
+          day.style.transform = 'translateY(-2px)';
+          day.classList.add('shadow-md', 'z-10');
+        }
+      });
+      day.addEventListener('mouseleave', () => {
+        day.style.transform = 'translateY(0)';
+        day.classList.remove('shadow-md', 'z-10');
+      });
+    });
+
+    // Simple tooltip logic placeholder
+    const showToast = (msg) => {
+      console.log(`Notification: ${msg}`);
+    };
+  </script>
+</body></html>

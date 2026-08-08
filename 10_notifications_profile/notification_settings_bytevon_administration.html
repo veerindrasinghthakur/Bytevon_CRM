@@ -1,0 +1,466 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Notification Settings | Bytevon Enterprise</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"primary-container": "#001f3f", "on-secondary": "#ffffff", "on-error": "#ffffff", "on-secondary-fixed": "#001a41", "primary-fixed-dim": "#afc8f0", error: "#ba1a1a", "on-secondary-container": "#fefcff", background: "#f8f9ff", "tertiary-fixed-dim": "#c4c7c9", "surface-bright": "#f8f9ff", "on-tertiary": "#ffffff", "surface-container": "#e5eeff", "inverse-surface": "#213145", "surface-tint": "#476083", "inverse-primary": "#afc8f0", "surface-container-highest": "#d3e4fe", primary: "#000613", "on-tertiary-fixed-variant": "#444749", "on-tertiary-fixed": "#191c1e", "on-secondary-fixed-variant": "#004493", secondary: "#0059bb", "on-primary-fixed": "#001c3a", "on-primary": "#ffffff", "tertiary-fixed": "#e0e3e5", "surface-dim": "#cbdbf5", "tertiary-container": "#1c1f21", "primary-fixed": "#d4e3ff", "on-error-container": "#93000a", "on-surface-variant": "#43474e", "surface-variant": "#d3e4fe", "outline-variant": "#c4c6cf", "surface-container-low": "#eff4ff", "secondary-container": "#0070ea", "secondary-fixed-dim": "#adc7ff", outline: "#74777f", "inverse-on-surface": "#eaf1ff", "on-background": "#0b1c30", "secondary-fixed": "#d8e2ff", tertiary: "#040607", "on-tertiary-container": "#848789", "surface-container-high": "#dce9ff", surface: "#f8f9ff", "error-container": "#ffdad6", "on-primary-container": "#6f88ad", "surface-container-lowest": "#ffffff", "on-primary-fixed-variant": "#2f486a", "on-surface": "#0b1c30"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"margin-mobile": "16px", "stack-lg": "32px", gutter: "24px", "stack-md": "16px", unit: "4px", "stack-sm": "8px", "margin-desktop": "40px", "container-max": "1440px"}, fontFamily: {"title-lg": ["Inter"], "headline-lg": ["Inter"], "body-sm": ["Inter"], "body-lg": ["Inter"], "display-lg": ["Inter"], "headline-md": ["Inter"], "label-sm": ["Inter"], "headline-lg-mobile": ["Inter"], "body-md": ["Inter"], "label-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}]}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9ff; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px; width: 14px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #0059bb; }
+        input:checked + .slider:before { transform: translateX(20px); }
+    </style>
+</head>
+<body class="text-on-surface overflow-hidden">
+<!-- Primary Global Sidebar -->
+<aside class="fixed left-0 top-0 h-full w-[80px] bg-primary-container flex flex-col items-center py-6 z-50 transition-all duration-300" id="primary-nav">
+<div class="mb-10 cursor-pointer hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-on-primary-container text-[32px]">menu_open</span>
+</div>
+<nav class="flex flex-col gap-6 w-full">
+<a class="text-on-primary-container hover:text-on-primary p-3 flex items-center justify-center hover:bg-primary/20 transition-colors group relative" href="#" title="Dashboard">
+<span class="material-symbols-outlined">dashboard</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary p-3 flex items-center justify-center hover:bg-primary/20 transition-colors group relative" href="#" title="Analytics">
+<span class="material-symbols-outlined">analytics</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary p-3 flex items-center justify-center hover:bg-primary/20 transition-colors group relative" href="#" title="Sales">
+<span class="material-symbols-outlined">monetization_on</span>
+</a>
+<a class="text-on-primary-container hover:text-on-primary p-3 flex items-center justify-center hover:bg-primary/20 transition-colors group relative" href="#" title="Inventory">
+<span class="material-symbols-outlined">inventory_2</span>
+</a>
+<a class="bg-secondary-container text-on-secondary-container rounded-lg mx-2 p-3 flex items-center justify-center scale-95 duration-100" href="#" title="Administration">
+<span class="material-symbols-outlined">assessment</span>
+</a>
+</nav>
+<div class="mt-auto flex flex-col gap-6">
+<span class="material-symbols-outlined text-on-primary-container/50 cursor-pointer hover:text-on-primary">help</span>
+<span class="material-symbols-outlined text-on-primary-container/50 cursor-pointer hover:text-on-primary">settings</span>
+</div>
+</aside>
+<!-- Secondary Contextual Sidebar -->
+<aside class="fixed left-[80px] top-0 h-full w-[280px] bg-surface-container-low border-r border-outline-variant flex flex-col z-40 transition-all duration-300" id="secondary-nav">
+<div class="p-6">
+<div class="flex justify-between items-center mb-6">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary">Administration</h2>
+<p class="font-label-md text-label-md text-on-surface-variant">System Settings</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest py-3 px-4 rounded-lg flex items-center gap-3 transition-all" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span class="font-label-md text-label-md">Organization</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest py-3 px-4 rounded-lg flex items-center gap-3 transition-all" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-md text-label-md">User Management</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest py-3 px-4 rounded-lg flex items-center gap-3 transition-all" href="#">
+<span class="material-symbols-outlined">security_update_good</span>
+<span class="font-label-md text-label-md">Roles &amp; Permissions</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest py-3 px-4 rounded-lg flex items-center gap-3 transition-all" href="#">
+<span class="material-symbols-outlined">lock</span>
+<span class="font-label-md text-label-md">Security</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest py-3 px-4 rounded-lg flex items-center gap-3 transition-all" href="#">
+<span class="material-symbols-outlined">event_available</span>
+<span class="font-label-md text-label-md">Attendance</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest py-3 px-4 rounded-lg flex items-center gap-3 transition-all" href="#">
+<span class="material-symbols-outlined">event_busy</span>
+<span class="font-label-md text-label-md">Leave</span>
+</a>
+<a class="text-secondary font-bold border-r-4 border-secondary bg-surface-container-high py-3 px-4 flex items-center gap-3 transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">notifications_active</span>
+<span class="font-label-md text-label-md">Notification Settings</span>
+</a>
+<a class="text-on-surface-variant hover:text-on-surface hover:bg-surface-container-highest py-3 px-4 rounded-lg flex items-center gap-3 transition-all" href="#">
+<span class="material-symbols-outlined">history_edu</span>
+<span class="font-label-md text-label-md">Audit Logs</span>
+</a>
+</nav>
+</div>
+</aside>
+<!-- Top App Bar -->
+<header class="fixed top-0 right-0 w-[calc(100%-360px)] h-16 bg-surface border-b border-outline-variant shadow-sm flex justify-between items-center px-gutter z-30">
+<div class="flex items-center gap-4">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full text-body-md focus:ring-2 focus:ring-secondary focus:border-secondary outline-none w-64 transition-all" placeholder="Search parameters..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex gap-2">
+<button class="hover:bg-surface-container-low rounded-full p-2 text-on-surface-variant opacity-80 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="hover:bg-surface-container-low rounded-full p-2 text-on-surface-variant relative opacity-80 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+</div>
+<div class="flex items-center gap-3 border-l pl-6 border-outline-variant">
+<div class="text-right">
+<p class="font-label-md text-label-md text-primary">Alex Sterling</p>
+<p class="text-[10px] uppercase tracking-wider text-on-surface-variant">System Admin</p>
+</div>
+<img class="w-10 h-10 rounded-full border-2 border-surface-container-highest object-cover shadow-sm" data-alt="A professional headshot of a senior system administrator in a high-tech office environment. The lighting is soft and natural, coming from large windows in the background. He is wearing a dark navy blazer over a light blue shirt, embodying a professional and authoritative executive style that fits a modern enterprise software context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-Q1VO76zLx5cvYhplKrgKWagUgoQJSDHeztTY7Qo4xJGVfW79rnSh7ecfnnLqwpDZswvM2KLfN089v2IUe0R3U47FmNaKmaJJq91FEP_hfzsyqCPe4E6yHVdmGWGpi49Tcgfg1UV-Sl5qsOF2zoHNb1mfdFp7_N-24tH2QE_t9q9M280PgopXb0D1Yd4OMysA2f1Own4zIFdGAT5lCD_JOb4PWhoQYMSO1WR-8hUVMmO4ZETqCS3-nw">
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="fixed top-16 right-0 w-[calc(100%-360px)] h-[calc(100vh-64px)] overflow-y-auto bg-background p-10 custom-scrollbar">
+<div class="max-w-container-max mx-auto">
+<!-- Page Header -->
+<div class="flex justify-between items-start mb-10">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-primary mb-2">Notification Settings</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">Configure system-wide notification protocols, delivery channels, and trigger-based alerts across the enterprise ecosystem.</p>
+</div>
+<div class="flex gap-4">
+<button class="px-6 py-2.5 rounded-lg border border-outline text-primary font-label-md hover:bg-surface-container transition-colors">Discard Changes</button>
+<button class="px-6 py-2.5 rounded-lg bg-primary-container text-white font-label-md hover:bg-primary transition-all shadow-md">Save Settings</button>
+</div>
+</div>
+<!-- Section 1: Delivery Channels -->
+<section class="mb-12">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-secondary">broadcast_on_home</span>
+<h3 class="font-title-lg text-title-lg text-primary">Delivery Channels</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<!-- Email -->
+<div class="bg-white p-6 rounded-xl border border-surface-dim shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 bg-primary-container/10 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container">mail</span>
+</div>
+<label class="toggle-switch">
+<input checked="" type="checkbox">
+<span class="slider"></span>
+</label>
+</div>
+<h4 class="font-title-lg text-title-lg mb-1">Email</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6">SMTP &amp; API delivery for reports and alerts.</p>
+<a class="text-secondary font-label-md flex items-center gap-1 hover:underline" href="#">
+                            Configure <span class="material-symbols-outlined text-sm">chevron_right</span>
+</a>
+</div>
+<!-- SMS -->
+<div class="bg-white p-6 rounded-xl border border-surface-dim shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 bg-primary-container/10 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container">sms</span>
+</div>
+<label class="toggle-switch">
+<input type="checkbox">
+<span class="slider"></span>
+</label>
+</div>
+<h4 class="font-title-lg text-title-lg mb-1">SMS</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6">Twilio integration for urgent security codes.</p>
+<a class="text-secondary font-label-md flex items-center gap-1 hover:underline" href="#">
+                            Configure <span class="material-symbols-outlined text-sm">chevron_right</span>
+</a>
+</div>
+<!-- Push -->
+<div class="bg-white p-6 rounded-xl border border-surface-dim shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 bg-primary-container/10 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container">ad_units</span>
+</div>
+<label class="toggle-switch">
+<input checked="" type="checkbox">
+<span class="slider"></span>
+</label>
+</div>
+<h4 class="font-title-lg text-title-lg mb-1">Push</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6">Mobile and desktop browser notifications.</p>
+<a class="text-secondary font-label-md flex items-center gap-1 hover:underline" href="#">
+                            Configure <span class="material-symbols-outlined text-sm">chevron_right</span>
+</a>
+</div>
+<!-- In-App -->
+<div class="bg-white p-6 rounded-xl border border-surface-dim shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="w-12 h-12 bg-primary-container/10 rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-primary-container">notification_important</span>
+</div>
+<label class="toggle-switch">
+<input checked="" type="checkbox">
+<span class="slider"></span>
+</label>
+</div>
+<h4 class="font-title-lg text-title-lg mb-1">In-App</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6">Internal dashboard notification center.</p>
+<a class="text-secondary font-label-md flex items-center gap-1 hover:underline" href="#">
+                            Configure <span class="material-symbols-outlined text-sm">chevron_right</span>
+</a>
+</div>
+</div>
+</section>
+<!-- Section 2: Global Triggers -->
+<section class="mb-12">
+<div class="flex justify-between items-center mb-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">bolt</span>
+<h3 class="font-title-lg text-title-lg text-primary">Global Triggers</h3>
+</div>
+<button class="text-secondary font-label-md flex items-center gap-1">
+<span class="material-symbols-outlined">add</span> Create New Trigger
+                    </button>
+</div>
+<div class="bg-white rounded-xl border border-surface-dim shadow-sm overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-surface-dim">
+<th class="py-4 px-6 font-label-md text-label-md text-on-surface-variant">Notification Event</th>
+<th class="py-4 px-6 font-label-md text-label-md text-on-surface-variant">Channels</th>
+<th class="py-4 px-6 font-label-md text-label-md text-on-surface-variant">Recipients</th>
+<th class="py-4 px-6 font-label-md text-label-md text-on-surface-variant">Last Triggered</th>
+<th class="py-4 px-6 font-label-md text-label-md text-on-surface-variant">Status</th>
+<th class="py-4 px-6 font-label-md text-label-md text-on-surface-variant text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-dim">
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="py-4 px-6">
+<p class="font-body-md text-body-md font-medium text-primary">New Employee Onboarding</p>
+<p class="text-[12px] text-on-surface-variant">Fires when a new user record is created.</p>
+</td>
+<td class="py-4 px-6">
+<div class="flex gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]" title="Email">mail</span>
+<span class="material-symbols-outlined text-[20px]" title="In-App">notification_important</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<span class="px-2 py-1 bg-surface-container text-primary text-[12px] font-semibold rounded">HR Admin</span>
+</td>
+<td class="py-4 px-6 text-on-surface-variant text-body-sm">2 hrs ago</td>
+<td class="py-4 px-6">
+<label class="toggle-switch">
+<input checked="" type="checkbox">
+<span class="slider"></span>
+</label>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="py-4 px-6">
+<p class="font-body-md text-body-md font-medium text-primary">Security Breach Alert</p>
+<p class="text-[12px] text-on-surface-variant">Critical: Multiple failed login attempts.</p>
+</td>
+<td class="py-4 px-6">
+<div class="flex gap-2 text-error">
+<span class="material-symbols-outlined text-[20px]" title="Email">mail</span>
+<span class="material-symbols-outlined text-[20px]" title="SMS">sms</span>
+<span class="material-symbols-outlined text-[20px]" title="Push">ad_units</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<span class="px-2 py-1 bg-error-container text-on-error-container text-[12px] font-semibold rounded">System Admin</span>
+</td>
+<td class="py-4 px-6 text-on-surface-variant text-body-sm">14 days ago</td>
+<td class="py-4 px-6">
+<label class="toggle-switch">
+<input checked="" type="checkbox">
+<span class="slider"></span>
+</label>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="py-4 px-6">
+<p class="font-body-md text-body-md font-medium text-primary">Leave Request Submission</p>
+<p class="text-[12px] text-on-surface-variant">Standard workflow for absence approval.</p>
+</td>
+<td class="py-4 px-6">
+<div class="flex gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]" title="Email">mail</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<span class="px-2 py-1 bg-surface-container text-primary text-[12px] font-semibold rounded">Direct Manager</span>
+</td>
+<td class="py-4 px-6 text-on-surface-variant text-body-sm">5 mins ago</td>
+<td class="py-4 px-6">
+<label class="toggle-switch">
+<input checked="" type="checkbox">
+<span class="slider"></span>
+</label>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="py-4 px-6">
+<p class="font-body-md text-body-md font-medium text-primary">System Maintenance</p>
+<p class="text-[12px] text-on-surface-variant">Scheduled downtime or patch updates.</p>
+</td>
+<td class="py-4 px-6">
+<div class="flex gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]" title="Push">ad_units</span>
+<span class="material-symbols-outlined text-[20px]" title="In-App">notification_important</span>
+</div>
+</td>
+<td class="py-4 px-6">
+<span class="px-2 py-1 bg-surface-container text-primary text-[12px] font-semibold rounded">All Users</span>
+</td>
+<td class="py-4 px-6 text-on-surface-variant text-body-sm">Yesterday</td>
+<td class="py-4 px-6">
+<label class="toggle-switch">
+<input type="checkbox">
+<span class="slider"></span>
+</label>
+</td>
+<td class="py-4 px-6 text-right">
+<button class="text-on-surface-variant hover:text-primary"><span class="material-symbols-outlined">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Section 3: Advanced Preferences -->
+<section class="mb-12">
+<div class="flex items-center gap-2 mb-6">
+<span class="material-symbols-outlined text-secondary">tune</span>
+<h3 class="font-title-lg text-title-lg text-primary">Advanced Preferences</h3>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+<!-- Batch Frequency -->
+<div class="bg-white p-8 rounded-xl border border-surface-dim shadow-sm">
+<h4 class="font-title-lg text-title-lg mb-2">Batch Frequency</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6">Controls how often system updates and reports are delivered to prevent inbox fatigue.</p>
+<div class="space-y-4">
+<label class="flex items-center gap-4 p-4 rounded-lg border border-surface-dim hover:border-secondary cursor-pointer transition-all bg-surface-container-lowest">
+<input class="w-5 h-5 text-secondary focus:ring-secondary" name="freq" type="radio">
+<div>
+<p class="font-body-md text-body-md font-medium">Immediate Delivery</p>
+<p class="text-[12px] text-on-surface-variant">Send triggers the moment they occur.</p>
+</div>
+</label>
+<label class="flex items-center gap-4 p-4 rounded-lg border border-secondary bg-surface-container-high cursor-pointer transition-all">
+<input checked="" class="w-5 h-5 text-secondary focus:ring-secondary" name="freq" type="radio">
+<div>
+<p class="font-body-md text-body-md font-medium text-secondary">Hourly Digest</p>
+<p class="text-[12px] text-on-surface-variant">Collect notifications and send once per hour.</p>
+</div>
+</label>
+<label class="flex items-center gap-4 p-4 rounded-lg border border-surface-dim hover:border-secondary cursor-pointer transition-all bg-surface-container-lowest">
+<input class="w-5 h-5 text-secondary focus:ring-secondary" name="freq" type="radio">
+<div>
+<p class="font-body-md text-body-md font-medium">Daily Summary</p>
+<p class="text-[12px] text-on-surface-variant">One consolidated report at the end of the day (18:00).</p>
+</div>
+</label>
+</div>
+</div>
+<!-- Quiet Hours -->
+<div class="bg-white p-8 rounded-xl border border-surface-dim shadow-sm">
+<div class="flex justify-between items-center mb-6">
+<div>
+<h4 class="font-title-lg text-title-lg mb-2">Quiet Hours</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Suppress non-critical alerts during specified periods.</p>
+</div>
+<label class="toggle-switch">
+<input checked="" type="checkbox">
+<span class="slider"></span>
+</label>
+</div>
+<div class="grid grid-cols-2 gap-6">
+<div>
+<label class="block font-label-md text-label-md text-primary mb-2">Start Time</label>
+<div class="relative">
+<input class="w-full p-3 bg-surface-container-low border border-surface-dim rounded-lg focus:ring-2 focus:ring-secondary outline-none" type="time" value="21:00">
+</div>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-primary mb-2">End Time</label>
+<div class="relative">
+<input class="w-full p-3 bg-surface-container-low border border-surface-dim rounded-lg focus:ring-2 focus:ring-secondary outline-none" type="time" value="07:00">
+</div>
+</div>
+</div>
+<div class="mt-8">
+<label class="block font-label-md text-label-md text-primary mb-3">Exemptions</label>
+<div class="flex flex-wrap gap-2">
+<div class="px-4 py-2 bg-surface-container text-primary rounded-full flex items-center gap-2 text-sm border border-outline-variant hover:border-secondary transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">verified_user</span> Security Alerts
+                                </div>
+<div class="px-4 py-2 bg-surface-container text-primary rounded-full flex items-center gap-2 text-sm border border-outline-variant hover:border-secondary transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">warning</span> System Down
+                                </div>
+<div class="px-4 py-2 bg-background border border-dashed border-outline-variant text-on-surface-variant rounded-full flex items-center gap-2 text-sm hover:border-secondary hover:text-secondary transition-all cursor-pointer">
+<span class="material-symbols-outlined text-[18px]">add</span> Add Exemption
+                                </div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</main>
+<script>
+        // Micro-interactions and UI state
+        document.querySelectorAll('.toggle-switch input').forEach(toggle => {
+            toggle.addEventListener('change', function() {
+                const parent = this.closest('.bg-white') || this.closest('tr');
+                if (parent) {
+                    if (this.checked) {
+                        parent.style.opacity = '1';
+                    } else {
+                        parent.style.opacity = '0.6';
+                    }
+                }
+            });
+        });
+
+        // Basic toggle functionality for sidebars could be added here
+        // But the layout is fixed as per prompt requirement for visual fidelity
+    </script>
+</body></html>

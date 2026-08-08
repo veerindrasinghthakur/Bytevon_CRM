@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add New Role | Bytevon Enterprise ERP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {error: "#ba1a1a", "surface-variant": "#d3e4fe", "surface-container-lowest": "#ffffff", surface: "#f8f9ff", "tertiary-container": "#1c1f21", "on-primary-fixed": "#001c3a", "inverse-primary": "#afc8f0", "tertiary-fixed-dim": "#c4c7c9", "on-primary": "#ffffff", "primary-fixed": "#d4e3ff", "on-tertiary": "#ffffff", "surface-tint": "#476083", "on-error-container": "#93000a", "on-tertiary-fixed": "#191c1e", "secondary-fixed-dim": "#adc7ff", "on-background": "#0b1c30", "on-surface-variant": "#43474e", "surface-container": "#e5eeff", "tertiary-fixed": "#e0e3e5", "outline-variant": "#c4c6cf", "on-secondary-container": "#fefcff", "surface-container-high": "#dce9ff", "on-error": "#ffffff", "primary-container": "#001f3f", primary: "#000613", "on-tertiary-fixed-variant": "#444749", secondary: "#0059bb", "surface-container-highest": "#d3e4fe", "surface-bright": "#f8f9ff", "on-secondary-fixed": "#001a41", "secondary-container": "#0070ea", "on-tertiary-container": "#848789", outline: "#74777f", "inverse-on-surface": "#eaf1ff", "on-secondary-fixed-variant": "#004493", "inverse-surface": "#213145", "secondary-fixed": "#d8e2ff", "on-primary-container": "#6f88ad", "on-surface": "#0b1c30", background: "#f8f9ff", "surface-container-low": "#eff4ff", "on-primary-fixed-variant": "#2f486a", "primary-fixed-dim": "#afc8f0", tertiary: "#040607", "error-container": "#ffdad6", "surface-dim": "#cbdbf5", "on-secondary": "#ffffff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-sm": "8px", "margin-mobile": "16px", "margin-desktop": "40px", unit: "4px", "container-max": "1440px", "stack-lg": "32px", "stack-md": "16px", gutter: "24px"}, fontFamily: {"headline-lg": ["Inter"], "body-sm": ["Inter"], "title-lg": ["Inter"], "display-lg": ["Inter"], "headline-md": ["Inter"], "label-md": ["Inter"], "body-lg": ["Inter"], "label-sm": ["Inter"], "body-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}]}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen overflow-x-hidden">
+<!-- SIDE NAV BAR (The Anchor) -->
+<aside class="flex flex-col h-full flex-shrink-0 z-40 bg-primary border-r border-outline-variant transition-all duration-300 w-24 fixed left-0 top-0" id="primary-sidebar"><div class="p-4 flex flex-col items-center gap-6 h-full"><button class="material-symbols-outlined text-on-primary p-2 hover:bg-white/10 rounded-lg transition-colors" id="primary-collapse">menu_open</button><nav class="flex flex-col gap-4 items-center w-full"><a class="p-3 rounded-xl text-on-primary-container hover:bg-white/10 transition-all group" href="#" title="Dashboard"><span class="material-symbols-outlined">dashboard</span></a><a class="p-3 rounded-xl text-on-primary-container hover:bg-white/10 transition-all group" href="#" title="Sales"><span class="material-symbols-outlined">payments</span></a><a class="p-3 rounded-xl text-on-primary-container hover:bg-white/10 transition-all group" href="#" title="People"><span class="material-symbols-outlined">group</span></a><a class="p-3 rounded-xl text-on-primary-container hover:bg-white/10 transition-all group" href="#" title="Workforce"><span class="material-symbols-outlined">engineering</span></a><a class="p-3 rounded-xl text-on-primary-container hover:bg-white/10 transition-all group" href="#" title="Approvals"><span class="material-symbols-outlined">fact_check</span></a><a class="p-3 rounded-xl text-on-primary-container hover:bg-white/10 transition-all group" href="#" title="CRM"><span class="material-symbols-outlined">hub</span></a><a class="p-3 rounded-xl bg-secondary text-on-secondary shadow-lg transition-all group" href="#" title="Administration"><span class="material-symbols-outlined">admin_panel_settings</span></a></nav><div class="mt-auto"><a class="p-3 rounded-xl text-on-primary-container hover:bg-white/10 transition-all" href="#" title="Support"><span class="material-symbols-outlined">contact_support</span></a></div></div></aside><aside class="flex flex-col h-full w-[240px] flex-shrink-0 z-30 bg-surface-container-low border-r border-outline-variant py-4 fixed left-24 top-0" id="secondary-sidebar"><div class="px-6 flex justify-between items-center mb-8"><h3 class="text-xs font-bold text-on-surface-variant uppercase tracking-widest">Administration</h3><button class="material-symbols-outlined text-on-surface-variant hover:text-secondary transition-colors" id="secondary-collapse">chevron_left</button></div><nav class="px-3 space-y-1"><a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors font-label-md" href="#"><span class="material-symbols-outlined text-[20px]">corporate_fare</span>Organization Settings</a><a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors font-label-md" href="#"><span class="material-symbols-outlined text-[20px]">group</span>User Management</a><a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-secondary/10 text-secondary font-label-md border border-secondary/20" href="#"><span class="material-symbols-outlined text-[20px]">rule</span>Roles &amp; Permissions</a><a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors font-label-md" href="#"><span class="material-symbols-outlined text-[20px]">security</span>Security</a><a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors font-label-md" href="#"><span class="material-symbols-outlined text-[20px]">calendar_today</span>Attendance</a><a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors font-label-md" href="#"><span class="material-symbols-outlined text-[20px]">event_busy</span>Leave</a><a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors font-label-md" href="#"><span class="material-symbols-outlined text-[20px]">receipt_long</span>Audit Logs</a></nav><div class="mt-auto px-6 py-8 border-t border-outline-variant border-opacity-10"><div class="bg-surface-container p-4 rounded-xl"><p class="text-[10px] font-bold text-on-surface-variant uppercase mb-2">System Status</p><div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-green-500"></div><span class="text-xs font-medium">All Systems Operational</span></div></div></div></aside>
+<!-- MAIN CONTENT AREA -->
+<main class="ml-[336px] min-h-screen flex flex-col">
+<!-- TOP APP BAR -->
+<header class="fixed top-0 right-0 w-[calc(100%-336px)] h-16 bg-surface border-b border-outline-variant flex justify-between items-center px-margin-desktop z-40">
+<div class="flex items-center space-x-6">
+<div class="relative group">
+<input class="bg-surface-container border-none rounded-full px-10 py-1.5 text-body-sm w-64 focus:ring-1 focus:ring-secondary transition-all" placeholder="Search..." type="text"/>
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+</div>
+<div class="flex items-center space-x-4 border-l border-outline-variant pl-6">
+<button class="relative hover:bg-surface-container-high p-2 rounded-full transition-colors active:scale-95">
+<span class="material-symbols-outlined text-primary">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full border border-surface"></span>
+</button>
+<button class="hover:bg-surface-container-high p-2 rounded-full transition-colors active:scale-95">
+<span class="material-symbols-outlined text-primary">apps</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="Close up professional corporate portrait of an executive male in a crisp white shirt and navy blazer, minimalist studio lighting, high resolution photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiw2c9_uHIohNKhIzqsEprLJJOrAvPtGbXMaALNpF2KvpJXFEc_Pwt_inrCJZnp7txvRXt4Yjs9G7PBWTOGJzzjVEliOmCq-vVBfp21W7BNTBEAf9bDX6UM4zFzYH3dpJLlZYz3i_OMThk3AKLdSwM_XhAUH_tL0mqH3qGrhvZXnpBq69ckWtJ-tHA0J5TpgJjyR1veoEUlgqCYxDqoxZGWup0iasIXJg6j4pMpy5FNJ_jtZuIoEbspg"/>
+</div>
+</div>
+</div>
+</header>
+<!-- CANVAS CONTENT -->
+<div class="mt-16 p-margin-desktop pb-32 max-w-container-max mx-auto w-full">
+<!-- PAGE HEADER -->
+<div class="mb-stack-lg"><nav class="flex items-center space-x-2 text-on-surface-variant font-label-md mb-4"><a class="hover:text-primary transition-colors" href="#">Dashboard</a><span class="material-symbols-outlined text-[18px]">chevron_right</span><a class="hover:text-primary transition-colors" href="#">Administration</a><span class="material-symbols-outlined text-[18px]">chevron_right</span><a class="hover:text-primary transition-colors" href="#">Roles &amp; Permissions</a><span class="material-symbols-outlined text-[18px]">chevron_right</span><span class="text-primary font-bold">Add New Role</span></nav>
+<a class="inline-flex items-center gap-2 text-secondary hover:text-primary transition-colors mb-2 group" href="#">
+<span class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="font-label-md">Back to Roles &amp; Permissions</span>
+</a><h2 class="font-headline-lg text-headline-lg text-primary mb-2">Add New Role</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Define access levels and assign granular permissions for a new organizational role.</p>
+</div>
+<!-- FORM SECTIONS -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- ROLE IDENTITY (SIDE CARD) -->
+<section class="col-span-12 lg:col-span-4 space-y-gutter">
+<div class="bg-white p-6 rounded-xl border border-[#E2E8F0] shadow-sm">
+<div class="flex items-center space-x-2 mb-6 pb-4 border-b border-outline-variant">
+<span class="material-symbols-outlined text-secondary">badge</span>
+<h3 class="font-title-lg text-title-lg text-primary">Role Identity</h3>
+</div>
+<div class="space-y-5">
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Role Name</label>
+<input class="w-full border-outline rounded-lg px-4 py-2.5 focus:border-secondary focus:ring-1 focus:ring-secondary bg-surface transition-all" placeholder="e.g., Senior Financial Analyst" type="text"/>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Hierarchy Level</label>
+<select class="w-full border-outline rounded-lg px-4 py-2.5 focus:border-secondary focus:ring-1 focus:ring-secondary bg-surface transition-all">
+<option>Select Level</option>
+<option>1 (Entry)</option>
+<option>2</option>
+<option>3</option>
+<option>4</option>
+<option>5 (Management)</option>
+<option>10 (Executive)</option>
+</select>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Inherit permissions from</label>
+<select class="w-full border-outline rounded-lg px-4 py-2.5 focus:border-secondary focus:ring-1 focus:ring-secondary bg-surface transition-all">
+<option>None (Custom)</option>
+<option>Basic Employee</option>
+<option>Financial Analyst</option>
+<option>HR Manager</option>
+</select>
+</div>
+<div>
+<label class="block font-label-md text-label-md text-on-surface-variant mb-2">Description</label>
+<textarea class="w-full border-outline rounded-lg px-4 py-2.5 focus:border-secondary focus:ring-1 focus:ring-secondary bg-surface transition-all" placeholder="Briefly describe the responsibilities..." rows="4"></textarea>
+</div>
+<div class="flex items-center justify-between pt-4 border-t border-outline-variant">
+<div>
+<p class="font-label-md text-label-md text-primary">Role Status</p>
+<p class="text-label-sm text-on-surface-variant font-normal">Active roles are immediately available.</p>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+</label>
+</div>
+</div>
+</div>
+<!-- GUIDANCE BOX -->
+<div class="bg-surface-container-low p-6 rounded-xl border border-secondary/20">
+<h4 class="font-label-md text-label-md text-secondary flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-[18px]">info</span>
+                            Best Practice
+                        </h4>
+<p class="text-body-sm text-on-surface-variant">Assign the lowest necessary permissions required for the job function to maintain system integrity and data security.</p>
+</div>
+</section>
+<!-- PERMISSION MATRIX (MAIN CONTENT CARD) -->
+<section class="col-span-12 lg:col-span-8">
+<div class="bg-white rounded-xl border border-[#E2E8F0] shadow-sm overflow-hidden flex flex-col h-full">
+<div class="p-6 border-b border-outline-variant bg-white sticky top-0 z-10 flex justify-between items-center">
+<div class="flex items-center space-x-2">
+<span class="material-symbols-outlined text-secondary">grid_view</span>
+<h3 class="font-title-lg text-title-lg text-primary">Permission Matrix</h3>
+</div>
+<div class="flex gap-4">
+<button class="text-label-sm text-secondary hover:underline transition-all">Expand All</button>
+<button class="text-label-sm text-secondary hover:underline transition-all">Reset Matrix</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse min-w-[800px]">
+<thead class="bg-surface">
+<tr>
+<th class="px-6 py-4 border-b border-outline-variant font-label-md text-primary w-1/4">Module</th>
+<th class="px-3 py-4 border-b border-outline-variant font-label-sm text-on-surface-variant text-center">View</th>
+<th class="px-3 py-4 border-b border-outline-variant font-label-sm text-on-surface-variant text-center">Create</th>
+<th class="px-3 py-4 border-b border-outline-variant font-label-sm text-on-surface-variant text-center">Edit</th>
+<th class="px-3 py-4 border-b border-outline-variant font-label-sm text-on-surface-variant text-center">Delete</th>
+<th class="px-3 py-4 border-b border-outline-variant font-label-sm text-on-surface-variant text-center">Approve</th>
+<th class="px-3 py-4 border-b border-outline-variant font-label-sm text-on-surface-variant text-center">Export</th>
+<th class="px-3 py-4 border-b border-outline-variant font-label-sm text-on-surface-variant text-center">Import</th>
+<th class="px-3 py-4 border-b border-outline-variant font-label-sm text-on-surface-variant text-center">Manage</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- TABLE HEADER SELECT ALL ROW -->
+<tr class="bg-surface-container-lowest font-bold">
+<td class="px-6 py-3 font-label-md text-primary italic">Select All Columns</td>
+<td class="px-3 py-3 text-center"><input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/></td>
+<td class="px-3 py-3 text-center"><input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/></td>
+<td class="px-3 py-3 text-center"><input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/></td>
+<td class="px-3 py-3 text-center"><input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/></td>
+<td class="px-3 py-3 text-center"><input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/></td>
+<td class="px-3 py-3 text-center"><input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/></td>
+<td class="px-3 py-3 text-center"><input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/></td>
+<td class="px-3 py-3 text-center"><input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/></td>
+</tr>
+<!-- MODULE ROWS -->
+<script>
+                                        const modules = [
+                                            "Dashboard", "Employees", "CRM", "Sales", 
+                                            "Inventory", "Reports", "Administration", 
+                                            "Attendance", "Leave", "Payroll"
+                                        ];
+                                        modules.forEach(mod => {
+                                            document.write(`
+                                                <tr class="hover:bg-surface-container-low transition-colors">
+                                                    <td class="px-6 py-4 flex items-center justify-between">
+                                                        <span class="font-label-md text-primary">${mod}</span>
+                                                        <label class="flex items-center gap-1 cursor-pointer">
+                                                            <input type="checkbox" class="rounded border-outline text-secondary focus:ring-secondary h-3 w-3">
+                                                            <span class="text-[10px] text-on-surface-variant font-medium">All</span>
+                                                        </label>
+                                                    </td>
+                                                    ${Array(8).fill().map(() => `
+                                                        <td class="px-3 py-4 text-center">
+                                                            <input type="checkbox" class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer">
+                                                        </td>
+                                                    `).join('')}
+                                                </tr>
+                                            `);
+                                        });
+                                    </script>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 flex items-center justify-between">
+<span class="font-label-md text-primary">Dashboard</span>
+<label class="flex items-center gap-1 cursor-pointer">
+<input class="rounded border-outline text-secondary focus:ring-secondary h-3 w-3" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant font-medium">All</span>
+</label>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 flex items-center justify-between">
+<span class="font-label-md text-primary">Employees</span>
+<label class="flex items-center gap-1 cursor-pointer">
+<input class="rounded border-outline text-secondary focus:ring-secondary h-3 w-3" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant font-medium">All</span>
+</label>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 flex items-center justify-between">
+<span class="font-label-md text-primary">CRM</span>
+<label class="flex items-center gap-1 cursor-pointer">
+<input class="rounded border-outline text-secondary focus:ring-secondary h-3 w-3" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant font-medium">All</span>
+</label>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 flex items-center justify-between">
+<span class="font-label-md text-primary">Sales</span>
+<label class="flex items-center gap-1 cursor-pointer">
+<input class="rounded border-outline text-secondary focus:ring-secondary h-3 w-3" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant font-medium">All</span>
+</label>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 flex items-center justify-between">
+<span class="font-label-md text-primary">Inventory</span>
+<label class="flex items-center gap-1 cursor-pointer">
+<input class="rounded border-outline text-secondary focus:ring-secondary h-3 w-3" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant font-medium">All</span>
+</label>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 flex items-center justify-between">
+<span class="font-label-md text-primary">Reports</span>
+<label class="flex items-center gap-1 cursor-pointer">
+<input class="rounded border-outline text-secondary focus:ring-secondary h-3 w-3" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant font-medium">All</span>
+</label>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 flex items-center justify-between">
+<span class="font-label-md text-primary">Administration</span>
+<label class="flex items-center gap-1 cursor-pointer">
+<input class="rounded border-outline text-secondary focus:ring-secondary h-3 w-3" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant font-medium">All</span>
+</label>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 flex items-center justify-between">
+<span class="font-label-md text-primary">Attendance</span>
+<label class="flex items-center gap-1 cursor-pointer">
+<input class="rounded border-outline text-secondary focus:ring-secondary h-3 w-3" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant font-medium">All</span>
+</label>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 flex items-center justify-between">
+<span class="font-label-md text-primary">Leave</span>
+<label class="flex items-center gap-1 cursor-pointer">
+<input class="rounded border-outline text-secondary focus:ring-secondary h-3 w-3" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant font-medium">All</span>
+</label>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4 flex items-center justify-between">
+<span class="font-label-md text-primary">Payroll</span>
+<label class="flex items-center gap-1 cursor-pointer">
+<input class="rounded border-outline text-secondary focus:ring-secondary h-3 w-3" type="checkbox"/>
+<span class="text-[10px] text-on-surface-variant font-medium">All</span>
+</label>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-3 py-4 text-center">
+<input class="rounded border-outline text-secondary focus:ring-secondary cursor-pointer" type="checkbox"/>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</div>
+</div>
+<!-- STICKY ACTION FOOTER -->
+<footer class="fixed bottom-0 right-0 w-[calc(100%-280px)] bg-white/95 backdrop-blur-md border-t border-outline-variant py-4 px-margin-desktop z-40 flex justify-between items-center">
+<div class="flex items-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px] mr-2">history</span>
+<span class="text-label-sm">Last modification: Just now by System Admin</span>
+</div>
+<div class="flex space-x-4">
+<button class="px-8 py-2.5 rounded-lg font-label-md text-label-md text-primary border border-outline hover:bg-surface-container transition-all">
+                    Cancel
+                </button>
+<button class="px-8 py-2.5 rounded-lg font-label-md text-label-md bg-secondary text-on-primary hover:brightness-110 shadow-lg active:scale-95 transition-all">
+                    Save Role
+                </button>
+</div>
+</footer>
+</main>
+<script>
+        // Micro-interaction for sidebar expansion/collapse (placeholder logic)
+        document.addEventListener('DOMContentLoaded', () => {
+            const navItems = document.querySelectorAll('nav a');
+            navItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    // Logic for navigation if needed
+                });
+            });
+
+            // Master Checkbox Toggle simulation
+            const selectAllCheckboxes = document.querySelectorAll('thead input, .bg-surface-container-lowest input');
+            selectAllCheckboxes.forEach(cb => {
+                cb.addEventListener('change', (e) => {
+                    const row = e.target.closest('tr');
+                    const colIndex = e.target.closest('td') ? e.target.closest('td').cellIndex : -1;
+                    
+                    if (row && row.classList.contains('bg-surface-container-lowest')) {
+                        // Handle column select all
+                        const table = row.closest('table');
+                        const checkboxes = table.querySelectorAll(`tbody tr td:nth-child(${colIndex + 1}) input`);
+                        checkboxes.forEach(child => child.checked = e.target.checked);
+                    }
+                });
+            });
+        });
+    </script>
+</body></html>

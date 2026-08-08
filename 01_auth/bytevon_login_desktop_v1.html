@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en" style=""><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login | Bytevon ERP CRM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-container-highest": "#d3e4fe", surface: "#f8f9ff", "on-primary-fixed-variant": "#2f486a", "on-tertiary-fixed": "#191c1e", error: "#ba1a1a", "on-secondary-fixed-variant": "#004493", "on-error-container": "#93000a", "secondary-fixed": "#d8e2ff", "on-secondary-container": "#fefcff", "tertiary-fixed-dim": "#c4c7c9", "surface-container-high": "#dce9ff", "on-primary-fixed": "#001c3a", "on-primary-container": "#6f88ad", secondary: "#0059bb", primary: "#000613", "secondary-fixed-dim": "#adc7ff", "surface-variant": "#d3e4fe", "surface-container": "#e5eeff", "primary-container": "#001f3f", "on-tertiary": "#ffffff", "inverse-surface": "#213145", background: "#f8f9ff", "on-primary": "#ffffff", "inverse-on-surface": "#eaf1ff", "surface-tint": "#476083", "on-surface-variant": "#43474e", "outline-variant": "#c4c6cf", "primary-fixed-dim": "#afc8f0", "surface-bright": "#f8f9ff", "on-tertiary-fixed-variant": "#444749", "surface-dim": "#cbdbf5", tertiary: "#040607", outline: "#74777f", "tertiary-fixed": "#e0e3e5", "on-secondary": "#ffffff", "on-background": "#0b1c30", "on-tertiary-container": "#848789", "on-surface": "#0b1c30", "on-secondary-fixed": "#001a41", "tertiary-container": "#1c1f21", "error-container": "#ffdad6", "surface-container-lowest": "#ffffff", "primary-fixed": "#d4e3ff", "on-error": "#ffffff", "inverse-primary": "#afc8f0", "secondary-container": "#0070ea", "surface-container-low": "#eff4ff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {unit: "4px", "container-max": "1440px", "stack-lg": "32px", "stack-sm": "8px", "margin-desktop": "40px", gutter: "24px", "stack-md": "16px", "margin-mobile": "16px"}, fontFamily: {"headline-md": ["Inter"], "body-lg": ["Inter"], "headline-lg": ["Inter"], "label-sm": ["Inter"], "label-md": ["Inter"], "headline-lg-mobile": ["Inter"], "body-sm": ["Inter"], "title-lg": ["Inter"], "body-md": ["Inter"], "display-lg": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}]}}}};</script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9ff;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .login-card-shadow {
+            box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05), 0 2px 10px -2px rgba(0, 0, 0, 0.03);
+        }
+        .fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex flex-col items-center">
+<!-- Main Content Container -->
+<main class="w-full min-h-screen grid grid-cols-1 md:grid-cols-2 max-w-container-max mx-auto px-4"><section class="hidden md:flex flex-col justify-between p-margin-desktop bg-surface-container-low relative overflow-hidden md:p-10"><div class="z-10"><img alt="Bytevon Logo" class="h-12 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9gs1VT2efatwUsmeheI9AWwiO0d0IV__PK3FaDkHDZS3ekICJxJXHH0YyDl2m8uq1vr7Ym9mShz0Qw9760JARuhuXgKE4f42_qn-6QVQ6l_UdoyAeckbLlZLIzYJ2Lv5FOczXwLk3lE9NuJ6n9d5BY6VINeehGsqlJdf-umr5qu0F0e8GkIZ94fvpLvEkilgh46LddXFXeiFAu28FWMjy_laHsHfXzGJ9702oPWoqBtXPZZ0oUH0x4AkvQYq8OzeSr8Y"/><div class="mt-stack-lg max-w-md"><h1 class="font-display-lg text-display-lg text-primary mb-stack-md">Welcome to Bytevon</h1><p class="font-body-lg text-body-lg text-on-surface-variant">Your all-in-one enterprise platform for seamless ERP and CRM management. Efficiency meets institutional trust.</p></div></div><div class="z-10 flex justify-center items-center py-stack-lg"><img alt="Enterprise Analytics and Resource Management Illustration" class="w-full max-w-xl drop-shadow-xl" src="https://lh3.googleusercontent.com/aida/AP1WRLuh_bQb-Das64CyGHoXA8taL-P8Up_h1i3DOdV5PzpT3b6HYhE49l0avZ3-qwdJkGFcGpPhbgJZ77D-NWrAINbu6cEmJyspHCxDtP7VqVoBY-KPocCV7317jQp2IEcpqpJH2-5hXsF9kdj8zhoA4wjKcFL6DzCXvotbuSETgEiAVCctc3r_o_GY6gGwjbaYYvwi4osNI0Vf2lWaJgsxdsL3FfoKqxSGeSTqTMbbQ0aShgDNUWFOKccuAGkT"/></div><div class="z-10 opacity-60"><p class="font-label-sm text-label-sm text-on-surface-variant">© 2024 Bytevon Enterprise. All rights reserved.</p></div><div class="absolute -bottom-24 -left-24 w-96 h-96 bg-primary-container rounded-full opacity-5"></div></section>
+<!-- Top: Brand & Welcome -->
+<section class="flex items-center justify-center p-margin-mobile md:p-margin-desktop bg-surface md:p-10"><div class="w-full max-w-md"><div class="md:hidden mb-stack-lg text-center"><img alt="Bytevon Logo" class="h-10 mx-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDDFCN8nCrWL6HTH0HpMk7H7yDuHjE-6fnwDCRg-KXe36ReM2uGUInF0fEg160rJPu_1M4qRoGRWiNaKMAc86NFqJRivwdvV2K7pHXtnCrlQKXJhQyXJs0yATKUw3-Dr1l8EPJ4MOW0R_dRWwNB1w5ZrUZPh03lfpIt6Yw5qCDqSMCOEB5Xk8ow2T1VDLphwb9tmg_5qQ7MpJBKzb8KiGwX-AnysGS02mVzgX6vARA5zB8YemnSuz8HcKMObf9xqu5iEYM"/></div><div class="bg-surface-container-lowest p-8 md:p-10 rounded-xl shadow-[0_10px_40px_-15px_rgba(11,28,48,0.1)] border border-outline-variant"><div class="mb-stack-lg"><h2 class="font-headline-lg text-headline-lg text-primary">Login to your account</h2><p class="font-body-sm text-body-sm text-on-surface-variant mt-2">Enter your credentials to access the dashboard</p></div><form class="space-y-6" id="loginForm"><div><label class="block font-label-md text-label-md text-on-surface-variant mb-2" for="email">Work Email</label><div class="relative"><span class="absolute inset-y-0 left-0 pl-3 flex items-center text-outline pointer-events-none"><span class="material-symbols-outlined text-[20px]">mail</span></span><input class="block w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary-container transition-all" id="email" name="email" placeholder="name@company.com" required="" type="email"/></div></div><div><div class="flex justify-between items-center mb-2"><label class="block font-label-md text-label-md text-on-surface-variant" for="password">Password</label></div><div class="relative"><span class="absolute inset-y-0 left-0 pl-3 flex items-center text-outline pointer-events-none"><span class="material-symbols-outlined text-[20px]">lock</span></span><input class="block w-full pl-10 pr-12 py-3 bg-white border border-outline-variant rounded-lg font-body-md text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary-container transition-all" id="password" name="password" placeholder="••••••••" required="" type="password"/><button class="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-primary transition-colors" id="togglePassword" type="button"><span class="material-symbols-outlined text-[20px]" id="passwordIcon">visibility</span></button></div></div><div class="flex items-center justify-between"><label class="flex items-center space-x-2 cursor-pointer"><input class="w-4 h-4 text-secondary-container border-outline-variant rounded focus:ring-secondary-container transition-all" type="checkbox"/><span class="font-label-md text-label-md text-on-surface-variant">Remember Me</span></label><a class="font-label-md text-label-md text-secondary hover:underline transition-all" href="#">Forgot Password?</a></div><button class="w-full py-3 px-6 text-white font-label-md text-label-md rounded-lg transition-all duration-200 shadow-lg active:scale-[0.98] bg-secondary-container hover:bg-secondary" type="submit">Login to Dashboard</button></form><div class="relative my-8"><div class="absolute inset-0 flex items-center"><div class="w-full border-t border-outline-variant"></div></div><div class="relative flex justify-center text-label-sm text-label-sm"><span class="px-4 bg-surface-container-lowest text-on-surface-variant">Or continue with</span></div></div><div class="grid grid-cols-2 gap-4"><button class="flex items-center justify-center gap-2 py-2.5 px-4 bg-white border border-outline-variant rounded-lg hover:bg-surface-container-low transition-all active:scale-95"><img alt="Google" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAaCQm9NlCrp4p7_gt5Wtx8-L-1ga7ocAd03UkV3FMU2i1U0Akq8vUsGtAA4-gPkRxaqBwvMoDy7Ea5pfgdnQVy_WihSVti_nV1lnLQnlgaxKf7DNvobS05MkA8RPklmIy11cihNd3q7sEUU8begthvawkODOXZh_llnWaQc6vAJmoYq-wc97WDdxMgawr_gkhgn5XxV6pB71z9sreXYjhPPPi5WfdDTu45ltAoRA57CKF0wxCVjcF8g"/><span class="font-label-md text-label-md text-on-surface">Google</span></button><button class="flex items-center justify-center gap-2 py-2.5 px-4 bg-white border border-outline-variant rounded-lg hover:bg-surface-container-low transition-all active:scale-95"><svg class="w-5 h-5" fill="none" viewbox="0 0 23 23" xmlns="http://www.w3.org/2000/svg"><path d="M0 0H11V11H0V0Z" fill="#F25022"></path><path d="M12 0H23V11H12V0Z" fill="#7FBA00"></path><path d="M0 12H11V23H0V12Z" fill="#00A4EF"></path><path d="M12 12H23V23H12V12Z" fill="#FFB900"></path></svg><span class="font-label-md text-label-md text-on-surface">Microsoft</span></button></div><div class="mt-stack-lg text-center"><p class="font-body-sm text-body-sm text-on-surface-variant">New to Bytevon? <a class="font-semibold hover:underline ml-1 text-secondary-container" href="#">Contact Sales</a></p></div></div><nav class="mt-8 flex justify-center space-x-6"><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a><a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Help Center</a></nav></div></section>
+<!-- Middle: Login Card -->
+<!-- Bottom: Registration Link -->
+</main>
+<!-- Footer Links -->
+<script>
+        // Password visibility toggle logic
+        const togglePassword = document.querySelector('#togglePassword');
+        const password = document.querySelector('#password');
+        const passwordIcon = document.querySelector('#passwordIcon');
+
+        togglePassword.addEventListener('click', function (e) {
+            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+            password.setAttribute('type', type);
+            passwordIcon.textContent = type === 'password' ? 'visibility' : 'visibility_off';
+        });
+
+        // Form submission simulation
+        const loginForm = document.querySelector('#loginForm');
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.textContent;
+            
+            btn.disabled = true;
+            btn.innerHTML = '<span class="flex items-center justify-center"><svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Authenticating...</span>';
+            
+            setTimeout(() => {
+                btn.innerHTML = 'Success!';
+                btn.classList.replace('bg-primary', 'bg-green-600');
+                setTimeout(() => {
+                    alert('Login successful! Redirecting to dashboard...');
+                    btn.disabled = false;
+                    btn.textContent = originalText;
+                    btn.classList.replace('bg-green-600', 'bg-primary');
+                }, 1000);
+            }, 1500);
+        });
+    </script>
+</body></html>

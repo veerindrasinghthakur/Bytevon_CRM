@@ -1,0 +1,353 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Bytevon | Approval Center - Action Required</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-secondary-fixed": "#001a41", "on-secondary": "#ffffff", "on-tertiary": "#ffffff", "on-error": "#ffffff", "error-container": "#ffdad6", "surface-bright": "#f8f9ff", "on-secondary-container": "#fefcff", "on-primary-fixed": "#001c3a", "tertiary-fixed-dim": "#c4c7c9", "on-secondary-fixed-variant": "#004493", tertiary: "#040607", "inverse-primary": "#afc8f0", error: "#ba1a1a", "tertiary-fixed": "#e0e3e5", surface: "#f8f9ff", outline: "#74777f", "primary-fixed": "#d4e3ff", "surface-container": "#e5eeff", "secondary-fixed-dim": "#adc7ff", secondary: "#0059bb", primary: "#000613", "primary-fixed-dim": "#afc8f0", "secondary-fixed": "#d8e2ff", "surface-container-low": "#eff4ff", "on-tertiary-fixed-variant": "#444749", "on-surface": "#0b1c30", "on-tertiary-fixed": "#191c1e", "on-background": "#0b1c30", "on-primary-fixed-variant": "#2f486a", "tertiary-container": "#1c1f21", "surface-container-lowest": "#ffffff", "on-primary-container": "#6f88ad", "on-primary": "#ffffff", "primary-container": "#001f3f", "surface-variant": "#d3e4fe", "outline-variant": "#c4c6cf", "surface-container-highest": "#d3e4fe", background: "#f8f9ff", "on-surface-variant": "#43474e", "inverse-surface": "#213145", "surface-container-high": "#dce9ff", "surface-tint": "#476083", "surface-dim": "#cbdbf5", "on-tertiary-container": "#848789", "on-error-container": "#93000a", "secondary-container": "#0070ea", "inverse-on-surface": "#eaf1ff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {unit: "4px", "margin-desktop": "40px", "stack-md": "16px", "stack-lg": "32px", "container-max": "1440px", gutter: "24px", "stack-sm": "8px", "margin-mobile": "16px"}, fontFamily: {"display-lg": ["Inter"], "body-md": ["Inter"], "title-lg": ["Inter"], "label-md": ["Inter"], "headline-lg-mobile": ["Inter"], "body-sm": ["Inter"], "label-sm": ["Inter"], "headline-lg": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}]}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        /* Custom scrollbar for clean enterprise look */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-background text-on-background">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary shadow-sm flex flex-col p-spacing-stack-md z-50">
+<div class="mb-spacing-stack-lg px-4">
+<div class="flex items-center gap-2 mb-1"><img alt="Bytevon Logo" class="w-8 h-8 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAbu032YNBQDPdZXCDJM4rSLenmjYtOpguPqy35LdA_m73le4EijWpLElIYJbYjdY6_Pt4WjQ-B0XOUt-SpPYyXiT2Q9ECsp3mkYm1QcCkrfzkzQN6r_TMNb4tKvoZ4nn9Xl1YjtAg4Oc3-RAkuolNSS74C-3ybYebCuMx74ayF-q3mni6h6nJ3Sc2Kt8Cb7sKHxGGQTa2cYYOo4BI6Igv_ixm7zddfMZq7c191YnaeuUyaeysaSeaeoprvHF-EK0pgyw"><h1 class="font-headline-md text-headline-md font-bold text-on-primary">Bytevon</h1></div>
+<p class="font-body-md text-body-md text-on-primary/60">Enterprise Resource Planning</p>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 font-body-md text-body-md text-on-primary-fixed-variant hover:text-on-primary hover:bg-primary-fixed-dim/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 font-body-md text-body-md bg-secondary text-on-secondary rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">precision_manufacturing</span>
+                Operations
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 font-body-md text-body-md text-on-primary-fixed-variant hover:text-on-primary hover:bg-primary-fixed-dim/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">group</span>
+                Customers
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 font-body-md text-body-md text-on-primary-fixed-variant hover:text-on-primary hover:bg-primary-fixed-dim/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+                Resources
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 font-body-md text-body-md text-on-primary-fixed-variant hover:text-on-primary hover:bg-primary-fixed-dim/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+                Analytics
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 font-body-md text-body-md text-on-primary-fixed-variant hover:text-on-primary hover:bg-primary-fixed-dim/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+                Settings
+            </a>
+</nav>
+<div class="mt-auto border-t border-on-primary/10 pt-4 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 font-body-md text-body-md text-on-primary-fixed-variant hover:text-on-primary hover:bg-primary-fixed-dim/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">support_agent</span>
+                Support Portal
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 font-body-md text-body-md text-on-primary-fixed-variant hover:text-on-primary hover:bg-primary-fixed-dim/10 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">logout</span>
+                Logout
+            </a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] w-[calc(100%-280px)] min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="fixed top-0 ml-[280px] w-[calc(100%-280px)] h-16 bg-surface border-b border-outline-variant flex justify-between items-center px-spacing-margin-desktop z-40">
+<div class="flex items-center gap-6">
+<div class="relative">
+<span class="absolute inset-y-0 left-3 flex items-center text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</span>
+<input class="pl-10 pr-4 py-1.5 bg-surface-container-low border border-outline-variant rounded-full text-label-md font-label-md focus:ring-2 focus:ring-secondary focus:border-secondary w-64 outline-none" placeholder="Search approvals..." type="text">
+</div>
+<nav class="flex gap-4">
+<a class="font-label-md text-label-md text-secondary border-b-2 border-secondary pb-1" href="#">Recent</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all" href="#">Favorites</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all" href="#">Help</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-secondary text-on-secondary px-4 py-2 rounded-lg font-label-md text-label-md active:scale-95 transition-all">
+                    Create New
+                </button>
+<div class="flex gap-2">
+<button class="p-2 text-on-surface-variant hover:text-secondary transition-all active:scale-95">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-secondary transition-all active:scale-95">
+<span class="material-symbols-outlined">apps</span>
+</button>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a female executive in a minimalist studio. She is wearing a structured navy blue blazer, exuding confidence and authority. The lighting is soft and high-key, maintaining a crisp, modern aesthetic consistent with a high-end enterprise software profile. The background is a clean, off-white gradient." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnzcZ95oO4yvf4kkbYMNViHECSCDKLm8sK9_rFVhDoXV43lzee7k8nDNSz33QH3q-CArwTQIxLg_5OhAM0aXx0tD6ckeJFU5AleNQqyqgoXKZmWN-XFg0P74PgZYR862j_QKBOKZHzLvlsphYtYRcaIuPusm0KPLih1O-SKF0UPa1JYwSuu7dC39TtXt4D00aNJYEQRiYwgBX6pVxuHyWAByv5x8GspFKY1ieQjj8zTIEJZr-U4gUJOw">
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<div class="mt-16 p-spacing-margin-desktop flex-1">
+<!-- System Conflict Banner -->
+<section class="mb-spacing-stack-lg animate-in fade-in slide-in-from-top-4 duration-500">
+<div class="bg-error-container border border-error/20 rounded-xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-sm">
+<div class="flex items-start gap-4">
+<div class="bg-error text-on-error p-3 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+<div>
+<h2 class="font-title-lg text-title-lg text-on-error-container mb-1">System Conflict: Bulk Action Failure</h2>
+<p class="font-body-md text-body-md text-on-error-container/80 max-w-2xl">
+                                4 out of 12 approval requests failed due to a synchronization mismatch with the Operations API. Manual reconciliation is required to maintain ledger integrity.
+                            </p>
+</div>
+</div>
+<div class="flex items-center gap-3 whitespace-nowrap">
+<button class="px-5 py-2.5 bg-error text-on-error rounded-lg font-label-md text-label-md hover:bg-error/90 transition-colors shadow-sm">
+                            Retry Failed Actions
+                        </button>
+<button class="px-5 py-2.5 bg-surface-container-lowest border border-error text-error rounded-lg font-label-md text-label-md hover:bg-error/5 transition-colors">
+                            Contact Support
+                        </button>
+</div>
+</div>
+</section>
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-8">
+<div>
+<nav class="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm mb-2">
+<span class="">Operations</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-secondary">Approval Center</span>
+</nav>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Approval Center</h1>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-md text-label-md text-on-surface-variant">Filter by status:</span>
+<div class="flex bg-surface-container-low p-1 rounded-lg border border-outline-variant">
+<button class="px-4 py-1.5 rounded-md font-label-sm text-label-sm text-on-surface-variant hover:text-primary">All</button>
+<button class="px-4 py-1.5 rounded-md font-label-sm text-label-sm bg-error-container text-on-error-container font-bold shadow-sm">Action Required (4)</button>
+<button class="px-4 py-1.5 rounded-md font-label-sm text-label-sm text-on-surface-variant hover:text-primary">Pending</button>
+</div>
+</div>
+</div>
+<!-- Approval Data Table -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">
+<input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox">
+</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Entity ID</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Request Name</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Requested By</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Value</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Status</th>
+<th class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- High-density row with conflict state -->
+<tr class="bg-error-container/10 group hover:bg-error-container/20 transition-colors">
+<td class="px-6 py-4">
+<input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox">
+</td>
+<td class="px-6 py-4 font-label-md text-label-md text-error font-bold">#OP-98422</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-semibold">Q3 Logistics Expansion</span>
+<span class="font-label-sm text-label-sm text-error">Conflict: Double-entry detected in Ledger-B</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary-fixed-dim flex items-center justify-center font-label-sm text-on-primary-fixed">MS</div>
+<span class="font-body-sm text-body-sm text-on-surface">Marcus Sterling</span>
+</div>
+</td>
+<td class="px-6 py-4 font-body-sm text-body-sm text-on-surface">$142,500.00</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-error/10 text-error rounded-full font-label-sm text-label-sm border border-error/20 flex items-center w-fit gap-1">
+<span class="material-symbols-outlined text-[14px]">error</span>
+                                    Manual Check
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 text-on-surface-variant hover:text-secondary"><span class="material-symbols-outlined">more_vert</span></button>
+</td>
+</tr>
+<tr class="bg-error-container/10 group hover:bg-error-container/20 transition-colors">
+<td class="px-6 py-4">
+<input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox">
+</td>
+<td class="px-6 py-4 font-label-md text-label-md text-error font-bold">#OP-98425</td>
+<td class="px-6 py-4">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface font-semibold">Server Farm Lease Renewal</span>
+<span class="font-label-sm text-label-sm text-error">System Error: API Timeout (Code 504)</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary-fixed-dim flex items-center justify-center font-label-sm text-on-secondary-fixed">JD</div>
+<span class="font-body-sm text-body-sm text-on-surface">Jane Doe</span>
+</div>
+</td>
+<td class="px-6 py-4 font-body-sm text-body-sm text-on-surface">$89,200.00</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-error/10 text-error rounded-full font-label-sm text-label-sm border border-error/20 flex items-center w-fit gap-1">
+<span class="material-symbols-outlined text-[14px]">sync_problem</span>
+                                    Sync Failed
+                                </span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 text-on-surface-variant hover:text-secondary"><span class="material-symbols-outlined">more_vert</span></button>
+</td>
+</tr>
+<!-- Normal rows for context -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4">
+<input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox">
+</td>
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">#OP-98430</td>
+<td class="px-6 py-4 font-body-md text-body-md text-on-surface font-semibold">Global SaaS Subscription</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-tertiary-fixed-dim flex items-center justify-center font-label-sm text-on-tertiary-fixed">AK</div>
+<span class="font-body-sm text-body-sm text-on-surface">Arjun Kapoor</span>
+</div>
+</td>
+<td class="px-6 py-4 font-body-sm text-body-sm text-on-surface">$12,000.00</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-surface-variant text-on-surface-variant rounded-full font-label-sm text-label-sm border border-outline-variant">Pending Review</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 text-on-surface-variant hover:text-secondary"><span class="material-symbols-outlined">more_vert</span></button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-6 py-4">
+<input class="rounded border-outline-variant text-secondary focus:ring-secondary" type="checkbox">
+</td>
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface-variant">#OP-98432</td>
+<td class="px-6 py-4 font-body-md text-body-md text-on-surface font-semibold">Fleet Fuel Procurement</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-primary-fixed flex items-center justify-center font-label-sm text-on-primary-fixed">LC</div>
+<span class="font-body-sm text-body-sm text-on-surface">Laura Chen</span>
+</div>
+</td>
+<td class="px-6 py-4 font-body-sm text-body-sm text-on-surface">$345,000.00</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 bg-surface-variant text-on-surface-variant rounded-full font-label-sm text-label-sm border border-outline-variant">Pending Review</span>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="p-2 text-on-surface-variant hover:text-secondary"><span class="material-symbols-outlined">more_vert</span></button>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Pagination/Footer -->
+<div class="px-6 py-4 bg-surface-container-low flex justify-between items-center border-t border-outline-variant">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Showing 1-12 of 128 approvals</span>
+<div class="flex items-center gap-2">
+<button class="p-2 rounded hover:bg-surface-variant transition-colors disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded bg-secondary text-on-secondary font-label-sm text-label-sm">1</button>
+<button class="w-8 h-8 rounded hover:bg-surface-variant font-label-sm text-label-sm">2</button>
+<button class="w-8 h-8 rounded hover:bg-surface-variant font-label-sm text-label-sm">3</button>
+<button class="p-2 rounded hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Contextual Insights Bento Section -->
+<div class="mt-spacing-stack-lg grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Conflict Summary -->
+<div class="bg-surface-container-high p-6 rounded-xl border border-outline-variant flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<span class="font-label-md text-label-md text-on-surface-variant">Current Blockers</span>
+<span class="material-symbols-outlined text-error">report</span>
+</div>
+<div>
+<div class="text-[32px] font-bold text-on-surface mb-1">04</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">High-priority conflicts requiring manual intervention.</div>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant/30">
+<a class="text-secondary font-label-md text-label-md hover:underline flex items-center gap-1" href="#">
+                            View all issues <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+</a>
+</div>
+</div>
+<!-- Reconciliation Progress -->
+<div class="bg-surface-container-high p-6 rounded-xl border border-outline-variant flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<span class="font-label-md text-label-md text-on-surface-variant">System Health</span>
+<span class="material-symbols-outlined text-secondary">analytics</span>
+</div>
+<div class="flex-1 flex flex-col justify-center">
+<div class="w-full bg-outline-variant/30 h-2 rounded-full mb-3">
+<div class="bg-secondary h-full rounded-full w-[92%]"></div>
+</div>
+<div class="flex justify-between font-label-sm text-label-sm">
+<span class="text-on-surface">92.4% Success Rate</span>
+<span class="text-on-surface-variant">Last 24h</span>
+</div>
+</div>
+<div class="mt-auto pt-4 border-t border-outline-variant/30 font-body-sm text-body-sm text-on-surface-variant">
+                        Drift detected in Warehouse 4 integration.
+                    </div>
+</div>
+<!-- Visual Asset Section -->
+<div class="relative bg-primary-container rounded-xl overflow-hidden border border-outline-variant flex items-center justify-center">
+<!-- Subtle background animation -->
+<div class="relative z-10 text-center p-6">
+<h3 class="font-title-lg text-title-lg text-on-primary-container mb-2">Automated Audit</h3>
+<p class="font-body-sm text-body-sm text-on-primary-container/80 mb-4">Integrity engine is scanning for further mismatches.</p>
+<button class="px-4 py-2 bg-secondary text-on-secondary rounded-lg font-label-sm text-label-sm hover:brightness-110 transition-all">
+                            Refresh Audit
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Micro-interactions for the Retry button
+        const retryBtn = document.querySelector('button.bg-error');
+        if (retryBtn) {
+            retryBtn.addEventListener('click', function() {
+                const originalText = this.innerText;
+                this.innerText = 'Syncing...';
+                this.disabled = true;
+                this.classList.add('opacity-70', 'cursor-not-allowed');
+                
+                setTimeout(() => {
+                    this.innerText = 'Retried';
+                    this.classList.remove('bg-error');
+                    this.classList.add('bg-secondary');
+                    
+                    // Shake effect on error rows to show "processing"
+                    document.querySelectorAll('.bg-error-container\\/10').forEach(row => {
+                        row.classList.add('animate-pulse');
+                    });
+                }, 1500);
+            });
+        }
+    </script>
+</body></html>

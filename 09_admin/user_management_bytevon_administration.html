@@ -1,0 +1,493 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Bytevon Security Center - User Management</title>
+<!-- Google Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-variant": "#d3e4fe", "inverse-on-surface": "#eaf1ff", "on-surface-variant": "#43474e", "on-secondary": "#ffffff", outline: "#74777f", "on-secondary-container": "#fefcff", "tertiary-fixed-dim": "#c4c7c9", "surface-container-low": "#eff4ff", "on-tertiary-fixed-variant": "#444749", "surface-container-high": "#dce9ff", "primary-fixed": "#d4e3ff", "primary-container": "#001f3f", "on-tertiary-container": "#848789", "tertiary-container": "#1c1f21", "surface-container": "#e5eeff", "secondary-fixed": "#d8e2ff", "inverse-primary": "#afc8f0", background: "#f8f9ff", secondary: "#0059bb", "on-error-container": "#93000a", error: "#ba1a1a", "on-primary-fixed": "#001c3a", "inverse-surface": "#213145", "secondary-fixed-dim": "#adc7ff", "on-tertiary-fixed": "#191c1e", "surface-tint": "#476083", "on-primary-container": "#6f88ad", "tertiary-fixed": "#e0e3e5", "on-error": "#ffffff", "on-background": "#0b1c30", "on-secondary-fixed-variant": "#004493", surface: "#f8f9ff", tertiary: "#040607", "on-secondary-fixed": "#001a41", "surface-dim": "#cbdbf5", "error-container": "#ffdad6", "surface-container-lowest": "#ffffff", "on-primary": "#ffffff", "on-primary-fixed-variant": "#2f486a", "outline-variant": "#c4c6cf", "on-tertiary": "#ffffff", "surface-bright": "#f8f9ff", "primary-fixed-dim": "#afc8f0", "surface-container-highest": "#d3e4fe", primary: "#000613", "secondary-container": "#0070ea", "on-surface": "#0b1c30"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-lg": "32px", "container-max": "1440px", "margin-desktop": "40px", "margin-mobile": "16px", gutter: "24px", "stack-md": "16px", unit: "4px", "stack-sm": "8px"}, fontFamily: {"label-md": ["Inter"], "body-md": ["Inter"], "display-lg": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-md": ["Inter"], "headline-lg": ["Inter"], "body-sm": ["Inter"], "label-sm": ["Inter"], "body-lg": ["Inter"], "title-lg": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}]}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Executive Precision Borders */
+        .border-precision { border: 1px solid #E2E8F0; }
+        .bg-glass { backdrop-filter: blur(8px); background-color: rgba(255, 255, 255, 0.8); }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex overflow-hidden">
+<!-- PRIMARY SIDENAV (Global Shell) -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary-container text-on-primary-container flex flex-col py-stack-lg px-stack-md z-50 shadow-sm">
+<div class="mb-stack-lg flex items-center gap-stack-sm px-stack-sm">
+<span class="material-symbols-outlined text-on-primary-container text-4xl">security</span>
+<div>
+<h1 class="text-title-lg font-title-lg text-on-primary-container leading-none">Bytevon Admin</h1>
+<p class="text-[11px] opacity-60 uppercase tracking-widest mt-1">Enterprise Security</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Navigation Items Mapping from JSON -->
+<a class="flex items-center gap-3 px-4 py-3 opacity-80 hover:opacity-100 hover:bg-on-primary-container/10 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 opacity-80 hover:opacity-100 hover:bg-on-primary-container/10 rounded-lg transition-all bg-secondary-container text-on-secondary-container font-bold" href="#">
+<span class="material-symbols-outlined">verified_user</span>
+<span class="font-label-md text-label-md">MFA Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 opacity-80 hover:opacity-100 hover:bg-on-primary-container/10 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">vpn_key</span>
+<span class="font-label-md text-label-md">SSO Config</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 opacity-80 hover:opacity-100 hover:bg-on-primary-container/10 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">lock_reset</span>
+<span class="font-label-md text-label-md">Password Policy</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 opacity-80 hover:opacity-100 hover:bg-on-primary-container/10 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">lan</span>
+<span class="font-label-md text-label-md">IP Whitelisting</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 opacity-80 hover:opacity-100 hover:bg-on-primary-container/10 rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-md text-label-md">Audit Logs</span>
+</a>
+</nav>
+<div class="mt-auto space-y-4 pt-6 border-t border-on-primary-container/10">
+<button class="w-full bg-error text-on-error py-3 rounded-lg font-bold flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all">
+<span class="material-symbols-outlined text-xl">lock</span>
+<span>Lock System</span>
+</button>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-2 opacity-70 hover:opacity-100 text-sm" href="#">
+<span class="material-symbols-outlined text-lg">support_agent</span>
+<span>Support</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 opacity-70 hover:opacity-100 text-sm" href="#">
+<span class="material-symbols-outlined text-lg">menu_book</span>
+<span>Documentation</span>
+</a>
+</div>
+</div>
+</aside>
+<!-- ADMINISTRATION SUB-SIDEBAR (Secondary Shell) -->
+<aside class="fixed left-[280px] top-0 h-full w-[240px] bg-surface-container-low border-r border-outline-variant flex flex-col py-stack-lg px-4 z-40">
+<h3 class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-widest mb-6 px-2">Administration</h3>
+<nav class="space-y-1">
+<a class="flex items-center justify-between group px-3 py-2.5 rounded-lg text-on-surface-variant opacity-70 hover:opacity-100 hover:bg-surface-variant transition-colors" href="#">
+<span class="font-label-md text-label-md">Overview</span>
+</a>
+<a class="flex items-center justify-between group px-3 py-2.5 rounded-lg bg-surface-variant text-primary font-bold" href="#">
+<span class="font-label-md text-label-md">User Management</span>
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+</a>
+<a class="flex items-center justify-between group px-3 py-2.5 rounded-lg text-on-surface-variant opacity-70 hover:opacity-100 hover:bg-surface-variant transition-colors" href="#">
+<span class="font-label-md text-label-md">Role Permissions</span>
+</a>
+<a class="flex items-center justify-between group px-3 py-2.5 rounded-lg text-on-surface-variant opacity-70 hover:opacity-100 hover:bg-surface-variant transition-colors" href="#">
+<span class="font-label-md text-label-md">Department Trees</span>
+</a>
+<a class="flex items-center justify-between group px-3 py-2.5 rounded-lg text-on-surface-variant opacity-70 hover:opacity-100 hover:bg-surface-variant transition-colors" href="#">
+<span class="font-label-md text-label-md">Provisioning Logs</span>
+</a>
+</nav>
+</aside>
+<!-- MAIN CONTENT AREA -->
+<main class="ml-[520px] flex-1 flex flex-col h-screen overflow-y-auto">
+<!-- TOP NAVBAR -->
+<header class="h-16 flex justify-between items-center px-margin-desktop bg-surface-container-lowest sticky top-0 z-30 border-b border-outline-variant">
+<div class="flex items-center gap-stack-md">
+<span class="text-headline-md font-headline-md font-black text-primary">Bytevon Security Center</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="relative flex items-center bg-surface-container-low px-4 py-2 rounded-full border border-outline-variant focus-within:border-secondary transition-all w-64">
+<span class="material-symbols-outlined text-on-surface-variant text-xl">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm ml-2 w-full placeholder:text-on-surface-variant/50" placeholder="Global system search..." type="text">
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 text-on-surface-variant hover:text-secondary hover:bg-secondary-container/10 rounded-full transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-secondary hover:bg-secondary-container/10 rounded-full transition-all">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-secondary hover:bg-secondary-container/10 rounded-full transition-all">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3 cursor-pointer group">
+<img class="w-10 h-10 rounded-full object-cover border-2 border-outline group-hover:border-secondary transition-all" data-alt="Close-up professional headshot of a corporate security administrator in a high-tech office environment. The person looks confident and focused, wearing professional business attire. The lighting is crisp and cool, emphasizing a modern, secure, and technologically advanced atmosphere typical of a high-end enterprise security dashboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCLupz0e3aCINqPBOmy5qnRbs74-X3OdfPYk0hWSFk28Z6gLj-Xpx0BO0IL-3tjPcTXoWaiHEmu0xkIgYF9Z8kNBQLOpnDo-4zvrwkGuSq_8ULPbctcdqATls5JwePWnWYL4KN-tKCogA0-HOr6s1QngME6mgLj90E7q59ZpdsgyN3be2hS2JkyGoL-fQ2X08Z8t-sB_pofMBsDFtDT2gJCRB4RSu4CrwlQOtfB2u7Sp0eaOymIL05W8Q">
+<div class="hidden xl:block">
+<p class="text-label-md font-bold text-on-background leading-none">Admin Profile</p>
+<p class="text-[10px] text-on-surface-variant uppercase mt-1">Superuser</p>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- DASHBOARD BODY -->
+<div class="p-margin-desktop space-y-stack-lg max-w-container-max mx-auto w-full">
+<!-- Page Title & Actions -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-primary tracking-tight">User Management</h2>
+<p class="text-body-md text-on-surface-variant mt-1">Control access, roles, and security protocols for the enterprise directory.</p>
+</div>
+<div class="flex gap-stack-md">
+<button class="flex items-center gap-2 px-5 py-2.5 border-precision bg-surface-container-lowest hover:bg-surface-container-low text-on-background font-bold rounded-lg transition-all">
+<span class="material-symbols-outlined text-xl">download</span>
+<span>Export User List</span>
+</button>
+<button class="flex items-center gap-2 px-5 py-2.5 bg-secondary text-on-secondary font-bold rounded-lg hover:opacity-90 active:scale-95 transition-all shadow-md">
+<span class="material-symbols-outlined text-xl">person_add</span>
+<span>Add New User</span>
+</button>
+</div>
+</div>
+<!-- User Metrics Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<div class="bg-surface-container-lowest p-6 rounded-xl border-precision shadow-sm hover:shadow-md transition-all group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-primary-container text-on-primary-container rounded-lg">
+<span class="material-symbols-outlined">group</span>
+</div>
+<span class="text-xs font-bold text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span> +12%
+                        </span>
+</div>
+<p class="text-label-md text-on-surface-variant uppercase tracking-widest">Total Users</p>
+<h3 class="text-headline-lg font-black text-primary mt-1">1,284</h3>
+<div class="mt-4 h-1 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-secondary w-4/5"></div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border-precision shadow-sm hover:shadow-md transition-all group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-secondary-container text-on-secondary-container rounded-lg">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<span class="text-xs font-bold text-on-surface-variant opacity-60">Real-time</span>
+</div>
+<p class="text-label-md text-on-surface-variant uppercase tracking-widest">Active Now</p>
+<h3 class="text-headline-lg font-black text-primary mt-1">156</h3>
+<div class="mt-4 flex items-center gap-2">
+<span class="flex h-2 w-2 rounded-full bg-secondary animate-pulse"></span>
+<span class="text-body-sm text-on-surface-variant">Live sessions monitored</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border-precision shadow-sm hover:shadow-md transition-all group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-surface-variant text-on-surface-variant rounded-lg">
+<span class="material-symbols-outlined">mail</span>
+</div>
+<span class="text-xs font-bold text-error">Critical</span>
+</div>
+<p class="text-label-md text-on-surface-variant uppercase tracking-widest">Pending Invites</p>
+<h3 class="text-headline-lg font-black text-primary mt-1">12</h3>
+<p class="mt-4 text-body-sm text-on-surface-variant">Avg. wait time: 4.2h</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border-precision shadow-sm hover:shadow-md transition-all group">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-error-container text-on-error-container rounded-lg">
+<span class="material-symbols-outlined">lock_person</span>
+</div>
+<span class="text-xs font-bold text-error">Action Req.</span>
+</div>
+<p class="text-label-md text-on-surface-variant uppercase tracking-widest">Locked Accounts</p>
+<h3 class="text-headline-lg font-black text-error mt-1">2</h3>
+<div class="mt-4 flex -space-x-2">
+<div class="w-6 h-6 rounded-full border-2 border-surface bg-error"></div>
+<div class="w-6 h-6 rounded-full border-2 border-surface bg-error"></div>
+<span class="text-body-sm text-error ml-4 font-bold">Investigation pending</span>
+</div>
+</div>
+</div>
+<!-- Filters & Data Table -->
+<div class="bg-surface-container-lowest rounded-xl border-precision shadow-sm overflow-hidden">
+<!-- Toolbar -->
+<div class="p-stack-md border-b border-outline-variant bg-surface-container-low/50 flex flex-wrap items-center justify-between gap-gutter">
+<div class="flex items-center gap-stack-md flex-1 min-w-[300px]">
+<div class="relative flex-1">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border-precision rounded-lg focus:ring-2 focus:ring-secondary/20 focus:border-secondary text-sm" placeholder="Filter by name, email, or role..." type="text">
+</div>
+<button class="flex items-center gap-2 px-4 py-2 border-precision bg-surface-container-lowest rounded-lg hover:bg-surface-variant transition-all text-sm font-medium">
+<span class="material-symbols-outlined text-lg">tune</span>
+<span>Filters</span>
+</button>
+</div>
+<div class="flex items-center gap-stack-sm">
+<div class="flex rounded-lg border-precision overflow-hidden">
+<button class="px-3 py-2 bg-surface-variant text-primary"><span class="material-symbols-outlined text-lg">list</span></button>
+<button class="px-3 py-2 bg-surface-container-lowest hover:bg-surface-variant text-on-surface-variant"><span class="material-symbols-outlined text-lg">grid_view</span></button>
+</div>
+<select class="bg-surface-container-lowest border-precision rounded-lg text-sm px-4 py-2 focus:ring-0 cursor-pointer">
+<option>Role: All</option>
+<option>Admin</option>
+<option>Security Analyst</option>
+<option>Operator</option>
+</select>
+<select class="bg-surface-container-lowest border-precision rounded-lg text-sm px-4 py-2 focus:ring-0 cursor-pointer">
+<option>Department: All</option>
+<option>Engineering</option>
+<option>Security</option>
+<option>Legal</option>
+</select>
+</div>
+</div>
+<!-- Table Content -->
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-lowest text-on-surface-variant uppercase text-[11px] font-bold tracking-widest border-b border-outline-variant">
+<th class="px-6 py-4">User Identity</th>
+<th class="px-6 py-4">Primary Role</th>
+<th class="px-6 py-4">Department</th>
+<th class="px-6 py-4">Last Active</th>
+<th class="px-6 py-4">Security Status</th>
+<th class="px-6 py-4 text-right">Administrative Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- User Row 1 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-sm">JS</div>
+<div>
+<p class="font-bold text-on-background">Julian Sterling</p>
+<p class="text-xs text-on-surface-variant">j.sterling@bytevon.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary-container text-on-primary-container">Security Admin</span>
+</td>
+<td class="px-6 py-4 text-body-sm text-on-surface-variant">Cyber Operations</td>
+<td class="px-6 py-4 text-body-sm">
+<p class="font-medium text-on-background">4 mins ago</p>
+<p class="text-[10px] text-on-surface-variant">IP: 192.168.1.45</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-xs font-medium text-secondary">MFA Active</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-variant rounded-lg text-on-surface-variant" title="Edit Profile"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="p-2 hover:bg-surface-variant rounded-lg text-on-surface-variant" title="Reset Credentials"><span class="material-symbols-outlined text-xl">lock_reset</span></button>
+<button class="p-2 hover:bg-error-container/20 rounded-lg text-error" title="Deactivate User"><span class="material-symbols-outlined text-xl">person_off</span></button>
+</div>
+</td>
+</tr>
+<!-- User Row 2 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="Close-up professional headshot of a female software architect in a bright, modern corporate office. She has a friendly but professional expression, wearing minimalist glasses and professional attire. The background features blurred high-tech workspace elements, maintaining a clean and focused executive aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvIHaiKlU6GHBXUcziPh_st59GtKwPeJ3WtdbMoBD3oX24kCRGYFCVZUV_0Kui1dNbiJARjQud5W0l_LE8wBQRE7P3U6YaPXUVJP6YLAGrVn9war3OYYauwyxmjv9wfFTxj8QD_PTbcH7EsSm8VUz72OOjascQ6EcKpZYWH_bGsa6gcdm_AJqF8pIimkVKcxuBo2wMDPAtdWM3xsDvPzp87UIaojtXWEquyxR9YsQCuzgS2pViUwKm-A">
+<div>
+<p class="font-bold text-on-background">Elena Rodriguez</p>
+<p class="text-xs text-on-surface-variant">e.rod@bytevon.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-variant text-primary">Cloud Architect</span>
+</td>
+<td class="px-6 py-4 text-body-sm text-on-surface-variant">Infrastructure</td>
+<td class="px-6 py-4 text-body-sm">
+<p class="font-medium text-on-background">Yesterday, 4:20 PM</p>
+<p class="text-[10px] text-on-surface-variant">IP: 10.0.4.122</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">warning</span>
+<span class="text-xs font-medium text-on-surface-variant">Password Expired</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-variant rounded-lg text-on-surface-variant"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="p-2 hover:bg-surface-variant rounded-lg text-on-surface-variant"><span class="material-symbols-outlined text-xl">lock_reset</span></button>
+<button class="p-2 hover:bg-error-container/20 rounded-lg text-error"><span class="material-symbols-outlined text-xl">person_off</span></button>
+</div>
+</td>
+</tr>
+<!-- User Row 3 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-error-container text-on-error-container flex items-center justify-center font-bold text-sm">MK</div>
+<div>
+<p class="font-bold text-error">Marcus Knight</p>
+<p class="text-xs text-on-surface-variant">m.knight@bytevon.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-container text-on-surface-variant">Analyst</span>
+</td>
+<td class="px-6 py-4 text-body-sm text-on-surface-variant">Marketing</td>
+<td class="px-6 py-4 text-body-sm">
+<p class="font-medium text-error">Locked 2h ago</p>
+<p class="text-[10px] text-on-surface-variant">3 failed MFA attempts</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-sm">dangerous</span>
+<span class="text-xs font-medium text-error">Locked Account</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2">
+<button class="px-4 py-1.5 bg-secondary text-on-secondary text-xs font-bold rounded-lg hover:opacity-90">Verify &amp; Unlock</button>
+</div>
+</td>
+</tr>
+<!-- User Row 4 -->
+<tr class="hover:bg-surface-container-low/30 transition-colors group">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center font-bold text-sm">SL</div>
+<div>
+<p class="font-bold text-on-background">Sarah Lawson</p>
+<p class="text-xs text-on-surface-variant">s.lawson@bytevon.com</p>
+</div>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-surface-variant text-primary">Senior Developer</span>
+</td>
+<td class="px-6 py-4 text-body-sm text-on-surface-variant">Product Engineering</td>
+<td class="px-6 py-4 text-body-sm">
+<p class="font-medium text-on-background">Oct 24, 10:15 AM</p>
+<p class="text-[10px] text-on-surface-variant">IP: 172.16.0.5</p>
+</td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-xs font-medium text-secondary">MFA Active</span>
+</div>
+</td>
+<td class="px-6 py-4 text-right">
+<div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+<button class="p-2 hover:bg-surface-variant rounded-lg text-on-surface-variant"><span class="material-symbols-outlined text-xl">edit</span></button>
+<button class="p-2 hover:bg-surface-variant rounded-lg text-on-surface-variant"><span class="material-symbols-outlined text-xl">lock_reset</span></button>
+<button class="p-2 hover:bg-error-container/20 rounded-lg text-error"><span class="material-symbols-outlined text-xl">person_off</span></button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-6 py-4 bg-surface-container-low/50 border-t border-outline-variant flex items-center justify-between">
+<p class="text-xs text-on-surface-variant font-medium">Showing <span class="text-primary">1-25</span> of 1,284 users</p>
+<div class="flex items-center gap-2">
+<button class="p-1 border-precision rounded-md bg-surface-container-lowest text-on-surface-variant opacity-50 cursor-not-allowed">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 rounded-md bg-secondary text-on-secondary text-xs font-bold">1</button>
+<button class="w-8 h-8 rounded-md hover:bg-surface-variant text-xs font-bold text-on-surface-variant">2</button>
+<button class="w-8 h-8 rounded-md hover:bg-surface-variant text-xs font-bold text-on-surface-variant">3</button>
+<span class="px-1 text-on-surface-variant">...</span>
+<button class="w-8 h-8 rounded-md hover:bg-surface-variant text-xs font-bold text-on-surface-variant">52</button>
+</div>
+<button class="p-1 border-precision rounded-md bg-surface-container-lowest text-on-surface-variant hover:bg-surface-variant transition-all">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Administrative Insight Overlay (Asymmetric Element) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter mt-stack-lg">
+<div class="lg:col-span-2 bg-primary text-on-primary p-margin-desktop rounded-2xl relative overflow-hidden flex flex-col justify-between h-64">
+<div class="relative z-10">
+<h4 class="text-headline-md font-black">Identity Security Report</h4>
+<p class="text-body-md opacity-80 mt-2 max-w-md">Global audit of MFA adoption across all departments. Security health is currently 94.2% optimized.</p>
+</div>
+<div class="flex gap-stack-md relative z-10">
+<button class="bg-secondary px-6 py-2.5 rounded-lg font-bold text-sm hover:opacity-90">Generate Security Audit</button>
+<button class="bg-white/10 backdrop-blur-md border border-white/20 px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-white/20">View Global Policies</button>
+</div>
+<!-- Abstract Background Graphic -->
+<div class="absolute -right-20 -bottom-20 w-80 h-80 rounded-full border-[30px] border-secondary/20"></div>
+<div class="absolute -right-40 -top-40 w-96 h-96 rounded-full border-[1px] border-white/5"></div>
+</div>
+<div class="bg-surface-container-lowest border-precision p-6 rounded-2xl flex flex-col h-64">
+<h4 class="font-bold text-primary flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-secondary">history</span>
+                        Recent Admin Activity
+                    </h4>
+<div class="space-y-4 overflow-y-auto scrollbar-hide pr-2">
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary text-sm">person_add</span>
+</div>
+<div>
+<p class="text-xs text-on-background font-bold leading-tight">Admin created user "M. Scott"</p>
+<p class="text-[10px] text-on-surface-variant mt-0.5">2 minutes ago</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-error-container/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-error text-sm">lock</span>
+</div>
+<div>
+<p class="text-xs text-on-background font-bold leading-tight">M. Knight account auto-locked</p>
+<p class="text-[10px] text-on-surface-variant mt-0.5">2 hours ago</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-variant flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">edit</span>
+</div>
+<div>
+<p class="text-xs text-on-background font-bold leading-tight">Policy update: MFA enforced for Sales</p>
+<p class="text-[10px] text-on-surface-variant mt-0.5">5 hours ago</p>
+</div>
+</div>
+</div>
+<button class="mt-auto text-xs font-bold text-secondary text-center hover:underline">View All System Logs</button>
+</div>
+</div>
+</div>
+<!-- Footer Branding -->
+<footer class="mt-auto px-margin-desktop py-stack-md border-t border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+<p class="text-[10px] text-on-surface-variant uppercase tracking-widest font-bold">© 2024 Bytevon Systems Inc. - Confidential Security Environment</p>
+<div class="flex gap-stack-lg">
+<a class="text-[10px] font-bold text-on-surface-variant hover:text-secondary uppercase" href="#">Privacy Policy</a>
+<a class="text-[10px] font-bold text-on-surface-variant hover:text-secondary uppercase" href="#">Terms of Access</a>
+<a class="text-[10px] font-bold text-on-surface-variant hover:text-secondary uppercase" href="#">Compliance API</a>
+</div>
+</footer>
+</main>
+<script>
+        // Simple Micro-interactions
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mouseenter', () => {
+                button.classList.add('scale-[1.02]');
+            });
+            button.addEventListener('mouseleave', () => {
+                button.classList.remove('scale-[1.02]');
+            });
+        });
+
+        // Search Bar Focus Effect
+        const searchInput = document.querySelector('input[type="text"]');
+        searchInput.addEventListener('focus', () => {
+            searchInput.parentElement.classList.add('ring-2', 'ring-secondary/20');
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.parentElement.classList.remove('ring-2', 'ring-secondary/20');
+        });
+    </script>
+</body></html>

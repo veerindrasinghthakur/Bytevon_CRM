@@ -1,0 +1,548 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Team Detail - Alpha Engineering | Bytevon</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#d3e4fe",
+                        "secondary-fixed": "#dae2fd",
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#dae2fd",
+                        "primary-fixed-dim": "#adc6ff",
+                        "background": "#f8f9ff",
+                        "inverse-surface": "#213145",
+                        "on-tertiary-container": "#fbfdff",
+                        "on-tertiary-fixed": "#191c1e",
+                        "surface-container-low": "#eff4ff",
+                        "on-surface-variant": "#414755",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "surface-dim": "#cbdbf5",
+                        "surface-container-high": "#dce9ff",
+                        "primary-fixed": "#d8e2ff",
+                        "primary-container": "#0070eb",
+                        "error": "#ba1a1a",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#727577",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "surface": "#f8f9ff",
+                        "secondary": "#565e74",
+                        "surface-tint": "#005bc1",
+                        "outline": "#717786",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary": "#595c5e",
+                        "on-secondary-fixed": "#131b2e",
+                        "inverse-primary": "#adc6ff",
+                        "surface-container-highest": "#d3e4fe",
+                        "primary": "#0058bc",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "on-error": "#ffffff",
+                        "on-surface": "#0b1c30",
+                        "outline-variant": "#c1c6d7",
+                        "on-primary-fixed-variant": "#004493",
+                        "on-primary-fixed": "#001a41",
+                        "on-primary-container": "#fefcff",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#e5eeff",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "inverse-on-surface": "#eaf1ff",
+                        "tertiary-fixed": "#e0e3e5",
+                        "surface-bright": "#f8f9ff",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-container": "#5c647a",
+                        "on-secondary": "#ffffff",
+                        "on-background": "#0b1c30"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "table-row-height": "72px",
+                        "section-gap": "32px",
+                        "container-margin": "24px",
+                        "card-padding": "20px",
+                        "gutter-md": "16px"
+                    },
+                    "fontFamily": {
+                        "label-bold": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-xl": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "caption": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-bold": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-lg": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "headline-lg-mobile": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-xl": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "500" }],
+                        "headline-md": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "caption": ["11px", { "lineHeight": "14px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script><script>
+        function switchMenu(menuId, button) {
+            document.querySelectorAll('.secondary-menu').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(menuId);
+            if (target) target.classList.remove('hidden');
+            
+            document.querySelectorAll('.rail-item').forEach(el => {
+                el.classList.remove('bg-on-primary-fixed-variant', 'text-primary-fixed', 'border-primary');
+                el.classList.add('text-surface-variant', 'hover:bg-on-tertiary-fixed-variant', 'hover:text-primary-fixed', 'border-transparent');
+            });
+            
+            button.classList.remove('text-surface-variant', 'hover:bg-on-tertiary-fixed-variant', 'hover:text-primary-fixed', 'border-transparent');
+            button.classList.add('bg-on-primary-fixed-variant', 'text-primary-fixed', 'border-primary');
+        }
+
+        let isSidebarCollapsed = false;
+        let isRailExpanded = false;
+
+        function updateLayout() {
+            const primaryRail = document.getElementById('primary-rail');
+            const sidebar = document.getElementById('secondary-sidebar');
+            const mainWrapper = document.querySelector('.md\\:ml-\\[320px\\]');
+            const railLabels = document.querySelectorAll('.rail-label');
+            const railToggleIcon = document.getElementById('rail-toggle-icon');
+            const sidebarToggleIcon = document.getElementById('sidebar-toggle-icon');
+            
+            const secLabels = document.querySelectorAll('.sec-label');
+            const secHeaders = document.querySelectorAll('.sec-header');
+            const secIcons = document.querySelectorAll('.sec-icon');
+            
+            const primaryWidth = isRailExpanded ? 240 : 80;
+            const secondaryWidth = isSidebarCollapsed ? 80 : 240;
+            const totalWidth = primaryWidth + secondaryWidth;
+
+            primaryRail.style.width = `${primaryWidth}px`;
+            if (isRailExpanded) {
+                railToggleIcon.textContent = 'menu_open';
+                railLabels.forEach(el => el.classList.remove('hidden'));
+            } else {
+                railToggleIcon.textContent = 'menu';
+                railLabels.forEach(el => el.classList.add('hidden'));
+            }
+
+            sidebar.style.width = `${secondaryWidth}px`;
+            if (isSidebarCollapsed) {
+                sidebarToggleIcon.textContent = 'chevron_right';
+                secLabels.forEach(el => el.classList.add('hidden'));
+                secHeaders.forEach(el => el.classList.add('hidden'));
+                secIcons.forEach(el => {
+                    el.classList.remove('mr-3');
+                    el.classList.add('mx-auto');
+                });
+            } else {
+                sidebarToggleIcon.textContent = 'chevron_left';
+                secLabels.forEach(el => el.classList.remove('hidden'));
+                secHeaders.forEach(el => el.classList.remove('hidden'));
+                secIcons.forEach(el => {
+                    el.classList.add('mr-3');
+                    el.classList.remove('mx-auto');
+                });
+            }
+
+            if (mainWrapper) {
+                mainWrapper.style.marginLeft = `${totalWidth}px`;
+            }
+        }
+
+        function toggleSidebar() {
+            isSidebarCollapsed = !isSidebarCollapsed;
+            updateLayout();
+        }
+
+        function toggleRailExpansion() {
+            isRailExpanded = !isRailExpanded;
+            updateLayout();
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .shadow-subtle {
+            box-shadow: 0px 1px 3px rgba(0,0,0,0.05), 0px 10px 15px -3px rgba(0,0,0,0.02);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex overflow-hidden">
+<!-- SideNavBar (Shared Component) -->
+<div class="fixed left-0 top-0 h-full flex z-50 shadow-md">
+<!-- Primary Navigation Rail (Narrow) -->
+<nav class="w-[80px] h-full bg-inverse-surface flex flex-col items-center py-6 border-r border-on-secondary-fixed-variant/30 z-20 transition-all duration-500 ease-in-out" id="primary-rail">
+<button class="w-10 h-10 mb-6 flex items-center justify-center text-surface-variant hover:text-primary-fixed transition-colors" id="rail-expand-toggle" onclick="toggleRailExpansion()">
+<span class="material-symbols-outlined" id="rail-toggle-icon">menu</span>
+</button>
+<!-- Logo Icon -->
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center text-on-primary shadow-sm shadow-black/20 mb-8 shrink-0">
+<span class="material-symbols-outlined text-2xl font-bold" style="font-variation-settings: 'FILL' 1;">code</span>
+</div>
+<!-- Rail Items -->
+<div class="flex-1 w-full flex flex-col gap-2">
+<button class="rail-item w-full flex items-center px-6 py-4 gap-4 transition-all duration-200 text-surface-variant hover:bg-on-tertiary-fixed-variant hover:text-primary-fixed border-transparent border-l-4" onclick="switchMenu('menu-admin', this)">
+<span class="material-symbols-outlined text-2xl">shield_person</span>
+<span class="rail-label hidden text-sm font-medium whitespace-nowrap">Admin</span>
+</button>
+<button class="rail-item w-full flex items-center px-6 py-4 gap-4 transition-all duration-200 text-surface-variant hover:bg-on-tertiary-fixed-variant hover:text-primary-fixed border-transparent border-l-4" onclick="switchMenu('menu-settings', this)">
+<span class="material-symbols-outlined text-2xl">admin_panel_settings</span>
+<span class="rail-label hidden text-sm font-medium whitespace-nowrap">Settings</span>
+</button>
+<button class="rail-item w-full flex items-center px-6 py-4 gap-4 transition-all duration-200 text-surface-variant hover:bg-on-tertiary-fixed-variant hover:text-primary-fixed border-l-4 border-transparent" onclick="switchMenu('menu-sales', this)">
+<span class="material-symbols-outlined text-2xl">point_of_sale</span>
+<span class="rail-label hidden text-sm font-medium whitespace-nowrap">Sales</span>
+</button>
+<button class="rail-item w-full flex items-center px-6 py-4 gap-4 transition-all duration-200 border-l-4 bg-on-primary-fixed-variant text-primary-fixed border-primary" onclick="switchMenu('menu-dev', this)">
+<span class="material-symbols-outlined text-2xl">terminal</span>
+<span class="rail-label hidden text-sm font-medium whitespace-nowrap">Dev</span>
+</button>
+</div>
+<!-- User Profile Mini -->
+<div class="mt-auto pt-6 flex flex-col items-center gap-4 border-t border-on-secondary-fixed-variant/30 w-full shrink-0">
+<button class="text-surface-variant hover:text-primary-fixed transition-colors mb-2 flex items-center justify-center w-full py-2" onclick="toggleRailExpansion()" title="Collapse Rail">
+<span class="material-symbols-outlined text-xl">chevron_left</span>
+</button>
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface cursor-pointer hover:ring-2 hover:ring-primary transition-all">
+<span class="material-symbols-outlined">person</span>
+</div>
+<button class="text-surface-variant hover:text-primary-fixed transition-colors pb-4 flex items-center gap-4 px-6 w-full justify-center">
+<span class="material-symbols-outlined text-xl">logout</span>
+<span class="rail-label hidden text-sm font-medium whitespace-nowrap">Logout</span>
+</button>
+</div>
+</nav>
+<!-- Secondary Sidebar (Standard) -->
+<nav class="w-[240px] h-full bg-surface-container-lowest border-r border-outline-variant flex flex-col transition-all duration-500 ease-in-out overflow-hidden whitespace-nowrap z-10 relative" id="secondary-sidebar">
+<div class="w-full flex flex-col h-full">
+<!-- Header -->
+<div class="px-4 py-6 border-b border-outline-variant shrink-0 relative flex items-center justify-between min-h-[88px]">
+<div class="sec-header flex-1">
+<h1 class="text-headline-md font-headline-md text-on-background leading-tight truncate">Bytevon</h1>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold">Enterprise ERP</p>
+</div>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors p-1.5 rounded-lg hover:bg-surface-container mx-auto" onclick="toggleSidebar()" title="Toggle Sidebar">
+<span class="material-symbols-outlined text-xl" id="sidebar-toggle-icon">chevron_left</span>
+</button>
+</div>
+<!-- Sub-menus Container -->
+<div class="flex-1 py-4 overflow-y-auto px-2 w-full">
+<!-- DEVELOPER Sub-menu (Active) -->
+<div class="secondary-menu w-full" id="menu-dev">
+<h2 class="sec-header text-label-bold font-label-bold text-on-surface-variant/70 px-4 mb-2 uppercase">Organization</h2>
+<ul class="flex flex-col gap-1 w-full">
+<li class="w-full">
+<a class="text-on-surface-variant flex items-center px-4 py-3 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all duration-200 ease-in-out cursor-pointer group w-full" href="#">
+<span class="sec-icon material-symbols-outlined mr-3 text-lg group-hover:text-primary transition-all">dashboard</span>
+<span class="sec-label text-label-bold font-label-bold">Dashboard</span>
+</a>
+</li>
+<li class="w-full">
+<a class="bg-on-primary-fixed-variant text-primary-fixed rounded-lg flex items-center px-4 py-3 duration-200 ease-in-out cursor-pointer font-medium w-full" href="#">
+<span class="sec-icon material-symbols-outlined mr-3 text-lg text-primary transition-all" style="font-variation-settings: 'FILL' 1;">corporate_fare</span>
+<span class="sec-label text-label-bold font-label-bold">Organization</span>
+</a>
+</li>
+<li class="w-full">
+<a class="text-on-surface-variant flex items-center px-4 py-3 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all duration-200 ease-in-out cursor-pointer group w-full" href="#">
+<span class="sec-icon material-symbols-outlined mr-3 text-lg group-hover:text-primary transition-all">groups</span>
+<span class="sec-label text-label-bold font-label-bold">People</span>
+</a>
+</li>
+<li class="w-full">
+<a class="text-on-surface-variant flex items-center px-4 py-3 rounded-lg hover:bg-surface-container hover:text-on-surface transition-all duration-200 ease-in-out cursor-pointer group w-full" href="#">
+<span class="sec-icon material-symbols-outlined mr-3 text-lg group-hover:text-primary transition-all">engineering</span>
+<span class="sec-label text-label-bold font-label-bold">Workforce</span>
+</a>
+</li>
+</ul>
+</div>
+<!-- Placeholder for other menus -->
+<div class="secondary-menu hidden w-full" id="menu-admin"></div>
+<div class="secondary-menu hidden w-full" id="menu-settings"></div>
+<div class="secondary-menu hidden w-full" id="menu-sales"></div>
+</div>
+</div>
+</nav>
+</div>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col h-screen overflow-hidden md:ml-[320px]">
+<!-- TopNavBar (Shared Component) -->
+<header class="flex justify-between items-center w-full px-gutter-md h-16 bg-surface dark:bg-surface border-b border-outline-variant dark:border-outline z-10 shrink-0">
+<div class="flex items-center gap-4">
+<!-- Mobile Menu Button -->
+<button class="md:hidden p-2 text-on-surface-variant rounded-lg hover:bg-surface-container-low transition-colors cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<!-- Search -->
+<div class="relative hidden sm:block w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2 rounded-lg bg-surface-container-low border-transparent focus:border-primary focus:bg-surface focus:ring-0 transition-colors font-body-md text-body-md text-on-surface placeholder:text-outline" placeholder="Search..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors rounded-full cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors rounded-full cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-highest transition-colors rounded-full cursor-pointer active:opacity-80">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden ml-2 border border-outline-variant cursor-pointer active:opacity-80">
+<img alt="User avatar" class="w-full h-full object-cover" data-alt="A professional corporate headshot of a female executive with dark hair, wearing a navy blazer, standing in a brightly lit modern office with subtle blue lighting accents. High resolution, professional photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDghoxfTte3GxEv8jjH_2qHOWYia7dLS_dU0blkjMy1X6ZUuZC9o1IHTmCZcPxx1tkt1rUsw7Wtt1WTAf3t9lN9s7TNlYNIE8nkHo-2IZkn1Lg371pUk-mX0-AxqRXPACgyusphgOIzM5e7ogUx0vBPs0ofptFJluW61ojej4pFvxhMCXc-5w3dgwThvyeDIx5P4C-BBLMbjCtHm_npragakMfCmpEdtNQiSBVbCLicAtB9NggwsEnD">
+</div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 overflow-y-auto bg-background p-container-margin">
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm mb-6">
+<a class="hover:text-primary transition-colors" href="#">Organization</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Teams</a>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-on-surface font-medium">Alpha Engineering</span>
+</nav>
+<!-- Header Section -->
+<div class="flex flex-col lg:flex-row lg:items-start justify-between gap-6 mb-section-gap">
+<div>
+<div class="flex items-center gap-4 mb-2">
+<h1 class="font-headline-xl text-headline-xl text-on-surface">Alpha Engineering</h1>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-variant text-primary font-label-bold text-label-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                            Active
+                        </span>
+</div>
+<div class="flex flex-wrap items-center gap-4 font-body-md text-body-md text-on-surface-variant">
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">calendar_today</span> Created on Oct 12, 2022</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant hidden sm:block"></span>
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">domain</span> Department: Engineering</span>
+<span class="w-1 h-1 rounded-full bg-outline-variant hidden sm:block"></span>
+<span class="flex items-center gap-1.5"><span class="material-symbols-outlined text-[18px]">person</span> Lead: Sarah Jenkins</span>
+</div>
+</div>
+<div class="flex items-center gap-3 shrink-0">
+<button class="px-4 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface font-label-bold text-label-bold hover:bg-surface-container-low transition-colors shadow-subtle flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">edit</span>
+                        Edit Team
+                    </button>
+<button class="px-4 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-on-surface font-label-bold text-label-bold hover:bg-surface-container-low transition-colors shadow-subtle flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">assignment_add</span>
+                        Assign to Project
+                    </button>
+<button class="px-4 py-2 rounded-lg bg-primary text-on-primary font-label-bold text-label-bold hover:bg-on-primary-fixed-variant transition-colors shadow-subtle flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">download</span>
+                        Export Data
+                    </button>
+</div>
+</div>
+<!-- Top Stats Row -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter-md mb-section-gap">
+<!-- Stat Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-outline-variant shadow-subtle hover:border-primary transition-colors">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">group</span>
+</div>
+<span class="flex items-center text-emerald-600 font-label-sm text-label-sm bg-emerald-50 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[16px]">trending_up</span> 12%
+                        </span>
+</div>
+<div class="font-body-md text-body-md text-on-surface-variant mb-1">Total Members</div>
+<div class="font-headline-xl text-headline-xl text-on-surface">12 Members</div>
+</div>
+<!-- Stat Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-outline-variant shadow-subtle hover:border-primary transition-colors">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">check_circle</span>
+</div>
+<span class="flex items-center text-emerald-600 font-label-sm text-label-sm bg-emerald-50 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[16px]">trending_up</span> 4%
+                        </span>
+</div>
+<div class="font-body-md text-body-md text-on-surface-variant mb-1">Projects Delivered</div>
+<div class="font-headline-xl text-headline-xl text-on-surface">24 Projects</div>
+</div>
+<!-- Stat Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-outline-variant shadow-subtle hover:border-primary transition-colors">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">speed</span>
+</div>
+<span class="flex items-center text-emerald-600 font-label-sm text-label-sm bg-emerald-50 px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[16px]">trending_up</span> 2%
+                        </span>
+</div>
+<div class="font-body-md text-body-md text-on-surface-variant mb-1">Current Velocity</div>
+<div class="font-headline-xl text-headline-xl text-on-surface">94%</div>
+</div>
+<!-- Stat Card 4 -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-outline-variant shadow-subtle hover:border-primary transition-colors">
+<div class="flex justify-between items-start mb-4">
+<div class="w-10 h-10 rounded-lg bg-surface-container-low flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">timer</span>
+</div>
+<span class="flex items-center text-error font-label-sm text-label-sm bg-error-container px-2 py-0.5 rounded">
+<span class="material-symbols-outlined text-[16px]">trending_down</span> 0.5d
+                        </span>
+</div>
+<div class="font-body-md text-body-md text-on-surface-variant mb-1">Avg. Task Completion</div>
+<div class="font-headline-xl text-headline-xl text-on-surface">4.2 Days</div>
+</div>
+</div>
+<!-- Tabbed Navigation -->
+<div class="border-b border-outline-variant mb-section-gap">
+<nav class="flex gap-8">
+<a class="pb-3 border-b-2 border-primary text-primary font-label-bold text-label-bold" href="#">Overview</a>
+<a class="pb-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface transition-colors font-label-bold text-label-bold" href="#">Members</a>
+<a class="pb-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface transition-colors font-label-bold text-label-bold" href="#">Project History</a>
+<a class="pb-3 border-b-2 border-transparent text-on-surface-variant hover:text-on-surface transition-colors font-label-bold text-label-bold" href="#">Performance</a>
+</nav>
+</div>
+<!-- Overview Content (Two-Column) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-section-gap">
+<!-- Left Column -->
+<div class="lg:col-span-8 flex flex-col gap-section-gap">
+<!-- Team Mission -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-outline-variant shadow-subtle">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">flag</span> Team Mission
+                        </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+                            Alpha Engineering is dedicated to building scalable, high-performance backend infrastructure for enterprise clients. We focus on delivering robust microservices architecture, ensuring 99.99% uptime, and optimizing data pipelines for real-time analytics. Our core philosophy centers on clean code, automated testing, and continuous deployment.
+                        </p>
+</div>
+<!-- Active Projects -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-outline-variant shadow-subtle">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">account_tree</span> Active Projects
+                            </h2>
+<button class="text-primary hover:text-on-primary-fixed-variant font-label-bold text-label-bold transition-colors">View All</button>
+</div>
+<div class="space-y-4">
+<!-- Project 1 -->
+<div class="border border-outline-variant rounded-lg p-4 hover:border-primary transition-colors cursor-pointer">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold">Nexus Data Migration</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Client: Nexus Corp</p>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-surface-variant text-primary font-label-sm text-label-sm">Due: Nov 15</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex-1 bg-surface-container-low h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 75%"></div>
+</div>
+<span class="font-label-bold text-label-bold text-on-surface">75%</span>
+</div>
+</div>
+<!-- Project 2 -->
+<div class="border border-outline-variant rounded-lg p-4 hover:border-primary transition-colors cursor-pointer">
+<div class="flex justify-between items-start mb-3">
+<div>
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold">Project Horizon API</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Internal Initiative</p>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-surface-variant text-primary font-label-sm text-label-sm">Due: Dec 01</span>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex-1 bg-surface-container-low h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 40%"></div>
+</div>
+<span class="font-label-bold text-label-bold text-on-surface">40%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column -->
+<div class="lg:col-span-4 flex flex-col gap-section-gap">
+<!-- Key Members -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-outline-variant shadow-subtle">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">groups</span> Key Members
+                            </h2>
+</div>
+<div class="space-y-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-variant">
+<img alt="Member Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a male software engineer with glasses, wearing a casual button-down shirt, in a modern office environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLE8DJ0j0_etAWrdqU1Zn_FL_pAbHHUZbKjV0h45WsHVx6Raf_4vjFTz6cw6QFIzYMnkz9oV1ZdOFOn4KH4oLI_UfOfZEb6Wyj0TvjcYTKCQbJ7NqtHACgveamp9d10ZEz9lzWVU8fLPtJ4BpOYLURSxNNpzCzK51lyaAqNltp8ZGGskufL0M-8WH0NDe13D0thQ_8JexCyvKdCvlhspy9i9pAzKErM-1uACn8NsVuZofEET1KBl8s">
+</div>
+<div>
+<div class="font-body-md text-body-md text-on-surface font-semibold">David Chen</div>
+<div class="font-caption text-caption text-on-surface-variant">Senior Backend Engineer</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-variant">
+<img alt="Member Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a female database administrator smiling, wearing a dark navy blouse, lit with cool corporate lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2Fnvhn_o57KeZMrjb8nNfYyhg6CJ9MDcBI7zXjwFQiJh4rP0xccVNdFwLgDchGW1UsEG9j_Drh8W5Gv_NLiV-qHGS3Jc_nAvwtHwiR65PCS2Ap384gdpkuEnW5I7uY6VTL8_ks2YDn5RiIFiDZJpZDvyNeVIvAmyKvA6mVUcwX0K3SFXgGk8oKrO5qtwTcewDQkt9bMaP1V5IJ0uvOlFgZCjZkBDRzjfNc-zjKukK7dr-GOmjDOaf">
+</div>
+<div>
+<div class="font-body-md text-body-md text-on-surface font-semibold">Maria Rodriguez</div>
+<div class="font-caption text-caption text-on-surface-variant">Database Architect</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-variant">
+<img alt="Member Avatar" class="w-full h-full object-cover" data-alt="A professional headshot of a male devops engineer in a tech office setting, wearing a black t-shirt, professional lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBNl9E-V1mzwhX39e8IFLA2xCI-7qwjm3u9u3aQBy3Vsjt_XJCo2IO17e1mHoOxvYoPVbDZr2GZNHh60RhgkI03bR2P8ca-KsQRSl5IBLWFZTNGOTvxwqkYaxFwp-_R_A0U6p2TsVnCucU8dUjaKRxOHFY3O0WVsusvZX_wpo8im4rbwSCsZADYq7rRiwiMLnOQ6Xx8GrzqohLuL6HI8I8wNmGNl1QUDuwmUBhbbpC0E_rYPeR0NwKH">
+</div>
+<div>
+<div class="font-body-md text-body-md text-on-surface font-semibold">James Wilson</div>
+<div class="font-caption text-caption text-on-surface-variant">DevOps Lead</div>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-2 border border-outline-variant rounded-lg text-on-surface font-label-bold text-label-bold hover:bg-surface-container-low transition-colors">View All 12 Members</button>
+</div>
+<!-- Recent Activity -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding border border-outline-variant shadow-subtle">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">history</span> Recent Activity
+                        </h2>
+<div class="relative border-l-2 border-surface-variant ml-3 space-y-6">
+<div class="relative pl-6">
+<span class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-primary ring-4 ring-surface-container-lowest"></span>
+<div class="font-body-md text-body-md text-on-surface">Code merge to main branch for Nexus Data Migration.</div>
+<div class="font-caption text-caption text-on-surface-variant mt-1">Today, 10:30 AM</div>
+</div>
+<div class="relative pl-6">
+<span class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-surface-variant border-2 border-primary ring-4 ring-surface-container-lowest"></span>
+<div class="font-body-md text-body-md text-on-surface">Team sync: Q4 Planning finalized.</div>
+<div class="font-caption text-caption text-on-surface-variant mt-1">Yesterday, 2:00 PM</div>
+</div>
+<div class="relative pl-6">
+<span class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-surface-variant border-2 border-primary ring-4 ring-surface-container-lowest"></span>
+<div class="font-body-md text-body-md text-on-surface">New member joined: Alex Kim (QA Engineer).</div>
+<div class="font-caption text-caption text-on-surface-variant mt-1">Oct 24, 9:00 AM</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+
+</body></html>

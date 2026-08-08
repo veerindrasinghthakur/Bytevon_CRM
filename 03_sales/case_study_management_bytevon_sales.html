@@ -1,0 +1,459 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Bytevon | Case Study Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {error: "#ba1a1a", "surface-container": "#e5eeff", secondary: "#0059bb", "surface-variant": "#d3e4fe", background: "#f8f9ff", "surface-bright": "#f8f9ff", "on-secondary-container": "#fefcff", "primary-fixed-dim": "#afc8f0", tertiary: "#040607", "on-tertiary-fixed": "#191c1e", "on-tertiary": "#ffffff", "on-surface": "#0b1c30", "on-primary-container": "#6f88ad", "inverse-surface": "#213145", "on-error-container": "#93000a", "on-primary-fixed-variant": "#2f486a", "on-secondary-fixed": "#001a41", "primary-fixed": "#d4e3ff", "on-tertiary-container": "#848789", "on-secondary": "#ffffff", "surface-dim": "#cbdbf5", "secondary-fixed-dim": "#adc7ff", "primary-container": "#001f3f", "inverse-on-surface": "#eaf1ff", "on-secondary-fixed-variant": "#004493", outline: "#74777f", "tertiary-fixed-dim": "#c4c7c9", "surface-tint": "#476083", "on-tertiary-fixed-variant": "#444749", "on-primary-fixed": "#001c3a", "on-error": "#ffffff", "secondary-container": "#0070ea", primary: "#000613", "tertiary-container": "#1c1f21", "inverse-primary": "#afc8f0", "surface-container-high": "#dce9ff", "surface-container-highest": "#d3e4fe", "on-primary": "#ffffff", "tertiary-fixed": "#e0e3e5", "secondary-fixed": "#d8e2ff", surface: "#f8f9ff", "surface-container-lowest": "#ffffff", "surface-container-low": "#eff4ff", "outline-variant": "#c4c6cf", "error-container": "#ffdad6", "on-surface-variant": "#43474e", "on-background": "#0b1c30"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-md": "16px", "stack-lg": "32px", "margin-mobile": "16px", "margin-desktop": "40px", unit: "4px", "stack-sm": "8px", "container-max": "1440px", gutter: "24px"}, fontFamily: {"headline-lg": ["Inter"], "title-lg": ["Inter"], "label-sm": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-md": ["Inter"], "body-md": ["Inter"], "display-lg": ["Inter"], "body-sm": ["Inter"], "body-lg": ["Inter"], "label-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}]}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .sidebar-item-active { background-color: #0059bb; color: #ffffff; }
+        .glass-panel { backdrop-filter: blur(8px); background: rgba(255, 255, 255, 0.8); border: 1px solid #E2E8F0; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .quick-view-enter { transform: translateX(100%); transition: transform 0.3s ease-out; }
+        .quick-view-active { transform: translateX(0); }
+    </style>
+</head>
+<body class="bg-background text-on-surface overflow-hidden">
+<div class="flex h-screen w-full">
+<!-- Side Navigation (Shared Component Logic) -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary-container flex flex-col py-stack-lg px-stack-md z-50">
+<div class="mb-stack-lg px-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center"><img alt="Bytevon Logo" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGGrV-IifJf1NbHzG9k_51el5DKzmahbgWJdWVe0LkPiCKBci40EwpOyqholrfcoYgr69mV12vE9ERDZkX0ZK6-YL-1e_rqh6VVMlhI2BhuBSEdCIJxheQxDQ0B3rNUQq4cmGdjge2cgvkDa3VJfKAPsmIX9ZqkKFTLvobWCyvmMCZDIEebAgrdVKyNpfRhEt9CvRpudVj0jyIc9D8y-bfClsUSATFz0AMVmTTcyI-WyxY7EEFSoHDDA4QAn5-zExfw78"></div>
+<div>
+<h1 class="text-on-primary-container font-title-lg text-title-lg font-black leading-none">Bytevon ERP</h1>
+<p class="text-on-primary-container opacity-60 text-label-sm font-label-sm mt-1">Enterprise Resources</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Direct mappings from SideNavBar JSON + Custom Sales Logic -->
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-primary-container opacity-80 font-label-md text-label-md hover:bg-secondary-container hover:text-on-secondary-container rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-primary-container opacity-80 font-label-md text-label-md hover:bg-secondary-container hover:text-on-secondary-container rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">group</span> Customers
+                </a>
+<!-- Active Sales Category -->
+<div class="pt-2">
+<button class="w-full flex items-center justify-between px-3 py-2.5 bg-secondary text-on-secondary rounded-lg font-label-md text-label-md">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined">payments</span> Sales
+                        </div>
+<span class="material-symbols-outlined text-[18px]">expand_more</span>
+</button>
+<div class="ml-9 mt-1 space-y-1">
+<a class="block px-3 py-1.5 text-on-secondary font-label-md text-label-md border-l-2 border-on-secondary/40" href="#">Case Studies</a>
+<a class="block px-3 py-1.5 text-on-primary-container opacity-60 font-label-md text-label-md hover:text-on-secondary transition-colors" href="#">Proposals</a>
+<a class="block px-3 py-1.5 text-on-primary-container opacity-60 font-label-md text-label-md hover:text-on-secondary transition-colors" href="#">Contracts</a>
+</div>
+</div>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-primary-container opacity-80 font-label-md text-label-md hover:bg-secondary-container hover:text-on-secondary-container rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">inventory_2</span> Resources
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-primary-container opacity-80 font-label-md text-label-md hover:bg-secondary-container hover:text-on-secondary-container rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">account_tree</span> Projects
+                </a>
+<a class="flex items-center gap-3 px-3 py-2.5 text-on-primary-container opacity-80 font-label-md text-label-md hover:bg-secondary-container hover:text-on-secondary-container rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined">analytics</span> Analytics
+                </a>
+</nav>
+<button class="mt-auto mb-stack-md mx-2 py-3 bg-secondary-container text-on-secondary-container rounded-lg font-label-md text-label-md flex items-center justify-center gap-2 font-bold active:scale-95 transition-transform">
+<span class="material-symbols-outlined">add_circle</span> New Entry
+            </button>
+<div class="border-t border-on-primary-container/10 pt-4 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-primary-container opacity-80 font-label-md text-label-md hover:text-on-secondary transition-colors" href="#">
+<span class="material-symbols-outlined">help</span> Help Center
+                </a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-primary-container opacity-80 font-label-md text-label-md hover:text-on-secondary transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span> Log Out
+                </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-[280px] overflow-y-auto bg-background custom-scrollbar relative">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-40 bg-surface-container-lowest/80 backdrop-blur-md border-b border-outline-variant px-margin-desktop h-16 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
+<span class="">Dashboard</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="">Sales</span>
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+<span class="text-secondary font-bold">Case Studies</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate executive in high-contrast light mode setting, wearing a tailored navy blazer, positioned against a minimalist architectural background of Bytevon headquarters. The lighting is crisp and modern, emphasizing clarity and enterprise trust." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBr6nmYvxcvm_aXAyMhhrlhKU8XRsc0gCbUN1LkYraLfEzUeG-CBxygS3HOCMGbQkGA_nTz3S_VgtMvw5HhM-XlmgUeGsNqhPsj9mW-YrC2eOQIyBfPOCIMasTrepmZXo_njBLIFXs4kfN_pFhXxWDqxJ0TLF94RBfPo8BT4v802GsEj-pKoGdeN9Z90fvCAEYmbE5eu_CuSJsXRylgb_gGg-rvLJn6ozlbkbXuGgYYUPoXTrTUy1pFAA">
+</div>
+</div>
+</header>
+<!-- Content Container -->
+<div class="p-margin-desktop space-y-stack-lg max-w-container-max mx-auto">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-gutter">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Case Study Management</h2>
+<p class="text-on-surface-variant font-body-md text-body-md mt-1">Manage reusable customer success stories, implementation examples and sales enablement content.</p>
+</div>
+<div class="flex items-center gap-3 flex-wrap">
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container-highest text-on-surface font-label-md text-label-md rounded-lg hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">analytics</span> Knowledge Analytics
+                        </button>
+<div class="flex bg-surface-container-high rounded-lg p-1">
+<button class="px-3 py-1 text-label-sm font-label-sm hover:bg-surface-container-lowest rounded-md transition-colors">Import</button>
+<button class="px-3 py-1 text-label-sm font-label-sm hover:bg-surface-container-lowest rounded-md transition-colors">Export</button>
+</div>
+<button class="flex items-center gap-2 px-5 py-2.5 bg-secondary text-on-secondary font-label-md text-label-md rounded-lg font-bold shadow-sm active:scale-95 transition-transform">
+<span class="material-symbols-outlined">add</span> Create Case Study
+                        </button>
+</div>
+</div>
+<!-- KPI Cards Section -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- KPI 1 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-between h-32">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-label-md text-label-md">Total Case Studies</span>
+<span class="material-symbols-outlined text-secondary">library_books</span>
+</div>
+<div class="flex items-end justify-between">
+<span class="text-headline-md font-headline-md text-on-surface">24</span>
+<span class="text-secondary font-label-sm text-label-sm flex items-center">+2 this month</span>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-between h-32">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-label-md text-label-md">Published</span>
+<span class="material-symbols-outlined text-green-600">check_circle</span>
+</div>
+<div class="flex items-end justify-between">
+<span class="text-headline-md font-headline-md text-on-surface">18</span>
+<div class="flex items-center text-green-600">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span class="font-label-sm text-label-sm">75% rate</span>
+</div>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-between h-32">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-label-md text-label-md">Draft</span>
+<span class="material-symbols-outlined text-orange-500">edit_note</span>
+</div>
+<div class="flex items-end justify-between">
+<span class="text-headline-md font-headline-md text-on-surface">6</span>
+<span class="text-on-surface-variant font-label-sm text-label-sm opacity-60">Requires Review</span>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-between h-32">
+<div class="flex justify-between items-start">
+<span class="text-on-surface-variant font-label-md text-label-md">Revenue Influenced</span>
+<span class="material-symbols-outlined text-secondary">monetization_on</span>
+</div>
+<div class="flex items-end justify-between">
+<span class="text-headline-md font-headline-md text-on-surface">$4.2M</span>
+<div class="flex items-center text-secondary">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span class="font-label-sm text-label-sm">12% YoY</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Toolbar -->
+<div class="flex flex-col lg:flex-row items-center justify-between gap-gutter bg-surface-container-low p-4 rounded-xl border border-outline-variant">
+<div class="relative w-full lg:w-96">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary focus:border-secondary outline-none font-body-sm text-body-sm" placeholder="Search by title, customer, or tags..." type="text">
+</div>
+<div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+<select class="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-label-sm text-label-sm outline-none focus:ring-1 focus:ring-secondary">
+<option>All Status</option>
+<option>Published</option>
+<option>Draft</option>
+<option>Archived</option>
+</select>
+<select class="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 font-label-sm text-label-sm outline-none focus:ring-1 focus:ring-secondary">
+<option>All Industries</option>
+<option>SaaS</option>
+<option>Manufacturing</option>
+<option>Fintech</option>
+</select>
+<button class="p-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface-variant hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-1"></div>
+<div class="flex bg-surface-container-high rounded-lg p-1">
+<button class="p-1.5 bg-surface-container-lowest text-secondary rounded shadow-sm">
+<span class="material-symbols-outlined text-[20px]">grid_view</span>
+</button>
+<button class="p-1.5 text-on-surface-variant hover:bg-surface-container-lowest rounded transition-colors">
+<span class="material-symbols-outlined text-[20px]">list</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Card Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter pb-stack-lg">
+<!-- Case Study Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group cursor-pointer" onclick="openDrawer()">
+<div class="h-40 relative">
+<img class="w-full h-full object-cover" data-alt="A clean architectural photograph of a high-tech corporate campus featuring glass and steel facades with lush green integration. The lighting is soft morning sun, creating a professional and optimistic atmosphere. The image style is crisp, high-definition photography with a cool blue and silver color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDXGkB9T9dtykfLbpPT1BLYyFdCoVdADe73lwYB63FZlH9zrkP8TMozBQqHB2-PnTsCf8xNvptpW0Io-vfyd37zDs9fWKtrF1DFICSBPUPRAtTzdpAnR-tw_aiOuR5T9ienMjNeEHLNHKed_mflQ47aVN635bFyckKN59jMz6YJ-IfaTG4RnN0yoP1HmsJlqVoaX50839rBPApbRGErWfx6jqfQfzVviiOd6C8wfvir8g9Aj7q0YI-lrQ">
+<div class="absolute top-3 left-3 bg-green-100 text-green-700 px-2 py-1 rounded-md font-label-sm text-label-sm flex items-center gap-1 border border-green-200">
+<span class="w-1.5 h-1.5 bg-green-600 rounded-full"></span> Published
+                            </div>
+</div>
+<div class="p-5 space-y-3">
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface group-hover:text-secondary transition-colors">TechNexus ERP Migration</h3>
+<div class="flex items-center gap-2 mt-1 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">domain</span> SaaS | TechNexus Corp
+                                </div>
+</div>
+<div class="flex items-center justify-between py-2 border-y border-outline-variant/30">
+<div>
+<p class="text-on-surface-variant text-[10px] uppercase tracking-wider font-bold">Impact</p>
+<p class="font-label-md text-label-md text-secondary">40% efficiency gain</p>
+</div>
+<div class="text-right">
+<p class="text-on-surface-variant text-[10px] uppercase tracking-wider font-bold">Revenue</p>
+<p class="font-label-md text-label-md text-on-surface">$1.2M</p>
+</div>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-0.5 bg-surface-container text-on-primary-container rounded font-label-sm text-[11px]">ERP</span>
+<span class="px-2 py-0.5 bg-surface-container text-on-primary-container rounded font-label-sm text-[11px]">Cloud</span>
+<span class="px-2 py-0.5 bg-surface-container text-on-primary-container rounded font-label-sm text-[11px]">Migration</span>
+</div>
+<div class="flex items-center gap-2 pt-2">
+<button class="flex-1 py-2 bg-secondary/5 text-secondary border border-secondary/20 rounded-lg font-label-md text-label-md hover:bg-secondary/10 transition-colors">View</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Case Study Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group">
+<div class="h-40 relative">
+<img class="w-full h-full object-cover" data-alt="A modern industrial facility interior with robotic arms and streamlined production lines. The scene is illuminated by cool-toned LED lighting, highlighting the precision and technological sophistication. Deep blues and metallic greys dominate the palette, conveying an enterprise-grade manufacturing environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCnhDAoyvarxArr4zs8QAjWTn9WxT60v_Lz1Ep9aAB3DCTALieGRPL5VfdQXDNUbo3PMKKF0qU46AZTl4VMA1T0reDXnHyiK1nNyGDQq8GYQlgKdSE4QJYgmEnhoxZtBd56TgklPl7SUPd5WGyA41T9009WnYfC-BxJzMz_E7RAei3ExCI34vVeBTEMPk8Fx_of6ofi4p9ZD-jjrz53BdVM5vRJLz87bLeWRdt9bvAE9IYhy2WoZeq-Yg">
+<div class="absolute top-3 left-3 bg-orange-100 text-orange-700 px-2 py-1 rounded-md font-label-sm text-label-sm flex items-center gap-1 border border-orange-200">
+<span class="w-1.5 h-1.5 bg-orange-600 rounded-full"></span> Draft
+                            </div>
+</div>
+<div class="p-5 space-y-3">
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface group-hover:text-secondary transition-colors">Global Logistics Optimization</h3>
+<div class="flex items-center gap-2 mt-1 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">local_shipping</span> Logistics | SwiftFlow Ltd
+                                </div>
+</div>
+<div class="flex items-center justify-between py-2 border-y border-outline-variant/30">
+<div>
+<p class="text-on-surface-variant text-[10px] uppercase tracking-wider font-bold">Impact</p>
+<p class="font-label-md text-label-md text-secondary">15% Cost reduction</p>
+</div>
+<div class="text-right">
+<p class="text-on-surface-variant text-[10px] uppercase tracking-wider font-bold">Revenue</p>
+<p class="font-label-md text-label-md text-on-surface">$850k</p>
+</div>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-0.5 bg-surface-container text-on-primary-container rounded font-label-sm text-[11px]">SCM</span>
+<span class="px-2 py-0.5 bg-surface-container text-on-primary-container rounded font-label-sm text-[11px]">AI</span>
+<span class="px-2 py-0.5 bg-surface-container text-on-primary-container rounded font-label-sm text-[11px]">Logistics</span>
+</div>
+<div class="flex items-center gap-2 pt-2">
+<button class="flex-1 py-2 bg-secondary/5 text-secondary border border-secondary/20 rounded-lg font-label-md text-label-md hover:bg-secondary/10 transition-colors">Resume Editing</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Case Study Card 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow group">
+<div class="h-40 relative">
+<img class="w-full h-full object-cover" data-alt="A futuristic fintech office interior with glowing data visualization screens and sleek, minimalist workstations. The lighting is sophisticated, using purple and blue accents against a clean white backdrop to create a high-stakes financial atmosphere. The design is modern, professional, and trustworthy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmIcfKxPoCbp3LxNTCWX4ORRGHcUgFZrwjFPKGE0LPLKv0RA6UP9vokGTdzykjQwQMPTgby6hufZhG6ZBfzbcY143ebL7hhGTp4wJJlJoHUVU2MqETW1up30h9nyOskeMiFGbzOXV3rCQdqFrExrEay2_cHD_em1O-Gkp445o5k01PyAJlahPUmV6kqCUTChMsJ45-B40pSjc0USnM6O52gXS3yhZhOywGCAkp5bksqu93Vb3o-u5sqQ">
+<div class="absolute top-3 left-3 bg-green-100 text-green-700 px-2 py-1 rounded-md font-label-sm text-label-sm flex items-center gap-1 border border-green-200">
+<span class="w-1.5 h-1.5 bg-green-600 rounded-full"></span> Published
+                            </div>
+</div>
+<div class="p-5 space-y-3">
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface group-hover:text-secondary transition-colors">Zenith Bank Digital Core</h3>
+<div class="flex items-center gap-2 mt-1 text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">account_balance</span> Finance | Zenith Group
+                                </div>
+</div>
+<div class="flex items-center justify-between py-2 border-y border-outline-variant/30">
+<div>
+<p class="text-on-surface-variant text-[10px] uppercase tracking-wider font-bold">Impact</p>
+<p class="font-label-md text-label-md text-secondary">Zero downtime update</p>
+</div>
+<div class="text-right">
+<p class="text-on-surface-variant text-[10px] uppercase tracking-wider font-bold">Revenue</p>
+<p class="font-label-md text-label-md text-on-surface">$2.1M</p>
+</div>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-0.5 bg-surface-container text-on-primary-container rounded font-label-sm text-[11px]">Banking</span>
+<span class="px-2 py-0.5 bg-surface-container text-on-primary-container rounded font-label-sm text-[11px]">Fintech</span>
+<span class="px-2 py-0.5 bg-surface-container text-on-primary-container rounded font-label-sm text-[11px]">Database</span>
+</div>
+<div class="flex items-center gap-2 pt-2">
+<button class="flex-1 py-2 bg-secondary/5 text-secondary border border-secondary/20 rounded-lg font-label-md text-label-md hover:bg-secondary/10 transition-colors">View</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:bg-surface-container-low rounded-lg transition-colors">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Recent Activity Timeline (Bento Style) -->
+<div class="bg-surface-container-low border border-outline-variant rounded-2xl p-stack-lg">
+<h4 class="font-title-lg text-title-lg mb-6">Recent Activity</h4>
+<div class="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-secondary/30 before:via-secondary/10 before:to-transparent">
+<!-- Activity Item 1 -->
+<div class="relative flex items-center justify-between">
+<div class="flex items-center">
+<div class="absolute left-0 flex h-10 w-10 items-center justify-center rounded-full bg-secondary text-on-secondary shadow-sm">
+<span class="material-symbols-outlined text-[20px]">publish</span>
+</div>
+<div class="ml-14">
+<p class="font-label-md text-label-md font-bold text-on-surface">Case Study Published</p>
+<p class="text-on-surface-variant font-body-sm text-body-sm">"TechNexus ERP Migration" was approved and moved to published.</p>
+</div>
+</div>
+<span class="text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap">2 hours ago</span>
+</div>
+<!-- Activity Item 2 -->
+<div class="relative flex items-center justify-between">
+<div class="flex items-center">
+<div class="absolute left-0 flex h-10 w-10 items-center justify-center rounded-full bg-surface-container-highest text-secondary border border-secondary/20">
+<span class="material-symbols-outlined text-[20px]">upload_file</span>
+</div>
+<div class="ml-14">
+<p class="font-label-md text-label-md font-bold text-on-surface">Document Uploaded</p>
+<p class="text-on-surface-variant font-body-sm text-body-sm">New implementation technical specs added to "Global Logistics" folder.</p>
+</div>
+</div>
+<span class="text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap">Yesterday</span>
+</div>
+<!-- Activity Item 3 -->
+<div class="relative flex items-center justify-between">
+<div class="flex items-center">
+<div class="absolute left-0 flex h-10 w-10 items-center justify-center rounded-full bg-surface-container-highest text-secondary border border-secondary/20">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+</div>
+<div class="ml-14">
+<p class="font-label-md text-label-md font-bold text-on-surface">Case Study Created</p>
+<p class="text-on-surface-variant font-body-sm text-body-sm">Initial draft for "Fintech Secure Gateway" created by Marketing Team.</p>
+</div>
+</div>
+<span class="text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap">3 days ago</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Quick View Panel (Drawer) -->
+<div class="fixed top-0 right-0 h-full w-[400px] bg-surface-container-lowest shadow-2xl border-l border-outline-variant z-50 overflow-y-auto custom-scrollbar quick-view-active" id="quickViewPanel">
+<div class="p-stack-lg space-y-6">
+<div class="flex items-center justify-between">
+<h4 class="font-title-lg text-title-lg text-on-surface">Quick View</h4>
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors" onclick="closeDrawer()">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+
+<div class="space-y-4">
+<div>
+<span class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-widest font-bold">Project Name</span>
+<h3 class="text-headline-md font-headline-md text-on-surface mt-1">TechNexus ERP Migration</h3>
+</div>
+<div>
+<span class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-widest font-bold">Executive Summary</span>
+<p class="text-on-surface-variant font-body-md text-body-md mt-2 leading-relaxed">
+                                A complete digital transformation journey for TechNexus Corp, migrating their legacy on-premise systems to a fully managed Bytevon Cloud ERP ecosystem. Resulted in significant operational overhead reduction and improved data visibility across 12 global regions.
+                            </p>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low p-4 rounded-lg">
+<span class="text-on-surface-variant font-label-sm text-label-sm">Industry</span>
+<p class="font-label-md text-label-md text-on-surface mt-1">SaaS &amp; Enterprise Tech</p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg">
+<span class="text-on-surface-variant font-label-sm text-label-sm">Revenue</span>
+<p class="font-label-md text-label-md text-secondary mt-1">$1.2M Contract</p>
+</div>
+</div>
+<div>
+<span class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-widest font-bold">Technologies</span>
+<div class="flex flex-wrap gap-2 mt-2">
+<span class="px-3 py-1 bg-primary-container text-on-primary-fixed rounded-lg text-label-sm font-label-sm">AWS Architecture</span>
+<span class="px-3 py-1 bg-primary-container text-on-primary-fixed rounded-lg text-label-sm font-label-sm">SAP Integration</span>
+<span class="px-3 py-1 bg-primary-container text-on-primary-fixed rounded-lg text-label-sm font-label-sm">Kubernetes</span>
+<span class="px-3 py-1 bg-primary-container text-on-primary-fixed rounded-lg text-label-sm font-label-sm">Bytevon Core API</span>
+</div>
+</div>
+<div class="pt-6 space-y-3">
+<span class="text-on-surface-variant font-label-sm text-label-sm uppercase tracking-widest font-bold">Quick Actions</span>
+<button class="w-full flex items-center justify-between px-4 py-3 bg-secondary text-on-secondary rounded-lg font-bold hover:opacity-90 transition-opacity">
+<span class="">Download PDF Case Study</span>
+<span class="material-symbols-outlined">download</span>
+</button>
+<button class="w-full flex items-center justify-between px-4 py-3 border border-outline-variant rounded-lg font-bold hover:bg-surface-container-low transition-colors">
+<span class="">Share with Sales Team</span>
+<span class="material-symbols-outlined">share</span>
+</button>
+<button class="w-full flex items-center justify-between px-4 py-3 border border-outline-variant rounded-lg font-bold hover:bg-surface-container-low transition-colors">
+<span class="">View Full Analytics</span>
+<span class="material-symbols-outlined">insights</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<script>
+        function openDrawer() {
+            const panel = document.getElementById('quickViewPanel');
+            panel.classList.remove('quick-view-enter');
+            panel.classList.add('quick-view-active');
+        }
+
+        function closeDrawer() {
+            const panel = document.getElementById('quickViewPanel');
+            panel.classList.remove('quick-view-active');
+            panel.classList.add('quick-view-enter');
+        }
+        
+        // Auto-open drawer for demo purposes as requested
+        window.onload = () => {
+            setTimeout(openDrawer, 800);
+        };
+    </script>
+
+
+</body></html>

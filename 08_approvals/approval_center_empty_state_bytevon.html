@@ -1,0 +1,212 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Bytevon - Approval Center</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-secondary-fixed": "#001a41", "on-secondary": "#ffffff", "on-tertiary": "#ffffff", "on-error": "#ffffff", "error-container": "#ffdad6", "surface-bright": "#f8f9ff", "on-secondary-container": "#fefcff", "on-primary-fixed": "#001c3a", "tertiary-fixed-dim": "#c4c7c9", "on-secondary-fixed-variant": "#004493", tertiary: "#040607", "inverse-primary": "#afc8f0", error: "#ba1a1a", "tertiary-fixed": "#e0e3e5", surface: "#f8f9ff", outline: "#74777f", "primary-fixed": "#d4e3ff", "surface-container": "#e5eeff", "secondary-fixed-dim": "#adc7ff", secondary: "#0059bb", primary: "#000613", "primary-fixed-dim": "#afc8f0", "secondary-fixed": "#d8e2ff", "surface-container-low": "#eff4ff", "on-tertiary-fixed-variant": "#444749", "on-surface": "#0b1c30", "on-tertiary-fixed": "#191c1e", "on-background": "#0b1c30", "on-primary-fixed-variant": "#2f486a", "tertiary-container": "#1c1f21", "surface-container-lowest": "#ffffff", "on-primary-container": "#6f88ad", "on-primary": "#ffffff", "primary-container": "#001f3f", "surface-variant": "#d3e4fe", "outline-variant": "#c4c6cf", "surface-container-highest": "#d3e4fe", background: "#f8f9ff", "on-surface-variant": "#43474e", "inverse-surface": "#213145", "surface-container-high": "#dce9ff", "surface-tint": "#476083", "surface-dim": "#cbdbf5", "on-tertiary-container": "#848789", "on-error-container": "#93000a", "secondary-container": "#0070ea", "inverse-on-surface": "#eaf1ff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {unit: "4px", "margin-desktop": "40px", "stack-md": "16px", "stack-lg": "32px", "container-max": "1440px", gutter: "24px", "stack-sm": "8px", "margin-mobile": "16px"}, fontFamily: {"display-lg": ["Inter"], "body-md": ["Inter"], "title-lg": ["Inter"], "label-md": ["Inter"], "headline-lg-mobile": ["Inter"], "body-sm": ["Inter"], "label-sm": ["Inter"], "headline-lg": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}]}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9ff;
+        }
+        .canvas-area {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            min-height: calc(100vh - 64px);
+        }
+    </style>
+<style>
+            ::selection {
+                background: #adc7ff;
+                color: #001a41;
+            }
+        </style><style>
+            ::selection {
+                background: #adc7ff;
+                color: #001a41;
+            }
+        </style><style>
+            ::selection {
+                background: #adc7ff;
+                color: #001a41;
+            }
+        </style><style>
+            ::selection {
+                background: #adc7ff;
+                color: #001a41;
+            }
+        </style></head>
+<body class="text-on-surface">
+<!-- SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary dark:bg-primary-container flex flex-col p-spacing-stack-md shadow-sm z-50">
+<div class="flex items-center gap-3 mb-spacing-stack-lg px-2">
+<div class="w-10 h-10 bg-secondary rounded flex items-center justify-center"><img alt="Bytevon Logo" class="w-full h-full object-cover rounded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVaTptKYjIrh5b8OwWnRGKJxUpsm2G6_-D_u4FKGSfXVDR2yehQ3Y7QvPeNJyaO6LtJDVSx-yeDJMq2trOMKimCg-mvF0m37-amA4kxZ2ULXvZvOErI-xCSuIZt-qNl9v44sQXKSnicsiEmOG3XW9m64aOdeDmVXs9PU1cskgkHSCEb8uuSs-yn-ZJsJuBgn742pNuQ-s5GvFNvhZOPSYeffF-YWSv1ZEkMqnmhlzIlVhkz6F1D4jHKA5JAyvwY07241c"></div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">Bytevon</h1>
+<p class="font-body-sm text-body-sm text-on-primary/60">Enterprise Resource Planning</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Navigation Items Mapping -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-primary-fixed-dim/10 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-primary-fixed-dim/10 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-md text-body-md">Customers</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-primary-fixed-dim/10 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-body-md text-body-md">Resources</span>
+</a>
+<!-- Active State: Operations (Nearest to Approvals/Process) -->
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary text-on-secondary rounded-lg transition-colors duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">precision_manufacturing</span>
+<span class="font-body-md text-body-md">Operations</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-primary-fixed-dim/10 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-body-md text-body-md">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-primary-fixed-dim/10 transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto pt-spacing-stack-md border-t border-white/10">
+<button class="w-full mb-4 py-2 px-4 bg-primary-fixed-dim/20 text-on-primary rounded-lg font-label-md text-label-md hover:bg-primary-fixed-dim/30 transition-colors">
+                Support Portal
+            </button>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-body-md text-body-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- TopAppBar (Shared Component) -->
+<header class="fixed top-0 right-0 h-16 ml-[280px] w-[calc(100%-280px)] bg-surface dark:bg-surface-dim border-b border-outline-variant flex justify-between items-center px-spacing-margin-desktop z-40">
+<div class="flex items-center gap-6">
+<h2 class="font-headline-md text-headline-md font-extrabold text-primary">Approval Center</h2>
+<div class="relative w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full font-label-md text-label-md focus:ring-2 focus:ring-secondary/20" placeholder="Search approvals..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-4">
+<nav class="hidden md:flex gap-6 mr-6">
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all" href="#">Recent</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all" href="#">Favorites</a>
+<a class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-all" href="#">Help</a>
+</nav>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-secondary transition-all active:scale-95">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant hover:text-secondary transition-all active:scale-95">apps</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3">
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md text-label-md hover:bg-secondary transition-all active:scale-95">
+                    Create New
+                </button>
+<img class="w-9 h-9 rounded-full object-cover border border-outline-variant" data-alt="Professional headshot of a senior enterprise executive in a modern office setting. The lighting is soft and corporate, with a shallow depth of field blurring the clean, minimalist architectural background. The executive wears professional attire, and the overall color grade is cool and sophisticated, matching a high-end ERP software aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4ZwzcHsGwyXRXs-vI6plvD2sypn9Mcj5U301uVvEZWpTO1_qShjpEbbgliHMjXToKr9jfDX1RrxYvOOl1UCPEYbITacUu1Lxi00hT1wZWt8FcsZ8ZrWkupi5leL_Eoa6iC4t0ubCFBZkIETrXyOlciWlS5id6aDAcBTgYy_YcZThc9Bscpw2JUdbQ7f8izCMhub_YSJXJ_ytwlVYQ_gJYZGo27BvLK6Aw9ADW9CY5uGzgrUxZd9eP6Q">
+</div>
+</div>
+</header>
+<!-- Main Content Canvas Area -->
+<main class="canvas-area pt-16 flex flex-col">
+<div class="flex-1 flex flex-center justify-center items-center p-spacing-margin-desktop">
+<!-- Empty State Section -->
+<div class="max-w-2xl w-full flex flex-col items-center text-center">
+<!-- Professional Illustration Container -->
+<div class="relative mb-12 group">
+<!-- Subtle Glow/Shadow Effect -->
+<div class="absolute inset-0 bg-secondary/5 blur-3xl rounded-full scale-110 opacity-50 transition-opacity duration-700 group-hover:opacity-100"></div>
+<div class="relative w-72 h-72 bg-surface-container-lowest rounded-full shadow-[0_20px_50px_rgba(0,31,63,0.08)] flex items-center justify-center border border-outline-variant/30">
+<!-- We use a data-alt for a sophisticated visual representation -->
+<div class="w-full h-full rounded-full overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" data-alt="A clean, minimalist 3D isometric illustration of a pristine, white document tray with a single glowing checkmark floating above it. The scene is set in a spacious, bright white environment with soft blue accent shadows. The style is professional and high-utility, evoking a sense of calm organization and completion in a modern enterprise workspace." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCPv8SQ-8ipp1H43VY7Jr6DjX4wWVRye3h8Xske0mKJCBZMil7wT0-K2nIBHcUW72AOwG3fawvDJOCi4LIwc4L5gH9TQ8CxRqUFT2GX7gLLxdRKrU0KBuXPVpYLM1eqeUUpCt-xTWh1UAbybrMhr7xR9m2p8OCPr4Bpxb8A-6ciQAheljKCX0IgJ-IbXv3n4-9vN0HbDd0f-FVUysAzZwE6PzMJMDY3hdPW5phtamqL6voqAJmEIk-aWQ">
+</div>
+</div>
+<!-- Decorative Floating Element -->
+<div class="absolute -bottom-4 -right-4 w-16 h-16 bg-surface-container-high rounded-xl shadow-lg border border-white flex items-center justify-center animate-bounce duration-3000">
+<span class="material-symbols-outlined text-secondary text-3xl" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<!-- Text Content -->
+<h3 class="font-headline-lg text-headline-lg text-on-surface mb-4">No pending approvals</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-12 max-w-lg leading-relaxed">
+                    Your queue is completely clear. Any new requests requiring your authorization, from budget adjustments to operational changes, will automatically appear here.
+                </p>
+<!-- Action Buttons -->
+<div class="flex flex-col sm:flex-row items-center gap-4">
+<button class="px-8 py-3 bg-primary text-on-primary rounded-lg font-label-md text-label-md font-bold shadow-sm hover:bg-secondary hover:shadow-md transition-all active:scale-95 flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">sync</span>
+                        Refresh Queue
+                    </button>
+<button class="px-8 py-3 bg-transparent border border-outline text-on-surface rounded-lg font-label-md text-label-md font-semibold hover:bg-surface-container transition-all active:scale-95 flex items-center gap-2">
+<span class="material-symbols-outlined text-lg">history</span>
+                        View Approval History
+                    </button>
+</div>
+<!-- Quick Insight Section (Bento Lite) -->
+<div class="mt-20 w-full grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+<div class="p-6 bg-white rounded-xl border border-outline-variant/50 shadow-sm">
+<span class="material-symbols-outlined text-secondary mb-3">speed</span>
+<h4 class="font-title-lg text-title-lg text-on-surface mb-2">Efficiency</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Your average approval turnaround is 1.4 hours, top 5% in the organization.</p>
+</div>
+<div class="p-6 bg-white rounded-xl border border-outline-variant/50 shadow-sm">
+<span class="material-symbols-outlined text-secondary mb-3">auto_awesome</span>
+<h4 class="font-title-lg text-title-lg text-on-surface mb-2">Automation</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">42 routine requests were auto-approved this week based on your rules.</p>
+</div>
+<div class="p-6 bg-white rounded-xl border border-outline-variant/50 shadow-sm">
+<span class="material-symbols-outlined text-secondary mb-3">info</span>
+<h4 class="font-title-lg text-title-lg text-on-surface mb-2">Upcoming</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Q3 Budget reviews are scheduled to arrive in your queue next Monday.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer / Breadcrumb area -->
+<footer class="mt-auto px-spacing-margin-desktop py-6 flex justify-between items-center border-t border-outline-variant/30 text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm uppercase tracking-wider opacity-50">System Status:</span>
+<div class="flex items-center gap-1.5 bg-green-100 text-green-800 px-2 py-0.5 rounded-full font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                    Operational
+                </div>
+</div>
+<p class="font-label-sm text-label-sm">Bytevon Executive Suite v4.2.0 • Last synced: Just now</p>
+</footer>
+</main>
+<!-- Micro-interaction Script -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const refreshBtn = document.querySelector('button:has(.material-symbols-outlined:contains("sync"))');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', function() {
+                    const icon = this.querySelector('.material-symbols-outlined');
+                    icon.classList.add('animate-spin');
+                    setTimeout(() => {
+                        icon.classList.remove('animate-spin');
+                    }, 1000);
+                });
+            }
+        });
+
+        // Add custom text selection color
+        const style = document.createElement('style');
+        style.innerHTML = `
+            ::selection {
+                background: #adc7ff;
+                color: #001a41;
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body></html>

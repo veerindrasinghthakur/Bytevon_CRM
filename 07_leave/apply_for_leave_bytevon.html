@@ -1,0 +1,478 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Apply Leave - Bytevon ERP</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#f8f9ff",
+                        "on-secondary-container": "#fefcff",
+                        "on-primary-container": "#6f88ad",
+                        "on-tertiary-container": "#848789",
+                        "primary-fixed": "#d4e3ff",
+                        "outline": "#74777f",
+                        "surface-dim": "#cbdbf5",
+                        "secondary": "#0059bb",
+                        "secondary-fixed-dim": "#adc7ff",
+                        "on-primary-fixed": "#001c3a",
+                        "on-secondary-fixed": "#001a41",
+                        "on-error-container": "#93000a",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#43474e",
+                        "surface-variant": "#d3e4fe",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "surface-container-high": "#dce9ff",
+                        "inverse-primary": "#afc8f0",
+                        "primary-fixed-dim": "#afc8f0",
+                        "on-tertiary-fixed": "#191c1e",
+                        "surface-tint": "#476083",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "on-secondary-fixed-variant": "#004493",
+                        "inverse-on-surface": "#eaf1ff",
+                        "on-background": "#0b1c30",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#eff4ff",
+                        "tertiary-container": "#1c1f21",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#001f3f",
+                        "tertiary-fixed": "#e0e3e5",
+                        "outline-variant": "#c4c6cf",
+                        "secondary-fixed": "#d8e2ff",
+                        "background": "#f8f9ff",
+                        "on-primary-fixed-variant": "#2f486a",
+                        "inverse-surface": "#213145",
+                        "tertiary": "#040607",
+                        "on-tertiary": "#ffffff",
+                        "on-surface": "#0b1c30",
+                        "surface-bright": "#f8f9ff",
+                        "secondary-container": "#0070ea",
+                        "surface-container": "#e5eeff",
+                        "surface-container-highest": "#d3e4fe",
+                        "primary": "#000613"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "8px",
+                        "xl": "12px",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "display-lg": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .form-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e6edf4;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .date-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+        }
+        .sticky-footer {
+            position: sticky;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border-top: 1px solid #e6edf4;
+            z-index: 50;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md overflow-hidden">
+<div class="flex h-screen w-full overflow-hidden">
+<!-- Sidebar -->
+<aside class="w-64 bg-primary-container text-white flex flex-col shrink-0">
+<div class="p-6 border-b border-white/10">
+<div class="flex items-center gap-3">
+<div class="size-8 text-on-primary">
+<svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M39.5563 34.1455V13.8546C39.5563 15.708 36.8773 17.3437 32.7927 18.3189C30.2914 18.916 27.263 19.2655 24 19.2655C20.737 19.2655 17.7086 18.916 15.2073 18.3189C11.1227 17.3437 8.44365 15.708 8.44365 13.8546V34.1455C8.44365 35.9988 11.1227 37.6346 15.2073 38.6098C17.7086 39.2069 20.737 39.5564 24 39.5564C27.1288 39.5564 30.2914 39.2069 32.7927 38.6098C36.8773 37.6346 39.5563 35.9988 39.5563 34.1455Z" fill="currentColor"></path>
+<path clip-rule="evenodd" d="M10.4485 13.8519C10.4749 13.9271 10.6203 14.246 11.379 14.7361C12.298 15.3298 13.7492 15.9145 15.6717 16.3735C18.0007 16.9296 20.8712 17.2655 24 17.2655C27.1288 17.2655 29.9993 16.9296 32.3283 16.3735C34.2508 15.9145 35.702 15.3298 36.621 14.7361C37.3796 14.246 37.5251 13.9271 37.5515 13.8519C37.5287 13.7876 37.4333 13.5973 37.0635 13.2931C36.5266 12.8516 35.6288 12.3647 34.343 11.9175C31.79 11.0295 28.1333 10.4437 24 10.4437C19.8667 10.4437 16.2099 11.0295 13.657 11.9175C12.3712 12.3647 11.4734 12.8516 10.9365 13.2931C10.5667 13.5973 10.4713 13.7876 10.4485 13.8519ZM37.5563 18.7877C36.3176 19.3925 34.8502 19.8839 33.2571 20.2642C30.5836 20.9025 27.3973 21.2655 24 21.2655C20.6027 21.2655 17.4164 20.9025 14.7429 20.2642C13.1498 19.8839 11.6824 19.3925 10.4436 18.7877V34.1275C10.4515 34.1545 10.5427 34.4867 11.379 35.027C12.298 35.6207 13.7492 36.2054 15.6717 36.6644C18.0007 37.2205 20.8712 37.5564 24 37.5564C27.1288 37.5564 29.9993 37.2205 32.3283 36.6644C34.2508 36.2054 35.702 35.6207 36.621 35.027C37.4573 34.4867 37.5485 34.1546 37.5563 34.1275V18.7877ZM41.5563 13.8546V34.1455C41.5563 36.1078 40.158 37.5042 38.7915 38.3869C37.3498 39.3182 35.4192 40.0389 33.2571 40.5551C30.5836 41.1934 27.3973 41.5564 24 41.5564C20.6027 41.5564 17.4164 41.1934 14.7429 40.5551C12.5808 40.0389 10.6502 39.3182 9.20848 38.3869C7.84205 37.5042 6.44365 36.1078 6.44365 34.1455L6.44365 13.8546C6.44365 12.2684 7.37223 11.0454 8.39581 10.2036C9.43325 9.3505 10.8137 8.67141 12.343 8.13948C15.4203 7.06909 19.5418 6.44366 24 6.44366C28.4582 6.44366 32.5797 7.06909 35.657 8.13948C37.1863 8.67141 38.5667 9.3505 39.6042 10.2036C40.6278 11.0454 41.5563 12.2684 41.5563 13.8546Z" fill="currentColor" fill-rule="evenodd"></path>
+</svg>
+</div>
+<h1 class="text-xl font-bold tracking-tight">Bytevon ERP</h1>
+</div>
+</div>
+<nav class="flex-1 px-4 py-6 space-y-2">
+<a class="flex items-center gap-3 px-3 py-2 text-white/70 hover:bg-white/10 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="layout">swap_driving_apps_wheel</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-white/70 hover:bg-white/10 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="users">group</span>
+<span class="text-sm font-medium">Employees</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-secondary text-white rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="calendar" style="font-variation-settings: &quot;FILL&quot; 1;">calendar_today</span>
+<span class="text-sm font-medium">Leave&nbsp;<br></span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-white/70 hover:bg-white/10 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="text-sm font-medium">Payroll</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-white/70 hover:bg-white/10 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="text-sm font-medium">Settings</span>
+</a>
+</nav>
+<div class="p-4 bg-primary/20 border-t border-white/10">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-surface-container overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of an executive male in a crisp navy suit, soft cinematic office lighting, photorealistic style, sharp focus on eyes, blurred corporate background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCB2e9oaQQH7Xw8AV4Iwo_Z3J83Fn-Bbj5m97-WtT87VOtSlTpoPNHPTix4D90P0z6zow3RdZs--beF2Pyl7Q9AlOLRtwjW1ZenZj5skSgXp3Te-jSU5kvVltoY-mqfaDZZmTsOFcz_9h4P3vXY8sTUYOnO3wUVULUL3F5GE6vEZ1YDp51OsJEcL3v7yiIkH8aMNyf-XUtbgPQ7DWOaeYvGe5VCrrbhpWqbzodxc31cATYDgG-Kt9lgpw">
+</div>
+<div class="flex flex-col">
+<p class="text-sm font-bold">Marcus Sterling</p>
+<p class="text-xs text-white/50">Director of Ops</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col min-w-0 overflow-y-auto custom-scrollbar relative">
+<!-- Success Hint Toast -->
+<div class="hidden absolute top-4 left-1/2 -translate-x-1/2 z-[100] w-full max-w-md" id="success-toast">
+<div class="bg-secondary-container text-on-secondary-fixed p-4 rounded-lg shadow-xl flex items-center gap-3 border border-secondary/20 animate-bounce">
+<span class="material-symbols-outlined text-secondary" data-icon="check_circle">check_circle</span>
+<p class="text-sm font-medium">Draft saved successfully!</p>
+<button class="ml-auto" onclick="document.getElementById('success-toast').classList.add('hidden')">
+<span class="material-symbols-outlined text-sm" data-icon="close">close</span>
+</button>
+</div>
+</div>
+<!-- Header -->
+<header class="bg-white border-b border-outline-variant px-8 py-4 sticky top-0 z-40">
+<div class="flex flex-col gap-1 mb-2">
+<nav class="flex items-center gap-2 text-on-primary-container text-sm font-medium">
+
+
+<a class="hover:text-secondary" href="#">Leave&nbsp;</a>
+<span class="material-symbols-outlined text-xs" data-icon="chevron_right">chevron_right</span>
+<span class="text-on-surface">Apply Leave</span>
+</nav>
+</div>
+<div class="flex items-center justify-between">
+<h1 class="text-3xl font-black text-on-surface tracking-tight">Apply for Leave</h1>
+<div class="flex gap-3">
+<button class="size-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface-variant hover:bg-surface-variant transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</div>
+</div>
+</header>
+<div class="p-8 space-y-8">
+<!-- Leave Balance Row -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="form-card p-6 flex flex-col gap-3 group hover:border-secondary transition-colors">
+<div class="flex items-center justify-between">
+<div class="p-2 bg-primary-fixed rounded-lg text-on-primary-fixed">
+<span class="material-symbols-outlined" data-icon="sunny">sunny</span>
+</div>
+<span class="text-xs font-bold uppercase tracking-wider text-on-tertiary-container">Status: Healthy</span>
+</div>
+<div>
+<h3 class="text-sm font-bold text-on-surface">Annual Leave</h3>
+<p class="text-2xl font-black text-on-surface">12 <span class="text-sm font-normal text-on-tertiary-container">/ 18 days remaining</span></p>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full w-[66%]"></div>
+</div>
+</div>
+<div class="form-card p-6 flex flex-col gap-3 group hover:border-secondary transition-colors">
+<div class="flex items-center justify-between">
+<div class="p-2 bg-error-container rounded-lg text-on-error-container">
+<span class="material-symbols-outlined" data-icon="medical_services">medical_services</span>
+</div>
+</div>
+<div>
+<h3 class="text-sm font-bold text-on-surface">Sick Leave</h3>
+<p class="text-2xl font-black text-on-surface">8 <span class="text-sm font-normal text-on-tertiary-container">/ 10 days remaining</span></p>
+</div>
+<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+<div class="bg-error h-full rounded-full w-[80%]"></div>
+</div>
+</div>
+<div class="form-card p-6 flex flex-col gap-3 group hover:border-secondary transition-colors">
+<div class="flex items-center justify-between">
+<div class="p-2 bg-surface-container-high rounded-lg text-on-primary-fixed">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</div>
+</div>
+<div>
+<h3 class="text-sm font-bold text-on-surface">Personal Leave</h3>
+<p class="text-2xl font-black text-on-surface">3 <span class="text-sm font-normal text-on-tertiary-container">days total</span></p>
+</div>
+<div class="flex gap-1">
+<span class="text-xs text-secondary font-semibold">Eligibility confirmed</span>
+</div>
+</div>
+</div>
+<!-- Form Content -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Left Column: Form Details -->
+<div class="lg:col-span-2 space-y-8">
+<!-- Leave Information Section -->
+<section class="form-card overflow-hidden">
+<div class="p-6 border-b border-outline-variant bg-surface-container-low">
+<h2 class="text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="info">info</span>
+                                Leave Information
+                            </h2>
+</div>
+<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold text-on-surface-variant">Leave Type *</label>
+<select class="form-select rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary/20">
+<option>Annual Leave</option>
+<option>Sick Leave</option>
+<option>Unpaid Leave</option>
+<option>Maternity/Paternity Leave</option>
+<option>Compassionate Leave</option>
+</select>
+</div>
+<div class="flex flex-col gap-2 justify-center">
+<label class="text-sm font-bold text-on-surface-variant mb-2">Duration Modifier</label>
+<label class="inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value="">
+<div class="relative w-11 h-6 bg-outline-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-secondary"></div>
+<span class="ms-3 text-sm font-medium text-on-surface">Half Day Leave</span>
+</label>
+</div>
+</div>
+</section>
+<!-- Date Selection Section -->
+<section class="form-card overflow-hidden">
+<div class="p-6 border-b border-outline-variant bg-surface-container-low">
+<h2 class="text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="event">event</span>
+                                Duration &amp; Dates
+                            </h2>
+</div>
+<div class="p-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold text-on-surface-variant">Start Date</label>
+<div class="relative">
+<input class="w-full form-input rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary/20 pl-10" type="date" value="2023-11-20">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-tertiary-container" data-icon="calendar_month">calendar_month</span>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold text-on-surface-variant">End Date</label>
+<div class="relative">
+<input class="w-full form-input rounded-lg border-error focus:border-error focus:ring-error/20 pl-10" id="end-date-input" type="date" value="2023-11-24">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-error" data-icon="calendar_month">calendar_month</span>
+</div>
+<span class="text-xs text-error font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-xs" data-icon="warning">warning</span>
+                                        End date cannot be before start date
+                                    </span>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4">
+<div class="flex items-center justify-between mb-4">
+<p class="text-sm font-bold text-on-surface">Visual Timeline Picker</p>
+<div class="flex items-center gap-2">
+<button class="p-1 hover:bg-surface-container rounded transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="arrow_back_ios">arrow_back_ios</span>
+</button>
+<span class="text-xs font-bold text-on-surface">November 2023</span>
+<button class="p-1 hover:bg-surface-container rounded transition-colors">
+<span class="material-symbols-outlined text-sm" data-icon="arrow_forward_ios">arrow_forward_ios</span>
+</button>
+</div>
+</div>
+<div class="date-picker-grid text-center text-[10px] font-bold text-on-tertiary-container mb-2">
+<div class="">S</div><div class="">M</div><div class="">T</div><div class="">W</div><div class="">T</div><div class="">F</div><div class="">S</div>
+</div>
+<div class="date-picker-grid text-center text-sm">
+<!-- Simple dummy calendar generation -->
+<div class="py-2 text-on-surface-variant opacity-30">29</div>
+<div class="py-2 text-on-surface-variant opacity-30">30</div>
+<div class="py-2 text-on-surface-variant opacity-30">31</div>
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">1</div>
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">2</div>
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">3</div>
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">4</div>
+<!-- Week 2 -->
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">5</div>
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded text-error font-bold">6</div>
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">7</div>
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">8</div>
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">9</div>
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">10</div>
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">11</div>
+<!-- Selected Range Start -->
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">12</div>
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">13</div>
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">14</div>
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">15</div>
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">16</div>
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">17</div>
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">18</div>
+<!-- Selected Range -->
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">19</div>
+<div class="py-2 bg-secondary text-white font-bold rounded-l-lg">20</div>
+<div class="py-2 bg-secondary/20 font-medium">21</div>
+<div class="py-2 bg-secondary/20 font-medium">22</div>
+<div class="py-2 bg-secondary/20 font-medium">23</div>
+<div class="py-2 bg-secondary text-white font-bold rounded-r-lg">24</div>
+<div class="py-2 hover:bg-surface-container cursor-pointer rounded">25</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Reason Section -->
+<section class="form-card overflow-hidden">
+<div class="p-6 border-b border-outline-variant bg-surface-container-low">
+<h2 class="text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="notes">notes</span>
+                                Leave Reason
+                            </h2>
+</div>
+<div class="p-6">
+<div class="flex flex-col gap-2">
+<label class="text-sm font-bold text-on-surface-variant">Reason for Leave *</label>
+<textarea class="form-textarea rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary/20 w-full" placeholder="Describe the purpose of your leave request..." rows="4"></textarea>
+<p class="text-xs text-on-tertiary-container italic">Minimum 10 characters required.</p>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Column: Sidebar Tasks -->
+<div class="space-y-8">
+<!-- Attachments Section -->
+<section class="form-card overflow-hidden">
+<div class="p-6 border-b border-outline-variant bg-surface-container-low">
+<h2 class="text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="attach_file">attach_file</span>
+                                Supporting Docs
+                            </h2>
+</div>
+<div class="p-6">
+<div class="border-2 border-dashed border-outline-variant rounded-xl p-8 flex flex-col items-center justify-center text-center group hover:border-secondary transition-colors cursor-pointer bg-surface/50">
+<span class="material-symbols-outlined text-4xl text-on-tertiary-container group-hover:text-secondary transition-colors mb-4" data-icon="cloud_upload">cloud_upload</span>
+<p class="text-sm font-bold text-on-surface">Drag and drop files</p>
+<p class="text-xs text-on-tertiary-container mt-1">Or click to browse from device</p>
+<p class="text-[10px] uppercase font-black tracking-widest text-on-primary-container mt-4">PDF, JPG up to 10MB</p>
+</div>
+</div>
+</section>
+<!-- Approval Info -->
+<section class="bg-primary-container text-white rounded-lg p-6 relative overflow-hidden">
+<div class="relative z-10 space-y-4">
+<h3 class="text-sm font-black uppercase tracking-widest text-secondary-fixed">Approval Workflow</h3>
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full border-2 border-white/20 overflow-hidden shrink-0">
+<img class="w-full h-full object-cover" data-alt="A portrait of a high-ranking executive female with short silver hair, wearing dark designer glasses and a grey tailored blazer. Corporate studio lighting, ultra-realistic texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgpqnhAoAyOvkvqSInMn7k1_2zQ7tjhlmLDeMxtvMtUihwayhB4J8NSbtPBR0XoghJD-nlZ0I8pQ0NfM7N9jANetOEVc-5O-BLJbAI_-sffqDlfjuKHkOxUlJrQqaWeljG2yS0mJR7U4ebLEH5bFLQBZUaWiooabFnodINjzq2CZsQhUKiJ9I96ThMHszAgjAPT17-lWAF2OVEyLqgUhWbdjNn028PJ5bAE4KrY5qkPaVgc-79T0_W_g">
+</div>
+<div class="flex flex-col">
+<p class="text-sm font-bold">Eleanor Vance</p>
+<p class="text-xs text-white/50">Direct Manager</p>
+</div>
+</div>
+<p class="text-xs leading-relaxed text-white/70">
+                                Your request will be automatically routed to Eleanor Vance for primary approval. Once approved, it will be reflected in the team calendar.
+                            </p>
+<div class="flex items-center gap-2 text-xs font-medium text-secondary-fixed-dim">
+<span class="material-symbols-outlined text-sm" data-icon="verified_user">verified_user</span>
+                                Standard SLA: 24 Hours
+                            </div>
+</div>
+<!-- Background decoration -->
+<div class="absolute -bottom-4 -right-4 size-24 bg-white/5 rounded-full blur-2xl"></div>
+</section>
+<!-- Policy Quick Look -->
+<section class="form-card p-6 bg-surface-container-lowest">
+<h3 class="text-sm font-bold text-on-surface mb-4">Leave Policy Reminder</h3>
+<ul class="space-y-3">
+<li class="flex gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="check">check</span>
+<span class="">Requests over 5 days require 2 weeks notice.</span>
+</li>
+<li class="flex gap-2 text-xs text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary text-sm" data-icon="check">check</span>
+<span class="">Sick leave over 2 days requires a certificate.</span>
+</li>
+</ul>
+</section>
+</div>
+</div>
+</div>
+<!-- Sticky Footer -->
+<footer class="sticky-footer px-8 py-6 flex flex-wrap items-center justify-between gap-4">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm" data-icon="schedule">schedule</span>
+<span class="text-xs font-medium">Estimated Balance after Approval: <span class="text-on-surface font-bold">7 days</span></span>
+</div>
+<div class="flex items-center gap-4">
+<button class="px-6 py-2.5 text-sm font-bold text-on-surface-variant hover:text-on-surface transition-colors">
+                    Cancel
+                </button>
+<button class="px-6 py-2.5 text-sm font-bold bg-surface-container-high text-on-primary-fixed-variant rounded-lg hover:bg-surface-variant transition-all border border-outline-variant" onclick="showSuccessToast()">
+                    Save Draft
+                </button>
+<button class="px-8 py-2.5 text-sm font-bold bg-primary-container text-white rounded-lg shadow-lg hover:bg-secondary transition-all flex items-center gap-2">
+                    Submit Request
+                    <span class="material-symbols-outlined text-sm" data-icon="send">send</span>
+</button>
+</div>
+</footer>
+</main>
+</div>
+<script>
+    function showSuccessToast() {
+        const toast = document.getElementById('success-toast');
+        toast.classList.remove('hidden');
+        setTimeout(() => {
+            toast.classList.add('hidden');
+        }, 4000);
+    }
+
+    // Simple interaction for the End Date input to simulate error state handling
+    document.getElementById('end-date-input').addEventListener('change', function() {
+        // Just as an example UI toggle
+        this.classList.remove('border-error');
+        this.nextElementSibling.classList.add('text-on-tertiary-container');
+        this.nextElementSibling.classList.remove('text-error');
+        const errorMsg = this.parentElement.nextElementSibling;
+        if(errorMsg) errorMsg.style.display = 'none';
+    });
+</script>
+
+
+
+
+</body></html>

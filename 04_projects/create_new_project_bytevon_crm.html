@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Create New Project - Bytevon CRM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              'deep-navy': '#0A1128',
+              'electric-blue': '#0066FF',
+              'surface-bright': '#FFFFFF',
+              'background': '#F4F7F9',
+              'outline-variant': '#E2E8F0',
+              'on-surface-variant': '#475569',
+              'primary-fixed-dim': '#94A3B8',
+              'secondary': '#0066FF',
+              'on-secondary': '#FFFFFF',
+              'error': '#DC2626',
+              'success': '#16A34A',
+              'warning': '#D97706',
+            },
+            borderRadius: {
+              "DEFAULT": "0.25rem",
+              "lg": "0.5rem",
+              "xl": "0.75rem",
+              "full": "9999px"
+            },
+            fontFamily: {
+              "headline": ["Public Sans", "sans-serif"],
+              "display": ["Public Sans", "sans-serif"],
+              "body": ["Public Sans", "sans-serif"],
+              "label": ["Public Sans", "sans-serif"]
+            },
+            fontSize: {
+              'headline-md': ['1.5rem', { lineHeight: '2rem', fontWeight: '700' }],
+              'title-lg': ['1.75rem', { lineHeight: '2.25rem', fontWeight: '900' }],
+              'body-md': ['1rem', { lineHeight: '1.5rem' }],
+              'label-md': ['0.875rem', { lineHeight: '1.25rem', fontWeight: '500' }],
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { font-family: 'Public Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-background text-deep-navy h-screen overflow-hidden flex relative">
+<!-- SideNavBar -->
+<nav class="bg-deep-navy fixed left-0 top-0 h-screen w-[280px] shadow-md flex flex-col h-full py-8 px-4 z-10 hidden md:flex">
+<div class="mb-10 px-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 bg-electric-blue rounded flex items-center justify-center text-white font-bold font-headline">B</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-white leading-tight">Bytevon CRM</h1>
+<p class="text-primary-fixed-dim text-xs">Enterprise Edition</p>
+</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto">
+<p class="px-4 text-xs font-semibold text-primary-fixed-dim uppercase tracking-wider mb-4 mt-4">Main Menu</p>
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-primary-fixed-dim hover:text-white hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-primary-fixed-dim hover:text-white hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-label-md text-label-md">Customers</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 bg-electric-blue text-on-secondary rounded-lg scale-95 duration-150 ease-in-out font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span>Sales Pipeline</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-primary-fixed-dim hover:text-white hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-md text-label-md">Inventory</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-primary-fixed-dim hover:text-white hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-primary-fixed-dim hover:text-white hover:bg-white/5 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+</li>
+</ul>
+</div>
+<div class="mt-auto pt-6 border-t border-white/10 space-y-4">
+<button class="w-full bg-electric-blue hover:bg-blue-600 text-white py-2.5 rounded-lg flex items-center justify-center gap-2 font-medium transition-colors">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+                Add New Lead
+            </button>
+<div class="flex items-center gap-3 px-4 py-3 bg-white/5 rounded-lg border border-white/10">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A small, professional portrait photo of a corporate executive, smiling warmly, wearing a dark suit against a neutral studio background. Soft lighting, high quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBM27BC1LaA66jis9EsQ-pA1J0MnO8nmn9U0sxVl0fy6TJ8s_rtkPqtr--prLJ1J5f39V5VshuDb4zPRPLDPrKcFgC6j23uqrIh-fBJLgR-TBrWw78dz0m6AfarWN7JF8b9Pr2PyN42U6vKf7JHIyP6vnKKWuPbjPwFPBoo2KO27Snruq-MNwW2vo0DdBnW6KdCEQU_Kw-3bMLm0_fBKOpYdNybj1bEm_B_QzMVs3-GqPWUZ6G1hYLk"/>
+<div>
+<p class="text-white text-sm font-semibold">Marcus S.</p>
+<p class="text-primary-fixed-dim text-xs">Admin Access</p>
+</div>
+<span class="material-symbols-outlined text-primary-fixed-dim ml-auto cursor-pointer hover:text-white">settings</span>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col ml-[280px] w-full min-h-screen relative">
+<!-- TopAppBar -->
+<header class="bg-surface-bright border-b border-outline-variant flex justify-between items-center h-16 w-full pl-6 pr-10 shrink-0">
+<div class="flex items-center w-full max-w-2xl">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg bg-background/50 focus:bg-white focus:border-electric-blue focus:ring-1 focus:ring-electric-blue transition-all outline-none text-sm" placeholder="Search by Lead Name, Company, or Representative" type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6 ml-auto">
+<div class="flex items-center gap-4 text-on-surface-variant">
+<button class="hover:text-electric-blue transition-all relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="hover:text-electric-blue transition-all">
+<span class="material-symbols-outlined">history</span>
+</button>
+<button class="hover:text-electric-blue transition-all">
+<span class="material-symbols-outlined">apps</span>
+</button>
+</div>
+</div>
+</header>
+<!-- Background Context (Blurred out for modal) -->
+<main class="flex-1 p-8 overflow-y-auto blur-sm select-none pointer-events-none">
+<div class="mb-8">
+<div class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+<span>Dashboard</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span>Projects</span>
+</div>
+<div class="flex justify-between items-center">
+<h2 class="text-3xl font-black text-deep-navy">Project Directory</h2>
+<button class="bg-deep-navy text-white px-4 py-2 rounded-lg flex items-center gap-2 font-medium">
+<span class="material-symbols-outlined">add</span> New Project
+                    </button>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-6">
+<!-- Dummy cards to create context -->
+<div class="bg-white p-6 rounded-xl border border-outline-variant shadow-sm h-48"></div>
+<div class="bg-white p-6 rounded-xl border border-outline-variant shadow-sm h-48"></div>
+<div class="bg-white p-6 rounded-xl border border-outline-variant shadow-sm h-48"></div>
+<div class="bg-white p-6 rounded-xl border border-outline-variant shadow-sm h-48"></div>
+<div class="bg-white p-6 rounded-xl border border-outline-variant shadow-sm h-48"></div>
+</div>
+</main>
+<!-- Modal Overlay -->
+<div class="absolute inset-0 bg-deep-navy/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6">
+<div class="bg-white w-full max-w-3xl rounded-xl shadow-2xl flex flex-col max-h-[921px] overflow-hidden border border-outline-variant">
+<!-- Modal Header -->
+<div class="flex justify-between items-center p-6 border-b border-outline-variant bg-surface-bright">
+<div>
+<h2 class="text-xl font-bold text-deep-navy">Create New Project</h2>
+<p class="text-sm text-on-surface-variant mt-1">Configure workspace, team allocation, and repository details.</p>
+</div>
+<button class="text-on-surface-variant hover:text-error transition-colors p-1 rounded-md hover:bg-gray-100">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Modal Body -->
+<div class="p-6 overflow-y-auto flex-1 bg-background/30 space-y-8">
+<!-- Section 1: Basic Details -->
+<section>
+<h3 class="text-sm font-semibold text-deep-navy uppercase tracking-wider mb-4 border-b border-outline-variant pb-2">Core Details</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-1.5 md:col-span-2">
+<label class="text-sm font-medium text-deep-navy">Project Name <span class="text-error">*</span></label>
+<input class="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue focus:border-electric-blue outline-none transition-shadow bg-white text-deep-navy" placeholder="e.g., Nexus Platform Migration" type="text"/>
+</div>
+<div class="space-y-1.5 md:col-span-2">
+<label class="text-sm font-medium text-deep-navy">Client</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue focus:border-electric-blue outline-none transition-shadow bg-white text-deep-navy" placeholder="Search and select client..." type="text"/>
+</div>
+</div>
+<div class="space-y-1.5 md:col-span-2">
+<label class="text-sm font-medium text-deep-navy">Project Description</label>
+<textarea class="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue focus:border-electric-blue outline-none transition-shadow bg-white text-deep-navy resize-none" placeholder="Brief overview of the project goals and scope..." rows="3"></textarea>
+</div>
+</div>
+</section>
+<!-- Section 2: Strategy & Config -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+<!-- Left Col -->
+<div class="space-y-8">
+<section>
+<h3 class="text-sm font-semibold text-deep-navy uppercase tracking-wider mb-4 border-b border-outline-variant pb-2">Assignment Strategy</h3>
+<div class="space-y-3">
+<label class="flex items-start gap-3 p-3 border border-outline-variant rounded-lg cursor-pointer hover:border-electric-blue hover:bg-blue-50/50 transition-all bg-white group">
+<div class="mt-0.5">
+<input checked="" class="w-4 h-4 text-electric-blue border-gray-300 focus:ring-electric-blue" name="assignment" type="radio"/>
+</div>
+<div>
+<p class="text-sm font-medium text-deep-navy">Assign Existing Team</p>
+<p class="text-xs text-on-surface-variant mt-0.5">Allocate a pre-configured team to this project.</p>
+</div>
+</label>
+<label class="flex items-start gap-3 p-3 border border-outline-variant rounded-lg cursor-pointer hover:border-electric-blue hover:bg-blue-50/50 transition-all bg-white">
+<div class="mt-0.5">
+<input class="w-4 h-4 text-electric-blue border-gray-300 focus:ring-electric-blue" name="assignment" type="radio"/>
+</div>
+<div>
+<p class="text-sm font-medium text-deep-navy">Create New Team</p>
+<p class="text-xs text-on-surface-variant mt-0.5">Build a custom team from available resources.</p>
+</div>
+</label>
+<label class="flex items-start gap-3 p-3 border border-outline-variant rounded-lg cursor-pointer hover:border-electric-blue hover:bg-blue-50/50 transition-all bg-white">
+<div class="mt-0.5">
+<input class="w-4 h-4 text-electric-blue border-gray-300 focus:ring-electric-blue" name="assignment" type="radio"/>
+</div>
+<div>
+<p class="text-sm font-medium text-deep-navy">Assign Later</p>
+<p class="text-xs text-on-surface-variant mt-0.5">Setup shell project, add members later.</p>
+</div>
+</label>
+</div>
+</section>
+</div>
+<!-- Right Col -->
+<div class="space-y-8">
+<section>
+<h3 class="text-sm font-semibold text-deep-navy uppercase tracking-wider mb-4 border-b border-outline-variant pb-2">Initial Configuration</h3>
+<div class="space-y-4">
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-deep-navy">Phase</label>
+<select class="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue focus:border-electric-blue outline-none transition-shadow bg-white text-deep-navy">
+<option>Discovery</option>
+<option>Implementation</option>
+<option>QA &amp; Testing</option>
+<option>Deployment</option>
+</select>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-deep-navy">Priority</label>
+<select class="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue focus:border-electric-blue outline-none transition-shadow bg-white text-deep-navy">
+<option>Low</option>
+<option>Medium</option>
+<option selected="">High</option>
+<option>Critical</option>
+</select>
+</div>
+</div>
+</section>
+<section>
+<h3 class="text-sm font-semibold text-deep-navy uppercase tracking-wider mb-4 border-b border-outline-variant pb-2">Repository Details</h3>
+<div class="space-y-4">
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-deep-navy">Git URL</label>
+<input class="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue focus:border-electric-blue outline-none transition-shadow bg-white text-deep-navy text-sm font-mono" placeholder="https://github.com/org/repo" type="url"/>
+</div>
+<div class="space-y-1.5">
+<label class="text-sm font-medium text-deep-navy">Default Branch</label>
+<input class="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue focus:border-electric-blue outline-none transition-shadow bg-white text-deep-navy text-sm font-mono" placeholder="main" type="text"/>
+</div>
+</div>
+</section>
+</div>
+</div>
+</div>
+<!-- Modal Footer -->
+<div class="p-6 border-t border-outline-variant bg-surface-bright flex justify-end gap-3 items-center">
+<button class="px-5 py-2.5 text-sm font-semibold text-on-surface-variant hover:text-deep-navy hover:bg-gray-100 rounded-lg transition-colors">Cancel</button>
+<button class="px-6 py-2.5 text-sm font-semibold bg-electric-blue hover:bg-blue-700 text-white rounded-lg shadow-sm transition-all flex items-center gap-2">
+                        Create Project
+                        <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</body></html>

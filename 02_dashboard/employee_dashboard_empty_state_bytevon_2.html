@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bytevon Employee Dashboard - Empty State</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"secondary-fixed": "#d8e2ff", "inverse-on-surface": "#eaf1ff", "on-surface-variant": "#43474e", "on-primary-fixed": "#001c3a", "surface-container": "#e5eeff", surface: "#f8f9ff", "on-error": "#ffffff", "surface-bright": "#f8f9ff", "inverse-surface": "#213145", tertiary: "#040607", "primary-container": "#001f3f", "on-tertiary-fixed": "#191c1e", "surface-container-low": "#eff4ff", "on-primary-fixed-variant": "#2f486a", "tertiary-container": "#1c1f21", outline: "#74777f", "surface-variant": "#d3e4fe", "surface-container-lowest": "#ffffff", "surface-dim": "#cbdbf5", "on-tertiary-fixed-variant": "#444749", "on-tertiary-container": "#848789", "surface-container-highest": "#d3e4fe", "on-secondary-fixed": "#001a41", background: "#f8f9ff", "outline-variant": "#c4c6cf", "secondary-fixed-dim": "#adc7ff", secondary: "#0059bb", "error-container": "#ffdad6", primary: "#000613", "on-primary": "#ffffff", "secondary-container": "#0070ea", "on-surface": "#0b1c30", "surface-tint": "#476083", "inverse-primary": "#afc8f0", "on-secondary": "#ffffff", "on-tertiary": "#ffffff", "tertiary-fixed-dim": "#c4c7c9", "primary-fixed": "#d4e3ff", "surface-container-high": "#dce9ff", "on-error-container": "#93000a", "tertiary-fixed": "#e0e3e5", "on-background": "#0b1c30", "primary-fixed-dim": "#afc8f0", "on-secondary-fixed-variant": "#004493", "on-primary-container": "#6f88ad", error: "#ba1a1a", "on-secondary-container": "#fefcff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-lg": "32px", gutter: "24px", "margin-mobile": "16px", "stack-sm": "8px", unit: "4px", "stack-md": "16px", "margin-desktop": "40px", "container-max": "1440px"}, fontFamily: {"headline-lg": ["Inter"], "display-lg": ["Inter"], "body-sm": ["Inter"], "label-md": ["Inter"], "headline-md": ["Inter"], "body-lg": ["Inter"], "body-md": ["Inter"], "title-lg": ["Inter"], "label-sm": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}]}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9ff; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .sidebar-active { transition: all 0.3s ease; }
+        .sidebar-active:active { transform: scale(0.95); }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- Side Navigation Shell -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary-container dark:bg-primary-container shadow-sm flex flex-col p-gutter z-50">
+<div class="mb-stack-lg">
+<h1 class="text-headline-md font-headline-md font-bold text-white dark:text-primary-fixed">Bytevon</h1>
+<p class="text-on-primary-container text-label-md font-label-md">Enterprise Resource</p>
+</div>
+<nav class="flex-1 space-y-unit">
+<!-- Active: Dashboard -->
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg font-bold sidebar-active" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-label-md font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-on-primary-fixed-variant/20 rounded-lg transition-colors sidebar-active" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+<span class="text-label-md font-label-md">Employees</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-on-primary-fixed-variant/20 rounded-lg transition-colors sidebar-active" href="#">
+<span class="material-symbols-outlined" data-icon="handshake">handshake</span>
+<span class="text-label-md font-label-md">CRM</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-on-primary-fixed-variant/20 rounded-lg transition-colors sidebar-active" href="#">
+<span class="material-symbols-outlined" data-icon="account_tree">account_tree</span>
+<span class="text-label-md font-label-md">ERP</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-on-primary-fixed-variant/20 rounded-lg transition-colors sidebar-active" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="text-label-md font-label-md">Reports</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-on-primary-fixed-variant/20 pt-stack-md space-y-unit">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-on-primary-fixed-variant/10 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="text-label-md font-label-md">Help</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container hover:bg-on-primary-fixed-variant/10 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+<span class="text-label-md font-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Top App Bar -->
+<header class="fixed top-0 left-[280px] right-0 h-16 bg-surface dark:bg-surface-container-lowest border-b border-outline-variant/30 flex justify-between items-center px-margin-desktop z-40">
+<div class="flex items-center bg-surface-container-low rounded-full px-4 py-2 w-96">
+<span class="material-symbols-outlined text-on-surface-variant mr-2" data-icon="search">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md w-full" placeholder="Search resources..." type="text"/>
+</div>
+<div class="flex items-center gap-stack-md">
+<button class="p-2 text-on-surface-variant hover:text-secondary transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-secondary transition-colors">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="h-8 w-px bg-outline-variant/30 mx-2"></div>
+<div class="flex items-center gap-3">
+<div class="text-right">
+<p class="text-label-md font-bold">New Employee</p>
+<p class="text-label-sm text-on-surface-variant">Onboarding Phase</p>
+</div>
+<img class="w-10 h-10 rounded-full border border-outline-variant object-cover" data-alt="A professional corporate headshot of a diverse young professional, wearing a smart casual blazer, set against a soft-focus office background with natural lighting. The image maintains a clean, modern aesthetic with a neutral color palette that reflects the Bytevon brand identity of trust and efficiency." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA7Fv8Xjg8QyxOnBQjjIGzsGQa1JF7IaOSejH8DbFMK2wiP09IlCmQwsui87sKE06VmCSSPa89UB-XmS0wZXSOMLSprHf5GNViC28-8PqgUqSHX17erxIrYea0P4DMldkIaHvYgdQMlXSxkm7xIpxcfy3pAG5-WKP-DEcrXsrQbRgNkSY4xee61nd-1cmRBskg4h1oaMYjN-pRR_GtUun_2nT_JsDNinWX3_IgngBq1VBc8KB15Fud0wg"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] mt-16 p-margin-desktop max-w-[1440px]">
+<!-- Welcome Header -->
+<div class="mb-stack-lg flex justify-between items-end">
+<div>
+<h2 class="text-headline-lg font-headline-lg text-primary">Welcome to Bytevon</h2>
+<p class="text-body-md text-on-surface-variant">Let's get your workspace set up. Here's your overview for today.</p>
+</div>
+<div class="flex gap-stack-sm">
+<button class="bg-secondary text-on-secondary px-6 py-2.5 rounded-lg font-bold text-label-md flex items-center gap-2 hover:bg-secondary-container transition-all active:scale-95 shadow-sm">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+                    Quick Action
+                </button>
+</div>
+</div>
+<!-- Dashboard Bento Grid -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Empty State: Attendance Overview (7/12 cols) -->
+<div class="col-span-12 lg:col-span-7 bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-stack-lg shadow-sm flex flex-col min-h-[400px]">
+<div class="flex justify-between items-center mb-stack-lg">
+<h3 class="text-title-lg font-title-lg text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="calendar_today">calendar_today</span>
+                        Attendance Overview
+                    </h3>
+<button class="text-label-md text-secondary font-bold hover:underline">View History</button>
+</div>
+<div class="flex-1 flex flex-col items-center justify-center text-center p-stack-lg">
+<div class="w-48 h-48 mb-stack-md flex items-center justify-center rounded-full bg-surface-container-low">
+<span class="material-symbols-outlined text-[80px] text-outline-variant/50" data-icon="event_busy">event_busy</span>
+</div>
+<h4 class="text-headline-md font-headline-md text-on-surface mb-unit">No Data Available</h4>
+<p class="text-body-md text-on-surface-variant max-w-md mx-auto">
+                        Your attendance records will appear here once you've completed your first clock-in. Ready to start your journey?
+                    </p>
+<button class="mt-stack-lg flex items-center gap-2 px-6 py-2 bg-primary text-on-primary rounded-lg font-bold hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined" data-icon="timer">timer</span>
+                        Clock In Now
+                    </button>
+</div>
+</div>
+<!-- Empty State: Leave Summary (5/12 cols) -->
+<div class="col-span-12 lg:col-span-5 bg-surface-container-lowest border border-outline-variant/20 rounded-xl p-stack-lg shadow-sm flex flex-col min-h-[400px]">
+<div class="flex justify-between items-center mb-stack-lg">
+<h3 class="text-title-lg font-title-lg text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="flight_takeoff">flight_takeoff</span>
+                        Leave Summary
+                    </h3>
+</div>
+<div class="flex-1 flex flex-col items-center justify-center p-stack-lg">
+<div class="w-full max-w-xs space-y-stack-md">
+<div class="p-stack-md bg-surface-container-low rounded-lg border border-dashed border-outline-variant/50 flex flex-col items-center gap-unit">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="hotel_class">hotel_class</span>
+<p class="text-label-md text-on-surface-variant font-bold">No Leave Taken Yet</p>
+</div>
+<!-- Ghost Skeleton Stats -->
+<div class="grid grid-cols-2 gap-stack-md opacity-40 grayscale">
+<div class="p-4 bg-surface rounded-lg border border-outline-variant/10 text-center">
+<p class="text-label-sm text-on-surface-variant uppercase tracking-wider">Annual</p>
+<p class="text-headline-md font-bold">12/12</p>
+</div>
+<div class="p-4 bg-surface rounded-lg border border-outline-variant/10 text-center">
+<p class="text-label-sm text-on-surface-variant uppercase tracking-wider">Sick</p>
+<p class="text-headline-md font-bold">05/05</p>
+</div>
+</div>
+<p class="text-body-sm text-on-surface-variant text-center px-4">
+                            Your leave balance will update automatically as you request and take time off.
+                        </p>
+<button class="w-full py-2.5 border-2 border-secondary text-secondary rounded-lg font-bold hover:bg-secondary-fixed transition-colors">
+                            Request Time Off
+                        </button>
+</div>
+</div>
+</div>
+<!-- Quick Actions Section (Full width bottom row) -->
+<div class="col-span-12">
+<h3 class="text-title-lg font-title-lg text-primary mb-stack-md">Quick Actions</h3>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-stack-md">
+<button class="group p-stack-md bg-surface-container-lowest border border-outline-variant/20 rounded-xl shadow-sm hover:shadow-md hover:border-secondary transition-all text-left">
+<div class="w-12 h-12 rounded-lg bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center mb-stack-sm group-hover:bg-secondary-container group-hover:text-on-secondary-container transition-colors">
+<span class="material-symbols-outlined" data-icon="person_search">person_search</span>
+</div>
+<p class="text-label-md font-bold text-on-surface">Employee Directory</p>
+<p class="text-body-sm text-on-surface-variant">Connect with your team</p>
+</button>
+<button class="group p-stack-md bg-surface-container-lowest border border-outline-variant/20 rounded-xl shadow-sm hover:shadow-md hover:border-secondary transition-all text-left">
+<div class="w-12 h-12 rounded-lg bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center mb-stack-sm group-hover:bg-secondary-container group-hover:text-on-secondary-container transition-colors">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+</div>
+<p class="text-label-md font-bold text-on-surface">Policies &amp; Handbook</p>
+<p class="text-body-sm text-on-surface-variant">Review company guidelines</p>
+</button>
+<button class="group p-stack-md bg-surface-container-lowest border border-outline-variant/20 rounded-xl shadow-sm hover:shadow-md hover:border-secondary transition-all text-left">
+<div class="w-12 h-12 rounded-lg bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center mb-stack-sm group-hover:bg-secondary-container group-hover:text-on-secondary-container transition-colors">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+</div>
+<p class="text-label-md font-bold text-on-surface">Payslips</p>
+<p class="text-body-sm text-on-surface-variant">Manage your earnings</p>
+</button>
+<button class="group p-stack-md bg-surface-container-lowest border border-outline-variant/20 rounded-xl shadow-sm hover:shadow-md hover:border-secondary transition-all text-left">
+<div class="w-12 h-12 rounded-lg bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center mb-stack-sm group-hover:bg-secondary-container group-hover:text-on-secondary-container transition-colors">
+<span class="material-symbols-outlined" data-icon="assignment_ind">assignment_ind</span>
+</div>
+<p class="text-label-md font-bold text-on-surface">Onboarding Tasks</p>
+<p class="text-body-sm text-on-surface-variant">Complete your profile</p>
+</button>
+</div>
+</div>
+<!-- Upcoming Events (Decorative Empty) -->
+<div class="col-span-12 lg:col-span-12 bg-white rounded-xl p-stack-lg border border-outline-variant/20">
+<h3 class="text-title-lg font-title-lg text-primary mb-stack-lg">Company Announcements</h3>
+<div class="flex flex-col items-center justify-center py-stack-lg bg-surface rounded-lg border border-dashed border-outline-variant/30">
+<span class="material-symbols-outlined text-outline-variant/40 text-[48px] mb-stack-sm" data-icon="campaign">campaign</span>
+<p class="text-body-md text-on-surface-variant">No new announcements at this time.</p>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Simple micro-interactions for the empty state
+        document.addEventListener('DOMContentLoaded', () => {
+            const clockBtn = document.querySelector('button:contains("Clock In Now")');
+            if (clockBtn) {
+                clockBtn.addEventListener('click', () => {
+                    alert('Redirecting to the attendance logging system...');
+                });
+            }
+
+            // Custom selector for text content since browser support varies
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(btn => {
+                if (btn.innerText.includes("Clock In Now")) {
+                    btn.addEventListener('click', () => {
+                        btn.innerHTML = '<span class="material-symbols-outlined animate-spin" data-icon="autorenew">autorenew</span> Starting...';
+                        setTimeout(() => {
+                            btn.innerHTML = '<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span> Success';
+                            btn.classList.replace('bg-primary', 'bg-green-600');
+                        }, 1500);
+                    });
+                }
+            });
+        });
+    </script>
+</body></html>

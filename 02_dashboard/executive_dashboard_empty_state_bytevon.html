@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Executive Dashboard - Empty State</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-bright": "#f8f9ff", outline: "#74777f", "tertiary-container": "#1c1f21", "secondary-container": "#0070ea", "inverse-surface": "#213145", "on-secondary-fixed": "#001a41", "on-primary-fixed-variant": "#2f486a", "on-primary-fixed": "#001c3a", "surface-variant": "#d3e4fe", "primary-fixed-dim": "#afc8f0", background: "#f8f9ff", "on-tertiary-fixed-variant": "#444749", "tertiary-fixed": "#e0e3e5", "surface-dim": "#cbdbf5", "on-primary": "#ffffff", "secondary-fixed": "#d8e2ff", "on-surface-variant": "#43474e", secondary: "#0059bb", "on-primary-container": "#6f88ad", "inverse-primary": "#afc8f0", "surface-container": "#e5eeff", "primary-container": "#001f3f", primary: "#000613", "error-container": "#ffdad6", "inverse-on-surface": "#eaf1ff", "on-background": "#0b1c30", surface: "#f8f9ff", "primary-fixed": "#d4e3ff", "on-tertiary": "#ffffff", "on-error": "#ffffff", "on-secondary-fixed-variant": "#004493", "on-secondary": "#ffffff", "secondary-fixed-dim": "#adc7ff", "surface-container-highest": "#d3e4fe", "on-secondary-container": "#fefcff", "surface-container-lowest": "#ffffff", "on-tertiary-container": "#848789", "on-tertiary-fixed": "#191c1e", error: "#ba1a1a", "on-surface": "#0b1c30", "surface-container-low": "#eff4ff", "tertiary-fixed-dim": "#c4c7c9", "surface-container-high": "#dce9ff", "outline-variant": "#c4c6cf", tertiary: "#040607", "surface-tint": "#476083", "on-error-container": "#93000a"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"margin-mobile": "16px", "stack-lg": "32px", gutter: "24px", unit: "4px", "stack-sm": "8px", "margin-desktop": "40px", "stack-md": "16px", "container-max": "1440px"}, fontFamily: {"display-lg": ["Inter"], "title-lg": ["Inter"], "label-md": ["Inter"], "body-sm": ["Inter"], "body-md": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-lg": ["Inter"], "label-sm": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}]}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .zebra-stripes tr:nth-child(even) { background-color: #f8f9ff; }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-surface-container-low border-b border-outline-variant fixed top-0 w-full z-50 h-16">
+<div class="flex justify-between items-center px-margin-desktop w-full h-full max-w-container-max mx-auto">
+<div class="flex items-center gap-stack-md">
+<div class="flex items-center gap-2"><img alt="Bytevon Logo" class="w-8 h-8 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAF0vlXvxatsRvuyPUpqn9M301VftldkZrDStmScw10GjDUHpBC3_UyIaKzQTjtvH2OvBjECpjzxlNGnij-YpAeNWla8qWhDokJaabLtwwaCJBcG__45rcQf9psMESB1kTuqf9sePiJyA-1DMLEEnQnTP7QaXFXjrUvh8HzXJq7JC34r4agQzl7EdCRx1DWyK0th3DLk6E65b_yavwHc1iG3Z2tv6fmLQKg3wAxTeU5t45t5Ht6w_HWeLDFIW5zlGrRsQQ"/><span class="font-headline-md text-headline-md font-bold text-primary dark:text-on-primary-fixed">Bytevon ERP</span></div>
+<nav class="hidden md:flex ml-stack-lg gap-gutter h-full items-center">
+<a class="text-secondary font-bold border-b-2 border-secondary pb-1 font-label-md text-label-md cursor-pointer active:opacity-80" href="#">Dashboard</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant font-label-md text-label-md hover:text-secondary transition-colors duration-200 cursor-pointer active:opacity-80" href="#">Reports</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant font-label-md text-label-md hover:text-secondary transition-colors duration-200 cursor-pointer active:opacity-80" href="#">Inventory</a>
+<a class="text-on-surface-variant dark:text-on-surface-variant font-label-md text-label-md hover:text-secondary transition-colors duration-200 cursor-pointer active:opacity-80" href="#">CRM</a>
+</nav>
+</div>
+<div class="flex items-center gap-stack-md">
+<div class="relative hidden sm:block mr-stack-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container border border-outline-variant rounded-lg font-body-sm text-body-sm w-64 focus:outline-none focus:border-secondary" placeholder="Search..." type="text"/>
+</div>
+<div class="flex items-center gap-stack-sm text-secondary dark:text-secondary-fixed-dim">
+<span class="material-symbols-outlined cursor-pointer active:opacity-80 p-2 rounded-full hover:bg-surface-container">notifications</span>
+<span class="material-symbols-outlined cursor-pointer active:opacity-80 p-2 rounded-full hover:bg-surface-container">help</span>
+<span class="material-symbols-outlined cursor-pointer active:opacity-80 p-2 rounded-full hover:bg-surface-container">settings</span>
+</div>
+<div class="ml-4 w-10 h-10 rounded-full overflow-hidden border-2 border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A clean, professional headshot of a corporate executive in a sharp navy blue suit, set against a soft-focus minimalist office background. The lighting is balanced and airy, emphasizing professional confidence and clarity within the Bytevon Executive Dashboard brand ecosystem." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlOlj_62c_a47z2aJf7W3lcI0DGkx__ER5bALzQxwFylJqb4-VYK2KGr9Wkz6vus4uGE3zhd8XAD1Gc5hoCjyEF9oRJlj-ioDbI1oZ9f_wd-OB8YoRRfJuaYF3rr6-1o4JZCAnFSjWv4pVa-cHem4vZckBBNePqgfaY90s6c0HA1Eunil3GQIVaQr_51xdSCue9L6n8ilGNKCKpbxei5hnb2HEfkHIGQRddvn34Kk1pjEjiFcKfgTk5Q"/>
+</div>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="flex flex-col fixed left-0 top-0 h-full w-[280px] z-40 py-stack-lg bg-primary dark:bg-primary-container shadow-sm hidden md:flex">
+<div class="px-6 mb-stack-lg">
+<h2 class="font-headline-sm text-headline-sm font-black text-on-primary">Master Settings</h2>
+<p class="text-on-primary-container dark:text-on-primary-fixed-variant font-label-sm text-label-sm opacity-80">Enterprise Control</p>
+</div>
+<nav class="flex-1 space-y-1 overflow-y-auto px-2">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container dark:text-on-primary-fixed-variant hover:bg-on-primary-fixed-variant hover:text-on-primary transition-all rounded-lg font-label-md text-label-md scale-95 active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">corporate_fare</span> Organization
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container dark:text-on-primary-fixed-variant hover:bg-on-primary-fixed-variant hover:text-on-primary transition-all rounded-lg font-label-md text-label-md scale-95 active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">group</span> User Management
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container dark:text-on-primary-fixed-variant hover:bg-on-primary-fixed-variant hover:text-on-primary transition-all rounded-lg font-label-md text-label-md scale-95 active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">security</span> Security
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container dark:text-on-primary-fixed-variant hover:bg-on-primary-fixed-variant hover:text-on-primary transition-all rounded-lg font-label-md text-label-md scale-95 active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">history_toggle_off</span> Attendance
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container dark:text-on-primary-fixed-variant hover:bg-on-primary-fixed-variant hover:text-on-primary transition-all rounded-lg font-label-md text-label-md scale-95 active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">event_busy</span> Leave
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container dark:text-on-primary-fixed-variant hover:bg-on-primary-fixed-variant hover:text-on-primary transition-all rounded-lg font-label-md text-label-md scale-95 active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">fact_check</span> Approvals
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container dark:text-on-primary-fixed-variant hover:bg-on-primary-fixed-variant hover:text-on-primary transition-all rounded-lg font-label-md text-label-md scale-95 active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">notifications_active</span> Notifications
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container dark:text-on-primary-fixed-variant hover:bg-on-primary-fixed-variant hover:text-on-primary transition-all rounded-lg font-label-md text-label-md scale-95 active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined">receipt_long</span> Audit Logs
+            </a>
+</nav>
+<div class="mt-auto px-4 space-y-4">
+<button class="w-full py-3 bg-secondary text-on-secondary rounded-lg font-label-md text-label-md font-bold shadow-lg hover:brightness-110 active:scale-95 transition-all">
+                Save Configuration
+            </button>
+<div class="border-t border-on-primary-container/20 pt-4">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container dark:text-on-primary-fixed-variant hover:text-on-primary transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">contact_support</span> Support
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container dark:text-on-primary-fixed-variant hover:text-on-primary transition-all font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">logout</span> Sign Out
+                </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="md:ml-[280px] pt-16 min-h-screen">
+<div class="max-w-container-max mx-auto px-margin-desktop py-stack-lg">
+<!-- Dashboard Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-stack-lg gap-stack-md">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-primary mb-2">Executive Dashboard - Empty State</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Welcome to your new enterprise ecosystem. Connect data sources to begin generating insights.</p>
+</div>
+<div class="flex gap-stack-sm">
+<button class="px-stack-md py-2 border border-outline-variant rounded-lg font-label-md text-label-md flex items-center gap-2 hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[20px]">download</span> Export Report
+                    </button>
+<button class="px-stack-md py-2 bg-secondary text-on-secondary rounded-lg font-label-md text-label-md flex items-center gap-2 shadow-sm hover:brightness-110 transition-all">
+<span class="material-symbols-outlined text-[20px]">add</span> Data Source
+                    </button>
+</div>
+</div>
+<!-- KPI Row: Bento Grid Style -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter mb-stack-lg">
+<!-- KPI Card 1 -->
+<div class="bg-surface-container-lowest p-stack-md border border-outline-variant rounded-xl shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-stack-md">
+<div class="p-2 bg-secondary-fixed rounded-lg text-secondary">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<span class="text-outline font-label-sm text-label-sm">This Month</span>
+</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Total Revenue</div>
+<div class="font-display-lg text-display-lg text-primary mt-1">$0.00</div>
+<div class="mt-stack-md flex items-center gap-1 font-label-sm text-label-sm text-outline">
+<span class="material-symbols-outlined text-[16px]">trending_flat</span> 0% from last period
+                    </div>
+</div>
+<!-- KPI Card 2 -->
+<div class="bg-surface-container-lowest p-stack-md border border-outline-variant rounded-xl shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-stack-md">
+<div class="p-2 bg-surface-variant rounded-lg text-on-secondary-fixed-variant">
+<span class="material-symbols-outlined">group</span>
+</div>
+<span class="text-outline font-label-sm text-label-sm">Active Now</span>
+</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Active Users</div>
+<div class="font-display-lg text-display-lg text-primary mt-1">0</div>
+<div class="mt-stack-md flex items-center gap-1 font-label-sm text-label-sm text-outline">
+<span class="material-symbols-outlined text-[16px]">trending_flat</span> 0% from last period
+                    </div>
+</div>
+<!-- KPI Card 3 -->
+<div class="bg-surface-container-lowest p-stack-md border border-outline-variant rounded-xl shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-stack-md">
+<div class="p-2 bg-error-container rounded-lg text-error">
+<span class="material-symbols-outlined">priority_high</span>
+</div>
+<span class="text-outline font-label-sm text-label-sm">Critical</span>
+</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Operational Alerts</div>
+<div class="font-display-lg text-display-lg text-primary mt-1">0</div>
+<div class="mt-stack-md flex items-center gap-1 font-label-sm text-label-sm text-outline">
+<span class="material-symbols-outlined text-[16px]">check_circle</span> No active issues
+                    </div>
+</div>
+<!-- KPI Card 4 -->
+<div class="bg-surface-container-lowest p-stack-md border border-outline-variant rounded-xl shadow-sm hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-stack-md">
+<div class="p-2 bg-tertiary-fixed rounded-lg text-on-tertiary-fixed">
+<span class="material-symbols-outlined">inventory_2</span>
+</div>
+<span class="text-outline font-label-sm text-label-sm">Live Status</span>
+</div>
+<div class="font-label-md text-label-md text-on-surface-variant">Inventory Flux</div>
+<div class="font-display-lg text-display-lg text-primary mt-1">0%</div>
+<div class="mt-stack-md flex items-center gap-1 font-label-sm text-label-sm text-outline">
+<span class="material-symbols-outlined text-[16px]">history</span> Syncing required
+                    </div>
+</div>
+</div>
+<!-- Main Dashboard Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Performance Trends (Placeholder Chart) -->
+<div class="lg:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden flex flex-col">
+<div class="px-stack-md py-stack-md border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-title-lg text-title-lg text-primary">Performance Trends</h3>
+<div class="flex gap-2">
+<div class="w-3 h-3 rounded-full bg-secondary-fixed"></div>
+<div class="w-3 h-3 rounded-full bg-outline-variant"></div>
+</div>
+</div>
+<div class="flex-1 min-h-[320px] flex flex-col items-center justify-center p-stack-lg text-center bg-surface-bright relative">
+<!-- Abstract placeholder illustration -->
+<div class="relative w-full max-w-[400px] h-48 mb-stack-md">
+<div class="absolute inset-0 border-b border-l border-outline-variant opacity-30"></div>
+<div class="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-4 h-full">
+<div class="w-full bg-surface-container-high rounded-t-lg h-0 transition-all duration-1000" style="height: 20%;"></div>
+<div class="w-full bg-surface-container-high rounded-t-lg h-0 transition-all duration-1000" style="height: 35%;"></div>
+<div class="w-full bg-surface-container-high rounded-t-lg h-0 transition-all duration-1000" style="height: 15%;"></div>
+<div class="w-full bg-surface-container-high rounded-t-lg h-0 transition-all duration-1000" style="height: 50%;"></div>
+<div class="w-full bg-surface-container-high rounded-t-lg h-0 transition-all duration-1000" style="height: 25%;"></div>
+</div>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="material-symbols-outlined text-[64px] text-outline/20">show_chart</span>
+</div>
+</div>
+<h4 class="font-title-lg text-title-lg text-on-surface mb-2">No data available</h4>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-sm">Connect your CRM and Finance modules to visualize organizational performance over time.</p>
+<button class="mt-stack-md font-label-md text-label-md text-secondary hover:underline">Learn how to connect</button>
+</div>
+</div>
+<!-- Recent Activity Feed (Empty) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl flex flex-col">
+<div class="px-stack-md py-stack-md border-b border-outline-variant">
+<h3 class="font-title-lg text-title-lg text-primary">Live Updates</h3>
+</div>
+<div class="flex-1 p-stack-md flex flex-col items-center justify-center text-center">
+<div class="w-16 h-16 bg-surface-container flex items-center justify-center rounded-full mb-stack-md">
+<span class="material-symbols-outlined text-outline">history</span>
+</div>
+<h4 class="font-label-md text-label-md text-on-surface font-bold">Awaiting Events</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">System interactions and audits will appear here as they occur.</p>
+</div>
+</div>
+<!-- Pending Approvals Table (Empty) -->
+<div class="lg:col-span-3 bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+<div class="px-stack-md py-stack-md border-b border-outline-variant flex justify-between items-center">
+<h3 class="font-title-lg text-title-lg text-primary">Pending Approvals</h3>
+<span class="bg-surface-container px-3 py-1 rounded-full text-on-surface-variant font-label-sm text-label-sm">0 Items</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead class="bg-surface-bright text-outline border-b border-outline-variant uppercase tracking-wider font-label-sm text-[11px]">
+<tr>
+<th class="px-stack-md py-4 font-semibold">Request ID</th>
+<th class="px-stack-md py-4 font-semibold">Originator</th>
+<th class="px-stack-md py-4 font-semibold">Department</th>
+<th class="px-stack-md py-4 font-semibold">Amount</th>
+<th class="px-stack-md py-4 font-semibold">Priority</th>
+<th class="px-stack-md py-4 font-semibold text-right">Actions</th>
+</tr>
+</thead>
+<tbody>
+<tr class="h-64">
+<td class="text-center py-stack-lg" colspan="6">
+<div class="flex flex-col items-center justify-center">
+<div class="mb-stack-md">
+<div class="w-20 h-20 rounded-2xl bg-surface-container flex items-center justify-center border-2 border-dashed border-outline-variant">
+<span class="material-symbols-outlined text-outline/50 text-[40px]">fact_check</span>
+</div>
+</div>
+<h4 class="font-title-lg text-title-lg text-on-surface mb-1">No pending requests</h4>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md">Your queue is clear. New administrative and financial approval requests will be listed here for executive review.</p>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Footer Meta -->
+<footer class="mt-stack-lg pt-stack-lg border-t border-outline-variant flex flex-col md:flex-row justify-between items-center gap-stack-md opacity-60">
+<div class="font-label-sm text-label-sm text-outline">
+                    Bytevon Executive Suite v4.2.0 • Build ID: 8829-X
+                </div>
+<div class="flex gap-gutter font-label-sm text-label-sm text-outline">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">System Status</a>
+<a class="hover:text-primary transition-colors" href="#">Documentation</a>
+</div>
+</footer>
+</div>
+</main>
+<!-- FAB for quick actions (only in relevant screens, but kept for dash context) -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-on-primary rounded-full shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all z-50 group">
+<span class="material-symbols-outlined">rocket_launch</span>
+<span class="absolute right-16 bg-primary text-on-primary px-4 py-2 rounded-lg font-label-md text-label-md whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity shadow-lg">
+            Quick Setup Wizard
+        </span>
+</button>
+<script>
+        // Simple micro-interaction for KPI cards
+        document.querySelectorAll('.bg-surface-container-lowest').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.classList.add('translate-y-[-4px]');
+                card.style.transition = 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.classList.remove('translate-y-[-4px]');
+            });
+        });
+
+        // Initialize empty state animation
+        setTimeout(() => {
+            const bars = document.querySelectorAll('.bg-surface-container-high');
+            const heights = ['20%', '35%', '15%', '50%', '25%'];
+            bars.forEach((bar, index) => {
+                bar.style.height = heights[index];
+            });
+        }, 300);
+    </script>
+</body></html>

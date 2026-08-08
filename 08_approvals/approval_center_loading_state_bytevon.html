@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bytevon - Approval Center (Loading)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -1000px 0; }
+            100% { background-position: 1000px 0; }
+        }
+
+        .skeleton {
+            background: linear-gradient(90deg, #f0f4f8 25%, #e2e8f0 50%, #f0f4f8 75%);
+            background-size: 1000px 100%;
+            animation: shimmer 2s infinite linear;
+        }
+
+        .dark .skeleton {
+            background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+            background-size: 1000px 100%;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9ff;
+        }
+    </style>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-secondary-fixed": "#001a41", "on-secondary": "#ffffff", "on-tertiary": "#ffffff", "on-error": "#ffffff", "error-container": "#ffdad6", "surface-bright": "#f8f9ff", "on-secondary-container": "#fefcff", "on-primary-fixed": "#001c3a", "tertiary-fixed-dim": "#c4c7c9", "on-secondary-fixed-variant": "#004493", tertiary: "#040607", "inverse-primary": "#afc8f0", error: "#ba1a1a", "tertiary-fixed": "#e0e3e5", surface: "#f8f9ff", outline: "#74777f", "primary-fixed": "#d4e3ff", "surface-container": "#e5eeff", "secondary-fixed-dim": "#adc7ff", secondary: "#0059bb", primary: "#000613", "primary-fixed-dim": "#afc8f0", "secondary-fixed": "#d8e2ff", "surface-container-low": "#eff4ff", "on-tertiary-fixed-variant": "#444749", "on-surface": "#0b1c30", "on-tertiary-fixed": "#191c1e", "on-background": "#0b1c30", "on-primary-fixed-variant": "#2f486a", "tertiary-container": "#1c1f21", "surface-container-lowest": "#ffffff", "on-primary-container": "#6f88ad", "on-primary": "#ffffff", "primary-container": "#001f3f", "surface-variant": "#d3e4fe", "outline-variant": "#c4c6cf", "surface-container-highest": "#d3e4fe", background: "#f8f9ff", "on-surface-variant": "#43474e", "inverse-surface": "#213145", "surface-container-high": "#dce9ff", "surface-tint": "#476083", "surface-dim": "#cbdbf5", "on-tertiary-container": "#848789", "on-error-container": "#93000a", "secondary-container": "#0070ea", "inverse-on-surface": "#eaf1ff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {unit: "4px", "margin-desktop": "40px", "stack-md": "16px", "stack-lg": "32px", "container-max": "1440px", gutter: "24px", "stack-sm": "8px", "margin-mobile": "16px"}, fontFamily: {"display-lg": ["Inter"], "body-md": ["Inter"], "title-lg": ["Inter"], "label-md": ["Inter"], "headline-lg-mobile": ["Inter"], "body-sm": ["Inter"], "label-sm": ["Inter"], "headline-lg": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}]}}}};</script>
+</head>
+<body class="bg-background text-on-surface">
+<!-- SideNavBar Anchor -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary dark:bg-primary-container flex flex-col p-spacing-stack-md shadow-sm z-50">
+<div class="mb-10 px-4">
+<div class="flex items-center gap-3 mb-2"><img alt="Bytevon Logo" class="w-8 h-8 rounded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCWm0Jq1uqEr10nXAELtrUWaoPsoVm_Q3qMKy9cPqRLEjAL4EBk5KmI8qNFEg_iWMtvG62nE7Na-NxzLJ1i8-p8v3SfiZK2IJ0w4SrCKm0-D06KeaPxw_PmjholkqKE42suTwY0dNihFdQbApi391Jbz9gE9gwipbN4MvdBAe2BwQeIs8iMbUcNUImU7QsjGkT9xaB0Pp_VSj7wgKXvxevYwAg_Soeak1ztAZwb342xFGVDnXReRamUVIAodh7eHJKVcE"/><h1 class="font-headline-md text-headline-md font-bold text-on-primary">Bytevon</h1></div>
+<p class="font-body-sm text-on-primary-container opacity-80">Enterprise Resource Planning</p>
+</div>
+<nav class="flex-1 space-y-2">
+<!-- Active state logic: Dashboard is active as this is a high-level ERP portal view -->
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary text-on-secondary rounded-lg duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md text-body-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-primary-fixed-dim/10 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">group</span>
+<span class="font-body-md text-body-md">Customers</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-primary-fixed-dim/10 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-body-md text-body-md">Resources</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-primary-fixed-dim/10 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">precision_manufacturing</span>
+<span class="font-body-md text-body-md">Operations</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-primary-fixed-dim/10 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">monitoring</span>
+<span class="font-body-md text-body-md">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-primary-fixed-dim/10 transition-colors duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md">Settings</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-on-primary/10 pt-4 px-4">
+<button class="w-full mb-4 py-2 bg-secondary-container text-on-secondary-fixed rounded-lg font-label-md text-label-md">Support Portal</button>
+<a class="flex items-center gap-3 py-3 text-on-primary-fixed-variant hover:text-on-primary transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-body-md text-body-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- TopAppBar Anchor -->
+<header class="flex justify-between items-center h-16 px-spacing-margin-desktop ml-[280px] w-[calc(100%-280px)] bg-surface border-b border-outline-variant fixed top-0 z-40">
+<div class="flex items-center gap-8">
+<div class="relative">
+<span class="absolute inset-y-0 left-3 flex items-center text-on-surface-variant">
+<span class="material-symbols-outlined text-body-md">search</span>
+</span>
+<input class="pl-10 pr-4 py-1.5 bg-surface-container-low border border-outline-variant rounded-full text-label-md focus:ring-2 focus:ring-secondary outline-none w-64" placeholder="Search approvals..." type="text"/>
+</div>
+<nav class="flex gap-6">
+<a class="text-on-surface-variant hover:text-primary font-label-md text-label-md transition-all" href="#">Recent</a>
+<a class="text-on-surface-variant hover:text-primary font-label-md text-label-md transition-all" href="#">Favorites</a>
+<a class="text-on-surface-variant hover:text-primary font-label-md text-label-md transition-all" href="#">Help</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="flex gap-2 mr-4">
+<button class="p-2 text-on-surface-variant hover:text-secondary active:scale-95 transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-secondary active:scale-95 transition-all">
+<span class="material-symbols-outlined">apps</span>
+</button>
+</div>
+<button class="px-4 py-2 bg-primary text-on-primary rounded-lg font-label-md text-label-md active:scale-95 transition-all">Create New</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant ml-2 bg-surface-container-high">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a business executive in a sharp navy suit, looking confident and approachable. The background is a blurred high-end office interior with soft morning light, following a modern minimalist and corporate aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCOdUS1zQc8bcNG1QvSELw9zrK3HjdeSSljP2EynC4iDvHEEW0ngUsmAfDEwLRUzRPfZTIIbDZ5xFnbNNpnGcILdVcmaDaZcn7JVM7HZUt3t4ZXHYl-l2s1o420vXKe6ersEA-aKx4Th3qRsvggIFJeOmLRxipKz7fSoZgiVtXgveFI9EVyQOqkeW1-3gJ0I7TY74fCoVDBPDHl4mFKqV3_03FbdBHqvApcNhXxTUsF4c_61tMKW8TU9A"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] pt-24 pb-12 px-spacing-margin-desktop min-h-screen">
+<!-- Header Section -->
+<section class="mb-spacing-stack-lg max-w-container-max">
+<div class="flex justify-between items-end mb-8">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-2">Approval Center</h2>
+<p class="font-body-md text-on-surface-variant">Review and manage pending enterprise requests.</p>
+</div>
+<div class="flex gap-3">
+<div class="skeleton h-10 w-32 rounded-lg"></div>
+<div class="skeleton h-10 w-40 rounded-lg"></div>
+</div>
+</div>
+<!-- KPI Cards Bento Grid (Skeleton) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+<!-- KPI Card 1 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div class="skeleton h-4 w-24 rounded"></div>
+<div class="skeleton h-8 w-8 rounded-full"></div>
+</div>
+<div class="skeleton h-10 w-16 rounded mt-2"></div>
+<div class="skeleton h-3 w-32 rounded mt-auto"></div>
+</div>
+<!-- KPI Card 2 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div class="skeleton h-4 w-28 rounded"></div>
+<div class="skeleton h-8 w-8 rounded-full"></div>
+</div>
+<div class="skeleton h-10 w-20 rounded mt-2"></div>
+<div class="skeleton h-3 w-24 rounded mt-auto"></div>
+</div>
+<!-- KPI Card 3 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div class="skeleton h-4 w-20 rounded"></div>
+<div class="skeleton h-8 w-8 rounded-full"></div>
+</div>
+<div class="skeleton h-10 w-12 rounded mt-2"></div>
+<div class="skeleton h-3 w-40 rounded mt-auto"></div>
+</div>
+<!-- KPI Card 4 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-4">
+<div class="flex justify-between items-start">
+<div class="skeleton h-4 w-32 rounded"></div>
+<div class="skeleton h-8 w-8 rounded-full"></div>
+</div>
+<div class="skeleton h-10 w-24 rounded mt-2"></div>
+<div class="skeleton h-3 w-28 rounded mt-auto"></div>
+</div>
+</div>
+<!-- Main Data Table Section (Skeleton) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<div class="p-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<div class="flex gap-4">
+<div class="skeleton h-8 w-24 rounded-full"></div>
+<div class="skeleton h-8 w-32 rounded-full"></div>
+</div>
+<div class="skeleton h-8 w-40 rounded"></div>
+</div>
+<div class="w-full overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant bg-surface-container-lowest">
+<th class="p-4"><div class="skeleton h-4 w-4 rounded"></div></th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant"><div class="skeleton h-4 w-32 rounded"></div></th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant"><div class="skeleton h-4 w-24 rounded"></div></th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant"><div class="skeleton h-4 w-20 rounded"></div></th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant"><div class="skeleton h-4 w-24 rounded"></div></th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant"><div class="skeleton h-4 w-28 rounded"></div></th>
+<th class="p-4"></th>
+</tr>
+</thead>
+<tbody>
+<!-- Skeleton Rows -->
+<script>
+                                for (let i = 0; i < 8; i++) {
+                                    document.write(`
+                                        <tr class="border-b border-outline-variant/50 hover:bg-surface-container-low/30 transition-colors">
+                                            <td class="p-4"><div class="skeleton h-4 w-4 rounded"></div></td>
+                                            <td class="p-4">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="skeleton h-8 w-8 rounded-full flex-shrink-0"></div>
+                                                    <div class="space-y-2">
+                                                        <div class="skeleton h-4 w-40 rounded"></div>
+                                                        <div class="skeleton h-3 w-24 rounded"></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="p-4"><div class="skeleton h-4 w-24 rounded"></div></td>
+                                            <td class="p-4"><div class="skeleton h-6 w-20 rounded-full"></div></td>
+                                            <td class="p-4"><div class="skeleton h-4 w-20 rounded"></div></td>
+                                            <td class="p-4"><div class="skeleton h-4 w-28 rounded"></div></td>
+                                            <td class="p-4 text-right">
+                                                <div class="skeleton h-8 w-8 rounded-full ml-auto"></div>
+                                            </td>
+                                        </tr>
+                                    `);
+                                }
+                            </script>
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-low/30 transition-colors">
+<td class="p-4"><div class="skeleton h-4 w-4 rounded"></div></td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="skeleton h-8 w-8 rounded-full flex-shrink-0"></div>
+<div class="space-y-2">
+<div class="skeleton h-4 w-40 rounded"></div>
+<div class="skeleton h-3 w-24 rounded"></div>
+</div>
+</div>
+</td>
+<td class="p-4"><div class="skeleton h-4 w-24 rounded"></div></td>
+<td class="p-4"><div class="skeleton h-6 w-20 rounded-full"></div></td>
+<td class="p-4"><div class="skeleton h-4 w-20 rounded"></div></td>
+<td class="p-4"><div class="skeleton h-4 w-28 rounded"></div></td>
+<td class="p-4 text-right">
+<div class="skeleton h-8 w-8 rounded-full ml-auto"></div>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-low/30 transition-colors">
+<td class="p-4"><div class="skeleton h-4 w-4 rounded"></div></td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="skeleton h-8 w-8 rounded-full flex-shrink-0"></div>
+<div class="space-y-2">
+<div class="skeleton h-4 w-40 rounded"></div>
+<div class="skeleton h-3 w-24 rounded"></div>
+</div>
+</div>
+</td>
+<td class="p-4"><div class="skeleton h-4 w-24 rounded"></div></td>
+<td class="p-4"><div class="skeleton h-6 w-20 rounded-full"></div></td>
+<td class="p-4"><div class="skeleton h-4 w-20 rounded"></div></td>
+<td class="p-4"><div class="skeleton h-4 w-28 rounded"></div></td>
+<td class="p-4 text-right">
+<div class="skeleton h-8 w-8 rounded-full ml-auto"></div>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-low/30 transition-colors">
+<td class="p-4"><div class="skeleton h-4 w-4 rounded"></div></td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="skeleton h-8 w-8 rounded-full flex-shrink-0"></div>
+<div class="space-y-2">
+<div class="skeleton h-4 w-40 rounded"></div>
+<div class="skeleton h-3 w-24 rounded"></div>
+</div>
+</div>
+</td>
+<td class="p-4"><div class="skeleton h-4 w-24 rounded"></div></td>
+<td class="p-4"><div class="skeleton h-6 w-20 rounded-full"></div></td>
+<td class="p-4"><div class="skeleton h-4 w-20 rounded"></div></td>
+<td class="p-4"><div class="skeleton h-4 w-28 rounded"></div></td>
+<td class="p-4 text-right">
+<div class="skeleton h-8 w-8 rounded-full ml-auto"></div>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-low/30 transition-colors">
+<td class="p-4"><div class="skeleton h-4 w-4 rounded"></div></td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="skeleton h-8 w-8 rounded-full flex-shrink-0"></div>
+<div class="space-y-2">
+<div class="skeleton h-4 w-40 rounded"></div>
+<div class="skeleton h-3 w-24 rounded"></div>
+</div>
+</div>
+</td>
+<td class="p-4"><div class="skeleton h-4 w-24 rounded"></div></td>
+<td class="p-4"><div class="skeleton h-6 w-20 rounded-full"></div></td>
+<td class="p-4"><div class="skeleton h-4 w-20 rounded"></div></td>
+<td class="p-4"><div class="skeleton h-4 w-28 rounded"></div></td>
+<td class="p-4 text-right">
+<div class="skeleton h-8 w-8 rounded-full ml-auto"></div>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-low/30 transition-colors">
+<td class="p-4"><div class="skeleton h-4 w-4 rounded"></div></td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="skeleton h-8 w-8 rounded-full flex-shrink-0"></div>
+<div class="space-y-2">
+<div class="skeleton h-4 w-40 rounded"></div>
+<div class="skeleton h-3 w-24 rounded"></div>
+</div>
+</div>
+</td>
+<td class="p-4"><div class="skeleton h-4 w-24 rounded"></div></td>
+<td class="p-4"><div class="skeleton h-6 w-20 rounded-full"></div></td>
+<td class="p-4"><div class="skeleton h-4 w-20 rounded"></div></td>
+<td class="p-4"><div class="skeleton h-4 w-28 rounded"></div></td>
+<td class="p-4 text-right">
+<div class="skeleton h-8 w-8 rounded-full ml-auto"></div>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-low/30 transition-colors">
+<td class="p-4"><div class="skeleton h-4 w-4 rounded"></div></td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="skeleton h-8 w-8 rounded-full flex-shrink-0"></div>
+<div class="space-y-2">
+<div class="skeleton h-4 w-40 rounded"></div>
+<div class="skeleton h-3 w-24 rounded"></div>
+</div>
+</div>
+</td>
+<td class="p-4"><div class="skeleton h-4 w-24 rounded"></div></td>
+<td class="p-4"><div class="skeleton h-6 w-20 rounded-full"></div></td>
+<td class="p-4"><div class="skeleton h-4 w-20 rounded"></div></td>
+<td class="p-4"><div class="skeleton h-4 w-28 rounded"></div></td>
+<td class="p-4 text-right">
+<div class="skeleton h-8 w-8 rounded-full ml-auto"></div>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-low/30 transition-colors">
+<td class="p-4"><div class="skeleton h-4 w-4 rounded"></div></td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="skeleton h-8 w-8 rounded-full flex-shrink-0"></div>
+<div class="space-y-2">
+<div class="skeleton h-4 w-40 rounded"></div>
+<div class="skeleton h-3 w-24 rounded"></div>
+</div>
+</div>
+</td>
+<td class="p-4"><div class="skeleton h-4 w-24 rounded"></div></td>
+<td class="p-4"><div class="skeleton h-6 w-20 rounded-full"></div></td>
+<td class="p-4"><div class="skeleton h-4 w-20 rounded"></div></td>
+<td class="p-4"><div class="skeleton h-4 w-28 rounded"></div></td>
+<td class="p-4 text-right">
+<div class="skeleton h-8 w-8 rounded-full ml-auto"></div>
+</td>
+</tr>
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-low/30 transition-colors">
+<td class="p-4"><div class="skeleton h-4 w-4 rounded"></div></td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<div class="skeleton h-8 w-8 rounded-full flex-shrink-0"></div>
+<div class="space-y-2">
+<div class="skeleton h-4 w-40 rounded"></div>
+<div class="skeleton h-3 w-24 rounded"></div>
+</div>
+</div>
+</td>
+<td class="p-4"><div class="skeleton h-4 w-24 rounded"></div></td>
+<td class="p-4"><div class="skeleton h-6 w-20 rounded-full"></div></td>
+<td class="p-4"><div class="skeleton h-4 w-20 rounded"></div></td>
+<td class="p-4"><div class="skeleton h-4 w-28 rounded"></div></td>
+<td class="p-4 text-right">
+<div class="skeleton h-8 w-8 rounded-full ml-auto"></div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Skeleton -->
+<div class="p-4 bg-surface-container-low flex justify-between items-center">
+<div class="skeleton h-4 w-48 rounded"></div>
+<div class="flex gap-2">
+<div class="skeleton h-8 w-8 rounded"></div>
+<div class="skeleton h-8 w-24 rounded"></div>
+<div class="skeleton h-8 w-8 rounded"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- Contextual Help / Tips Section -->
+<section class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-container-max mt-8">
+<div class="bg-surface-container-high/40 p-6 rounded-xl border border-outline-variant/50">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-secondary">lightbulb</span>
+<div class="skeleton h-5 w-32 rounded"></div>
+</div>
+<div class="space-y-2">
+<div class="skeleton h-3 w-full rounded"></div>
+<div class="skeleton h-3 w-5/6 rounded"></div>
+</div>
+</div>
+<div class="bg-surface-container-high/40 p-6 rounded-xl border border-outline-variant/50">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-secondary">verified_user</span>
+<div class="skeleton h-5 w-40 rounded"></div>
+</div>
+<div class="space-y-2">
+<div class="skeleton h-3 w-full rounded"></div>
+<div class="skeleton h-3 w-4/5 rounded"></div>
+</div>
+</div>
+<div class="bg-surface-container-high/40 p-6 rounded-xl border border-outline-variant/50">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-secondary">history</span>
+<div class="skeleton h-5 w-28 rounded"></div>
+</div>
+<div class="space-y-2">
+<div class="skeleton h-3 w-full rounded"></div>
+<div class="skeleton h-3 w-3/4 rounded"></div>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button (FAB) Suppression: Suppressed on Details/Transactional screens as per logic -->
+</body></html>

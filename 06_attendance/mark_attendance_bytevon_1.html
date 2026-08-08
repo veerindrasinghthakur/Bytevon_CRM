@@ -1,0 +1,363 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Mark Attendance | Bytevon ERP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-tertiary-fixed": "#191c1e", "tertiary-container": "#1c1f21", "on-background": "#0b1c30", "error-container": "#ffdad6", "secondary-fixed-dim": "#adc7ff", "on-primary": "#ffffff", "on-surface": "#0b1c30", "primary-fixed-dim": "#afc8f0", "outline-variant": "#c4c6cf", "primary-fixed": "#d4e3ff", surface: "#f8f9ff", "on-primary-fixed-variant": "#2f486a", "inverse-on-surface": "#eaf1ff", "on-secondary-container": "#fefcff", error: "#ba1a1a", "surface-tint": "#476083", "on-tertiary-fixed-variant": "#444749", "on-error-container": "#93000a", "inverse-surface": "#213145", "secondary-fixed": "#d8e2ff", "surface-container-high": "#dce9ff", "on-primary-container": "#6f88ad", "surface-container-lowest": "#ffffff", "surface-container": "#e5eeff", "on-tertiary-container": "#848789", "on-surface-variant": "#43474e", outline: "#74777f", "tertiary-fixed-dim": "#c4c7c9", "surface-container-highest": "#d3e4fe", "inverse-primary": "#afc8f0", tertiary: "#040607", "surface-dim": "#cbdbf5", "on-error": "#ffffff", "primary-container": "#001f3f", "tertiary-fixed": "#e0e3e5", "surface-variant": "#d3e4fe", "surface-bright": "#f8f9ff", "on-secondary-fixed-variant": "#004493", "on-primary-fixed": "#001c3a", "surface-container-low": "#eff4ff", "on-tertiary": "#ffffff", secondary: "#0059bb", background: "#f8f9ff", "secondary-container": "#0070ea", "on-secondary-fixed": "#001a41", "on-secondary": "#ffffff", primary: "#000613"}, spacing: {unit: "4px", "margin-mobile": "16px", "container-max": "1440px", "stack-lg": "32px", gutter: "24px", "stack-sm": "8px", "stack-md": "16px", "margin-desktop": "40px"}, fontFamily: {"headline-lg": ["Inter"], "label-sm": ["Inter"], "display-lg": ["Inter"], "body-md": ["Inter"], "title-lg": ["Inter"], "headline-md": ["Inter"], "body-lg": ["Inter"], "label-md": ["Inter"], "body-sm": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-tab-glow {
+            box-shadow: 0 0 15px rgba(0, 89, 187, 0.2);
+        }
+        .clock-gradient {
+            background: radial-gradient(circle at center, #f8f9ff 0%, #dce9ff 100%);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- Main Sidebar (Primary Navigation) -->
+<aside class="fixed left-0 top-0 h-screen w-[280px] bg-primary flex flex-col py-stack-lg px-stack-md shrink-0 z-50">
+<div class="mb-stack-lg px-4">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">Bytevon</h1>
+<p class="text-label-sm text-on-primary-container opacity-70">Enterprise Resource Planning</p>
+</div>
+<nav class="flex-1 space-y-1">
+<!-- Workforce is active as requested -->
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:bg-secondary-container hover:text-on-secondary-container transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:bg-secondary-container hover:text-on-secondary-container transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">domain</span>
+<span class="font-label-md text-label-md">Organization</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:bg-secondary-container hover:text-on-secondary-container transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="font-label-md text-label-md">People</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary text-on-secondary-container font-bold rounded-lg transition-transform active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md">Workforce</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:bg-secondary-container hover:text-on-secondary-container transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">fact_check</span>
+<span class="font-label-md text-label-md">Approvals</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:bg-secondary-container hover:text-on-secondary-container transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">contact_page</span>
+<span class="font-label-md text-label-md">CRM</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:bg-secondary-container hover:text-on-secondary-container transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">code</span>
+<span class="font-label-md text-label-md">Developer</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:bg-secondary-container hover:text-on-secondary-container transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Administration</span>
+</a>
+</nav>
+<div class="mt-auto border-t border-white/10 pt-stack-md space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:text-on-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-md text-label-md">Help Center</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-primary-container opacity-80 hover:text-on-secondary-container transition-colors" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">Log Out</span>
+</a>
+</div>
+</aside>
+<!-- Sub-Sidebar (Module Navigation) -->
+<aside class="fixed left-[280px] top-0 h-screen w-[240px] bg-surface-container-low border-r border-outline-variant py-stack-lg px-4 z-40">
+<div class="mb-stack-lg">
+<span class="text-label-sm font-bold uppercase tracking-wider text-on-surface-variant">Attendance</span>
+</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-md transition-colors" href="#">
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<!-- Mark Attendance is active -->
+<a class="flex items-center gap-3 px-3 py-2 bg-white text-secondary font-bold rounded-md shadow-sm border border-outline-variant/30" href="#">
+<span class="font-label-md text-label-md">Mark Attendance</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-md transition-colors" href="#">
+<span class="font-label-md text-label-md">Attendance Details</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-md transition-colors" href="#">
+<span class="font-label-md text-label-md">Attendance Calendar</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-on-surface-variant hover:bg-surface-container-high rounded-md transition-colors" href="#">
+<span class="font-label-md text-label-md">Attendance Corrections</span>
+</a>
+</nav>
+</aside>
+<!-- Main Canvas -->
+<main class="ml-[520px] min-h-screen">
+<!-- Top Nav Bar -->
+<header class="flex justify-between items-center w-full h-16 px-gutter bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-stack-md">
+<div class="relative group">
+<span class="absolute inset-y-0 left-0 flex items-center pl-3 text-on-surface-variant">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</span>
+<input class="bg-surface-container border border-outline-variant rounded-full pl-10 pr-4 py-1.5 text-body-sm w-64 focus:ring-2 focus:ring-secondary focus:outline-none transition-all" placeholder="Search records, people..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="bg-secondary text-on-secondary px-6 py-2 rounded-full font-label-md text-label-md hover:opacity-90 transition-opacity">Create New</button>
+<div class="flex items-center gap-4 text-on-surface-variant">
+<button class="hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="hover:text-secondary transition-colors">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest border border-outline-variant overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a senior enterprise administrator in a modern office environment. The lighting is soft and natural, emphasizing a high-end corporate aesthetic with neutral tones. The individual is wearing professional attire, and the background is a blurred high-tech workspace with clean glass surfaces and architectural lines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhCzpaI-PIBB9BsSwVOfVLKTLjOdV8ZnGYeR4cWmWLjYrg-f1akV94-EWwHl-CsuhFuP5VBGAoQtx7cMJQnTTlNh_d1JvNC0gtLeV4E6v4ieu6ReKHTi1fwAfCSkuXIaXBRs8TIc7GuvwCvZHJrqEHw2xGMcVqVAuk5NKRfMyTidtxb9Sc1Q3CcQrkPFUGJErdzmV5yyKy8xkEUVRU9cfH7WcXb7FXnDKQXUeaKyNHnbzh1-K5xXeXyQ">
+</div>
+</div>
+</div>
+</header>
+<!-- Content Area -->
+<div class="p-gutter max-w-container-max mx-auto space-y-stack-lg">
+<!-- Page Header -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Mark Attendance</h2>
+<p class="text-body-md text-on-surface-variant">Good morning, Alex. Securely log your daily check-in from your verified location.</p>
+</div>
+<div class="flex items-center gap-2 text-label-md font-bold text-secondary">
+<span class="material-symbols-outlined text-[18px]">calendar_month</span>
+<span>October 24, 2023</span>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Clock-In Card (Large) -->
+<div class="col-span-12 lg:col-span-7 bg-white rounded-xl border border-outline-variant shadow-sm p-stack-lg overflow-hidden relative">
+<div class="absolute top-0 right-0 p-stack-md">
+<div class="flex items-center gap-2 bg-success/10 text-emerald-700 px-3 py-1 rounded-full text-label-sm border border-emerald-100">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            Verified Location
+                        </div>
+</div>
+<div class="flex flex-col items-center justify-center py-stack-lg">
+<div class="clock-gradient w-48 h-48 rounded-full border-8 border-surface-container-high flex flex-col items-center justify-center mb-stack-md shadow-inner">
+<span class="font-display-lg text-display-lg text-secondary tracking-tighter" id="current-time">10:48</span>
+<span class="text-label-md text-on-surface-variant font-medium">AM</span>
+</div>
+<div class="flex gap-stack-md w-full max-w-md mt-stack-md">
+<button class="flex-1 bg-secondary text-on-secondary py-4 rounded-xl font-headline-md text-headline-md flex flex-col items-center justify-center gap-1 hover:scale-[1.02] transition-transform shadow-lg shadow-secondary/20">
+<span class="material-symbols-outlined text-[32px]" style="font-variation-settings: 'FILL' 1;">login</span>
+<span>Check In</span>
+</button>
+<button class="flex-1 border border-outline-variant text-on-surface-variant py-4 rounded-xl font-headline-md text-headline-md flex flex-col items-center justify-center gap-1 opacity-50 cursor-not-allowed">
+<span class="material-symbols-outlined text-[32px]">logout</span>
+<span>Check Out</span>
+</button>
+</div>
+</div>
+<div class="mt-stack-lg pt-stack-lg border-t border-outline-variant flex justify-around">
+<div class="text-center">
+<p class="text-label-sm text-on-surface-variant uppercase">Shift Starts</p>
+<p class="text-title-lg font-bold">09:00 AM</p>
+</div>
+<div class="text-center">
+<p class="text-label-sm text-on-surface-variant uppercase">Shift Ends</p>
+<p class="text-title-lg font-bold">06:00 PM</p>
+</div>
+<div class="text-center">
+<p class="text-label-sm text-on-surface-variant uppercase">Required Hours</p>
+<p class="text-title-lg font-bold">08:00</p>
+</div>
+</div>
+</div>
+<!-- Status & Location Card -->
+<div class="col-span-12 lg:col-span-5 space-y-gutter">
+<!-- Status Indicators -->
+<div class="bg-white rounded-xl border border-outline-variant shadow-sm p-gutter">
+<h3 class="text-label-sm font-bold text-on-surface-variant uppercase mb-4">Current Status</h3>
+<div class="grid grid-cols-3 gap-3">
+<button class="flex flex-col items-center justify-center p-4 border-2 border-secondary bg-secondary-fixed/30 rounded-lg text-secondary">
+<span class="material-symbols-outlined mb-2" style="font-variation-settings: 'FILL' 1;">business_center</span>
+<span class="text-label-sm font-bold">Present</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 border-2 border-transparent bg-surface-container rounded-lg text-on-surface-variant hover:border-outline-variant transition-all">
+<span class="material-symbols-outlined mb-2">home_work</span>
+<span class="text-label-sm font-bold">WFH</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 border-2 border-transparent bg-surface-container rounded-lg text-on-surface-variant hover:border-outline-variant transition-all">
+<span class="material-symbols-outlined mb-2">person_off</span>
+<span class="text-label-sm font-bold">Leave</span>
+</button>
+</div>
+</div>
+<!-- Map/Location Tracking -->
+<div class="bg-white rounded-xl border border-outline-variant shadow-sm overflow-hidden h-[240px] relative group">
+<div class="absolute inset-0 bg-surface-dim">
+<img class="w-full h-full object-cover" data-location="London, UK" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCKVvr6rlLuLggVF0AtJI-ILRjG_pFngtJXIgcLIvnNDNXs5KESba8qRu7BilRZxOawMWi_7ueZqiQxBbesBJ_VuYnibfBUP4MiR3fKTP4SScXgrS_0Ogy7NmwhZdjwHZBcc8rCtxXxc-6_mYU0r3UMMAptqFrr_TyNpYc84xzbOQgK5WcrKiYoiN3bNnSkhcecBRnErFzlkkklmdaPPYL3gShNRB1DrtWLKt1AmFBG9Qxo7f_qPFt4rA">
+</div>
+<div class="absolute inset-x-0 bottom-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
+<div class="flex items-center gap-2 text-white">
+<span class="material-symbols-outlined text-[18px]">location_on</span>
+<span class="text-body-sm">Tech City Headquarters, Tower 1</span>
+</div>
+<p class="text-[10px] text-white/60 ml-6 uppercase">Latitude: 51.5074 | Longitude: 0.1278</p>
+</div>
+</div>
+</div>
+<!-- Visual Log (Full Width) -->
+<div class="col-span-12 bg-white rounded-xl border border-outline-variant shadow-sm p-gutter">
+<div class="flex justify-between items-center mb-stack-lg">
+<h3 class="font-title-lg text-title-lg text-on-surface">Working Hours Log</h3>
+<div class="text-label-md text-on-surface-variant">Total: <span class="font-bold text-secondary">0h 12m</span> logged today</div>
+</div>
+<div class="relative h-16 bg-surface-container rounded-full overflow-hidden mb-6 flex">
+<!-- Visual representation of hours -->
+<div class="w-[37%] bg-transparent border-r-2 border-white flex items-center justify-center text-[10px] text-on-surface-variant/40">00:00 - 09:00</div>
+<div class="w-[5%] bg-secondary-container/30 border-r-2 border-white flex items-center justify-center text-[10px] text-on-secondary-fixed-variant font-bold">09:00 - 09:12</div>
+<div class="flex-1 bg-surface-container-highest/20"></div>
+<!-- Current Time Marker -->
+<div class="absolute top-0 bottom-0 left-[42%] w-1 bg-secondary shadow-lg z-10">
+<div class="absolute -top-1 -left-1 w-3 h-3 bg-secondary rounded-full"></div>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="text-label-sm text-on-surface-variant border-b border-outline-variant uppercase">
+<tr>
+<th class="pb-3 font-bold">Activity</th>
+<th class="pb-3 font-bold">Time</th>
+<th class="pb-3 font-bold">Duration</th>
+<th class="pb-3 font-bold">Status</th>
+<th class="pb-3 font-bold">Location</th>
+</tr>
+</thead>
+<tbody class="text-body-sm divide-y divide-outline-variant/30">
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-4 font-medium">Punch In</td>
+<td class="py-4">09:00:14 AM</td>
+<td class="py-4">—</td>
+<td class="py-4"><span class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-md text-[10px] font-bold uppercase">On Time</span></td>
+<td class="py-4 text-on-surface-variant">Office WiFi (ID: HQ-GUEST)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Manual Entry Form -->
+<div class="col-span-12 lg:col-span-8 bg-white rounded-xl border border-outline-variant shadow-sm p-gutter">
+<div class="flex items-center gap-2 mb-stack-md">
+<span class="material-symbols-outlined text-secondary">edit_note</span>
+<h3 class="font-title-lg text-title-lg text-on-surface">Manual Attendance Entry</h3>
+</div>
+<p class="text-body-sm text-on-surface-variant mb-gutter">Permitted for off-site client meetings or connectivity issues. Requires HR approval.</p>
+<form class="grid grid-cols-1 md:grid-cols-2 gap-stack-md">
+<div class="space-y-1">
+<label class="block text-label-md font-medium text-on-surface-variant">Date</label>
+<input class="w-full bg-surface border border-outline rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary outline-none" type="date">
+</div>
+<div class="space-y-1">
+<label class="block text-label-md font-medium text-on-surface-variant">Reason Category</label>
+<select class="w-full bg-surface border border-outline rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary outline-none">
+<option>Client Meeting</option>
+<option>System Issue</option>
+<option>Forgot to Log</option>
+<option>Travel</option>
+</select>
+</div>
+<div class="space-y-1">
+<label class="block text-label-md font-medium text-on-surface-variant">Time In</label>
+<input class="w-full bg-surface border border-outline rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary outline-none" type="time">
+</div>
+<div class="space-y-1">
+<label class="block text-label-md font-medium text-on-surface-variant">Time Out</label>
+<input class="w-full bg-surface border border-outline rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary outline-none" type="time">
+</div>
+<div class="md:col-span-2 space-y-1">
+<label class="block text-label-md font-medium text-on-surface-variant">Justification Note</label>
+<textarea class="w-full bg-surface border border-outline rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary outline-none" placeholder="Briefly describe the reason for manual entry..." rows="3"></textarea>
+</div>
+<div class="md:col-span-2 flex justify-end gap-3 mt-4">
+<button class="px-6 py-2 border border-outline text-on-surface-variant rounded-lg font-label-md hover:bg-surface-container transition-colors" type="button">Discard</button>
+<button class="px-8 py-2 bg-primary text-on-primary rounded-lg font-label-md hover:opacity-90 transition-opacity" type="submit">Request Approval</button>
+</div>
+</form>
+</div>
+<!-- Recent Activity/Guideline -->
+<div class="col-span-12 lg:col-span-4 bg-primary-container text-on-primary-fixed rounded-xl p-gutter flex flex-col justify-between">
+<div>
+<div class="flex items-center gap-2 mb-stack-md">
+<span class="material-symbols-outlined text-secondary-fixed">info</span>
+<h4 class="font-title-lg text-title-lg">Policy Highlights</h4>
+</div>
+<ul class="space-y-4">
+<li class="flex gap-3">
+<span class="material-symbols-outlined text-secondary-fixed shrink-0">check_circle</span>
+<p class="text-body-sm opacity-90">Grace period for 'Late' marking is 15 minutes past the shift start.</p>
+</li>
+<li class="flex gap-3">
+<span class="material-symbols-outlined text-secondary-fixed shrink-0">check_circle</span>
+<p class="text-body-sm opacity-90">Location must be within 500m of the office perimeter for verified punch-in.</p>
+</li>
+<li class="flex gap-3">
+<span class="material-symbols-outlined text-secondary-fixed shrink-0">check_circle</span>
+<p class="text-body-sm opacity-90">Attendance corrections must be submitted within 48 hours of the missing log.</p>
+</li>
+</ul>
+</div>
+<div class="mt-stack-lg p-4 bg-white/5 rounded-lg border border-white/10">
+<p class="text-label-sm font-bold mb-2 uppercase text-on-primary-container">Approval Status</p>
+<div class="flex justify-between items-center">
+<span class="text-body-sm">Pending Corrections</span>
+<span class="px-2 py-0.5 bg-secondary-fixed text-on-secondary-fixed rounded text-[10px] font-bold">2 REQUIRES ACTION</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button - Only for Primary Content screens -->
+<button class="fixed right-8 bottom-8 w-14 h-14 bg-secondary text-on-secondary rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all group z-50">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">add</span>
+<div class="absolute right-16 bg-inverse-surface text-inverse-on-surface px-4 py-2 rounded-lg text-label-md font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 transition-all">
+            Quick Report
+        </div>
+</button>
+<script>
+        // Update clock in real-time
+        function updateClock() {
+            const clockElement = document.getElementById('current-time');
+            const now = new Date();
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            const strHours = String(hours).padStart(2, '0');
+            
+            clockElement.textContent = `${strHours}:${minutes}`;
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Simple tab interaction
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', (e) => {
+                if (link.closest('aside')) {
+                    // Simulation - actual navigation is handled by server/router
+                    console.log('Navigating to:', link.textContent.trim());
+                }
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en" style=""><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Leave Balance | Bytevon Enterprise ERP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-surface": "#0b1c30", background: "#f8f9ff", "inverse-on-surface": "#eaf1ff", "primary-fixed-dim": "#afc8f0", "surface-variant": "#d3e4fe", "surface-dim": "#cbdbf5", "tertiary-fixed-dim": "#c4c7c9", "secondary-fixed-dim": "#adc7ff", "on-secondary-fixed-variant": "#004493", "on-secondary-container": "#fefcff", "surface-bright": "#f8f9ff", primary: "#000613", "inverse-primary": "#afc8f0", "on-tertiary-container": "#848789", "on-secondary-fixed": "#001a41", error: "#ba1a1a", "surface-container": "#e5eeff", "on-secondary": "#ffffff", "primary-fixed": "#d4e3ff", "primary-container": "#001f3f", "on-primary-fixed": "#001c3a", "on-error": "#ffffff", "surface-tint": "#476083", surface: "#f8f9ff", "on-error-container": "#93000a", "on-tertiary-fixed-variant": "#444749", secondary: "#0059bb", "tertiary-fixed": "#e0e3e5", "on-tertiary": "#ffffff", "on-tertiary-fixed": "#191c1e", "error-container": "#ffdad6", "surface-container-lowest": "#ffffff", outline: "#74777f", "secondary-fixed": "#d8e2ff", "outline-variant": "#c4c6cf", "surface-container-low": "#eff4ff", "on-surface-variant": "#43474e", tertiary: "#040607", "on-primary-fixed-variant": "#2f486a", "surface-container-high": "#dce9ff", "secondary-container": "#0070ea", "on-primary-container": "#6f88ad", "tertiary-container": "#1c1f21", "on-primary": "#ffffff", "inverse-surface": "#213145", "on-background": "#0b1c30", "surface-container-highest": "#d3e4fe"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {unit: "4px", "stack-sm": "8px", "container-max": "1440px", "stack-md": "16px", "stack-lg": "32px", "margin-mobile": "16px", gutter: "24px", "margin-desktop": "40px"}, fontFamily: {"label-md": ["Inter"], "body-sm": ["Inter"], "label-sm": ["Inter"], "title-lg": ["Inter"], "headline-md": ["Inter"], "body-md": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-lg": ["Inter"], "body-lg": ["Inter"], "display-lg": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}]}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-transition { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            border: 1px solid #E2E8F0;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface overflow-hidden">
+<!-- Global Layout Wrapper -->
+<div class="flex h-screen w-full overflow-hidden">
+<!-- PRIMARY SIDEBAR (Bytevon Branding) -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary dark:bg-primary-container flex flex-col py-stack-lg shadow-md z-50">
+<div class="px-6 mb-10 flex items-center gap-3">
+<div class="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center" style="transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); width: 0%;">
+<span class="material-symbols-outlined text-on-secondary" style='font-variation-settings: "FILL" 1;'>business_center</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary dark:text-inverse-primary leading-tight">Bytevon</h1>
+<p class="text-[10px] uppercase tracking-widest text-on-primary/50">Enterprise ERP</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-4 py-3 px-6 text-on-primary/70 hover:text-on-primary hover:bg-on-primary/10 mx-2 transition-colors rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+                </a>
+<a class="flex items-center gap-4 py-3 px-6 text-on-primary/70 hover:text-on-primary hover:bg-on-primary/10 mx-2 transition-colors rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">groups</span> Employees
+                </a>
+<!-- Active Item for Primary Nav based on Page Context -->
+<a class="flex items-center gap-4 py-3 px-6 bg-secondary-container text-on-secondary-container rounded-lg mx-2 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" style='font-variation-settings: "FILL" 1;'>business_center</span>Leave<br/></a>
+<a class="flex items-center gap-4 py-3 px-6 text-on-primary/70 hover:text-on-primary hover:bg-on-primary/10 mx-2 transition-colors rounded-lg font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">settings</span> Administration
+                </a>
+</nav>
+<div class="px-6 py-4 border-t border-on-primary/10">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-container-high overflow-hidden border-2 border-secondary/30">
+<img class="w-full h-full object-cover" data-alt="Professional headshot of a female executive with a confident expression, set against a clean, softly lit corporate office background with a professional navy blue and white aesthetic, high-end photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBi3_ss3BO4Yjf91Gsdtz_zQsRSvDMiE5HDecV-0FqnSKshIeA_GYy8RvTGnHd5GUwPUSyiQgoyw_f8og1vFwHo3dfDMLC9yG-3JMUy5GPLwmFWOL6j8iKIDCE85SogIGpQFEQaOSzWSp_z3d1B--nAh47KufeubqBIwBw_UaNMNPMMytLplAuXlMSF9ky5T14KXMZQo0qMQnk7KDRYgxmUIocXT2vCOx8jW1bULcKyk8rXrKM02CW0Gg"/>
+</div>
+<div>
+<p class="text-on-primary font-label-md text-label-md">Sarah Jenkins</p>
+<p class="text-on-primary/60 text-[12px]">HR Director</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- SECONDARY SIDEBAR (Module Specific: Leave) -->
+<aside class="fixed left-[280px] top-16 h-[calc(100%-64px)] w-64 bg-surface-container-low dark:bg-surface-container flex flex-col pt-stack-md border-r border-outline-variant/20 z-40">
+<div class="px-6 py-4">
+<h2 class="font-title-lg text-title-lg font-semibold text-on-surface">Leave Module</h2>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 py-2 px-6 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all duration-200 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">calendar_month</span> Leave Calendar
+                </a>
+<!-- Active Item for Secondary Nav -->
+<a class="flex items-center gap-3 py-3 px-6 text-secondary font-semibold bg-surface-container-high rounded-r-full mr-4 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined" style='font-variation-settings: "FILL" 1;'>account_balance_wallet</span> Leave Balance
+                </a>
+<a class="flex items-center gap-3 py-2 px-6 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all duration-200 font-label-md text-label-md" href="#">
+<span class="material-symbols-outlined">history</span> Leave History
+                </a>
+</nav>
+</aside>
+<!-- TOP NAVIGATION BAR -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface-bright dark:bg-surface-dim flex items-center justify-between px-margin-desktop z-40 border-b border-outline-variant/30">
+<div class="flex items-center gap-6">
+<div class="relative w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-label-md focus:outline-none focus:ring-2 focus:ring-secondary/50 focus:border-secondary transition-all" placeholder="Search employees or reports..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant/30 mx-2"></div>
+<button class="flex items-center gap-2 pl-2 pr-1 py-1 rounded-full hover:bg-surface-container-low transition-colors">
+<span class="font-label-md text-label-md font-semibold">Leave Balance</span>
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- MAIN CONTENT AREA -->
+<main class="ml-[544px] mt-16 flex-1 overflow-y-auto bg-background p-stack-lg">
+<!-- Executive Summary (Bento Style Cards) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-stack-lg">
+<!-- Total Entitlement -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/30 shadow-sm transition-transform hover:-translate-y-1">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-primary/5 rounded-lg">
+<span class="material-symbols-outlined text-primary" style='font-variation-settings: "FILL" 1;'>assignment</span>
+</div>
+<span class="text-xs font-bold text-secondary bg-secondary-container/10 px-2 py-1 rounded">ANNUAL</span>
+</div>
+<p class="text-on-surface-variant font-label-md text-label-md mb-1">Total Entitlement</p>
+<h3 class="text-display-lg font-display-lg text-on-surface leading-none">28 <span class="text-headline-md font-headline-md text-on-surface-variant">days</span></h3>
+<p class="text-[12px] text-outline mt-3 flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">info</span> Period: Jan - Dec 2024
+                    </p>
+</div>
+<!-- Used Leave -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/30 shadow-sm transition-transform hover:-translate-y-1">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-error/5 rounded-lg">
+<span class="material-symbols-outlined text-error" style='font-variation-settings: "FILL" 1;'>event_busy</span>
+</div>
+<span class="text-xs font-bold text-error bg-error/10 px-2 py-1 rounded">USED</span>
+</div>
+<p class="text-on-surface-variant font-label-md text-label-md mb-1">Used Leave</p>
+<h3 class="text-display-lg font-display-lg text-on-surface leading-none">12.5 <span class="text-headline-md font-headline-md text-on-surface-variant">days</span></h3>
+<div class="w-full bg-surface-container-high h-2 rounded-full mt-4 overflow-hidden">
+<div class="bg-error h-full rounded-full" style="width: 0%; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+</div>
+</div>
+<!-- Pending Leave -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/30 shadow-sm transition-transform hover:-translate-y-1">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-secondary/5 rounded-lg">
+<span class="material-symbols-outlined text-secondary" style='font-variation-settings: "FILL" 1;'>pending_actions</span>
+</div>
+<span class="text-xs font-bold text-on-surface-variant bg-surface-container-high px-2 py-1 rounded">PENDING</span>
+</div>
+<p class="text-on-surface-variant font-label-md text-label-md mb-1">Pending Approval</p>
+<h3 class="text-display-lg font-display-lg text-on-surface leading-none">3 <span class="text-headline-md font-headline-md text-on-surface-variant">days</span></h3>
+<p class="text-[12px] text-outline mt-3">2 requests awaiting manager</p>
+</div>
+<!-- Remaining Balance -->
+<div class="bg-secondary p-6 rounded-xl border border-secondary shadow-lg transition-transform hover:-translate-y-1 text-on-secondary" style="transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); width: 0%;">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-white/10 rounded-lg">
+<span class="material-symbols-outlined text-on-secondary" style='font-variation-settings: "FILL" 1;'>account_balance_wallet</span>
+</div>
+<span class="text-xs font-bold text-on-secondary bg-white/20 px-2 py-1 rounded">AVAILABLE</span>
+</div>
+<p class="text-on-secondary/80 font-label-md text-label-md mb-1">Remaining Balance</p>
+<h3 class="text-display-lg font-display-lg text-on-secondary leading-none">12.5 <span class="text-headline-md font-headline-md text-on-secondary/70">days</span></h3>
+<p class="text-[12px] text-on-secondary/60 mt-3">Expires in 184 days</p>
+</div>
+</div>
+<!-- Detailed Breakdown Table -->
+<section class="mb-stack-lg">
+<div class="flex items-center justify-between mb-stack-md">
+<h2 class="font-headline-md text-headline-md text-on-surface">Leave Type Breakdown</h2>
+<div class="flex gap-2">
+<button class="px-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-label-md font-semibold hover:bg-surface-container-low transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">download</span> Export Report
+                        </button>
+<button class="px-4 py-2 bg-primary text-on-primary rounded-lg text-label-md font-semibold hover:bg-primary-container transition-colors">Request Leave</button>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant/20">
+<th class="px-6 py-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Leave Type</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Allocated</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Accrued</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Used</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Current Balance</th>
+<th class="px-6 py-4 font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider w-1/4">Utilization</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/20">
+<!-- Annual Leave -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-secondary" style="transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); width: 0%;"></div>
+<span class="font-semibold text-on-surface font-label-md text-label-md">Annual Leave</span>
+</div>
+</td>
+<td class="px-6 py-5 text-on-surface font-label-md text-label-md">25.0 days</td>
+<td class="px-6 py-5 text-on-surface font-label-md text-label-md">18.5 days</td>
+<td class="px-6 py-5 text-error font-label-md text-label-md">10.0 days</td>
+<td class="px-6 py-5 text-on-surface font-bold font-label-md text-label-md">8.5 days</td>
+<td class="px-6 py-5">
+<div class="flex flex-col gap-1">
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-secondary h-full" style="width: 0%; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+</div>
+<span class="text-[10px] text-outline-variant uppercase">54% utilized</span>
+</div>
+</td>
+</tr>
+<!-- Sick Leave -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-error" style="transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); width: 0%;"></div>
+<span class="font-semibold text-on-surface font-label-md text-label-md">Sick Leave</span>
+</div>
+</td>
+<td class="px-6 py-5 text-on-surface font-label-md text-label-md">10.0 days</td>
+<td class="px-6 py-5 text-on-surface font-label-md text-label-md">10.0 days</td>
+<td class="px-6 py-5 text-error font-label-md text-label-md">2.5 days</td>
+<td class="px-6 py-5 text-on-surface font-bold font-label-md text-label-md">7.5 days</td>
+<td class="px-6 py-5">
+<div class="flex flex-col gap-1">
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-error h-full" style="width: 0%; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+</div>
+<span class="text-[10px] text-outline-variant uppercase">25% utilized</span>
+</div>
+</td>
+</tr>
+<!-- Personal Leave -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-6 py-5">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-on-tertiary-container" style="transition: width 1s cubic-bezier(0.4, 0, 0.2, 1); width: 0%;"></div>
+<span class="font-semibold text-on-surface font-label-md text-label-md">Personal Leave</span>
+</div>
+</td>
+<td class="px-6 py-5 text-on-surface font-label-md text-label-md">3.0 days</td>
+<td class="px-6 py-5 text-on-surface font-label-md text-label-md">3.0 days</td>
+<td class="px-6 py-5 text-error font-label-md text-label-md">0.0 days</td>
+<td class="px-6 py-5 text-on-surface font-bold font-label-md text-label-md">3.0 days</td>
+<td class="px-6 py-5">
+<div class="flex flex-col gap-1">
+<div class="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+<div class="bg-on-tertiary-container h-full" style="width: 0%; transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+</div>
+<span class="text-[10px] text-outline-variant uppercase">0% utilized</span>
+</div>
+</td>
+</tr>
+<!-- Compassionate Leave -->
+<tr class="hover:bg-surface-container-lowest transition-colors">
+<td class="px-6 py-5 border-b-0">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-primary-fixed-dim"></div>
+<span class="font-semibold text-on-surface font-label-md text-label-md">Compassionate</span>
+</div>
+</td>
+<td class="px-6 py-5 text-on-surface font-label-md text-label-md">Unlimited</td>
+<td class="px-6 py-5 text-on-surface font-label-md text-label-md">N/A</td>
+<td class="px-6 py-5 text-error font-label-md text-label-md">0.0 days</td>
+<td class="px-6 py-5 text-on-surface font-bold font-label-md text-label-md">-</td>
+<td class="px-6 py-5">
+<span class="text-[12px] text-outline-variant">Manager Discretion</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Accrual History & Rules (Asymmetric Section) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Accrual History (Table) -->
+<div class="lg:col-span-2">
+<h3 class="font-title-lg text-title-lg text-on-surface mb-stack-md">Recent Accrual History</h3>
+<div class="bg-surface-container-lowest border border-outline-variant/30 rounded-xl overflow-hidden shadow-sm">
+<div class="p-4 bg-surface-container-low border-b border-outline-variant/20 flex justify-between items-center">
+<span class="text-label-sm font-label-sm text-on-surface-variant">Showing last 4 cycles</span>
+<button class="text-secondary font-semibold text-label-sm hover:underline">View All</button>
+</div>
+<table class="w-full text-left">
+<tbody class="divide-y divide-outline-variant/10">
+<tr class="hover:bg-surface-container-lowest/50">
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface">May 31, 2024</td>
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface">Monthly Accrual - Annual</td>
+<td class="px-6 py-4 font-label-md text-label-md text-secondary font-bold text-right">+2.08 days</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest/50">
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface">May 31, 2024</td>
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface">Monthly Accrual - Sick</td>
+<td class="px-6 py-4 font-label-md text-label-md text-secondary font-bold text-right">+0.83 days</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest/50">
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface">May 15, 2024</td>
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface">LSL Adjustment</td>
+<td class="px-6 py-4 font-label-md text-label-md text-secondary font-bold text-right">+1.50 days</td>
+</tr>
+<tr class="hover:bg-surface-container-lowest/50">
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface">Apr 30, 2024</td>
+<td class="px-6 py-4 font-label-md text-label-md text-on-surface">Monthly Accrual - Annual</td>
+<td class="px-6 py-4 font-label-md text-label-md text-secondary font-bold text-right">+2.08 days</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Carry-forward Rules (Info Panel) -->
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface mb-stack-md">Policies &amp; Rules</h3>
+<div class="bg-surface-container border border-outline-variant/30 rounded-xl p-6 relative overflow-hidden">
+<!-- Subtle Background Pattern -->
+<div class="absolute -right-4 -bottom-4 opacity-5 pointer-events-none">
+<span class="material-symbols-outlined text-9xl">gavel</span>
+</div>
+<div class="space-y-4">
+<div class="flex gap-4">
+<div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary text-sm">sync</span>
+</div>
+<div>
+<p class="font-semibold text-on-surface font-label-md text-label-md">Carry-forward Rule</p>
+<p class="text-[12px] text-on-surface-variant leading-relaxed">Maximum of 10 days of annual leave can be carried over to the next financial year.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary text-sm">payments</span>
+</div>
+<div>
+<p class="font-semibold text-on-surface font-label-md text-label-md">Cashing Out</p>
+<p class="text-[12px] text-on-surface-variant leading-relaxed">Eligible for cashing out up to 5 days once per year, provided 15 days balance remains.</p>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary text-sm">timer</span>
+</div>
+<div>
+<p class="font-semibold text-on-surface font-label-md text-label-md">Notice Period</p>
+<p class="text-[12px] text-on-surface-variant leading-relaxed">Minimum 4 weeks notice required for leave requests longer than 5 consecutive days.</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-6 py-2 border border-secondary text-secondary rounded-lg text-label-sm font-bold hover:bg-secondary hover:text-on-secondary transition-all">
+                            Download Full Policy PDF
+                        </button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Animate progress bars on load
+            const bars = document.querySelectorAll('.bg-secondary, .bg-error, .bg-on-tertiary-container');
+            bars.forEach(bar => {
+                const finalWidth = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.transition = 'width 1s cubic-bezier(0.4, 0, 0.2, 1)';
+                    bar.style.width = finalWidth;
+                }, 100);
+            });
+
+            // Tab highlighting logic (already handled by classes in HTML)
+        });
+    </script>
+</body></html>

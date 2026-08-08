@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add New Employee | Bytevon Enterprise Suite</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-container": "#e5eeff", surface: "#f8f9ff", "on-surface-variant": "#43474e", "error-container": "#ffdad6", "outline-variant": "#c4c6cf", background: "#f8f9ff", "on-error": "#ffffff", "on-primary-fixed-variant": "#2f486a", "on-secondary": "#ffffff", "secondary-fixed": "#d8e2ff", "on-tertiary-fixed": "#191c1e", secondary: "#0059bb", "primary-fixed-dim": "#afc8f0", "on-tertiary-container": "#848789", "inverse-primary": "#afc8f0", "tertiary-container": "#1c1f21", "on-background": "#0b1c30", outline: "#74777f", "surface-bright": "#f8f9ff", primary: "#000613", "inverse-on-surface": "#eaf1ff", "surface-dim": "#cbdbf5", "tertiary-fixed-dim": "#c4c7c9", "on-surface": "#0b1c30", "surface-container-high": "#dce9ff", "primary-container": "#001f3f", "on-tertiary-fixed-variant": "#444749", "on-error-container": "#93000a", "secondary-fixed-dim": "#adc7ff", "surface-container-lowest": "#ffffff", "on-secondary-fixed": "#001a41", "on-primary": "#ffffff", "inverse-surface": "#213145", error: "#ba1a1a", "surface-container-highest": "#d3e4fe", "on-tertiary": "#ffffff", "secondary-container": "#0070ea", "on-primary-fixed": "#001c3a", tertiary: "#040607", "primary-fixed": "#d4e3ff", "surface-tint": "#476083", "on-primary-container": "#6f88ad", "tertiary-fixed": "#e0e3e5", "surface-variant": "#d3e4fe", "surface-container-low": "#eff4ff", "on-secondary-container": "#fefcff", "on-secondary-fixed-variant": "#004493"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-md": "16px", "stack-lg": "32px", "container-max": "1440px", unit: "4px", "margin-mobile": "16px", gutter: "24px", "margin-desktop": "40px", "stack-sm": "8px"}, fontFamily: {"headline-lg": ["Inter"], "headline-md": ["Inter"], "body-md": ["Inter"], "label-md": ["Inter"], "title-lg": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen">
+<!-- SideNavBar (Fixed Anchor) -->
+<aside class="flex flex-col p-stack-md w-[280px] h-screen fixed left-0 top-0 z-50 bg-primary dark:bg-primary-container shadow-md">
+<div class="mb-stack-lg px-2"><div class="px-6 mb-stack-lg"><div class="flex items-center gap-3"><img alt="Bytevon Logo" class="h-10 w-auto" src="https://lh3.googleusercontent.com/aida/AP1WRLsbNGS7u70Gj-RkBNEnRB-zrpfGaryvNujizMk2OWo2HPenx7iLKvLr_4bjz4TGo9JltCy0e-BAZ1QQEG5IJ__mz6VX94kYE-iiteunw2iL0Gk6vWQzAHsJmEgphHKTFg36bdEDX5Syl75_kgTH97RsCerqpze6ovDLQv9MxOyXgG1_byjTplDtadspy99upN0y5qSwBRPpaYlzUituC3waMazdBeppXY5V3K9eIbj4tpZQSZ2k1_NZwj_S"/><div class="flex flex-col"><span class="font-headline-md text-headline-md font-bold text-on-primary">Bytevon</span><span class="font-label-sm text-label-sm text-on-primary-container tracking-wider">Enterprise Suite</span></div></div></div></div>
+<nav class="flex-1 space-y-1"><a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#"><span class="material-symbols-outlined text-[20px]">dashboard</span><span class="font-label-md text-label-md">Dashboard</span></a><a class="bg-secondary-container text-on-secondary-container rounded-lg mx-2 flex items-center px-4 py-3 gap-3 group transition-colors" href="#"><span class="material-symbols-outlined text-[20px]">badge</span><span class="font-label-md text-label-md">Employees</span></a><a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#"><span class="material-symbols-outlined text-[20px]">group</span><span class="font-label-md text-label-md">CRM</span></a><a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#"><span class="material-symbols-outlined text-[20px]">settings_applications</span><span class="font-label-md text-label-md">ERP</span></a><a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#"><span class="material-symbols-outlined text-[20px]">bar_chart</span><span class="font-label-md text-label-md">Reports</span></a><a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 hover:bg-primary-fixed-variant/10 rounded-lg mx-2 transition-colors" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span class="font-label-md text-label-md">Settings</span></a></nav>
+<div class="mt-auto px-4 py-4"><button class="w-full bg-secondary text-on-secondary py-3 px-4 rounded-lg flex items-center justify-center gap-2 font-label-md hover:bg-opacity-90 active:scale-95 transition-all"><span class="material-symbols-outlined">add</span>Quick Create</button><div class="mt-4 pt-4 border-t border-on-primary-container/20"><a class="text-on-primary-container hover:text-on-primary px-4 py-3 flex items-center gap-3 transition-colors" href="#"><span class="material-symbols-outlined text-[20px]">help_outline</span><span class="font-label-md text-label-md">Help Center</span></a></div></div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] min-h-screen flex flex-col max-w-container-max mx-auto w-[calc(100%-280px)]">
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] bg-surface dark:bg-surface-container-low h-16 px-margin-desktop flex justify-between items-center z-40 border-b border-outline-variant max-w-[calc(1440px-280px)] mx-auto left-[280px]"><div class="flex items-center gap-6"><nav class="flex items-center text-on-surface-variant font-body-md text-body-md gap-2"><span class="hover:text-secondary cursor-pointer">Main</span><span class="material-symbols-outlined text-sm">chevron_right</span><span class="hover:text-secondary cursor-pointer">Employees</span><span class="material-symbols-outlined text-sm">chevron_right</span><span class="text-secondary font-semibold">Add New Employee</span></nav><div class="relative w-80"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span><input class="w-full bg-surface-container-highest/30 border border-outline-variant rounded-full py-2 pl-10 pr-4 focus:outline-none focus:border-secondary transition-all font-body-sm text-body-sm" placeholder="Search enterprise..." type="text"/></div></div><div class="flex items-center gap-6"><button class="relative p-2 text-on-surface-variant hover:text-secondary transition-colors cursor-pointer active:scale-95"><span class="material-symbols-outlined">notifications</span><span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span></button><div class="flex items-center gap-3 cursor-pointer group"><div class="text-right"><p class="font-label-md text-label-md text-on-surface">Alex Rivera</p><p class="font-label-sm text-label-sm text-on-surface-variant">HR Director</p></div><img class="w-10 h-10 rounded-full border border-outline-variant object-cover group-hover:border-secondary transition-colors" data-alt="A professional studio portrait of a high-level executive..." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfCAzqEDn2ae4gHI_PfH2wcVtM_lmNe7Hg9k9twuJKUTtYF6SHoOL5RXF5aeCY74evFfGNW9RCNWE0xrHZeiQW8DPkru22WKwEweyDelvAO4_QtKaQJpqRroHohN3zxej3Z_2UwZltcRCGeNIsmZrDbJFbRw7gMlXtqapnkZtU5pxzrIib_2_iIhNdouYVbQlpXoM6R2NeIC_jDyUVyDibXlQlzDCp_3-rBcsNY2WiQGFQzRBzxOt0KA"/></div></div></header>
+<!-- Form Body -->
+<div class="flex-1 overflow-y-auto p-margin-desktop custom-scrollbar pb-32">
+<div class="max-w-5xl mx-auto">
+<form class="space-y-stack-lg">
+<!-- Profile Photo Upload -->
+<section class="bg-surface-container-lowest p-stack-lg rounded-xl border border-outline-variant shadow-sm flex flex-col md:flex-row items-center gap-8">
+<div class="relative group">
+<div class="w-32 h-32 rounded-xl bg-surface-container-high border-2 border-dashed border-outline flex flex-center items-center justify-center overflow-hidden transition-all group-hover:border-secondary">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover:text-secondary">add_a_photo</span>
+</div>
+<button class="absolute -bottom-2 -right-2 bg-secondary text-on-secondary p-2 rounded-lg shadow-md hover:scale-110 transition-transform" type="button">
+<span class="material-symbols-outlined text-sm">edit</span>
+</button>
+</div>
+<div class="flex-1 space-y-2 text-center md:text-left">
+<h3 class="font-title-lg text-title-lg text-primary">Employee Profile Photo</h3>
+<p class="text-body-sm text-on-surface-variant">Upload a high-resolution professional headshot. JPEG or PNG, max 5MB. Recommended dimensions: 400x400px.</p>
+<div class="flex gap-3 justify-center md:justify-start pt-2">
+<button class="px-4 py-2 text-label-md font-label-md text-secondary border border-secondary rounded-lg hover:bg-secondary/5 transition-all" type="button">Upload New</button>
+<button class="px-4 py-2 text-label-md font-label-md text-outline hover:text-error transition-all" type="button">Remove</button>
+</div>
+</div>
+</section>
+<!-- Personal Information -->
+<section class="bg-surface-container-lowest p-stack-lg rounded-xl border border-outline-variant shadow-sm">
+<div class="flex items-center gap-2 mb-stack-md text-secondary">
+<span class="material-symbols-outlined">person</span>
+<h3 class="font-title-lg text-title-lg font-bold text-primary">Personal Information</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">First Name <span class="text-error">*</span></label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" placeholder="e.g. Jonathan" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Last Name <span class="text-error">*</span></label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" placeholder="e.g. Wick" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Date of Birth <span class="text-error">*</span></label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" type="date"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Gender</label>
+<select class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4 appearance-none">
+<option>Select Gender</option>
+<option>Male</option>
+<option>Female</option>
+<option>Non-binary</option>
+<option>Prefer not to say</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Nationality</label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" placeholder="e.g. British" type="text"/>
+</div>
+</div>
+</section>
+<!-- Employment Information -->
+<section class="bg-surface-container-lowest p-stack-lg rounded-xl border border-outline-variant shadow-sm">
+<div class="flex items-center gap-2 mb-stack-md text-secondary">
+<span class="material-symbols-outlined">work</span>
+<h3 class="font-title-lg text-title-lg font-bold text-primary">Employment Information</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Employee ID <span class="text-error">*</span></label>
+<div class="relative">
+<input class="w-full rounded-lg border-outline-variant bg-surface-container text-on-surface-variant text-body-md py-3 px-4 cursor-not-allowed" disabled="" type="text" value="BTVN-49201"/>
+<span class="absolute right-4 top-3 text-xs font-semibold text-outline">AUTO-GEN</span>
+</div>
+<p class="text-xs text-on-surface-variant/70 italic">Automatically generated based on payroll sequence.</p>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Job Title <span class="text-error">*</span></label>
+<input class="w-full rounded-lg border-outline-variant border-secondary ring-1 ring-secondary text-body-md py-3 px-4" placeholder="e.g. Senior Solutions Architect" type="text"/>
+<p class="text-xs text-secondary flex items-center gap-1"><span class="material-symbols-outlined text-xs">check_circle</span> Title available in directory</p>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Department</label>
+<select class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4">
+<option>Engineering</option>
+<option>Human Resources</option>
+<option>Product Management</option>
+<option>Sales &amp; Marketing</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Manager</label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" placeholder="Search manager..." type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Joining Date <span class="text-error">*</span></label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" type="date"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Employment Type</label>
+<select class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4">
+<option>Full-Time Regular</option>
+<option>Contractor</option>
+<option>Part-Time</option>
+<option>Intern</option>
+</select>
+</div>
+</div>
+</section>
+<!-- Contact & Emergency -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-stack-lg">
+<section class="bg-surface-container-lowest p-stack-lg rounded-xl border border-outline-variant shadow-sm h-full">
+<div class="flex items-center gap-2 mb-stack-md text-secondary">
+<span class="material-symbols-outlined">contact_mail</span>
+<h3 class="font-title-lg text-title-lg font-bold text-primary">Contact Information</h3>
+</div>
+<div class="space-y-4">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Work Email <span class="text-error">*</span></label>
+<input class="w-full rounded-lg border-error focus:ring-error text-body-md py-3 px-4" type="email" value="invalid-email"/>
+<p class="text-xs text-error flex items-center gap-1"><span class="material-symbols-outlined text-xs">error</span> Please enter a valid corporate email.</p>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Personal Email</label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" placeholder="personal@example.com" type="email"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Phone Number <span class="text-error">*</span></label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" placeholder="+1 (555) 000-0000" type="tel"/>
+</div>
+</div>
+</section>
+<section class="bg-surface-container-lowest p-stack-lg rounded-xl border border-outline-variant shadow-sm h-full">
+<div class="flex items-center gap-2 mb-stack-md text-secondary">
+<span class="material-symbols-outlined">emergency</span>
+<h3 class="font-title-lg text-title-lg font-bold text-primary">Emergency Contact</h3>
+</div>
+<div class="space-y-4">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Full Name <span class="text-error">*</span></label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" placeholder="Contact Person Name" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Relationship <span class="text-error">*</span></label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" placeholder="e.g. Spouse, Parent" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Phone Number <span class="text-error">*</span></label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" placeholder="+1 (555) 000-0000" type="tel"/>
+</div>
+</div>
+</section>
+</div>
+<!-- Address Information -->
+<section class="bg-surface-container-lowest p-stack-lg rounded-xl border border-outline-variant shadow-sm">
+<div class="flex items-center gap-2 mb-stack-md text-secondary">
+<span class="material-symbols-outlined">location_on</span>
+<h3 class="font-title-lg text-title-lg font-bold text-primary">Address</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<div class="md:col-span-2 space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Street Address <span class="text-error">*</span></label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" placeholder="Unit, Street Name" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">City <span class="text-error">*</span></label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" placeholder="City" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">State</label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" placeholder="State/Prov" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">ZIP Code</label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" placeholder="00000" type="text"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Country <span class="text-error">*</span></label>
+<select class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4">
+<option>United Kingdom</option>
+<option>United States</option>
+<option>Canada</option>
+<option>Germany</option>
+</select>
+</div>
+</div>
+</section>
+<!-- Bank Details -->
+<section class="bg-surface-container-lowest p-stack-lg rounded-xl border border-outline-variant shadow-sm">
+<div class="flex items-center gap-2 mb-stack-md text-secondary">
+<span class="material-symbols-outlined">payments</span>
+<h3 class="font-title-lg text-title-lg font-bold text-primary">Bank Details</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Account Holder Name</label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" placeholder="As per bank records" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Bank Name</label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" placeholder="Full name of bank" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">Account Number</label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" placeholder="0000000000" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant">IFSC / SWIFT Code</label>
+<input class="w-full rounded-lg border-outline-variant focus:border-secondary focus:ring-secondary text-body-md py-3 px-4" placeholder="Bank ID code" type="text"/>
+</div>
+</div>
+</section>
+<!-- Documents Upload -->
+<section class="bg-surface-container-lowest p-stack-lg rounded-xl border border-outline-variant shadow-sm">
+<div class="flex items-center gap-2 mb-stack-md text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">description</span>
+<h3 class="font-title-lg text-title-lg font-bold text-primary">Documents</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-md">
+<!-- Document Card 1 -->
+<div class="p-4 border border-outline-variant rounded-lg flex items-center justify-between group hover:border-secondary transition-colors bg-surface">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-surface-container-high rounded flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">badge</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-primary">Identity Proof (Passport/ID)</p>
+<p class="text-xs text-on-surface-variant">Required for verification</p>
+</div>
+</div>
+<button class="p-2 text-secondary hover:bg-secondary/10 rounded-full transition-colors" type="button">
+<span class="material-symbols-outlined">cloud_upload</span>
+</button>
+</div>
+<!-- Document Card 2 -->
+<div class="p-4 border border-outline-variant rounded-lg flex items-center justify-between group hover:border-secondary transition-colors bg-surface">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 bg-surface-container-high rounded flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">history_edu</span>
+</div>
+<div>
+<p class="font-label-md text-label-md text-primary">Signed Contract</p>
+<p class="text-xs text-on-surface-variant">Final offer letter</p>
+</div>
+</div>
+<button class="p-2 text-secondary hover:bg-secondary/10 rounded-full transition-colors" type="button">
+<span class="material-symbols-outlined">cloud_upload</span>
+</button>
+</div>
+</div>
+<div class="mt-stack-md p-6 border-2 border-dashed border-outline-variant rounded-xl flex flex-col items-center justify-center text-on-surface-variant hover:bg-surface-container-low hover:border-secondary transition-all cursor-pointer">
+<span class="material-symbols-outlined text-4xl mb-2">upload_file</span>
+<p class="font-label-md text-label-md">Drop additional files here or <span class="text-secondary underline">browse</span></p>
+<p class="text-xs mt-1">PDF, DOCX, JPG (Max 10MB per file)</p>
+</div>
+</section>
+</form>
+</div>
+</div>
+<!-- Sticky Bottom Action Bar -->
+<footer class="fixed bottom-0 left-[280px] right-0 bg-surface border-t border-outline-variant px-margin-desktop py-4 flex justify-between items-center z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] max-w-[calc(1440px-280px)] mx-auto w-[calc(100%-280px)]">
+<button class="text-on-surface-variant hover:text-primary font-label-md text-label-md transition-colors px-4 py-2" type="button">
+                Cancel
+            </button>
+<div class="flex gap-4">
+<button class="px-6 py-2.5 border border-outline-variant text-primary font-label-md text-label-md rounded-lg hover:bg-surface-container-high transition-all" type="button">
+                    Save Draft
+                </button>
+<button class="px-8 py-2.5 bg-primary text-on-primary font-label-md text-label-md rounded-lg hover:bg-primary-container transition-all flex items-center gap-2" id="save-btn" type="button">
+<span class="">Save Employee</span>
+</button>
+</div>
+</footer>
+</main>
+<script>
+        // Micro-interactions for the Save button loading state demonstration
+        const saveBtn = document.getElementById('save-btn');
+        saveBtn.addEventListener('click', () => {
+            const originalContent = saveBtn.innerHTML;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = `
+                <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Processing...</span>
+            `;
+            saveBtn.classList.add('opacity-80', 'cursor-not-allowed');
+
+            setTimeout(() => {
+                saveBtn.innerHTML = `
+                    <span class="material-symbols-outlined">check</span>
+                    <span>Saved Successfully</span>
+                `;
+                saveBtn.classList.replace('bg-primary', 'bg-secondary');
+                
+                setTimeout(() => {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = originalContent;
+                    saveBtn.classList.replace('bg-secondary', 'bg-primary');
+                    saveBtn.classList.remove('opacity-80', 'cursor-not-allowed');
+                }, 2000);
+            }, 1500);
+        });
+    </script>
+</body></html>

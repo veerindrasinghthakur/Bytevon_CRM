@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bytevon CRM - Footer</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#191c1d",
+                        "tertiary": "#000000",
+                        "inverse-on-surface": "#eff0f6",
+                        "surface-tint": "#555f70",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#7a8496",
+                        "deep-navy": "#001f3f",
+                        "primary": "#000000",
+                        "surface-dim": "#d8dae0",
+                        "on-surface": "#191c20",
+                        "secondary-container": "#0170ea",
+                        "on-primary": "#ffffff",
+                        "surface-container": "#eceef3",
+                        "on-tertiary": "#ffffff",
+                        "inverse-primary": "#bdc7da",
+                        "on-error-container": "#93000a",
+                        "on-background": "#191c20",
+                        "on-secondary-fixed-variant": "#004493",
+                        "on-secondary-container": "#fefcff",
+                        "secondary-fixed": "#d8e2ff",
+                        "surface-sidebar": "#000613",
+                        "sidebar-item-active": "#001f3f",
+                        "surface-container-lowest": "#ffffff",
+                        "surface": "#f8f9ff",
+                        "tertiary-fixed-dim": "#c5c7c8",
+                        "surface-container-high": "#e7e8ee",
+                        "on-error": "#ffffff",
+                        "surface-container-low": "#f2f3f9",
+                        "primary-container": "#121c2a",
+                        "background": "#f8f9ff",
+                        "outline-variant": "#c5c6cc",
+                        "on-tertiary-container": "#828486",
+                        "surface-bright": "#f8f9ff",
+                        "secondary": "#0058bb",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#bdc7da",
+                        "tertiary-fixed": "#e1e3e4",
+                        "outline": "#75777d",
+                        "on-tertiary-fixed": "#191c1d",
+                        "inverse-surface": "#2e3135",
+                        "surface-container-highest": "#e1e2e8",
+                        "electric-blue": "#007bff",
+                        "on-surface-variant": "#44474c",
+                        "sidebar-accent": "#0070ea",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed-variant": "#3d4757",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "surface-variant": "#e1e2e8",
+                        "on-secondary-fixed": "#001a41",
+                        "secondary-fixed-dim": "#adc6ff",
+                        "primary-fixed": "#d9e3f7",
+                        "on-primary-fixed": "#121c2a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "40px",
+                        "gutter": "24px",
+                        "section-gap": "32px",
+                        "sidebar-width": "280px",
+                        "nav-gap": "4px",
+                        "margin-mobile": "16px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "nav-item": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "body-md": ["Inter"],
+                        "title-lg": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "nav-group": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "nav-item": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "title-lg": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "label-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "nav-group": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-surface font-body-md text-on-surface antialiased min-h-screen flex flex-col justify-end">
+<!-- Mock Content to push footer down -->
+<div class="flex-grow p-8 flex flex-col items-center justify-center opacity-50">
+<span class="material-symbols-outlined text-6xl text-outline-variant mb-4" data-icon="dashboard">dashboard</span>
+<h1 class="font-headline-md text-headline-md text-on-surface-variant">Main Content Area</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Scroll down to view footer component.</p>
+</div>
+<!-- Enterprise Footer Component -->
+<footer class="bg-surface-container-low border-t border-outline-variant w-full mt-auto">
+<div class="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop py-8 md:py-12">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-gutter">
+<!-- Section 1: Brand -->
+<div class="md:col-span-4 flex flex-col gap-4">
+<div class="flex items-center gap-3">
+<img alt="Bytevon CRM Logo" class="w-8 h-8 rounded object-cover shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJU3j8vafa3xYwvrXdPyTNKi-DR5HiOrOKB4WnZoTD-d7Fud5EmqttjAlH2S-bG4YY9s2ryOg0Dh76OWlHQqj_G6A3v8AvLQ6Cg1cIOz-u_AhuQwZIfgWX7GaUx8m8Em9qrLwyo4zbBNvjDZfZ7nWCHRJtn7-01jtzHOBadqreUJLrhf7YtA3bCB9iXxe2RpiNrkwSdf78HVVqetLu7Znsvfxbe25cQ15hn0J3S1qYWBPqqae_968CYkvIQLqBYzfO9A"/>
+<span class="font-title-lg text-title-lg text-deep-navy font-bold">Bytevon CRM</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-sm">
+                        Enterprise Resource Planning &amp; Customer Relationship Management Platform
+                    </p>
+</div>
+<!-- Section 2: Quick Links -->
+<div class="md:col-span-4 grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-3">
+<h4 class="font-nav-group text-nav-group text-surface-tint uppercase">Resources</h4>
+<a class="font-body-sm text-body-sm text-on-surface hover:text-electric-blue transition-colors" href="#">Documentation</a>
+<a class="font-body-sm text-body-sm text-on-surface hover:text-electric-blue transition-colors" href="#">Help Center</a>
+<a class="font-body-sm text-body-sm text-on-surface hover:text-electric-blue transition-colors" href="#">Contact Support</a>
+</div>
+<div class="flex flex-col gap-3">
+<h4 class="font-nav-group text-nav-group text-surface-tint uppercase">Legal</h4>
+<a class="font-body-sm text-body-sm text-on-surface hover:text-electric-blue transition-colors" href="#">Release Notes</a>
+<a class="font-body-sm text-body-sm text-on-surface hover:text-electric-blue transition-colors" href="#">Privacy Policy</a>
+<a class="font-body-sm text-body-sm text-on-surface hover:text-electric-blue transition-colors" href="#">Terms of Service</a>
+</div>
+</div>
+<!-- Section 3: System Information -->
+<div class="md:col-span-4 flex flex-col gap-3">
+<h4 class="font-nav-group text-nav-group text-surface-tint uppercase">System Info</h4>
+<div class="bg-surface border border-outline-variant rounded-lg p-4 shadow-sm flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Status</span>
+<div class="flex items-center gap-2 bg-surface-container-high px-2 py-1 rounded-full">
+<div class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.5)]"></div>
+<span class="font-label-sm text-label-sm text-on-surface">All Systems Operational</span>
+</div>
+</div>
+<div class="h-[1px] w-full bg-outline-variant opacity-50 my-1"></div>
+<div class="grid grid-cols-2 gap-y-2 font-body-sm text-body-sm text-on-surface-variant">
+<span>Version:</span> <span class="text-on-surface font-medium text-right">2.4.1</span>
+<span>Build:</span> <span class="text-on-surface font-medium text-right">#8922</span>
+<span>Updated:</span> <span class="text-on-surface font-medium text-right">Oct 24, 2023</span>
+<span>Environment:</span> <span class="text-on-surface font-medium text-right">Production</span>
+</div>
+</div>
+<div class="flex items-center gap-2 mt-2">
+<span class="material-symbols-outlined text-[16px] text-surface-tint" data-icon="palette">palette</span>
+<span class="font-label-sm text-label-sm text-surface-tint">Theme: Executive Precision Light</span>
+</div>
+</div>
+</div>
+<!-- Section 4: Copyright -->
+<div class="mt-8 pt-8 border-t border-outline-variant flex flex-col md:flex-row items-center justify-between gap-4">
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+                    © 2026 Bytevon Technologies. All Rights Reserved.
+                </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+                    Made with <span class="text-error mx-1">❤️</span> using Python, FastAPI, React and PostgreSQL.
+                </span>
+</div>
+</div>
+<!-- Bottom Status Bar -->
+<div class="bg-deep-navy text-on-primary w-full border-t border-sidebar-item-active py-2 px-margin-mobile md:px-margin-desktop shadow-inner">
+<div class="max-w-[1440px] mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
+<div class="flex items-center gap-4 font-label-sm text-label-sm text-inverse-primary opacity-90 divide-x divide-sidebar-item-active">
+<span class="pr-4 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]" data-icon="shield_person">shield_person</span> Role: Admin Access</span>
+<span class="px-4 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]" data-icon="corporate_fare">corporate_fare</span> Organization: TechNexus Corp.</span>
+<span class="pl-4 flex items-center gap-1"><span class="material-symbols-outlined text-[14px]" data-icon="location_on">location_on</span> Office: San Francisco HQ</span>
+</div>
+<div class="flex items-center gap-4 font-label-sm text-label-sm text-inverse-primary opacity-90 divide-x divide-sidebar-item-active">
+<span class="pr-4">v2.4.1-stable</span>
+<span class="px-4">Enterprise License</span>
+<span class="pl-4 flex items-center gap-2">System Status: Active <div class="w-1.5 h-1.5 rounded-full bg-green-400"></div></span>
+</div>
+</div>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,340 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Client Details | Nexus Global Holdings | Bytevon CRM</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-tertiary-container": "#848789", "surface-bright": "#f8f9ff", "on-surface": "#0b1c30", "on-secondary-fixed-variant": "#004493", secondary: "#0059bb", "on-tertiary-fixed": "#191c1e", "surface-tint": "#476083", "on-primary-fixed-variant": "#2f486a", "surface-variant": "#d3e4fe", "error-container": "#ffdad6", background: "#f8f9ff", "tertiary-container": "#1c1f21", "primary-container": "#001f3f", "primary-fixed": "#d4e3ff", "on-tertiary": "#ffffff", "on-error": "#ffffff", "on-surface-variant": "#43474e", "secondary-container": "#0070ea", "surface-container-low": "#eff4ff", "on-secondary": "#ffffff", "on-primary": "#ffffff", "surface-dim": "#cbdbf5", tertiary: "#040607", "surface-container-lowest": "#ffffff", "on-primary-fixed": "#001c3a", "inverse-primary": "#afc8f0", "surface-container": "#e5eeff", "tertiary-fixed-dim": "#c4c7c9", "secondary-fixed": "#d8e2ff", "on-secondary-fixed": "#001a41", "on-background": "#0b1c30", "tertiary-fixed": "#e0e3e5", surface: "#f8f9ff", "inverse-surface": "#213145", "primary-fixed-dim": "#afc8f0", "on-error-container": "#93000a", "secondary-fixed-dim": "#adc7ff", primary: "#000613", "on-tertiary-fixed-variant": "#444749", outline: "#74777f", "on-secondary-container": "#fefcff", "inverse-on-surface": "#eaf1ff", "surface-container-high": "#dce9ff", "surface-container-highest": "#d3e4fe", "outline-variant": "#c4c6cf", "on-primary-container": "#6f88ad", error: "#ba1a1a"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-sm": "8px", "stack-md": "16px", "stack-lg": "32px", "margin-mobile": "16px", gutter: "24px", "container-max": "1440px", unit: "4px", "margin-desktop": "40px"}, fontFamily: {"headline-lg": ["Inter"], "display-lg": ["Inter"], "label-sm": ["Inter"], "body-sm": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-md": ["Inter"], "label-md": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "title-lg": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}]}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .sidebar-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .sidebar-scroll::-webkit-scrollbar-thumb {
+            background: rgba(0,0,0,0.1);
+            border-radius: 10px;
+        }
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            left: 11px;
+            top: 24px;
+            bottom: 0;
+            width: 2px;
+            background: #E2E8F0;
+        }
+        .timeline-item:last-child .timeline-line::before {
+            display: none;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface">
+<!-- Top Navigation Bar -->
+<nav class="bg-primary dark:bg-primary-container text-on-primary dark:text-on-primary-container docked full-width top-0 shadow-sm flex justify-between items-center w-full px-margin-desktop h-16 fixed z-50">
+<div class="flex items-center gap-gutter">
+<span class="text-title-lg font-title-lg font-bold text-on-primary">Bytevon CRM</span>
+<div class="hidden md:flex gap-6 font-body-md text-body-md">
+<a class="text-on-primary-container/70 hover:text-on-primary transition-colors cursor-pointer active:opacity-80" href="#">Dashboard</a>
+<a class="text-on-primary border-b-2 border-secondary-container pb-1 cursor-pointer active:opacity-80" href="#">Clients</a>
+<a class="text-on-primary-container/70 hover:text-on-primary transition-colors cursor-pointer active:opacity-80" href="#">Sales</a>
+<a class="text-on-primary-container/70 hover:text-on-primary transition-colors cursor-pointer active:opacity-80" href="#">Reports</a>
+</div>
+</div>
+<div class="flex items-center gap-stack-lg">
+<div class="relative hidden lg:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-primary-container/50">search</span>
+<input class="bg-primary-container border-none rounded-full pl-10 pr-4 py-1.5 text-sm text-on-primary focus:ring-1 focus:ring-secondary-container w-64" placeholder="Global search..." type="text">
+</div>
+<div class="flex items-center gap-stack-md">
+<span class="material-symbols-outlined cursor-pointer text-on-primary hover:opacity-80">notifications</span>
+<span class="material-symbols-outlined cursor-pointer text-on-primary hover:opacity-80">settings</span>
+<img alt="User profile avatar" class="w-8 h-8 rounded-full border border-primary-container object-cover" data-alt="Professional headshot of a senior CRM administrator in a corporate office environment, soft cinematic lighting, minimalist aesthetic with neutral tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDYHo0wR8s0S0oL38haqSMreAIizRVtemg59Jp82Wma2gzb1h80z1wZRRFQzqDXZdhHb9dWBLLU24PmHGfiMpiXZteQgUoboMpnPrFXfFGMO9lDkwHoDRZmDHeh7CwUit9h3iv7gMRQGjiyKIJ3KOgcq5wqMtBLzuiCe8QKBfB7raUJGjHeASx92b4etWRlHo4scY3f857i-1WWJhtXzh5MgoK-uYKM_I66i-5yWKbHOG-nE3HsFc9wA">
+</div>
+</div>
+</nav>
+<!-- Side Navigation Bar -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-[280px] bg-surface-container-low dark:bg-tertiary-container flex flex-col p-stack-md gap-stack-sm border-r border-outline-variant/30 hidden md:flex z-40">
+<div class="px-4 py-4 mb-4">
+<div class="flex items-center gap-3">
+<div class="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center text-on-secondary shadow-sm">
+<span class="material-symbols-outlined text-3xl">corporate_fare</span>
+</div>
+<div>
+<h2 class="text-headline-md font-headline-md text-on-surface leading-tight">Client Details</h2>
+<p class="text-label-md font-label-md text-on-surface-variant opacity-70">Enterprise View</p>
+</div>
+</div>
+</div>
+<nav class="flex flex-col gap-1 sidebar-scroll overflow-y-auto font-label-md text-label-md">
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container font-bold rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span> Overview
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">group</span> Contact Persons
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">folder_open</span> Projects
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">leaderboard</span> Leads
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">event</span> Meetings
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">description</span> Notes
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">article</span> Documents
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined">history</span> Timeline
+            </a>
+</nav>
+<div class="mt-auto pt-6 border-t border-outline-variant/30">
+
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="md:ml-[280px] pt-16 min-h-screen bg-surface">
+<div class="max-w-[1440px] mx-auto px-6 md:px-margin-desktop py-stack-lg">
+<!-- Header Summary Section -->
+<header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="flex flex-col gap-2">
+<nav class="flex items-center gap-2 text-sm text-on-surface-variant mb-2">
+<span class="">Clients</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-secondary font-medium">Nexus Global Holdings</span>
+</nav>
+<div class="flex items-center gap-4">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Nexus Global Holdings</h1>
+<span class="px-3 py-1 bg-secondary/10 text-secondary text-xs font-bold rounded-full uppercase tracking-tight">Enterprise</span>
+</div>
+<div class="flex flex-wrap items-center gap-x-6 gap-y-2 mt-1">
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-lg">public</span>
+<span class="font-body-md text-body-md">United States</span>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-lg">language</span>
+<a class="font-body-md text-body-md hover:text-secondary transition-colors" href="https://nexusglobal.com">nexusglobal.com</a>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-lg">verified</span>
+<span class="font-body-md text-body-md">Verified Tier-1 Vendor</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="px-5 py-2.5 bg-white border border-outline-variant hover:bg-surface-container-low text-on-surface font-label-md text-label-md rounded-lg flex items-center gap-2 transition-all shadow-sm">
+<span class="material-symbols-outlined text-lg">edit</span> Edit Client
+                    </button>
+<button class="px-5 py-2.5 bg-primary text-on-primary hover:opacity-90 font-label-md text-label-md rounded-lg flex items-center gap-2 transition-all shadow-sm">
+<span class="material-symbols-outlined text-lg" style="font-variation-settings: 'FILL' 1;">add</span> Add Project
+                    </button>
+<button class="p-2.5 bg-white border border-outline-variant hover:bg-surface-container-low text-on-surface rounded-lg transition-all shadow-sm">
+<span class="material-symbols-outlined text-lg">more_horiz</span>
+</button>
+</div>
+</header>
+<!-- Bento Grid Dashboard -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- KPI Statistics (Top Row) -->
+<div class="col-span-12 lg:col-span-8 grid grid-cols-1 md:grid-cols-4 gap-gutter">
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/30 transition-transform hover:-translate-y-1">
+<p class="text-label-md text-on-surface-variant mb-1">Total Projects</p>
+<h3 class="text-headline-md font-headline-md text-on-surface">12</h3>
+<div class="flex items-center gap-1 mt-2 text-green-600 text-xs font-bold">
+<span class="material-symbols-outlined text-xs">trending_up</span> +2 this quarter
+                        </div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/30 transition-transform hover:-translate-y-1">
+<p class="text-label-md text-on-surface-variant mb-1">Active Leads</p>
+<h3 class="text-headline-md font-headline-md text-on-surface">4</h3>
+<div class="flex items-center gap-1 mt-2 text-on-surface-variant text-xs font-bold">
+<span class="material-symbols-outlined text-xs">remove</span> Stable
+                        </div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/30 transition-transform hover:-translate-y-1">
+<p class="text-label-md text-on-surface-variant mb-1">Total Revenue</p>
+<h3 class="text-headline-md font-headline-md text-on-surface">$1.2M</h3>
+<div class="flex items-center gap-1 mt-2 text-green-600 text-xs font-bold">
+<span class="material-symbols-outlined text-xs">trending_up</span> +14% YoY
+                        </div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border border-outline-variant/30 transition-transform hover:-translate-y-1">
+<p class="text-label-md text-on-surface-variant mb-1">Client Since</p>
+<h3 class="text-headline-md font-headline-md text-on-surface">Jan 2022</h3>
+<p class="text-on-surface-variant text-xs font-bold mt-2">2.4 Years</p>
+</div>
+</div>
+<!-- Latest Activity (Right Column - Spans Rows) -->
+<div class="col-span-12 lg:col-span-4 lg:row-span-2 bg-white p-gutter rounded-xl border border-outline-variant/30 shadow-sm">
+<div class="flex items-center justify-between mb-8">
+<h3 class="text-title-lg font-title-lg text-on-surface">Latest Activity</h3>
+<button class="text-secondary text-sm font-semibold hover:underline">View All</button>
+</div>
+<div class="space-y-0 relative">
+<!-- Timeline Item 1 -->
+<div class="timeline-item timeline-line relative pb-8 flex gap-4">
+<div class="z-10 bg-secondary-container text-on-secondary-container w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-xs">send</span>
+</div>
+<div class="flex flex-col">
+<p class="font-label-md text-label-md text-on-surface">Proposal Sent</p>
+<p class="text-body-sm text-on-surface-variant opacity-80 mt-0.5">Project 'Zion Core' phase 2 document dispatched.</p>
+<p class="text-xs text-on-surface-variant mt-2 font-medium">Today, 10:45 AM</p>
+</div>
+</div>
+<!-- Timeline Item 2 -->
+<div class="timeline-item timeline-line relative pb-8 flex gap-4">
+<div class="z-10 bg-surface-container-highest text-on-surface-variant w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-xs">call</span>
+</div>
+<div class="flex flex-col">
+<p class="font-label-md text-label-md text-on-surface">Discovery Call</p>
+<p class="text-body-sm text-on-surface-variant opacity-80 mt-0.5">Sync with Sarah Miller regarding Q4 expansion leads.</p>
+<p class="text-xs text-on-surface-variant mt-2 font-medium">2 days ago</p>
+</div>
+</div>
+<!-- Timeline Item 3 -->
+<div class="timeline-item timeline-line relative pb-8 flex gap-4">
+<div class="z-10 bg-green-100 text-green-700 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-xs">description</span>
+</div>
+<div class="flex flex-col">
+<p class="font-label-md text-label-md text-on-surface">Contract Renewed</p>
+<p class="text-body-sm text-on-surface-variant opacity-80 mt-0.5">Annual Service Agreement signed by legal team.</p>
+<p class="text-xs text-on-surface-variant mt-2 font-medium">1 week ago</p>
+</div>
+</div>
+<!-- Timeline Item 4 -->
+<div class="timeline-item relative flex gap-4">
+<div class="z-10 bg-surface-container-highest text-on-surface-variant w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-xs">mail</span>
+</div>
+<div class="flex flex-col">
+<p class="font-label-md text-label-md text-on-surface">Email Interaction</p>
+<p class="text-body-sm text-on-surface-variant opacity-80 mt-0.5">Inquiry about compliance reporting features.</p>
+<p class="text-xs text-on-surface-variant mt-2 font-medium">10 days ago</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Company Information Card -->
+<div class="col-span-12 md:col-span-6 lg:col-span-4 bg-white p-gutter rounded-xl border border-outline-variant/30 shadow-sm">
+<h3 class="text-title-lg font-title-lg text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">info</span> Company Information
+                    </h3>
+<dl class="space-y-4">
+<div>
+<dt class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Full Legal Name</dt>
+<dd class="text-body-md font-body-md text-on-surface">Nexus Global Holdings, Inc.</dd>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<dt class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Industry</dt>
+<dd class="text-body-md font-body-md text-on-surface">Technology</dd>
+</div>
+<div>
+<dt class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Sector</dt>
+<dd class="text-body-md font-body-md text-on-surface">SaaS &amp; Fintech</dd>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div>
+<dt class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Tax ID</dt>
+<dd class="text-body-md font-body-md text-on-surface">US-992200-XX</dd>
+</div>
+<div>
+<dt class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Founding Date</dt>
+<dd class="text-body-md font-body-md text-on-surface">May 12, 2015</dd>
+</div>
+</div>
+</dl>
+</div>
+<!-- Address Card with Map -->
+<div class="col-span-12 md:col-span-6 lg:col-span-4 bg-white rounded-xl border border-outline-variant/30 shadow-sm overflow-hidden flex flex-col">
+<div class="p-gutter pb-0">
+<h3 class="text-title-lg font-title-lg text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">location_on</span> Headquarters
+                        </h3>
+<p class="text-body-md font-body-md text-on-surface mb-4">
+                            500 Innovation Way, Suite 1200<br>
+                            Palo Alto, CA 94301<br>
+                            United States
+                        </p>
+</div>
+<div class="flex-1 min-h-[160px] relative mt-2">
+<!-- Map Placeholder -->
+<div class="absolute inset-0 bg-surface-container-highest" data-alt="A clean, minimalist architectural map view of a tech corridor in Palo Alto, showing simplified building footprints and greenery in a professional enterprise UI style with navy and white tones." data-location="Palo Alto, California" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDENaaHE2hw7HMYMnmpJYn589Np-LUC8CZ1pMK7LAku_w8V9mP5uP_-0Jw0TeHmzkf7vc4tLP4GUIpVJaHPm3G6xMbLZFXPH41DDXcYU3TjfcZ5WIYtHhtGAm0PTwc968K-Mwziu8Urhcd6CIgAVr0y4bxpyCw3DFuUhSwARu2gUZaPOYouPeL_pjE29uYgI1onLKQbtU5NnKC6sYAtBo3azd6jp7XGxFA2kNHDwjc1qoJ3jv7-ttXd2g')"></div>
+<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+<div class="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center border-2 border-secondary animate-pulse">
+<div class="w-4 h-4 bg-secondary rounded-full"></div>
+</div>
+</div>
+<button class="absolute bottom-4 right-4 px-3 py-1.5 bg-white shadow-md text-xs font-bold rounded flex items-center gap-1 hover:bg-surface-container-low">
+<span class="material-symbols-outlined text-sm">open_in_new</span> Directions
+                        </button>
+</div>
+</div>
+<!-- Quick Actions / Bottom Row -->
+
+</div>
+</div>
+</main>
+<!-- Mobile Navigation Bar (Bottom) -->
+<div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-outline-variant/30 flex justify-around items-center h-16 z-50 px-2">
+<button class="flex flex-col items-center gap-1 text-on-surface-variant active:text-secondary">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-[10px] font-bold">Overview</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant active:text-secondary">
+<span class="material-symbols-outlined">folder_open</span>
+<span class="text-[10px] font-bold">Projects</span>
+</button>
+<button class="w-12 h-12 -mt-8 bg-primary text-on-primary rounded-full shadow-lg flex items-center justify-center">
+<span class="material-symbols-outlined">add</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant active:text-secondary">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="text-[10px] font-bold">Leads</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant active:text-secondary">
+<span class="material-symbols-outlined">menu</span>
+<span class="text-[10px] font-bold">More</span>
+</button>
+</div>
+<script>
+        // Simple Micro-interaction for hover effects and active states
+        document.querySelectorAll('a, button').forEach(el => {
+            el.addEventListener('mousedown', () => {
+                el.style.transform = 'scale(0.98)';
+            });
+            el.addEventListener('mouseup', () => {
+                el.style.transform = 'scale(1)';
+            });
+            el.addEventListener('mouseleave', () => {
+                el.style.transform = 'scale(1)';
+            });
+        });
+
+        // Search Bar Focus Effect
+        const searchInput = document.querySelector('input[type="text"]');
+        if (searchInput) {
+            searchInput.addEventListener('focus', () => {
+                searchInput.parentElement.classList.add('ring-2', 'ring-secondary-container/30');
+            });
+            searchInput.addEventListener('blur', () => {
+                searchInput.parentElement.classList.remove('ring-2', 'ring-secondary-container/30');
+            });
+        }
+    </script>
+
+
+</body></html>

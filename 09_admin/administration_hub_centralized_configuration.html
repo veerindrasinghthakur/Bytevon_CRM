@@ -1,0 +1,633 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Administration Hub | Bytevon ERP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-secondary-fixed": "#001a41", "on-surface": "#0b1c30", "on-secondary": "#ffffff", "tertiary-fixed-dim": "#c4c7c9", "secondary-container": "#0070ea", primary: "#000613", "inverse-on-surface": "#eaf1ff", "on-primary-fixed": "#001c3a", secondary: "#0059bb", "on-tertiary-fixed-variant": "#444749", "on-tertiary-fixed": "#191c1e", "surface-bright": "#f8f9ff", "on-primary": "#ffffff", "tertiary-fixed": "#e0e3e5", "on-error-container": "#93000a", "inverse-surface": "#213145", "on-tertiary-container": "#848789", "surface-dim": "#cbdbf5", outline: "#74777f", "on-secondary-container": "#fefcff", "surface-container-low": "#eff4ff", "on-primary-fixed-variant": "#2f486a", "on-error": "#ffffff", "on-tertiary": "#ffffff", "surface-container-highest": "#d3e4fe", error: "#ba1a1a", "primary-fixed": "#d4e3ff", "on-secondary-fixed-variant": "#004493", "outline-variant": "#c4c6cf", "surface-variant": "#d3e4fe", "surface-container": "#e5eeff", "on-surface-variant": "#43474e", background: "#f8f9ff", "primary-container": "#001f3f", "error-container": "#ffdad6", "primary-fixed-dim": "#afc8f0", "surface-container-lowest": "#ffffff", "on-background": "#0b1c30", "surface-tint": "#476083", "surface-container-high": "#dce9ff", "inverse-primary": "#afc8f0", tertiary: "#040607", surface: "#f8f9ff", "tertiary-container": "#1c1f21", "secondary-fixed": "#d8e2ff", "on-primary-container": "#6f88ad", "secondary-fixed-dim": "#adc7ff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {gutter: "24px", "stack-lg": "32px", "stack-md": "16px", unit: "4px", "margin-desktop": "40px", "container-max": "1440px", "margin-mobile": "16px", "stack-sm": "8px"}, fontFamily: {"headline-md": ["Inter"], "label-md": ["Inter"], "title-lg": ["Inter"], "label-sm": ["Inter"], "body-sm": ["Inter"], "headline-lg": ["Inter"], "body-lg": ["Inter"], "body-md": ["Inter"], "headline-lg-mobile": ["Inter"], "display-lg": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}]}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .nav-link-active {
+            @apply bg-secondary/10 text-secondary border-r-2 border-secondary font-semibold;
+        }
+        .sticky-sidebar { height: calc(100vh - 64px); position: sticky; top: 64px; }
+        .content-container { height: calc(100vh - 64px); overflow-y: auto; scroll-behavior: smooth; }
+        .action-bar { display: none; }
+        .action-bar.visible { display: flex; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col overflow-hidden">
+<!-- Global Top Nav -->
+<header class="bg-surface border-b border-outline-variant flex justify-between items-center px-margin-desktop w-full h-16 shrink-0 z-[60]">
+<div class="flex items-center gap-stack-lg">
+<span class="font-headline-md text-headline-md font-bold text-primary">Bytevon ERP</span>
+<nav class="hidden md:flex gap-6 items-center ml-8">
+<a class="text-on-surface-variant font-label-md hover:text-secondary transition-colors" href="#">Dashboard</a>
+<a class="text-on-surface-variant font-label-md hover:text-secondary transition-colors" href="#">Reports</a>
+<a class="text-on-surface-variant font-label-md hover:text-secondary transition-colors" href="#">Inventory</a>
+<a class="text-on-surface-variant font-label-md hover:text-secondary transition-colors" href="#">CRM</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span>
+<input class="bg-surface-container border border-outline-variant rounded-lg pl-10 pr-4 py-2 text-label-md w-64 focus:border-secondary outline-none transition-all" placeholder="Search enterprise..." type="text">
+</div>
+<button class="material-symbols-outlined text-secondary p-2 hover:bg-surface-container rounded-full">notifications</button>
+<button class="material-symbols-outlined text-secondary p-2 hover:bg-surface-container rounded-full font-bold">settings</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant ml-2">
+<img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB2BrpWNP4TD6vjriQydeKQqv3qjtccitIY_ZycqwI7Nsh4lkOw4sA1QvSzMqKQSVytsdcDIfEjqxCbs4O8sHVbJUw1C2DAjJIUQHsZ48w7tEpRP5tfy3eA_JyXyhUKMEk--CBbEuZfLcLdMCOIZxFXVwlgU0s2EU5vZ4YK20CGQ6wQ_uxMWsNyiUvy7Wj0CEApzvvMXP16WKJjEtAz1fvNIdiavZfshGFNbQiJ93nziXDl4Q4VIv3hAw">
+</div>
+</div>
+</header>
+<div class="flex flex-1 overflow-hidden">
+<!-- Dual Sidebar Architecture -->
+<aside class="flex shrink-0 z-40 bg-primary border-r border-outline-variant sticky-sidebar">
+<!-- Primary Sidebar (Apps) -->
+<div class="w-20 flex flex-col items-center py-6 h-full shrink-0">
+<div class="mb-10">
+<img alt="bv" class="w-10 h-10 object-contain rounded" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlvtJJuY982IfCqqVBZi_n1l3m22mS6n8NMrwCMnruv86cbOrSwKa88ODG__S1rr7YjlZyvgZVtwv-8j6GjuWjLe72h8Rphr-iND4fL0B-LogCk-uQoQEdTsoluc_CkhFQgfTJjeEUGOfa5G3bhxAgt7s__GBT5fSM5ImNF08ZY3w0CcE9MqJnvYf9vfx96gPnXBEncFeFop4FnzWl8bPGerQbzfNrY4g9Yv_9dgE-x4jMrCE2feWI8HenLuI_F6I3MdA">
+</div>
+<nav class="flex flex-col gap-6 items-center w-full">
+<a class="p-3 text-on-primary-container hover:bg-white/10 rounded-xl transition-all" href="#" title="Dashboard"><span class="material-symbols-outlined">dashboard</span></a>
+<a class="p-3 text-on-primary-container hover:bg-white/10 rounded-xl transition-all" href="#" title="Sales"><span class="material-symbols-outlined">payments</span></a>
+<a class="p-3 text-on-primary-container hover:bg-white/10 rounded-xl transition-all" href="#" title="People"><span class="material-symbols-outlined">group</span></a>
+<a class="p-3 bg-secondary text-on-secondary rounded-xl shadow-lg transition-all" href="#" title="Administration"><span class="material-symbols-outlined">admin_panel_settings</span></a>
+<a class="p-3 text-on-primary-container hover:bg-white/10 rounded-xl transition-all" href="#" title="Administration Settings"><span class="material-symbols-outlined">settings_suggest</span></a></nav>
+<div class="mt-auto mb-6">
+<a class="p-3 text-on-primary-container hover:bg-white/10 rounded-xl transition-all" href="#" title="Support"><span class="material-symbols-outlined">contact_support</span></a>
+</div>
+</div>
+<!-- Administration Sub-Nav (Collapsible) -->
+</aside>
+<!-- Main Workspace Area -->
+<div class="flex-1 flex flex-col min-w-0 bg-background overflow-hidden relative">
+<!-- Hub Header -->
+<div class="bg-surface border-b border-outline-variant px-margin-desktop py-4 shrink-0 flex items-center justify-between z-30">
+<div>
+<h1 class="font-headline-md text-headline-md text-on-surface">Administration Hub</h1>
+<p class="text-on-surface-variant font-body-sm">Unified configuration for your enterprise identity, workforce tracking, and policy management.</p>
+</div>
+<div class="flex items-center gap-3">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">filter_list</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg text-sm w-64 focus:border-secondary outline-none" placeholder="Search settings..." type="text">
+</div>
+<button class="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant material-symbols-outlined">refresh</button>
+<button class="px-5 py-2 rounded-lg bg-secondary text-on-secondary font-label-md hover:opacity-90 shadow-lg transition-all">Save Changes</button>
+</div>
+</div>
+<div class="flex-1 flex min-h-0">
+<!-- Settings Internal Navigation (Sticky Panel) -->
+<nav class="w-72 bg-surface-container-lowest border-r border-outline-variant py-6 hidden xl:block overflow-y-auto custom-scrollbar shrink-0" id="settings-toc">
+<div class="px-6 mb-4">
+<span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Section Overview</span>
+</div>
+<div class="space-y-1 px-3">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all border-l-4 text-on-surface-variant font-medium border-transparent" href="#organization-profile">
+<span class="material-symbols-outlined text-[20px]">info</span>
+                        Organization Profile
+                    </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-surface-container text-sm transition-all border-l-4 text-on-surface-variant font-medium border-transparent" href="#head-office">
+<span class="material-symbols-outlined text-[20px]">location_city</span>
+                        Head Office
+                    </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-surface-container text-sm transition-all border-l-4 text-on-surface-variant font-medium border-transparent" href="#office-locations">
+<span class="material-symbols-outlined text-[20px]">apartment</span>
+                        Office Locations
+                    </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-surface-container text-sm transition-all border-l-4 text-on-surface-variant font-medium border-transparent" href="#branding">
+<span class="material-symbols-outlined text-[20px]">palette</span>
+                        Branding
+                    </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-surface-container text-sm transition-all border-l-4 text-on-surface-variant font-medium border-transparent" href="#regional">
+<span class="material-symbols-outlined text-[20px]">language</span>
+                        Regional Config
+                    </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-surface-container text-sm transition-all border-l-4 bg-secondary/5 text-secondary font-semibold border-secondary" href="#attendance-management">
+<span class="material-symbols-outlined text-[20px]">calendar_today</span>
+                        Attendance Management
+                    </a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-surface-container text-sm transition-all border-l-4 text-on-surface-variant font-medium border-transparent" href="#leave-management">
+<span class="material-symbols-outlined text-[20px]">event_busy</span>
+                        Leave Management
+                    </a>
+</div>
+<div class="mt-8 px-6">
+<div class="p-4 bg-primary-container rounded-xl">
+<p class="text-xs text-on-primary-container mb-2 font-medium">Configuration Score</p>
+<div class="w-full bg-primary/20 h-1.5 rounded-full overflow-hidden mb-3">
+<div class="bg-secondary h-full w-[85%]"></div>
+</div>
+<p class="text-[10px] text-on-primary-container/80 italic">Complete branding and leave policies to reach 100%.</p>
+</div>
+</div>
+</nav>
+<!-- Scrollable Settings Panel -->
+<main class="flex-1 content-container custom-scrollbar px-margin-desktop py-8 relative" id="main-scroll-panel">
+<!-- Quick Overview Strip -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-10">
+<div class="p-4 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Organization</p>
+<p class="text-xl font-bold text-primary">1</p>
+</div>
+<div class="p-4 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Locations</p>
+<p class="text-xl font-bold text-primary">8</p>
+</div>
+<div class="p-4 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Departments</p>
+<p class="text-xl font-bold text-primary">15</p>
+</div>
+<div class="p-4 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Employees</p>
+<p class="text-xl font-bold text-primary">1,284</p>
+</div>
+<div class="p-4 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Policies</p>
+<p class="text-xl font-bold text-primary">20</p>
+</div>
+<div class="p-4 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Health</p>
+<div class="flex items-center gap-2">
+<div class="w-2 h-2 rounded-full bg-green-500"></div>
+<span class="text-sm font-semibold">Good</span>
+</div>
+</div>
+</div>
+<!-- Independent Settings Cards -->
+<div class="max-w-5xl space-y-12">
+<!-- SECTION 1: Organization Profile -->
+<div class="scroll-mt-24" id="organization-profile">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<div class="px-8 py-6 border-b border-outline-variant flex justify-between items-center">
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface">Organization Information</h3>
+<p class="text-on-surface-variant font-body-sm">Manage the primary organization identity and registration details.</p>
+</div>
+<button class="px-4 py-2 bg-secondary text-on-secondary rounded-lg text-xs font-bold uppercase hover:opacity-90">Save Profile</button>
+</div>
+<div class="p-8">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<div class="space-y-4">
+<label class="block font-label-md text-on-surface-variant">Organization Logo</label>
+<div class="relative w-32 h-32 border border-outline-variant rounded-lg overflow-hidden bg-surface-container-low flex items-center justify-center p-4">
+<img alt="Logo Preview" class="max-w-full max-h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPsuaXWIaaR4OUE1dmYkWHec-DIsr3OXYwlQZN2jH117pY9dimmNjuFv2am5cgzGPkMYZVe3KndUtU8aYxVV7Q53Kn8RoeoTv5NkaWeXkGysWl8KGoPV4nVp33gIRslFOLPLkp0weFOtO7zGr5A_iSVu2OigrOnjPjE8QqUwu_vthoyMU2rLElFGM8Z89-buFKftjbvFj0Ng18FzbGwLIyQFZlGZSlUuubzz8R2Cs2EXaPXFhGn7MXqgRJMUYH1ROjTxE">
+</div>
+<button class="text-xs font-bold text-secondary uppercase hover:underline">Change Logo</button>
+</div>
+<div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="space-y-1"><label class="text-xs font-bold text-on-surface-variant uppercase">Organization Name</label><input class="w-full bg-white border border-outline-variant rounded px-3 py-2 text-sm" type="text" value="Bytevon Global Holdings"></div>
+<div class="space-y-1"><label class="text-xs font-bold text-on-surface-variant uppercase">Legal Name</label><input class="w-full bg-white border border-outline-variant rounded px-3 py-2 text-sm" type="text" value="Bytevon Global Holdings Inc."></div>
+<div class="space-y-1"><label class="text-xs font-bold text-on-surface-variant uppercase">Organization Email</label><input class="w-full bg-white border border-outline-variant rounded px-3 py-2 text-sm" type="email" value="admin@bytevon.com"></div>
+<div class="space-y-1"><label class="text-xs font-bold text-on-surface-variant uppercase">Primary Contact Number</label><input class="w-full bg-white border border-outline-variant rounded px-3 py-2 text-sm" type="tel" value="+1 (555) 012-3456"></div>
+<div class="space-y-1"><label class="text-xs font-bold text-on-surface-variant uppercase">Website</label><input class="w-full bg-white border border-outline-variant rounded px-3 py-2 text-sm" type="url" value="https://bytevon.com"></div>
+<div class="space-y-1"><label class="text-xs font-bold text-on-surface-variant uppercase">Tax Identification Number</label><input class="w-full bg-white border border-outline-variant rounded px-3 py-2 text-sm" type="text" value="TX-9928341"></div>
+<div class="space-y-1"><label class="text-xs font-bold text-on-surface-variant uppercase">Business Registration Number</label><input class="w-full bg-white border border-outline-variant rounded px-3 py-2 text-sm" type="text" value="BRN-001293"></div>
+<div class="md:col-span-2 space-y-1"><label class="text-xs font-bold text-on-surface-variant uppercase">Organization Description</label><textarea class="w-full bg-white border border-outline-variant rounded px-3 py-2 text-sm h-20">Leading enterprise solutions provider for global workforce management.</textarea></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION 2: Head Office -->
+<div class="scroll-mt-24" id="head-office">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<div class="px-8 py-6 border-b border-outline-variant flex justify-between items-center">
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface">Head Office</h3>
+<p class="text-on-surface-variant font-body-sm">Configure the organization's default headquarters.</p>
+</div>
+<button class="px-4 py-2 border border-secondary text-secondary rounded-lg text-xs font-bold uppercase hover:bg-secondary/5 transition-all">Change Head Office</button>
+</div>
+<div class="p-8">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="space-y-1"><p class="text-[10px] font-bold text-on-surface-variant uppercase">Head Office Name</p><p class="text-sm font-medium">New York HQ</p></div>
+<div class="space-y-1"><p class="text-[10px] font-bold text-on-surface-variant uppercase">Country</p><p class="text-sm font-medium">United States</p></div>
+<div class="space-y-1"><p class="text-[10px] font-bold text-on-surface-variant uppercase">State</p><p class="text-sm font-medium">New York</p></div>
+<div class="space-y-1"><p class="text-[10px] font-bold text-on-surface-variant uppercase">City</p><p class="text-sm font-medium">New York City</p></div>
+<div class="md:col-span-2 space-y-1"><p class="text-[10px] font-bold text-on-surface-variant uppercase">Address</p><p class="text-sm font-medium">123 Enterprise Way, Suite 500</p></div>
+<div class="space-y-1"><p class="text-[10px] font-bold text-on-surface-variant uppercase">Postal Code</p><p class="text-sm font-medium">10001</p></div>
+<div class="space-y-1"><p class="text-[10px] font-bold text-on-surface-variant uppercase">Timezone</p><p class="text-sm font-medium">UTC-05:00 Eastern Time</p></div>
+<div class="space-y-1"><p class="text-[10px] font-bold text-on-surface-variant uppercase">Currency</p><p class="text-sm font-medium">USD ($)</p></div>
+<div class="space-y-1"><p class="text-[10px] font-bold text-on-surface-variant uppercase">Fiscal Year</p><p class="text-sm font-medium">Jan - Dec</p></div>
+</div>
+<p class="mt-6 text-[11px] text-on-surface-variant italic">The Head Office references one of the existing office locations.</p>
+</div>
+</div>
+</div>
+<!-- SECTION 3: Office Locations -->
+<div class="scroll-mt-24" id="office-locations">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<div class="px-8 py-6 border-b border-outline-variant flex justify-between items-center">
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface">Office Locations</h3>
+<p class="text-on-surface-variant font-body-sm">Manage all company offices and branches.</p>
+</div>
+<button class="px-4 py-2 bg-secondary text-on-secondary rounded-lg text-xs font-bold uppercase hover:opacity-90 transition-all">+ Add Office</button>
+</div>
+<div class="p-8">
+<div class="flex flex-wrap gap-2 mb-4">
+<input class="text-xs border border-outline-variant rounded px-3 py-1.5 bg-white w-full md:w-48" placeholder="Search Office" type="text">
+<select class="text-xs border border-outline-variant rounded px-3 py-1.5 bg-white"><option>Country</option></select>
+<select class="text-xs border border-outline-variant rounded px-3 py-1.5 bg-white"><option>Status</option></select>
+</div>
+<div class="overflow-x-auto border border-outline-variant rounded-lg">
+<table class="w-full text-left text-sm">
+<thead class="bg-surface-container-low border-b border-outline-variant text-[10px] font-bold uppercase text-on-surface-variant">
+<tr>
+<th class="px-4 py-3">Office Name</th>
+<th class="px-4 py-3">Country</th>
+<th class="px-4 py-3">City</th>
+<th class="px-4 py-3">Head Office</th>
+<th class="px-4 py-3">Status</th>
+<th class="px-4 py-3 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<tr>
+<td class="px-4 py-3 font-medium">New York HQ</td>
+<td class="px-4 py-3">USA</td>
+<td class="px-4 py-3">New York</td>
+<td class="px-4 py-3"><span class="px-2 py-0.5 bg-primary text-white text-[10px] font-bold rounded-full">Primary</span></td>
+<td class="px-4 py-3"><span class="px-2 py-0.5 bg-green-500/10 text-green-500 text-[10px] font-bold rounded-full">Active</span></td>
+<td class="px-4 py-3 text-right space-x-2">
+<button class="material-symbols-outlined text-sm text-outline hover:text-secondary">edit</button>
+<button class="material-symbols-outlined text-sm text-outline hover:text-error">archive</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<!-- SECTION 4: Branding -->
+<div class="scroll-mt-24" id="branding">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden h-full">
+<div class="px-8 py-6 border-b border-outline-variant">
+<h3 class="font-title-lg text-title-lg text-on-surface">Branding</h3>
+<p class="text-on-surface-variant font-body-sm">Customize organization colors and icons.</p>
+</div>
+<div class="p-8 space-y-6">
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="text-xs font-bold text-on-surface-variant uppercase">Organization Logo</label>
+<button class="w-full py-2 border border-dashed border-outline-variant rounded-lg text-xs font-medium hover:border-secondary transition-all">Upload Logo</button>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold text-on-surface-variant uppercase">Favicon</label>
+<button class="w-full py-2 border border-dashed border-outline-variant rounded-lg text-xs font-medium hover:border-secondary transition-all">Upload Icon</button>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-2">
+<label class="text-xs font-bold text-on-surface-variant uppercase">Primary Color</label>
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded bg-primary border border-outline-variant"></div>
+<input class="flex-1 text-xs border border-outline-variant rounded px-2 py-1.5" type="text" value="#000613">
+</div>
+</div>
+<div class="space-y-2">
+<label class="text-xs font-bold text-on-surface-variant uppercase">Secondary Color</label>
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded bg-secondary border border-outline-variant"></div>
+<input class="flex-1 text-xs border border-outline-variant rounded px-2 py-1.5" type="text" value="#0059bb">
+</div>
+</div>
+</div>
+<div class="p-4 bg-surface-container-low rounded-lg border border-outline-variant">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase mb-2">Theme Preview</p>
+<div class="flex gap-2">
+<div class="w-12 h-4 bg-primary rounded"></div>
+<div class="w-12 h-4 bg-secondary rounded"></div>
+<div class="w-12 h-4 bg-surface-container-highest rounded"></div>
+</div>
+</div>
+<div class="flex justify-end">
+<button class="text-error text-xs font-bold uppercase hover:underline">Reset Branding</button>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION 5: Regional Configuration -->
+<div class="scroll-mt-24" id="regional">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden h-full">
+<div class="px-8 py-6 border-b border-outline-variant">
+<h3 class="font-title-lg text-title-lg text-on-surface">Regional Config</h3>
+<p class="text-on-surface-variant font-body-sm">Global language and currency settings.</p>
+</div>
+<div class="p-8">
+<div class="grid grid-cols-1 gap-4">
+<div class="space-y-1"><label class="text-xs font-bold text-on-surface-variant uppercase">Default Language</label><select class="w-full bg-white border border-outline-variant rounded px-3 py-2 text-sm"><option>English (US)</option></select></div>
+<div class="space-y-1"><label class="text-xs font-bold text-on-surface-variant uppercase">Default Timezone</label><select class="w-full bg-white border border-outline-variant rounded px-3 py-2 text-sm"><option>UTC-05:00 Eastern Time</option></select></div>
+<div class="space-y-1"><label class="text-xs font-bold text-on-surface-variant uppercase">Default Currency</label><select class="w-full bg-white border border-outline-variant rounded px-3 py-2 text-sm"><option>USD ($)</option></select></div>
+<div class="space-y-1"><label class="text-xs font-bold text-on-surface-variant uppercase">Date Format</label><select class="w-full bg-white border border-outline-variant rounded px-3 py-2 text-sm"><option>MM/DD/YYYY</option></select></div>
+<div class="space-y-1"><label class="text-xs font-bold text-on-surface-variant uppercase">Week Start Day</label><select class="w-full bg-white border border-outline-variant rounded px-3 py-2 text-sm"><option>Monday</option></select></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION 6: Attendance Management -->
+<div class="scroll-mt-24" id="attendance-management">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<div class="px-8 py-6 border-b border-outline-variant">
+<div class="flex justify-between items-center mb-1">
+<h3 class="font-title-lg text-title-lg text-on-surface flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">calendar_today</span>
+                                        Attendance Management
+                                    </h3>
+<button class="bg-secondary text-on-secondary px-4 py-2 rounded-lg text-xs font-bold uppercase hover:opacity-90">Manage Policies</button>
+</div>
+<p class="text-on-surface-variant font-body-sm">Configure organization-wide attendance rules, work schedules, and overtime policies.</p>
+</div>
+<div class="p-8">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<div class="lg:col-span-2 space-y-8">
+<div class="space-y-4">
+<div class="flex justify-between items-end">
+<h4 class="font-label-md text-on-surface">Work Shifts</h4>
+<button class="text-secondary text-xs font-bold uppercase hover:underline">+ Add Shift</button>
+</div>
+<div class="overflow-x-auto border border-outline-variant rounded-lg">
+<table class="w-full text-left text-sm">
+<thead class="bg-surface-container-low border-b border-outline-variant text-[10px] font-bold uppercase text-on-surface-variant">
+<tr>
+<th class="px-4 py-3">Shift Name</th>
+<th class="px-4 py-3">Start</th>
+<th class="px-4 py-3">End</th>
+<th class="px-4 py-3">Status</th>
+<th class="px-4 py-3 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<tr>
+<td class="px-4 py-3 font-medium">General Morning</td>
+<td class="px-4 py-3">09:00</td>
+<td class="px-4 py-3">18:00</td>
+<td class="px-4 py-3"><span class="px-2 py-0.5 bg-green-500/10 text-green-500 text-[10px] font-bold rounded-full">Active</span></td>
+<td class="px-4 py-3 text-right space-x-2">
+<button class="material-symbols-outlined text-sm text-outline hover:text-secondary">edit</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="space-y-6">
+<h4 class="font-label-md text-on-surface">Quick Configuration</h4>
+<div class="p-4 bg-surface-container-low border border-outline-variant rounded-lg space-y-4">
+<div class="flex justify-between items-center">
+<span class="text-xs font-medium">Attendance Tracking</span>
+<div class="w-8 h-4 bg-secondary rounded-full relative"><div class="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></div></div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-xs font-medium">Geolocation</span>
+<div class="w-8 h-4 bg-outline-variant rounded-full relative"><div class="absolute left-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></div></div>
+</div>
+<div class="flex justify-between items-center">
+<span class="text-xs font-medium">Overtime</span>
+<div class="w-8 h-4 bg-secondary rounded-full relative"><div class="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></div></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- SECTION 7: Leave Management -->
+<div class="scroll-mt-24" id="leave-management"><div class="space-y-8">
+<!-- Card 1: Leave Types -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<div class="px-8 py-6 border-b border-outline-variant flex justify-between items-center">
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface">Leave Types</h3>
+<p class="text-on-surface-variant font-body-sm">Manage the leave categories available across the organization.</p>
+</div>
+<button class="px-4 py-2 bg-secondary text-on-secondary rounded-lg text-xs font-bold uppercase hover:opacity-90">+ Add Leave Type</button>
+</div>
+<div class="p-8">
+<div class="overflow-x-auto border border-outline-variant rounded-lg">
+<table class="w-full text-left text-sm">
+<thead class="bg-surface-container-low border-b border-outline-variant text-[10px] font-bold uppercase text-on-surface-variant">
+<tr>
+<th class="px-4 py-3">Leave Type</th>
+<th class="px-4 py-3">Code</th>
+<th class="px-4 py-3">Paid / Unpaid</th>
+<th class="px-4 py-3">Color</th>
+<th class="px-4 py-3">Status</th>
+<th class="px-4 py-3 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<tr>
+<td class="px-4 py-3 font-medium">Casual Leave</td>
+<td class="px-4 py-3">CL</td>
+<td class="px-4 py-3">Paid</td>
+<td class="px-4 py-3"><div class="w-4 h-4 rounded-full bg-blue-500"></div></td>
+<td class="px-4 py-3"><span class="px-2 py-0.5 bg-green-500/10 text-green-500 text-[10px] font-bold rounded-full">Active</span></td>
+<td class="px-4 py-3 text-right space-x-2">
+<button class="material-symbols-outlined text-sm text-outline hover:text-secondary">edit</button>
+<button class="material-symbols-outlined text-sm text-outline hover:text-error">archive</button>
+<button class="material-symbols-outlined text-sm text-outline hover:text-secondary">visibility</button>
+</td>
+</tr>
+<tr>
+<td class="px-4 py-3 font-medium">Sick Leave</td>
+<td class="px-4 py-3">SL</td>
+<td class="px-4 py-3">Paid</td>
+<td class="px-4 py-3"><div class="w-4 h-4 rounded-full bg-red-500"></div></td>
+<td class="px-4 py-3"><span class="px-2 py-0.5 bg-green-500/10 text-green-500 text-[10px] font-bold rounded-full">Active</span></td>
+<td class="px-4 py-3 text-right space-x-2">
+<button class="material-symbols-outlined text-sm text-outline hover:text-secondary">edit</button>
+<button class="material-symbols-outlined text-sm text-outline hover:text-error">archive</button>
+<button class="material-symbols-outlined text-sm text-outline hover:text-secondary">visibility</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Card 2: Leave Policies -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<div class="px-8 py-6 border-b border-outline-variant flex justify-between items-center">
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface">Leave Policies</h3>
+<p class="text-on-surface-variant font-body-sm">Define organization leave policies and eligibility rules.</p>
+</div>
+<button class="px-4 py-2 bg-secondary text-on-secondary rounded-lg text-xs font-bold uppercase hover:opacity-90">+ Create Policy</button>
+</div>
+<div class="p-8">
+<div class="flex flex-wrap gap-3 mb-6">
+<input class="text-xs border border-outline-variant rounded px-3 py-2 bg-white w-full md:w-48" placeholder="Search Policy" type="text">
+<select class="text-xs border border-outline-variant rounded px-3 py-2 bg-white"><option>Leave Type</option></select>
+<select class="text-xs border border-outline-variant rounded px-3 py-2 bg-white"><option>Employment Type</option></select>
+<select class="text-xs border border-outline-variant rounded px-3 py-2 bg-white"><option>Department</option></select>
+<select class="text-xs border border-outline-variant rounded px-3 py-2 bg-white"><option>Status</option></select>
+</div>
+<div class="overflow-x-auto border border-outline-variant rounded-lg">
+<table class="w-full text-left text-sm">
+<thead class="bg-surface-container-low border-b border-outline-variant text-[10px] font-bold uppercase text-on-surface-variant">
+<tr>
+<th class="px-4 py-3">Policy Name</th>
+<th class="px-4 py-3">Leave Type</th>
+<th class="px-4 py-3">Employment Type</th>
+<th class="px-4 py-3">Annual Quota</th>
+<th class="px-4 py-3">Approval</th>
+<th class="px-4 py-3">Status</th>
+<th class="px-4 py-3 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30">
+<tr>
+<td class="px-4 py-3 font-medium">Standard Casual Policy</td>
+<td class="px-4 py-3">Casual Leave</td>
+<td class="px-4 py-3">Full-Time</td>
+<td class="px-4 py-3">12 Days</td>
+<td class="px-4 py-3">Required</td>
+<td class="px-4 py-3"><span class="px-2 py-0.5 bg-green-500/10 text-green-500 text-[10px] font-bold rounded-full">Active</span></td>
+<td class="px-4 py-3 text-right space-x-2">
+<button class="material-symbols-outlined text-sm text-outline hover:text-secondary">edit</button>
+<button class="material-symbols-outlined text-sm text-outline hover:text-error">delete</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Card 3: Policy Assignment Summary -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="p-4 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Policies</p>
+<p class="text-xl font-bold text-primary">12</p>
+</div>
+<div class="p-4 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Leave Types</p>
+<p class="text-xl font-bold text-primary">8</p>
+</div>
+<div class="p-4 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Depts Covered</p>
+<p class="text-xl font-bold text-primary">15</p>
+</div>
+<div class="p-4 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Emp Types</p>
+<p class="text-xl font-bold text-primary">4</p>
+</div>
+</div>
+<!-- Card 4: Quick Configuration -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+<div class="px-8 py-6 border-b border-outline-variant">
+<h3 class="font-title-lg text-title-lg text-on-surface">Quick Configuration</h3>
+<p class="text-on-surface-variant font-body-sm">Global leave behavior settings.</p>
+</div>
+<div class="p-8">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="flex justify-between items-center p-4 bg-surface-container-low border border-outline-variant rounded-lg">
+<span class="text-xs font-medium">Allow Employees to Cancel Leave</span>
+<div class="w-8 h-4 bg-secondary rounded-full relative cursor-pointer"><div class="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></div></div>
+</div>
+<div class="flex justify-between items-center p-4 bg-surface-container-low border border-outline-variant rounded-lg">
+<span class="text-xs font-medium">Allow Half-Day Leave</span>
+<div class="w-8 h-4 bg-secondary rounded-full relative cursor-pointer"><div class="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></div></div>
+</div>
+<div class="flex justify-between items-center p-4 bg-surface-container-low border border-outline-variant rounded-lg">
+<span class="text-xs font-medium">Allow Multi-Day Leave</span>
+<div class="w-8 h-4 bg-secondary rounded-full relative cursor-pointer"><div class="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></div></div>
+</div>
+<div class="flex justify-between items-center p-4 bg-surface-container-low border border-outline-variant rounded-lg">
+<span class="text-xs font-medium">Allow Leave During Probation</span>
+<div class="w-8 h-4 bg-outline-variant rounded-full relative cursor-pointer"><div class="absolute left-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></div></div>
+</div>
+<div class="flex justify-between items-center p-4 bg-surface-container-low border border-outline-variant rounded-lg">
+<span class="text-xs font-medium">Enable Carry Forward</span>
+<div class="w-8 h-4 bg-secondary rounded-full relative cursor-pointer"><div class="absolute right-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></div></div>
+</div>
+<div class="flex justify-between items-center p-4 bg-surface-container-low border border-outline-variant rounded-lg">
+<span class="text-xs font-medium">Enable Negative Leave Balance</span>
+<div class="w-8 h-4 bg-outline-variant rounded-full relative cursor-pointer"><div class="absolute left-0.5 top-0.5 w-3 h-3 bg-white rounded-full"></div></div>
+</div>
+</div>
+</div>
+</div>
+</div></div>
+<!-- Bottom Spacer -->
+<div class="h-24"></div>
+</div>
+<!-- Floating Back to Top Button -->
+<button class="fixed bottom-24 right-8 w-12 h-12 bg-surface border border-outline-variant rounded-full shadow-lg flex items-center justify-center text-secondary hover:bg-surface-container-low transition-all z-40" onclick="document.getElementById('main-scroll-panel').scrollTo({top: 0, behavior: 'smooth'})">
+<span class="material-symbols-outlined">arrow_upward</span>
+</button>
+</main>
+</div>
+<!-- Sticky Action Bar (Visible only when changes are made) -->
+<div class="action-bar fixed bottom-0 left-0 lg:left-[calc(80px+256px)] right-0 bg-surface/80 backdrop-blur-md border-t border-outline-variant px-margin-desktop py-4 items-center justify-between z-[50] shadow-[0_-4px_20px_rgba(0,0,0,0.05)]" id="footer-action-bar">
+<p class="text-sm font-medium text-on-surface">You have unsaved changes in Administration Hub.</p>
+<div class="flex items-center gap-4">
+<button class="px-5 py-2 rounded-lg border border-outline text-on-surface font-label-md hover:bg-surface-container transition-all" onclick="this.closest('#footer-action-bar').classList.remove('visible')">Discard</button>
+<button class="px-8 py-2 rounded-lg bg-secondary text-on-secondary font-label-md hover:opacity-90 shadow-lg transition-all">Save Changes</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+    // Track changes to show action bar
+    const inputs = document.querySelectorAll('input, select, textarea');
+    const actionBar = document.getElementById('footer-action-bar');
+    
+    inputs.forEach(input => {
+        input.addEventListener('change', () => {
+            actionBar.classList.add('visible');
+        });
+    });
+
+    // Sticky sub-nav highlighting logic
+    const scrollPanel = document.getElementById('main-scroll-panel');
+    const sections = document.querySelectorAll('.scroll-mt-24');
+    const navLinks = document.querySelectorAll('#settings-toc a');
+
+    scrollPanel.addEventListener('scroll', () => {
+        let current = "";
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            if (scrollPanel.scrollTop >= sectionTop - 150) {
+                current = section.getAttribute("id");
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.classList.remove("bg-secondary/5", "text-secondary", "font-semibold", "border-secondary");
+            link.classList.add("text-on-surface-variant", "font-medium", "border-transparent");
+            if (link.getAttribute("href").includes(current)) {
+                link.classList.add("bg-secondary/5", "text-secondary", "font-semibold", "border-secondary");
+                link.classList.remove("text-on-surface-variant", "font-medium", "border-transparent");
+            }
+        });
+    });
+
+    // Smooth scroll for internal navigation
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            scrollPanel.scrollTo({
+                top: targetElement.offsetTop - 40,
+                behavior: 'smooth'
+            });
+        });
+    });
+</script>
+</body></html>

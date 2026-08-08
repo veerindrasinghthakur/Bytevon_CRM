@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bytevon | Employee Management - Multi-Select</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-container": "#e5eeff", "on-error-container": "#93000a", "surface-tint": "#476083", primary: "#000613", "on-primary-container": "#6f88ad", "tertiary-fixed": "#e0e3e5", background: "#f8f9ff", "on-tertiary-container": "#848789", "on-secondary-fixed": "#001a41", "secondary-container": "#0070ea", "surface-dim": "#cbdbf5", "inverse-primary": "#afc8f0", secondary: "#0059bb", "inverse-on-surface": "#eaf1ff", "tertiary-fixed-dim": "#c4c7c9", "on-primary-fixed-variant": "#2f486a", "on-error": "#ffffff", "tertiary-container": "#1c1f21", "surface-container-highest": "#d3e4fe", "primary-fixed": "#d4e3ff", "primary-fixed-dim": "#afc8f0", "secondary-fixed-dim": "#adc7ff", "surface-bright": "#f8f9ff", "outline-variant": "#c4c6cf", error: "#ba1a1a", "surface-variant": "#d3e4fe", "error-container": "#ffdad6", "primary-container": "#001f3f", "on-primary-fixed": "#001c3a", "on-secondary-fixed-variant": "#004493", "on-tertiary-fixed-variant": "#444749", "on-secondary-container": "#fefcff", "on-surface-variant": "#43474e", surface: "#f8f9ff", tertiary: "#040607", "secondary-fixed": "#d8e2ff", "on-primary": "#ffffff", "surface-container-lowest": "#ffffff", "surface-container-high": "#dce9ff", "on-background": "#0b1c30", "on-surface": "#0b1c30", "surface-container-low": "#eff4ff", "on-tertiary-fixed": "#191c1e", "inverse-surface": "#213145", "on-tertiary": "#ffffff", "on-secondary": "#ffffff", outline: "#74777f"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"stack-lg": "32px", "margin-desktop": "40px", gutter: "24px", unit: "4px", "stack-md": "16px", "margin-mobile": "16px", "container-max": "1440px", "stack-sm": "8px"}, fontFamily: {"title-lg": ["Inter"], "label-sm": ["Inter"], "label-md": ["Inter"], "headline-md": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "headline-lg": ["Inter"], "headline-lg-mobile": ["Inter"], "display-lg": ["Inter"], "body-sm": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}]}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .selection-glow {
+            box-shadow: 0 0 0 2px #0070ea;
+        }
+        .custom-checkbox:checked {
+            background-color: #0070ea;
+            border-color: #0070ea;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md selection:bg-secondary-container/30">
+<!-- Sidebar Navigation -->
+<aside class="flex flex-col p-stack-md w-[280px] h-screen fixed left-0 top-0 z-50 bg-primary dark:bg-primary-container shadow-md">
+<div class="flex items-center gap-stack-sm mb-stack-lg">
+<div class="w-10 h-10 rounded-lg bg-on-primary flex items-center justify-center"><img alt="Bytevon Logo" class="w-full h-full rounded-lg object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBoyE6GhJhxBABXFL-cP-L2vJqvnjsPtYE21EFs9xSt5B4C5QeKO1GM1PmAV2b_hO4r81plyyarZD_kPeMTMHJpeeIwImFUwJNElsoJXasDidWSC9QsPSS5lO48qt0oSF-0dVIk5vRTUQS4Zlk4Hx7DiXelC-IImA4hlhEwVmHV6SZNebjEm0_2_pMWBYowefF6xlq8RY31qrSEnZm1jtWia_TOcmbK-G1a7uH4kgfoJISxL1KvJmmnb2hO5bKXOd9YTuY"/></div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary leading-none">Bytevon</h1>
+<p class="font-label-md text-label-md text-on-primary-fixed-variant">Enterprise Suite</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-stack-sm px-stack-md py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-on-primary-fixed-variant/20 transition-all" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-stack-sm px-stack-md py-3 bg-secondary text-on-secondary rounded-lg transition-transform duration-200 active:scale-95" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">group</span>
+<span class="font-label-md">Employees</span>
+</a>
+<a class="flex items-center gap-stack-sm px-stack-md py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-on-primary-fixed-variant/20 transition-all" href="#">
+<span class="material-symbols-outlined">handshake</span>
+<span class="font-label-md">CRM</span>
+</a>
+<a class="flex items-center gap-stack-sm px-stack-md py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-on-primary-fixed-variant/20 transition-all" href="#">
+<span class="material-symbols-outlined">factory</span>
+<span class="font-label-md">ERP</span>
+</a>
+<a class="flex items-center gap-stack-sm px-stack-md py-3 text-on-primary-fixed-variant hover:text-on-primary hover:bg-on-primary-fixed-variant/20 transition-all" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-md">Reports</span>
+</a>
+</nav>
+<div class="mt-stack-lg border-t border-on-primary/10 pt-stack-lg">
+<a class="flex items-center gap-stack-sm px-stack-md py-3 text-on-primary-fixed-variant hover:text-on-primary transition-all" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label-md">Support</span>
+</a>
+<a class="flex items-center gap-stack-sm px-stack-md py-3 text-on-primary-fixed-variant hover:text-on-primary transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md">Sign Out</span>
+</a>
+</div>
+</aside>
+<!-- Top Navigation Bar -->
+<header class="flex justify-between items-center h-16 px-margin-desktop w-full ml-[280px] max-w-[calc(1440px-280px)] fixed top-0 z-40 bg-surface dark:bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-stack-md flex-1">
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-low border-none rounded-full py-2 pl-10 pr-4 text-body-sm focus:ring-2 focus:ring-secondary" placeholder="Search employees..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-stack-md">
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors text-on-surface-variant">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-stack-sm cursor-pointer active:opacity-80 transition-all">
+<img class="w-10 h-10 rounded-full border border-outline-variant object-cover" data-alt="A professional headshot of a corporate executive in a light-filled modern office environment. The image uses a clean, high-contrast aesthetic with soft, neutral tones and a focus on sharp detail and professional attire. High-key lighting highlights the subject's approachable yet authoritative expression." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMsEjkJLLcTaVc-k2jXKN-Rnb6es9t0ZBKmUiIMfqMk4ZL-No7aM1jrx4dF4vzVhlgDFFePZU6VMmD1sQrDYIo4WE6kCJtRZy8bxalKS82uLfYzlhfnLA8Fx3HaxIgPgVt4GjtK-QGbKCus-krfrWpB39LdIUDvOfXf3e8G4slVPjmktZPqfKTLbFQxVEd-urX9dsJ4LX24NRANCdyZG1IYaP75uCz3vMFFGO7eFdtN4FMEIHNf2TSZQ"/>
+<div class="hidden lg:block text-left">
+<p class="font-label-md text-on-surface leading-none">Alex Rivera</p>
+<p class="font-label-sm text-on-surface-variant">Admin</p>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="ml-[280px] mt-16 p-margin-desktop min-h-screen">
+<!-- Selection Bulk Action Bar (FLOATING) -->
+<div class="fixed top-20 left-[calc(280px+40px)] right-10 z-30 transform transition-all duration-300 opacity-100 translate-y-0" id="bulk-action-bar">
+<div class="bg-secondary-container text-on-secondary-container rounded-xl shadow-xl border border-secondary p-stack-md flex items-center justify-between">
+<div class="flex items-center gap-stack-md">
+<div class="bg-white/20 p-2 rounded-lg">
+<span class="material-symbols-outlined text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<span class="font-title-lg text-title-lg">3 Employees Selected</span>
+<p class="text-label-sm opacity-80">Apply bulk changes to the selected workforce records</p>
+</div>
+</div>
+<div class="flex items-center gap-stack-sm">
+<button class="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors font-label-md">
+<span class="material-symbols-outlined text-[20px]">ios_share</span>
+                        Export
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors font-label-md">
+<span class="material-symbols-outlined text-[20px]">published_with_changes</span>
+                        Change Status
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors font-label-md">
+<span class="material-symbols-outlined text-[20px]">groups</span>
+                        Assign Team
+                    </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-error text-on-error hover:bg-error/90 rounded-lg transition-colors font-label-md">
+<span class="material-symbols-outlined text-[20px]">archive</span>
+                        Archive
+                    </button>
+<div class="w-[1px] h-8 bg-white/20 mx-2"></div>
+<button class="p-2 hover:bg-white/10 rounded-full transition-colors" onclick="document.getElementById('bulk-action-bar').classList.add('opacity-0', '-translate-y-4')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-stack-lg pt-16">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Employee Directory</h2>
+<p class="text-on-surface-variant font-body-md mt-unit">Manage global staff records, team assignments, and payroll status.</p>
+</div>
+<button class="flex items-center gap-stack-sm px-6 py-3 bg-secondary text-on-secondary font-label-md rounded-lg shadow-sm hover:opacity-90 transition-all active:scale-95">
+<span class="material-symbols-outlined">add</span>
+                New Employee
+            </button>
+</div>
+<!-- Table Filters -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-stack-md mb-stack-md flex flex-wrap items-center gap-stack-md">
+<div class="flex items-center gap-stack-sm">
+<span class="font-label-md text-on-surface-variant">View:</span>
+<div class="flex bg-surface-container-low p-1 rounded-lg">
+<button class="px-4 py-1.5 bg-white shadow-sm rounded-md font-label-md text-primary">All Staff</button>
+<button class="px-4 py-1.5 font-label-md text-on-surface-variant hover:text-on-surface">Active</button>
+<button class="px-4 py-1.5 font-label-md text-on-surface-variant hover:text-on-surface">On Leave</button>
+</div>
+</div>
+<div class="flex-1"></div>
+<button class="flex items-center gap-2 px-4 py-2 border border-outline-variant rounded-lg font-label-md text-on-surface-variant hover:bg-surface-container-low">
+<span class="material-symbols-outlined text-[20px]">filter_list</span>
+                Filters
+            </button>
+<button class="flex items-center gap-2 px-4 py-2 border border-outline-variant rounded-lg font-label-md text-on-surface-variant hover:bg-surface-container-low">
+<span class="material-symbols-outlined text-[20px]">sort</span>
+                Sort
+            </button>
+</div>
+<!-- Employee Table -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="px-stack-md py-4 w-12 text-center">
+<input checked="" class="custom-checkbox w-4 h-4 rounded border-outline focus:ring-secondary text-secondary" type="checkbox"/>
+</th>
+<th class="px-stack-md py-4 font-label-md text-on-surface-variant">Employee</th>
+<th class="px-stack-md py-4 font-label-md text-on-surface-variant">Role</th>
+<th class="px-stack-md py-4 font-label-md text-on-surface-variant">Department</th>
+<th class="px-stack-md py-4 font-label-md text-on-surface-variant">Status</th>
+<th class="px-stack-md py-4 font-label-md text-on-surface-variant">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<!-- Row 1: Selected -->
+<tr class="bg-secondary-container/10 hover:bg-secondary-container/20 transition-colors">
+<td class="px-stack-md py-4 text-center">
+<input checked="" class="custom-checkbox w-4 h-4 rounded border-outline focus:ring-secondary text-secondary" type="checkbox"/>
+</td>
+<td class="px-stack-md py-4">
+<div class="flex items-center gap-stack-md">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A detailed headshot of a middle-aged woman with glasses and a friendly, confident smile, set against a blurred office backdrop. The lighting is soft and professional, and the color palette is dominated by corporate blues and grays, maintaining a sleek, modern, enterprise UI aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB5suOTfKaR7bM-ucDy2O-zRVZ94KcQFgT0s0gA0CZUzYj69tCVFP-_Xgsfm5b9zFL2ij-Onk1VB3xnon2IPYa5WrSSeB9X8GfAmVV8UYeU9lDK552WPVxWEz7q1Nj2s9KrieMBQ_cRk9DTLPSPLT9OP8eYY-5si1p8bxKP2s049WKBd_2IwbiGEW2c1GBt1gT8NQw-MqoP-vrN56C16180e4RoKfS6oneSV7BtchPp9bT5vjcMdtBv4w"/>
+<div>
+<p class="font-label-md text-on-surface">Sarah Jenkins</p>
+<p class="text-label-sm text-on-surface-variant">sarah.j@bytevon.io</p>
+</div>
+</div>
+</td>
+<td class="px-stack-md py-4 font-body-sm text-on-surface">Senior Product Manager</td>
+<td class="px-stack-md py-4 font-body-sm text-on-surface">Product Operations</td>
+<td class="px-stack-md py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-sm bg-green-100 text-green-800 font-medium">Active</span>
+</td>
+<td class="px-stack-md py-4">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Selected -->
+<tr class="bg-secondary-container/10 hover:bg-secondary-container/20 transition-colors">
+<td class="px-stack-md py-4 text-center">
+<input checked="" class="custom-checkbox w-4 h-4 rounded border-outline focus:ring-secondary text-secondary" type="checkbox"/>
+</td>
+<td class="px-stack-md py-4">
+<div class="flex items-center gap-stack-md">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A portrait of a young man with a creative, modern look, featuring a clean haircut and stylish professional attire. The background is a minimalist studio setting with high-key lighting, emphasizing a clean and efficient enterprise atmosphere. The color scheme is professional navy and white." src="https://lh3.googleusercontent.com/aida-public/AB6AXuACkGnRNmAwyEiNFFOh8Y-JCAzyAoX2_WGYEP_c-4vpmPkIJ-cqXxSl3JxKESpreLQuydrQS084whP9jqIcrG2xW_DorDPf-mBHWqPm9UzFKZnxaHK3n_4Ztopt1N202ux7W7UtHgx90wBtrp-t_h3br1xIcDnUKpBlyNYDaYaijTkVz5D3o5XC15enPACX2I4TmVjLymlK9ilfqNOoCmdfkDKIh3jvhGDhkxSWSu34EX0y3N64HWqzzg"/>
+<div>
+<p class="font-label-md text-on-surface">Marcus Thorne</p>
+<p class="text-label-sm text-on-surface-variant">m.thorne@bytevon.io</p>
+</div>
+</div>
+</td>
+<td class="px-stack-md py-4 font-body-sm text-on-surface">Lead UI Architect</td>
+<td class="px-stack-md py-4 font-body-sm text-on-surface">Engineering</td>
+<td class="px-stack-md py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-sm bg-green-100 text-green-800 font-medium">Active</span>
+</td>
+<td class="px-stack-md py-4">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Not Selected -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-stack-md py-4 text-center">
+<input class="custom-checkbox w-4 h-4 rounded border-outline focus:ring-secondary text-secondary" type="checkbox"/>
+</td>
+<td class="px-stack-md py-4">
+<div class="flex items-center gap-stack-md">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A professional headshot of a mature Asian man in a crisp white shirt, radiating institutional trust and experience. The setting is a bright, airy architectural office space. The lighting is natural and sophisticated, fitting for a premium enterprise software interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDPBOIDCVB9rvIsZACDu1_SFuyUhzBwhsWu1jU9DyscnVMVSWqtsCbem2Y9oakmI6yWyzMXPfO1o3zH-pzKQGchIjbyixDOPu0aMvyrRKNmRuTQywqjVnFrwO91F-00PEI52icro3xjg6Dw5-8dqa345W1qmXIfoAeWI-mFNREO_mVgQroQ_cHalFEZ8mNK663L9aQogvCE8dgg1e5FQFEgYpbrH5_wvr7Kfl75F33dvvHRxzj-5pZR2A"/>
+<div>
+<p class="font-label-md text-on-surface">David Chen</p>
+<p class="text-label-sm text-on-surface-variant">d.chen@bytevon.io</p>
+</div>
+</div>
+</td>
+<td class="px-stack-md py-4 font-body-sm text-on-surface">Financial Controller</td>
+<td class="px-stack-md py-4 font-body-sm text-on-surface">Finance</td>
+<td class="px-stack-md py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-sm bg-blue-100 text-blue-800 font-medium">Remote</span>
+</td>
+<td class="px-stack-md py-4">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Selected -->
+<tr class="bg-secondary-container/10 hover:bg-secondary-container/20 transition-colors">
+<td class="px-stack-md py-4 text-center">
+<input checked="" class="custom-checkbox w-4 h-4 rounded border-outline focus:ring-secondary text-secondary" type="checkbox"/>
+</td>
+<td class="px-stack-md py-4">
+<div class="flex items-center gap-stack-md">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A portrait of a young professional woman with a bright, engaged expression, wearing a modern business blazer. The environment is a clean, glass-walled corporate meeting room. The image conveys energy and institutional reliability within a modern minimalist design framework." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1XmVujEWMV5LAnSoMsQExjBRjAkh3pHOJ_mvckxywIb3rME5lclf1VzDmh1boPNd-Zu_RD-Zh6VCF6tvu2877UrkG2qVJZcFhZQXdIqi0hkAEHj2oGOi__VpX-kRBPTq-o8rxroYfd1rmS5Wvl_z_ybCH6y76jq87t9zqsFDslpjJKoic5FAyuD2tl_PCu_JrR94MesjXfdX-dlxW1vXvuY-mzyot9F4ZoiPAjLHuA0y-Py29i0wKEA"/>
+<div>
+<p class="font-label-md text-on-surface">Elena Rodriguez</p>
+<p class="text-label-sm text-on-surface-variant">e.rod@bytevon.io</p>
+</div>
+</div>
+</td>
+<td class="px-stack-md py-4 font-body-sm text-on-surface">HR Specialist</td>
+<td class="px-stack-md py-4 font-body-sm text-on-surface">Human Resources</td>
+<td class="px-stack-md py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-sm bg-green-100 text-green-800 font-medium">Active</span>
+</td>
+<td class="px-stack-md py-4">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Not Selected -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="px-stack-md py-4 text-center">
+<input class="custom-checkbox w-4 h-4 rounded border-outline focus:ring-secondary text-secondary" type="checkbox"/>
+</td>
+<td class="px-stack-md py-4">
+<div class="flex items-center gap-stack-md">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="A high-detail professional headshot of a young man with a sharp, modern haircut and a focused expression. He is wearing a dark navy corporate shirt in a bright, minimalist high-tech office. The lighting is crisp and clear, emphasizing professionalism and technological sophistication." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6LZXvjjLYlGukT_8wsLSK8AxPiQ3Ms6AZpZm4AN5eChGLcYDAV7DQ0gokDj1ZmHyfH5n_nIV1KLWle3Q2aTvk4qSrkpS5dnUcvzUa46mjx-8Mm1lhZTSPaIXQOpPMGBqXOSjtn6YBoOUHMLL7ikchal-68h7tH8rJ4QqfU6Y-rvdOGWSCVouGmmLnfDhjJf-tYlWie-F9uYucHX2Lj5LKsGJ_dhSKYd0bUb7gCtWjuyz-aHPsOXwGww"/>
+<div>
+<p class="font-label-md text-on-surface">Samuel Wright</p>
+<p class="text-label-sm text-on-surface-variant">s.wright@bytevon.io</p>
+</div>
+</div>
+</td>
+<td class="px-stack-md py-4 font-body-sm text-on-surface">Backend Engineer</td>
+<td class="px-stack-md py-4 font-body-sm text-on-surface">Engineering</td>
+<td class="px-stack-md py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-sm bg-yellow-100 text-yellow-800 font-medium">Pending</span>
+</td>
+<td class="px-stack-md py-4">
+<button class="p-2 hover:bg-surface-container-high rounded-lg text-on-surface-variant">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+<!-- Table Footer/Pagination -->
+<div class="p-stack-md flex justify-between items-center bg-surface-container-low">
+<p class="text-label-sm text-on-surface-variant">Showing 5 of 1,240 employees</p>
+<div class="flex items-center gap-2">
+<button class="p-2 border border-outline-variant rounded-lg disabled:opacity-50" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-8 h-8 flex items-center justify-center bg-secondary text-on-secondary rounded-lg font-label-md">1</button>
+<button class="w-8 h-8 flex items-center justify-center hover:bg-surface-container-high rounded-lg font-label-md">2</button>
+<button class="w-8 h-8 flex items-center justify-center hover:bg-surface-container-high rounded-lg font-label-md">3</button>
+<span class="text-on-surface-variant">...</span>
+<button class="w-8 h-8 flex items-center justify-center hover:bg-surface-container-high rounded-lg font-label-md">248</button>
+<button class="p-2 border border-outline-variant rounded-lg">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Simple logic for the bulk bar visibility toggle
+        document.querySelectorAll('.custom-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                const checkedCount = document.querySelectorAll('.custom-checkbox:checked').length;
+                const bulkBar = document.getElementById('bulk-action-bar');
+                const selectedText = bulkBar.querySelector('.text-title-lg');
+                
+                if (checkedCount > 0) {
+                    bulkBar.classList.remove('opacity-0', '-translate-y-4');
+                    bulkBar.classList.add('opacity-100', 'translate-y-0');
+                    selectedText.innerText = `${checkedCount} Employees Selected`;
+                } else {
+                    bulkBar.classList.add('opacity-0', '-translate-y-4');
+                    bulkBar.classList.remove('opacity-100', 'translate-y-0');
+                }
+            });
+        });
+    </script>
+</body></html>

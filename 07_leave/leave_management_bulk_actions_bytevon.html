@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Leave Management - Bulk Actions | Bytevon</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-container": "#e5eeff", "surface-container-high": "#dce9ff", surface: "#f8f9ff", "on-secondary-fixed": "#001a41", "tertiary-fixed-dim": "#c4c7c9", "secondary-container": "#0070ea", "tertiary-fixed": "#e0e3e5", background: "#f8f9ff", "inverse-surface": "#213145", "surface-container-low": "#eff4ff", "on-secondary": "#ffffff", "on-background": "#0b1c30", "outline-variant": "#c4c6cf", outline: "#74777f", "on-primary": "#ffffff", "on-surface": "#0b1c30", "surface-container-lowest": "#ffffff", "on-primary-container": "#6f88ad", "on-tertiary-fixed-variant": "#444749", "on-primary-fixed-variant": "#2f486a", "error-container": "#ffdad6", "on-error": "#ffffff", "primary-container": "#001f3f", "secondary-fixed-dim": "#adc7ff", "primary-fixed-dim": "#afc8f0", tertiary: "#040607", "inverse-primary": "#afc8f0", error: "#ba1a1a", "surface-dim": "#cbdbf5", "on-surface-variant": "#43474e", "on-error-container": "#93000a", "surface-tint": "#476083", "surface-container-highest": "#d3e4fe", "tertiary-container": "#1c1f21", "on-tertiary": "#ffffff", "secondary-fixed": "#d8e2ff", "on-tertiary-fixed": "#191c1e", primary: "#000613", "surface-variant": "#d3e4fe", secondary: "#0059bb", "on-secondary-fixed-variant": "#004493", "on-primary-fixed": "#001c3a", "surface-bright": "#f8f9ff", "primary-fixed": "#d4e3ff", "on-tertiary-container": "#848789", "inverse-on-surface": "#eaf1ff", "on-secondary-container": "#fefcff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {gutter: "24px", "container-max": "1440px", "stack-md": "16px", "stack-sm": "8px", "margin-desktop": "40px", unit: "4px", "margin-mobile": "16px", "stack-lg": "32px"}, fontFamily: {"headline-lg": ["Inter"], "body-lg": ["Inter"], "label-sm": ["Inter"], "body-sm": ["Inter"], "headline-md": ["Inter"], "display-lg": ["Inter"], "body-md": ["Inter"], "label-md": ["Inter"], "title-lg": ["Inter"], "headline-lg-mobile": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}]}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .selection-glow {
+            box-shadow: 0 0 15px rgba(0, 112, 234, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary flex flex-col py-stack-md shadow-sm z-50">
+<div class="px-6 mb-10 flex items-center gap-3">
+<div class="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center text-on-secondary"><img alt="Bytevon Logo" class="w-full h-full object-cover rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA6siHtoqpWpx21D31THQXWQVbloZzvp-v7RB8AK9KwcVXmLNWJXRnHs3MB5J_WNOgH811_0UE6S7R_Slgftha7TuSnGg3i0PtLHmZeD8lhmwyT2H1BRlC9jPkeffp2rllN4JJ3wwDyzqV1mKhBQcPL0X_FQHLpBM_Y2bbkPb73S5HsH7mhpwmHYmtH8IV3OqDz8rI-yaJ7ljWeXoJvmYYmk531c5-yMLR7maZf4_vWXdKNFkyznLViyooCZcuRPV6arw0"/></div>
+<div>
+<h1 class="text-headline-md font-headline-md text-on-primary">Bytevon</h1>
+<p class="font-label-sm text-label-sm text-on-primary-container opacity-80">Enterprise Resource</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center text-surface-variant hover:text-on-primary-fixed-variant px-6 py-3 font-label-md text-label-md transition-all" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center text-surface-variant hover:text-on-primary-fixed-variant px-6 py-3 font-label-md text-label-md transition-all" href="#">
+<span class="material-symbols-outlined mr-3">corporate_fare</span> Organization
+            </a>
+<a class="flex items-center text-surface-variant hover:text-on-primary-fixed-variant px-6 py-3 font-label-md text-label-md transition-all" href="#">
+<span class="material-symbols-outlined mr-3">group</span> People
+            </a>
+<a class="flex items-center text-surface-variant hover:text-on-primary-fixed-variant px-6 py-3 font-label-md text-label-md transition-all" href="#">
+<span class="material-symbols-outlined mr-3">engineering</span> Workforce
+            </a>
+<!-- Active State -->
+<a class="flex items-center bg-secondary-container text-on-secondary-container rounded-lg mx-2 px-4 py-3 font-label-md text-label-md shadow-lg" href="#">
+<span class="material-symbols-outlined mr-3" style="font-variation-settings: 'FILL' 1;">fact_check</span> Approvals
+            </a>
+<a class="flex items-center text-surface-variant hover:text-on-primary-fixed-variant px-6 py-3 font-label-md text-label-md transition-all" href="#">
+<span class="material-symbols-outlined mr-3">diversity_3</span> CRM
+            </a>
+<a class="flex items-center text-surface-variant hover:text-on-primary-fixed-variant px-6 py-3 font-label-md text-label-md transition-all" href="#">
+<span class="material-symbols-outlined mr-3">code</span> Developer
+            </a>
+<a class="flex items-center text-surface-variant hover:text-on-primary-fixed-variant px-6 py-3 font-label-md text-label-md transition-all" href="#">
+<span class="material-symbols-outlined mr-3">admin_panel_settings</span> Administration
+            </a>
+</nav>
+<div class="mt-auto px-4 space-y-4">
+<div class="bg-primary-container p-4 rounded-xl border border-on-primary-fixed-variant/20">
+<p class="font-label-sm text-label-sm text-on-primary-container mb-3 text-center">Need help with policies?</p>
+<button class="w-full bg-secondary text-on-secondary py-2 rounded-lg font-label-md text-label-md hover:bg-on-secondary-fixed-variant transition-colors">Support Center</button>
+</div>
+<div class="space-y-1">
+<a class="flex items-center text-surface-variant hover:text-on-primary-fixed-variant px-4 py-2 font-label-md text-label-md transition-all" href="#">
+<span class="material-symbols-outlined mr-3">settings</span> Settings
+                </a>
+<a class="flex items-center text-surface-variant hover:text-on-primary-fixed-variant px-4 py-2 font-label-md text-label-md transition-all" href="#">
+<span class="material-symbols-outlined mr-3">logout</span> Logout
+                </a>
+</div>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-[280px] flex-1 flex flex-col min-h-screen relative">
+<!-- TopNavBar -->
+<header class="h-16 flex justify-between items-center w-full px-margin-desktop sticky top-0 z-40 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-6">
+<h2 class="font-title-lg text-title-lg font-bold text-on-surface">Leave Management</h2>
+<div class="flex items-center bg-surface-container-low px-4 py-2 rounded-full border border-outline-variant/30 w-80">
+<span class="material-symbols-outlined text-on-surface-variant mr-2">search</span>
+<input class="bg-transparent border-none focus:ring-0 w-full text-body-md font-body-md text-on-surface" placeholder="Search requests..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="flex items-center gap-2 bg-secondary text-on-secondary px-4 py-2 rounded-lg font-label-md text-label-md hover:opacity-90 transition-all cursor-pointer">
+<span class="material-symbols-outlined">add</span> Quick Create
+                </button>
+<div class="h-8 w-[1px] bg-outline-variant mx-2"></div>
+<button class="material-symbols-outlined text-on-surface-variant p-2 hover:bg-surface-container-low rounded-full transition-colors">notifications</button>
+<button class="material-symbols-outlined text-on-surface-variant p-2 hover:bg-surface-container-low rounded-full transition-colors">settings</button>
+<img class="w-10 h-10 rounded-full border-2 border-outline-variant object-cover" data-alt="A professional headshot of a corporate human resources manager, looking friendly and approachable. The lighting is soft and natural, coming from a large office window in the background. The manager is wearing a dark navy blazer over a light blue shirt, fitting the modern minimalist enterprise aesthetic. The background is a slightly blurred, high-end office environment with clean lines and white surfaces." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUXFtOUlxsw_z_LxunXfhODgr3sjt1-5i23-qQ7jnOw6ne1YdCkddfr-YDj3Z-YpDJECpG1WluGe8bSrszHbliQ9BW5CCJtdZoDOwgHjLgaxCUY_PNONaFU7i8Xay0JSvWwoUusWJoVQ0nSzLiEsuqhUQldA67nvymKsPXizI9GMjURMb9jlNE6DsgT9ipLgyZEeQA93QgboJWglvAvnrNUYEjc8hmGS_WougGrkrXF_vK1NFF5GNJmw"/>
+</div>
+</header>
+<!-- Content Canvas -->
+<div class="p-margin-desktop space-y-stack-lg">
+<!-- Statistics Bento Grid -->
+<div class="grid grid-cols-4 gap-gutter">
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/30 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined p-2 bg-surface-container-highest text-secondary rounded-lg">pending_actions</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">+12% vs LW</span>
+</div>
+<h4 class="font-label-md text-label-md text-on-surface-variant">Pending Approvals</h4>
+<p class="font-headline-lg text-headline-lg mt-1">24</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/30 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined p-2 bg-surface-container-highest text-secondary rounded-lg">event_available</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">Optimal</span>
+</div>
+<h4 class="font-label-md text-label-md text-on-surface-variant">On Leave Today</h4>
+<p class="font-headline-lg text-headline-lg mt-1">156</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/30 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined p-2 bg-surface-container-highest text-secondary rounded-lg">person_remove</span>
+<span class="text-label-sm font-label-sm text-on-error">-3 Critical</span>
+</div>
+<h4 class="font-label-md text-label-md text-on-surface-variant">Upcoming Absences</h4>
+<p class="font-headline-lg text-headline-lg mt-1">42</p>
+</div>
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/30 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<span class="material-symbols-outlined p-2 bg-surface-container-highest text-secondary rounded-lg">fact_check</span>
+<span class="text-label-sm font-label-sm text-on-surface-variant">98.4% Accuracy</span>
+</div>
+<h4 class="font-label-md text-label-md text-on-surface-variant">Requests Processed</h4>
+<p class="font-headline-lg text-headline-lg mt-1">1,204</p>
+</div>
+</div>
+<!-- Table Container -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="px-6 py-4 flex justify-between items-center bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<h3 class="font-title-lg text-title-lg text-on-surface">Leave Requests</h3>
+<div class="flex gap-2">
+<span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">All (430)</span>
+<span class="px-3 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">Medical (12)</span>
+<span class="px-3 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">Vacation (28)</span>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-3 py-2 border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">filter_list</span> Filter
+                        </button>
+<button class="flex items-center gap-2 px-3 py-2 border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">file_download</span> Export
+                        </button>
+</div>
+</div>
+<div class="overflow-x-auto custom-scrollbar">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="p-4 w-12 text-center">
+<input checked="" class="w-4 h-4 rounded border-outline focus:ring-secondary text-secondary" type="checkbox"/>
+</th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant">Employee</th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant">Leave Type</th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant">Duration</th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant">Status</th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant">Submission Date</th>
+<th class="p-4 font-label-md text-label-md text-on-surface-variant">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/50">
+<!-- Selected Row 1 -->
+<tr class="bg-secondary-container/5 hover:bg-secondary-container/10 transition-colors">
+<td class="p-4 text-center">
+<input checked="" class="w-4 h-4 rounded border-outline focus:ring-secondary text-secondary" type="checkbox"/>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full border border-outline-variant" data-alt="A portrait of a male enterprise software developer in a professional yet relaxed office environment. He is wearing a minimalist gray sweater and has short, well-groomed dark hair. The lighting is modern and cool, emphasizing a tech-forward atmosphere. The background shows a hint of a collaborative workspace with glass partitions and soft focus greenery." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCw6Ky88w1KBxUMdYcKAJNki1QKmvUn3ss9xjfCr3dUFY0JDptxvbwsxadYd0FRmcHmi4os9Kt-xLmV6xZMFprKgIKKYIgWgK77U_gFVenFoon9XUxFH8ElPWWMxX4ZqN6WleULMT4tTiQj_S6ZAOszvYITrpcY3OzdmRmaqIltgjS7L3Ubl9ezjCAOWzYurJQLbBQD3vJTCeT5DVqYjOMRU1RjyWncBJ3SBNfUsWLyudSxBHr0JEhFeA"/>
+<div>
+<p class="font-body-md text-body-md text-on-surface">Ethan Caldwell</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Senior Engineering</p>
+</div>
+</div>
+</td>
+<td class="p-4"><span class="font-body-sm text-body-sm text-on-surface">Annual Vacation</span></td>
+<td class="p-4"><p class="font-body-sm text-body-sm text-on-surface">Oct 24 - Oct 28</p><p class="font-label-sm text-label-sm text-on-surface-variant">5 Working Days</p></td>
+<td class="p-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container-high text-on-surface-variant border border-outline-variant">Pending</span></td>
+<td class="p-4 text-on-surface-variant font-body-sm">Oct 12, 2024</td>
+<td class="p-4"><button class="material-symbols-outlined text-on-surface-variant hover:text-secondary">more_vert</button></td>
+</tr>
+<!-- Selected Row 2 -->
+<tr class="bg-secondary-container/5 hover:bg-secondary-container/10 transition-colors">
+<td class="p-4 text-center">
+<input checked="" class="w-4 h-4 rounded border-outline focus:ring-secondary text-secondary" type="checkbox"/>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full border border-outline-variant" data-alt="A portrait of a female marketing strategist with a bright, confident smile. She is wearing a crisp white blouse and modern minimalist earrings. The lighting is warm and professional, suggesting an upscale corporate office during a sunny afternoon. The background is softly blurred, showing clean architectural lines and a professional workspace." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBRG8D1JIdZFlFESpf00fRF7qBnvKuI35c9p_ie509N4hBEjEUA_UPapvPwAeobWKPFfgytTiCNsD20bU8TEJ2pbcgFGNSw_gvqNuISVwZKZyeCcosB4jrsMefa8meToblVeBHhkng9bwPpXiOgyvP3bgFXcIvScLO7g3WuDUurbdUElagLQjte7z8tJU1DkNRY4I1K6G929PBJa1cRvny7Qhb-CtdUvD103gHP4U5tw0ZFB8oP0ZvWg"/>
+<div>
+<p class="font-body-md text-body-md text-on-surface">Maya Rodriguez</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Growth &amp; Ops</p>
+</div>
+</div>
+</td>
+<td class="p-4"><span class="font-body-sm text-body-sm text-on-surface">Sick Leave</span></td>
+<td class="p-4"><p class="font-body-sm text-body-sm text-on-surface">Oct 25 - Oct 26</p><p class="font-label-sm text-label-sm text-on-surface-variant">2 Working Days</p></td>
+<td class="p-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container-high text-on-surface-variant border border-outline-variant">Pending</span></td>
+<td class="p-4 text-on-surface-variant font-body-sm">Oct 14, 2024</td>
+<td class="p-4"><button class="material-symbols-outlined text-on-surface-variant hover:text-secondary">more_vert</button></td>
+</tr>
+<!-- Selected Row 3 -->
+<tr class="bg-secondary-container/5 hover:bg-secondary-container/10 transition-colors">
+<td class="p-4 text-center">
+<input checked="" class="w-4 h-4 rounded border-outline focus:ring-secondary text-secondary" type="checkbox"/>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full border border-outline-variant" data-alt="A professional headshot of an executive male, around 40 years old, with sharp features and a confident expression. He is wearing a premium charcoal-colored polo shirt. The lighting is studio-quality, high-contrast but flattering, against a minimal gray background that conveys institutional trust and authority." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1q7gqQ0b9rBp9gULLj4KMH7LBrktw_3S1T2Tqm5xNysI6VhWBmk0jlB9Fg5n8lTw5dSNV9s98ZxRUOo1KTU6_r0ZEJUbUbShexnIZpj-shcoEjafedQcnKaLyX4eRFVBk7O1tFrA9AQ34ZUJxSesJnn3C1GqVgtrsZrnkPyiC8aDpQBpjnXAirhySC0e1ZmMUnOp1xQ1wcrhJTcGoyTtAoFN-Q6gVmjxndjWbe-6rPJ84CZND-AsUbg"/>
+<div>
+<p class="font-body-md text-body-md text-on-surface">Marcus Thorne</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Product Design</p>
+</div>
+</div>
+</td>
+<td class="p-4"><span class="font-body-sm text-body-sm text-on-surface">Annual Vacation</span></td>
+<td class="p-4"><p class="font-body-sm text-body-sm text-on-surface">Nov 01 - Nov 05</p><p class="font-label-sm text-label-sm text-on-surface-variant">3 Working Days</p></td>
+<td class="p-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container-high text-on-surface-variant border border-outline-variant">Pending</span></td>
+<td class="p-4 text-on-surface-variant font-body-sm">Oct 15, 2024</td>
+<td class="p-4"><button class="material-symbols-outlined text-on-surface-variant hover:text-secondary">more_vert</button></td>
+</tr>
+<!-- Unselected Row -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="p-4 text-center">
+<input class="w-4 h-4 rounded border-outline focus:ring-secondary text-secondary" type="checkbox"/>
+</td>
+<td class="p-4">
+<div class="flex items-center gap-3">
+<img class="w-8 h-8 rounded-full border border-outline-variant" data-alt="A bright portrait of a young female HR coordinator with glasses and a friendly, helpful expression. She is wearing a simple black turtleneck. The lighting is soft and even, suggesting a professional studio setup with a white-to-light-gray gradient background. The style is clean, modern, and trustworthy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAST75Ofpr3ui1eyKrCUK04ybqLsBy5wafsWD_nAvcWXkNC4oQFLUqY3wJFTNWBTKfqukmNkblgFSXva2rX9lzmuKxsqrURqQTPFiHD11iZajY82HDEPRQS8RPYfu5tQbcM2MWV5_PDdpW9r4NKHu4xMGMzCHRDStNCOFGMO4cawsVWJ1aW3wgAOUoiWKWinvWe0q85QftQ_UTsxDejH7bGcGMzCo8OzHJa4OzFkx3dZbk4l5pa2zovCQ"/>
+<div>
+<p class="font-body-md text-body-md text-on-surface">Sienna Williams</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">HR Coordinator</p>
+</div>
+</div>
+</td>
+<td class="p-4"><span class="font-body-sm text-body-sm text-on-surface">Compensatory Off</span></td>
+<td class="p-4"><p class="font-body-sm text-body-sm text-on-surface">Oct 26 - Oct 26</p><p class="font-label-sm text-label-sm text-on-surface-variant">1 Working Day</p></td>
+<td class="p-4"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-surface-container-high text-on-surface-variant border border-outline-variant">Pending</span></td>
+<td class="p-4 text-on-surface-variant font-body-sm">Oct 15, 2024</td>
+<td class="p-4"><button class="material-symbols-outlined text-on-surface-variant hover:text-secondary">more_vert</button></td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Footer Pagination -->
+<div class="px-6 py-4 flex justify-between items-center bg-surface border-t border-outline-variant">
+<p class="font-label-sm text-label-sm text-on-surface-variant">Showing 1 to 4 of 430 entries</p>
+<div class="flex gap-2">
+<button class="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined text-body-md">chevron_left</span></button>
+<button class="px-4 py-2 bg-secondary text-on-secondary rounded-lg font-label-md text-label-md">1</button>
+<button class="px-4 py-2 border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-container-low transition-colors">2</button>
+<button class="px-4 py-2 border border-outline-variant rounded-lg font-label-md text-label-md hover:bg-surface-container-low transition-colors">3</button>
+<button class="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined text-body-md">chevron_right</span></button>
+</div>
+</div>
+</div>
+</div>
+<!-- Contextual Action Bar (The Highlight) -->
+<div class="fixed bottom-10 left-[calc(280px+((100%-280px)/2))] -translate-x-1/2 z-50 flex items-center gap-6 px-8 py-4 bg-primary rounded-2xl shadow-2xl border border-secondary/30 selection-glow animate-bounce-in">
+<div class="flex items-center gap-4 border-r border-on-primary-container/30 pr-6">
+<div class="w-8 h-8 bg-secondary rounded-full flex items-center justify-center text-on-secondary font-bold text-label-md">3</div>
+<p class="font-label-md text-label-md text-on-primary">Items selected</p>
+</div>
+<div class="flex items-center gap-3">
+<button class="flex items-center gap-2 px-6 py-2.5 bg-secondary text-on-secondary rounded-lg font-label-md text-label-md hover:bg-on-secondary-fixed-variant transition-all transform active:scale-95">
+<span class="material-symbols-outlined">task_alt</span> Bulk Approve
+                </button>
+<button class="flex items-center gap-2 px-6 py-2.5 bg-error text-on-error rounded-lg font-label-md text-label-md hover:opacity-90 transition-all transform active:scale-95">
+<span class="material-symbols-outlined">cancel</span> Bulk Reject
+                </button>
+<button class="flex items-center gap-2 px-6 py-2.5 bg-primary-container text-on-primary-container border border-on-primary-container/20 rounded-lg font-label-md text-label-md hover:bg-on-primary-container/10 transition-all transform active:scale-95">
+<span class="material-symbols-outlined">ios_share</span> Export Selected
+                </button>
+</div>
+<div class="border-l border-on-primary-container/30 pl-6">
+<button class="text-on-primary/60 hover:text-on-primary transition-colors flex items-center gap-1 font-label-md text-label-md">
+<span class="material-symbols-outlined">close</span> Clear
+                </button>
+</div>
+</div>
+<!-- Footer -->
+<footer class="flex justify-between items-center w-full px-margin-desktop py-stack-md mt-auto border-t border-outline-variant bg-surface">
+<div class="flex gap-6">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-opacity duration-150" href="#">Privacy Policy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-opacity duration-150" href="#">Terms of Service</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-opacity duration-150" href="#">Security</a>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">© 2024 Bytevon Enterprise. All rights reserved.</p>
+</footer>
+</main>
+<style>
+        @keyframes bounce-in {
+            0% { transform: translate(-50%, 100px); opacity: 0; }
+            60% { transform: translate(-50%, -10px); opacity: 1; }
+            100% { transform: translate(-50%, 0); }
+        }
+        .animate-bounce-in {
+            animation: bounce-in 0.5s ease-out forwards;
+        }
+    </style>
+<script>
+        // Simple interactivity for the demo
+        document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const row = this.closest('tr');
+                if (row && !row.closest('thead')) {
+                    if (this.checked) {
+                        row.classList.add('bg-secondary-container/5');
+                        row.classList.add('hover:bg-secondary-container/10');
+                    } else {
+                        row.classList.remove('bg-secondary-container/5');
+                        row.classList.remove('hover:bg-secondary-container/10');
+                    }
+                }
+            });
+        });
+    </script>
+</body></html>

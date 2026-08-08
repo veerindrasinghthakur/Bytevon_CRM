@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Add Member | Engineering - Bytevon</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-tertiary": "#ffffff", "on-secondary": "#ffffff", "on-surface": "#0b1c30", "on-primary-fixed": "#001c3a", "on-secondary-fixed": "#001a41", "surface-bright": "#f8f9ff", "on-tertiary-fixed": "#191c1e", "on-error": "#ffffff", "tertiary-fixed": "#e0e3e5", "inverse-primary": "#afc8f0", "inverse-on-surface": "#eaf1ff", "on-secondary-container": "#fefcff", "error-container": "#ffdad6", "surface-tint": "#476083", "primary-container": "#001f3f", "surface-variant": "#d3e4fe", "secondary-container": "#0070ea", "surface-container-highest": "#d3e4fe", "surface-container-low": "#eff4ff", "secondary-fixed-dim": "#adc7ff", outline: "#74777f", "surface-container-lowest": "#ffffff", "tertiary-fixed-dim": "#c4c7c9", "primary-fixed": "#d4e3ff", "on-primary-container": "#6f88ad", "on-secondary-fixed-variant": "#004493", "on-tertiary-container": "#848789", tertiary: "#040607", "on-error-container": "#93000a", "primary-fixed-dim": "#afc8f0", primary: "#000613", "on-primary-fixed-variant": "#2f486a", "on-primary": "#ffffff", error: "#ba1a1a", "tertiary-container": "#1c1f21", "surface-dim": "#cbdbf5", secondary: "#0059bb", "on-tertiary-fixed-variant": "#444749", "on-surface-variant": "#43474e", "outline-variant": "#c4c6cf", background: "#f8f9ff", "secondary-fixed": "#d8e2ff", "on-background": "#0b1c30", surface: "#f8f9ff", "inverse-surface": "#213145", "surface-container-high": "#dce9ff", "surface-container": "#e5eeff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {"margin-mobile": "16px", "stack-sm": "8px", "margin-desktop": "40px", "stack-md": "16px", gutter: "24px", unit: "4px", "stack-lg": "32px", "container-max": "1440px"}, fontFamily: {"body-lg": ["Inter"], "label-md": ["Inter"], "headline-md": ["Inter"], "body-sm": ["Inter"], "display-lg": ["Inter"], "title-lg": ["Inter"], "headline-lg": ["Inter"], "label-sm": ["Inter"], "headline-lg-mobile": ["Inter"], "body-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}]}}}};</script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8f9ff; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-role-ring {
+            box-shadow: 0 0 0 2px #0059bb;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background overflow-hidden">
+<!-- Global Layout Wrapper -->
+<div class="flex h-screen w-full">
+<!-- Primary SideNavBar (Dashboard Level) -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary dark:bg-primary-container flex flex-col py-stack-lg shadow-md z-50">
+<div class="px-6 mb-stack-lg flex items-center gap-3">
+<div class="w-10 h-10 bg-secondary-container rounded-lg flex items-center justify-center">
+<span class="material-symbols-outlined text-on-secondary-container" style="font-variation-settings: 'FILL' 1;">terminal</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary dark:text-inverse-primary tracking-tight">Bytevon</h1>
+<p class="font-label-sm text-label-sm text-on-primary/60">Enterprise ERP</p>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 py-3 px-4 transition-colors text-on-primary/70 dark:text-on-primary-container/70 hover:text-on-primary hover:bg-on-primary/10 mx-2" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 py-3 px-4 bg-secondary-container text-on-secondary-container rounded-lg mx-2" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span>
+<span class="font-label-md text-label-md">Employees</span>
+</a>
+<a class="flex items-center gap-3 py-3 px-4 transition-colors text-on-primary/70 dark:text-on-primary-container/70 hover:text-on-primary hover:bg-on-primary/10 mx-2" href="#">
+<span class="material-symbols-outlined">handshake</span>
+<span class="font-label-md text-label-md">CRM</span>
+</a>
+<a class="flex items-center gap-3 py-3 px-4 transition-colors text-on-primary/70 dark:text-on-primary-container/70 hover:text-on-primary hover:bg-on-primary/10 mx-2" href="#">
+<span class="material-symbols-outlined">business_center</span>
+<span class="font-label-md text-label-md">ERP</span>
+</a>
+<a class="flex items-center gap-3 py-3 px-4 transition-colors text-on-primary/70 dark:text-on-primary-container/70 hover:text-on-primary hover:bg-on-primary/10 mx-2" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span class="font-label-md text-label-md">Reports</span>
+</a>
+<a class="flex items-center gap-3 py-3 px-4 transition-colors text-on-primary/70 dark:text-on-primary-container/70 hover:text-on-primary hover:bg-on-primary/10 mx-2" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Administration</span>
+</a>
+</nav>
+</aside>
+<!-- Secondary SideNavBar (Module Level) -->
+<aside class="fixed left-[280px] top-16 h-[calc(100%-64px)] w-64 bg-surface-container-low dark:bg-surface-container flex flex-col pt-stack-md border-r border-outline-variant/20 z-40">
+<div class="px-6 mb-6">
+<h2 class="font-title-lg text-title-lg font-semibold text-on-surface">Engineering</h2>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 py-2 px-6 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all" href="#">
+<span class="material-symbols-outlined">account_tree</span>
+<span class="font-label-md text-label-md">Projects</span>
+</a>
+<a class="flex items-center gap-3 py-2 px-6 text-secondary font-semibold bg-surface-container-high rounded-r-full mr-4 transition-all" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person_add</span>
+<span class="font-label-md text-label-md">Add Member</span>
+</a>
+<a class="flex items-center gap-3 py-2 px-6 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all" href="#">
+<span class="material-symbols-outlined">architecture</span>
+<span class="font-label-md text-label-md">Tech Stack</span>
+</a>
+<a class="flex items-center gap-3 py-2 px-6 text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-all" href="#">
+<span class="material-symbols-outlined">inventory_2</span>
+<span class="font-label-md text-label-md">Resources</span>
+</a>
+</nav>
+</aside>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-[calc(100%-280px)] h-16 bg-surface-bright dark:bg-surface-dim flex items-center justify-between px-margin-desktop border-b border-outline-variant/30 z-40">
+<div class="flex items-center flex-1">
+<div class="relative w-full max-w-xl">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/50">search</span>
+<input class="w-full bg-surface-container-low border border-outline-variant/30 rounded-lg py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-secondary/20 focus:border-secondary transition-all font-body-sm text-body-sm" placeholder="Search employees by name, role, or ID..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4 ml-8">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<div class="h-8 w-[1px] bg-outline-variant/30 mx-2"></div>
+<div class="flex items-center gap-3 cursor-pointer group">
+<div class="text-right hidden sm:block">
+<p class="font-label-md text-label-md font-bold text-on-surface">Alex Rivera</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">CTO</p>
+</div>
+<div class="w-10 h-10 rounded-full bg-secondary-fixed overflow-hidden border-2 border-transparent group-hover:border-secondary transition-all">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a Hispanic male executive in his late 40s, wearing a crisp dark navy blazer and white shirt. He has a warm yet authoritative expression. The photography style is high-end corporate portraiture with soft three-point lighting against a minimalist gray and blue studio background that complements the brand's precision aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDgpI7NtK6eb6X5eXWZzP4d2a4PS302t68Ljc4xhioWmn-hgssLnyC9FxaBQbYtClf0rx1st-pFUk9fK8IboCWe1p5jjuR5kzbWoYyg9D9G7ArISkdxjtmTRsG8Eprt9IJaTfrgQmYIFmf0s0sbvB38u3lC81mb3U0VOhfVhHyUgWTT1gFhVTRWGaS035hOP7PfI4wGkmc975s1HxQCuJHVUuVpY4tVsbFBOd-l9XH8iOghTqyomyQYOQ"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 ml-[544px] mt-16 p-margin-desktop overflow-y-auto bg-background">
+<div class="max-w-container-max mx-auto space-y-stack-lg">
+<!-- Page Header & Summary Section -->
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-gutter">
+<div class="space-y-1">
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Add Team Member</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">Expand the Engineering department by onboarding verified company employees. Ensure team balance across seniority levels.</p>
+</div>
+<!-- Headcount Context Summary -->
+<div class="flex items-center gap-stack-md bg-surface-container rounded-xl p-4 border border-outline-variant/20 shadow-sm">
+<div class="text-center px-4 border-r border-outline-variant/30">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Total Headcount</p>
+<p class="font-headline-md text-headline-md font-bold text-on-surface">42</p>
+</div>
+<div class="flex gap-4 px-4">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Leads</p>
+<p class="font-title-lg text-title-lg font-semibold text-secondary">6</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Senior</p>
+<p class="font-title-lg text-title-lg font-semibold text-secondary">18</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Junior</p>
+<p class="font-title-lg text-title-lg font-semibold text-secondary">18</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Filters & Search Bar -->
+<section class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant/40 shadow-sm flex flex-wrap gap-4 items-center">
+<div class="flex flex-1 gap-4 min-w-[300px]">
+<div class="flex-1 relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/50">filter_list</span>
+<input class="w-full bg-background border border-outline rounded-lg py-2 pl-10 pr-4 focus:ring-2 focus:ring-secondary/20 transition-all font-body-sm text-body-sm" placeholder="Filter by name..." type="text"/>
+</div>
+</div>
+<div class="flex flex-wrap gap-3">
+<select class="bg-background border border-outline rounded-lg py-2 px-4 font-label-md text-label-md text-on-surface focus:ring-2 focus:ring-secondary/20">
+<option>All Departments</option>
+<option>Product</option>
+<option>Design</option>
+<option>Operations</option>
+<option>HR</option>
+</select>
+<select class="bg-background border border-outline rounded-lg py-2 px-4 font-label-md text-label-md text-on-surface focus:ring-2 focus:ring-secondary/20">
+<option>Any Experience</option>
+<option>0-2 Years</option>
+<option>2-5 Years</option>
+<option>5-10 Years</option>
+<option>10+ Years</option>
+</select>
+<select class="bg-background border border-outline rounded-lg py-2 px-4 font-label-md text-label-md text-on-surface focus:ring-2 focus:ring-secondary/20">
+<option>Available Status</option>
+<option>Full Time</option>
+<option>Contractor</option>
+<option>Intern</option>
+</select>
+<button class="bg-primary text-on-primary px-6 py-2 rounded-lg font-label-md text-label-md font-semibold hover:bg-secondary transition-colors">Apply Filters</button>
+</div>
+</section>
+<!-- Employee Grid (Bento Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-gutter">
+<!-- Employee Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm hover:shadow-md transition-shadow group overflow-hidden">
+<div class="p-6">
+<div class="flex items-start justify-between mb-4">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-full bg-surface-container-high overflow-hidden border-2 border-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="Close-up portrait of a professional woman with a bright smile, wearing glasses and a minimalist gray sweater. Soft natural lighting from a large window reflects in her eyes. The background is a blurred, high-end modern office with deep navy and electric blue accents, matching a professional enterprise atmosphere." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB9h1IjRbHtjSZHSOIfKtRiiPZe_OiyAv4269wupjnyNmvV62uUCu9aporN4HbWRjMk_TPC1LA-x3pZC6FBWsJngrihaRfN9yLb_HJrRHZQSDLLI57GoK_8V7ld4QwD1zwkiN4swD3n0zytvjwzWtMs9t3NNyXx2eSu-LmDjgcGlUdQbS34adpplcFj9J7aB7ABzp_C4a31rBFvT6d_l9spNB47E3yMVKBFdYW6Xkw1TpTiY0h8N1HsKg"/>
+</div>
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface">Sarah Jenkins</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide">Product Management</p>
+</div>
+</div>
+<span class="px-2 py-1 bg-green-100 text-green-700 rounded text-[10px] font-bold uppercase tracking-tighter">Available</span>
+</div>
+<div class="grid grid-cols-2 gap-4 py-4 border-y border-outline-variant/20 mb-6">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Experience</p>
+<p class="font-body-md text-body-md font-semibold text-on-surface">8.5 Years</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Joined</p>
+<p class="font-body-md text-body-md font-semibold text-on-surface">Mar 2021</p>
+</div>
+</div>
+<div class="space-y-4">
+<label class="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider">Assign Role in Engineering</label>
+<div class="flex flex-wrap gap-2">
+<button class="flex-1 py-2 px-3 border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:border-secondary hover:text-secondary transition-all" onclick="selectRole(this)">Lead</button>
+<button class="flex-1 py-2 px-3 border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:border-secondary hover:text-secondary transition-all" onclick="selectRole(this)">Senior</button>
+<button class="flex-1 py-2 px-3 border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:border-secondary hover:text-secondary transition-all" onclick="selectRole(this)">Junior</button>
+</div>
+<button class="w-full bg-secondary-container text-on-secondary-container py-3 rounded-lg font-label-md text-label-md font-bold flex items-center justify-center gap-2 hover:brightness-110 transition-all">
+<span class="material-symbols-outlined">add_circle</span>
+                                    Add to Department
+                                </button>
+</div>
+</div>
+</div>
+<!-- Employee Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm hover:shadow-md transition-shadow group overflow-hidden">
+<div class="p-6">
+<div class="flex items-start justify-between mb-4">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-full bg-surface-container-high overflow-hidden border-2 border-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="Professional headshot of a young East Asian man with a thoughtful expression, wearing a tailored navy blue shirt. He is set against a clean, out-of-focus tech office background with soft bokeh lighting. The overall color palette is professional and calm, using deep blues and cool grays to reflect an authoritative enterprise ERP environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCZoTx5FTMxWa9IX-ZNuG1sBlJd8mLNjIOKV6nRFEoVH3uaQ-feURoZojQeJX_dwYrPGI-CULWpqIeFtVk2wEGxtzUdwKinZ_WBuaagkUb3BBX15Dp-Oopr4Xp28NKiS1YZaVUgPMEKPX_aAT--9O8WcDJTPbuvCOMYJ76qygeJWqnsQOQYQ10tiBVnKwVvaHfsOTXJV0dAbJngfjoeElcpZAPfUqzyOlDRG3ZZutLnu67DG5QkvIqOcw"/>
+</div>
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface">Marcus Chen</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide">Infrastructure</p>
+</div>
+</div>
+<span class="px-2 py-1 bg-green-100 text-green-700 rounded text-[10px] font-bold uppercase tracking-tighter">Available</span>
+</div>
+<div class="grid grid-cols-2 gap-4 py-4 border-y border-outline-variant/20 mb-6">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Experience</p>
+<p class="font-body-md text-body-md font-semibold text-on-surface">12 Years</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Joined</p>
+<p class="font-body-md text-body-md font-semibold text-on-surface">Nov 2019</p>
+</div>
+</div>
+<div class="space-y-4">
+<label class="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider">Assign Role in Engineering</label>
+<div class="flex flex-wrap gap-2">
+<button class="flex-1 py-2 px-3 border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:border-secondary hover:text-secondary transition-all" onclick="selectRole(this)">Lead</button>
+<button class="flex-1 py-2 px-3 border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:border-secondary hover:text-secondary transition-all" onclick="selectRole(this)">Senior</button>
+<button class="flex-1 py-2 px-3 border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:border-secondary hover:text-secondary transition-all" onclick="selectRole(this)">Junior</button>
+</div>
+<button class="w-full bg-secondary-container text-on-secondary-container py-3 rounded-lg font-label-md text-label-md font-bold flex items-center justify-center gap-2 hover:brightness-110 transition-all">
+<span class="material-symbols-outlined">add_circle</span>
+                                    Add to Department
+                                </button>
+</div>
+</div>
+</div>
+<!-- Employee Card 3 -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm hover:shadow-md transition-shadow group overflow-hidden">
+<div class="p-6">
+<div class="flex items-start justify-between mb-4">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-full bg-surface-container-high overflow-hidden border-2 border-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="A striking portrait of a middle-aged Black man with a confident, welcoming gaze. He is wearing a high-quality light blue Oxford shirt in a bright, modern corporate setting. The lighting is crisp and detailed, emphasizing the professional environment. The image maintains a sophisticated, executive feel with clean lines and a palette dominated by whites, grays, and corporate blues." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBT7MIdU4gUfjflGBVm7b31GF0NfO4FI5166LiNPqXKCxh9O1n4rkZzms89YmrBPTsOgrdPrEIdkN-gd3M1NPktrbRRvViJ8XHXcnisWWr9urJW5gHeCUg9jwIPJqhvJyLZHX0j2NS80bp9z2Otpizi3RDOowPAZvoZ2boL7GhG79gdedEwg_MtYr4lKHBpxLpydeJN23a3IUGHq3_ad_BKgboJYDiLcs9wBUQopYJOtTyX6e4R1HJMog"/>
+</div>
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface">David Okafor</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide">Software Dev</p>
+</div>
+</div>
+<span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-[10px] font-bold uppercase tracking-tighter">Transitioning</span>
+</div>
+<div class="grid grid-cols-2 gap-4 py-4 border-y border-outline-variant/20 mb-6">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Experience</p>
+<p class="font-body-md text-body-md font-semibold text-on-surface">4.2 Years</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Joined</p>
+<p class="font-body-md text-body-md font-semibold text-on-surface">Jan 2022</p>
+</div>
+</div>
+<div class="space-y-4">
+<label class="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider">Assign Role in Engineering</label>
+<div class="flex flex-wrap gap-2">
+<button class="flex-1 py-2 px-3 border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:border-secondary hover:text-secondary transition-all" onclick="selectRole(this)">Lead</button>
+<button class="flex-1 py-2 px-3 border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:border-secondary hover:text-secondary transition-all" onclick="selectRole(this)">Senior</button>
+<button class="flex-1 py-2 px-3 border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:border-secondary hover:text-secondary transition-all" onclick="selectRole(this)">Junior</button>
+</div>
+<button class="w-full bg-secondary-container text-on-secondary-container py-3 rounded-lg font-label-md text-label-md font-bold flex items-center justify-center gap-2 hover:brightness-110 transition-all">
+<span class="material-symbols-outlined">add_circle</span>
+                                    Add to Department
+                                </button>
+</div>
+</div>
+</div>
+<!-- Employee Card 4 -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-sm hover:shadow-md transition-shadow group overflow-hidden">
+<div class="p-6">
+<div class="flex items-start justify-between mb-4">
+<div class="flex items-center gap-4">
+<div class="w-14 h-14 rounded-full bg-surface-container-high overflow-hidden border-2 border-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="Portrait of a South Asian man in his early 30s, looking professional and friendly, wearing a dark polo shirt. The background features a blurred workspace with modern glass partitions and hints of greenery. High-quality lighting highlights his features, while the color palette remains focused on professional navy, white, and gray tones consistent with an executive enterprise application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAo47XAZu5J0XmpRko9rcGblcHATFcr75gI2SjAodlwUyzfK96T0_KZDkeCCt_F36vC1i-9fYC_txvDNv0Gx3SW4TSRaoEWa1IRR0-zmj_ryt5CBhX3r5bXPEuEaunWQ_2JugQSWZhqdIg4c5haZXHUFtwcislEi5dLzBYArIo_CaNO0EIUlcbzKgLPHRnwl_PQtqVx5Yb0q9ghfAOEczUi5wGLdCpRfX8sX09aFirxWKdzncQMtCdUDQ"/>
+</div>
+<div>
+<h3 class="font-title-lg text-title-lg text-on-surface">Arjun Mehta</h3>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide">QA Engineering</p>
+</div>
+</div>
+<span class="px-2 py-1 bg-green-100 text-green-700 rounded text-[10px] font-bold uppercase tracking-tighter">Available</span>
+</div>
+<div class="grid grid-cols-2 gap-4 py-4 border-y border-outline-variant/20 mb-6">
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Experience</p>
+<p class="font-body-md text-body-md font-semibold text-on-surface">5.8 Years</p>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Joined</p>
+<p class="font-body-md text-body-md font-semibold text-on-surface">Aug 2020</p>
+</div>
+</div>
+<div class="space-y-4">
+<label class="font-label-sm text-label-sm text-on-surface-variant block uppercase tracking-wider">Assign Role in Engineering</label>
+<div class="flex flex-wrap gap-2">
+<button class="flex-1 py-2 px-3 border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:border-secondary hover:text-secondary transition-all" onclick="selectRole(this)">Lead</button>
+<button class="flex-1 py-2 px-3 border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:border-secondary hover:text-secondary transition-all" onclick="selectRole(this)">Senior</button>
+<button class="flex-1 py-2 px-3 border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:border-secondary hover:text-secondary transition-all" onclick="selectRole(this)">Junior</button>
+</div>
+<button class="w-full bg-secondary-container text-on-secondary-container py-3 rounded-lg font-label-md text-label-md font-bold flex items-center justify-center gap-2 hover:brightness-110 transition-all">
+<span class="material-symbols-outlined">add_circle</span>
+                                    Add to Department
+                                </button>
+</div>
+</div>
+</div>
+<!-- Add Employee Shortcut Card -->
+<div class="border-2 border-dashed border-outline-variant/40 rounded-xl flex flex-col items-center justify-center p-6 text-center hover:bg-surface-container-low transition-colors cursor-pointer min-h-[350px]">
+<div class="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-4">
+<span class="material-symbols-outlined text-outline text-3xl">person_search</span>
+</div>
+<h3 class="font-title-lg text-title-lg text-on-surface">External Recruitment</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-2 mb-6">Can't find the right internal candidate? Initiate an external hiring request for the Engineering team.</p>
+<button class="px-6 py-2 border border-secondary text-secondary rounded-lg font-label-md text-label-md font-bold hover:bg-secondary/5 transition-all">Create Job Req</button>
+</div>
+</div>
+<!-- Footer Pagination -->
+<div class="flex items-center justify-between pt-stack-lg">
+<p class="font-body-sm text-body-sm text-on-surface-variant">Showing 4 of 284 employees</p>
+<div class="flex items-center gap-2">
+<button class="w-10 h-10 border border-outline-variant/50 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="w-10 h-10 bg-secondary text-on-secondary rounded-lg flex items-center justify-center font-label-md">1</button>
+<button class="w-10 h-10 border border-outline-variant/50 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors">2</button>
+<button class="w-10 h-10 border border-outline-variant/50 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors">3</button>
+<span class="text-on-surface-variant">...</span>
+<button class="w-10 h-10 border border-outline-variant/50 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors">71</button>
+<button class="w-10 h-10 border border-outline-variant/50 rounded-lg flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Notification Toast (Hidden by default) -->
+<div class="fixed bottom-8 right-8 bg-inverse-surface text-inverse-on-surface px-6 py-4 rounded-xl shadow-2xl flex items-center gap-4 translate-y-24 opacity-0 transition-all duration-300 z-[100]" id="toast">
+<span class="material-symbols-outlined text-green-400">check_circle</span>
+<div>
+<p class="font-label-md text-label-md font-bold">Member Added Successfully</p>
+<p class="font-body-sm text-body-sm opacity-80">Employee has been assigned to Engineering.</p>
+</div>
+</div>
+<script>
+        function selectRole(button) {
+            // Get all siblings and remove active classes
+            const parent = button.parentElement;
+            const buttons = parent.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.classList.remove('bg-secondary-container', 'text-on-secondary-container', 'border-secondary');
+                btn.classList.add('text-on-surface-variant', 'border-outline-variant');
+            });
+
+            // Add active class to clicked button
+            button.classList.remove('text-on-surface-variant', 'border-outline-variant');
+            button.classList.add('bg-secondary-container', 'text-on-secondary-container', 'border-secondary');
+        }
+
+        // Logic for "Add to Department" buttons
+        document.querySelectorAll('button').forEach(btn => {
+            if (btn.innerText.includes('Add to Department')) {
+                btn.onclick = function() {
+                    const toast = document.getElementById('toast');
+                    toast.classList.remove('translate-y-24', 'opacity-0');
+                    setTimeout(() => {
+                        toast.classList.add('translate-y-24', 'opacity-0');
+                    }, 4000);
+                }
+            }
+        });
+    </script>
+</body></html>

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Leave Management - Empty State | Bytevon</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"surface-container": "#e5eeff", "surface-container-high": "#dce9ff", surface: "#f8f9ff", "on-secondary-fixed": "#001a41", "tertiary-fixed-dim": "#c4c7c9", "secondary-container": "#0070ea", "tertiary-fixed": "#e0e3e5", background: "#f8f9ff", "inverse-surface": "#213145", "surface-container-low": "#eff4ff", "on-secondary": "#ffffff", "on-background": "#0b1c30", "outline-variant": "#c4c6cf", outline: "#74777f", "on-primary": "#ffffff", "on-surface": "#0b1c30", "surface-container-lowest": "#ffffff", "on-primary-container": "#6f88ad", "on-tertiary-fixed-variant": "#444749", "on-primary-fixed-variant": "#2f486a", "error-container": "#ffdad6", "on-error": "#ffffff", "primary-container": "#001f3f", "secondary-fixed-dim": "#adc7ff", "primary-fixed-dim": "#afc8f0", tertiary: "#040607", "inverse-primary": "#afc8f0", error: "#ba1a1a", "surface-dim": "#cbdbf5", "on-surface-variant": "#43474e", "on-error-container": "#93000a", "surface-tint": "#476083", "surface-container-highest": "#d3e4fe", "tertiary-container": "#1c1f21", "on-tertiary": "#ffffff", "secondary-fixed": "#d8e2ff", "on-tertiary-fixed": "#191c1e", primary: "#000613", "surface-variant": "#d3e4fe", secondary: "#0059bb", "on-secondary-fixed-variant": "#004493", "on-primary-fixed": "#001c3a", "surface-bright": "#f8f9ff", "primary-fixed": "#d4e3ff", "on-tertiary-container": "#848789", "inverse-on-surface": "#eaf1ff", "on-secondary-container": "#fefcff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {gutter: "24px", "container-max": "1440px", "stack-md": "16px", "stack-sm": "8px", "margin-desktop": "40px", unit: "4px", "margin-mobile": "16px", "stack-lg": "32px"}, fontFamily: {"headline-lg": ["Inter"], "body-lg": ["Inter"], "label-sm": ["Inter"], "body-sm": ["Inter"], "headline-md": ["Inter"], "display-lg": ["Inter"], "body-md": ["Inter"], "label-md": ["Inter"], "title-lg": ["Inter"], "headline-lg-mobile": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}], "label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}]}}}};</script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        .sidebar-item-active { background-color: #0070ea !important; color: #fefcff !important; border-radius: 0.5rem; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex">
+<!-- SideNavBar Component -->
+<aside class="fixed left-0 top-0 h-full w-[280px] bg-primary flex flex-col py-stack-md shadow-sm z-50">
+<div class="px-6 mb-8"><div class="flex items-center gap-3">
+<img alt="Bytevon Logo" class="w-10 h-10 object-contain rounded-lg" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCAwAd1PVa5S0r6kq9oZ63COPbCknsvU16cYf4b4cPXW6wAzXkxSgJPdBTmw4-juimPsmMBB5r-PuoWtgVNtvWdpa63mS1Ke7Lv8M0o5rMp_q4Uv1i-kRUNhbmqYYodh3iXgNh9w6sdjTPKAokNjMDxRipnU2Fa2TgzzBgJTfjrjL2QEd_eHO9Co-O1csFl8BL2K7G1n6Rqx2JR9VbUix7maTMa3b-WDXpNEyuUqSB4C_jfpQQ7gDYUFgFgSjIXIRQB4fM"/>
+<div>
+<h1 class="text-headline-md font-headline-md text-on-primary">Bytevon</h1>
+<p class="text-label-sm font-label-sm text-surface-variant opacity-70">Enterprise Resource</p>
+</div>
+</div></div>
+<nav class="flex-1 space-y-1">
+<!-- Approvals maps to Leave Management intent -->
+<a class="flex items-center px-4 py-3 text-surface-variant hover:text-on-primary-fixed-variant transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+<a class="flex items-center px-4 py-3 text-surface-variant hover:text-on-primary-fixed-variant transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">corporate_fare</span>
+<span class="font-label-md text-label-md">Organization</span>
+</a>
+<a class="flex items-center px-4 py-3 text-surface-variant hover:text-on-primary-fixed-variant transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">group</span>
+<span class="font-label-md text-label-md">People</span>
+</a>
+<a class="flex items-center px-4 py-3 sidebar-item-active mx-2" href="#">
+<span class="material-symbols-outlined mr-3">fact_check</span>
+<span class="font-label-md text-label-md">Approvals</span>
+</a>
+<a class="flex items-center px-4 py-3 text-surface-variant hover:text-on-primary-fixed-variant transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">engineering</span>
+<span class="font-label-md text-label-md">Workforce</span>
+</a>
+<a class="flex items-center px-4 py-3 text-surface-variant hover:text-on-primary-fixed-variant transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">diversity_3</span>
+<span class="font-label-md text-label-md">CRM</span>
+</a>
+<a class="flex items-center px-4 py-3 text-surface-variant hover:text-on-primary-fixed-variant transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">code</span>
+<span class="font-label-md text-label-md">Developer</span>
+</a>
+<a class="flex items-center px-4 py-3 text-surface-variant hover:text-on-primary-fixed-variant transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">admin_panel_settings</span>
+<span class="font-label-md text-label-md">Administration</span>
+</a>
+</nav>
+<div class="px-2 mt-auto border-t border-white/10 pt-4">
+<a class="flex items-center px-4 py-3 text-surface-variant hover:text-on-primary-fixed-variant transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center px-4 py-3 text-surface-variant hover:text-on-primary-fixed-variant transition-all duration-200" href="#">
+<span class="material-symbols-outlined mr-3">logout</span>
+<span class="font-label-md text-label-md">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="ml-[280px] flex-1 flex flex-col min-h-screen">
+<!-- TopNavBar Component -->
+<header class="h-16 flex justify-between items-center px-margin-desktop sticky top-0 z-40 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-stack-lg">
+<h2 class="font-title-lg text-title-lg font-bold text-on-surface">Leave Management</h2>
+<div class="relative w-80">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary focus:border-transparent outline-none transition-all" placeholder="Search leave requests..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="bg-primary-container text-white px-4 py-2 rounded-lg font-label-md text-label-md hover:opacity-90 transition-all flex items-center">
+<span class="material-symbols-outlined mr-2">add</span>
+                    Quick Create
+                </button>
+<div class="flex items-center gap-2">
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors relative">
+<span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">settings</span>
+</button>
+<div class="ml-2 w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a corporate executive for a user profile avatar. The subject is a woman in her late 30s with a confident smile, wearing a professional blazer. The background is a soft-focus modern office environment with neutral tones and natural lighting, maintaining the Bytevon clean and authoritative aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAUDxlEu0lrD7oUrGcvcXh7N3OFPoAr8NaX20z2hqDyypIzuX_X2VSFHerRRl0Sla4L-K-BwhQh5jfh8vFUxEkHDyDwfrot6RqbohcPDdTj7esCQ2YfxrxhT17o4i0j-qhCN4QWV9ry9CRwc1oYYxVu7HZ3JK8rWRVr7NmRs46K70qzO9DssMze7LFRZ3OiobhyZe_YqvJXiwly9Aamv8qCXN20H4vgZHNqn_ZGusTMKXijBTB7BudIuA"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<div class="p-margin-desktop flex-1 flex flex-col space-y-stack-lg max-w-[1440px] mx-auto w-full">
+<!-- KPI Cards Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Pending Approvals -->
+<div class="bg-white p-6 rounded-xl border border-outline-variant shadow-sm transition-all hover:shadow-md">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-surface-container rounded-lg">
+<span class="material-symbols-outlined text-secondary">pending_actions</span>
+</div>
+<span class="text-label-sm text-outline">This Month</span>
+</div>
+<div class="space-y-1">
+<h3 class="text-label-md text-on-surface-variant font-label-md">Pending Approvals</h3>
+<p class="text-headline-md font-headline-md text-on-surface">0</p>
+</div>
+<div class="mt-4 flex items-center text-label-sm text-outline-variant">
+<span class="material-symbols-outlined text-sm mr-1">info</span>
+                        No active requests
+                    </div>
+</div>
+<!-- Annual Leave Balance -->
+<div class="bg-white p-6 rounded-xl border border-outline-variant shadow-sm transition-all hover:shadow-md">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-surface-container rounded-lg">
+<span class="material-symbols-outlined text-secondary">calendar_today</span>
+</div>
+<span class="text-label-sm text-outline">Balance</span>
+</div>
+<div class="space-y-1">
+<h3 class="text-label-md text-on-surface-variant font-label-md">Remaining PTO</h3>
+<p class="text-headline-md font-headline-md text-on-surface">No data</p>
+</div>
+<div class="mt-4 h-2 bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-outline-variant w-0"></div>
+</div>
+</div>
+<!-- Sick Leave -->
+<div class="bg-white p-6 rounded-xl border border-outline-variant shadow-sm transition-all hover:shadow-md">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-surface-container rounded-lg">
+<span class="material-symbols-outlined text-secondary">medical_services</span>
+</div>
+<span class="text-label-sm text-outline">Yearly</span>
+</div>
+<div class="space-y-1">
+<h3 class="text-label-md text-on-surface-variant font-label-md">Sick Leave Taken</h3>
+<p class="text-headline-md font-headline-md text-on-surface">0 Days</p>
+</div>
+<div class="mt-4 flex items-center text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-sm mr-1 text-on-primary-container">trending_flat</span>
+                        No change from last month
+                    </div>
+</div>
+<!-- Remote Work -->
+<div class="bg-white p-6 rounded-xl border border-outline-variant shadow-sm transition-all hover:shadow-md">
+<div class="flex justify-between items-start mb-4">
+<div class="p-3 bg-surface-container rounded-lg">
+<span class="material-symbols-outlined text-secondary">home_work</span>
+</div>
+<span class="text-label-sm text-outline">Current</span>
+</div>
+<div class="space-y-1">
+<h3 class="text-label-md text-on-surface-variant font-label-md">WFH Requests</h3>
+<p class="text-headline-md font-headline-md text-on-surface">0</p>
+</div>
+<div class="mt-4 flex items-center text-label-sm text-outline-variant">
+<span class="material-symbols-outlined text-sm mr-1">event_busy</span>
+                        No records found
+                    </div>
+</div>
+</div>
+<!-- Main Content Area: Empty State -->
+<div class="bg-white border border-outline-variant rounded-xl flex-1 flex flex-col overflow-hidden shadow-sm">
+<!-- Filters Bar -->
+<div class="px-6 py-4 border-b border-outline-variant flex flex-wrap items-center justify-between gap-4">
+<div class="flex items-center gap-3">
+<span class="text-label-md font-label-md text-on-surface-variant">Active Filters:</span>
+<div class="flex items-center gap-2">
+<span class="bg-surface-container px-3 py-1 rounded-full text-label-sm text-secondary flex items-center">
+                                Status: Approved
+                                <button class="ml-2 text-secondary hover:text-on-secondary-fixed transition-colors"><span class="material-symbols-outlined text-xs">close</span></button>
+</span>
+<span class="bg-surface-container px-3 py-1 rounded-full text-label-sm text-secondary flex items-center">
+                                Type: Medical
+                                <button class="ml-2 text-secondary hover:text-on-secondary-fixed transition-colors"><span class="material-symbols-outlined text-xs">close</span></button>
+</span>
+<span class="bg-surface-container px-3 py-1 rounded-full text-label-sm text-secondary flex items-center">
+                                Date: This Year
+                                <button class="ml-2 text-secondary hover:text-on-secondary-fixed transition-colors"><span class="material-symbols-outlined text-xs">close</span></button>
+</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-4 py-2 border border-outline text-on-surface-variant rounded-lg font-label-md text-label-md hover:bg-surface-container-low transition-colors flex items-center">
+<span class="material-symbols-outlined mr-2">filter_list</span>
+                            More Filters
+                        </button>
+</div>
+</div>
+<!-- Empty State Content -->
+<div class="flex-1 flex flex-col items-center justify-center p-stack-lg text-center">
+<div class="w-full max-w-md mb-8">
+<!-- Professional Empty State Illustration -->
+<div class="relative w-64 h-64 mx-auto mb-6">
+<div class="absolute inset-0 bg-surface-container-high rounded-full opacity-20 animate-pulse"></div>
+<div class="absolute inset-4 bg-white rounded-xl border border-outline-variant shadow-sm flex items-center justify-center overflow-hidden">
+<img class="w-48 h-48 object-contain" data-alt="A professional 3D isometric illustration of a search interface with no results. It features a magnifying glass floating over a stack of empty document folders. The style is clean and corporate, using a palette of Bytevon deep navy, electric blue accents, and soft grays. The scene is lit with bright, studio-quality light, creating a sense of organized efficiency even in an empty state." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAztOjvAkFby_vQt43GPzH_1SpwVQXk7OzrNuQkuxC3yyv98BekGd-uvOJJj--ntRjONyH6ly_gjWgY2pTJ1MT5pM6GjzrJBuEB0Lz5f5BHyFOiCIcLLEV7JlnXlI9xDko1JRxV0Wn5IfRCUNeaTTE7zNZcxDi5pqBV9WBOfib2uQLjjXiyIxckZOS0LkM9psrCmMYvJV4AdKNrv5AeSe1qgN8vcmybt-0KV9wHka6PXvcc8wb_g96x6Q"/>
+</div>
+<div class="absolute -bottom-4 -right-4 p-4 bg-surface-container-lowest rounded-lg border border-outline-variant shadow-md">
+<span class="material-symbols-outlined text-4xl text-outline-variant" style="font-variation-settings: 'FILL' 1;">search_off</span>
+</div>
+</div>
+</div>
+<h2 class="text-headline-md font-headline-md text-on-surface mb-2">No requests found</h2>
+<p class="text-body-md font-body-md text-on-surface-variant max-w-sm mb-8">
+                        We couldn't find any leave requests matching your current filter criteria. Try adjusting your search or clearing all active filters.
+                    </p>
+<div class="flex items-center gap-4">
+<button class="px-6 py-3 border border-secondary text-secondary rounded-lg font-label-md text-label-md hover:bg-surface-container-low transition-all flex items-center group" onclick="window.location.reload()">
+<span class="material-symbols-outlined mr-2 transition-transform group-hover:rotate-180">filter_list_off</span>
+                            Clear Filters
+                        </button>
+<button class="px-6 py-3 bg-secondary text-white rounded-lg font-label-md text-label-md hover:opacity-90 transition-all flex items-center">
+<span class="material-symbols-outlined mr-2">add</span>
+                            Create New Request
+                        </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Component -->
+<footer class="flex justify-between items-center w-full px-margin-desktop py-stack-md mt-auto bg-surface border-t border-outline-variant">
+<div class="flex items-center gap-6">
+<p class="font-label-sm text-label-sm text-on-surface-variant">© 2024 Bytevon Enterprise. All rights reserved.</p>
+<div class="flex gap-4">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-opacity" href="#">Privacy Policy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-opacity" href="#">Terms of Service</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-secondary transition-opacity" href="#">Security</a>
+</div>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">language</span>
+<span class="font-label-sm text-label-sm">English (US)</span>
+</div>
+</footer>
+</main>
+<!-- Floating Action Button for Dashboard Context -->
+<button class="fixed bottom-8 right-8 w-14 h-14 bg-secondary-container text-on-secondary-container rounded-full shadow-lg flex items-center justify-center hover:scale-105 active:scale-95 transition-transform z-50">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">help_center</span>
+</button>
+<script>
+        // Micro-interaction for filter chips
+        document.querySelectorAll('.bg-surface-container button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.parentElement.style.opacity = '0';
+                setTimeout(() => {
+                    this.parentElement.remove();
+                }, 200);
+            });
+        });
+    </script>
+</body></html>
