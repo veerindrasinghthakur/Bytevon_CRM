@@ -1,12 +1,14 @@
 export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE' | 'BLOCKED'
 
+/** Tasks are sub-parts of a project (always owned by projectId). */
 export interface Task {
   id: number
   title: string
   description?: string
   priority: TaskPriority
   status: TaskStatus
+  projectId: number
   projectName?: string
   assigneeName?: string
   dueDate?: string | null
@@ -20,6 +22,7 @@ const MOCK_TASKS: Task[] = [
     description: 'Icon rail + secondary sidebar + header',
     priority: 'HIGH',
     status: 'DONE',
+    projectId: 1,
     projectName: 'Bytevon CRM Core',
     assigneeName: 'Virendra',
     dueDate: '2026-08-05',
@@ -31,6 +34,7 @@ const MOCK_TASKS: Task[] = [
     description: 'List with mock data, detail, create form',
     priority: 'HIGH',
     status: 'IN_PROGRESS',
+    projectId: 1,
     projectName: 'Bytevon CRM Core',
     assigneeName: 'Virendra',
     dueDate: '2026-08-10',
@@ -42,6 +46,7 @@ const MOCK_TASKS: Task[] = [
     description: 'Replace mock store with backend endpoints',
     priority: 'MEDIUM',
     status: 'TODO',
+    projectId: 1,
     projectName: 'Bytevon CRM Core',
     assigneeName: undefined,
     dueDate: '2026-08-20',
@@ -53,6 +58,7 @@ const MOCK_TASKS: Task[] = [
     description: 'Login and session for external clients',
     priority: 'HIGH',
     status: 'TODO',
+    projectId: 2,
     projectName: 'Client Portal',
     assigneeName: 'Design team',
     dueDate: '2026-09-15',
@@ -64,6 +70,7 @@ const MOCK_TASKS: Task[] = [
     description: 'Mobile-friendly mark attendance screen',
     priority: 'URGENT',
     status: 'BLOCKED',
+    projectId: 3,
     projectName: 'Mobile Attendance',
     assigneeName: 'Mobile Ops',
     dueDate: '2026-06-01',
@@ -75,6 +82,7 @@ const MOCK_TASKS: Task[] = [
     description: 'Ensure all components use CSS variables',
     priority: 'LOW',
     status: 'IN_REVIEW',
+    projectId: 1,
     projectName: 'Bytevon CRM Core',
     assigneeName: 'Beta Design',
     dueDate: '2026-08-12',
@@ -89,9 +97,13 @@ function delay(ms = 350) {
 export async function getTasks(params?: {
   search?: string
   status?: string
+  projectId?: number
 }): Promise<{ items: Task[]; total: number }> {
   await delay()
   let items = [...MOCK_TASKS]
+  if (params?.projectId != null) {
+    items = items.filter((t) => t.projectId === params.projectId)
+  }
   if (params?.search) {
     const q = params.search.toLowerCase()
     items = items.filter(
@@ -111,6 +123,8 @@ export async function createTask(input: {
   title: string
   description?: string
   priority?: TaskPriority
+  projectId?: number
+  projectName?: string
 }): Promise<Task> {
   await delay(500)
   const task: Task = {
@@ -119,7 +133,8 @@ export async function createTask(input: {
     description: input.description,
     priority: input.priority ?? 'MEDIUM',
     status: 'TODO',
-    projectName: undefined,
+    projectId: input.projectId ?? 0,
+    projectName: input.projectName,
     assigneeName: undefined,
     dueDate: null,
     createdAt: new Date().toISOString(),

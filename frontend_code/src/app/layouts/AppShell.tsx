@@ -7,7 +7,7 @@ import {
   SECONDARY_EXPANDED_WIDTH,
   SECONDARY_NAV,
 } from '@/shared/components/layout/SecondarySidebar'
-import { Header } from '@/shared/components/layout/Header'
+import { Header, HEADER_HEIGHT_PX } from '@/shared/components/layout/Header'
 
 function getActiveModule(pathname: string): string {
   if (pathname.startsWith('/sales')) return 'sales'
@@ -20,20 +20,6 @@ function getActiveModule(pathname: string): string {
   return 'dashboard'
 }
 
-/** List routes that render their own page-level search — header search collapses to icon */
-function pathHasPageSearch(pathname: string): boolean {
-  const listSearchPaths = [
-    '/projects',
-    '/projects/teams',
-    '/projects/tasks',
-    '/sales/leads',
-    '/sales/clients',
-    '/workforce/employees',
-    '/workforce/departments',
-  ]
-  return listSearchPaths.some((p) => pathname === p)
-}
-
 export function AppShell() {
   const [isRailExpanded, setIsRailExpanded] = useState(false)
   const [isSecondaryCollapsed, setIsSecondaryCollapsed] = useState(true)
@@ -41,7 +27,6 @@ export function AppShell() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const moduleId = getActiveModule(pathname)
   const hasSecondaryItems = (SECONDARY_NAV[moduleId]?.items?.length ?? 0) > 0
-  const collapseSearch = pathHasPageSearch(pathname)
 
   const railWidth = isRailExpanded ? 220 : 80
   const secondaryWidth = !hasSecondaryItems
@@ -62,6 +47,8 @@ export function AppShell() {
   const mainStyle = useMemo(
     () => ({
       marginLeft: `${totalSidebarWidth}px`,
+      marginTop: HEADER_HEIGHT_PX,
+      height: `calc(100vh - ${HEADER_HEIGHT_PX}px)`,
     }),
     [totalSidebarWidth]
   )
@@ -82,12 +69,10 @@ export function AppShell() {
         />
       </div>
 
-      <Header style={headerStyle} collapseSearch={collapseSearch} />
+      {/* Header search stays full for now (no collapse) */}
+      <Header style={headerStyle} />
 
-      <main
-        className="mt-16 flex-1 bg-background overflow-y-auto p-margin-desktop h-[calc(100vh-64px)]"
-        style={mainStyle}
-      >
+      <main className="flex-1 bg-background overflow-y-auto p-margin-desktop" style={mainStyle}>
         <Outlet />
       </main>
     </div>

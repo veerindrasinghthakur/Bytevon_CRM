@@ -1,5 +1,6 @@
 import { cn } from '@/shared/lib/cn'
 import { Link, useRouterState } from '@tanstack/react-router'
+import { HEADER_HEIGHT_PX } from './Header'
 
 export interface SecondaryNavItem {
   id: string
@@ -17,11 +18,7 @@ export interface SecondaryNavGroup {
 }
 
 export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
-  dashboard: {
-    moduleId: 'dashboard',
-    title: 'Dashboard',
-    items: [],
-  },
+  dashboard: { moduleId: 'dashboard', title: 'Dashboard', items: [] },
   sales: {
     moduleId: 'sales',
     title: 'Sales',
@@ -99,19 +96,13 @@ interface SecondarySidebarProps {
   onToggle: () => void
 }
 
-/**
- * Secondary sidebar — item vertical rhythm aligned with IconRail (py-3.5 / gap-1).
- * Header block mirrors rail: toggle first, then content margin below collapse control.
- */
 export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProps) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const moduleId = getActiveModule(pathname)
   const group = SECONDARY_NAV[moduleId]
   const items = (group?.items ?? []).filter((i) => i.visible !== false)
 
-  if (items.length === 0) {
-    return null
-  }
+  if (items.length === 0) return null
 
   const isItemActive = (to: string) => {
     if (to === '/projects') return pathname === '/projects'
@@ -127,21 +118,18 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
       )}
       aria-label="Secondary navigation"
     >
-      {/* Top: collapse control — margin below matches IconRail toggle spacing (mb-4) */}
+      {/* Top row height matches Header (h-14 / 56px) */}
       <div
         className={cn(
-          'shrink-0 flex border-b border-outline-variant',
-          isCollapsed
-            ? 'flex-col items-center pt-6 pb-4'
-            : 'items-center justify-between px-3 pt-6 pb-4'
+          'shrink-0 flex items-center border-b border-outline-variant',
+          isCollapsed ? 'justify-center px-0' : 'justify-between px-3'
         )}
+        style={{ height: HEADER_HEIGHT_PX }}
       >
         {!isCollapsed && (
-          <div className="min-w-0 flex-1 pr-2">
-            <h2 className="text-title-lg text-on-background leading-tight truncate">
-              {group?.title ?? 'Workspace'}
-            </h2>
-          </div>
+          <h2 className="text-body-md font-semibold text-on-background leading-none truncate min-w-0 flex-1 pr-2">
+            {group?.title ?? 'Workspace'}
+          </h2>
         )}
         <button
           type="button"
@@ -149,7 +137,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
           className={cn(
             'flex items-center justify-center rounded-lg text-on-surface-variant',
             'hover:bg-surface-container hover:text-on-surface',
-            isCollapsed ? 'w-10 h-10' : 'w-9 h-9'
+            'w-8 h-8'
           )}
           aria-label={isCollapsed ? 'Expand secondary sidebar' : 'Collapse secondary sidebar'}
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
@@ -160,19 +148,13 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
         </button>
       </div>
 
-      {/* Nav items — gap/padding parallel to primary rail items */}
       <div
         className={cn(
           'flex-1 overflow-y-auto scrollbar-hide',
           isCollapsed ? 'pt-2 flex flex-col items-center' : 'pt-2 px-1'
         )}
       >
-        <ul
-          className={cn(
-            'flex flex-col gap-1',
-            isCollapsed ? 'w-full items-center' : 'w-full'
-          )}
-        >
+        <ul className={cn('flex flex-col gap-1', isCollapsed ? 'w-full items-center' : 'w-full')}>
           {items.map((item) => {
             const active = isItemActive(item.to)
             return (
@@ -182,7 +164,6 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                   title={isCollapsed ? item.label : undefined}
                   className={cn(
                     'flex items-center group relative',
-                    // Match IconRail vertical padding (py-3.5)
                     isCollapsed
                       ? 'w-10 h-11 justify-center rounded-lg'
                       : 'w-full px-3 py-3.5 rounded-lg gap-3',
@@ -200,7 +181,6 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                   >
                     {item.icon}
                   </span>
-
                   {!isCollapsed && (
                     <>
                       <span className="text-nav-item flex-1 truncate">{item.label}</span>
@@ -211,7 +191,6 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                       )}
                     </>
                   )}
-
                   {isCollapsed && item.badge != null && (
                     <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-electric-blue" />
                   )}
