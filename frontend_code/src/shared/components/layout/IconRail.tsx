@@ -46,33 +46,37 @@ export function IconRail({
   return (
     <nav
       className={cn(
-        'h-full bg-deep-navy flex flex-col items-center py-4 border-r border-sidebar-item-active/30 z-20',
-        'transition-all duration-300 ease-in-out shrink-0',
+        'relative h-full bg-deep-navy flex flex-col items-center py-4 border-r border-sidebar-item-active/30 z-20',
+        'transition-all duration-300 ease-in-out shrink-0 overflow-visible',
         isExpanded ? 'w-[220px]' : 'w-[80px]'
       )}
       aria-label="Primary navigation"
     >
-      {/* Logo + hover collapse/expand chevron (right of logo, aligned) */}
+      {/* Logo + hover collapse (half outside rail border) */}
       <div
         className={cn(
           'group relative w-full shrink-0 mb-3 flex items-center',
           isExpanded ? 'px-4 justify-start' : 'justify-center px-2'
         )}
       >
-        {/* Collapsed: logo only. Expanded: logo + company name */}
         <BrandLogo
           sizeClassName="w-10 h-10"
           className="shrink-0"
           withWordmark={isExpanded}
           wordmarkClassName="text-on-primary/90"
         />
+        {/*
+          Button is 28px (w-7). -right-3.5 = -14px so half sits outside the rail edge.
+          Visible on group hover / focus.
+        */}
         <button
           type="button"
           onClick={onToggleExpand}
           className={cn(
-            'absolute top-1/2 -translate-y-1/2 right-2',
-            'w-7 h-7 rounded-md flex items-center justify-center',
-            'text-on-primary/80 bg-sidebar-item-active/80',
+            'absolute top-1/2 -translate-y-1/2 -right-3.5 z-30',
+            'w-7 h-7 rounded-full flex items-center justify-center',
+            'text-on-primary bg-deep-navy border border-sidebar-item-active',
+            'shadow-md',
             'opacity-0 group-hover:opacity-100 focus:opacity-100',
             'transition-opacity duration-150',
             'hover:bg-sidebar-item-active hover:text-on-primary'
@@ -80,13 +84,12 @@ export function IconRail({
           aria-label={isExpanded ? 'Collapse navigation' : 'Expand navigation'}
           title={isExpanded ? 'Collapse' : 'Expand'}
         >
-          <span className="material-symbols-outlined text-[18px] leading-none">
+          <span className="material-symbols-outlined text-[16px] leading-none">
             {isExpanded ? 'chevron_left' : 'chevron_right'}
           </span>
         </button>
       </div>
 
-      {/* Rail items — gap-1 + py-3.5 matches secondary sidebar item rhythm */}
       <div className="flex-1 w-full flex flex-col gap-1 overflow-y-auto scrollbar-hide">
         {visibleItems.map((item) => {
           const active = isActive(item.to)
@@ -112,7 +115,6 @@ export function IconRail({
         })}
       </div>
 
-      {/* Bottom: Logout */}
       <div className="mt-auto pt-3 flex flex-col items-center gap-2 border-t border-sidebar-item-active/30 w-full shrink-0">
         <button
           type="button"
