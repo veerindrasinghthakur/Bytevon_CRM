@@ -1,6 +1,7 @@
-import { useParams } from '@tanstack/react-router'
+import { useParams, useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
-import { myTasks } from '../data/mock'
+import { Button } from '@/shared/components/ui/Button'
+import { myTasks, currentUser } from '../data/mock'
 
 const priorityClass: Record<string, string> = {
   Critical: 'bg-red-100 text-red-800',
@@ -19,6 +20,7 @@ const statusDot: Record<string, string> = {
 
 export function MyTaskDetailPage() {
   const { taskId } = useParams({ strict: false }) as { taskId: string }
+  const navigate = useNavigate()
   const task = myTasks.find((t) => t.id === taskId) ?? myTasks[0]
 
   if (!task) {
@@ -31,35 +33,106 @@ export function MyTaskDetailPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
-      <PageHeader title={task.name} description={task.project ?? 'No project'} showBack />
+    <div className="space-y-8">
+      <PageHeader
+        title={task.name}
+        description={task.project ?? 'No project linked'}
+        showBack
+        actions={
+          <Button
+            variant="outline"
+            leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
+            onClick={() => console.info('Edit task', task.id)}
+          >
+            Edit
+          </Button>
+        }
+      />
 
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm space-y-4">
-        <div className="flex flex-wrap gap-3 items-center">
-          <span className={`px-2.5 py-0.5 rounded-full text-label-sm font-bold ${priorityClass[task.priority]}`}>
-            {task.priority}
-          </span>
-          <span className="flex items-center gap-1.5 text-label-md text-on-surface-variant">
-            <span className={`w-2 h-2 rounded-full ${statusDot[task.status] ?? 'bg-outline'}`} />
-            {task.status}
-          </span>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+        <div className="lg:col-span-2 space-y-6">
+          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+            <h3 className="text-title-lg text-on-background mb-4">Overview</h3>
+            <p className="text-body-md text-on-surface-variant">
+              {task.project
+                ? `Work item under project “${task.project}”. Estimated effort ${task.estimatedHours ?? 'not set'}.`
+                : 'Personal task with no project link yet.'}
+            </p>
+            <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="bg-surface-container-low p-4 rounded-lg">
+                <p className="text-label-sm text-on-surface-variant">Due date</p>
+                <p className="text-body-lg font-bold text-on-background mt-1">{task.dueDate}</p>
+              </div>
+              <div className="bg-surface-container-low p-4 rounded-lg">
+                <p className="text-label-sm text-on-surface-variant">Estimated time</p>
+                <p className="text-body-lg font-bold text-on-background mt-1">
+                  {task.estimatedHours ?? '—'}
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+            <h3 className="text-title-lg text-on-background mb-3">Activity</h3>
+            <p className="text-body-md text-on-surface-variant">
+              No comments or status changes in mock data yet. Wire to task activity feed when backend is ready.
+            </p>
+          </section>
         </div>
-        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <dt className="text-label-sm text-on-surface-variant">Project</dt>
-            <dd className="text-body-md font-semibold text-on-background mt-0.5">{task.project ?? '—'}</dd>
-          </div>
-          <div>
-            <dt className="text-label-sm text-on-surface-variant">Due date</dt>
-            <dd className="text-body-md font-semibold text-on-background mt-0.5">{task.dueDate}</dd>
-          </div>
-          <div>
-            <dt className="text-label-sm text-on-surface-variant">Estimated time</dt>
-            <dd className="text-body-md font-semibold text-on-background mt-0.5">
-              {task.estimatedHours ?? '—'}
-            </dd>
-          </div>
-        </dl>
+
+        <div className="space-y-4">
+          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+            <h3 className="text-label-md text-on-surface-variant uppercase tracking-wider mb-3">Status</h3>
+            <span className="flex items-center gap-2 text-body-md text-on-surface">
+              <span className={`w-2.5 h-2.5 rounded-full ${statusDot[task.status] ?? 'bg-outline'}`} />
+              {task.status}
+            </span>
+          </section>
+
+          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 space-y-4">
+            <div>
+              <p className="text-label-sm text-on-surface-variant">Priority</p>
+              <span
+                className={`inline-flex mt-1 px-2.5 py-0.5 rounded-full text-label-sm font-bold ${priorityClass[task.priority]}`}
+              >
+                {task.priority}
+              </span>
+            </div>
+            <div>
+              <p className="text-label-sm text-on-surface-variant">Project</p>
+              <p className="text-body-md text-on-surface mt-0.5">{task.project ?? '—'}</p>
+            </div>
+            <div>
+              <p className="text-label-sm text-on-surface-variant">Assignee</p>
+              <p className="text-body-md text-on-surface mt-0.5">{currentUser.name}</p>
+            </div>
+            <div>
+              <p className="text-label-sm text-on-surface-variant">Due</p>
+              <p className="text-body-md text-on-surface mt-0.5">{task.dueDate}</p>
+            </div>
+            <div>
+              <p className="text-label-sm text-on-surface-variant">Est. time</p>
+              <p className="text-body-md text-on-surface mt-0.5">{task.estimatedHours ?? '—'}</p>
+            </div>
+          </section>
+
+          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 space-y-2">
+            <Button
+              variant="primary"
+              className="w-full"
+              onClick={() => navigate({ to: '/my-work/tasks/new' })}
+            >
+              Create task
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => navigate({ to: '/my-work/tasks' })}
+            >
+              All my tasks
+            </Button>
+          </section>
+        </div>
       </div>
     </div>
   )
