@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
@@ -19,11 +20,30 @@ const statusDot: Record<string, string> = {
   Blocked: 'bg-orange-500',
 }
 
+type TaskFilter = 'open' | 'inProgress' | 'high' | null
+
 export function MyTasksPage() {
   const navigate = useNavigate()
+  const [filter, setFilter] = useState<TaskFilter>(null)
+
   const open = myTasks.filter((t) => t.status !== 'Completed').length
   const inProgress = myTasks.filter((t) => t.status === 'In Progress').length
   const high = myTasks.filter((t) => t.priority === 'High' || t.priority === 'Critical').length
+
+  const filtered = useMemo(() => {
+    if (filter === 'open') return myTasks.filter((t) => t.status !== 'Completed')
+    if (filter === 'inProgress') return myTasks.filter((t) => t.status === 'In Progress')
+    if (filter === 'high')
+      return myTasks.filter((t) => t.priority === 'High' || t.priority === 'Critical')
+    return myTasks
+  }, [filter])
+
+  const cardClass = (active: boolean) =>
+    `bg-surface-container-lowest rounded-xl border p-5 shadow-sm cursor-pointer transition-colors text-left w-full ${
+      active
+        ? 'border-secondary ring-1 ring-secondary/30'
+        : 'border-outline-variant hover:border-secondary/40'
+    }`
 
   return (
     <div className="space-y-6">
@@ -43,19 +63,46 @@ export function MyTasksPage() {
       />
 
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm">
+        <button
+          type="button"
+          className={cardClass(filter === 'open')}
+          onClick={() => setFilter((f) => (f === 'open' ? null : 'open'))}
+        >
           <p className="text-label-sm text-on-surface-variant mb-1">Open tasks</p>
           <p className="text-headline-md font-bold text-on-background">{open}</p>
-        </div>
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm">
+        </button>
+        <button
+          type="button"
+          className={cardClass(filter === 'inProgress')}
+          onClick={() => setFilter((f) => (f === 'inProgress' ? null : 'inProgress'))}
+        >
           <p className="text-label-sm text-on-surface-variant mb-1">In progress</p>
           <p className="text-headline-md font-bold text-secondary">{inProgress}</p>
-        </div>
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm">
+        </button>
+        <button
+          type="button"
+          className={cardClass(filter === 'high')}
+          onClick={() => setFilter((f) => (f === 'high' ? null : 'high'))}
+        >
           <p className="text-label-sm text-on-surface-variant mb-1">High / Critical</p>
           <p className="text-headline-md font-bold text-error">{high}</p>
-        </div>
+        </button>
       </section>
+
+      {filter && (
+        <div className="flex items-center justify-end">
+          <button
+            type="button"
+            onClick={() => setFilter(null)}
+            className="inline-flex items-center gap-1.5 text-label-md text-on-surface-variant hover:text-on-surface rounded-md px-2 py-1"
+            aria-label="Clear filter"
+            title="Clear filter"
+          >
+            <span className="material-symbols-outlined text-[20px]">filter_alt_off</span>
+            <span>Clear filter</span>
+          </button>
+        </div>
+      )}
 
       <section className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
         <div className="px-6 py-4 border-b border-outline-variant">
@@ -74,7 +121,14 @@ export function MyTasksPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
-              {myTasks.map((task: MyTask) => (
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-10 text-center text-body-md text-on-surface-variant">
+                    No tasks match this filter.
+                  </td>
+                </tr>
+              )}
+              {filtered.map((task: MyTask) => (
                 <tr
                   key={task.id}
                   className="hover:bg-secondary/5 cursor-pointer"
