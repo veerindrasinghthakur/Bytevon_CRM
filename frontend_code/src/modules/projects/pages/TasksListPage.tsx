@@ -7,7 +7,6 @@ import { RowActions } from '@/shared/components/ui/RowActions'
 import { useTasks } from '../hooks/use-tasks'
 import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
 
-/** Same layout pattern as ProjectsListPage. */
 export function TasksListPage() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
@@ -20,6 +19,9 @@ export function TasksListPage() {
   const pending = items.filter((t) => t.status === 'TODO' || t.status === 'IN_PROGRESS').length
   const done = items.filter((t) => t.status === 'DONE').length
   const blocked = items.filter((t) => t.status === 'BLOCKED').length
+
+  const goTask = (taskId: number) =>
+    navigate({ to: '/projects/tasks/$taskId', params: { taskId: String(taskId) } })
 
   return (
     <div className="space-y-8">
@@ -197,13 +199,15 @@ export function TasksListPage() {
                       <input type="checkbox" className="rounded border-outline-variant w-4 h-4" />
                     </td>
                     <td className="py-2 px-4">
-                      <p
-                        className={`text-body-md font-semibold ${
+                      <button
+                        type="button"
+                        className={`text-left text-body-md font-semibold ${
                           task.status === 'DONE' ? 'text-on-surface-variant line-through' : 'text-on-background'
                         }`}
+                        onClick={() => goTask(task.id)}
                       >
                         {task.title}
-                      </p>
+                      </button>
                     </td>
                     <td className="py-2 px-4 text-body-md text-on-background">{task.projectName ?? '—'}</td>
                     <td className="py-2 px-4 text-body-md text-on-background">{task.assigneeName ?? '—'}</td>
@@ -223,13 +227,13 @@ export function TasksListPage() {
                               id: 'view',
                               label: 'View',
                               icon: 'description',
-                              onClick: () => console.info('View task', task.id),
+                              onClick: () => goTask(task.id),
                             },
                             {
                               id: 'edit',
                               label: 'Edit',
                               icon: 'edit',
-                              onClick: () => console.info('Edit task', task.id),
+                              onClick: () => goTask(task.id),
                             },
                           ]}
                         />
