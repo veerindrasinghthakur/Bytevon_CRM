@@ -19,6 +19,9 @@ export function TeamsListPage() {
   const totalProjects = data?.items.reduce((s, t) => s + t.projectCount, 0) ?? 0
   const avgSize = total > 0 ? (activeMembers / total).toFixed(1) : '0'
 
+  const goTeam = (teamId: number) =>
+    navigate({ to: '/projects/teams/$teamId', params: { teamId: String(teamId) } })
+
   return (
     <div className="space-y-8">
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -94,34 +97,10 @@ export function TeamsListPage() {
       </section>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard
-          label="Total Teams"
-          value={String(total || '—')}
-          trend="+12%"
-          icon="groups"
-          iconClass="bg-electric-blue/10 text-electric-blue"
-        />
-        <MetricCard
-          label="Active Members"
-          value={String(activeMembers)}
-          trend="+4%"
-          icon="person"
-          iconClass="bg-purple-100 text-purple-600"
-        />
-        <MetricCard
-          label="Total Projects"
-          value={String(totalProjects)}
-          sub="Active"
-          icon="account_tree"
-          iconClass="bg-emerald-100 text-emerald-700"
-        />
-        <MetricCard
-          label="Avg. Team Size"
-          value={avgSize}
-          sub="Members"
-          icon="group_work"
-          iconClass="bg-amber-100 text-amber-700"
-        />
+        <MetricCard label="Total Teams" value={String(total || '—')} trend="+12%" icon="groups" iconClass="bg-electric-blue/10 text-electric-blue" />
+        <MetricCard label="Active Members" value={String(activeMembers)} trend="+4%" icon="person" iconClass="bg-purple-100 text-purple-600" />
+        <MetricCard label="Total Projects" value={String(totalProjects)} sub="Active" icon="account_tree" iconClass="bg-emerald-100 text-emerald-700" />
+        <MetricCard label="Avg. Team Size" value={avgSize} sub="Members" icon="group_work" iconClass="bg-amber-100 text-amber-700" />
       </section>
 
       {isLoading && <TableSkeleton rows={4} />}
@@ -158,7 +137,7 @@ export function TeamsListPage() {
                 {data.items.map((team) => (
                   <tr key={team.id} className="h-[72px]">
                     <td className="py-2 px-6">
-                      <div className="flex items-center gap-3">
+                      <button type="button" className="flex items-center gap-3 text-left" onClick={() => goTeam(team.id)}>
                         <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
                           <span className="material-symbols-outlined">groups</span>
                         </div>
@@ -166,7 +145,7 @@ export function TeamsListPage() {
                           <p className="text-body-md font-semibold text-on-background">{team.name}</p>
                           <p className="text-[11px] text-on-surface-variant">{team.department ?? '—'}</p>
                         </div>
-                      </div>
+                      </button>
                     </td>
                     <td className="py-2 px-4">
                       {team.headName ? (
@@ -207,13 +186,13 @@ export function TeamsListPage() {
                               id: 'view',
                               label: 'View',
                               icon: 'description',
-                              onClick: () => console.info('View team', team.id),
+                              onClick: () => goTeam(team.id),
                             },
                             {
                               id: 'edit',
                               label: 'Edit',
                               icon: 'edit',
-                              onClick: () => console.info('Edit team', team.id),
+                              onClick: () => goTeam(team.id),
                             },
                           ]}
                         />
