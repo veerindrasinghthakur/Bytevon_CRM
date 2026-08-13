@@ -18,6 +18,7 @@ function getActiveModule(pathname: string): string {
   if (pathname.startsWith('/approvals')) return 'approvals'
   if (pathname.startsWith('/admin')) return 'admin'
   if (pathname.startsWith('/profile')) return 'dashboard'
+  if (pathname.startsWith('/notifications')) return 'dashboard'
   return 'dashboard'
 }
 
@@ -63,7 +64,8 @@ export function AppShell() {
 
   return (
     <div className="h-screen overflow-hidden flex bg-background">
-      <div className="fixed left-0 top-0 h-full flex z-50">
+      {/* overflow-visible so rail collapse chevron can sit half outside the rail border */}
+      <div className="fixed left-0 top-0 h-full flex z-50 overflow-visible">
         <IconRail
           isExpanded={isRailExpanded}
           onToggleExpand={() => setIsRailExpanded((v) => !v)}
