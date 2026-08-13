@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useRouterState } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
 import { IconButton } from '@/shared/components/ui/IconButton'
 
@@ -12,6 +12,11 @@ interface HeaderProps {
 }
 
 export function Header({ title, className, style }: HeaderProps) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const isProfileActive = pathname === '/profile' || pathname.startsWith('/profile/')
+  const isNotificationsActive =
+    pathname === '/notifications' || pathname.startsWith('/notifications/')
+
   return (
     <header
       className={cn(
@@ -40,19 +45,57 @@ export function Header({ title, className, style }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-gutter shrink-0">
-        <IconButton label="Notifications">
-          <span className="material-symbols-outlined">notifications</span>
-        </IconButton>
+        <Link to="/notifications" aria-label="My notifications">
+          <IconButton
+            label="Notifications"
+            className={cn(
+              isNotificationsActive && 'bg-surface-container text-secondary'
+            )}
+          >
+            <span
+              className="material-symbols-outlined"
+              style={
+                isNotificationsActive ? { fontVariationSettings: "'FILL' 1" } : undefined
+              }
+            >
+              notifications
+            </span>
+          </IconButton>
+        </Link>
 
+        {/*
+          Left divider line turns deep navy when Profile is the active page.
+        */}
         <Link
           to="/profile"
-          className="flex items-center gap-3 border-l border-outline-variant pl-gutter ml-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue"
+          className={cn(
+            'flex items-center gap-3 border-l-2 pl-gutter ml-1 rounded-md',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue',
+            isProfileActive
+              ? 'border-deep-navy bg-surface-container/60'
+              : 'border-outline-variant'
+          )}
           aria-label="Open profile"
+          aria-current={isProfileActive ? 'page' : undefined}
         >
-          <div className="w-7 h-7 rounded-full bg-surface-container-highest flex items-center justify-center text-on-surface">
+          <div
+            className={cn(
+              'w-7 h-7 rounded-full flex items-center justify-center',
+              isProfileActive
+                ? 'bg-deep-navy text-white'
+                : 'bg-surface-container-highest text-on-surface'
+            )}
+          >
             <span className="material-symbols-outlined text-base">person</span>
           </div>
-          <span className="text-label-md font-semibold text-on-surface hidden sm:inline">Profile</span>
+          <span
+            className={cn(
+              'text-label-md font-semibold hidden sm:inline',
+              isProfileActive ? 'text-deep-navy' : 'text-on-surface'
+            )}
+          >
+            Profile
+          </span>
         </Link>
       </div>
     </header>
