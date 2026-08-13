@@ -1,11 +1,14 @@
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useNavigate, Link, useSearch } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
+import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
 import { useCreateTask } from '../hooks/use-tasks'
 import { useProject } from '../hooks/use-projects'
+import { getDb } from '@/shared/mock/db'
 
 const schema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters').max(200),
@@ -22,6 +25,18 @@ export function TaskCreatePage() {
   const { data: project } = useProject(
     projectId != null && Number.isFinite(projectId) ? projectId : undefined
   )
+
+  const employeeOptions: EntityOption[] = useMemo(
+    () =>
+      getDb().employees.map((e) => ({
+        id: e.id,
+        label: e.fullName,
+        sublabel: [e.role, e.department].filter(Boolean).join(' · '),
+      })),
+    []
+  )
+
+  const [assignee, setAssignee] = useState<EntityOption | null>(null)
 
   const createMutation = useCreateTask()
   const {
@@ -47,6 +62,7 @@ export function TaskCreatePage() {
         ...data,
         projectId: projectId && Number.isFinite(projectId) ? projectId : undefined,
         projectName: project?.name,
+        assigneeName: assignee?.label,
       })
       if (projectId && Number.isFinite(projectId)) {
         navigate({ to: '/projects/$projectId', params: { projectId: String(projectId) } })
@@ -125,6 +141,26 @@ export function TaskCreatePage() {
                   placeholder="Provide detailed instructions or context..."
                 />
               </div>
+            </div>
+
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center gap-2 pb-2 border-b border-outline-variant">
+                <span className="material-symbols-outlined text-electric-blue text-sm">person_search</span>
+                <h3 className="text-[12px] font-bold uppercase tracking-wider text-on-surface-variant">
+                  Assignment
+                </h3>
+              </div>
+              <EntitySearch
+                label="Assign to"
+                placeholder="Search employees by name or department…"
+                options={employeeOptions}
+                value={assignee}
+                onChange={setAssignee}
+                emptyMessage="No employees match your search"
+              />
+              <p className="text-body-sm text-on-surface-variant">
+                Pick who will own this work item (searches employees from mock data).
+              </p>
             </div>
 
             <div className="space-y-4 pt-2">
