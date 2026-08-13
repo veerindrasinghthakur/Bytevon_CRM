@@ -1,0 +1,5 @@
+export { MyWorkOverviewPage } from './pages/MyWorkOverviewPage'
+export { MyAttendancePage } from './pages/MyAttendancePage'
+export { MyLeavePage } from './pages/MyLeavePage'
+export { MyTasksPage } from './pages/MyTasksPage'
+export { MyApprovalsPage } from './pages/MyApprovalsPage'
