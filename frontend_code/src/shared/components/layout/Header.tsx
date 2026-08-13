@@ -1,6 +1,5 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
-import { IconButton } from '@/shared/components/ui/IconButton'
 
 /** Shared shell header height — keep SecondarySidebar top row the same */
 export const HEADER_HEIGHT_PX = 56
@@ -45,27 +44,28 @@ export function Header({ title, className, style }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-gutter shrink-0">
-        <Link to="/notifications" aria-label="My notifications">
-          <IconButton
-            label="Notifications"
-            className={cn(
-              isNotificationsActive && 'bg-surface-container text-secondary'
-            )}
+        <Link
+          to="/notifications"
+          aria-label="My notifications"
+          title="Notifications"
+          className={cn(
+            'inline-flex items-center justify-center rounded-full p-2',
+            'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface',
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue',
+            isNotificationsActive && 'bg-surface-container text-secondary'
+          )}
+        >
+          <span
+            className="material-symbols-outlined"
+            style={
+              isNotificationsActive ? { fontVariationSettings: "'FILL' 1" } : undefined
+            }
           >
-            <span
-              className="material-symbols-outlined"
-              style={
-                isNotificationsActive ? { fontVariationSettings: "'FILL' 1" } : undefined
-              }
-            >
-              notifications
-            </span>
-          </IconButton>
+            notifications
+          </span>
         </Link>
 
-        {/*
-          Left divider line turns deep navy when Profile is the active page.
-        */}
+        {/* Left divider turns deep navy when Profile is active */}
         <Link
           to="/profile"
           className={cn(
