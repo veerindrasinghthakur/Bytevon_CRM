@@ -69,22 +69,45 @@ export async function updateTeam(
 export async function createTeam(input: {
   name: string
   description?: string
+  headName?: string
+  headRole?: string
+  memberNames?: string[]
+  /** When set, team is linked to this project and project.teamCount increments */
+  projectId?: number
+  projectName?: string
 }): Promise<Team> {
   await delay(500)
-  const teams = getDb().teams
+  const db = getDb()
+  const teams = db.teams
+  const memberCount = (input.memberNames?.length ?? 0) + (input.headName ? 1 : 0)
   const row = {
     id: nextId(teams),
     name: input.name,
     description: input.description ?? null,
     department: 'Engineering',
-    headName: null as string | null,
-    headRole: null as string | null,
-    projectName: null as string | null,
-    memberCount: 0,
-    projectCount: 0,
+    headName: input.headName ?? null,
+    headRole: input.headRole ?? (input.headName ? 'Team Lead' : null),
+    projectName: input.projectName ?? null,
+    memberCount,
+    projectCount: input.projectId ? 1 : 0,
     status: 'ACTIVE',
     createdAt: new Date().toISOString(),
   }
   teams.unshift(row)
+
+  if (input.projectId) {
+    const pIdx = db.projects.findIndex((p) => p.id === input.projectId)
+    if (pIdx !== -1) {
+      db.projects[pIdx] = {
+        ...db.projects[pIdx],
+        teamCount: (db.projects[pIdx].teamCount ?? 0) + 1,
+        updatedAt: new Date().toISOString(),
+      }
+      if (!row.projectName) {
+        row.projectName = db.projects[pIdx].name
+      }
+    }
+  }
+
   return asTeam(row)
 }
