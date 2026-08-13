@@ -24,6 +24,7 @@ export function Header({ title, className, style }: HeaderProps) {
         className
       )}
       style={style}
+      data-shell-header="v2"
     >
       <div className="flex items-center gap-4 min-w-0">
         {title && (
@@ -43,16 +44,17 @@ export function Header({ title, className, style }: HeaderProps) {
         </div>
       </div>
 
-      <div className="flex items-center gap-gutter shrink-0">
+      <div className="flex items-center gap-3 shrink-0">
+        {/* Notifications — opens /notifications */}
         <Link
           to="/notifications"
           aria-label="My notifications"
           title="Notifications"
           className={cn(
-            'inline-flex items-center justify-center rounded-full p-2',
+            'relative inline-flex items-center justify-center rounded-full p-2',
             'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue',
-            isNotificationsActive && 'bg-surface-container text-secondary'
+            isNotificationsActive && 'bg-[#e8f1ff] text-secondary'
           )}
         >
           <span
@@ -63,30 +65,39 @@ export function Header({ title, className, style }: HeaderProps) {
           >
             notifications
           </span>
+          {/* Mock unread badge */}
+          {!isNotificationsActive && (
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface" />
+          )}
         </Link>
 
-        {/* Left divider turns deep navy when Profile is active */}
+        {/*
+          Profile control — left divider is grey by default;
+          becomes deep navy (+ filled avatar) when /profile is active.
+        */}
         <Link
           to="/profile"
           className={cn(
-            'flex items-center gap-3 border-l-2 pl-gutter ml-1 rounded-md',
+            'flex items-center gap-2.5 pl-3 ml-1 py-1 pr-1.5 rounded-md',
+            'border-l-4',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue',
             isProfileActive
-              ? 'border-deep-navy bg-surface-container/60'
+              ? 'border-deep-navy bg-surface-container'
               : 'border-outline-variant'
           )}
           aria-label="Open profile"
           aria-current={isProfileActive ? 'page' : undefined}
+          data-active={isProfileActive ? 'true' : 'false'}
         >
           <div
             className={cn(
-              'w-7 h-7 rounded-full flex items-center justify-center',
+              'w-8 h-8 rounded-full flex items-center justify-center shrink-0',
               isProfileActive
                 ? 'bg-deep-navy text-white'
                 : 'bg-surface-container-highest text-on-surface'
             )}
           >
-            <span className="material-symbols-outlined text-base">person</span>
+            <span className="material-symbols-outlined text-[18px]">person</span>
           </div>
           <span
             className={cn(
