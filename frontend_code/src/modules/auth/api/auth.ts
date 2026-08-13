@@ -1,8 +1,8 @@
 /**
- * Auth API (mock for V1 UI).
- * Locked V1: login / logout / refresh / revoke session(s),
- * forgot-password + single-use reset token, no MFA, no password history.
- * Swap implementations for real backend later.
+ * Auth API — single module file (all auth methods).
+ * Mock for V1 UI; replace bodies with real backend calls later.
+ *
+ * Temporary test user: username `admin` / password `123`
  */
 
 import type {
@@ -13,19 +13,21 @@ import type {
   LoginInput,
   ResetPasswordInput,
 } from '../schemas/auth'
+import { MOCK_LOGIN_PASSWORD, MOCK_LOGIN_USERNAME } from '../schemas/auth'
 
 const STORAGE_KEY = 'bytevon_auth_session'
 const RESET_TOKENS_KEY = 'bytevon_reset_tokens'
 
-const DEMO_USER: AuthUser = {
+const ADMIN_USER: AuthUser = {
   id: 1,
-  email: 'marcus@bytevon.example',
-  name: 'Marcus S.',
+  username: MOCK_LOGIN_USERNAME,
+  email: 'admin@bytevon.example',
+  name: 'Admin User',
   role: 'Administrator',
   department: 'Operations',
 }
 
-function delay(ms = 600) {
+function delay(ms = 500) {
   return new Promise((r) => setTimeout(r, ms))
 }
 
@@ -34,7 +36,7 @@ function makeTokens(): AuthSession['tokens'] {
   return {
     accessToken: `access_${id}`,
     refreshToken: `refresh_${id}`,
-    expiresIn: 600, // 10 min — matches V1 access JWT window
+    expiresIn: 600,
   }
 }
 
@@ -59,21 +61,15 @@ export function persistSession(session: AuthSession | null) {
 export async function loginApi(input: LoginInput): Promise<AuthSession> {
   await delay()
 
-  // Mock: reject only a locked demo account
-  if (input.email.toLowerCase() === 'locked@bytevon.example') {
-    throw new Error('Account is temporarily locked. Try again later.')
-  }
+  const username = input.username.trim().toLowerCase()
+  const password = input.password
 
-  if (!input.password || input.password.length < 1) {
-    throw new Error('Invalid email or password.')
+  if (username !== MOCK_LOGIN_USERNAME || password !== MOCK_LOGIN_PASSWORD) {
+    throw new Error('Invalid username or password.')
   }
 
   const session: AuthSession = {
-    user: {
-      ...DEMO_USER,
-      email: input.email,
-      name: input.email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
-    },
+    user: ADMIN_USER,
     tokens: makeTokens(),
   }
   persistSession(session)
@@ -81,12 +77,12 @@ export async function loginApi(input: LoginInput): Promise<AuthSession> {
 }
 
 export async function logoutApi(_revokeAll = false): Promise<void> {
-  await delay(300)
+  await delay(250)
   persistSession(null)
 }
 
 export async function refreshApi(refreshToken: string): Promise<AuthSession> {
-  await delay(200)
+  await delay(150)
   const current = loadStoredSession()
   if (!current || current.tokens.refreshToken !== refreshToken) {
     persistSession(null)
@@ -96,7 +92,6 @@ export async function refreshApi(refreshToken: string): Promise<AuthSession> {
     ...current,
     tokens: makeTokens(),
   }
-  // keep same refresh family for mock simplicity
   next.tokens.refreshToken = refreshToken
   persistSession(next)
   return next
@@ -109,9 +104,8 @@ export async function forgotPasswordApi(input: ForgotPasswordInput): Promise<{ m
     string,
     { email: string; exp: number }
   >
-  map[token] = { email: input.email, exp: Date.now() + 10 * 60 * 1000 } // 5–10 min V1
+  map[token] = { email: input.email, exp: Date.now() + 10 * 60 * 1000 }
   localStorage.setItem(RESET_TOKENS_KEY, JSON.stringify(map))
-  // In real API the token is emailed; for mock we expose it in console for QA
   console.info('[auth mock] Password reset token (dev only):', token)
   return { message: 'If an account exists for that email, a reset link has been sent.' }
 }

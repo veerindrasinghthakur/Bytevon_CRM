@@ -1,7 +1,11 @@
 import { z } from 'zod'
 
+/** Temporary mock credentials until backend Auth API is connected. */
+export const MOCK_LOGIN_USERNAME = 'admin'
+export const MOCK_LOGIN_PASSWORD = '123'
+
 export const loginSchema = z.object({
-  email: z.string().email('Enter a valid work email'),
+  username: z.string().min(1, 'Username is required'),
   password: z.string().min(1, 'Password is required'),
   rememberMe: z.boolean().optional(),
 })
@@ -52,6 +56,7 @@ export type ChangePasswordInput = z.infer<typeof changePasswordSchema>
 
 export interface AuthUser {
   id: number
+  username: string
   email: string
   name: string
   role: string

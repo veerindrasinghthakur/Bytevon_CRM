@@ -2,7 +2,12 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate, useSearch } from '@tanstack/react-router'
-import { loginSchema, type LoginInput } from '../schemas/auth'
+import {
+  loginSchema,
+  type LoginInput,
+  MOCK_LOGIN_PASSWORD,
+  MOCK_LOGIN_USERNAME,
+} from '../schemas/auth'
 import { useAuth } from '../context/AuthContext'
 import { Button } from '@/shared/components/ui/Button'
 
@@ -19,7 +24,7 @@ export function LoginPage() {
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: '', password: '', rememberMe: false },
+    defaultValues: { username: '', password: '', rememberMe: false },
   })
 
   const onSubmit = async (data: LoginInput) => {
@@ -34,7 +39,6 @@ export function LoginPage() {
 
   return (
     <main className="w-full min-h-screen grid grid-cols-1 md:grid-cols-2 max-w-[1440px] mx-auto">
-      {/* Brand panel */}
       <section className="hidden md:flex flex-col justify-between p-10 bg-surface-container-low relative overflow-hidden">
         <div className="z-10">
           <div className="flex items-center gap-3">
@@ -65,7 +69,6 @@ export function LoginPage() {
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-deep-navy rounded-full opacity-5" />
       </section>
 
-      {/* Form panel */}
       <section className="flex items-center justify-center p-4 md:p-10 bg-surface">
         <div className="w-full max-w-md">
           <div className="md:hidden mb-8 text-center">
@@ -95,24 +98,24 @@ export function LoginPage() {
               )}
 
               <div>
-                <label className="block text-label-md text-on-surface-variant mb-2" htmlFor="email">
-                  Work Email
+                <label className="block text-label-md text-on-surface-variant mb-2" htmlFor="username">
+                  Username
                 </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-outline pointer-events-none">
-                    <span className="material-symbols-outlined text-[20px]">mail</span>
+                    <span className="material-symbols-outlined text-[20px]">person</span>
                   </span>
                   <input
-                    id="email"
-                    type="email"
-                    autoComplete="email"
-                    placeholder="name@company.com"
+                    id="username"
+                    type="text"
+                    autoComplete="username"
+                    placeholder="admin"
                     className="block w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded-lg text-body-md text-on-background focus:outline-none focus:ring-2 focus:ring-electric-blue"
-                    {...register('email')}
+                    {...register('username')}
                   />
                 </div>
-                {errors.email && (
-                  <p className="mt-1 text-label-sm text-error">{errors.email.message}</p>
+                {errors.username && (
+                  <p className="mt-1 text-label-sm text-error">{errors.username.message}</p>
                 )}
               </div>
 
@@ -157,10 +160,7 @@ export function LoginPage() {
                   />
                   <span className="text-label-md text-on-surface-variant">Remember Me</span>
                 </label>
-                <Link
-                  to="/forgot-password"
-                  className="text-label-md text-secondary hover:underline"
-                >
+                <Link to="/forgot-password" className="text-label-md text-secondary hover:underline">
                   Forgot Password?
                 </Link>
               </div>
@@ -170,10 +170,14 @@ export function LoginPage() {
               </Button>
             </form>
 
-            <p className="mt-6 text-center text-body-sm text-on-surface-variant">
-              Mock auth: any email + password works. Use{' '}
-              <span className="font-semibold text-on-background">locked@bytevon.example</span> to test lockout.
-            </p>
+            <div className="mt-6 rounded-lg bg-surface-container-low border border-outline-variant/50 px-4 py-3 text-center">
+              <p className="text-label-sm text-on-surface-variant mb-1">Temporary test account</p>
+              <p className="text-body-sm text-on-background">
+                Username <span className="font-semibold">{MOCK_LOGIN_USERNAME}</span>
+                {' · '}
+                Password <span className="font-semibold">{MOCK_LOGIN_PASSWORD}</span>
+              </p>
+            </div>
           </div>
 
           <nav className="mt-8 flex justify-center gap-6">
