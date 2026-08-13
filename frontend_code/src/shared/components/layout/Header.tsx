@@ -45,7 +45,6 @@ export function Header({ title, className, style }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-3 shrink-0">
-        {/* Notifications — opens /notifications */}
         <Link
           to="/notifications"
           aria-label="My notifications"
@@ -65,25 +64,23 @@ export function Header({ title, className, style }: HeaderProps) {
           >
             notifications
           </span>
-          {/* Mock unread badge */}
           {!isNotificationsActive && (
             <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface" />
           )}
         </Link>
 
         {/*
-          Profile control — left divider is grey by default;
-          becomes deep navy (+ filled avatar) when /profile is active.
+          Inactive: thin light border (barely visible line).
+          Active: thick deep-navy border + filled avatar.
         */}
         <Link
           to="/profile"
           className={cn(
             'flex items-center gap-2.5 pl-3 ml-1 py-1 pr-1.5 rounded-md',
-            'border-l-4',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue',
             isProfileActive
-              ? 'border-deep-navy bg-surface-container'
-              : 'border-outline-variant'
+              ? 'border-l-4 border-deep-navy bg-surface-container'
+              : 'border-l border-outline-variant/50'
           )}
           aria-label="Open profile"
           aria-current={isProfileActive ? 'page' : undefined}
