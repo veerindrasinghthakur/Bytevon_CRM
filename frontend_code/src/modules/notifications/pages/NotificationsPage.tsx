@@ -1,15 +1,14 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
+import type { NotifType } from '../api/notifications'
 import {
-  getNotifications,
-  markAllNotificationsRead,
-  markNotificationRead,
-  type NotifType,
-  type NotificationItem,
-} from '../api/notifications'
+  useMarkAllNotificationsRead,
+  useMarkNotificationRead,
+  useNotifications,
+} from '../hooks/use-notifications'
 
 const TYPE_META: Record<
   NotifType,
@@ -36,41 +35,24 @@ function formatWhen(iso: string) {
 }
 
 export function NotificationsPage() {
-  const [items, setItems] = useState<NotificationItem[]>([])
+  const { data, isLoading } = useNotifications()
+  const markRead = useMarkNotificationRead()
+  const markAll = useMarkAllNotificationsRead()
+
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
   const [selectedId, setSelectedId] = useState<number | null>(null)
-  const [loading, setLoading] = useState(true)
 
-  const reload = useCallback(async () => {
-    setLoading(true)
-    try {
-      const res = await getNotifications()
-      setItems(res.items)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    void reload()
-  }, [reload])
-
+  const items = data?.items ?? []
   const visible = useMemo(
     () => (filter === 'unread' ? items.filter((n) => !n.read) : items),
     [items, filter]
   )
-  const unreadCount = items.filter((n) => !n.read).length
+  const unreadCount = data?.unreadCount ?? items.filter((n) => !n.read).length
   const selected = items.find((n) => n.id === selectedId) ?? null
 
-  const markAllRead = async () => {
-    await markAllNotificationsRead()
-    await reload()
-  }
-
-  const selectItem = async (id: number) => {
+  const selectItem = (id: number) => {
     setSelectedId(id)
-    await markNotificationRead(id)
-    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
+    markRead.mutate(id)
   }
 
   return (
@@ -97,7 +79,12 @@ export function NotificationsPage() {
             >
               Unread{unreadCount > 0 ? ` (${unreadCount})` : ''}
             </Button>
-            <Button variant="outline" size="sm" onClick={() => void markAllRead()} disabled={unreadCount === 0}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => markAll.mutate()}
+              disabled={unreadCount === 0 || markAll.isPending}
+            >
               Mark all read
             </Button>
           </div>
@@ -111,10 +98,10 @@ export function NotificationsPage() {
             selected ? 'flex-1' : 'w-full'
           )}
         >
-          {loading && (
+          {isLoading && (
             <p className="p-8 text-body-sm text-on-surface-variant text-center">Loading…</p>
           )}
-          {!loading && visible.length === 0 && (
+          {!isLoading && visible.length === 0 && (
             <div className="p-12 text-center">
               <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-3">
                 notifications_off
@@ -133,7 +120,7 @@ export function NotificationsPage() {
                 <li key={n.id}>
                   <button
                     type="button"
-                    onClick={() => void selectItem(n.id)}
+                    onClick={() => selectItem(n.id)}
                     className={cn(
                       'w-full text-left flex items-start gap-4 px-5 py-4',
                       'hover:bg-surface-container/60',
@@ -240,11 +227,7 @@ export function NotificationsPage() {
       </div>
 
       <p className="text-body-sm text-on-surface-variant text-center lg:text-left">
-        Data from <code className="text-label-sm">shared/mock/mock-data.json</code>. Preferences on{' '}
-        <Link to="/profile" className="text-secondary hover:underline">
-          Profile
-        </Link>
-        .
+        Updates apply optimistically; cache syncs after the mock API settles.
       </p>
     </div>
   )
