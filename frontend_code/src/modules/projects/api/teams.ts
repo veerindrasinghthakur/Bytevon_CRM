@@ -16,7 +16,8 @@ export interface Team {
   createdAt: string
 }
 
-function asTeam(row: (typeof getDb.arguments extends never ? never : ReturnType<typeof getDb>)['teams'][number]): Team {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function asTeam(row: any): Team {
   return {
     id: row.id,
     name: row.name,
@@ -61,14 +62,7 @@ export async function updateTeam(
   const teams = getDb().teams
   const idx = teams.findIndex((t) => t.id === id)
   if (idx === -1) throw new Error('Team not found')
-  teams[idx] = {
-    ...teams[idx],
-    ...patch,
-    description: patch.description ?? teams[idx].description,
-    department: patch.department ?? teams[idx].department,
-    headName: patch.headName ?? teams[idx].headName,
-    headRole: patch.headRole ?? teams[idx].headRole,
-  }
+  teams[idx] = { ...teams[idx], ...patch }
   return asTeam(teams[idx])
 }
 
