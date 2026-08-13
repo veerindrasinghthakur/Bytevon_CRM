@@ -84,9 +84,11 @@ export async function createTask(input: {
   priority?: TaskPriority
   projectId?: number
   projectName?: string
+  assigneeName?: string
 }): Promise<Task> {
   await delay(500)
-  const tasks = getDb().tasks
+  const db = getDb()
+  const tasks = db.tasks
   const row = {
     id: nextId(tasks),
     title: input.title,
@@ -95,10 +97,22 @@ export async function createTask(input: {
     status: 'TODO',
     projectId: input.projectId ?? 0,
     projectName: input.projectName ?? null,
-    assigneeName: null as string | null,
+    assigneeName: input.assigneeName ?? null,
     dueDate: null as string | null,
     createdAt: new Date().toISOString(),
   }
   tasks.unshift(row)
+
+  if (input.projectId) {
+    const pIdx = db.projects.findIndex((p) => p.id === input.projectId)
+    if (pIdx !== -1) {
+      db.projects[pIdx] = {
+        ...db.projects[pIdx],
+        taskCount: (db.projects[pIdx].taskCount ?? 0) + 1,
+        updatedAt: new Date().toISOString(),
+      }
+    }
+  }
+
   return asTask(row)
 }
