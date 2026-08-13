@@ -1,15 +1,37 @@
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate, Link } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
+import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
 import { createProjectSchema, type CreateProjectInput } from '../schemas/project'
 import { useCreateProject } from '../hooks/use-projects'
+import { useTeams } from '../hooks/use-teams'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
+import { createTeam } from '../api/teams'
+
+type AssignMode = 'existing' | 'new' | 'later'
 
 export function ProjectCreatePage() {
   const navigate = useNavigate()
   const createMutation = useCreateProject()
+  const { data: teamsData } = useTeams()
+
+  const [assignMode, setAssignMode] = useState<AssignMode>('later')
+  const [selectedTeam, setSelectedTeam] = useState<EntityOption | null>(null)
+
+  const teamOptions: EntityOption[] = useMemo(
+    () =>
+      (teamsData?.items ?? []).map((t) => ({
+        id: t.id,
+        label: t.name,
+        sublabel: [t.department, t.headName ? `Head: ${t.headName}` : null, `${t.memberCount} members`]
+          .filter(Boolean)
+          .join(' · '),
+      })),
+    [teamsData]
+  )
 
   const {
     register,
@@ -29,6 +51,32 @@ export function ProjectCreatePage() {
   const onSubmit = async (data: CreateProjectInput) => {
     try {
       const project = await createMutation.mutateAsync(data)
+
+      if (assignMode === 'existing' && selectedTeam) {
+        await createTeam({
+          name: `${selectedTeam.label} · ${project.name}`,
+          description: `Assigned from existing team ${selectedTeam.label}`,
+          projectId: project.id,
+          projectName: project.name,
+          headName: selectedTeam.sublabel?.includes('Head:')
+            ? selectedTeam.sublabel.split('Head: ')[1]?.split(' · ')[0]
+            : undefined,
+        }).catch(() => undefined)
+        navigate({ to: '/projects/$projectId', params: { projectId: String(project.id) } })
+        return
+      }
+
+      if (assignMode === 'new') {
+        navigate({
+          to: '/projects/teams/new',
+          search: {
+            projectId: String(project.id),
+            returnTo: `/projects/${project.id}`,
+          },
+        })
+        return
+      }
+
       navigate({ to: '/projects/$projectId', params: { projectId: String(project.id) } })
     } catch {
       // mutation state
@@ -116,28 +164,68 @@ export function ProjectCreatePage() {
                   Assignment Strategy
                 </h3>
                 <div className="space-y-3">
-                  {[
-                    { id: 'existing', title: 'Assign Existing Team', desc: 'Allocate a pre-configured team to this project.' },
-                    { id: 'new', title: 'Create New Team', desc: 'Build a custom team from available resources.' },
-                    { id: 'later', title: 'Assign Later', desc: 'Setup shell project, add members later.' },
-                  ].map((opt, i) => (
+                  {(
+                    [
+                      {
+                        id: 'existing' as const,
+                        title: 'Assign Existing Team',
+                        desc: 'Search and allocate a pre-configured team.',
+                      },
+                      {
+                        id: 'new' as const,
+                        title: 'Create New Team',
+                        desc: 'After project save, build a team and auto-assign it here.',
+                      },
+                      {
+                        id: 'later' as const,
+                        title: 'Assign Later',
+                        desc: 'Setup shell project, add members later.',
+                      },
+                    ] as const
+                  ).map((opt) => (
                     <label
                       key={opt.id}
-                      className="flex items-start gap-3 p-3 border border-outline-variant rounded-lg cursor-pointer hover:border-electric-blue hover:bg-electric-blue/5 bg-surface-container-lowest"
+                      className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer bg-surface-container-lowest ${
+                        assignMode === opt.id
+                          ? 'border-electric-blue bg-electric-blue/5'
+                          : 'border-outline-variant hover:border-electric-blue'
+                      }`}
                     >
                       <input
                         type="radio"
                         name="assignment"
-                        defaultChecked={i === 2}
+                        checked={assignMode === opt.id}
+                        onChange={() => setAssignMode(opt.id)}
                         className="mt-0.5 w-4 h-4 text-electric-blue border-outline-variant focus:ring-electric-blue"
                       />
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-on-background">{opt.title}</p>
                         <p className="text-xs text-on-surface-variant mt-0.5">{opt.desc}</p>
                       </div>
                     </label>
                   ))}
                 </div>
+
+                {assignMode === 'existing' && (
+                  <div className="mt-4">
+                    <EntitySearch
+                      label="Search existing teams"
+                      placeholder="Type team name, department, or head…"
+                      options={teamOptions}
+                      value={selectedTeam}
+                      onChange={setSelectedTeam}
+                      emptyMessage="No teams match — try Create New Team"
+                    />
+                  </div>
+                )}
+
+                {assignMode === 'new' && (
+                  <p className="mt-4 text-body-sm text-on-surface-variant rounded-lg border border-outline-variant/50 bg-surface p-3">
+                    On submit we create the project, then open <strong>Create Team</strong> with
+                    employee search. The new team is linked to this project and you return to the
+                    project page.
+                  </p>
+                )}
               </section>
 
               <div className="space-y-8">
@@ -223,7 +311,7 @@ export function ProjectCreatePage() {
               isLoading={isSubmitting || createMutation.isPending}
               rightIcon={<span className="material-symbols-outlined text-sm">arrow_forward</span>}
             >
-              Create Project
+              {assignMode === 'new' ? 'Create project & new team' : 'Create Project'}
             </Button>
           </div>
         </form>
