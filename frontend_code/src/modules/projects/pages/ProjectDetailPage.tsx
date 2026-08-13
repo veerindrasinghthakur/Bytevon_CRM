@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams, useNavigate } from '@tanstack/react-router'
+import { Link, useParams, useNavigate, useSearch } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
@@ -12,6 +12,7 @@ import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 export function ProjectDetailPage() {
   const navigate = useNavigate()
   const params = useParams({ strict: false }) as { projectId?: string }
+  const search = useSearch({ strict: false }) as { edit?: string }
   const id = Number(params.projectId)
   const { data: project, isLoading, isError, refetch } = useProject(
     Number.isFinite(id) ? id : undefined
@@ -20,7 +21,7 @@ export function ProjectDetailPage() {
     Number.isFinite(id) ? { projectId: id } : undefined
   )
 
-  const [editing, setEditing] = useState(false)
+  const [editing, setEditing] = useState(search.edit === '1')
   const [draft, setDraft] = useState({
     name: '',
     description: '',
@@ -36,9 +37,9 @@ export function ProjectDetailPage() {
         clientName: project.clientName ?? '',
         repositoryUrl: project.repositoryUrl ?? '',
       })
-      setEditing(false)
+      setEditing(search.edit === '1')
     }
-  }, [project])
+  }, [project, search.edit])
 
   if (isLoading) {
     return (
@@ -84,12 +85,9 @@ export function ProjectDetailPage() {
     setEditing(true)
   }
 
-  const cancelEdit = () => {
-    setEditing(false)
-  }
+  const cancelEdit = () => setEditing(false)
 
   const saveEdit = () => {
-    // Local-only until project update API is wired
     console.info('Save project draft', project.id, draft)
     setEditing(false)
   }
@@ -112,12 +110,8 @@ export function ProjectDetailPage() {
         actions={
           editing ? (
             <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={cancelEdit}>
-                Cancel
-              </Button>
-              <Button variant="primary" size="sm" onClick={saveEdit}>
-                Save
-              </Button>
+              <Button variant="ghost" size="sm" onClick={cancelEdit}>Cancel</Button>
+              <Button variant="primary" size="sm" onClick={saveEdit}>Save</Button>
             </div>
           ) : (
             <Button
@@ -151,9 +145,7 @@ export function ProjectDetailPage() {
             {editing ? (
               <div className="space-y-4">
                 <div>
-                  <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="edit-name">
-                    Project name
-                  </label>
+                  <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="edit-name">Project name</label>
                   <input
                     id="edit-name"
                     value={draft.name}
@@ -163,9 +155,7 @@ export function ProjectDetailPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="edit-desc">
-                    Description
-                  </label>
+                  <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="edit-desc">Description</label>
                   <textarea
                     id="edit-desc"
                     rows={4}
@@ -176,9 +166,7 @@ export function ProjectDetailPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="edit-repo">
-                    Repository URL
-                  </label>
+                  <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="edit-repo">Repository URL</label>
                   <input
                     id="edit-repo"
                     value={draft.repositoryUrl}
@@ -212,9 +200,7 @@ export function ProjectDetailPage() {
             <div className="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
               <div>
                 <h3 className="text-title-lg text-on-background">Tasks</h3>
-                <p className="text-body-sm text-on-surface-variant mt-0.5">
-                  Work items belonging to this project
-                </p>
+                <p className="text-body-sm text-on-surface-variant mt-0.5">Work items belonging to this project</p>
               </div>
               <Button
                 variant="primary"
@@ -280,12 +266,8 @@ export function ProjectDetailPage() {
                         <td className="px-4 py-2">
                           <TaskStatusBadge status={task.status} />
                         </td>
-                        <td className="px-4 py-2 text-body-md text-on-surface">
-                          {task.assigneeName ?? '—'}
-                        </td>
-                        <td className="px-4 py-2 text-body-md text-on-surface">
-                          {task.dueDate ?? '—'}
-                        </td>
+                        <td className="px-4 py-2 text-body-md text-on-surface">{task.assigneeName ?? '—'}</td>
+                        <td className="px-4 py-2 text-body-md text-on-surface">{task.dueDate ?? '—'}</td>
                       </tr>
                     ))}
                   </tbody>
