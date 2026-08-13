@@ -1,6 +1,10 @@
 import { useState, useMemo } from 'react'
 import { Outlet, useNavigate, useRouterState } from '@tanstack/react-router'
-import { IconRail } from '@/shared/components/layout/IconRail'
+import {
+  IconRail,
+  RAIL_COLLAPSED_WIDTH,
+  RAIL_EXPANDED_WIDTH,
+} from '@/shared/components/layout/IconRail'
 import {
   SecondarySidebar,
   SECONDARY_COLLAPSED_WIDTH,
@@ -32,7 +36,7 @@ export function AppShell() {
   const moduleId = getActiveModule(pathname)
   const hasSecondaryItems = (SECONDARY_NAV[moduleId]?.items?.length ?? 0) > 0
 
-  const railWidth = isRailExpanded ? 220 : 80
+  const railWidth = isRailExpanded ? RAIL_EXPANDED_WIDTH : RAIL_COLLAPSED_WIDTH
   const secondaryWidth = !hasSecondaryItems
     ? 0
     : isSecondaryCollapsed
@@ -64,7 +68,6 @@ export function AppShell() {
 
   return (
     <div className="h-screen overflow-hidden flex bg-background">
-      {/* overflow-visible so rail collapse chevron can sit half outside the rail border */}
       <div className="fixed left-0 top-0 h-full flex z-50 overflow-visible">
         <IconRail
           isExpanded={isRailExpanded}
