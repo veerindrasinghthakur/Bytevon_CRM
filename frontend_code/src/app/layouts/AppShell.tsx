@@ -12,6 +12,10 @@ import {
   SECONDARY_NAV,
 } from '@/shared/components/layout/SecondarySidebar'
 import { Header, HEADER_HEIGHT_PX } from '@/shared/components/layout/Header'
+import {
+  QuickOverviewProvider,
+  QuickOverviewPanel,
+} from '@/shared/components/layout/QuickOverview'
 import { useAuth } from '@/modules/auth'
 
 function getActiveModule(pathname: string): string {
@@ -67,26 +71,30 @@ export function AppShell() {
   }
 
   return (
-    <div className="h-screen overflow-hidden flex bg-background">
-      <div className="fixed left-0 top-0 h-full flex z-50 overflow-visible">
-        <IconRail
-          isExpanded={isRailExpanded}
-          onToggleExpand={() => setIsRailExpanded((v) => !v)}
-          onLogout={() => {
-            void handleLogout()
-          }}
-        />
-        <SecondarySidebar
-          isCollapsed={isSecondaryCollapsed}
-          onToggle={() => setIsSecondaryCollapsed((v) => !v)}
-        />
+    <QuickOverviewProvider>
+      <div className="h-screen overflow-hidden flex bg-background">
+        <div className="fixed left-0 top-0 h-full flex z-50 overflow-visible">
+          <IconRail
+            isExpanded={isRailExpanded}
+            onToggleExpand={() => setIsRailExpanded((v) => !v)}
+            onLogout={() => {
+              void handleLogout()
+            }}
+          />
+          <SecondarySidebar
+            isCollapsed={isSecondaryCollapsed}
+            onToggle={() => setIsSecondaryCollapsed((v) => !v)}
+          />
+        </div>
+
+        <Header style={headerStyle} />
+
+        <main className="flex-1 bg-background overflow-y-auto p-margin-desktop" style={mainStyle}>
+          <Outlet />
+        </main>
+
+        <QuickOverviewPanel />
       </div>
-
-      <Header style={headerStyle} />
-
-      <main className="flex-1 bg-background overflow-y-auto p-margin-desktop" style={mainStyle}>
-        <Outlet />
-      </main>
-    </div>
+    </QuickOverviewProvider>
   )
 }
