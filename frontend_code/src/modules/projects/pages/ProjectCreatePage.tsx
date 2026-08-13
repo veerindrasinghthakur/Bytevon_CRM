@@ -5,6 +5,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { createProjectSchema, type CreateProjectInput } from '../schemas/project'
 import { useCreateProject } from '../hooks/use-projects'
+import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 
 export function ProjectCreatePage() {
   const navigate = useNavigate()
@@ -70,6 +71,7 @@ export function ProjectCreatePage() {
                   <input
                     id="name"
                     {...register('name')}
+                    onKeyDown={(e) => handleEnterAdvance(e)}
                     className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue focus:border-electric-blue outline-none bg-surface-container-lowest text-on-background"
                     placeholder="e.g., Nexus Platform Migration"
                   />
@@ -86,6 +88,7 @@ export function ProjectCreatePage() {
                     <input
                       id="clientName"
                       {...register('clientName')}
+                      onKeyDown={(e) => handleEnterAdvance(e)}
                       className="w-full pl-10 pr-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue focus:border-electric-blue outline-none bg-surface-container-lowest text-on-background"
                       placeholder="Search and select client..."
                     />
@@ -99,6 +102,7 @@ export function ProjectCreatePage() {
                     id="description"
                     rows={3}
                     {...register('description')}
+                    onKeyDown={(e) => handleEnterAdvance(e)}
                     className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue focus:border-electric-blue outline-none bg-surface-container-lowest text-on-background resize-none"
                     placeholder="Brief overview of the project goals and scope..."
                   />
@@ -144,7 +148,10 @@ export function ProjectCreatePage() {
                   <div className="space-y-4">
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium text-on-background">Phase</label>
-                      <select className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue outline-none bg-surface-container-lowest text-on-background">
+                      <select
+                        className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue outline-none bg-surface-container-lowest text-on-background"
+                        onKeyDown={(e) => handleEnterAdvance(e)}
+                      >
                         <option>Discovery</option>
                         <option>Implementation</option>
                         <option>QA & Testing</option>
@@ -153,7 +160,10 @@ export function ProjectCreatePage() {
                     </div>
                     <div className="space-y-1.5">
                       <label className="text-sm font-medium text-on-background">Priority</label>
-                      <select className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue outline-none bg-surface-container-lowest text-on-background">
+                      <select
+                        className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue outline-none bg-surface-container-lowest text-on-background"
+                        onKeyDown={(e) => handleEnterAdvance(e)}
+                      >
                         <option>Low</option>
                         <option>Medium</option>
                         <option>High</option>
@@ -175,6 +185,7 @@ export function ProjectCreatePage() {
                         id="repositoryUrl"
                         type="url"
                         {...register('repositoryUrl')}
+                        onKeyDown={(e) => handleEnterAdvance(e)}
                         className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue outline-none bg-surface-container-lowest text-on-background text-sm font-mono"
                         placeholder="https://github.com/org/repo"
                       />
@@ -187,6 +198,7 @@ export function ProjectCreatePage() {
                       <input
                         type="text"
                         defaultValue="main"
+                        onKeyDown={(e) => handleEnterAdvance(e)}
                         className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue outline-none bg-surface-container-lowest text-on-background text-sm font-mono"
                         placeholder="main"
                       />
