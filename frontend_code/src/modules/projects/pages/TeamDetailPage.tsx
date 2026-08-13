@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from '@tanstack/react-router'
+import { Link, useParams, useSearch } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
@@ -9,13 +9,14 @@ import type { TeamStatus } from '../api/teams'
 
 export function TeamDetailPage() {
   const params = useParams({ strict: false }) as { teamId?: string }
+  const search = useSearch({ strict: false }) as { edit?: string }
   const id = Number(params.teamId)
   const { data: team, isLoading, isError, refetch } = useTeam(
     Number.isFinite(id) ? id : undefined
   )
   const updateMutation = useUpdateTeam()
 
-  const [editing, setEditing] = useState(false)
+  const [editing, setEditing] = useState(search.edit === '1')
   const [draft, setDraft] = useState({
     name: '',
     description: '',
@@ -35,9 +36,9 @@ export function TeamDetailPage() {
         headRole: team.headRole ?? '',
         status: team.status,
       })
-      setEditing(false)
+      setEditing(search.edit === '1')
     }
-  }, [team])
+  }, [team, search.edit])
 
   if (isLoading) {
     return (
@@ -139,12 +140,7 @@ export function TeamDetailPage() {
             <h3 className="text-title-lg text-on-background mb-4">Details</h3>
             {editing ? (
               <div className="space-y-4">
-                <FieldInput
-                  label="Name"
-                  id="team-name"
-                  value={draft.name}
-                  onChange={(v) => setDraft((d) => ({ ...d, name: v }))}
-                />
+                <FieldInput label="Name" id="team-name" value={draft.name} onChange={(v) => setDraft((d) => ({ ...d, name: v }))} />
                 <div>
                   <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="team-desc">
                     Description
@@ -158,24 +154,9 @@ export function TeamDetailPage() {
                     className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-electric-blue resize-none"
                   />
                 </div>
-                <FieldInput
-                  label="Department"
-                  id="team-dept"
-                  value={draft.department}
-                  onChange={(v) => setDraft((d) => ({ ...d, department: v }))}
-                />
-                <FieldInput
-                  label="Head name"
-                  id="team-head"
-                  value={draft.headName}
-                  onChange={(v) => setDraft((d) => ({ ...d, headName: v }))}
-                />
-                <FieldInput
-                  label="Head role"
-                  id="team-role"
-                  value={draft.headRole}
-                  onChange={(v) => setDraft((d) => ({ ...d, headRole: v }))}
-                />
+                <FieldInput label="Department" id="team-dept" value={draft.department} onChange={(v) => setDraft((d) => ({ ...d, department: v }))} />
+                <FieldInput label="Head name" id="team-head" value={draft.headName} onChange={(v) => setDraft((d) => ({ ...d, headName: v }))} />
+                <FieldInput label="Head role" id="team-role" value={draft.headRole} onChange={(v) => setDraft((d) => ({ ...d, headRole: v }))} />
                 <div>
                   <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="team-status">
                     Status
@@ -183,9 +164,7 @@ export function TeamDetailPage() {
                   <select
                     id="team-status"
                     value={draft.status}
-                    onChange={(e) =>
-                      setDraft((d) => ({ ...d, status: e.target.value as TeamStatus }))
-                    }
+                    onChange={(e) => setDraft((d) => ({ ...d, status: e.target.value as TeamStatus }))}
                     className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background"
                   >
                     <option value="ACTIVE">Active</option>
@@ -194,14 +173,11 @@ export function TeamDetailPage() {
                 </div>
               </div>
             ) : (
-              <p className="text-body-md text-on-surface-variant">
-                {team.description || 'No description.'}
-              </p>
+              <p className="text-body-md text-on-surface-variant">{team.description || 'No description.'}</p>
             )}
           </section>
         </div>
 
-        {/* Quick overview — always on detail view */}
         <aside className="w-full lg:w-[280px] shrink-0 rounded-xl border border-outline-variant bg-surface-container-lowest p-5 space-y-4">
           <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Overview</p>
           <OverviewRow label="Status" value={team.status} />
@@ -210,10 +186,7 @@ export function TeamDetailPage() {
           <OverviewRow label="Role" value={team.headRole ?? '—'} />
           <OverviewRow label="Members" value={String(team.memberCount)} />
           <OverviewRow label="Projects" value={String(team.projectCount)} />
-          <OverviewRow
-            label="Created"
-            value={new Date(team.createdAt).toLocaleDateString()}
-          />
+          <OverviewRow label="Created" value={new Date(team.createdAt).toLocaleDateString()} />
         </aside>
       </div>
     </div>
