@@ -5,6 +5,7 @@ import { Link } from '@tanstack/react-router'
 import { forgotPasswordSchema, type ForgotPasswordInput } from '../schemas/auth'
 import { forgotPasswordApi } from '../api/auth'
 import { Button } from '@/shared/components/ui/Button'
+import { BrandLogo } from '@/shared/components/brand/BrandLogo'
 
 export function ForgotPasswordPage() {
   const [sentTo, setSentTo] = useState<string | null>(null)
@@ -33,13 +34,8 @@ export function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="w-full px-6 md:px-10 py-4 flex justify-between items-center border-b border-outline-variant/40">
-        <Link to="/login" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-electric-blue flex items-center justify-center text-white">
-            <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
-              dataset
-            </span>
-          </div>
-          <span className="text-title-lg font-bold text-on-background">Bytevon</span>
+        <Link to="/login">
+          <BrandLogo withWordmark sizeClassName="w-8 h-8" />
         </Link>
         <span className="text-label-md text-on-surface-variant">Support</span>
       </header>
@@ -106,13 +102,13 @@ export function ForgotPasswordPage() {
               <div className="space-y-2">
                 <h2 className="text-headline-md text-on-background">Check your email</h2>
                 <p className="text-body-md text-on-surface-variant">
-                  We&apos;ve sent a password reset link to{' '}
+                  We've sent a password reset link to{' '}
                   <span className="font-bold text-on-background">{sentTo}</span>.
                 </p>
               </div>
               <div className="bg-surface-container-low p-4 rounded-lg text-left border border-outline-variant/30">
                 <p className="text-label-sm text-on-surface-variant">
-                  Didn&apos;t receive the email? Check spam, or open the browser console for the mock
+                  Didn't receive the email? Check spam, or open the browser console for the mock
                   reset token (dev only).
                 </p>
               </div>
