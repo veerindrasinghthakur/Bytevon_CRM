@@ -3,7 +3,7 @@ import { Link, useParams, useNavigate, useSearch } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
-import { useProject } from '../hooks/use-projects'
+import { useProject, useUpdateProject } from '../hooks/use-projects'
 import { useTasks } from '../hooks/use-tasks'
 import { ProjectStatusBadge } from '../components/ProjectStatusBadge'
 import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
@@ -20,6 +20,7 @@ export function ProjectDetailPage() {
   const { data: tasksData, isLoading: tasksLoading } = useTasks(
     Number.isFinite(id) ? { projectId: id } : undefined
   )
+  const updateMutation = useUpdateProject()
 
   const [editing, setEditing] = useState(search.edit === '1')
   const [draft, setDraft] = useState({
@@ -88,8 +89,18 @@ export function ProjectDetailPage() {
   const cancelEdit = () => setEditing(false)
 
   const saveEdit = () => {
-    console.info('Save project draft', project.id, draft)
-    setEditing(false)
+    updateMutation.mutate(
+      {
+        id: project.id,
+        patch: {
+          name: draft.name,
+          description: draft.description,
+          clientName: draft.clientName,
+          repositoryUrl: draft.repositoryUrl || null,
+        },
+      },
+      { onSuccess: () => setEditing(false) }
+    )
   }
 
   return (
@@ -111,7 +122,14 @@ export function ProjectDetailPage() {
           editing ? (
             <div className="flex gap-2">
               <Button variant="ghost" size="sm" onClick={cancelEdit}>Cancel</Button>
-              <Button variant="primary" size="sm" onClick={saveEdit}>Save</Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={saveEdit}
+                isLoading={updateMutation.isPending}
+              >
+                Save
+              </Button>
             </div>
           ) : (
             <Button
