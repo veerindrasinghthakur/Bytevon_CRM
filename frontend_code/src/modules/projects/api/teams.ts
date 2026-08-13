@@ -88,6 +88,22 @@ export async function getTeams(params?: { search?: string }): Promise<{ items: T
   return { items, total: items.length }
 }
 
+export async function getTeam(id: number): Promise<Team | null> {
+  await delay()
+  return MOCK_TEAMS.find((t) => t.id === id) ?? null
+}
+
+export async function updateTeam(
+  id: number,
+  patch: Partial<Pick<Team, 'name' | 'description' | 'department' | 'headName' | 'headRole' | 'status'>>
+): Promise<Team> {
+  await delay(400)
+  const idx = MOCK_TEAMS.findIndex((t) => t.id === id)
+  if (idx === -1) throw new Error('Team not found')
+  MOCK_TEAMS[idx] = { ...MOCK_TEAMS[idx], ...patch }
+  return MOCK_TEAMS[idx]
+}
+
 export async function createTeam(input: {
   name: string
   description?: string
