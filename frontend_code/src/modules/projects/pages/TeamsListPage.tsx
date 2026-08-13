@@ -1,45 +1,68 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
+import { Pagination, paginate, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { RowActions } from '@/shared/components/ui/RowActions'
+import { ListToolbar } from '@/shared/components/layout/ListToolbar'
+import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import { useTeams } from '../hooks/use-teams'
 
-/** Same layout pattern as ProjectsListPage: title + CTAs, search left / filters right, metric cards, table. */
 export function TeamsListPage() {
   const navigate = useNavigate()
+  const { open: openOverview } = useQuickOverview()
   const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('')
+  const [department, setDepartment] = useState('')
+  const [page, setPage] = useState(1)
+
   const { data, isLoading, isError, refetch } = useTeams({
     search: search || undefined,
   })
 
-  const total = data?.total ?? 0
-  const activeMembers = data?.items.reduce((s, t) => s + t.memberCount, 0) ?? 0
-  const totalProjects = data?.items.reduce((s, t) => s + t.projectCount, 0) ?? 0
+  const filtersActive = Boolean(search || status || department)
+
+  const resetFilters = () => {
+    setSearch('')
+    setStatus('')
+    setDepartment('')
+    setPage(1)
+  }
+
+  const filtered = useMemo(() => {
+    let list = data?.items ?? []
+    if (status) list = list.filter((t) => t.status === status)
+    if (department) list = list.filter((t) => (t.department ?? '').toLowerCase() === department.toLowerCase())
+    return list
+  }, [data, status, department])
+
+  const total = filtered.length
+  const pageItems = useMemo(() => paginate(filtered, page, DEFAULT_PAGE_SIZE), [filtered, page])
+
+  const activeMembers = filtered.reduce((s, t) => s + t.memberCount, 0)
+  const totalProjects = filtered.reduce((s, t) => s + t.projectCount, 0)
   const avgSize = total > 0 ? (activeMembers / total).toFixed(1) : '0'
 
-  const goTeam = (teamId: number) =>
-    navigate({ to: '/projects/teams/$teamId', params: { teamId: String(teamId) } })
+  const goTeam = (teamId: number, edit?: boolean) =>
+    navigate({
+      to: '/projects/teams/$teamId',
+      params: { teamId: String(teamId) },
+      search: edit ? { edit: '1' } : undefined,
+    })
 
   return (
     <div className="space-y-8">
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h2 className="text-[32px] leading-10 font-bold tracking-tight text-on-background">
-            Teams
-          </h2>
+          <h2 className="text-[32px] leading-10 font-bold tracking-tight text-on-background">Teams</h2>
           <p className="text-body-md text-on-surface-variant mt-1">
             Manage and organize your cross-functional teams.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}
-            onClick={() => console.info('Export teams')}
-          >
+          <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}>
             Export
           </Button>
           <Button
@@ -53,48 +76,43 @@ export function TeamsListPage() {
         </div>
       </section>
 
-      <section className="flex flex-wrap items-center gap-4">
-        <div className="flex items-center flex-1 min-w-[200px] max-w-sm bg-surface-container-lowest border border-outline-variant/50 rounded-lg px-3 py-2 focus-within:border-electric-blue">
-          <span className="material-symbols-outlined text-on-surface-variant mr-2 text-lg">search</span>
-          <input
-            type="search"
-            placeholder="Search teams..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent border-none outline-none text-body-sm w-full text-on-background placeholder:text-on-surface-variant"
-          />
-        </div>
-        <div className="flex flex-wrap items-center gap-3 ml-auto">
-          <div className="relative min-w-[140px]">
-            <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-background focus:outline-none focus:border-electric-blue cursor-pointer">
-              <option value="">All Statuses</option>
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
-              expand_more
-            </span>
-          </div>
-          <div className="relative min-w-[140px]">
-            <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-background focus:outline-none focus:border-electric-blue cursor-pointer">
-              <option value="">All Departments</option>
-              <option value="engineering">Engineering</option>
-              <option value="design">Design</option>
-            </select>
-            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
-              expand_more
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => refetch()}
-            className="p-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface-variant hover:text-electric-blue"
-            aria-label="Refresh"
-          >
-            <span className="material-symbols-outlined">refresh</span>
-          </button>
-        </div>
-      </section>
+      <ListToolbar
+        search={search}
+        onSearchChange={(v) => {
+          setSearch(v)
+          setPage(1)
+        }}
+        searchPlaceholder="Search teams..."
+        filtersActive={filtersActive}
+        onResetFilters={resetFilters}
+        onRefresh={() => void refetch()}
+      >
+        <Select
+          value={status}
+          onChange={(v) => {
+            setStatus(v)
+            setPage(1)
+          }}
+          placeholder="All Statuses"
+          options={[
+            { value: 'ACTIVE', label: 'Active' },
+            { value: 'INACTIVE', label: 'Inactive' },
+          ]}
+        />
+        <Select
+          value={department}
+          onChange={(v) => {
+            setDepartment(v)
+            setPage(1)
+          }}
+          placeholder="All Departments"
+          options={[
+            { value: 'Engineering', label: 'Engineering' },
+            { value: 'Design', label: 'Design' },
+            { value: 'Sales', label: 'Sales' },
+          ]}
+        />
+      </ListToolbar>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard label="Total Teams" value={String(total || '—')} trend="+12%" icon="groups" iconClass="bg-electric-blue/10 text-electric-blue" />
@@ -110,17 +128,17 @@ export function TeamsListPage() {
           <Button variant="outline" onClick={() => refetch()}>Retry</Button>
         </div>
       )}
-      {!isLoading && !isError && data?.items.length === 0 && (
+      {!isLoading && !isError && filtered.length === 0 && (
         <EmptyState
           icon="groups"
-          title="No teams yet"
-          description="Create your first team to start organizing project members."
+          title="No teams found"
+          description="Adjust filters or create a new team."
           actionLabel="New Team"
           onAction={() => navigate({ to: '/projects/teams/new' })}
         />
       )}
 
-      {!isLoading && !isError && data && data.items.length > 0 && (
+      {!isLoading && !isError && filtered.length > 0 && (
         <section className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden flex flex-col">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[800px]">
@@ -134,10 +152,32 @@ export function TeamsListPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/20">
-                {data.items.map((team) => (
-                  <tr key={team.id} className="h-[72px]">
+                {pageItems.map((team) => (
+                  <tr
+                    key={team.id}
+                    className="h-[72px] cursor-pointer hover:bg-surface-container/40"
+                    onClick={() =>
+                      openOverview({
+                        id: team.id,
+                        title: team.name,
+                        subtitle: team.department,
+                        badge: team.status,
+                        fields: [
+                          { label: 'Head', value: team.headName ?? 'Unassigned' },
+                          { label: 'Role', value: team.headRole ?? '—' },
+                          { label: 'Members', value: String(team.memberCount) },
+                          { label: 'Projects', value: String(team.projectCount) },
+                          { label: 'Linked project', value: team.projectName ?? '—' },
+                        ],
+                        detailTo: '/projects/teams/$teamId',
+                        detailParams: { teamId: String(team.id) },
+                        editTo: '/projects/teams/$teamId',
+                        editParams: { teamId: String(team.id) },
+                      })
+                    }
+                  >
                     <td className="py-2 px-6">
-                      <button type="button" className="flex items-center gap-3 text-left" onClick={() => goTeam(team.id)}>
+                      <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
                           <span className="material-symbols-outlined">groups</span>
                         </div>
@@ -145,7 +185,7 @@ export function TeamsListPage() {
                           <p className="text-body-md font-semibold text-on-background">{team.name}</p>
                           <p className="text-[11px] text-on-surface-variant">{team.department ?? '—'}</p>
                         </div>
-                      </button>
+                      </div>
                     </td>
                     <td className="py-2 px-4">
                       {team.headName ? (
@@ -177,23 +217,13 @@ export function TeamsListPage() {
                         )}
                       </div>
                     </td>
-                    <td className="py-2 px-6 text-right">
+                    <td className="py-2 px-6 text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end">
                         <RowActions
                           label={`Actions for ${team.name}`}
                           actions={[
-                            {
-                              id: 'view',
-                              label: 'View',
-                              icon: 'description',
-                              onClick: () => goTeam(team.id),
-                            },
-                            {
-                              id: 'edit',
-                              label: 'Edit',
-                              icon: 'edit',
-                              onClick: () => goTeam(team.id),
-                            },
+                            { id: 'view', label: 'View', icon: 'description', onClick: () => goTeam(team.id) },
+                            { id: 'edit', label: 'Edit', icon: 'edit', onClick: () => goTeam(team.id, true) },
                           ]}
                         />
                       </div>
@@ -203,12 +233,15 @@ export function TeamsListPage() {
               </tbody>
             </table>
           </div>
-          <div className="border-t border-outline-variant/30 p-4 flex items-center justify-between">
-            <p className="text-[11px] text-on-surface-variant">
-              Showing <span className="font-semibold text-on-background">1-{data.items.length}</span> of{' '}
-              <span className="font-semibold text-on-background">{data.total}</span> Teams
-            </p>
-          </div>
+          <Pagination page={page} total={total} onPageChange={setPage} itemLabel="Teams" />
+          {total <= DEFAULT_PAGE_SIZE && (
+            <div className="border-t border-outline-variant/30 p-4">
+              <p className="text-[11px] text-on-surface-variant">
+                Showing <span className="font-semibold text-on-background">1-{total}</span> of{' '}
+                <span className="font-semibold text-on-background">{total}</span> Teams
+              </p>
+            </div>
+          )}
         </section>
       )}
     </div>
