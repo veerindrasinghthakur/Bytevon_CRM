@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from '@tanstack/react-router'
+import { Link, useParams, useSearch } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
@@ -10,13 +10,14 @@ import type { TaskPriority, TaskStatus } from '../api/tasks'
 
 export function TaskDetailPage() {
   const params = useParams({ strict: false }) as { taskId?: string }
+  const search = useSearch({ strict: false }) as { edit?: string }
   const id = Number(params.taskId)
   const { data: task, isLoading, isError, refetch } = useTask(
     Number.isFinite(id) ? id : undefined
   )
   const updateMutation = useUpdateTask()
 
-  const [editing, setEditing] = useState(false)
+  const [editing, setEditing] = useState(search.edit === '1')
   const [draft, setDraft] = useState({
     title: '',
     description: '',
@@ -36,9 +37,9 @@ export function TaskDetailPage() {
         assigneeName: task.assigneeName ?? '',
         dueDate: task.dueDate ?? '',
       })
-      setEditing(false)
+      setEditing(search.edit === '1')
     }
-  }, [task])
+  }, [task, search.edit])
 
   if (isLoading) {
     return (
@@ -201,6 +202,7 @@ export function TaskDetailPage() {
                       <option value="IN_REVIEW">In review</option>
                       <option value="DONE">Done</option>
                       <option value="BLOCKED">Blocked</option>
+                      <option value="ON_HOLD">On hold</option>
                     </select>
                   </div>
                   <div>
@@ -250,19 +252,7 @@ export function TaskDetailPage() {
           <OverviewRow label="Priority" value={task.priority} />
           <OverviewRow label="Status" value={task.status.replace('_', ' ')} />
           <OverviewRow label="Due" value={task.dueDate ?? '—'} />
-          <OverviewRow
-            label="Created"
-            value={new Date(task.createdAt).toLocaleDateString()}
-          />
-          {task.projectId > 0 && (
-            <Link
-              to="/projects/$projectId"
-              params={{ projectId: String(task.projectId) }}
-              className="inline-flex text-secondary text-label-md hover:underline pt-2"
-            >
-              Open project
-            </Link>
-          )}
+          <OverviewRow label="Created" value={new Date(task.createdAt).toLocaleDateString()} />
         </aside>
       </div>
     </div>
