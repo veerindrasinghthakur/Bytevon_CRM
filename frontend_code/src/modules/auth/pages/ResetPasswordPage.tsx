@@ -5,6 +5,8 @@ import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { resetPasswordSchema, type ResetPasswordInput } from '../schemas/auth'
 import { resetPasswordApi } from '../api/auth'
 import { Button } from '@/shared/components/ui/Button'
+import { BrandLogo } from '@/shared/components/brand/BrandLogo'
+import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 
 export function ResetPasswordPage() {
   const navigate = useNavigate()
@@ -30,7 +32,6 @@ export function ResetPasswordPage() {
       return
     }
     try {
-      // Dev shortcut: token "demo" always succeeds without stored map
       if (token === 'demo') {
         await new Promise((r) => setTimeout(r, 500))
         setDone(true)
@@ -46,13 +47,12 @@ export function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="w-full px-6 md:px-10 py-4 flex items-center border-b border-outline-variant/40">
-        <Link to="/login" className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-electric-blue flex items-center justify-center text-white">
-            <span className="material-symbols-outlined text-lg" style={{ fontVariationSettings: "'FILL' 1" }}>
-              dataset
-            </span>
-          </div>
-          <span className="text-title-lg font-bold text-on-background">Bytevon</span>
+        <Link to="/login">
+          <BrandLogo
+            withWordmark
+            sizeClassName="w-8 h-8"
+            wordmarkClassName="text-on-background"
+          />
         </Link>
       </header>
 
@@ -105,6 +105,7 @@ export function ResetPasswordPage() {
                       type={showPassword ? 'text' : 'password'}
                       className="w-full h-12 px-4 pr-12 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-electric-blue"
                       {...register('password')}
+                      onKeyDown={(e) => handleEnterAdvance(e, 'confirmPassword')}
                     />
                     <button
                       type="button"
@@ -133,6 +134,7 @@ export function ResetPasswordPage() {
                     type={showPassword ? 'text' : 'password'}
                     className="w-full h-12 px-4 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-electric-blue"
                     {...register('confirmPassword')}
+                    onKeyDown={(e) => handleEnterAdvance(e)}
                   />
                   {errors.confirmPassword && (
                     <p className="mt-1 text-label-sm text-error">{errors.confirmPassword.message}</p>
