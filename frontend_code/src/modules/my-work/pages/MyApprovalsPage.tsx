@@ -1,3 +1,4 @@
+import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { myApprovals } from '../data/mock'
 import type { ApprovalStatus } from '../types'
@@ -16,6 +17,7 @@ const typeIcon: Record<string, string> = {
 }
 
 export function MyApprovalsPage() {
+  const navigate = useNavigate()
   const pending = myApprovals.filter((a) => a.status === 'Pending').length
   const approved = myApprovals.filter((a) => a.status === 'Approved').length
 
@@ -25,7 +27,6 @@ export function MyApprovalsPage() {
         title="My Requests"
         description="Leave, attendance corrections, and other requests you submitted."
         showBack
-        backTo="/my-work"
       />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -43,9 +44,13 @@ export function MyApprovalsPage() {
 
       <section className="space-y-3">
         {myApprovals.map((item) => (
-          <div
+          <button
             key={item.id}
-            className="bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm flex flex-col sm:flex-row sm:items-center gap-4 hover:border-secondary/40 transition-colors"
+            type="button"
+            onClick={() =>
+              navigate({ to: '/my-work/approvals/$requestId', params: { requestId: item.id } })
+            }
+            className="w-full text-left bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm flex flex-col sm:flex-row sm:items-center gap-4 hover:border-secondary/40 transition-colors"
           >
             <div className="w-11 h-11 rounded-lg bg-surface-container-low flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-primary text-[22px]">
@@ -64,10 +69,8 @@ export function MyApprovalsPage() {
                 {item.summary ? ` · ${item.summary}` : ''}
               </p>
             </div>
-            <button type="button" className="text-label-md font-medium text-secondary hover:underline shrink-0">
-              View details
-            </button>
-          </div>
+            <span className="text-label-md font-medium text-secondary shrink-0">View details</span>
+          </button>
         ))}
       </section>
     </div>

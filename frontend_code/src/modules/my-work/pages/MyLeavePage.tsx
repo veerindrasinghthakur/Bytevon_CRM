@@ -1,3 +1,4 @@
+import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { leaveBalances, leaveRequests } from '../data/mock'
@@ -11,17 +12,19 @@ const statusStyles: Record<LeaveStatus, string> = {
 }
 
 export function MyLeavePage() {
+  const navigate = useNavigate()
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="My Leave"
         description="Check balances, apply for leave, and track request status."
         showBack
-        backTo="/my-work"
         actions={
           <Button
             variant="primary"
             leftIcon={<span className="material-symbols-outlined text-lg">event_available</span>}
+            onClick={() => navigate({ to: '/my-work/leave/apply' })}
           >
             Apply for Leave
           </Button>
@@ -73,8 +76,14 @@ export function MyLeavePage() {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {leaveRequests.map((req) => (
-                <tr key={req.id} className="hover:bg-secondary/5">
-                  <td className="px-6 py-4 text-label-md font-semibold text-on-background">{req.type}</td>
+                <tr
+                  key={req.id}
+                  className="hover:bg-secondary/5 cursor-pointer"
+                  onClick={() =>
+                    navigate({ to: '/my-work/leave/$leaveId', params: { leaveId: req.id } })
+                  }
+                >
+                  <td className="px-6 py-4 text-label-md font-semibold text-secondary">{req.type}</td>
                   <td className="px-6 py-4 text-label-md text-on-surface-variant">{req.from}</td>
                   <td className="px-6 py-4 text-label-md text-on-surface-variant">{req.to}</td>
                   <td className="px-6 py-4 text-label-md text-on-surface-variant">{req.days}</td>

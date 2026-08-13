@@ -1,4 +1,6 @@
+import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
+import { Button } from '@/shared/components/ui/Button'
 import { myTasks } from '../data/mock'
 import type { MyTask } from '../types'
 
@@ -18,6 +20,7 @@ const statusDot: Record<string, string> = {
 }
 
 export function MyTasksPage() {
+  const navigate = useNavigate()
   const open = myTasks.filter((t) => t.status !== 'Completed').length
   const inProgress = myTasks.filter((t) => t.status === 'In Progress').length
   const high = myTasks.filter((t) => t.priority === 'High' || t.priority === 'Critical').length
@@ -26,9 +29,17 @@ export function MyTasksPage() {
     <div className="space-y-6">
       <PageHeader
         title="My Tasks"
-        description="Tasks assigned to you across projects."
+        description="Tasks assigned to you — or create your own."
         showBack
-        backTo="/my-work"
+        actions={
+          <Button
+            variant="primary"
+            leftIcon={<span className="material-symbols-outlined text-lg">add_task</span>}
+            onClick={() => navigate({ to: '/my-work/tasks/new' })}
+          >
+            Create task
+          </Button>
+        }
       />
 
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -64,8 +75,14 @@ export function MyTasksPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {myTasks.map((task: MyTask) => (
-                <tr key={task.id} className="hover:bg-secondary/5">
-                  <td className="px-6 py-4 text-label-md font-semibold text-on-background">{task.name}</td>
+                <tr
+                  key={task.id}
+                  className="hover:bg-secondary/5 cursor-pointer"
+                  onClick={() => navigate({ to: '/my-work/tasks/$taskId', params: { taskId: task.id } })}
+                >
+                  <td className="px-6 py-4 text-label-md font-semibold text-on-background text-secondary">
+                    {task.name}
+                  </td>
                   <td className="px-6 py-4 text-label-md text-on-surface-variant">{task.project ?? '—'}</td>
                   <td className="px-6 py-4">
                     <span className={`px-2.5 py-0.5 rounded-full text-label-sm font-bold ${priorityClass[task.priority]}`}>

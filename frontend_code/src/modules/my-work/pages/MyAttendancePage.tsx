@@ -1,3 +1,4 @@
+import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { currentUser, todayAttendance, attendanceHistory, weekHours } from '../data/mock'
@@ -13,20 +14,30 @@ const statusStyles: Record<AttendanceStatus, string> = {
 }
 
 export function MyAttendancePage() {
+  const navigate = useNavigate()
+
   return (
     <div className="space-y-6">
       <PageHeader
         title="My Attendance"
         description="Mark attendance, review daily hours, and track history."
         showBack
-        backTo="/my-work"
         actions={
-          <Button
-            variant="primary"
-            leftIcon={<span className="material-symbols-outlined text-lg">fingerprint</span>}
-          >
-            Mark Attendance
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={() => navigate({ to: '/my-work/attendance/corrections' })}
+            >
+              Corrections
+            </Button>
+            <Button
+              variant="primary"
+              leftIcon={<span className="material-symbols-outlined text-lg">fingerprint</span>}
+              onClick={() => navigate({ to: '/my-work/attendance/mark' })}
+            >
+              Mark Attendance
+            </Button>
+          </div>
         }
       />
 
@@ -72,11 +83,8 @@ export function MyAttendancePage() {
       </section>
 
       <section className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
-        <div className="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-outline-variant">
           <h3 className="text-title-lg font-semibold text-on-background">Attendance history</h3>
-          <button type="button" className="text-label-md font-medium text-secondary hover:underline">
-            Request correction
-          </button>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -92,8 +100,17 @@ export function MyAttendancePage() {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {attendanceHistory.map((row) => (
-                <tr key={row.id} className="hover:bg-secondary/5">
-                  <td className="px-6 py-4 text-label-md font-medium text-on-background">{row.date}</td>
+                <tr
+                  key={row.id}
+                  className="hover:bg-secondary/5 cursor-pointer"
+                  onClick={() =>
+                    navigate({
+                      to: '/my-work/attendance/$attendanceId',
+                      params: { attendanceId: row.id },
+                    })
+                  }
+                >
+                  <td className="px-6 py-4 text-label-md font-medium text-secondary">{row.date}</td>
                   <td className="px-6 py-4 text-label-md text-on-surface-variant">{row.checkIn ?? '—'}</td>
                   <td className="px-6 py-4 text-label-md text-on-surface-variant">{row.checkOut ?? '—'}</td>
                   <td className="px-6 py-4 text-label-md text-on-surface-variant">{row.totalHours ?? '—'}</td>
