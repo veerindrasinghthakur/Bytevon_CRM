@@ -1,11 +1,16 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
+import { Pagination, paginate, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { RowActions } from '@/shared/components/ui/RowActions'
+import { ListToolbar } from '@/shared/components/layout/ListToolbar'
+import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import { useProjects } from '../hooks/use-projects'
 import type { ProjectStatus } from '../schemas/project'
+import { cn } from '@/shared/lib/cn'
 
 function PriorityBadge({ status }: { status: ProjectStatus }) {
   if (status === 'IN_PROGRESS') {
@@ -44,17 +49,48 @@ function statusTrackLabel(status: ProjectStatus) {
   }
 }
 
-/** Nav list page — no breadcrumbs / back (only nested pages show path + back). */
+const STATUS_OPTIONS = [
+  { value: 'IN_PROGRESS', label: 'In Progress' },
+  { value: 'PLANNING', label: 'Planning' },
+  { value: 'ON_HOLD', label: 'On Hold' },
+  { value: 'COMPLETED', label: 'Completed' },
+  { value: 'CANCELLED', label: 'Cancelled' },
+]
+
 export function ProjectsListPage() {
   const navigate = useNavigate()
+  const { open: openOverview } = useQuickOverview()
   const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('')
+  const [page, setPage] = useState(1)
+
   const { data, isLoading, isError, refetch } = useProjects({
     search: search || undefined,
+    status: status || undefined,
   })
 
-  const total = data?.total ?? 0
-  const active = data?.items.filter((p) => p.status === 'IN_PROGRESS').length ?? 0
-  const atRisk = data?.items.filter((p) => p.status === 'ON_HOLD').length ?? 0
+  const filtersActive = Boolean(search || status)
+
+  const resetFilters = () => {
+    setSearch('')
+    setStatus('')
+    setPage(1)
+  }
+
+  const items = data?.items ?? []
+  const total = items.length
+  const pageItems = useMemo(() => paginate(items, page, DEFAULT_PAGE_SIZE), [items, page])
+
+  const active = items.filter((p) => p.status === 'IN_PROGRESS').length
+  const atRisk = items.filter((p) => p.status === 'ON_HOLD').length
+
+  const goDetail = (id: number, edit?: boolean) => {
+    navigate({
+      to: '/projects/$projectId',
+      params: { projectId: String(id) },
+      search: edit ? { edit: '1' } : undefined,
+    })
+  }
 
   return (
     <div className="space-y-8">
@@ -68,20 +104,10 @@ export function ProjectsListPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">upload</span>}
-            onClick={() => console.info('Import projects')}
-          >
+          <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">upload</span>}>
             Import
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}
-            onClick={() => console.info('Export projects')}
-          >
+          <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}>
             Export
           </Button>
           <Button
@@ -95,105 +121,35 @@ export function ProjectsListPage() {
         </div>
       </section>
 
-      <section className="flex flex-wrap items-center gap-4">
-        <div className="flex items-center flex-1 min-w-[200px] max-w-sm bg-surface-container-lowest border border-outline-variant/50 rounded-lg px-3 py-2 focus-within:border-electric-blue">
-          <span className="material-symbols-outlined text-on-surface-variant mr-2 text-lg">search</span>
-          <input
-            type="search"
-            placeholder="Search by Project Name, Client..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent border-none outline-none text-body-sm w-full text-on-background placeholder:text-on-surface-variant"
-          />
-        </div>
-        <div className="flex flex-wrap items-center gap-3 ml-auto">
-          <div className="relative min-w-[140px]">
-            <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-background focus:outline-none focus:border-electric-blue cursor-pointer">
-              <option>Project Status</option>
-              <option>Active</option>
-              <option>On Hold</option>
-              <option>Completed</option>
-            </select>
-            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
-              expand_more
-            </span>
-          </div>
-          <div className="relative min-w-[140px]">
-            <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-background focus:outline-none focus:border-electric-blue cursor-pointer">
-              <option>Current Phase</option>
-              <option>Planning</option>
-              <option>Execution</option>
-              <option>Review</option>
-            </select>
-            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
-              expand_more
-            </span>
-          </div>
-          <div className="relative min-w-[140px]">
-            <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-background focus:outline-none focus:border-electric-blue cursor-pointer">
-              <option>Priority Level</option>
-              <option>Critical</option>
-              <option>High</option>
-              <option>Medium</option>
-              <option>Low</option>
-            </select>
-            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
-              expand_more
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => refetch()}
-            className="p-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface-variant hover:text-electric-blue"
-            aria-label="Refresh"
-          >
-            <span className="material-symbols-outlined">refresh</span>
-          </button>
-        </div>
-      </section>
+      <ListToolbar
+        search={search}
+        onSearchChange={(v) => {
+          setSearch(v)
+          setPage(1)
+        }}
+        searchPlaceholder="Search by Project Name, Client..."
+        filtersActive={filtersActive}
+        onResetFilters={resetFilters}
+        onRefresh={() => void refetch()}
+      >
+        <Select
+          value={status}
+          onChange={(v) => {
+            setStatus(v)
+            setPage(1)
+          }}
+          placeholder="Project Status"
+          options={STATUS_OPTIONS}
+        />
+      </ListToolbar>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
-          <div className="flex justify-between items-start">
-            <div className="w-10 h-10 rounded-lg bg-electric-blue/10 flex items-center justify-center text-electric-blue">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>folder_open</span>
-            </div>
-            <div className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-1 rounded">+12%</div>
-          </div>
-          <div>
-            <p className="text-label-sm text-on-surface-variant mb-1">Total Projects</p>
-            <h3 className="text-[32px] font-bold text-on-background leading-none">{total || '—'}</h3>
-          </div>
-        </div>
-        <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
-          <div className="flex justify-between items-start">
-            <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center text-purple-600">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>trending_up</span>
-            </div>
-            <div className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-1 rounded">+4.2%</div>
-          </div>
-          <div>
-            <p className="text-label-sm text-on-surface-variant mb-1">Active Projects</p>
-            <h3 className="text-[32px] font-bold text-on-background leading-none">{active}</h3>
-          </div>
-        </div>
-        <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
-          <div className="flex justify-between items-start">
-            <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
-            </div>
-            <div className="bg-red-100 text-red-800 text-xs font-bold px-2 py-1 rounded">-2.1%</div>
-          </div>
-          <div>
-            <p className="text-label-sm text-on-surface-variant mb-1">At Risk / Delayed</p>
-            <h3 className="text-[32px] font-bold text-on-background leading-none">{atRisk}</h3>
-          </div>
-        </div>
+        <Metric label="Total Projects" value={String(total || '—')} trend="+12%" icon="folder_open" tone="bg-electric-blue/10 text-electric-blue" />
+        <Metric label="Active Projects" value={String(active)} trend="+4.2%" icon="trending_up" tone="bg-purple-100 text-purple-600" />
+        <Metric label="At Risk / Delayed" value={String(atRisk)} trend="-2.1%" trendDanger icon="warning" tone="bg-red-100 text-red-600" />
         <div className="bg-deep-navy border border-white/10 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
-          <div className="flex justify-between items-start">
-            <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
-            </div>
+          <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white">
+            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
           </div>
           <div>
             <p className="text-label-sm text-white/70 mb-1">Total Managed Budget</p>
@@ -209,17 +165,17 @@ export function ProjectsListPage() {
           <Button variant="outline" onClick={() => refetch()}>Retry</Button>
         </div>
       )}
-      {!isLoading && !isError && data?.items.length === 0 && (
+      {!isLoading && !isError && items.length === 0 && (
         <EmptyState
           icon="folder_off"
           title="No projects yet"
-          description="Create your first project to get started."
+          description="Create your first project or clear filters."
           actionLabel="New Project"
           onAction={() => navigate({ to: '/projects/new' })}
         />
       )}
 
-      {!isLoading && !isError && data && data.items.length > 0 && (
+      {!isLoading && !isError && items.length > 0 && (
         <section className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden flex flex-col">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[1000px]">
@@ -237,7 +193,7 @@ export function ProjectsListPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/20">
-                {data.items.map((project) => {
+                {pageItems.map((project) => {
                   const track = statusTrackLabel(project.status)
                   const initials = project.name
                     .split(' ')
@@ -246,8 +202,31 @@ export function ProjectsListPage() {
                     .join('')
                     .toUpperCase()
                   return (
-                    <tr key={project.id} className="h-[72px]">
-                      <td className="py-2 px-6">
+                    <tr
+                      key={project.id}
+                      className="h-[72px] cursor-pointer hover:bg-surface-container/40"
+                      onClick={() =>
+                        openOverview({
+                          id: project.id,
+                          title: project.name,
+                          subtitle: project.code,
+                          badge: project.status.replace('_', ' '),
+                          fields: [
+                            { label: 'Client', value: project.clientName ?? '—' },
+                            { label: 'Progress', value: `${project.progress ?? 0}%` },
+                            { label: 'Tasks', value: String(project.taskCount ?? 0) },
+                            { label: 'Teams', value: String(project.teamCount ?? 0) },
+                            { label: 'Start', value: project.startDate ?? '—' },
+                            { label: 'End', value: project.endDate ?? '—' },
+                          ],
+                          detailTo: '/projects/$projectId',
+                          detailParams: { projectId: String(project.id) },
+                          editTo: '/projects/$projectId',
+                          editParams: { projectId: String(project.id) },
+                        })
+                      }
+                    >
+                      <td className="py-2 px-6" onClick={(e) => e.stopPropagation()}>
                         <input type="checkbox" className="rounded border-outline-variant w-4 h-4" />
                       </td>
                       <td className="py-2 px-4 text-[11px] text-on-surface-variant">#{project.code}</td>
@@ -269,8 +248,8 @@ export function ProjectsListPage() {
                         <div className="flex flex-col gap-1 items-start">
                           <PriorityBadge status={project.status} />
                           <div className="flex items-center gap-1.5">
-                            <span className={`w-1.5 h-1.5 rounded-full ${track.dot}`} />
-                            <span className={`text-[11px] font-medium ${track.text}`}>{track.label}</span>
+                            <span className={cn('w-1.5 h-1.5 rounded-full', track.dot)} />
+                            <span className={cn('text-[11px] font-medium', track.text)}>{track.label}</span>
                           </div>
                         </div>
                       </td>
@@ -285,7 +264,7 @@ export function ProjectsListPage() {
                           <span className="text-body-sm text-on-surface-variant">{project.progress ?? 0}%</span>
                         </div>
                       </td>
-                      <td className="py-2 px-6 text-right">
+                      <td className="py-2 px-6 text-right" onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-end">
                           <RowActions
                             label={`Actions for ${project.name}`}
@@ -294,24 +273,13 @@ export function ProjectsListPage() {
                                 id: 'details',
                                 label: 'View details',
                                 icon: 'description',
-                                onClick: () =>
-                                  navigate({
-                                    to: '/projects/$projectId',
-                                    params: { projectId: String(project.id) },
-                                  }),
+                                onClick: () => goDetail(project.id),
                               },
                               {
                                 id: 'edit',
                                 label: 'Edit',
                                 icon: 'edit',
-                                onClick: () => console.info('Edit project', project.id),
-                              },
-                              {
-                                id: 'archive',
-                                label: 'Archive',
-                                icon: 'archive',
-                                danger: true,
-                                onClick: () => console.info('Archive project', project.id),
+                                onClick: () => goDetail(project.id, true),
                               },
                             ]}
                           />
@@ -323,14 +291,64 @@ export function ProjectsListPage() {
               </tbody>
             </table>
           </div>
-          <div className="border-t border-outline-variant/30 p-4 flex items-center justify-between">
-            <p className="text-[11px] text-on-surface-variant">
-              Showing <span className="font-semibold text-on-background">1-{data.items.length}</span> of{' '}
-              <span className="font-semibold text-on-background">{data.total}</span> Projects
-            </p>
-          </div>
+          <Pagination
+            page={page}
+            total={total}
+            onPageChange={setPage}
+            itemLabel="Projects"
+          />
+          {total <= DEFAULT_PAGE_SIZE && (
+            <div className="border-t border-outline-variant/30 p-4">
+              <p className="text-[11px] text-on-surface-variant">
+                Showing <span className="font-semibold text-on-background">1-{total}</span> of{' '}
+                <span className="font-semibold text-on-background">{total}</span> Projects
+              </p>
+            </div>
+          )}
         </section>
       )}
+    </div>
+  )
+}
+
+function Metric({
+  label,
+  value,
+  trend,
+  trendDanger,
+  icon,
+  tone,
+}: {
+  label: string
+  value: string
+  trend?: string
+  trendDanger?: boolean
+  icon: string
+  tone: string
+}) {
+  return (
+    <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
+      <div className="flex justify-between items-start">
+        <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', tone)}>
+          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
+            {icon}
+          </span>
+        </div>
+        {trend && (
+          <div
+            className={cn(
+              'text-xs font-bold px-2 py-1 rounded',
+              trendDanger ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'
+            )}
+          >
+            {trend}
+          </div>
+        )}
+      </div>
+      <div>
+        <p className="text-label-sm text-on-surface-variant mb-1">{label}</p>
+        <h3 className="text-[32px] font-bold text-on-background leading-none">{value}</h3>
+      </div>
     </div>
   )
 }
