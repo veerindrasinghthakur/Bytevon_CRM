@@ -10,6 +10,7 @@ import {
 } from '../schemas/auth'
 import { useAuth } from '../context/AuthContext'
 import { Button } from '@/shared/components/ui/Button'
+import { BrandLogo } from '@/shared/components/brand/BrandLogo'
 
 export function LoginPage() {
   const { login } = useAuth()
@@ -31,7 +32,15 @@ export function LoginPage() {
     setServerError(null)
     try {
       await login(data)
-      await navigate({ to: search.redirect || '/dashboard' })
+      // Always land on dashboard after login (ignore profile); honor safe redirect only for app routes
+      const target =
+        search.redirect &&
+        search.redirect.startsWith('/') &&
+        !search.redirect.startsWith('/login') &&
+        !search.redirect.startsWith('/profile')
+          ? search.redirect
+          : '/dashboard'
+      await navigate({ to: target })
     } catch (e) {
       setServerError(e instanceof Error ? e.message : 'Login failed. Please try again.')
     }
@@ -41,14 +50,7 @@ export function LoginPage() {
     <main className="w-full min-h-screen grid grid-cols-1 md:grid-cols-2 max-w-[1440px] mx-auto">
       <section className="hidden md:flex flex-col justify-between p-10 bg-surface-container-low relative overflow-hidden">
         <div className="z-10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-electric-blue flex items-center justify-center text-white">
-              <span className="material-symbols-outlined text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>
-                dataset
-              </span>
-            </div>
-            <span className="text-title-lg font-bold text-on-background">Bytevon</span>
-          </div>
+          <BrandLogo withWordmark sizeClassName="w-10 h-10" />
           <div className="mt-8 max-w-md">
             <h1 className="text-[48px] leading-[56px] font-bold tracking-tight text-on-background mb-4">
               Welcome to Bytevon
@@ -59,8 +61,13 @@ export function LoginPage() {
           </div>
         </div>
         <div className="z-10 flex justify-center items-center py-8">
-          <div className="w-full max-w-md aspect-[4/3] rounded-2xl bg-gradient-to-br from-electric-blue/20 via-surface-container to-secondary/10 border border-outline-variant/40 flex items-center justify-center">
-            <span className="material-symbols-outlined text-7xl text-electric-blue/40">analytics</span>
+          <div className="w-full max-w-md aspect-[4/3] rounded-2xl bg-gradient-to-br from-electric-blue/20 via-surface-container to-secondary/10 border border-outline-variant/40 flex items-center justify-center overflow-hidden">
+            <img
+              src="/brand/bytevon-logo.jpg"
+              alt=""
+              className="w-28 h-28 object-cover rounded-xl opacity-90"
+              draggable={false}
+            />
           </div>
         </div>
         <p className="z-10 text-label-sm text-on-surface-variant opacity-70">
@@ -71,15 +78,8 @@ export function LoginPage() {
 
       <section className="flex items-center justify-center p-4 md:p-10 bg-surface">
         <div className="w-full max-w-md">
-          <div className="md:hidden mb-8 text-center">
-            <div className="inline-flex items-center gap-2">
-              <div className="w-9 h-9 rounded-lg bg-electric-blue flex items-center justify-center text-white">
-                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
-                  dataset
-                </span>
-              </div>
-              <span className="text-title-lg font-bold">Bytevon</span>
-            </div>
+          <div className="md:hidden mb-8 flex justify-center">
+            <BrandLogo withWordmark sizeClassName="w-9 h-9" />
           </div>
 
           <div className="bg-surface-container-lowest p-8 md:p-10 rounded-xl shadow-[0_10px_40px_-15px_rgba(11,28,48,0.1)] border border-outline-variant">

@@ -1,5 +1,6 @@
 import { cn } from '@/shared/lib/cn'
 import { Link, useRouterState } from '@tanstack/react-router'
+import { BrandLogo } from '@/shared/components/brand/BrandLogo'
 
 export interface RailItem {
   id: string
@@ -45,32 +46,41 @@ export function IconRail({
   return (
     <nav
       className={cn(
-        'h-full bg-deep-navy flex flex-col items-center py-6 border-r border-sidebar-item-active/30 z-20',
+        'h-full bg-deep-navy flex flex-col items-center py-5 border-r border-sidebar-item-active/30 z-20',
         'transition-all duration-300 ease-in-out shrink-0',
         isExpanded ? 'w-[220px]' : 'w-[80px]'
       )}
       aria-label="Primary navigation"
     >
-      {/* Expand / collapse toggle */}
-      <button
-        type="button"
-        onClick={onToggleExpand}
-        className="w-10 h-10 mb-4 flex items-center justify-center text-inverse-primary/60 hover:text-on-primary transition-colors"
-        aria-label={isExpanded ? 'Collapse navigation' : 'Expand navigation'}
+      {/* Logo + hover collapse/expand chevron (right of logo, aligned) */}
+      <div
+        className={cn(
+          'group relative w-full shrink-0 mb-6 flex items-center',
+          isExpanded ? 'px-4 justify-start' : 'justify-center px-2'
+        )}
       >
-        <span className="material-symbols-outlined">
-          {isExpanded ? 'menu_open' : 'menu'}
-        </span>
-      </button>
-
-      {/* Logo */}
-      <div className="w-10 h-10 bg-electric-blue rounded-lg flex items-center justify-center text-on-primary shadow-sm shadow-black/20 mb-8 shrink-0">
-        <span
-          className="material-symbols-outlined text-2xl filled"
-          style={{ fontVariationSettings: "'FILL' 1" }}
+        <BrandLogo sizeClassName="w-10 h-10" className="shrink-0" />
+        {isExpanded && (
+          <span className="ml-3 text-sm font-semibold text-on-primary/90 truncate">Bytevon</span>
+        )}
+        <button
+          type="button"
+          onClick={onToggleExpand}
+          className={cn(
+            'absolute top-1/2 -translate-y-1/2 right-2',
+            'w-7 h-7 rounded-md flex items-center justify-center',
+            'text-on-primary/80 bg-sidebar-item-active/80',
+            'opacity-0 group-hover:opacity-100 focus:opacity-100',
+            'transition-opacity duration-150',
+            'hover:bg-sidebar-item-active hover:text-on-primary'
+          )}
+          aria-label={isExpanded ? 'Collapse navigation' : 'Expand navigation'}
+          title={isExpanded ? 'Collapse' : 'Expand'}
         >
-          dataset
-        </span>
+          <span className="material-symbols-outlined text-[18px] leading-none">
+            {isExpanded ? 'chevron_left' : 'chevron_right'}
+          </span>
+        </button>
       </div>
 
       {/* Rail items */}
@@ -82,7 +92,7 @@ export function IconRail({
               key={item.id}
               to={item.to}
               className={cn(
-                'w-full flex items-center gap-4 transition-all duration-200 border-l-4',
+                'w-full flex items-center gap-4 border-l-4',
                 isExpanded ? 'px-5 py-3.5' : 'px-0 py-3.5 justify-center',
                 active
                   ? 'bg-sidebar-item-active text-on-primary border-electric-blue'
@@ -105,7 +115,7 @@ export function IconRail({
           type="button"
           onClick={onLogout}
           className={cn(
-            'text-inverse-primary/60 hover:text-on-primary transition-colors flex items-center gap-4 w-full',
+            'text-inverse-primary/60 hover:text-on-primary flex items-center gap-4 w-full',
             isExpanded ? 'px-5 py-3 justify-start' : 'py-3 justify-center'
           )}
           title="Logout"
