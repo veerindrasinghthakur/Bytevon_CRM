@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Outlet, useRouterState } from '@tanstack/react-router'
+import { Outlet, useNavigate, useRouterState } from '@tanstack/react-router'
 import { IconRail } from '@/shared/components/layout/IconRail'
 import {
   SecondarySidebar,
@@ -8,6 +8,7 @@ import {
   SECONDARY_NAV,
 } from '@/shared/components/layout/SecondarySidebar'
 import { Header, HEADER_HEIGHT_PX } from '@/shared/components/layout/Header'
+import { useAuth } from '@/modules/auth'
 
 function getActiveModule(pathname: string): string {
   if (pathname.startsWith('/sales')) return 'sales'
@@ -23,6 +24,8 @@ function getActiveModule(pathname: string): string {
 export function AppShell() {
   const [isRailExpanded, setIsRailExpanded] = useState(false)
   const [isSecondaryCollapsed, setIsSecondaryCollapsed] = useState(true)
+  const { logout } = useAuth()
+  const navigate = useNavigate()
 
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const moduleId = getActiveModule(pathname)
@@ -53,6 +56,11 @@ export function AppShell() {
     [totalSidebarWidth]
   )
 
+  const handleLogout = async () => {
+    await logout()
+    await navigate({ to: '/login' })
+  }
+
   return (
     <div className="h-screen overflow-hidden flex bg-background">
       <div className="fixed left-0 top-0 h-full flex z-50">
@@ -60,7 +68,7 @@ export function AppShell() {
           isExpanded={isRailExpanded}
           onToggleExpand={() => setIsRailExpanded((v) => !v)}
           onLogout={() => {
-            console.info('Logout clicked')
+            void handleLogout()
           }}
         />
         <SecondarySidebar
@@ -69,7 +77,6 @@ export function AppShell() {
         />
       </div>
 
-      {/* Header search stays full for now (no collapse) */}
       <Header style={headerStyle} />
 
       <main className="flex-1 bg-background overflow-y-auto p-margin-desktop" style={mainStyle}>

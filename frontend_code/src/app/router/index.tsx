@@ -6,6 +6,17 @@ import {
   redirect,
 } from '@tanstack/react-router'
 import { AppShell } from '@/app/layouts/AppShell'
+import { AuthLayout } from '@/app/layouts/AuthLayout'
+import { loadStoredSession } from '@/modules/auth/api/auth'
+
+import {
+  LoginPage,
+  ForgotPasswordPage,
+  ResetPasswordPage,
+  SessionExpiredPage,
+  AccessDeniedPage,
+  NotFoundPage,
+} from '@/modules/auth'
 
 import { ProjectsListPage } from '@/modules/projects/pages/ProjectsListPage'
 import { ProjectDetailPage } from '@/modules/projects/pages/ProjectDetailPage'
@@ -38,13 +49,83 @@ function Placeholder({ title }: { title: string }) {
   )
 }
 
+/** Redirect unauthenticated users away from AppShell routes. */
+function requireAuth() {
+  const session = loadStoredSession()
+  if (!session) {
+    throw redirect({ to: '/login', search: { redirect: window.location.pathname } })
+  }
+}
+
+/** Redirect authenticated users away from guest-only auth pages. */
+function requireGuest() {
+  const session = loadStoredSession()
+  if (session) {
+    throw redirect({ to: '/dashboard' })
+  }
+}
+
 const rootRoute = createRootRoute({
   component: () => <Outlet />,
+  notFoundComponent: NotFoundPage,
 })
 
+// —— Auth (public) ——
+const authLayoutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  id: 'auth',
+  component: AuthLayout,
+})
+
+const loginRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/login',
+  beforeLoad: () => {
+    requireGuest()
+  },
+  validateSearch: (search: Record<string, unknown>) => ({
+    redirect: typeof search.redirect === 'string' ? search.redirect : undefined,
+  }),
+  component: LoginPage,
+})
+
+const forgotPasswordRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/forgot-password',
+  beforeLoad: () => {
+    requireGuest()
+  },
+  component: ForgotPasswordPage,
+})
+
+const resetPasswordRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/reset-password',
+  validateSearch: (search: Record<string, unknown>) => ({
+    token: typeof search.token === 'string' ? search.token : undefined,
+  }),
+  component: ResetPasswordPage,
+})
+
+const sessionExpiredRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/session-expired',
+  component: SessionExpiredPage,
+})
+
+const accessDeniedRoute = createRoute({
+  getParentRoute: () => authLayoutRoute,
+  path: '/access-denied',
+  component: AccessDeniedPage,
+})
+
+// —— Authenticated app ——
 const appLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'app',
+  beforeLoad: () => {
+    requireAuth()
+  },
   component: AppShell,
 })
 
@@ -52,7 +133,8 @@ const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   beforeLoad: () => {
-    throw redirect({ to: '/dashboard' })
+    const session = loadStoredSession()
+    throw redirect({ to: session ? '/dashboard' : '/login' })
   },
 })
 
@@ -256,6 +338,13 @@ const adminNotificationsRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
+  authLayoutRoute.addChildren([
+    loginRoute,
+    forgotPasswordRoute,
+    resetPasswordRoute,
+    sessionExpiredRoute,
+    accessDeniedRoute,
+  ]),
   appLayoutRoute.addChildren([
     dashboardRoute,
     profileRoute,
