@@ -1,10 +1,14 @@
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useNavigate, Link } from '@tanstack/react-router'
+import { useNavigate, Link, useSearch } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
+import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
 import { useCreateTeam } from '../hooks/use-teams'
+import { useProject } from '../hooks/use-projects'
+import { getDb } from '@/shared/mock/db'
 
 const schema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(120),
@@ -15,6 +19,28 @@ type FormValues = z.infer<typeof schema>
 
 export function TeamCreatePage() {
   const navigate = useNavigate()
+  const search = useSearch({ strict: false }) as {
+    projectId?: string
+    returnTo?: string
+  }
+  const projectId = search.projectId ? Number(search.projectId) : undefined
+  const { data: project } = useProject(
+    projectId != null && Number.isFinite(projectId) ? projectId : undefined
+  )
+
+  const employeeOptions: EntityOption[] = useMemo(
+    () =>
+      getDb().employees.map((e) => ({
+        id: e.id,
+        label: e.fullName,
+        sublabel: [e.role, e.department].filter(Boolean).join(' · '),
+      })),
+    []
+  )
+
+  const [head, setHead] = useState<EntityOption | null>(null)
+  const [members, setMembers] = useState<EntityOption[]>([])
+
   const createMutation = useCreateTeam()
   const {
     register,
@@ -25,19 +51,42 @@ export function TeamCreatePage() {
     defaultValues: { name: '', description: '' },
   })
 
+  const backTo =
+    search.returnTo ||
+    (projectId && Number.isFinite(projectId)
+      ? `/projects/${projectId}`
+      : '/projects/teams')
+
   const onSubmit = async (data: FormValues) => {
     try {
-      await createMutation.mutateAsync(data)
-      navigate({ to: '/projects/teams' })
+      await createMutation.mutateAsync({
+        name: data.name,
+        description: data.description,
+        headName: head?.label,
+        headRole: head?.sublabel?.split(' · ')[0],
+        memberNames: members.map((m) => m.label),
+        projectId: projectId && Number.isFinite(projectId) ? projectId : undefined,
+        projectName: project?.name,
+      })
+      if (search.returnTo) {
+        navigate({ to: search.returnTo as '/projects/new' })
+      } else if (projectId && Number.isFinite(projectId)) {
+        navigate({ to: '/projects/$projectId', params: { projectId: String(projectId) } })
+      } else {
+        navigate({ to: '/projects/teams' })
+      }
     } catch {
-      // shown below
+      // mutation error UI
     }
   }
 
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-4">
-        <BackButton to="/projects/teams" label="Back to teams" />
+        <BackButton
+          to={backTo}
+          label={project ? `Back to ${project.name}` : 'Back to teams'}
+        />
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
@@ -45,11 +94,13 @@ export function TeamCreatePage() {
           <div>
             <h2 className="text-headline-lg font-semibold text-on-surface">Create New Team</h2>
             <p className="text-body-md text-on-surface-variant mt-1">
-              Define team identity and assign members.
+              {project
+                ? `Will be assigned to project: ${project.name}`
+                : 'Define team identity and assign members.'}
             </p>
           </div>
           <Link
-            to="/projects/teams"
+            to={backTo as '/projects/teams'}
             className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-full p-2"
           >
             <span className="material-symbols-outlined">close</span>
@@ -97,18 +148,14 @@ export function TeamCreatePage() {
                 Leadership
               </h3>
               <div className="bg-surface-container-lowest p-5 rounded-lg border border-outline-variant">
-                <label className="text-label-sm text-on-surface block mb-1">Assign Team Head</label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">
-                    search
-                  </span>
-                  <input
-                    type="text"
-                    disabled
-                    className="w-full pl-10 pr-4 py-2 bg-surface-container border border-outline-variant rounded-md text-on-surface-variant text-body-md cursor-not-allowed"
-                    placeholder="Search employees by name... (connect API later)"
-                  />
-                </div>
+                <EntitySearch
+                  label="Assign Team Head"
+                  placeholder="Search employees by name or role…"
+                  options={employeeOptions}
+                  value={head}
+                  onChange={setHead}
+                  emptyMessage="No employees match your search"
+                />
               </div>
             </section>
 
@@ -118,18 +165,15 @@ export function TeamCreatePage() {
                 Team Composition
               </h3>
               <div className="bg-surface-container-lowest p-5 rounded-lg border border-outline-variant">
-                <label className="text-label-sm text-on-surface block mb-1">Add Members</label>
-                <div className="relative">
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">
-                    person_search
-                  </span>
-                  <input
-                    type="text"
-                    disabled
-                    className="w-full pl-10 pr-4 py-2 bg-surface-container border border-outline-variant rounded-md text-on-surface-variant text-body-md cursor-not-allowed"
-                    placeholder="Search employees... (connect API later)"
-                  />
-                </div>
+                <EntitySearch
+                  label="Add Members"
+                  placeholder="Search and add employees…"
+                  options={employeeOptions.filter((o) => String(o.id) !== String(head?.id ?? ''))}
+                  multi
+                  values={members}
+                  onChangeMulti={setMembers}
+                  emptyMessage="No employees match your search"
+                />
               </div>
             </section>
 
@@ -139,11 +183,11 @@ export function TeamCreatePage() {
           </div>
 
           <div className="px-6 py-4 border-t border-outline-variant bg-surface flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={() => navigate({ to: '/projects/teams' })}>
+            <Button type="button" variant="outline" onClick={() => navigate({ to: backTo as '/projects/teams' })}>
               Cancel
             </Button>
             <Button type="submit" variant="primary" isLoading={isSubmitting || createMutation.isPending}>
-              Create Team
+              {project ? 'Create & assign to project' : 'Create Team'}
             </Button>
           </div>
         </form>
