@@ -14,7 +14,6 @@ interface NotificationItem {
   createdAt: string
   read: boolean
   href?: string
-  /** Extra fields for the side overview panel */
   actor?: string
   relatedTo?: string
   priority?: 'Low' | 'Medium' | 'High'
@@ -135,7 +134,6 @@ export function NotificationsPage() {
   }
 
   return (
-    /* Center content when viewport / main area is narrow */
     <div className="w-full max-w-5xl mx-auto space-y-6">
       <PageHeader
         title="My Notifications"
@@ -166,10 +164,13 @@ export function NotificationsPage() {
         }
       />
 
-      {/* List + side overview */}
-      <div className="flex flex-col lg:flex-row gap-4 items-stretch min-h-[420px]">
-        {/* List */}
-        <div className="flex-1 min-w-0 rounded-xl border border-outline-variant bg-surface-container-lowest overflow-hidden">
+      <div className="flex flex-col lg:flex-row gap-4 items-stretch min-h-[320px]">
+        <div
+          className={cn(
+            'min-w-0 rounded-xl border border-outline-variant bg-surface-container-lowest overflow-hidden',
+            selected ? 'flex-1' : 'w-full'
+          )}
+        >
           {visible.length === 0 && (
             <div className="p-12 text-center">
               <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-3">
@@ -235,90 +236,65 @@ export function NotificationsPage() {
           </ul>
         </div>
 
-        {/* Side overview bar */}
-        <aside
-          className={cn(
-            'w-full lg:w-[300px] shrink-0 rounded-xl border border-outline-variant',
-            'bg-surface-container-lowest flex flex-col overflow-hidden'
-          )}
-          aria-label="Notification overview"
-        >
-          {!selected ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-              <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-3">
-                info
-              </span>
-              <p className="text-body-md font-medium text-on-background mb-1">Quick overview</p>
-              <p className="text-body-sm text-on-surface-variant">
-                Select a notification to see details here.
-              </p>
+        {/* Overview only mounts after a card is clicked */}
+        {selected && (
+          <aside
+            className="w-full lg:w-[300px] shrink-0 rounded-xl border border-outline-variant bg-surface-container-lowest flex flex-col overflow-hidden"
+            aria-label="Notification overview"
+          >
+            <div className="px-5 py-4 border-b border-outline-variant flex items-start justify-between gap-2">
+              <div className="min-w-0">
+                <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">
+                  Overview
+                </p>
+                <h3 className="text-title-lg text-on-background leading-snug">{selected.title}</h3>
+              </div>
+              <button
+                type="button"
+                className="p-1 rounded-lg text-on-surface-variant hover:bg-surface-container shrink-0"
+                aria-label="Close overview"
+                onClick={() => setSelectedId(null)}
+              >
+                <span className="material-symbols-outlined text-[20px]">close</span>
+              </button>
             </div>
-          ) : (
-            <>
-              <div className="px-5 py-4 border-b border-outline-variant flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">
-                    Overview
-                  </p>
-                  <h3 className="text-title-lg text-on-background leading-snug">{selected.title}</h3>
-                </div>
-                <button
-                  type="button"
-                  className="p-1 rounded-lg text-on-surface-variant hover:bg-surface-container shrink-0"
-                  aria-label="Close overview"
-                  onClick={() => setSelectedId(null)}
-                >
-                  <span className="material-symbols-outlined text-[20px]">close</span>
-                </button>
-              </div>
 
-              <div className="p-5 space-y-5 flex-1 overflow-y-auto">
-                <div
-                  className={cn(
-                    'inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-label-sm font-semibold',
-                    TYPE_META[selected.type].tone
-                  )}
-                >
-                  <span className="material-symbols-outlined text-[18px]">
-                    {TYPE_META[selected.type].icon}
-                  </span>
-                  {TYPE_META[selected.type].label}
-                </div>
-
-                <p className="text-body-md text-on-surface-variant">{selected.body}</p>
-
-                <dl className="space-y-3 text-body-sm">
-                  <OverviewRow label="When" value={formatWhen(selected.createdAt)} />
-                  <OverviewRow label="From" value={selected.actor ?? '—'} />
-                  <OverviewRow label="Related" value={selected.relatedTo ?? '—'} />
-                  <OverviewRow label="Priority" value={selected.priority ?? '—'} />
-                  <OverviewRow label="Status" value={selected.status ?? '—'} />
-                  <OverviewRow label="Read" value={selected.read ? 'Yes' : 'No'} />
-                </dl>
-              </div>
-
-              <div className="p-4 border-t border-outline-variant flex flex-col gap-2">
-                {selected.href && (
-                  <Link to={selected.href} className="block">
-                    <Button variant="primary" size="sm" className="w-full">
-                      Open related
-                    </Button>
-                  </Link>
+            <div className="p-5 space-y-5 flex-1 overflow-y-auto">
+              <div
+                className={cn(
+                  'inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-label-sm font-semibold',
+                  TYPE_META[selected.type].tone
                 )}
-                {!selected.read && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    onClick={() => markRead(selected.id)}
-                  >
-                    Mark as read
+              >
+                <span className="material-symbols-outlined text-[18px]">
+                  {TYPE_META[selected.type].icon}
+                </span>
+                {TYPE_META[selected.type].label}
+              </div>
+
+              <p className="text-body-md text-on-surface-variant">{selected.body}</p>
+
+              <dl className="space-y-3 text-body-sm">
+                <OverviewRow label="When" value={formatWhen(selected.createdAt)} />
+                <OverviewRow label="From" value={selected.actor ?? '—'} />
+                <OverviewRow label="Related" value={selected.relatedTo ?? '—'} />
+                <OverviewRow label="Priority" value={selected.priority ?? '—'} />
+                <OverviewRow label="Status" value={selected.status ?? '—'} />
+                <OverviewRow label="Read" value={selected.read ? 'Yes' : 'No'} />
+              </dl>
+            </div>
+
+            <div className="p-4 border-t border-outline-variant flex flex-col gap-2">
+              {selected.href && (
+                <Link to={selected.href} className="block">
+                  <Button variant="primary" size="sm" className="w-full">
+                    Open related
                   </Button>
-                )}
-              </div>
-            </>
-          )}
-        </aside>
+                </Link>
+              )}
+            </div>
+          </aside>
+        )}
       </div>
 
       <p className="text-body-sm text-on-surface-variant text-center lg:text-left">
