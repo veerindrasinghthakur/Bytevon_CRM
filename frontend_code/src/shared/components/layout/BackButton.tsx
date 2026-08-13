@@ -2,27 +2,34 @@ import { useNavigate } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
 
 interface BackButtonProps {
-  /** Explicit path; if omitted, uses browser history back */
+  /**
+   * Fallback path only when there is no usable history entry
+   * (e.g. user opened the page in a new tab). Prefer leaving this
+   * unset so Back always returns to the route the user came from.
+   */
   to?: string
   label?: string
   className?: string
 }
 
 /**
- * Standard back control for create/detail/edit pages.
- * Prefer `to` for predictable list return; falls back to history.back().
+ * Back control for create/detail/edit pages.
+ * Always prefers browser history so the user returns to the page they came from.
+ * `to` is only used when history cannot go back.
  */
 export function BackButton({ to, label = 'Back', className }: BackButtonProps) {
   const navigate = useNavigate()
 
   const handleClick = () => {
+    if (window.history.length > 1) {
+      window.history.back()
+      return
+    }
     if (to) {
       navigate({ to })
-    } else if (window.history.length > 1) {
-      window.history.back()
-    } else {
-      navigate({ to: '/dashboard' })
+      return
     }
+    navigate({ to: '/dashboard' })
   }
 
   return (
