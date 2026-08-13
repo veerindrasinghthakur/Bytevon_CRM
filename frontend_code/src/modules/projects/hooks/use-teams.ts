@@ -19,9 +19,18 @@ export function useTeam(id: number | undefined) {
 export function useCreateTeam() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (input: { name: string; description?: string }) => createTeam(input),
+    mutationFn: (input: {
+      name: string
+      description?: string
+      headName?: string
+      headRole?: string
+      memberNames?: string[]
+      projectId?: number
+      projectName?: string
+    }) => createTeam(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects', 'teams'] })
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
     },
   })
 }
