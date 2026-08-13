@@ -1,92 +1,15 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
-
-type NotifType = 'APPROVAL' | 'ASSIGNMENT' | 'SYSTEM' | 'MENTION'
-
-interface NotificationItem {
-  id: number
-  type: NotifType
-  title: string
-  body: string
-  createdAt: string
-  read: boolean
-  href?: string
-  actor?: string
-  relatedTo?: string
-  priority?: 'Low' | 'Medium' | 'High'
-  status?: string
-}
-
-const MOCK: NotificationItem[] = [
-  {
-    id: 1,
-    type: 'APPROVAL',
-    title: 'Leave request pending your approval',
-    body: 'Priya K. submitted 2 days of leave starting Aug 18.',
-    createdAt: '2026-08-13T08:12:00Z',
-    read: false,
-    href: '/approvals/pending',
-    actor: 'Priya K.',
-    relatedTo: 'Leave · 2 days',
-    priority: 'Medium',
-    status: 'Pending',
-  },
-  {
-    id: 2,
-    type: 'ASSIGNMENT',
-    title: 'You were assigned a task',
-    body: '"Wire auth refresh flow" on Nexus Platform Migration.',
-    createdAt: '2026-08-13T07:40:00Z',
-    read: false,
-    href: '/projects/tasks',
-    actor: 'Project lead',
-    relatedTo: 'Nexus Platform Migration',
-    priority: 'High',
-    status: 'Open',
-  },
-  {
-    id: 3,
-    type: 'MENTION',
-    title: 'Mentioned in a project note',
-    body: 'Marcus mentioned you on Client Onboarding Kit.',
-    createdAt: '2026-08-12T16:05:00Z',
-    read: true,
-    href: '/projects',
-    actor: 'Marcus S.',
-    relatedTo: 'Client Onboarding Kit',
-    priority: 'Low',
-    status: 'Note',
-  },
-  {
-    id: 4,
-    type: 'SYSTEM',
-    title: 'Password policy reminder',
-    body: 'Your password is older than 90 days. Consider updating it from Profile.',
-    createdAt: '2026-08-11T10:00:00Z',
-    read: true,
-    href: '/profile',
-    actor: 'System',
-    relatedTo: 'Security',
-    priority: 'Medium',
-    status: 'Reminder',
-  },
-  {
-    id: 5,
-    type: 'APPROVAL',
-    title: 'Timesheet approved',
-    body: 'Your timesheet for week of Aug 4 was approved.',
-    createdAt: '2026-08-10T14:22:00Z',
-    read: true,
-    href: '/my-work/attendance',
-    actor: 'Manager',
-    relatedTo: 'Timesheet · week of Aug 4',
-    priority: 'Low',
-    status: 'Approved',
-  },
-]
+import {
+  getNotifications,
+  markAllNotificationsRead,
+  markNotificationRead,
+  type NotifType,
+  type NotificationItem,
+} from '../api/notifications'
 
 const TYPE_META: Record<
   NotifType,
@@ -113,9 +36,24 @@ function formatWhen(iso: string) {
 }
 
 export function NotificationsPage() {
-  const [items, setItems] = useState(MOCK)
+  const [items, setItems] = useState<NotificationItem[]>([])
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
   const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  const reload = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await getNotifications()
+      setItems(res.items)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void reload()
+  }, [reload])
 
   const visible = useMemo(
     () => (filter === 'unread' ? items.filter((n) => !n.read) : items),
@@ -124,13 +62,15 @@ export function NotificationsPage() {
   const unreadCount = items.filter((n) => !n.read).length
   const selected = items.find((n) => n.id === selectedId) ?? null
 
-  const markAllRead = () => setItems((prev) => prev.map((n) => ({ ...n, read: true })))
-  const markRead = (id: number) =>
-    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
+  const markAllRead = async () => {
+    await markAllNotificationsRead()
+    await reload()
+  }
 
-  const selectItem = (id: number) => {
+  const selectItem = async (id: number) => {
     setSelectedId(id)
-    markRead(id)
+    await markNotificationRead(id)
+    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)))
   }
 
   return (
@@ -157,7 +97,7 @@ export function NotificationsPage() {
             >
               Unread{unreadCount > 0 ? ` (${unreadCount})` : ''}
             </Button>
-            <Button variant="outline" size="sm" onClick={markAllRead} disabled={unreadCount === 0}>
+            <Button variant="outline" size="sm" onClick={() => void markAllRead()} disabled={unreadCount === 0}>
               Mark all read
             </Button>
           </div>
@@ -171,7 +111,10 @@ export function NotificationsPage() {
             selected ? 'flex-1' : 'w-full'
           )}
         >
-          {visible.length === 0 && (
+          {loading && (
+            <p className="p-8 text-body-sm text-on-surface-variant text-center">Loading…</p>
+          )}
+          {!loading && visible.length === 0 && (
             <div className="p-12 text-center">
               <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-3">
                 notifications_off
@@ -190,7 +133,7 @@ export function NotificationsPage() {
                 <li key={n.id}>
                   <button
                     type="button"
-                    onClick={() => selectItem(n.id)}
+                    onClick={() => void selectItem(n.id)}
                     className={cn(
                       'w-full text-left flex items-start gap-4 px-5 py-4',
                       'hover:bg-surface-container/60',
@@ -236,7 +179,6 @@ export function NotificationsPage() {
           </ul>
         </div>
 
-        {/* Overview only mounts after a card is clicked */}
         {selected && (
           <aside
             className="w-full lg:w-[300px] shrink-0 rounded-xl border border-outline-variant bg-surface-container-lowest flex flex-col overflow-hidden"
@@ -298,7 +240,7 @@ export function NotificationsPage() {
       </div>
 
       <p className="text-body-sm text-on-surface-variant text-center lg:text-left">
-        V1 channels: In-app (and optional email). Preferences live on{' '}
+        Data from <code className="text-label-sm">shared/mock/mock-data.json</code>. Preferences on{' '}
         <Link to="/profile" className="text-secondary hover:underline">
           Profile
         </Link>
