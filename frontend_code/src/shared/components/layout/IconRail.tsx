@@ -2,6 +2,10 @@ import { cn } from '@/shared/lib/cn'
 import { Link, useRouterState } from '@tanstack/react-router'
 import { BrandLogo } from '@/shared/components/brand/BrandLogo'
 
+/** Collapsed / expanded rail widths (2px narrower than original 80 / 220) */
+export const RAIL_COLLAPSED_WIDTH = 78
+export const RAIL_EXPANDED_WIDTH = 218
+
 export interface RailItem {
   id: string
   icon: string
@@ -47,12 +51,11 @@ export function IconRail({
     <nav
       className={cn(
         'relative h-full bg-deep-navy flex flex-col items-center py-4 border-r border-sidebar-item-active/30 z-20',
-        'transition-all duration-300 ease-in-out shrink-0 overflow-visible',
-        isExpanded ? 'w-[220px]' : 'w-[80px]'
+        'transition-all duration-300 ease-in-out shrink-0 overflow-visible'
       )}
+      style={{ width: isExpanded ? RAIL_EXPANDED_WIDTH : RAIL_COLLAPSED_WIDTH }}
       aria-label="Primary navigation"
     >
-      {/* Logo + hover collapse (half outside rail border) */}
       <div
         className={cn(
           'group relative w-full shrink-0 mb-3 flex items-center',
@@ -65,10 +68,6 @@ export function IconRail({
           withWordmark={isExpanded}
           wordmarkClassName="text-on-primary/90"
         />
-        {/*
-          Button is 28px (w-7). -right-3.5 = -14px so half sits outside the rail edge.
-          Visible on group hover / focus.
-        */}
         <button
           type="button"
           onClick={onToggleExpand}
