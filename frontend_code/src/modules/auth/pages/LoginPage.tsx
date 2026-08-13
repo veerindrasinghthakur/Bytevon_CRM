@@ -10,7 +10,8 @@ import {
 } from '../schemas/auth'
 import { useAuth } from '../context/AuthContext'
 import { Button } from '@/shared/components/ui/Button'
-import { BrandLogo } from '@/shared/components/brand/BrandLogo'
+import { BrandLogo, BrandMark } from '@/shared/components/brand/BrandLogo'
+import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 
 export function LoginPage() {
   const { login } = useAuth()
@@ -32,7 +33,6 @@ export function LoginPage() {
     setServerError(null)
     try {
       await login(data)
-      // Always land on dashboard after login (ignore profile); honor safe redirect only for app routes
       const target =
         search.redirect &&
         search.redirect.startsWith('/') &&
@@ -66,12 +66,7 @@ export function LoginPage() {
         </div>
         <div className="z-10 flex justify-center items-center py-8">
           <div className="w-full max-w-md aspect-[4/3] rounded-2xl bg-gradient-to-br from-electric-blue/20 via-surface-container to-secondary/10 border border-outline-variant/40 flex items-center justify-center overflow-hidden">
-            <img
-              src="/brand/bytevon-logo.jpg"
-              alt=""
-              className="w-28 h-28 object-cover rounded-xl opacity-90"
-              draggable={false}
-            />
+            <BrandMark className="w-28 h-28" />
           </div>
         </div>
         <p className="z-10 text-label-sm text-on-surface-variant opacity-70">
@@ -120,6 +115,7 @@ export function LoginPage() {
                     placeholder="admin"
                     className="block w-full pl-10 pr-4 py-3 bg-white border border-outline-variant rounded-lg text-body-md text-on-background focus:outline-none focus:ring-2 focus:ring-electric-blue"
                     {...register('username')}
+                    onKeyDown={(e) => handleEnterAdvance(e, 'password')}
                   />
                 </div>
                 {errors.username && (
@@ -142,6 +138,7 @@ export function LoginPage() {
                     placeholder="••••••••"
                     className="block w-full pl-10 pr-12 py-3 bg-white border border-outline-variant rounded-lg text-body-md text-on-background focus:outline-none focus:ring-2 focus:ring-electric-blue"
                     {...register('password')}
+                    onKeyDown={(e) => handleEnterAdvance(e)}
                   />
                   <button
                     type="button"
