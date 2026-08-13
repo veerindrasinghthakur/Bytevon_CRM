@@ -36,9 +36,11 @@ export function useCreateTask() {
       priority?: TaskPriority
       projectId?: number
       projectName?: string
+      assigneeName?: string
     }) => createTask(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects', 'tasks'] })
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
     },
   })
 }
