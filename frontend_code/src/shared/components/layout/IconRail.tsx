@@ -46,7 +46,7 @@ export function IconRail({
   return (
     <nav
       className={cn(
-        'h-full bg-deep-navy flex flex-col items-center py-5 border-r border-sidebar-item-active/30 z-20',
+        'h-full bg-deep-navy flex flex-col items-center py-4 border-r border-sidebar-item-active/30 z-20',
         'transition-all duration-300 ease-in-out shrink-0',
         isExpanded ? 'w-[220px]' : 'w-[80px]'
       )}
@@ -55,14 +55,17 @@ export function IconRail({
       {/* Logo + hover collapse/expand chevron (right of logo, aligned) */}
       <div
         className={cn(
-          'group relative w-full shrink-0 mb-6 flex items-center',
+          'group relative w-full shrink-0 mb-3 flex items-center',
           isExpanded ? 'px-4 justify-start' : 'justify-center px-2'
         )}
       >
-        <BrandLogo sizeClassName="w-10 h-10" className="shrink-0" />
-        {isExpanded && (
-          <span className="ml-3 text-sm font-semibold text-on-primary/90 truncate">Bytevon</span>
-        )}
+        {/* Collapsed: logo only. Expanded: logo + company name */}
+        <BrandLogo
+          sizeClassName="w-10 h-10"
+          className="shrink-0"
+          withWordmark={isExpanded}
+          wordmarkClassName="text-on-primary/90"
+        />
         <button
           type="button"
           onClick={onToggleExpand}
@@ -83,7 +86,7 @@ export function IconRail({
         </button>
       </div>
 
-      {/* Rail items */}
+      {/* Rail items — gap-1 + py-3.5 matches secondary sidebar item rhythm */}
       <div className="flex-1 w-full flex flex-col gap-1 overflow-y-auto scrollbar-hide">
         {visibleItems.map((item) => {
           const active = isActive(item.to)
@@ -110,7 +113,7 @@ export function IconRail({
       </div>
 
       {/* Bottom: Logout */}
-      <div className="mt-auto pt-4 flex flex-col items-center gap-3 border-t border-sidebar-item-active/30 w-full shrink-0">
+      <div className="mt-auto pt-3 flex flex-col items-center gap-2 border-t border-sidebar-item-active/30 w-full shrink-0">
         <button
           type="button"
           onClick={onLogout}
