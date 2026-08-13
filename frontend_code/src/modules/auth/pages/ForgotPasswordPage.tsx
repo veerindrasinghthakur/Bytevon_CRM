@@ -6,6 +6,7 @@ import { forgotPasswordSchema, type ForgotPasswordInput } from '../schemas/auth'
 import { forgotPasswordApi } from '../api/auth'
 import { Button } from '@/shared/components/ui/Button'
 import { BrandLogo } from '@/shared/components/brand/BrandLogo'
+import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 
 export function ForgotPasswordPage() {
   const [sentTo, setSentTo] = useState<string | null>(null)
@@ -35,7 +36,11 @@ export function ForgotPasswordPage() {
     <div className="min-h-screen flex flex-col bg-background">
       <header className="w-full px-6 md:px-10 py-4 flex justify-between items-center border-b border-outline-variant/40">
         <Link to="/login">
-          <BrandLogo withWordmark sizeClassName="w-8 h-8" />
+          <BrandLogo
+            withWordmark
+            sizeClassName="w-8 h-8"
+            wordmarkClassName="text-on-background"
+          />
         </Link>
         <span className="text-label-md text-on-surface-variant">Support</span>
       </header>
@@ -70,6 +75,7 @@ export function ForgotPasswordPage() {
                     placeholder="name@company.com"
                     className="w-full h-12 px-4 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-electric-blue"
                     {...register('email')}
+                    onKeyDown={(e) => handleEnterAdvance(e)}
                   />
                   {errors.email && (
                     <p className="text-label-sm text-error">{errors.email.message}</p>
