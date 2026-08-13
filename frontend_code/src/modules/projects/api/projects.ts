@@ -1,81 +1,12 @@
 import type { CreateProjectInput, ProjectDetail, ProjectListItem } from '../schemas/project'
-
-/** Mock aligned with Stitch projects table */
-const MOCK_PROJECTS: ProjectDetail[] = [
-  {
-    id: 1024,
-    name: 'ERP Migration Phase 2',
-    code: 'PRJ-1024',
-    status: 'IN_PROGRESS',
-    clientName: 'TechNexus Corp.',
-    startDate: '2026-01-15',
-    endDate: '2026-12-15',
-    progress: 65,
-    teamCount: 4,
-    taskCount: 28,
-    description: 'Infrastructure upgrade and data migration for the core ERP system.',
-    repositoryUrl: 'https://github.com/example/erp',
-    createdAt: '2026-01-10T10:00:00Z',
-    updatedAt: '2026-08-07T14:30:00Z',
-  },
-  {
-    id: 1025,
-    name: 'Global Logistics Audit',
-    code: 'PRJ-1025',
-    status: 'PLANNING',
-    clientName: 'Global Logistics Ltd.',
-    startDate: '2026-09-01',
-    endDate: '2026-01-22',
-    progress: 0,
-    teamCount: 2,
-    taskCount: 6,
-    description: 'Consulting audit for logistics operations.',
-    createdAt: '2026-07-20T09:00:00Z',
-    updatedAt: '2026-08-01T11:00:00Z',
-  },
-  {
-    id: 1026,
-    name: 'Fintech Rollout V3',
-    code: 'PRJ-1026',
-    status: 'ON_HOLD',
-    clientName: 'Chen Financial Group',
-    startDate: '2026-03-01',
-    endDate: '2026-02-08',
-    progress: 82,
-    teamCount: 5,
-    taskCount: 41,
-    description: 'Product development rollout for fintech clients.',
-    createdAt: '2026-02-15T08:00:00Z',
-    updatedAt: '2026-05-12T16:00:00Z',
-  },
-  {
-    id: 1027,
-    name: 'Bytevon CRM Core',
-    code: 'PRJ-1027',
-    status: 'IN_PROGRESS',
-    clientName: 'Internal',
-    startDate: '2026-01-15',
-    endDate: '2026-09-30',
-    progress: 42,
-    teamCount: 4,
-    taskCount: 28,
-    description: 'Core ERP/CRM platform development.',
-    repositoryUrl: 'https://github.com/veerindrasinghthakur/bytevon_documentation',
-    createdAt: '2026-01-10T10:00:00Z',
-    updatedAt: '2026-08-07T14:30:00Z',
-  },
-]
-
-function delay(ms = 400) {
-  return new Promise((r) => setTimeout(r, ms))
-}
+import { delay, getDb, nextId } from '@/shared/mock/db'
 
 export async function getProjects(params?: {
   search?: string
   status?: string
 }): Promise<{ items: ProjectListItem[]; total: number }> {
   await delay()
-  let items = [...MOCK_PROJECTS]
+  let items = [...getDb().projects] as ProjectDetail[]
   if (params?.search) {
     const q = params.search.toLowerCase()
     items = items.filter(
@@ -93,27 +24,60 @@ export async function getProjects(params?: {
 
 export async function getProjectById(id: number): Promise<ProjectDetail | null> {
   await delay()
-  return MOCK_PROJECTS.find((p) => p.id === id) ?? null
+  const row = getDb().projects.find((p) => p.id === id)
+  return (row as ProjectDetail | undefined) ?? null
 }
 
 export async function createProject(input: CreateProjectInput): Promise<ProjectDetail> {
-  await delay(600)
-  const newProject: ProjectDetail = {
-    id: 2000 + MOCK_PROJECTS.length,
+  await delay(500)
+  const projects = getDb().projects
+  const id = nextId(projects)
+  const newProject = {
+    id,
     name: input.name,
-    code: input.code || `PRJ-${2000 + MOCK_PROJECTS.length}`,
-    status: 'PLANNING',
-    clientName: input.clientName,
+    code: input.code || `PRJ-${id}`,
+    status: 'PLANNING' as const,
+    clientId: null as number | null,
+    clientName: input.clientName ?? null,
     startDate: input.startDate ?? null,
     endDate: input.endDate ?? null,
     progress: 0,
     teamCount: 0,
     taskCount: 0,
-    description: input.description,
-    repositoryUrl: input.repositoryUrl,
+    description: input.description ?? null,
+    repositoryUrl: input.repositoryUrl ?? null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   }
-  MOCK_PROJECTS.unshift(newProject)
-  return newProject
+  projects.unshift(newProject)
+  return newProject as ProjectDetail
+}
+
+export async function updateProject(
+  id: number,
+  patch: Partial<
+    Pick<
+      ProjectDetail,
+      | 'name'
+      | 'code'
+      | 'status'
+      | 'clientName'
+      | 'startDate'
+      | 'endDate'
+      | 'progress'
+      | 'description'
+      | 'repositoryUrl'
+    >
+  >
+): Promise<ProjectDetail> {
+  await delay(400)
+  const projects = getDb().projects
+  const idx = projects.findIndex((p) => p.id === id)
+  if (idx === -1) throw new Error('Project not found')
+  projects[idx] = {
+    ...projects[idx],
+    ...patch,
+    updatedAt: new Date().toISOString(),
+  }
+  return projects[idx] as ProjectDetail
 }
