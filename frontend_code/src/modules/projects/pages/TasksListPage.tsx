@@ -1,46 +1,69 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
+import { Pagination, paginate, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { RowActions } from '@/shared/components/ui/RowActions'
+import { ListToolbar } from '@/shared/components/layout/ListToolbar'
+import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import { useTasks } from '../hooks/use-tasks'
 import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
 
 export function TasksListPage() {
   const navigate = useNavigate()
+  const { open: openOverview } = useQuickOverview()
   const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('')
+  const [priority, setPriority] = useState('')
+  const [page, setPage] = useState(1)
+
   const { data, isLoading, isError, refetch } = useTasks({
     search: search || undefined,
+    status: status || undefined,
   })
 
-  const items = data?.items ?? []
-  const total = data?.total ?? 0
-  const pending = items.filter((t) => t.status === 'TODO' || t.status === 'IN_PROGRESS').length
-  const done = items.filter((t) => t.status === 'DONE').length
-  const blocked = items.filter((t) => t.status === 'BLOCKED').length
+  const filtersActive = Boolean(search || status || priority)
 
-  const goTask = (taskId: number) =>
-    navigate({ to: '/projects/tasks/$taskId', params: { taskId: String(taskId) } })
+  const resetFilters = () => {
+    setSearch('')
+    setStatus('')
+    setPriority('')
+    setPage(1)
+  }
+
+  const filtered = useMemo(() => {
+    let list = data?.items ?? []
+    if (priority) list = list.filter((t) => t.priority === priority)
+    return list
+  }, [data, priority])
+
+  const total = filtered.length
+  const pageItems = useMemo(() => paginate(filtered, page, DEFAULT_PAGE_SIZE), [filtered, page])
+
+  const pending = filtered.filter((t) => t.status === 'TODO' || t.status === 'IN_PROGRESS').length
+  const done = filtered.filter((t) => t.status === 'DONE').length
+  const blocked = filtered.filter((t) => t.status === 'BLOCKED').length
+
+  const goTask = (taskId: number, edit?: boolean) =>
+    navigate({
+      to: '/projects/tasks/$taskId',
+      params: { taskId: String(taskId) },
+      search: edit ? { edit: '1' } : undefined,
+    })
 
   return (
     <div className="space-y-8">
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h2 className="text-[32px] leading-10 font-bold tracking-tight text-on-background">
-            Tasks
-          </h2>
+          <h2 className="text-[32px] leading-10 font-bold tracking-tight text-on-background">Tasks</h2>
           <p className="text-body-md text-on-surface-variant mt-1">
             Tasks are work items under projects across the organization.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}
-            onClick={() => console.info('Export tasks')}
-          >
+          <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}>
             Export
           </Button>
           <Button
@@ -54,107 +77,54 @@ export function TasksListPage() {
         </div>
       </section>
 
-      <section className="flex flex-wrap items-center gap-4">
-        <div className="flex items-center flex-1 min-w-[200px] max-w-sm bg-surface-container-lowest border border-outline-variant/50 rounded-lg px-3 py-2 focus-within:border-electric-blue">
-          <span className="material-symbols-outlined text-on-surface-variant mr-2 text-lg">search</span>
-          <input
-            type="search"
-            placeholder="Search task name..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="bg-transparent border-none outline-none text-body-sm w-full text-on-background placeholder:text-on-surface-variant"
-          />
-        </div>
-        <div className="flex flex-wrap items-center gap-3 ml-auto">
-          <div className="relative min-w-[140px]">
-            <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-background focus:outline-none focus:border-electric-blue cursor-pointer">
-              <option>All Projects</option>
-            </select>
-            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
-              expand_more
-            </span>
-          </div>
-          <div className="relative min-w-[140px]">
-            <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-background focus:outline-none focus:border-electric-blue cursor-pointer">
-              <option>Priority: All</option>
-              <option>High</option>
-              <option>Medium</option>
-              <option>Low</option>
-            </select>
-            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
-              expand_more
-            </span>
-          </div>
-          <div className="relative min-w-[140px]">
-            <select className="w-full appearance-none bg-surface-container-lowest border border-outline-variant/50 rounded-lg py-2 pl-4 pr-10 text-body-md text-on-background focus:outline-none focus:border-electric-blue cursor-pointer">
-              <option>Status: All</option>
-              <option>In Progress</option>
-              <option>Pending</option>
-              <option>Completed</option>
-            </select>
-            <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">
-              expand_more
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => refetch()}
-            className="p-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface-variant hover:text-electric-blue"
-            aria-label="Refresh"
-          >
-            <span className="material-symbols-outlined">refresh</span>
-          </button>
-        </div>
-      </section>
+      <ListToolbar
+        search={search}
+        onSearchChange={(v) => {
+          setSearch(v)
+          setPage(1)
+        }}
+        searchPlaceholder="Search task name..."
+        filtersActive={filtersActive}
+        onResetFilters={resetFilters}
+        onRefresh={() => void refetch()}
+      >
+        <Select
+          value={priority}
+          onChange={(v) => {
+            setPriority(v)
+            setPage(1)
+          }}
+          placeholder="Priority: All"
+          options={[
+            { value: 'URGENT', label: 'Urgent' },
+            { value: 'HIGH', label: 'High' },
+            { value: 'MEDIUM', label: 'Medium' },
+            { value: 'LOW', label: 'Low' },
+          ]}
+        />
+        <Select
+          value={status}
+          onChange={(v) => {
+            setStatus(v)
+            setPage(1)
+          }}
+          placeholder="Status: All"
+          options={[
+            { value: 'TODO', label: 'To do' },
+            { value: 'IN_PROGRESS', label: 'In progress' },
+            { value: 'IN_REVIEW', label: 'In review' },
+            { value: 'DONE', label: 'Done' },
+            { value: 'BLOCKED', label: 'Blocked' },
+            { value: 'ON_HOLD', label: 'On hold' },
+          ]}
+        />
+      </ListToolbar>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
-          <div className="flex justify-between items-start">
-            <div className="w-10 h-10 rounded-lg bg-electric-blue/10 flex items-center justify-center text-electric-blue">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>assignment</span>
-            </div>
-          </div>
-          <div>
-            <p className="text-label-sm text-on-surface-variant mb-1">Total Tasks</p>
-            <h3 className="text-[32px] font-bold text-on-background leading-none">{total || '—'}</h3>
-          </div>
-        </div>
-        <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
-          <div className="flex justify-between items-start">
-            <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center text-amber-700">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>pending_actions</span>
-            </div>
-          </div>
-          <div>
-            <p className="text-label-sm text-on-surface-variant mb-1">Pending</p>
-            <h3 className="text-[32px] font-bold text-on-background leading-none">{pending}</h3>
-          </div>
-        </div>
-        <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
-          <div className="flex justify-between items-start">
-            <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center text-red-600">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>block</span>
-            </div>
-            {blocked > 0 && (
-              <div className="bg-red-100 text-red-800 text-xs font-bold px-2 py-1 rounded">At risk</div>
-            )}
-          </div>
-          <div>
-            <p className="text-label-sm text-on-surface-variant mb-1">Blocked / Overdue</p>
-            <h3 className="text-[32px] font-bold text-on-background leading-none">{blocked}</h3>
-          </div>
-        </div>
-        <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
-          <div className="flex justify-between items-start">
-            <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-700">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
-            </div>
-          </div>
-          <div>
-            <p className="text-label-sm text-on-surface-variant mb-1">Completed</p>
-            <h3 className="text-[32px] font-bold text-on-background leading-none">{done}</h3>
-          </div>
-        </div>
+        <Stat label="Total Tasks" value={String(total || '—')} icon="assignment" tone="bg-electric-blue/10 text-electric-blue" />
+        <Stat label="Pending" value={String(pending)} icon="pending_actions" tone="bg-amber-100 text-amber-700" />
+        <Stat label="Blocked / Overdue" value={String(blocked)} icon="block" tone="bg-red-100 text-red-600" danger={blocked > 0} />
+        <Stat label="Completed" value={String(done)} icon="check_circle" tone="bg-emerald-100 text-emerald-700" />
       </section>
 
       {isLoading && <TableSkeleton rows={5} />}
@@ -164,17 +134,17 @@ export function TasksListPage() {
           <Button variant="outline" onClick={() => refetch()}>Retry</Button>
         </div>
       )}
-      {!isLoading && !isError && items.length === 0 && (
+      {!isLoading && !isError && filtered.length === 0 && (
         <EmptyState
           icon="assignment"
-          title="No tasks yet"
-          description="Create a task from a project detail page or here."
+          title="No tasks found"
+          description="Adjust filters or create a task."
           actionLabel="New Task"
           onAction={() => navigate({ to: '/projects/tasks/new' })}
         />
       )}
 
-      {!isLoading && !isError && items.length > 0 && (
+      {!isLoading && !isError && filtered.length > 0 && (
         <section className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden flex flex-col">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[900px]">
@@ -193,21 +163,41 @@ export function TasksListPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/20">
-                {items.map((task) => (
-                  <tr key={task.id} className="h-[72px]">
-                    <td className="py-2 px-6">
+                {pageItems.map((task) => (
+                  <tr
+                    key={task.id}
+                    className="h-[72px] cursor-pointer hover:bg-surface-container/40"
+                    onClick={() =>
+                      openOverview({
+                        id: task.id,
+                        title: task.title,
+                        subtitle: task.projectName,
+                        badge: task.status.replace('_', ' '),
+                        fields: [
+                          { label: 'Assignee', value: task.assigneeName ?? 'Unassigned' },
+                          { label: 'Priority', value: task.priority },
+                          { label: 'Status', value: task.status.replace('_', ' ') },
+                          { label: 'Due', value: task.dueDate ?? '—' },
+                          { label: 'Project', value: task.projectName ?? '—' },
+                        ],
+                        detailTo: '/projects/tasks/$taskId',
+                        detailParams: { taskId: String(task.id) },
+                        editTo: '/projects/tasks/$taskId',
+                        editParams: { taskId: String(task.id) },
+                      })
+                    }
+                  >
+                    <td className="py-2 px-6" onClick={(e) => e.stopPropagation()}>
                       <input type="checkbox" className="rounded border-outline-variant w-4 h-4" />
                     </td>
                     <td className="py-2 px-4">
-                      <button
-                        type="button"
-                        className={`text-left text-body-md font-semibold ${
+                      <p
+                        className={`text-body-md font-semibold ${
                           task.status === 'DONE' ? 'text-on-surface-variant line-through' : 'text-on-background'
                         }`}
-                        onClick={() => goTask(task.id)}
                       >
                         {task.title}
-                      </button>
+                      </p>
                     </td>
                     <td className="py-2 px-4 text-body-md text-on-background">{task.projectName ?? '—'}</td>
                     <td className="py-2 px-4 text-body-md text-on-background">{task.assigneeName ?? '—'}</td>
@@ -218,23 +208,13 @@ export function TasksListPage() {
                       <TaskStatusBadge status={task.status} />
                     </td>
                     <td className="py-2 px-4 text-body-md text-on-background">{task.dueDate ?? '—'}</td>
-                    <td className="py-2 px-6 text-right">
+                    <td className="py-2 px-6 text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end">
                         <RowActions
                           label={`Actions for ${task.title}`}
                           actions={[
-                            {
-                              id: 'view',
-                              label: 'View',
-                              icon: 'description',
-                              onClick: () => goTask(task.id),
-                            },
-                            {
-                              id: 'edit',
-                              label: 'Edit',
-                              icon: 'edit',
-                              onClick: () => goTask(task.id),
-                            },
+                            { id: 'view', label: 'View', icon: 'description', onClick: () => goTask(task.id) },
+                            { id: 'edit', label: 'Edit', icon: 'edit', onClick: () => goTask(task.id, true) },
                           ]}
                         />
                       </div>
@@ -244,14 +224,50 @@ export function TasksListPage() {
               </tbody>
             </table>
           </div>
-          <div className="border-t border-outline-variant/30 p-4 flex items-center justify-between">
-            <p className="text-[11px] text-on-surface-variant">
-              Showing <span className="font-semibold text-on-background">1-{items.length}</span> of{' '}
-              <span className="font-semibold text-on-background">{total}</span> Tasks
-            </p>
-          </div>
+          <Pagination page={page} total={total} onPageChange={setPage} itemLabel="Tasks" />
+          {total <= DEFAULT_PAGE_SIZE && (
+            <div className="border-t border-outline-variant/30 p-4">
+              <p className="text-[11px] text-on-surface-variant">
+                Showing <span className="font-semibold text-on-background">1-{total}</span> of{' '}
+                <span className="font-semibold text-on-background">{total}</span> Tasks
+              </p>
+            </div>
+          )}
         </section>
       )}
+    </div>
+  )
+}
+
+function Stat({
+  label,
+  value,
+  icon,
+  tone,
+  danger,
+}: {
+  label: string
+  value: string
+  icon: string
+  tone: string
+  danger?: boolean
+}) {
+  return (
+    <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
+      <div className="flex justify-between items-start">
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${tone}`}>
+          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
+            {icon}
+          </span>
+        </div>
+        {danger && (
+          <div className="bg-red-100 text-red-800 text-xs font-bold px-2 py-1 rounded">At risk</div>
+        )}
+      </div>
+      <div>
+        <p className="text-label-sm text-on-surface-variant mb-1">{label}</p>
+        <h3 className="text-[32px] font-bold text-on-background leading-none">{value}</h3>
+      </div>
     </div>
   )
 }
