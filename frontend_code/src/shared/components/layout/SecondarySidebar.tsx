@@ -147,10 +147,11 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
         </button>
       </div>
 
+      {/* Match primary rail: gap-1 + py-3.5 so items sit parallel */}
       <div
         className={cn(
           'flex-1 overflow-y-auto scrollbar-hide',
-          isCollapsed ? 'pt-2 flex flex-col items-center' : 'pt-2 px-1'
+          isCollapsed ? 'pt-3 flex flex-col items-center' : 'pt-3 px-1'
         )}
       >
         <ul className={cn('flex flex-col gap-1', isCollapsed ? 'w-full items-center' : 'w-full')}>
@@ -164,7 +165,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                   className={cn(
                     'flex items-center group relative border-l-4',
                     isCollapsed
-                      ? 'w-10 h-11 justify-center rounded-lg border-transparent'
+                      ? 'w-10 h-[52px] justify-center rounded-lg border-transparent'
                       : 'w-full px-3 py-3.5 rounded-r-lg gap-3',
                     // Distinct selected state (Stitch secondary-container wash)
                     active
