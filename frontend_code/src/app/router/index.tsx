@@ -38,6 +38,14 @@ import { DepartmentCreatePage } from '@/modules/workforce/pages/DepartmentCreate
 
 import { ProfilePage } from '@/modules/profile/pages/ProfilePage'
 
+import {
+  MyWorkOverviewPage,
+  MyAttendancePage,
+  MyLeavePage,
+  MyTasksPage,
+  MyApprovalsPage,
+} from '@/modules/my-work'
+
 function Placeholder({ title }: { title: string }) {
   return (
     <div>
@@ -148,7 +156,7 @@ const dashboardRoute = createRoute({
         Executive dashboard will be implemented in a later module.
       </p>
       <p className="text-body-sm text-on-surface-variant mt-4">
-        Use the left Icon Rail to open Projects, Sales, Workforce, etc.
+        Use the left Icon Rail to open Projects, Sales, Workforce, or My Work.
       </p>
     </div>
   ),
@@ -266,27 +274,27 @@ const workforceAttendanceRoute = createRoute({
 const myWorkRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/my-work',
-  component: () => <Placeholder title="My Work" />,
+  component: MyWorkOverviewPage,
 })
 const myWorkAttendanceRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/my-work/attendance',
-  component: () => <Placeholder title="My Attendance" />,
+  component: MyAttendancePage,
 })
 const myWorkLeaveRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/my-work/leave',
-  component: () => <Placeholder title="My Leave" />,
+  component: MyLeavePage,
 })
 const myWorkTasksRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/my-work/tasks',
-  component: () => <Placeholder title="My Tasks" />,
+  component: MyTasksPage,
 })
 const myWorkApprovalsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/my-work/approvals',
-  component: () => <Placeholder title="My Approvals" />,
+  component: MyApprovalsPage,
 })
 
 const approvalsRoute = createRoute({
