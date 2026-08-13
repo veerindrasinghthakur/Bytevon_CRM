@@ -119,6 +119,24 @@ export async function getTasks(params?: {
   return { items, total: items.length }
 }
 
+export async function getTask(id: number): Promise<Task | null> {
+  await delay()
+  return MOCK_TASKS.find((t) => t.id === id) ?? null
+}
+
+export async function updateTask(
+  id: number,
+  patch: Partial<
+    Pick<Task, 'title' | 'description' | 'priority' | 'status' | 'assigneeName' | 'dueDate'>
+  >
+): Promise<Task> {
+  await delay(400)
+  const idx = MOCK_TASKS.findIndex((t) => t.id === id)
+  if (idx === -1) throw new Error('Task not found')
+  MOCK_TASKS[idx] = { ...MOCK_TASKS[idx], ...patch }
+  return MOCK_TASKS[idx]
+}
+
 export async function createTask(input: {
   title: string
   description?: string
