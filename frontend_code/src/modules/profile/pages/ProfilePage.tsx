@@ -19,6 +19,9 @@ interface ProfileForm {
   workType: string
 }
 
+/** Which section is in edit mode: none | all (bottom Edit) | one card via pencil */
+type EditScope = 'none' | 'all' | 'personal' | 'employment' | 'preferences'
+
 const INITIAL: ProfileForm = {
   fullName: 'Marcus S.',
   email: 'marcus@bytevon.example',
@@ -34,25 +37,36 @@ const INITIAL: ProfileForm = {
   workType: 'Hybrid',
 }
 
-/** Profile — view + edit mode (Edit Profile / pencil) */
 export function ProfilePage() {
-  const [editing, setEditing] = useState(false)
+  const [editScope, setEditScope] = useState<EditScope>('none')
   const [form, setForm] = useState<ProfileForm>(INITIAL)
   const [draft, setDraft] = useState<ProfileForm>(INITIAL)
 
-  const startEdit = () => {
+  const isEditing = editScope !== 'none'
+  const isPersonalEditable = editScope === 'all' || editScope === 'personal'
+  const isEmploymentEditable = editScope === 'all' || editScope === 'employment'
+  const isPreferencesEditable = editScope === 'all' || editScope === 'preferences'
+
+  /** Bottom Edit — unlock every field */
+  const startEditAll = () => {
     setDraft(form)
-    setEditing(true)
+    setEditScope('all')
+  }
+
+  /** Pencil on a card — only that card */
+  const startEditSection = (scope: Exclude<EditScope, 'none' | 'all'>) => {
+    setDraft(form)
+    setEditScope(scope)
   }
 
   const cancelEdit = () => {
     setDraft(form)
-    setEditing(false)
+    setEditScope('none')
   }
 
   const saveEdit = () => {
     setForm(draft)
-    setEditing(false)
+    setEditScope('none')
   }
 
   const set =
@@ -68,47 +82,28 @@ export function ProfilePage() {
         showBack
         backTo="/dashboard"
         backLabel="Back"
-        actions={
-          editing ? (
-            <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={cancelEdit}>
-                Cancel
-              </Button>
-              <Button variant="primary" size="sm" onClick={saveEdit}>
-                Save Changes
-              </Button>
-            </div>
-          ) : (
-            <Button
-              variant="primary"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>}
-              onClick={startEdit}
-            >
-              Edit Profile
-            </Button>
-          )
-        }
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Header card — display only (no Edit button here) */}
         <section className="lg:col-span-8 bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/30 shadow-sm flex flex-col md:flex-row items-center gap-8">
           <div className="relative shrink-0">
             <div className="w-28 h-28 rounded-full bg-surface-container-high border-4 border-surface-container flex items-center justify-center text-on-surface">
               <span className="material-symbols-outlined text-5xl">person</span>
             </div>
+            {/* Pencil on avatar opens personal card edit */}
             <button
               type="button"
               className="absolute bottom-1 right-1 bg-secondary text-white p-2 rounded-full shadow-lg"
-              aria-label="Edit photo"
-              onClick={startEdit}
+              aria-label="Edit personal information"
+              onClick={() => startEditSection('personal')}
             >
               <span className="material-symbols-outlined text-[18px]">edit</span>
             </button>
           </div>
           <div className="flex-1 text-center md:text-left min-w-0">
             <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-2">
-              {editing ? (
+              {isPersonalEditable ? (
                 <input
                   className="text-headline-lg font-bold text-on-background bg-surface border border-outline-variant rounded-lg px-3 py-1 max-w-full"
                   value={draft.fullName}
@@ -130,24 +125,23 @@ export function ProfilePage() {
             <div className="flex flex-wrap justify-center md:justify-start gap-4">
               <div className="flex items-center gap-2 text-on-surface-variant">
                 <span className="material-symbols-outlined text-[20px]">location_on</span>
-                <span className="text-label-md">{editing ? draft.location : form.location}</span>
+                <span className="text-label-md">
+                  {isPersonalEditable ? draft.location : form.location}
+                </span>
               </div>
               <div className="flex items-center gap-2 text-on-surface-variant">
                 <span className="material-symbols-outlined text-[20px]">mail</span>
-                <span className="text-label-md">{editing ? draft.email : form.email}</span>
+                <span className="text-label-md">
+                  {isPersonalEditable ? draft.email : form.email}
+                </span>
               </div>
             </div>
           </div>
-          {!editing && (
-            <div className="flex flex-col gap-2 shrink-0">
-              <Button variant="primary" size="sm" onClick={startEdit}>
-                Edit Profile
-              </Button>
-              <Button variant="outline" size="sm">
-                View Public Page
-              </Button>
-            </div>
-          )}
+          <div className="flex flex-col gap-2 shrink-0">
+            <Button variant="outline" size="sm">
+              View Public Page
+            </Button>
+          </div>
         </section>
 
         <section className="lg:col-span-4 bg-deep-navy text-white p-8 rounded-xl shadow-md flex flex-col justify-between">
@@ -174,93 +168,75 @@ export function ProfilePage() {
           </div>
         </section>
 
-        <section className="lg:col-span-6 bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/30 shadow-sm">
+        {/* Personal Information — pencil = this card only */}
+        <section
+          className={cn(
+            'lg:col-span-6 bg-surface-container-lowest p-8 rounded-xl border shadow-sm',
+            isPersonalEditable ? 'border-secondary/50 ring-1 ring-secondary/20' : 'border-outline-variant/30'
+          )}
+        >
           <div className="flex items-center justify-between mb-6">
             <h4 className="text-title-lg text-on-background flex items-center gap-2">
               <span className="material-symbols-outlined text-secondary">person</span>
               Personal Information
             </h4>
-            {!editing && (
-              <button
-                type="button"
-                className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-background"
-                aria-label="Edit personal information"
-                onClick={startEdit}
-              >
-                <span className="material-symbols-outlined text-[20px]">edit</span>
-              </button>
-            )}
+            <button
+              type="button"
+              className={cn(
+                'p-1.5 rounded-lg',
+                isPersonalEditable
+                  ? 'bg-secondary/10 text-secondary'
+                  : 'text-on-surface-variant hover:bg-surface-container hover:text-on-background'
+              )}
+              aria-label="Edit personal information"
+              onClick={() => startEditSection('personal')}
+            >
+              <span className="material-symbols-outlined text-[20px]">edit</span>
+            </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
-            <EditableField
-              label="Full Name"
-              editing={editing}
-              value={editing ? draft.fullName : form.fullName}
-              onChange={set('fullName')}
-              id="fullName"
-            />
-            <EditableField
-              label="Email Address"
-              editing={editing}
-              value={editing ? draft.email : form.email}
-              onChange={set('email')}
-              id="email"
-            />
-            <EditableField
-              label="Phone Number"
-              editing={editing}
-              value={editing ? draft.phone : form.phone}
-              onChange={set('phone')}
-              id="phone"
-            />
-            <EditableField
-              label="Location"
-              editing={editing}
-              value={editing ? draft.location : form.location}
-              onChange={set('location')}
-              id="location"
-            />
-            <EditableField
-              label="Timezone"
-              editing={editing}
-              value={editing ? draft.timezone : form.timezone}
-              onChange={set('timezone')}
-              id="timezone"
-            />
-            <EditableField
-              label="Language"
-              editing={editing}
-              value={editing ? draft.language : form.language}
-              onChange={set('language')}
-              id="language"
-            />
+            <EditableField label="Full Name" editing={isPersonalEditable} value={isPersonalEditable ? draft.fullName : form.fullName} onChange={set('fullName')} id="fullName" />
+            <EditableField label="Email Address" editing={isPersonalEditable} value={isPersonalEditable ? draft.email : form.email} onChange={set('email')} id="email" />
+            <EditableField label="Phone Number" editing={isPersonalEditable} value={isPersonalEditable ? draft.phone : form.phone} onChange={set('phone')} id="phone" />
+            <EditableField label="Location" editing={isPersonalEditable} value={isPersonalEditable ? draft.location : form.location} onChange={set('location')} id="location" />
+            <EditableField label="Timezone" editing={isPersonalEditable} value={isPersonalEditable ? draft.timezone : form.timezone} onChange={set('timezone')} id="timezone" />
+            <EditableField label="Language" editing={isPersonalEditable} value={isPersonalEditable ? draft.language : form.language} onChange={set('language')} id="language" />
           </div>
         </section>
 
-        <section className="lg:col-span-6 bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/30 shadow-sm">
+        {/* Employment — pencil = this card only */}
+        <section
+          className={cn(
+            'lg:col-span-6 bg-surface-container-lowest p-8 rounded-xl border shadow-sm',
+            isEmploymentEditable ? 'border-secondary/50 ring-1 ring-secondary/20' : 'border-outline-variant/30'
+          )}
+        >
           <div className="flex items-center justify-between mb-6">
             <h4 className="text-title-lg text-on-background flex items-center gap-2">
               <span className="material-symbols-outlined text-secondary">badge</span>
               Employment Information
             </h4>
-            {!editing && (
-              <button
-                type="button"
-                className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container hover:text-on-background"
-                aria-label="Edit employment information"
-                onClick={startEdit}
-              >
-                <span className="material-symbols-outlined text-[20px]">edit</span>
-              </button>
-            )}
+            <button
+              type="button"
+              className={cn(
+                'p-1.5 rounded-lg',
+                isEmploymentEditable
+                  ? 'bg-secondary/10 text-secondary'
+                  : 'text-on-surface-variant hover:bg-surface-container hover:text-on-background'
+              )}
+              aria-label="Edit employment information"
+              onClick={() => startEditSection('employment')}
+            >
+              <span className="material-symbols-outlined text-[20px]">edit</span>
+            </button>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-8">
-            <EditableField label="Role" editing={editing} value={editing ? draft.role : form.role} onChange={set('role')} id="role" />
-            <EditableField label="Department" editing={editing} value={editing ? draft.department : form.department} onChange={set('department')} id="department" />
-            <EditableField label="Job Title" editing={editing} value={editing ? draft.jobTitle : form.jobTitle} onChange={set('jobTitle')} id="jobTitle" />
-            <EditableField label="Reporting Manager" editing={editing} value={editing ? draft.manager : form.manager} onChange={set('manager')} id="manager" />
-            <EditableField label="Joining Date" editing={editing} value={editing ? draft.joiningDate : form.joiningDate} onChange={set('joiningDate')} id="joiningDate" />
-            <EditableField label="Work Type" editing={editing} value={editing ? draft.workType : form.workType} onChange={set('workType')} id="workType" />
+            <EditableField label="Role" editing={isEmploymentEditable} value={isEmploymentEditable ? draft.role : form.role} onChange={set('role')} id="role" />
+            <EditableField label="Department" editing={isEmploymentEditable} value={isEmploymentEditable ? draft.department : form.department} onChange={set('department')} id="department" />
+            <EditableField label="Job Title" editing={isEmploymentEditable} value={isEmploymentEditable ? draft.jobTitle : form.jobTitle} onChange={set('jobTitle')} id="jobTitle" />
+            <EditableField label="Reporting Manager" editing={isEmploymentEditable} value={isEmploymentEditable ? draft.manager : form.manager} onChange={set('manager')} id="manager" />
+            <EditableField label="Joining Date" editing={isEmploymentEditable} value={isEmploymentEditable ? draft.joiningDate : form.joiningDate} onChange={set('joiningDate')} id="joiningDate" />
+            <EditableField label="Work Type" editing={isEmploymentEditable} value={isEmploymentEditable ? draft.workType : form.workType} onChange={set('workType')} id="workType" />
           </div>
         </section>
 
@@ -312,11 +288,32 @@ export function ProfilePage() {
           </div>
         </section>
 
-        <section className="lg:col-span-5 bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/30 shadow-sm">
-          <h4 className="text-title-lg text-on-background flex items-center gap-2 mb-6">
-            <span className="material-symbols-outlined text-secondary">tune</span>
-            Preferences & Notifications
-          </h4>
+        {/* Preferences — pencil = this card only */}
+        <section
+          className={cn(
+            'lg:col-span-5 bg-surface-container-lowest p-8 rounded-xl border shadow-sm',
+            isPreferencesEditable ? 'border-secondary/50 ring-1 ring-secondary/20' : 'border-outline-variant/30'
+          )}
+        >
+          <div className="flex items-center justify-between mb-6">
+            <h4 className="text-title-lg text-on-background flex items-center gap-2">
+              <span className="material-symbols-outlined text-secondary">tune</span>
+              Preferences & Notifications
+            </h4>
+            <button
+              type="button"
+              className={cn(
+                'p-1.5 rounded-lg',
+                isPreferencesEditable
+                  ? 'bg-secondary/10 text-secondary'
+                  : 'text-on-surface-variant hover:bg-surface-container hover:text-on-background'
+              )}
+              aria-label="Edit preferences"
+              onClick={() => startEditSection('preferences')}
+            >
+              <span className="material-symbols-outlined text-[20px]">edit</span>
+            </button>
+          </div>
           <div className="space-y-6">
             <PrefRow title="Email Notifications" description="Weekly summaries and direct messages" defaultOn />
             <PrefRow title="In-app Notifications" description="Alerts for approvals and assignments" defaultOn />
@@ -325,9 +322,9 @@ export function ProfilePage() {
                 Interface Language
               </label>
               <select
-                className="w-full bg-surface border border-outline-variant rounded-lg p-2.5 text-on-background focus:outline-none focus:border-electric-blue"
-                disabled={!editing}
-                value={editing ? draft.language : form.language}
+                className="w-full bg-surface border border-outline-variant rounded-lg p-2.5 text-on-background focus:outline-none focus:border-electric-blue disabled:opacity-60"
+                disabled={!isPreferencesEditable}
+                value={isPreferencesEditable ? draft.language : form.language}
                 onChange={set('language')}
               >
                 <option>English (US)</option>
@@ -354,22 +351,35 @@ export function ProfilePage() {
           </div>
         </section>
 
-        <section className="lg:col-span-12 flex flex-col md:flex-row items-center justify-between p-6 border-t border-outline-variant">
-          <p className="text-body-sm text-on-surface-variant mb-4 md:mb-0">
-            {editing
-              ? 'Editing mode — changes apply locally until API is connected.'
-              : 'Last login: today · Full profile API will connect later.'}
+        {/* Only Edit / Save / Cancel live here at the bottom */}
+        <section className="lg:col-span-12 flex flex-col md:flex-row items-center justify-between p-6 border-t border-outline-variant gap-4">
+          <p className="text-body-sm text-on-surface-variant">
+            {isEditing
+              ? editScope === 'all'
+                ? 'Editing all fields — save when finished.'
+                : `Editing ${editScope} section — save when finished.`
+              : 'Last login: today · Use pencil on a card for one section, or Edit Profile for everything.'}
           </p>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3 justify-end">
             <Button variant="danger" size="sm">
               Logout from All Devices
             </Button>
-            {editing ? (
-              <Button variant="primary" size="sm" onClick={saveEdit}>
-                Save Changes
-              </Button>
+            {isEditing ? (
+              <>
+                <Button variant="ghost" size="sm" onClick={cancelEdit}>
+                  Cancel
+                </Button>
+                <Button variant="primary" size="sm" onClick={saveEdit}>
+                  Save Changes
+                </Button>
+              </>
             ) : (
-              <Button variant="outline" size="sm" onClick={startEdit}>
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>}
+                onClick={startEditAll}
+              >
                 Edit Profile
               </Button>
             )}
