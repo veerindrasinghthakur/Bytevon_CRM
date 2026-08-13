@@ -47,13 +47,11 @@ export function ProfilePage() {
   const isEmploymentEditable = editScope === 'all' || editScope === 'employment'
   const isPreferencesEditable = editScope === 'all' || editScope === 'preferences'
 
-  /** Bottom Edit — unlock every field */
   const startEditAll = () => {
     setDraft(form)
     setEditScope('all')
   }
 
-  /** Pencil on a card — only that card */
   const startEditSection = (scope: Exclude<EditScope, 'none' | 'all'>) => {
     setDraft(form)
     setEditScope(scope)
@@ -85,13 +83,11 @@ export function ProfilePage() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Header card — display only (no Edit button here) */}
         <section className="lg:col-span-8 bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/30 shadow-sm flex flex-col md:flex-row items-center gap-8">
           <div className="relative shrink-0">
             <div className="w-28 h-28 rounded-full bg-surface-container-high border-4 border-surface-container flex items-center justify-center text-on-surface">
               <span className="material-symbols-outlined text-5xl">person</span>
             </div>
-            {/* Pencil on avatar opens personal card edit */}
             <button
               type="button"
               className="absolute bottom-1 right-1 bg-secondary text-white p-2 rounded-full shadow-lg"
@@ -168,7 +164,6 @@ export function ProfilePage() {
           </div>
         </section>
 
-        {/* Personal Information — pencil = this card only */}
         <section
           className={cn(
             'lg:col-span-6 bg-surface-container-lowest p-8 rounded-xl border shadow-sm',
@@ -204,7 +199,6 @@ export function ProfilePage() {
           </div>
         </section>
 
-        {/* Employment — pencil = this card only */}
         <section
           className={cn(
             'lg:col-span-6 bg-surface-container-lowest p-8 rounded-xl border shadow-sm',
@@ -288,7 +282,6 @@ export function ProfilePage() {
           </div>
         </section>
 
-        {/* Preferences — pencil = this card only */}
         <section
           className={cn(
             'lg:col-span-5 bg-surface-container-lowest p-8 rounded-xl border shadow-sm',
@@ -351,19 +344,21 @@ export function ProfilePage() {
           </div>
         </section>
 
-        {/* Only Edit / Save / Cancel live here at the bottom */}
-        <section className="lg:col-span-12 flex flex-col md:flex-row items-center justify-between p-6 border-t border-outline-variant gap-4">
-          <p className="text-body-sm text-on-surface-variant">
-            {isEditing
-              ? editScope === 'all'
-                ? 'Editing all fields — save when finished.'
-                : `Editing ${editScope} section — save when finished.`
-              : 'Last login: today · Use pencil on a card for one section, or Edit Profile for everything.'}
-          </p>
-          <div className="flex flex-wrap gap-3 justify-end">
-            <Button variant="danger" size="sm">
+        {/* Footer: Logout left · Edit/Save right */}
+        <section className="lg:col-span-12 flex flex-col sm:flex-row items-stretch sm:items-center justify-between p-6 border-t border-outline-variant gap-4">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
+            <Button variant="danger" size="sm" className="shrink-0 self-start">
               Logout from All Devices
             </Button>
+            <p className="text-body-sm text-on-surface-variant">
+              {isEditing
+                ? editScope === 'all'
+                  ? 'Editing all fields — save when finished.'
+                  : `Editing ${editScope} section — save when finished.`
+                : 'Last login: today · Pencil = one card · Edit Profile = all fields.'}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3 sm:justify-end shrink-0">
             {isEditing ? (
               <>
                 <Button variant="ghost" size="sm" onClick={cancelEdit}>
