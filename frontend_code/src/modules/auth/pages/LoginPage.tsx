@@ -50,7 +50,11 @@ export function LoginPage() {
     <main className="w-full min-h-screen grid grid-cols-1 md:grid-cols-2 max-w-[1440px] mx-auto">
       <section className="hidden md:flex flex-col justify-between p-10 bg-surface-container-low relative overflow-hidden">
         <div className="z-10">
-          <BrandLogo withWordmark sizeClassName="w-10 h-10" />
+          <BrandLogo
+            withWordmark
+            sizeClassName="w-10 h-10"
+            wordmarkClassName="text-on-background"
+          />
           <div className="mt-8 max-w-md">
             <h1 className="text-[48px] leading-[56px] font-bold tracking-tight text-on-background mb-4">
               Welcome to Bytevon
@@ -79,7 +83,11 @@ export function LoginPage() {
       <section className="flex items-center justify-center p-4 md:p-10 bg-surface">
         <div className="w-full max-w-md">
           <div className="md:hidden mb-8 flex justify-center">
-            <BrandLogo withWordmark sizeClassName="w-9 h-9" />
+            <BrandLogo
+              withWordmark
+              sizeClassName="w-9 h-9"
+              wordmarkClassName="text-on-background"
+            />
           </div>
 
           <div className="bg-surface-container-lowest p-8 md:p-10 rounded-xl shadow-[0_10px_40px_-15px_rgba(11,28,48,0.1)] border border-outline-variant">
