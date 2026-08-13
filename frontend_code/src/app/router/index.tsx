@@ -37,6 +37,7 @@ import { DepartmentsListPage } from '@/modules/workforce/pages/DepartmentsListPa
 import { DepartmentCreatePage } from '@/modules/workforce/pages/DepartmentCreatePage'
 
 import { ProfilePage } from '@/modules/profile/pages/ProfilePage'
+import { NotificationsPage } from '@/modules/notifications/pages/NotificationsPage'
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -158,6 +159,12 @@ const profileRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/profile',
   component: ProfilePage,
+})
+
+const notificationsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/notifications',
+  component: NotificationsPage,
 })
 
 const projectsIndexRoute = createRoute({
@@ -348,6 +355,7 @@ const routeTree = rootRoute.addChildren([
   appLayoutRoute.addChildren([
     dashboardRoute,
     profileRoute,
+    notificationsRoute,
     projectsIndexRoute,
     projectsNewRoute,
     projectDetailRoute,
