@@ -23,8 +23,10 @@ import { ProjectDetailPage } from '@/modules/projects/pages/ProjectDetailPage'
 import { ProjectCreatePage } from '@/modules/projects/pages/ProjectCreatePage'
 import { TeamsListPage } from '@/modules/projects/pages/TeamsListPage'
 import { TeamCreatePage } from '@/modules/projects/pages/TeamCreatePage'
+import { TeamDetailPage } from '@/modules/projects/pages/TeamDetailPage'
 import { TasksListPage } from '@/modules/projects/pages/TasksListPage'
 import { TaskCreatePage } from '@/modules/projects/pages/TaskCreatePage'
+import { TaskDetailPage } from '@/modules/projects/pages/TaskDetailPage'
 
 import { LeadsListPage } from '@/modules/sales/pages/LeadsListPage'
 import { LeadCreatePage } from '@/modules/sales/pages/LeadCreatePage'
@@ -50,7 +52,6 @@ function Placeholder({ title }: { title: string }) {
   )
 }
 
-/** Redirect unauthenticated users away from AppShell routes. */
 function requireAuth() {
   const session = loadStoredSession()
   if (!session) {
@@ -58,7 +59,6 @@ function requireAuth() {
   }
 }
 
-/** Redirect authenticated users away from guest-only auth pages. */
 function requireGuest() {
   const session = loadStoredSession()
   if (session) {
@@ -71,7 +71,6 @@ const rootRoute = createRootRoute({
   notFoundComponent: NotFoundPage,
 })
 
-// —— Auth (public) ——
 const authLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'auth',
@@ -120,7 +119,6 @@ const accessDeniedRoute = createRoute({
   component: AccessDeniedPage,
 })
 
-// —— Authenticated app ——
 const appLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'app',
@@ -192,6 +190,11 @@ const teamsNewRoute = createRoute({
   path: '/projects/teams/new',
   component: TeamCreatePage,
 })
+const teamDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/projects/teams/$teamId',
+  component: TeamDetailPage,
+})
 const tasksRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/projects/tasks',
@@ -201,6 +204,11 @@ const tasksNewRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/projects/tasks/new',
   component: TaskCreatePage,
+})
+const taskDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/projects/tasks/$taskId',
+  component: TaskDetailPage,
 })
 
 const salesRoute = createRoute({
@@ -361,8 +369,10 @@ const routeTree = rootRoute.addChildren([
     projectDetailRoute,
     teamsRoute,
     teamsNewRoute,
+    teamDetailRoute,
     tasksRoute,
     tasksNewRoute,
+    taskDetailRoute,
     salesRoute,
     salesLeadsRoute,
     salesLeadsNewRoute,
