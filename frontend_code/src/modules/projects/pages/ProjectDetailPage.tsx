@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link, useParams, useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
@@ -6,6 +7,7 @@ import { useProject } from '../hooks/use-projects'
 import { useTasks } from '../hooks/use-tasks'
 import { ProjectStatusBadge } from '../components/ProjectStatusBadge'
 import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
+import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 
 export function ProjectDetailPage() {
   const navigate = useNavigate()
@@ -17,6 +19,26 @@ export function ProjectDetailPage() {
   const { data: tasksData, isLoading: tasksLoading } = useTasks(
     Number.isFinite(id) ? { projectId: id } : undefined
   )
+
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState({
+    name: '',
+    description: '',
+    clientName: '',
+    repositoryUrl: '',
+  })
+
+  useEffect(() => {
+    if (project) {
+      setDraft({
+        name: project.name,
+        description: project.description ?? '',
+        clientName: project.clientName ?? '',
+        repositoryUrl: project.repositoryUrl ?? '',
+      })
+      setEditing(false)
+    }
+  }, [project])
 
   if (isLoading) {
     return (
@@ -52,10 +74,30 @@ export function ProjectDetailPage() {
 
   const tasks = tasksData?.items ?? []
 
+  const startEdit = () => {
+    setDraft({
+      name: project.name,
+      description: project.description ?? '',
+      clientName: project.clientName ?? '',
+      repositoryUrl: project.repositoryUrl ?? '',
+    })
+    setEditing(true)
+  }
+
+  const cancelEdit = () => {
+    setEditing(false)
+  }
+
+  const saveEdit = () => {
+    // Local-only until project update API is wired
+    console.info('Save project draft', project.id, draft)
+    setEditing(false)
+  }
+
   return (
     <div className="space-y-8">
       <PageHeader
-        title={project.name}
+        title={editing ? draft.name || project.name : project.name}
         description={project.code}
         showBack
         backTo="/projects"
@@ -68,37 +110,104 @@ export function ProjectDetailPage() {
           </nav>
         }
         actions={
-          <Button
-            variant="outline"
-            leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
-            onClick={() => console.info('Edit project', project.id)}
-          >
-            Edit
-          </Button>
+          editing ? (
+            <div className="flex gap-2">
+              <Button variant="ghost" size="sm" onClick={cancelEdit}>
+                Cancel
+              </Button>
+              <Button variant="primary" size="sm" onClick={saveEdit}>
+                Save
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
+              onClick={startEdit}
+            >
+              Edit
+            </Button>
+          )
         }
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
         <div className="lg:col-span-2 space-y-6">
           <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
-            <h3 className="text-title-lg text-on-background mb-4">Overview</h3>
-            <p className="text-body-md text-on-surface-variant">
-              {project.description || 'No description provided.'}
-            </p>
-            {project.repositoryUrl && (
-              <a
-                href={project.repositoryUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-4 inline-flex items-center gap-2 text-electric-blue text-body-sm hover:underline"
-              >
-                <span className="material-symbols-outlined text-lg">code</span>
-                Repository
-              </a>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-title-lg text-on-background">Overview</h3>
+              {!editing && (
+                <button
+                  type="button"
+                  className="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container"
+                  aria-label="Edit overview"
+                  onClick={startEdit}
+                >
+                  <span className="material-symbols-outlined text-[20px]">edit</span>
+                </button>
+              )}
+            </div>
+
+            {editing ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="edit-name">
+                    Project name
+                  </label>
+                  <input
+                    id="edit-name"
+                    value={draft.name}
+                    onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
+                    onKeyDown={(e) => handleEnterAdvance(e)}
+                    className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-electric-blue"
+                  />
+                </div>
+                <div>
+                  <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="edit-desc">
+                    Description
+                  </label>
+                  <textarea
+                    id="edit-desc"
+                    rows={4}
+                    value={draft.description}
+                    onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
+                    onKeyDown={(e) => handleEnterAdvance(e)}
+                    className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-electric-blue resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="edit-repo">
+                    Repository URL
+                  </label>
+                  <input
+                    id="edit-repo"
+                    value={draft.repositoryUrl}
+                    onChange={(e) => setDraft((d) => ({ ...d, repositoryUrl: e.target.value }))}
+                    onKeyDown={(e) => handleEnterAdvance(e)}
+                    className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background font-mono text-sm focus:outline-none focus:ring-2 focus:ring-electric-blue"
+                  />
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="text-body-md text-on-surface-variant">
+                  {project.description || 'No description provided.'}
+                </p>
+                {project.repositoryUrl && (
+                  <a
+                    href={project.repositoryUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-flex items-center gap-2 text-electric-blue text-body-sm hover:underline"
+                  >
+                    <span className="material-symbols-outlined text-lg">code</span>
+                    Repository
+                  </a>
+                )}
+              </>
             )}
           </section>
 
-          {/* Tasks are sub-parts of this project */}
           <section className="rounded-xl border border-outline-variant bg-surface-container-lowest overflow-hidden">
             <div className="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
               <div>
@@ -194,7 +303,16 @@ export function ProjectDetailPage() {
           <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 space-y-3">
             <div>
               <p className="text-label-sm text-on-surface-variant">Client</p>
-              <p className="text-body-md text-on-surface">{project.clientName ?? '—'}</p>
+              {editing ? (
+                <input
+                  value={draft.clientName}
+                  onChange={(e) => setDraft((d) => ({ ...d, clientName: e.target.value }))}
+                  onKeyDown={(e) => handleEnterAdvance(e)}
+                  className="mt-1 w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-electric-blue"
+                />
+              ) : (
+                <p className="text-body-md text-on-surface">{project.clientName ?? '—'}</p>
+              )}
             </div>
             <div>
               <p className="text-label-sm text-on-surface-variant">Progress</p>
