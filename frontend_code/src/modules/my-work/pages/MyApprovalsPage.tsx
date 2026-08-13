@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { myApprovals } from '../data/mock'
 import type { ApprovalStatus } from '../types'
@@ -17,7 +16,6 @@ const typeIcon: Record<string, string> = {
 }
 
 export function MyApprovalsPage() {
-  const navigate = useNavigate()
   const pending = myApprovals.filter((a) => a.status === 'Pending').length
   const approved = myApprovals.filter((a) => a.status === 'Approved').length
 
@@ -27,7 +25,7 @@ export function MyApprovalsPage() {
         title="My Requests"
         description="Leave, attendance corrections, and other requests you submitted."
         showBack
-        onBack={() => navigate({ to: '/my-work' })}
+        backTo="/my-work"
       />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">

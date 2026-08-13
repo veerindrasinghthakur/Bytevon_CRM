@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { leaveBalances, leaveRequests } from '../data/mock'
@@ -12,15 +11,13 @@ const statusStyles: Record<LeaveStatus, string> = {
 }
 
 export function MyLeavePage() {
-  const navigate = useNavigate()
-
   return (
     <div className="space-y-6">
       <PageHeader
         title="My Leave"
         description="Check balances, apply for leave, and track request status."
         showBack
-        onBack={() => navigate({ to: '/my-work' })}
+        backTo="/my-work"
         actions={
           <Button
             variant="primary"

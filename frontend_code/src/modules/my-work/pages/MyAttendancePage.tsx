@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { currentUser, todayAttendance, attendanceHistory, weekHours } from '../data/mock'
@@ -14,15 +13,13 @@ const statusStyles: Record<AttendanceStatus, string> = {
 }
 
 export function MyAttendancePage() {
-  const navigate = useNavigate()
-
   return (
     <div className="space-y-6">
       <PageHeader
         title="My Attendance"
         description="Mark attendance, review daily hours, and track history."
         showBack
-        onBack={() => navigate({ to: '/my-work' })}
+        backTo="/my-work"
         actions={
           <Button
             variant="primary"

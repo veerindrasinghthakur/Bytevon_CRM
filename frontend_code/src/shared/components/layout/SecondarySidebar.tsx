@@ -51,6 +51,7 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     moduleId: 'my-work',
     title: 'My Work',
     items: [
+      { id: 'overview', label: 'Overview', icon: 'dashboard', to: '/my-work' },
       { id: 'my-attendance', label: 'My Attendance', icon: 'calendar_today', to: '/my-work/attendance' },
       { id: 'my-leave', label: 'My Leave', icon: 'event_busy', to: '/my-work/leave' },
       { id: 'my-tasks', label: 'My Tasks', icon: 'task_alt', to: '/my-work/tasks' },
@@ -106,6 +107,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
 
   const isItemActive = (to: string) => {
     if (to === '/projects') return pathname === '/projects'
+    if (to === '/my-work') return pathname === '/my-work'
     return pathname === to || pathname.startsWith(to + '/')
   }
 
@@ -166,7 +168,6 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                     isCollapsed
                       ? 'w-10 h-11 justify-center rounded-lg border-transparent'
                       : 'w-full px-3 py-3.5 rounded-r-lg gap-3',
-                    // Distinct selected state (Stitch secondary-container wash)
                     active
                       ? isCollapsed
                         ? 'bg-[#e8f1ff] text-secondary border-transparent'

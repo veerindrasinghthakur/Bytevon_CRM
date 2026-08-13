@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { myTasks } from '../data/mock'
 import type { MyTask } from '../types'
@@ -19,7 +18,6 @@ const statusDot: Record<string, string> = {
 }
 
 export function MyTasksPage() {
-  const navigate = useNavigate()
   const open = myTasks.filter((t) => t.status !== 'Completed').length
   const inProgress = myTasks.filter((t) => t.status === 'In Progress').length
   const high = myTasks.filter((t) => t.priority === 'High' || t.priority === 'Critical').length
@@ -30,7 +28,7 @@ export function MyTasksPage() {
         title="My Tasks"
         description="Tasks assigned to you across projects."
         showBack
-        onBack={() => navigate({ to: '/my-work' })}
+        backTo="/my-work"
       />
 
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
