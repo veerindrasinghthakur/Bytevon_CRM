@@ -1,7 +1,7 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
-import { HeaderClock } from './HeaderClock'
 import { HeaderBreakChip } from './HeaderBreakChip'
+import { HeaderAttendanceSummary } from './HeaderAttendanceSummary'
 
 /** Shared shell header height — keep SecondarySidebar top row the same */
 export const HEADER_HEIGHT_PX = 56
@@ -56,7 +56,7 @@ export function Header({ title, className, style }: HeaderProps) {
 
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         <HeaderBreakChip active={isBreakActive} />
-        <HeaderClock />
+        <HeaderAttendanceSummary />
 
         <Link
           to="/notifications"
