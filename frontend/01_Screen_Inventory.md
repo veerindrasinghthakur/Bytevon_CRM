@@ -3,9 +3,9 @@
 # Bytevon Frontend — Screen Inventory
 
 **Project:** Bytevon ERP/CRM  
-**Version:** 1.0  
+**Version:** 1.1  
 **Status:** Draft (Navigation locked)  
-**Last Updated:** 2026-08-07
+**Last Updated:** 2026-08-13
 
 ---
 
@@ -95,17 +95,26 @@ Screens marked **(Pending UI)** do not yet have final Stitch designs but are req
 
 | Screen                    | Route                     | Notes                          |
 |---------------------------|---------------------------|--------------------------------|
+| My Work Overview          | `/my-work`                | Hub: KPIs, quick actions       |
 | My Attendance             | `/my-work/attendance`     | Mark + calendar + history      |
-| Mark Attendance           | `/my-work/attendance/mark`|                                |
-| Attendance Details        | `/my-work/attendance/:id` |                                |
-| Attendance Corrections    | `/my-work/attendance/corrections` |                        |
-| My Leave                  | `/my-work/leave`          |                                |
-| Apply for Leave           | `/my-work/leave/apply`    |                                |
-| Leave Balance             | `/my-work/leave/balance`  |                                |
-| Leave Calendar            | `/my-work/leave/calendar` |                                |
-| Leave History / Details   | `/my-work/leave/:id`      |                                |
-| My Tasks                  | `/my-work/tasks`          |                                |
-| My Approvals / Requests   | `/my-work/approvals`      |                                |
+| Mark Attendance           | `/my-work/attendance/mark`| Create / check-in flow         |
+| Attendance Details        | `/my-work/attendance/:id` | Day detail                     |
+| Attendance Corrections    | `/my-work/attendance/corrections` | Request corrections     |
+| My Leave                  | `/my-work/leave`          | Balances + list                |
+| Apply for Leave           | `/my-work/leave/apply`    | Create leave request           |
+| Leave Balance             | `/my-work/leave/balance`  | Optional deep link to balances |
+| Leave Calendar            | `/my-work/leave/calendar` | Optional                       |
+| Leave Details             | `/my-work/leave/:id`      | Request detail                 |
+| My Tasks                  | `/my-work/tasks`          | Assigned + self-created        |
+| Create Task (self)        | `/my-work/tasks/new`      | Employee can create own tasks  |
+| Task Details              | `/my-work/tasks/:id`      |                                |
+| My Approvals / Requests   | `/my-work/approvals`      | Submitted by me                |
+| Request Details           | `/my-work/approvals/:id`  |                                |
+
+**UX rules**
+
+- Create / New actions live **on the list page** (top-right), not only in secondary nav.
+- **Back** on create/detail pages returns to the **previous route the user came from** (browser history). Do not hard-wire Back to a fixed parent unless history is empty.
 
 ---
 
@@ -161,3 +170,4 @@ Screens marked **(Pending UI)** do not yet have final Stitch designs but are req
 - All list pages should support: search, filters, pagination / infinite scroll, bulk actions where relevant.
 - Create / New actions live **on the page** (usually top-right).
 - Teams screens are architecturally required even though final Stitch designs are pending.
+- **Back navigation:** use browser history so the user returns to the page they came from; fixed `backTo` is only a fallback when history is unavailable.

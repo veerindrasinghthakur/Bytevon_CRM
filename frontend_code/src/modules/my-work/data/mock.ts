@@ -1,0 +1,335 @@
+import type {
+  MetricCard,
+  AttendanceRecord,
+  LeaveBalance,
+  LeaveRequest,
+  MyTask,
+  ApprovalRequest,
+  NotificationItem,
+  UpcomingEvent,
+} from '../types'
+
+export const currentUser = {
+  name: 'Alex Johnson',
+  firstName: 'Alex',
+  employeeId: 'EMP-102',
+  department: 'Design Dept',
+  role: 'Senior Designer',
+  shift: '09:00 AM - 06:00 PM',
+  todayLabel: 'Aug 13, 2026',
+}
+
+export const myWorkMetrics: MetricCard[] = [
+  {
+    id: 'attendance',
+    label: 'Attendance',
+    value: '98%',
+    subtitle: '+2% this month',
+    icon: 'trending_up',
+    changeType: 'positive',
+  },
+  {
+    id: 'leave',
+    label: 'Rem. Leave',
+    value: '12 Days',
+    subtitle: 'Expiring Dec 31',
+    icon: 'event_note',
+  },
+  {
+    id: 'pending-leave',
+    label: 'Pending Leave',
+    value: '1',
+    subtitle: 'Awaiting Manager',
+    icon: 'hourglass_empty',
+    changeType: 'negative',
+  },
+  {
+    id: 'tasks',
+    label: 'Assigned Tasks',
+    value: '5',
+    subtitle: '2 due this week',
+    icon: 'assignment_turned_in',
+  },
+  {
+    id: 'notifications',
+    label: 'Notifications',
+    value: '3',
+    subtitle: 'Unread priority',
+    icon: 'notifications_active',
+    changeType: 'positive',
+  },
+]
+
+export const todayAttendance = {
+  checkIn: '08:55 AM',
+  checkInNote: 'On time',
+  totalHours: '4.5h',
+  totalHoursNote: '45% of shift',
+  status: 'Present' as const,
+}
+
+export const weekHours = [
+  { day: 'Mon', hours: 8.5, pct: 60 },
+  { day: 'Tue', hours: 9, pct: 85 },
+  { day: 'Wed', hours: 8.2, pct: 70 },
+  { day: 'Thu', hours: 9.5, pct: 90 },
+  { day: 'Fri', hours: 4.5, pct: 45, isToday: true },
+  { day: 'Sat', hours: 0, pct: 0 },
+  { day: 'Sun', hours: 0, pct: 0 },
+]
+
+export const leaveBalances: LeaveBalance[] = [
+  { type: 'Casual', used: 4, total: 10, remaining: 6 },
+  { type: 'Sick', used: 2, total: 8, remaining: 6 },
+  { type: 'Earned', used: 6, total: 12, remaining: 6 },
+]
+
+export const attendanceHistory: AttendanceRecord[] = [
+  {
+    id: 'a1',
+    date: '2026-08-13',
+    checkIn: '08:55 AM',
+    checkOut: '—',
+    totalHours: '4.5h',
+    status: 'Present',
+    shift: 'General',
+  },
+  {
+    id: 'a2',
+    date: '2026-08-12',
+    checkIn: '09:02 AM',
+    checkOut: '06:05 PM',
+    totalHours: '9.0h',
+    status: 'Present',
+    shift: 'General',
+  },
+  {
+    id: 'a3',
+    date: '2026-08-11',
+    checkIn: '08:48 AM',
+    checkOut: '05:55 PM',
+    totalHours: '9.1h',
+    status: 'Present',
+    shift: 'General',
+  },
+  {
+    id: 'a4',
+    date: '2026-08-10',
+    checkIn: '—',
+    checkOut: '—',
+    totalHours: '—',
+    status: 'Weekend',
+    shift: '—',
+  },
+  {
+    id: 'a5',
+    date: '2026-08-09',
+    checkIn: '—',
+    checkOut: '—',
+    totalHours: '—',
+    status: 'Weekend',
+    shift: '—',
+  },
+  {
+    id: 'a6',
+    date: '2026-08-08',
+    checkIn: '09:15 AM',
+    checkOut: '01:00 PM',
+    totalHours: '3.8h',
+    status: 'Half Day',
+    shift: 'General',
+    note: 'Medical appointment',
+  },
+  {
+    id: 'a7',
+    date: '2026-08-07',
+    checkIn: '08:50 AM',
+    checkOut: '06:10 PM',
+    totalHours: '9.3h',
+    status: 'Present',
+    shift: 'General',
+  },
+]
+
+export const leaveRequests: LeaveRequest[] = [
+  {
+    id: 'l1',
+    type: 'Casual',
+    from: '2026-11-12',
+    to: '2026-11-12',
+    days: 1,
+    reason: 'Personal errand',
+    status: 'Approved',
+    appliedOn: '2026-11-01',
+    approver: 'Sarah Chen',
+  },
+  {
+    id: 'l2',
+    type: 'Sick',
+    from: '2026-08-20',
+    to: '2026-08-21',
+    days: 2,
+    reason: 'Fever and recovery',
+    status: 'Pending',
+    appliedOn: '2026-08-12',
+  },
+  {
+    id: 'l3',
+    type: 'Earned',
+    from: '2026-09-01',
+    to: '2026-09-05',
+    days: 5,
+    reason: 'Family travel',
+    status: 'Pending',
+    appliedOn: '2026-08-10',
+  },
+  {
+    id: 'l4',
+    type: 'Casual',
+    from: '2026-07-15',
+    to: '2026-07-15',
+    days: 1,
+    reason: 'Bank work',
+    status: 'Approved',
+    appliedOn: '2026-07-10',
+    approver: 'Sarah Chen',
+  },
+]
+
+export const myTasks: MyTask[] = [
+  {
+    id: 't1',
+    name: 'Mobile App Wireframe Review',
+    project: 'Nexus Mobile',
+    priority: 'High',
+    dueDate: '2026-08-25',
+    status: 'In Progress',
+    estimatedHours: '8h',
+  },
+  {
+    id: 't2',
+    name: 'Quarterly Design System Audit',
+    project: 'Design System',
+    priority: 'Medium',
+    dueDate: '2026-08-30',
+    status: 'Pending',
+    estimatedHours: '24h',
+  },
+  {
+    id: 't3',
+    name: 'Client Meeting: Feedback Integration',
+    project: 'Nexus Global',
+    priority: 'High',
+    dueDate: '2026-08-26',
+    status: 'Not Started',
+    estimatedHours: '4h',
+  },
+  {
+    id: 't4',
+    name: 'Accessibility Guidelines Update',
+    project: 'Design System',
+    priority: 'Low',
+    dueDate: '2026-09-05',
+    status: 'Pending',
+    estimatedHours: '12h',
+  },
+  {
+    id: 't5',
+    name: 'Dashboard UI polish for My Work',
+    project: 'Bytevon CRM',
+    priority: 'Medium',
+    dueDate: '2026-08-20',
+    status: 'In Progress',
+    estimatedHours: '6h',
+  },
+]
+
+export const myApprovals: ApprovalRequest[] = [
+  {
+    id: 'ap1',
+    type: 'Leave',
+    title: 'Sick Leave — Aug 20–21',
+    submittedOn: '2026-08-12',
+    status: 'Pending',
+    summary: '2 days · Fever and recovery',
+  },
+  {
+    id: 'ap2',
+    type: 'Leave',
+    title: 'Earned Leave — Sep 1–5',
+    submittedOn: '2026-08-10',
+    status: 'Pending',
+    summary: '5 days · Family travel',
+  },
+  {
+    id: 'ap3',
+    type: 'Attendance Correction',
+    title: 'Correction for Aug 8 (Half Day)',
+    submittedOn: '2026-08-09',
+    status: 'Approved',
+    summary: 'Medical appointment note attached',
+  },
+  {
+    id: 'ap4',
+    type: 'Leave',
+    title: 'Casual Leave — Nov 12',
+    submittedOn: '2026-11-01',
+    status: 'Approved',
+    summary: '1 day · Personal errand',
+  },
+]
+
+export const recentNotifications: NotificationItem[] = [
+  {
+    id: 'n1',
+    title: 'Leave Approved',
+    body: 'Your leave application for Nov 12 has been approved by Sarah.',
+    time: '10m ago',
+    unread: true,
+    icon: 'verified_user',
+  },
+  {
+    id: 'n2',
+    title: 'New Task Assigned',
+    body: '"Mobile App Wireframe Review" assigned by Creative Director.',
+    time: '2h ago',
+    unread: true,
+    icon: 'new_releases',
+    tag: 'High Priority',
+  },
+  {
+    id: 'n3',
+    title: 'Payslip Generated',
+    body: 'July 2026 payslip is now available for download.',
+    time: 'Yesterday',
+    unread: true,
+    icon: 'account_balance_wallet',
+  },
+]
+
+export const upcomingEvents: UpcomingEvent[] = [
+  {
+    id: 'e1',
+    title: 'Independence Day',
+    subtitle: 'Public Holiday',
+    month: 'AUG',
+    day: '15',
+    icon: 'celebration',
+  },
+  {
+    id: 'e2',
+    title: "Sarah's Birthday",
+    subtitle: 'Design Team',
+    month: 'AUG',
+    day: '18',
+    icon: 'cake',
+  },
+  {
+    id: 'e3',
+    title: 'Weekly Sync',
+    subtitle: '02:00 PM - 03:00 PM',
+    month: 'AUG',
+    day: '14',
+    icon: 'groups',
+  },
+]
