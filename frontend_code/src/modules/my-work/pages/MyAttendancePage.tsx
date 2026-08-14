@@ -25,6 +25,7 @@ export function MyAttendancePage() {
         actions={
           <div className="flex items-center gap-2">
             <Button
+              leftIcon={<span className="material-symbols-outlined text-lg">edit_calendar</span>}
               variant="outline"
               onClick={() => navigate({ to: '/my-work/attendance/corrections' })}
             >

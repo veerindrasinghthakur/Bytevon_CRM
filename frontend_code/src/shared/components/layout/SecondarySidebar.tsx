@@ -53,12 +53,12 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     items: [
       { id: 'overview', label: 'Overview', icon: 'dashboard', to: '/my-work' },
       { id: 'my-attendance', label: 'My Attendance', icon: 'calendar_today', to: '/my-work/attendance' },
-      {
-        id: 'attendance-corrections',
-        label: 'Corrections',
-        icon: 'edit_calendar',
-        to: '/my-work/attendance/corrections',
-      },
+      // {
+      //   id: 'attendance-corrections',
+      //   label: 'Corrections',
+      //   icon: 'edit_calendar',
+      //   to: '/my-work/attendance/corrections',
+      // },
       { id: 'my-leave', label: 'My Leave', icon: 'event_busy', to: '/my-work/leave' },
       { id: 'my-tasks', label: 'My Tasks', icon: 'task_alt', to: '/my-work/tasks' },
       { id: 'my-approvals', label: 'My Approvals', icon: 'fact_check', to: '/my-work/approvals' },
