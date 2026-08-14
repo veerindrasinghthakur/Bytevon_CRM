@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
+import { HEADER_HEIGHT_PX } from '@/shared/components/layout/Header'
 import { Button } from '@/shared/components/ui/Button'
-import { leads, salesMetrics, clients } from '../data/mock'
+import { leads, salesMetrics } from '../data/mock'
 import type { Lead, PipelineStage, LeadPriority, RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 
 const LONG_PRESS_MS = 3000
+/** Space under header + small bottom inset so panel does not touch edges */
+const QUICK_VIEW_BOTTOM_GAP_PX = 12
 
 const stageStyles: Record<PipelineStage, string> = {
   New: 'bg-slate-100 text-slate-700',
@@ -52,8 +55,13 @@ function StatusDotOnly({ status }: { status: RecordStatus }) {
   )
 }
 
-function clientValue(c: (typeof clients)[0]) {
-  return c.arr ?? c.revenue ?? 0
+/** Icon glyph — never selectable / copyable text */
+function Icon({ name, className }: { name: string; className?: string }) {
+  return (
+    <span className={cn('material-symbols-outlined', className)} aria-hidden="true">
+      {name}
+    </span>
+  )
 }
 
 export function LeadsListPage() {
@@ -71,20 +79,12 @@ export function LeadsListPage() {
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const longPressTriggered = useRef(false)
 
-  const topClients = useMemo(() => {
-    return [...clients]
-      .filter((c) => c.status === 'Active')
-      .sort((a, b) => clientValue(b) - clientValue(a))
-      .slice(0, 4)
-  }, [])
-
   const filtered = useMemo(() => {
     return leads.filter((l) => {
       const q = search.toLowerCase()
       const matchSearch =
         !q ||
         l.contactName.toLowerCase().includes(q) ||
-        l.company.toLowerCase().includes(q) ||
         l.title.toLowerCase().includes(q) ||
         l.id.toLowerCase().includes(q)
       const matchStatus = statusFilter === 'All' || l.status === statusFilter
@@ -179,15 +179,15 @@ export function LeadsListPage() {
         description="Manage leads, assign ownership, qualify prospects and track progress through the sales pipeline."
         actions={
           <div className="flex items-center gap-3 flex-wrap">
-            <Button variant="outline" leftIcon={<span className="material-symbols-outlined text-lg">upload</span>}>
+            <Button variant="outline" leftIcon={<Icon name="upload" className="text-lg" />}>
               Import
             </Button>
-            <Button variant="outline" leftIcon={<span className="material-symbols-outlined text-lg">download</span>}>
+            <Button variant="outline" leftIcon={<Icon name="download" className="text-lg" />}>
               Export
             </Button>
             <Button
               variant="primary"
-              leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
+              leftIcon={<Icon name="add" className="text-lg" />}
               onClick={() => navigate({ to: '/sales/leads/new' })}
             >
               New Lead
@@ -214,7 +214,7 @@ export function LeadsListPage() {
                   m.id === 'pipeline' ? 'bg-white/10 text-white' : 'bg-secondary/10 text-secondary'
                 )}
               >
-                <span className="material-symbols-outlined text-xl">{m.icon}</span>
+                <Icon name={m.icon} className="text-xl" />
               </span>
               {m.change && (
                 <span
@@ -248,76 +248,17 @@ export function LeadsListPage() {
         ))}
       </div>
 
-      {/* Top Clients */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <h3 className="text-title-md font-bold text-on-background">Top Clients</h3>
-            <p className="text-label-sm text-on-surface-variant">
-              Highest-value active accounts linked to the pipeline
-            </p>
-          </div>
-          <Button variant="outline" size="sm" onClick={() => navigate({ to: '/sales/clients' })}>
-            View all clients
-          </Button>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          {topClients.map((client) => (
-            <button
-              key={client.id}
-              type="button"
-              onClick={() =>
-                navigate({ to: '/sales/clients/$clientId', params: { clientId: client.id } })
-              }
-              className="text-left p-4 rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm hover:shadow-md hover:border-secondary/40 transition-all group"
-            >
-              <div className="flex items-start gap-3">
-                <div className="w-11 h-11 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center text-sm font-bold shrink-0">
-                  {client.logoInitials ?? client.name.slice(0, 2).toUpperCase()}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <StatusDotOnly status={client.status} />
-                    <p className="font-semibold text-on-surface truncate group-hover:text-secondary transition-colors">
-                      {client.name}
-                    </p>
-                  </div>
-                  <p className="text-xs text-on-surface-variant mt-0.5 truncate">
-                    {client.industry}
-                    {client.country ? ` · ${client.country}` : ''}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 flex items-end justify-between gap-2">
-                <div>
-                  <p className="text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">ARR / Revenue</p>
-                  <p className="text-lg font-bold text-on-background">
-                    {clientValue(client) > 0 ? formatBudget(clientValue(client)) : '—'}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">Open leads</p>
-                  <p className="text-body-md font-semibold text-secondary">{client.leads}</p>
-                </div>
-              </div>
-              {client.growth && (
-                <p className="mt-2 text-[11px] font-semibold text-emerald-700">{client.growth} growth</p>
-              )}
-            </button>
-          ))}
-        </div>
-      </section>
-
       <div className="flex flex-wrap items-center gap-3 bg-surface-container-low p-4 rounded-xl border border-outline-variant">
         <div className="relative flex-1 min-w-[200px]">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
-            search
-          </span>
+          <Icon
+            name="search"
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg"
+          />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary"
-            placeholder="Search by name, company, or ID..."
+            placeholder="Search by name or ID..."
           />
         </div>
         <select
@@ -372,7 +313,7 @@ export function LeadsListPage() {
           onClick={resetFilters}
           aria-label="Reset filters"
         >
-          <span className="material-symbols-outlined text-lg">restart_alt</span>
+          <Icon name="restart_alt" className="text-lg" />
         </button>
       </div>
 
@@ -416,7 +357,6 @@ export function LeadsListPage() {
                 </th>
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">ID</th>
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Lead Name</th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Client</th>
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Assigned</th>
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Stage</th>
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Priority</th>
@@ -483,10 +423,6 @@ export function LeadsListPage() {
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <p className="font-semibold text-on-surface">{lead.company}</p>
-                      <p className="text-xs text-on-surface-variant">{lead.industry}</p>
-                    </td>
-                    <td className="px-4 py-4">
                       {lead.assignedTo ? (
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full bg-secondary text-white flex items-center justify-center text-[10px] font-bold">
@@ -541,8 +477,9 @@ export function LeadsListPage() {
                           type="button"
                           className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant"
                           onClick={() => setQuickView(lead)}
+                          aria-label="Quick view"
                         >
-                          <span className="material-symbols-outlined text-sm">visibility</span>
+                          <Icon name="visibility" className="text-sm" />
                         </button>
                         <button
                           type="button"
@@ -550,8 +487,9 @@ export function LeadsListPage() {
                           onClick={() =>
                             navigate({ to: '/sales/leads/$leadId/edit', params: { leadId: lead.id } })
                           }
+                          aria-label="Edit lead"
                         >
-                          <span className="material-symbols-outlined text-sm">edit</span>
+                          <Icon name="edit" className="text-sm" />
                         </button>
                         {lead.chatLink && (
                           <a
@@ -560,8 +498,9 @@ export function LeadsListPage() {
                             rel="noreferrer"
                             className="p-1.5 hover:bg-surface-container rounded-md text-secondary"
                             title="Open chat"
+                            aria-label="Open chat"
                           >
-                            <span className="material-symbols-outlined text-sm">chat</span>
+                            <Icon name="chat" className="text-sm" />
                           </a>
                         )}
                       </div>
@@ -585,35 +524,52 @@ export function LeadsListPage() {
 
       {quickView && (
         <>
-          <div className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm" onClick={() => setQuickView(null)} aria-hidden />
-          <div className="fixed top-0 right-0 h-full w-full max-w-md bg-surface-container-lowest shadow-2xl border-l border-outline-variant z-50 flex flex-col">
-            <div className="p-6 border-b border-outline-variant flex items-center justify-between bg-surface-container-low">
+          <div
+            className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm"
+            onClick={() => setQuickView(null)}
+            aria-hidden
+          />
+          <div
+            className="fixed right-0 z-50 w-full max-w-md bg-surface-container-lowest shadow-2xl border border-outline-variant rounded-l-xl flex flex-col overflow-hidden"
+            style={{
+              top: HEADER_HEIGHT_PX + QUICK_VIEW_BOTTOM_GAP_PX,
+              bottom: QUICK_VIEW_BOTTOM_GAP_PX,
+              height: `calc(100vh - ${HEADER_HEIGHT_PX + QUICK_VIEW_BOTTOM_GAP_PX * 2}px)`,
+            }}
+            role="dialog"
+            aria-label="Lead quick view"
+          >
+            <div className="p-6 border-b border-outline-variant flex items-center justify-between bg-surface-container-low shrink-0">
               <h4 className="text-title-lg font-bold flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary">info</span>
+                <Icon name="info" className="text-secondary" />
                 Lead Quick View
               </h4>
-              <button type="button" className="p-2 hover:bg-surface-container rounded-full" onClick={() => setQuickView(null)}>
-                <span className="material-symbols-outlined">close</span>
+              <button
+                type="button"
+                className="p-2 hover:bg-surface-container rounded-full"
+                onClick={() => setQuickView(null)}
+                aria-label="Close"
+              >
+                <Icon name="close" />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0">
               <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center text-xl font-bold">
+                <div className="w-16 h-16 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center text-xl font-bold shrink-0">
                   {quickView.contactName
                     .split(' ')
                     .map((p) => p[0])
                     .join('')
                     .slice(0, 2)}
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <StatusDotOnly status={quickView.status} />
-                    <h5 className="text-xl font-bold text-on-surface">{quickView.contactName}</h5>
+                    <h5 className="text-xl font-bold text-on-surface truncate">{quickView.contactName}</h5>
                   </div>
-                  <p className="text-on-surface-variant text-sm">
-                    {quickView.contactTitle} at{' '}
-                    <span className="font-semibold text-secondary">{quickView.company}</span>
-                  </p>
+                  {quickView.contactTitle && (
+                    <p className="text-on-surface-variant text-sm">{quickView.contactTitle}</p>
+                  )}
                   <div className="flex flex-wrap gap-2 mt-2">
                     <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold uppercase', stageStyles[quickView.stage])}>
                       {quickView.stage}
@@ -650,9 +606,9 @@ export function LeadsListPage() {
                     rel="noreferrer"
                     className="inline-flex items-center gap-2 text-secondary font-semibold text-sm hover:underline"
                   >
-                    <span className="material-symbols-outlined text-lg">chat</span>
+                    <Icon name="chat" className="text-lg" />
                     Open conversation with {quickView.contactName}
-                    <span className="material-symbols-outlined text-sm">open_in_new</span>
+                    <Icon name="open_in_new" className="text-sm" />
                   </a>
                 </div>
               )}
@@ -664,7 +620,7 @@ export function LeadsListPage() {
                 </div>
               )}
             </div>
-            <div className="p-6 border-t border-outline-variant bg-surface-container-low flex gap-3">
+            <div className="p-6 border-t border-outline-variant bg-surface-container-low flex gap-3 shrink-0">
               <Button
                 variant="primary"
                 className="flex-1"
