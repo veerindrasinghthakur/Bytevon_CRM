@@ -31,8 +31,13 @@ import { TaskDetailPage } from '@/modules/projects/pages/TaskDetailPage'
 import { SalesDashboardPage } from '@/modules/sales/pages/SalesDashboardPage'
 import { LeadsListPage } from '@/modules/sales/pages/LeadsListPage'
 import { LeadCreatePage } from '@/modules/sales/pages/LeadCreatePage'
+import { LeadDetailPage } from '@/modules/sales/pages/LeadDetailPage'
 import { ClientsListPage } from '@/modules/sales/pages/ClientsListPage'
 import { ClientCreatePage } from '@/modules/sales/pages/ClientCreatePage'
+import { ClientDetailPage } from '@/modules/sales/pages/ClientDetailPage'
+import { SalesAnalyticsPage } from '@/modules/sales/pages/SalesAnalyticsPage'
+import { SalesActivityTimelinePage } from '@/modules/sales/pages/SalesActivityTimelinePage'
+import { CaseStudiesListPage } from '@/modules/sales/pages/CaseStudiesListPage'
 
 import { EmployeesListPage } from '@/modules/workforce/pages/EmployeesListPage'
 import { EmployeeCreatePage } from '@/modules/workforce/pages/EmployeeCreatePage'
@@ -228,6 +233,7 @@ const taskDetailRoute = createRoute({
   component: TaskDetailPage,
 })
 
+// —— Sales (per 01_Screen_Inventory) ——
 const salesRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/sales',
@@ -243,6 +249,16 @@ const salesLeadsNewRoute = createRoute({
   path: '/sales/leads/new',
   component: LeadCreatePage,
 })
+const salesLeadDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/sales/leads/$leadId',
+  component: LeadDetailPage,
+})
+const salesLeadEditRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/sales/leads/$leadId/edit',
+  component: LeadCreatePage,
+})
 const salesClientsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/sales/clients',
@@ -253,15 +269,25 @@ const salesClientsNewRoute = createRoute({
   path: '/sales/clients/new',
   component: ClientCreatePage,
 })
+const salesClientDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/sales/clients/$clientId',
+  component: ClientDetailPage,
+})
 const salesAnalyticsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/sales/analytics',
-  component: () => <Placeholder title="Sales Analytics" />,
+  component: SalesAnalyticsPage,
 })
 const salesActivityRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/sales/activity',
-  component: () => <Placeholder title="Sales Activity" />,
+  component: SalesActivityTimelinePage,
+})
+const salesCaseStudiesRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/sales/case-studies',
+  component: CaseStudiesListPage,
 })
 
 const workforceRoute = createRoute({
@@ -295,7 +321,6 @@ const workforceAttendanceRoute = createRoute({
   component: () => <Placeholder title="Attendance" />,
 })
 
-// —— My Work ——
 const myWorkRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/my-work',
@@ -434,10 +459,14 @@ const routeTree = rootRoute.addChildren([
     salesRoute,
     salesLeadsRoute,
     salesLeadsNewRoute,
+    salesLeadDetailRoute,
+    salesLeadEditRoute,
     salesClientsRoute,
     salesClientsNewRoute,
+    salesClientDetailRoute,
     salesAnalyticsRoute,
     salesActivityRoute,
+    salesCaseStudiesRoute,
     workforceRoute,
     workforceEmployeesRoute,
     workforceEmployeesNewRoute,
