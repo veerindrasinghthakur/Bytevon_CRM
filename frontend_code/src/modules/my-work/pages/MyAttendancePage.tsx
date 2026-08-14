@@ -21,7 +21,6 @@ export function MyAttendancePage() {
       <PageHeader
         title="My Attendance"
         description="Mark attendance, review daily hours, and track history."
-        showBack
         actions={
           <div className="flex items-center gap-2">
             <Button
