@@ -20,11 +20,10 @@ export interface OverviewPayload {
   title: string
   subtitle?: string
   badge?: string
+  description?: string
   fields: OverviewField[]
-  /** Full detail route */
   detailTo?: string
   detailParams?: Record<string, string>
-  /** Edit opens detail with ?edit=1 */
   editTo?: string
   editParams?: Record<string, string>
 }
@@ -55,7 +54,6 @@ export function useQuickOverview() {
   return ctx
 }
 
-/** Safe hook when provider might not wrap (tests) */
 export function useQuickOverviewOptional() {
   return useContext(QuickOverviewContext)
 }
@@ -69,13 +67,13 @@ export function QuickOverviewPanel() {
       className={cn(
         'fixed right-0 z-40',
         'top-[56px] h-[calc(100vh-56px)]',
-        'w-full max-w-[320px]',
+        'w-full max-w-[360px]',
         'border-l border-outline-variant bg-surface-container-lowest',
-        'flex flex-col shadow-lg'
+        'flex flex-col shadow-soft animate-slide-in-right'
       )}
       aria-label="Quick overview"
     >
-      <div className="px-5 py-4 border-b border-outline-variant flex items-start justify-between gap-2">
+      <div className="px-5 py-4 border-b border-outline-variant flex items-start justify-between gap-2 bg-surface-bright shrink-0">
         <div className="min-w-0">
           <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">
             Quick overview
@@ -87,7 +85,7 @@ export function QuickOverviewPanel() {
         </div>
         <button
           type="button"
-          className="p-1 rounded-lg text-on-surface-variant hover:bg-surface-container shrink-0"
+          className="p-1 rounded-lg text-on-surface-variant hover:bg-surface-container shrink-0 transition-colors"
           aria-label="Close overview"
           onClick={close}
         >
@@ -95,11 +93,14 @@ export function QuickOverviewPanel() {
         </button>
       </div>
 
-      <div className="p-5 space-y-4 flex-1 overflow-y-auto">
+      <div className="p-5 space-y-5 flex-1 overflow-y-auto">
         {item.badge && (
           <span className="inline-flex px-2.5 py-1 rounded-full text-label-sm font-semibold bg-electric-blue/10 text-electric-blue">
             {item.badge}
           </span>
+        )}
+        {item.description && (
+          <p className="text-body-sm text-on-surface-variant leading-relaxed">{item.description}</p>
         )}
         <dl className="space-y-3 text-body-sm">
           {item.fields.map((f) => (
@@ -111,32 +112,32 @@ export function QuickOverviewPanel() {
         </dl>
       </div>
 
-      <div className="p-4 border-t border-outline-variant flex flex-col gap-2">
+      <div className="p-4 border-t border-outline-variant flex flex-col gap-2 bg-surface-bright shrink-0">
         {item.detailTo && (
-          <Link
-            to={item.detailTo}
-            params={item.detailParams}
-            onClick={close}
-            className="block"
-          >
+          <Link to={item.detailTo} params={item.detailParams} onClick={close} className="block">
             <Button variant="primary" size="sm" className="w-full">
-              Open details
+              View full
             </Button>
           </Link>
         )}
-        {item.editTo && (
-          <Link
-            to={item.editTo}
-            params={item.editParams}
-            search={{ edit: '1' }}
-            onClick={close}
-            className="block"
-          >
-            <Button variant="outline" size="sm" className="w-full">
-              Edit
-            </Button>
-          </Link>
-        )}
+        <div className="grid grid-cols-2 gap-2">
+          {item.editTo && (
+            <Link
+              to={item.editTo}
+              params={item.editParams}
+              search={{ edit: '1' }}
+              onClick={close}
+              className="block"
+            >
+              <Button variant="outline" size="sm" className="w-full">
+                Edit
+              </Button>
+            </Link>
+          )}
+          <Button variant="ghost" size="sm" className="w-full text-error" onClick={close}>
+            Close
+          </Button>
+        </div>
       </div>
     </aside>
   )
