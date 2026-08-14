@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 
 function formatNow(date: Date) {
-  // Exact local time with seconds, 24h for clarity across locales
   return date.toLocaleTimeString(undefined, {
     hour: '2-digit',
     minute: '2-digit',
@@ -37,9 +36,7 @@ export function HeaderClock() {
       <span className="text-label-md font-semibold text-on-background tracking-wide">
         {formatNow(now)}
       </span>
-      <span className="text-[10px] text-on-surface-variant mt-0.5">
-        {formatDateLabel(now)}
-      </span>
+      <span className="text-[10px] text-on-surface-variant mt-0.5">{formatDateLabel(now)}</span>
     </div>
   )
 }
