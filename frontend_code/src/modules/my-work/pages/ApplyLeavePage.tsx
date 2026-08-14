@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -7,6 +7,16 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { leaveBalances } from '../data/mock'
 import { cn } from '@/shared/lib/cn'
+
+/** Fixed holidays (YYYY-MM-DD) used across leave calendars */
+export const HOLIDAYS_2026: Record<string, string> = {
+  '2026-01-26': 'Republic Day',
+  '2026-03-14': 'Holi',
+  '2026-08-15': 'Independence Day',
+  '2026-10-02': 'Gandhi Jayanti',
+  '2026-10-20': 'Diwali',
+  '2026-12-25': 'Christmas',
+}
 
 const schema = z
   .object({
@@ -17,7 +27,7 @@ const schema = z
     reason: z.string().min(10, 'Minimum 10 characters required').max(500),
   })
   .refine((data) => !data.from || !data.to || data.to >= data.from, {
-    message: 'End date cannot be before start date',
+    message: 'End date must be on or after start date',
     path: ['to'],
   })
 
@@ -31,10 +41,17 @@ const leaveTypeIcons: Record<string, string> = {
   'Comp Off': 'swap_horiz',
 }
 
+function toISO(y: number, m: number, d: number) {
+  return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+}
+
 export function ApplyLeavePage() {
   const navigate = useNavigate()
   const [showToast, setShowToast] = useState(false)
-  const [calendarMonth, setCalendarMonth] = useState(new Date(2026, 7, 1))
+  const [calendarMonth, setCalendarMonth] = useState(() => {
+    const n = new Date()
+    return new Date(n.getFullYear(), n.getMonth(), 1)
+  })
 
   const {
     register,
@@ -73,31 +90,31 @@ export function ApplyLeavePage() {
   const daysInMonth = new Date(year, month + 1, 0).getDate()
   const monthLabel = calendarMonth.toLocaleString('default', { month: 'long', year: 'numeric' })
 
-  const isInRange = (day: number) => {
-    if (!from || !to) return false
-    const d = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    return d >= from && d <= to
-  }
-  const isRangeStart = (day: number) => {
-    if (!from) return false
-    const d = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    return d === from
-  }
-  const isRangeEnd = (day: number) => {
-    if (!to) return false
-    const d = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    return d === to
-  }
+  const cells = useMemo(() => {
+    const list: { day: number; iso: string; dow: number }[] = []
+    for (let d = 1; d <= daysInMonth; d++) {
+      list.push({ day: d, iso: toISO(year, month, d), dow: new Date(year, month, d).getDay() })
+    }
+    return list
+  }, [year, month, daysInMonth])
 
-  const selectDay = (day: number) => {
-    const d = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+  const isInRange = (iso: string) => {
+    if (!from || !to) return false
+    return iso >= from && iso <= to
+  }
+  const isRangeStart = (iso: string) => from === iso
+  const isRangeEnd = (iso: string) => to === iso
+
+  const selectDay = (iso: string) => {
     if (!from || (from && to)) {
-      setValue('from', d, { shouldValidate: true })
+      setValue('from', iso, { shouldValidate: true })
       setValue('to', '', { shouldValidate: true })
-    } else if (d >= from) {
-      setValue('to', d, { shouldValidate: true })
+    } else if (iso >= from) {
+      setValue('to', iso, { shouldValidate: true })
     } else {
-      setValue('from', d, { shouldValidate: true })
+      // clicked before start → swap
+      setValue('from', iso, { shouldValidate: true })
+      setValue('to', from, { shouldValidate: true })
     }
   }
 
@@ -119,6 +136,8 @@ export function ApplyLeavePage() {
         title="Apply for Leave"
         description="Submit a leave request for manager approval."
         showBack
+        backTo="/my-work/leave"
+        backLabel="Back to My Leave"
       />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -222,6 +241,13 @@ export function ApplyLeavePage() {
                       id="from"
                       type="date"
                       {...register('from')}
+                      onChange={(e) => {
+                        register('from').onChange(e)
+                        const v = e.target.value
+                        if (to && v && to < v) {
+                          setValue('to', '', { shouldValidate: true })
+                        }
+                      }}
                       className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest pl-10 pr-3 py-2.5 text-body-md text-on-surface outline-none focus:border-electric-blue focus:border-2"
                     />
                   </div>
@@ -243,6 +269,7 @@ export function ApplyLeavePage() {
                     <input
                       id="to"
                       type="date"
+                      min={from || undefined}
                       {...register('to')}
                       className={cn(
                         'w-full rounded-lg border bg-surface-container-lowest pl-10 pr-3 py-2.5 text-body-md text-on-surface outline-none focus:border-2',
@@ -261,6 +288,19 @@ export function ApplyLeavePage() {
                 </div>
               </div>
 
+              {/* Legend */}
+              <div className="flex flex-wrap gap-3 text-label-sm">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded bg-secondary" /> Selected leave
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded bg-slate-200 border border-slate-300" /> Weekend
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded bg-violet-200 border border-violet-300" /> Holiday
+                </span>
+              </div>
+
               <div className="border border-outline-variant rounded-xl p-4 bg-surface-container-lowest">
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-label-md font-semibold text-on-surface">Visual Timeline Picker</p>
@@ -269,50 +309,61 @@ export function ApplyLeavePage() {
                       type="button"
                       className="p-1.5 rounded-lg hover:bg-surface-container transition-colors"
                       onClick={() => setCalendarMonth(new Date(year, month - 1, 1))}
+                      aria-label="Previous month"
                     >
                       <span className="material-symbols-outlined text-sm">arrow_back_ios</span>
                     </button>
-                    <span className="text-label-sm font-bold text-on-surface min-w-[120px] text-center">
+                    <span className="text-label-sm font-bold text-on-surface min-w-[130px] text-center">
                       {monthLabel}
                     </span>
                     <button
-                      type="button"
+                      type="button"	ikzpicture type="button"
                       className="p-1.5 rounded-lg hover:bg-surface-container transition-colors"
                       onClick={() => setCalendarMonth(new Date(year, month + 1, 1))}
+                      aria-label="Next month"
                     >
                       <span className="material-symbols-outlined text-sm">arrow_forward_ios</span>
                     </button>
                   </div>
                 </div>
                 <div className="grid grid-cols-7 text-center text-[10px] font-bold text-on-surface-variant mb-1">
-                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d) => (
-                    <div key={d}>{d}</div>
+                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                    <div key={`${d}-${i}`}>{d}</div>
                   ))}
                 </div>
                 <div className="grid grid-cols-7 text-center text-sm gap-y-0.5">
                   {Array.from({ length: firstDay }).map((_, i) => (
                     <div key={`empty-${i}`} className="py-2" />
                   ))}
-                  {Array.from({ length: daysInMonth }).map((_, i) => {
-                    const day = i + 1
-                    const inRange = isInRange(day)
-                    const start = isRangeStart(day)
-                    const end = isRangeEnd(day)
+                  {cells.map(({ day, iso, dow }) => {
+                    const weekend = dow === 0 || dow === 6
+                    const holiday = HOLIDAYS_2026[iso]
+                    const inRange = isInRange(iso)
+                    const start = isRangeStart(iso)
+                    const end = isRangeEnd(iso)
                     return (
                       <button
-                        key={day}
+                        key={iso}
                         type="button"
-                        onClick={() => selectDay(day)}
+                        title={holiday || (weekend ? 'Weekend' : undefined)}
+                        onClick={() => selectDay(iso)}
                         className={cn(
-                          'py-2 rounded-lg transition-colors',
+                          'py-2 rounded-lg transition-colors relative',
                           start || end
-                            ? 'bg-secondary text-white font-bold'
+                            ? 'bg-secondary text-white font-bold shadow-sm'
                             : inRange
-                              ? 'bg-secondary/15 font-medium text-on-surface'
-                              : 'hover:bg-surface-container text-on-surface'
+                              ? 'bg-secondary/20 font-semibold text-secondary'
+                              : holiday
+                                ? 'bg-violet-100 text-violet-800 font-medium'
+                                : weekend
+                                  ? 'bg-slate-100 text-slate-500'
+                                  : 'hover:bg-surface-container text-on-surface'
                         )}
                       >
                         {day}
+                        {holiday && !inRange && !start && !end && (
+                          <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-violet-500" />
+                        )}
                       </button>
                     )
                   })}
