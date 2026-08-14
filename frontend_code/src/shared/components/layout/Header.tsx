@@ -1,5 +1,6 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
+import { HeaderClock } from './HeaderClock'
 
 /** Shared shell header height — keep SecondarySidebar top row the same */
 export const HEADER_HEIGHT_PX = 56
@@ -34,7 +35,9 @@ export function Header({ title, className, style }: HeaderProps) {
 
       <div className="flex-1 flex justify-center max-w-md mx-4">
         <div className="flex items-center w-full max-w-xs bg-surface-container-low rounded-lg px-3 py-1.5 border border-outline-variant focus-within:border-electric-blue">
-          <span className="material-symbols-outlined text-on-surface-variant mr-2 text-lg">search</span>
+          <span className="material-symbols-outlined text-on-surface-variant mr-2 text-lg" aria-hidden="true">
+            search
+          </span>
           <input
             type="search"
             placeholder="Search..."
@@ -45,6 +48,8 @@ export function Header({ title, className, style }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-3 shrink-0">
+        <HeaderClock />
+
         <Link
           to="/notifications"
           aria-label="My notifications"
@@ -58,6 +63,7 @@ export function Header({ title, className, style }: HeaderProps) {
         >
           <span
             className="material-symbols-outlined"
+            aria-hidden="true"
             style={
               isNotificationsActive ? { fontVariationSettings: "'FILL' 1" } : undefined
             }
@@ -69,10 +75,6 @@ export function Header({ title, className, style }: HeaderProps) {
           )}
         </Link>
 
-        {/*
-          Inactive: thin light border (barely visible line).
-          Active: thick deep-navy border + filled avatar.
-        */}
         <Link
           to="/profile"
           className={cn(
@@ -94,7 +96,9 @@ export function Header({ title, className, style }: HeaderProps) {
                 : 'bg-surface-container-highest text-on-surface'
             )}
           >
-            <span className="material-symbols-outlined text-[18px]">person</span>
+            <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+              person
+            </span>
           </div>
           <span
             className={cn(
