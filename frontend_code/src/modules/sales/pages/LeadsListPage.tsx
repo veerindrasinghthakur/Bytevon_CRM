@@ -1,10 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { leads, salesMetrics } from '../data/mock'
 import type { Lead, PipelineStage, LeadPriority, RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
+
+const LONG_PRESS_MS = 3000
 
 const stageStyles: Record<PipelineStage, string> = {
   New: 'bg-slate-100 text-slate-700',
@@ -37,23 +39,17 @@ function formatDate(iso?: string) {
   }
 }
 
-function StatusDot({ status }: { status: RecordStatus }) {
+/** Simple status indicator — green active, grey inactive (no text column) */
+function StatusDotOnly({ status }: { status: RecordStatus }) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 text-[11px] font-semibold',
-        status === 'Active' ? 'text-emerald-700' : 'text-slate-500'
+        'inline-block w-2.5 h-2.5 rounded-full shrink-0',
+        status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'
       )}
       title={status}
-    >
-      <span
-        className={cn(
-          'w-2.5 h-2.5 rounded-full',
-          status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'
-        )}
-      />
-      {status}
-    </span>
+      aria-label={status}
+    />
   )
 }
 
@@ -65,6 +61,13 @@ export function LeadsListPage() {
   const [priorityFilter, setPriorityFilter] = useState<string>('All')
   const [sourceFilter, setSourceFilter] = useState<string>('All')
   const [quickView, setQuickView] = useState<Lead | null>(null)
+
+  /** Bulk selection: only visible when selectionMode is true */
+  const [selectionMode, setSelectionMode] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const longPressTriggered = useRef(false)
 
   const filtered = useMemo(() => {
     return leads.filter((l) => {
@@ -82,6 +85,84 @@ export function LeadsListPage() {
       return matchSearch && matchStatus && matchStage && matchPriority && matchSource
     })
   }, [search, statusFilter, stageFilter, priorityFilter, sourceFilter])
+
+  // Drop selections that are no longer in the filtered set
+  useEffect(() => {
+    const visible = new Set(filtered.map((l) => l.id))
+    setSelectedIds((prev) => {
+      const next = new Set([...prev].filter((id) => visible.has(id)))
+      if (next.size === 0 && selectionMode) {
+        setSelectionMode(false)
+      }
+      return next
+    })
+  }, [filtered, selectionMode])
+
+  const clearLongPress = useCallback(() => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current)
+      longPressTimer.current = null
+    }
+  }, [])
+
+  const enterSelectionWith = useCallback((id: string) => {
+    setSelectionMode(true)
+    setSelectedIds(new Set([id]))
+  }, [])
+
+  const toggleOne = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      if (next.size === 0) {
+        setSelectionMode(false)
+      } else {
+        setSelectionMode(true)
+      }
+      return next
+    })
+  }, [])
+
+  const allFilteredSelected =
+    filtered.length > 0 && filtered.every((l) => selectedIds.has(l.id))
+
+  const toggleSelectAllFiltered = () => {
+    if (allFilteredSelected) {
+      setSelectedIds(new Set())
+      setSelectionMode(false)
+    } else {
+      setSelectedIds(new Set(filtered.map((l) => l.id)))
+      setSelectionMode(true)
+    }
+  }
+
+  const exitSelectionMode = () => {
+    setSelectedIds(new Set())
+    setSelectionMode(false)
+  }
+
+  const startLongPress = (id: string) => {
+    longPressTriggered.current = false
+    clearLongPress()
+    longPressTimer.current = setTimeout(() => {
+      longPressTriggered.current = true
+      enterSelectionWith(id)
+    }, LONG_PRESS_MS)
+  }
+
+  const endLongPress = (lead: Lead) => {
+    clearLongPress()
+    if (longPressTriggered.current) {
+      longPressTriggered.current = false
+      return
+    }
+    if (selectionMode) {
+      toggleOne(lead.id)
+    } else {
+      setQuickView(lead)
+    }
+  }
 
   const resetFilters = () => {
     setSearch('')
@@ -235,13 +316,43 @@ export function LeadsListPage() {
         </button>
       </div>
 
+      {selectionMode && (
+        <div className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl border border-secondary/30 bg-secondary/5">
+          <span className="text-body-sm font-semibold text-on-surface">
+            {selectedIds.size} selected
+            <span className="text-on-surface-variant font-normal"> (of {filtered.length} shown)</span>
+          </span>
+          <div className="flex-1" />
+          <Button variant="outline" size="sm" onClick={exitSelectionMode}>
+            Cancel
+          </Button>
+          <Button variant="outline" size="sm">
+            Export selected
+          </Button>
+          <Button variant="primary" size="sm">
+            Assign owner
+          </Button>
+        </div>
+      )}
+
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-outline-variant bg-surface-container-low/50">
-                <th className="px-4 py-3 text-center">
-                  <input type="checkbox" className="rounded border-outline-variant text-secondary" />
+                <th className="px-3 py-3 w-12 text-center">
+                  {selectionMode ? (
+                    <input
+                      type="checkbox"
+                      className="rounded border-outline-variant text-secondary"
+                      checked={allFilteredSelected}
+                      onChange={toggleSelectAllFiltered}
+                      title="Select all filtered rows"
+                      aria-label="Select all filtered rows"
+                    />
+                  ) : (
+                    <span className="sr-only">Status</span>
+                  )}
                 </th>
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">ID</th>
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Lead Name</th>
@@ -251,27 +362,57 @@ export function LeadsListPage() {
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Priority</th>
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Quotation</th>
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Date</th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-right">Status</th>
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {filtered.map((lead) => {
                 const dateParts = formatDate(lead.date)
+                const isSelected = selectedIds.has(lead.id)
                 return (
                   <tr
                     key={lead.id}
-                    className="hover:bg-surface-container-low/50 transition-colors cursor-pointer group"
-                    onClick={() => setQuickView(lead)}
+                    className={cn(
+                      'transition-colors cursor-pointer group select-none',
+                      isSelected ? 'bg-secondary/10' : 'hover:bg-surface-container-low/50'
+                    )}
+                    onMouseDown={() => startLongPress(lead.id)}
+                    onMouseUp={() => endLongPress(lead)}
+                    onMouseLeave={clearLongPress}
+                    onTouchStart={() => startLongPress(lead.id)}
+                    onTouchEnd={() => endLongPress(lead)}
+                    onTouchCancel={clearLongPress}
+                    onContextMenu={(e) => e.preventDefault()}
                   >
-                    <td className="px-4 py-4 text-center" onClick={(e) => e.stopPropagation()}>
-                      <input type="checkbox" className="rounded border-outline-variant text-secondary" />
+                    <td
+                      className="px-3 py-4 text-center"
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (selectionMode) toggleOne(lead.id)
+                      }}
+                    >
+                      {selectionMode ? (
+                        <input
+                          type="checkbox"
+                          className="rounded border-outline-variant text-secondary"
+                          checked={isSelected}
+                          onChange={() => toggleOne(lead.id)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <StatusDotOnly status={lead.status} />
+                      )}
                     </td>
                     <td className="px-4 py-4 font-mono text-xs text-on-surface-variant">{lead.id}</td>
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
-                          {lead.contactName.split(' ').map((p) => p[0]).join('').slice(0, 2)}
+                          {lead.contactName
+                            .split(' ')
+                            .map((p) => p[0])
+                            .join('')
+                            .slice(0, 2)}
                         </div>
                         <div>
                           <p className="font-semibold text-on-surface group-hover:text-secondary transition-colors">
@@ -289,7 +430,11 @@ export function LeadsListPage() {
                       {lead.assignedTo ? (
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full bg-secondary text-white flex items-center justify-center text-[10px] font-bold">
-                            {lead.assignedTo.split(' ').map((p) => p[0]).join('').slice(0, 2)}
+                            {lead.assignedTo
+                              .split(' ')
+                              .map((p) => p[0])
+                              .join('')
+                              .slice(0, 2)}
                           </div>
                           <span className="text-body-sm">{lead.assignedTo}</span>
                         </div>
@@ -330,19 +475,32 @@ export function LeadsListPage() {
                         '—'
                       )}
                     </td>
-                    <td className="px-4 py-4 text-right">
-                      <StatusDot status={lead.status} />
-                    </td>
-                    <td className="px-4 py-4 text-center" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-4 py-4 text-center" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-center gap-1">
-                        <button type="button" className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant" onClick={() => setQuickView(lead)}>
+                        <button
+                          type="button"
+                          className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant"
+                          onClick={() => setQuickView(lead)}
+                        >
                           <span className="material-symbols-outlined text-sm">visibility</span>
                         </button>
-                        <button type="button" className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant" onClick={() => navigate({ to: '/sales/leads/new' })}>
+                        <button
+                          type="button"
+                          className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant"
+                          onClick={() =>
+                            navigate({ to: '/sales/leads/$leadId/edit', params: { leadId: lead.id } })
+                          }
+                        >
                           <span className="material-symbols-outlined text-sm">edit</span>
                         </button>
                         {lead.chatLink && (
-                          <a href={lead.chatLink} target="_blank" rel="noreferrer" className="p-1.5 hover:bg-surface-container rounded-md text-secondary" title="Open chat">
+                          <a
+                            href={lead.chatLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="p-1.5 hover:bg-surface-container rounded-md text-secondary"
+                            title="Open chat"
+                          >
                             <span className="material-symbols-outlined text-sm">chat</span>
                           </a>
                         )}
@@ -358,6 +516,9 @@ export function LeadsListPage() {
           <p className="text-xs text-on-surface-variant">
             Showing <span className="font-semibold text-on-surface">1–{filtered.length}</span> of{' '}
             <span className="font-semibold text-on-surface">{leads.length}</span> leads
+            {!selectionMode && (
+              <span className="ml-2 text-on-surface-variant/80">· Hold a row 3s to multi-select</span>
+            )}
           </p>
         </div>
       </div>
@@ -378,18 +539,25 @@ export function LeadsListPage() {
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               <div className="flex items-start gap-4">
                 <div className="w-16 h-16 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center text-xl font-bold">
-                  {quickView.contactName.split(' ').map((p) => p[0]).join('').slice(0, 2)}
+                  {quickView.contactName
+                    .split(' ')
+                    .map((p) => p[0])
+                    .join('')
+                    .slice(0, 2)}
                 </div>
                 <div>
-                  <h5 className="text-xl font-bold text-on-surface">{quickView.contactName}</h5>
+                  <div className="flex items-center gap-2">
+                    <StatusDotOnly status={quickView.status} />
+                    <h5 className="text-xl font-bold text-on-surface">{quickView.contactName}</h5>
+                  </div>
                   <p className="text-on-surface-variant text-sm">
-                    {quickView.contactTitle} at <span className="font-semibold text-secondary">{quickView.company}</span>
+                    {quickView.contactTitle} at{' '}
+                    <span className="font-semibold text-secondary">{quickView.company}</span>
                   </p>
                   <div className="flex flex-wrap gap-2 mt-2">
                     <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold uppercase', stageStyles[quickView.stage])}>
                       {quickView.stage}
                     </span>
-                    <StatusDot status={quickView.status} />
                   </div>
                 </div>
               </div>
@@ -437,7 +605,14 @@ export function LeadsListPage() {
               )}
             </div>
             <div className="p-6 border-t border-outline-variant bg-surface-container-low flex gap-3">
-              <Button variant="primary" className="flex-1" onClick={() => { setQuickView(null); navigate({ to: '/sales/leads/new' }) }}>
+              <Button
+                variant="primary"
+                className="flex-1"
+                onClick={() => {
+                  setQuickView(null)
+                  navigate({ to: '/sales/leads/$leadId', params: { leadId: quickView.id } })
+                }}
+              >
                 Open Full Record
               </Button>
               <Button variant="outline">Log Task</Button>
