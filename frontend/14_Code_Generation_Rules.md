@@ -3,9 +3,9 @@
 # Bytevon Frontend — Code Generation Rules
 
 **Project:** Bytevon ERP/CRM  
-**Version:** 1.0  
+**Version:** 1.1  
 **Status:** Locked  
-**Last Updated:** 2026-08-07
+**Last Updated:** 2026-08-14
 
 ---
 
@@ -47,6 +47,14 @@ These rules must be followed by any human or AI when converting Stitch screens (
 10. **Permissions**  
     Hide or disable actions and navigation items the user cannot access.
 
+11. **List selection strategy (mandatory for multi-select lists)**  
+    - Use `useListSelection` from `@/shared/hooks/useListSelection`.  
+    - Hold row **≥ 3s** → enter selection mode + select that row.  
+    - Uncheck last item → exit selection mode.  
+    - Select-all = **filtered / rendered rows only**.  
+    - Active/Inactive = leftmost **StatusDot** only (no Status text column).  
+    Full rules: `09_Table_and_List_Patterns.md` §4–5.
+
 ---
 
 ## 3. Preferred Generation Order for a New Screen
@@ -56,9 +64,10 @@ These rules must be followed by any human or AI when converting Stitch screens (
 3. Create / reuse API functions + hooks
 4. Create the page component
 5. Compose shared UI components
-6. Wire loading / empty / error states
-7. Add the route + guards
-8. Verify permissions and navigation
+6. **On list pages:** wire `useListSelection`, `StatusDot`, `BulkSelectionBar`
+7. Wire loading / empty / error states
+8. Add the route + guards
+9. Verify permissions and navigation
 
 ---
 
@@ -69,6 +78,8 @@ These rules must be followed by any human or AI when converting Stitch screens (
 - Mixing data-fetching logic inside presentational components
 - Using magic numbers or raw hex values
 - Ignoring TypeScript (all code must be typed)
+- Inventing alternate multi-select UX (always use the shared long-press strategy)
+- Adding a Status text column for Active/Inactive
 
 ---
 
@@ -86,5 +97,6 @@ Generated code should be:
 
 - `12_Module_Implementation_Checklist.md`
 - `13_Naming_and_Code_Conventions.md`
+- `09_Table_and_List_Patterns.md`
 - `11_State_Management_Conventions.md`
 - `15_Page_State_Matrix.md`
