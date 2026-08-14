@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { leads, salesMetrics } from '../data/mock'
+import { leads, salesMetrics, clients } from '../data/mock'
 import type { Lead, PipelineStage, LeadPriority, RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 
@@ -39,7 +39,6 @@ function formatDate(iso?: string) {
   }
 }
 
-/** Simple status indicator — green active, grey inactive (no text column) */
 function StatusDotOnly({ status }: { status: RecordStatus }) {
   return (
     <span
@@ -53,6 +52,10 @@ function StatusDotOnly({ status }: { status: RecordStatus }) {
   )
 }
 
+function clientValue(c: (typeof clients)[0]) {
+  return c.arr ?? c.revenue ?? 0
+}
+
 export function LeadsListPage() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
@@ -62,12 +65,18 @@ export function LeadsListPage() {
   const [sourceFilter, setSourceFilter] = useState<string>('All')
   const [quickView, setQuickView] = useState<Lead | null>(null)
 
-  /** Bulk selection: only visible when selectionMode is true */
   const [selectionMode, setSelectionMode] = useState(false)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const longPressTriggered = useRef(false)
+
+  const topClients = useMemo(() => {
+    return [...clients]
+      .filter((c) => c.status === 'Active')
+      .sort((a, b) => clientValue(b) - clientValue(a))
+      .slice(0, 4)
+  }, [])
 
   const filtered = useMemo(() => {
     return leads.filter((l) => {
@@ -86,14 +95,11 @@ export function LeadsListPage() {
     })
   }, [search, statusFilter, stageFilter, priorityFilter, sourceFilter])
 
-  // Drop selections that are no longer in the filtered set
   useEffect(() => {
     const visible = new Set(filtered.map((l) => l.id))
     setSelectedIds((prev) => {
       const next = new Set([...prev].filter((id) => visible.has(id)))
-      if (next.size === 0 && selectionMode) {
-        setSelectionMode(false)
-      }
+      if (next.size === 0 && selectionMode) setSelectionMode(false)
       return next
     })
   }, [filtered, selectionMode])
@@ -115,11 +121,8 @@ export function LeadsListPage() {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id)
       else next.add(id)
-      if (next.size === 0) {
-        setSelectionMode(false)
-      } else {
-        setSelectionMode(true)
-      }
+      if (next.size === 0) setSelectionMode(false)
+      else setSelectionMode(true)
       return next
     })
   }, [])
@@ -157,11 +160,8 @@ export function LeadsListPage() {
       longPressTriggered.current = false
       return
     }
-    if (selectionMode) {
-      toggleOne(lead.id)
-    } else {
-      setQuickView(lead)
-    }
+    if (selectionMode) toggleOne(lead.id)
+    else setQuickView(lead)
   }
 
   const resetFilters = () => {
@@ -247,6 +247,66 @@ export function LeadsListPage() {
           </div>
         ))}
       </div>
+
+      {/* Top Clients */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h3 className="text-title-md font-bold text-on-background">Top Clients</h3>
+            <p className="text-label-sm text-on-surface-variant">
+              Highest-value active accounts linked to the pipeline
+            </p>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => navigate({ to: '/sales/clients' })}>
+            View all clients
+          </Button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {topClients.map((client) => (
+            <button
+              key={client.id}
+              type="button"
+              onClick={() =>
+                navigate({ to: '/sales/clients/$clientId', params: { clientId: client.id } })
+              }
+              className="text-left p-4 rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm hover:shadow-md hover:border-secondary/40 transition-all group"
+            >
+              <div className="flex items-start gap-3">
+                <div className="w-11 h-11 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center text-sm font-bold shrink-0">
+                  {client.logoInitials ?? client.name.slice(0, 2).toUpperCase()}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <StatusDotOnly status={client.status} />
+                    <p className="font-semibold text-on-surface truncate group-hover:text-secondary transition-colors">
+                      {client.name}
+                    </p>
+                  </div>
+                  <p className="text-xs text-on-surface-variant mt-0.5 truncate">
+                    {client.industry}
+                    {client.country ? ` · ${client.country}` : ''}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 flex items-end justify-between gap-2">
+                <div>
+                  <p className="text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">ARR / Revenue</p>
+                  <p className="text-lg font-bold text-on-background">
+                    {clientValue(client) > 0 ? formatBudget(clientValue(client)) : '—'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] font-bold uppercase text-on-surface-variant tracking-wider">Open leads</p>
+                  <p className="text-body-md font-semibold text-secondary">{client.leads}</p>
+                </div>
+              </div>
+              {client.growth && (
+                <p className="mt-2 text-[11px] font-semibold text-emerald-700">{client.growth} growth</p>
+              )}
+            </button>
+          ))}
+        </div>
+      </section>
 
       <div className="flex flex-wrap items-center gap-3 bg-surface-container-low p-4 rounded-xl border border-outline-variant">
         <div className="relative flex-1 min-w-[200px]">
