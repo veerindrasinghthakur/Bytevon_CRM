@@ -233,16 +233,23 @@ const taskDetailRoute = createRoute({
   component: TaskDetailPage,
 })
 
-// —— Sales (per 01_Screen_Inventory) ——
+// —— Sales: default landing = Lead Management ——
 const salesRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/sales',
+  component: LeadsListPage,
+})
+const salesDashboardRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/sales/dashboard',
   component: SalesDashboardPage,
 })
 const salesLeadsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/sales/leads',
-  component: LeadsListPage,
+  beforeLoad: () => {
+    throw redirect({ to: '/sales' })
+  },
 })
 const salesLeadsNewRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
@@ -457,6 +464,7 @@ const routeTree = rootRoute.addChildren([
     tasksNewRoute,
     taskDetailRoute,
     salesRoute,
+    salesDashboardRoute,
     salesLeadsRoute,
     salesLeadsNewRoute,
     salesLeadDetailRoute,

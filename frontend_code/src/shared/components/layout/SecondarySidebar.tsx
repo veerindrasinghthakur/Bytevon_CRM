@@ -23,12 +23,12 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     moduleId: 'sales',
     title: 'Sales',
     items: [
-      { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', to: '/sales' },
-      { id: 'leads', label: 'Leads', icon: 'person_search', to: '/sales/leads' },
+      { id: 'leads', label: 'Leads', icon: 'person_search', to: '/sales' },
       { id: 'clients', label: 'Clients', icon: 'handshake', to: '/sales/clients' },
       { id: 'case-studies', label: 'Case Studies', icon: 'library_books', to: '/sales/case-studies' },
       { id: 'analytics', label: 'Analytics', icon: 'analytics', to: '/sales/analytics' },
       { id: 'activity', label: 'Activity', icon: 'timeline', to: '/sales/activity' },
+      { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', to: '/sales/dashboard' },
     ],
   },
   projects: {
@@ -108,7 +108,14 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
   if (items.length === 0) return null
 
   const isItemActive = (to: string) => {
-    if (to === '/sales') return pathname === '/sales'
+    // Leads is the Sales landing page at /sales exactly (not child routes)
+    if (to === '/sales') {
+      return (
+        pathname === '/sales' ||
+        pathname === '/sales/leads' ||
+        pathname.startsWith('/sales/leads/')
+      )
+    }
     if (to === '/projects') return pathname === '/projects'
     if (to === '/my-work') return pathname === '/my-work'
     if (to === '/my-work/attendance') {
