@@ -43,7 +43,6 @@ export function MyApprovalsPage() {
       <PageHeader
         title="My Requests"
         description="Leave, attendance corrections, and other requests you submitted."
-        showBack
       />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
