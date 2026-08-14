@@ -54,6 +54,7 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     title: 'My Work',
     items: [
       { id: 'overview', label: 'Overview', icon: 'dashboard', to: '/my-work' },
+      { id: 'break', label: 'Take a Break', icon: 'coffee', to: '/my-work/break' },
       { id: 'my-attendance', label: 'My Attendance', icon: 'calendar_today', to: '/my-work/attendance' },
       { id: 'my-leave', label: 'My Leave', icon: 'event_busy', to: '/my-work/leave' },
       { id: 'my-tasks', label: 'My Tasks', icon: 'task_alt', to: '/my-work/tasks' },
@@ -108,7 +109,6 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
   if (items.length === 0) return null
 
   const isItemActive = (to: string) => {
-    // Leads is the Sales landing page at /sales exactly (not child routes)
     if (to === '/sales') {
       return (
         pathname === '/sales' ||
@@ -163,7 +163,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
           aria-label={isCollapsed ? 'Expand secondary sidebar' : 'Collapse secondary sidebar'}
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          <span className="material-symbols-outlined text-xl">
+          <span className="material-symbols-outlined text-xl" aria-hidden="true">
             {isCollapsed ? 'menu' : 'menu_open'}
           </span>
         </button>
@@ -203,6 +203,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                       active ? 'text-secondary' : ''
                     )}
                     style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                    aria-hidden="true"
                   >
                     {item.icon}
                   </span>
