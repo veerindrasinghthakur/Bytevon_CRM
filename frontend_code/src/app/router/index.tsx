@@ -61,6 +61,7 @@ import {
   MyTaskCreatePage,
   MyTaskDetailPage,
   MyApprovalDetailPage,
+  TakeABreakPage,
 } from '@/modules/my-work'
 
 function Placeholder({ title }: { title: string }) {
@@ -233,7 +234,6 @@ const taskDetailRoute = createRoute({
   component: TaskDetailPage,
 })
 
-// —— Sales: default landing = Lead Management ——
 const salesRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/sales',
@@ -332,6 +332,11 @@ const myWorkRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/my-work',
   component: MyWorkOverviewPage,
+})
+const myWorkBreakRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work/break',
+  component: TakeABreakPage,
 })
 const myWorkAttendanceRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
@@ -482,6 +487,7 @@ const routeTree = rootRoute.addChildren([
     workforceDepartmentsNewRoute,
     workforceAttendanceRoute,
     myWorkRoute,
+    myWorkBreakRoute,
     myWorkAttendanceRoute,
     myWorkAttendanceMarkRoute,
     myWorkAttendanceCorrectionsRoute,
