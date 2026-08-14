@@ -45,9 +45,16 @@ function toISO(y: number, m: number, d: number) {
   return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 }
 
+/** Today in local YYYY-MM-DD (no time) so past dates can be blocked. */
+function todayISO() {
+  const n = new Date()
+  return toISO(n.getFullYear(), n.getMonth(), n.getDate())
+}
+
 export function ApplyLeavePage() {
   const navigate = useNavigate()
   const [showToast, setShowToast] = useState(false)
+  const today = useMemo(() => todayISO(), [])
   const [calendarMonth, setCalendarMonth] = useState(() => {
     const n = new Date()
     return new Date(n.getFullYear(), n.getMonth(), 1)
@@ -106,6 +113,9 @@ export function ApplyLeavePage() {
   const isRangeEnd = (iso: string) => to === iso
 
   const selectDay = (iso: string) => {
+    // Block past dates
+    if (iso < today) return
+
     if (!from || (from && to)) {
       setValue('from', iso, { shouldValidate: true })
       setValue('to', '', { shouldValidate: true })
@@ -241,10 +251,15 @@ export function ApplyLeavePage() {
                     <input
                       id="from"
                       type="date"
+                      min={today}
                       {...fromReg}
                       onChange={(e) => {
                         fromReg.onChange(e)
                         const v = e.target.value
+                        if (v && v < today) {
+                          setValue('from', '', { shouldValidate: true })
+                          return
+                        }
                         if (to && v && to < v) {
                           setValue('to', '', { shouldValidate: true })
                         }
@@ -270,7 +285,7 @@ export function ApplyLeavePage() {
                     <input
                       id="to"
                       type="date"
-                      min={from || undefined}
+                      min={from && from > today ? from : today}
                       {...register('to')}
                       className={cn(
                         'w-full rounded-lg border bg-surface-container-lowest pl-10 pr-3 py-2.5 text-body-md text-on-surface outline-none focus:border-2',
@@ -291,13 +306,16 @@ export function ApplyLeavePage() {
 
               <div className="flex flex-wrap gap-3 text-label-sm">
                 <span className="inline-flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded bg-secondary" /> Selected leave
+                  <span className="w-3 h-3 rounded-sm bg-sky-100 border border-sky-200" /> Selected leave range
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded bg-slate-200 border border-slate-300" /> Weekend
+                  <span className="w-3 h-3 rounded-sm bg-slate-100 border border-slate-200" /> Weekend
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <span className="w-3 h-3 rounded bg-violet-200 border border-violet-300" /> Holiday
+                  <span className="w-3 h-3 rounded-sm bg-violet-100 border border-violet-200" /> Holiday
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="w-3 h-3 rounded-sm bg-emerald-50 border border-emerald-200" /> Today
                 </span>
               </div>
 
@@ -331,37 +349,61 @@ export function ApplyLeavePage() {
                     <div key={`${d}-${i}`}>{d}</div>
                   ))}
                 </div>
+                {/* Continuous range: use a single light sky background strip so the selection reads as one leave block */}
                 <div className="grid grid-cols-7 text-center text-sm gap-y-0.5">
                   {Array.from({ length: firstDay }).map((_, i) => (
                     <div key={`empty-${i}`} className="py-2" />
                   ))}
                   {cells.map(({ day, iso, dow }) => {
+                    const isPast = iso < today
+                    const isToday = iso === today
                     const weekend = dow === 0 || dow === 6
                     const holiday = HOLIDAYS_2026[iso]
                     const inRange = isInRange(iso)
                     const start = isRangeStart(iso)
                     const end = isRangeEnd(iso)
+                    const singleDay = start && end
+
+                    // Continuous light range background (thin light sky)
+                    // Start/end get slightly stronger edges so the block looks continuous
+                    let rangeClass = ''
+                    if (inRange || start || end) {
+                      if (singleDay) {
+                        rangeClass = 'bg-sky-100 text-on-surface font-semibold ring-1 ring-sky-300/60 rounded-lg'
+                      } else if (start) {
+                        rangeClass =
+                          'bg-sky-100 text-on-surface font-semibold rounded-l-lg ring-1 ring-sky-200/80 ring-r-0'
+                      } else if (end) {
+                        rangeClass =
+                          'bg-sky-100 text-on-surface font-semibold rounded-r-lg ring-1 ring-sky-200/80 ring-l-0'
+                      } else {
+                        rangeClass = 'bg-sky-50 text-on-surface'
+                      }
+                    }
+
                     return (
                       <button
                         key={iso}
                         type="button"
-                        title={holiday || (weekend ? 'Weekend' : undefined)}
+                        disabled={isPast}
+                        title={
+                          isPast
+                            ? 'Past dates cannot be selected'
+                            : holiday || (weekend ? 'Weekend' : isToday ? 'Today' : undefined)
+                        }
                         onClick={() => selectDay(iso)}
                         className={cn(
-                          'py-2 rounded-lg transition-colors relative',
-                          start || end
-                            ? 'bg-secondary text-white font-bold shadow-sm'
-                            : inRange
-                              ? 'bg-secondary/20 font-semibold text-secondary'
-                              : holiday
-                                ? 'bg-violet-100 text-violet-800 font-medium'
-                                : weekend
-                                  ? 'bg-slate-100 text-slate-500'
-                                  : 'hover:bg-surface-container text-on-surface'
+                          'py-2 relative transition-colors',
+                          isPast && 'opacity-35 cursor-not-allowed text-on-surface-variant',
+                          !isPast && !inRange && !start && !end && 'hover:bg-surface-container rounded-lg',
+                          !isPast && isToday && !inRange && !start && !end && 'bg-emerald-50 text-on-surface font-medium rounded-lg',
+                          !isPast && holiday && !inRange && !start && !end && 'bg-violet-50 text-violet-800 font-medium rounded-lg',
+                          !isPast && weekend && !holiday && !inRange && !start && !end && 'bg-slate-50 text-slate-500 rounded-lg',
+                          rangeClass
                         )}
                       >
                         {day}
-                        {holiday && !inRange && !start && !end && (
+                        {holiday && !inRange && !start && !end && !isPast && (
                           <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-violet-500" />
                         )}
                       </button>
