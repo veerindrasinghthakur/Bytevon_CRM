@@ -3,10 +3,10 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { leads, salesMetrics } from '../data/mock'
-import type { Lead, LeadStatus, LeadPriority } from '../types'
+import type { Lead, PipelineStage, LeadPriority, RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 
-const statusStyles: Record<LeadStatus, string> = {
+const stageStyles: Record<PipelineStage, string> = {
   New: 'bg-slate-100 text-slate-700',
   Contacted: 'bg-blue-50 text-blue-700',
   Qualified: 'bg-blue-100 text-blue-800',
@@ -27,8 +27,8 @@ function formatBudget(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n)
 }
 
-function formatCloseDate(iso?: string) {
-  if (!iso) return '—'
+function formatDate(iso?: string) {
+  if (!iso) return null
   const d = new Date(iso)
   return {
     day: String(d.getDate()).padStart(2, '0'),
@@ -37,10 +37,33 @@ function formatCloseDate(iso?: string) {
   }
 }
 
+function StatusDot({ status }: { status: RecordStatus }) {
+  return (
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 text-[11px] font-semibold',
+        status === 'Active' ? 'text-emerald-700' : 'text-slate-500'
+      )}
+      title={status}
+    >
+      <span
+        className={cn(
+          'w-2.5 h-2.5 rounded-full',
+          status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'
+        )}
+      />
+      {status}
+    </span>
+  )
+}
+
 export function LeadsListPage() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('All')
+  const [stageFilter, setStageFilter] = useState<string>('All')
+  const [priorityFilter, setPriorityFilter] = useState<string>('All')
+  const [sourceFilter, setSourceFilter] = useState<string>('All')
   const [quickView, setQuickView] = useState<Lead | null>(null)
 
   const filtered = useMemo(() => {
@@ -53,9 +76,20 @@ export function LeadsListPage() {
         l.title.toLowerCase().includes(q) ||
         l.id.toLowerCase().includes(q)
       const matchStatus = statusFilter === 'All' || l.status === statusFilter
-      return matchSearch && matchStatus
+      const matchStage = stageFilter === 'All' || l.stage === stageFilter
+      const matchPriority = priorityFilter === 'All' || l.priority === priorityFilter
+      const matchSource = sourceFilter === 'All' || l.source === sourceFilter
+      return matchSearch && matchStatus && matchStage && matchPriority && matchSource
     })
-  }, [search, statusFilter])
+  }, [search, statusFilter, stageFilter, priorityFilter, sourceFilter])
+
+  const resetFilters = () => {
+    setSearch('')
+    setStatusFilter('All')
+    setStageFilter('All')
+    setPriorityFilter('All')
+    setSourceFilter('All')
+  }
 
   return (
     <div className="space-y-6 relative">
@@ -81,7 +115,6 @@ export function LeadsListPage() {
         }
       />
 
-      {/* KPI cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {salesMetrics.map((m) => (
           <div
@@ -119,20 +152,10 @@ export function LeadsListPage() {
                 </span>
               )}
             </div>
-            <p
-              className={cn(
-                'text-label-md',
-                m.id === 'pipeline' ? 'text-white/70' : 'text-on-surface-variant'
-              )}
-            >
+            <p className={cn('text-label-md', m.id === 'pipeline' ? 'text-white/70' : 'text-on-surface-variant')}>
               {m.label}
             </p>
-            <h3
-              className={cn(
-                'text-headline-md font-bold mt-0.5',
-                m.id === 'pipeline' ? 'text-white' : 'text-on-background'
-              )}
-            >
+            <h3 className={cn('text-headline-md font-bold mt-0.5', m.id === 'pipeline' ? 'text-white' : 'text-on-background')}>
               {m.value}
             </h3>
             {m.subtitle && (
@@ -144,9 +167,8 @@ export function LeadsListPage() {
         ))}
       </div>
 
-      {/* Filters */}
       <div className="flex flex-wrap items-center gap-3 bg-surface-container-low p-4 rounded-xl border border-outline-variant">
-        <div className="relative flex-1 min-w-[220px]">
+        <div className="relative flex-1 min-w-[200px]">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
             search
           </span>
@@ -160,10 +182,19 @@ export function LeadsListPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none focus:ring-1 focus:ring-secondary"
+          className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none"
         >
           <option value="All">All Status</option>
-          {(['New', 'Contacted', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Lost'] as LeadStatus[]).map(
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+        <select
+          value={stageFilter}
+          onChange={(e) => setStageFilter(e.target.value)}
+          className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none"
+        >
+          <option value="All">All Stages</option>
+          {(['New', 'Contacted', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Lost'] as PipelineStage[]).map(
             (s) => (
               <option key={s} value={s}>
                 {s}
@@ -171,29 +202,39 @@ export function LeadsListPage() {
             )
           )}
         </select>
-        <select className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none">
-          <option>Pipeline Stage</option>
+        <select
+          value={priorityFilter}
+          onChange={(e) => setPriorityFilter(e.target.value)}
+          className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none"
+        >
+          <option value="All">All Priority</option>
+          {(['Critical', 'High', 'Medium', 'Low'] as LeadPriority[]).map((p) => (
+            <option key={p} value={p}>
+              {p}
+            </option>
+          ))}
         </select>
-        <select className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none">
-          <option>Priority</option>
-        </select>
-        <select className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none">
-          <option>Lead Source</option>
+        <select
+          value={sourceFilter}
+          onChange={(e) => setSourceFilter(e.target.value)}
+          className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none"
+        >
+          <option value="All">All Sources</option>
+          <option value="LinkedIn">LinkedIn</option>
+          <option value="Referral">Referral</option>
+          <option value="Website">Website</option>
+          <option value="Direct Referral">Direct Referral</option>
         </select>
         <button
           type="button"
           className="p-2 text-secondary border border-outline-variant rounded-lg hover:bg-secondary/5"
-          onClick={() => {
-            setSearch('')
-            setStatusFilter('All')
-          }}
+          onClick={resetFilters}
           aria-label="Reset filters"
         >
           <span className="material-symbols-outlined text-lg">restart_alt</span>
         </button>
       </div>
 
-      {/* Table */}
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -202,38 +243,21 @@ export function LeadsListPage() {
                 <th className="px-4 py-3 text-center">
                   <input type="checkbox" className="rounded border-outline-variant text-secondary" />
                 </th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Lead ID
-                </th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Lead Name
-                </th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Client
-                </th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Assigned
-                </th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Priority
-                </th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Quotation
-                </th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Close Date
-                </th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">
-                  Actions
-                </th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">ID</th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Lead Name</th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Client</th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Assigned</th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Stage</th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Priority</th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Quotation</th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Date</th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-right">Status</th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {filtered.map((lead) => {
-                const close = formatCloseDate(lead.closeDate)
+                const dateParts = formatDate(lead.date)
                 return (
                   <tr
                     key={lead.id}
@@ -247,11 +271,7 @@ export function LeadsListPage() {
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
-                          {lead.contactName
-                            .split(' ')
-                            .map((p) => p[0])
-                            .join('')
-                            .slice(0, 2)}
+                          {lead.contactName.split(' ').map((p) => p[0]).join('').slice(0, 2)}
                         </div>
                         <div>
                           <p className="font-semibold text-on-surface group-hover:text-secondary transition-colors">
@@ -269,11 +289,7 @@ export function LeadsListPage() {
                       {lead.assignedTo ? (
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full bg-secondary text-white flex items-center justify-center text-[10px] font-bold">
-                            {lead.assignedTo
-                              .split(' ')
-                              .map((p) => p[0])
-                              .join('')
-                              .slice(0, 2)}
+                            {lead.assignedTo.split(' ').map((p) => p[0]).join('').slice(0, 2)}
                           </div>
                           <span className="text-body-sm">{lead.assignedTo}</span>
                         </div>
@@ -282,29 +298,21 @@ export function LeadsListPage() {
                       )}
                     </td>
                     <td className="px-4 py-4">
-                      <div className="flex flex-col gap-1">
-                        <span
-                          className={cn(
-                            'px-2.5 py-0.5 rounded-full text-[10px] font-bold w-fit uppercase',
-                            statusStyles[lead.status]
-                          )}
-                        >
-                          {lead.status}
-                        </span>
-                        <span className={cn('text-[10px] font-bold uppercase', priorityStyles[lead.priority])}>
-                          {lead.priority}
-                        </span>
-                      </div>
+                      <span className={cn('px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase', stageStyles[lead.stage])}>
+                        {lead.stage}
+                      </span>
+                    </td>
+                    <td className="px-4 py-4">
+                      <span className={cn('text-[11px] font-bold uppercase', priorityStyles[lead.priority])}>
+                        {lead.priority}
+                      </span>
                     </td>
                     <td className="px-4 py-4">
                       <p className="font-bold text-on-surface">{formatBudget(lead.budget)}</p>
                       {lead.tags && lead.tags.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-1">
                           {lead.tags.map((t) => (
-                            <span
-                              key={t}
-                              className="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded text-[9px] font-bold"
-                            >
+                            <span key={t} className="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded text-[9px] font-bold">
                               {t}
                             </span>
                           ))}
@@ -312,41 +320,32 @@ export function LeadsListPage() {
                       )}
                     </td>
                     <td className="px-4 py-4">
-                      <span className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-md text-[11px] font-bold">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                        Active
-                      </span>
-                    </td>
-                    <td className="px-4 py-4">
-                      {lead.closeDate ? (
+                      {dateParts ? (
                         <div className="flex flex-col items-center justify-center w-12 h-14 bg-surface-container rounded-lg border border-outline-variant/30">
-                          <span className="text-lg font-black text-on-surface leading-none">{close.day}</span>
-                          <span className="text-[10px] font-bold text-secondary uppercase">{close.month}</span>
-                          <span className="text-[9px] text-on-surface-variant">{close.year}</span>
+                          <span className="text-lg font-black text-on-surface leading-none">{dateParts.day}</span>
+                          <span className="text-[10px] font-bold text-secondary uppercase">{dateParts.month}</span>
+                          <span className="text-[9px] text-on-surface-variant">{dateParts.year}</span>
                         </div>
                       ) : (
                         '—'
                       )}
                     </td>
+                    <td className="px-4 py-4 text-right">
+                      <StatusDot status={lead.status} />
+                    </td>
                     <td className="px-4 py-4 text-center" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-center gap-1">
-                        <button
-                          type="button"
-                          className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant"
-                          onClick={() => setQuickView(lead)}
-                        >
+                        <button type="button" className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant" onClick={() => setQuickView(lead)}>
                           <span className="material-symbols-outlined text-sm">visibility</span>
                         </button>
-                        <button
-                          type="button"
-                          className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant"
-                          onClick={() => navigate({ to: '/sales/leads/new' })}
-                        >
+                        <button type="button" className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant" onClick={() => navigate({ to: '/sales/leads/new' })}>
                           <span className="material-symbols-outlined text-sm">edit</span>
                         </button>
-                        <button type="button" className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant">
-                          <span className="material-symbols-outlined text-sm">more_vert</span>
-                        </button>
+                        {lead.chatLink && (
+                          <a href={lead.chatLink} target="_blank" rel="noreferrer" className="p-1.5 hover:bg-surface-container rounded-md text-secondary" title="Open chat">
+                            <span className="material-symbols-outlined text-sm">chat</span>
+                          </a>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -360,73 +359,37 @@ export function LeadsListPage() {
             Showing <span className="font-semibold text-on-surface">1–{filtered.length}</span> of{' '}
             <span className="font-semibold text-on-surface">{leads.length}</span> leads
           </p>
-          <div className="flex items-center gap-1">
-            <button
-              type="button"
-              className="p-2 border border-outline-variant rounded-lg bg-surface text-on-surface-variant disabled:opacity-50"
-              disabled
-            >
-              <span className="material-symbols-outlined text-sm">chevron_left</span>
-            </button>
-            <button type="button" className="w-8 h-8 rounded-lg bg-secondary text-white font-bold text-xs">
-              1
-            </button>
-            <button
-              type="button"
-              className="p-2 border border-outline-variant rounded-lg bg-surface text-on-surface-variant"
-            >
-              <span className="material-symbols-outlined text-sm">chevron_right</span>
-            </button>
-          </div>
         </div>
       </div>
 
-      {/* Quick View drawer */}
       {quickView && (
         <>
-          <div
-            className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm"
-            onClick={() => setQuickView(null)}
-            aria-hidden
-          />
-          <div className="fixed top-0 right-0 h-full w-full max-w-md bg-surface-container-lowest shadow-2xl border-l border-outline-variant z-50 flex flex-col animate-in slide-in-from-right">
+          <div className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm" onClick={() => setQuickView(null)} aria-hidden />
+          <div className="fixed top-0 right-0 h-full w-full max-w-md bg-surface-container-lowest shadow-2xl border-l border-outline-variant z-50 flex flex-col">
             <div className="p-6 border-b border-outline-variant flex items-center justify-between bg-surface-container-low">
               <h4 className="text-title-lg font-bold flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary">info</span>
                 Lead Quick View
               </h4>
-              <button
-                type="button"
-                className="p-2 hover:bg-surface-container rounded-full"
-                onClick={() => setQuickView(null)}
-              >
+              <button type="button" className="p-2 hover:bg-surface-container rounded-full" onClick={() => setQuickView(null)}>
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               <div className="flex items-start gap-4">
                 <div className="w-16 h-16 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center text-xl font-bold">
-                  {quickView.contactName
-                    .split(' ')
-                    .map((p) => p[0])
-                    .join('')
-                    .slice(0, 2)}
+                  {quickView.contactName.split(' ').map((p) => p[0]).join('').slice(0, 2)}
                 </div>
                 <div>
                   <h5 className="text-xl font-bold text-on-surface">{quickView.contactName}</h5>
                   <p className="text-on-surface-variant text-sm">
-                    {quickView.contactTitle} at{' '}
-                    <span className="font-semibold text-secondary">{quickView.company}</span>
+                    {quickView.contactTitle} at <span className="font-semibold text-secondary">{quickView.company}</span>
                   </p>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {quickView.tags?.map((t) => (
-                      <span key={t} className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
-                        {t}
-                      </span>
-                    ))}
-                    <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold uppercase', statusStyles[quickView.status])}>
-                      {quickView.status}
+                    <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold uppercase', stageStyles[quickView.stage])}>
+                      {quickView.stage}
                     </span>
+                    <StatusDot status={quickView.status} />
                   </div>
                 </div>
               </div>
@@ -437,37 +400,44 @@ export function LeadsListPage() {
                   <p className="text-lg font-bold">{formatBudget(quickView.budget)}</p>
                 </div>
                 <div className="p-4 bg-surface-container-low rounded-xl">
-                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Pipeline Stage</p>
-                  <p className="text-lg font-bold text-secondary">{quickView.status}</p>
+                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Stage</p>
+                  <p className="text-lg font-bold text-secondary">{quickView.stage}</p>
                 </div>
                 <div className="p-4 bg-surface-container-low rounded-xl">
-                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Lead Source</p>
+                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Source</p>
                   <p className="text-lg font-semibold">{quickView.source}</p>
                 </div>
                 <div className="p-4 bg-surface-container-low rounded-xl">
-                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Probability</p>
-                  <p className="text-lg font-semibold">{quickView.probability ?? '—'}%</p>
+                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Date</p>
+                  <p className="text-lg font-semibold">{quickView.date ?? '—'}</p>
                 </div>
               </div>
 
+              {quickView.chatLink && (
+                <div className="p-4 bg-secondary/5 border border-secondary/20 rounded-xl">
+                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-2">Client Chat</p>
+                  <a
+                    href={quickView.chatLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 text-secondary font-semibold text-sm hover:underline"
+                  >
+                    <span className="material-symbols-outlined text-lg">chat</span>
+                    Open conversation with {quickView.contactName}
+                    <span className="material-symbols-outlined text-sm">open_in_new</span>
+                  </a>
+                </div>
+              )}
+
               {quickView.notes && (
                 <div className="p-4 bg-surface-container rounded-xl">
-                  <div className="flex items-center justify-between mb-2">
-                    <h6 className="text-xs font-bold uppercase text-on-surface-variant">Internal Notes</h6>
-                  </div>
+                  <h6 className="text-xs font-bold uppercase text-on-surface-variant mb-2">Internal Notes</h6>
                   <p className="text-body-sm text-on-surface italic">"{quickView.notes}"</p>
                 </div>
               )}
             </div>
             <div className="p-6 border-t border-outline-variant bg-surface-container-low flex gap-3">
-              <Button
-                variant="primary"
-                className="flex-1"
-                onClick={() => {
-                  setQuickView(null)
-                  navigate({ to: '/sales/leads/new' })
-                }}
-              >
+              <Button variant="primary" className="flex-1" onClick={() => { setQuickView(null); navigate({ to: '/sales/leads/new' }) }}>
                 Open Full Record
               </Button>
               <Button variant="outline">Log Task</Button>
