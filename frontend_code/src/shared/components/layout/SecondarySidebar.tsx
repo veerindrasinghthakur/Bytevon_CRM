@@ -23,6 +23,7 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     moduleId: 'sales',
     title: 'Sales',
     items: [
+      { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', to: '/sales' },
       { id: 'leads', label: 'Leads', icon: 'person_search', to: '/sales/leads' },
       { id: 'clients', label: 'Clients', icon: 'handshake', to: '/sales/clients' },
       { id: 'analytics', label: 'Analytics', icon: 'analytics', to: '/sales/analytics' },
@@ -53,12 +54,6 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     items: [
       { id: 'overview', label: 'Overview', icon: 'dashboard', to: '/my-work' },
       { id: 'my-attendance', label: 'My Attendance', icon: 'calendar_today', to: '/my-work/attendance' },
-      // {
-      //   id: 'attendance-corrections',
-      //   label: 'Corrections',
-      //   icon: 'edit_calendar',
-      //   to: '/my-work/attendance/corrections',
-      // },
       { id: 'my-leave', label: 'My Leave', icon: 'event_busy', to: '/my-work/leave' },
       { id: 'my-tasks', label: 'My Tasks', icon: 'task_alt', to: '/my-work/tasks' },
       { id: 'my-approvals', label: 'My Approvals', icon: 'fact_check', to: '/my-work/approvals' },
@@ -112,10 +107,15 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
   if (items.length === 0) return null
 
   const isItemActive = (to: string) => {
+    if (to === '/sales') return pathname === '/sales'
     if (to === '/projects') return pathname === '/projects'
     if (to === '/my-work') return pathname === '/my-work'
     if (to === '/my-work/attendance') {
-      return pathname === '/my-work/attendance' || pathname.startsWith('/my-work/attendance/mark') || pathname.match(/^\/my-work\/attendance\/[^/]+$/)
+      return (
+        pathname === '/my-work/attendance' ||
+        pathname.startsWith('/my-work/attendance/mark') ||
+        !!pathname.match(/^\/my-work\/attendance\/[^/]+$/)
+      )
     }
     if (to === '/my-work/attendance/corrections') {
       return pathname.startsWith('/my-work/attendance/corrections')

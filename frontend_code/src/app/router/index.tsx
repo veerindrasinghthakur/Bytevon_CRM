@@ -28,6 +28,7 @@ import { TasksListPage } from '@/modules/projects/pages/TasksListPage'
 import { TaskCreatePage } from '@/modules/projects/pages/TaskCreatePage'
 import { TaskDetailPage } from '@/modules/projects/pages/TaskDetailPage'
 
+import { SalesDashboardPage } from '@/modules/sales/pages/SalesDashboardPage'
 import { LeadsListPage } from '@/modules/sales/pages/LeadsListPage'
 import { LeadCreatePage } from '@/modules/sales/pages/LeadCreatePage'
 import { ClientsListPage } from '@/modules/sales/pages/ClientsListPage'
@@ -230,7 +231,7 @@ const taskDetailRoute = createRoute({
 const salesRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/sales',
-  component: () => <Placeholder title="Sales" />,
+  component: SalesDashboardPage,
 })
 const salesLeadsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
