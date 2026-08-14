@@ -1,9 +1,20 @@
 /** Sales / CRM domain types */
 
-export type LeadStatus = 'New' | 'Contacted' | 'Qualified' | 'Proposal' | 'Negotiation' | 'Won' | 'Lost'
+/** Simple account/lead active state — shown as colored dots */
+export type RecordStatus = 'Active' | 'Inactive'
+
+/** Pipeline / lifecycle stage — separate from priority and Active/Inactive */
+export type PipelineStage =
+  | 'New'
+  | 'Contacted'
+  | 'Qualified'
+  | 'Proposal'
+  | 'Negotiation'
+  | 'Won'
+  | 'Lost'
+
 export type LeadPriority = 'Critical' | 'High' | 'Medium' | 'Low'
 export type ClientType = 'Enterprise' | 'SMB' | 'Partner'
-export type ClientStatus = 'Active' | 'Pending' | 'Inactive' | 'At Risk'
 export type CaseStudyStatus = 'Published' | 'Draft' | 'Archived'
 export type ActivityType =
   | 'Lead Created'
@@ -27,10 +38,14 @@ export interface Lead {
   phone?: string
   source: string
   priority: LeadPriority
-  status: LeadStatus
+  /** Active | Inactive — colored dot */
+  status: RecordStatus
+  /** Pipeline stage — separate column from priority & status */
+  stage: PipelineStage
   budget: number
   probability?: number
-  closeDate?: string
+  /** Displayed as "Date" in tables */
+  date?: string
   assignedTo?: string
   assignedAvatar?: string
   platform?: string
@@ -38,6 +53,8 @@ export interface Lead {
   caseStudy?: string
   createdAt: string
   notes?: string
+  /** Link to chat conversation with the client */
+  chatLink?: string
 }
 
 export interface Client {
@@ -45,7 +62,8 @@ export interface Client {
   name: string
   legalName?: string
   type: ClientType
-  status: ClientStatus
+  /** Active | Inactive */
+  status: RecordStatus
   industry: string
   sector?: string
   website?: string
@@ -64,6 +82,7 @@ export interface Client {
   clientSince?: string
   logoInitials?: string
   tags?: string[]
+  chatLink?: string
 }
 
 export interface CaseStudy {
