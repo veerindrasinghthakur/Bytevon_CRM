@@ -112,11 +112,12 @@ export function ApplyLeavePage() {
     } else if (iso >= from) {
       setValue('to', iso, { shouldValidate: true })
     } else {
-      // clicked before start → swap
       setValue('from', iso, { shouldValidate: true })
       setValue('to', from, { shouldValidate: true })
     }
   }
+
+  const fromReg = register('from')
 
   return (
     <div className="relative space-y-6 pb-24">
@@ -240,9 +241,9 @@ export function ApplyLeavePage() {
                     <input
                       id="from"
                       type="date"
-                      {...register('from')}
+                      {...fromReg}
                       onChange={(e) => {
-                        register('from').onChange(e)
+                        fromReg.onChange(e)
                         const v = e.target.value
                         if (to && v && to < v) {
                           setValue('to', '', { shouldValidate: true })
@@ -288,7 +289,6 @@ export function ApplyLeavePage() {
                 </div>
               </div>
 
-              {/* Legend */}
               <div className="flex flex-wrap gap-3 text-label-sm">
                 <span className="inline-flex items-center gap-1.5">
                   <span className="w-3 h-3 rounded bg-secondary" /> Selected leave
@@ -317,7 +317,7 @@ export function ApplyLeavePage() {
                       {monthLabel}
                     </span>
                     <button
-                      type="button"	ikzpicture type="button"
+                      type="button"
                       className="p-1.5 rounded-lg hover:bg-surface-container transition-colors"
                       onClick={() => setCalendarMonth(new Date(year, month + 1, 1))}
                       aria-label="Next month"
