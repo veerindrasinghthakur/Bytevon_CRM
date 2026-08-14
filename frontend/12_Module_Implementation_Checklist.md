@@ -3,9 +3,9 @@
 # Bytevon Frontend — Module Implementation Checklist
 
 **Project:** Bytevon ERP/CRM  
-**Version:** 1.0  
+**Version:** 1.1  
 **Status:** Locked  
-**Last Updated:** 2026-08-07
+**Last Updated:** 2026-08-14
 
 ---
 
@@ -61,6 +61,7 @@ modules/<module-name>/
 
 ### Step 4 — Pages
 - [ ] List page (with filters, table/cards, empty/loading/error)
+- [ ] **List selection:** `useListSelection` + leftmost `StatusDot` (or checkbox in selection mode) — see `09_Table_and_List_Patterns.md` §4–5
 - [ ] Detail page
 - [ ] Create page / form
 - [ ] Edit page / form
@@ -87,6 +88,8 @@ A module is considered complete when:
 
 - All required screens from the Screen Inventory exist
 - All states (loading, empty, error, success, no-permission) are handled
+- **List pages use the shared selection strategy** (3s long-press, filtered select-all, exit on last uncheck)
+- Active/Inactive shown as leftmost dots only (no Status text column)
 - Query keys follow the convention
 - Forms use React Hook Form + Zod
 - No hardcoded visual values (tokens only)
@@ -99,5 +102,7 @@ A module is considered complete when:
 
 - `03_Frontend_Project_Structure.md`
 - `06_API_Integration_Patterns.md`
+- `09_Table_and_List_Patterns.md` ← selection strategy
 - `11_State_Management_Conventions.md`
+- `14_Code_Generation_Rules.md`
 - `15_Page_State_Matrix.md`
