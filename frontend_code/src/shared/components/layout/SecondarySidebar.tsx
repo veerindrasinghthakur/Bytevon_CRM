@@ -53,6 +53,12 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     items: [
       { id: 'overview', label: 'Overview', icon: 'dashboard', to: '/my-work' },
       { id: 'my-attendance', label: 'My Attendance', icon: 'calendar_today', to: '/my-work/attendance' },
+      {
+        id: 'attendance-corrections',
+        label: 'Corrections',
+        icon: 'edit_calendar',
+        to: '/my-work/attendance/corrections',
+      },
       { id: 'my-leave', label: 'My Leave', icon: 'event_busy', to: '/my-work/leave' },
       { id: 'my-tasks', label: 'My Tasks', icon: 'task_alt', to: '/my-work/tasks' },
       { id: 'my-approvals', label: 'My Approvals', icon: 'fact_check', to: '/my-work/approvals' },
@@ -108,6 +114,12 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
   const isItemActive = (to: string) => {
     if (to === '/projects') return pathname === '/projects'
     if (to === '/my-work') return pathname === '/my-work'
+    if (to === '/my-work/attendance') {
+      return pathname === '/my-work/attendance' || pathname.startsWith('/my-work/attendance/mark') || pathname.match(/^\/my-work\/attendance\/[^/]+$/)
+    }
+    if (to === '/my-work/attendance/corrections') {
+      return pathname.startsWith('/my-work/attendance/corrections')
+    }
     return pathname === to || pathname.startsWith(to + '/')
   }
 
@@ -149,7 +161,6 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
         </button>
       </div>
 
-      {/* Match primary rail: gap-1 + py-3.5 so items sit parallel */}
       <div
         className={cn(
           'flex-1 overflow-y-auto scrollbar-hide',
