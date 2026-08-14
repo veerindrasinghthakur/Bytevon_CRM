@@ -50,7 +50,6 @@ export function MyTasksPage() {
       <PageHeader
         title="My Tasks"
         description="Tasks assigned to you — or create your own."
-        showBack
         actions={
           <Button
             variant="primary"
