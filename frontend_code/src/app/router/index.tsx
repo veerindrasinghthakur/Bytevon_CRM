@@ -24,6 +24,8 @@ import { ProjectCreatePage } from '@/modules/projects/pages/ProjectCreatePage'
 import { TeamsListPage as ProjectTeamsListPage } from '@/modules/projects/pages/TeamsListPage'
 import { TeamCreatePage } from '@/modules/projects/pages/TeamCreatePage'
 import { TeamDetailPage as ProjectTeamDetailPage } from '@/modules/projects/pages/TeamDetailPage'
+import { ProjectTeamMembersPage } from '@/modules/projects/pages/TeamMembersPage'
+import { ProjectTeamAddMemberPage } from '@/modules/projects/pages/TeamAddMemberPage'
 import { TasksListPage } from '@/modules/projects/pages/TasksListPage'
 import { TaskCreatePage } from '@/modules/projects/pages/TaskCreatePage'
 import { TaskDetailPage } from '@/modules/projects/pages/TaskDetailPage'
@@ -194,6 +196,8 @@ const projectDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, p
 const teamsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects/teams', component: ProjectTeamsListPage })
 const teamsNewRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects/teams/new', component: TeamCreatePage })
 const teamDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects/teams/$teamId', component: ProjectTeamDetailPage })
+const teamMembersRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects/teams/$teamId/members', component: ProjectTeamMembersPage })
+const teamAddMemberRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects/teams/$teamId/add-member', component: ProjectTeamAddMemberPage })
 const tasksRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects/tasks', component: TasksListPage })
 const tasksNewRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects/tasks/new', component: TaskCreatePage })
 const taskDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects/tasks/$taskId', component: TaskDetailPage })
@@ -282,6 +286,8 @@ const routeTree = rootRoute.addChildren([
     teamsRoute,
     teamsNewRoute,
     teamDetailRoute,
+    teamMembersRoute,
+    teamAddMemberRoute,
     tasksRoute,
     tasksNewRoute,
     taskDetailRoute,
