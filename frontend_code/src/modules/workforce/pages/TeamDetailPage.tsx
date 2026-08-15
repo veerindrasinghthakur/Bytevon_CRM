@@ -3,7 +3,7 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { teams } from '../data/mock'
 import { membersFor, projectsFor } from '../data/teamExtraMock'
-import { RouteCrumbs } from '../components/RouteCrumbs'
+import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { TeamTopView } from '../components/TeamTopView'
 import { cn } from '@/shared/lib/cn'
 
@@ -15,7 +15,6 @@ function Icon({ name, className }: { name: string; className?: string }) {
   )
 }
 
-/** Project mock ids → real project detail route ids */
 const PROJECT_ROUTE_IDS: Record<string, string> = {
   p1: '1024',
   p2: '1027',
@@ -34,14 +33,7 @@ export function TeamDetailPage() {
     <div className="space-y-6">
       <div>
         <BackButton to="/workforce/teams" label="Back to Teams" />
-        <RouteCrumbs
-          className="mt-2 mb-2"
-          items={[
-            { label: 'Workforce', to: '/workforce/employees' },
-            { label: 'Teams', to: '/workforce/teams' },
-            { label: t.name },
-          ]}
-        />
+        <DynamicRouteCrumbs className="mt-2 mb-2" lastLabel={t.name} />
         <TeamTopView team={t} activeTab="overview" />
       </div>
 

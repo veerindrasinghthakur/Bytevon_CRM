@@ -3,7 +3,7 @@ import { Link, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { teams } from '../data/mock'
 import { membersFor } from '../data/teamExtraMock'
-import { RouteCrumbs } from '../components/RouteCrumbs'
+import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { TeamTopView } from '../components/TeamTopView'
 import { cn } from '@/shared/lib/cn'
 
@@ -31,14 +31,10 @@ export function TeamMembersPage() {
     <div className="space-y-6">
       <div>
         <BackButton to={`/workforce/teams/${t.id}`} label="Back to team" />
-        <RouteCrumbs
+        <DynamicRouteCrumbs
           className="mt-2 mb-2"
-          items={[
-            { label: 'Workforce', to: '/workforce/employees' },
-            { label: 'Teams', to: '/workforce/teams' },
-            { label: t.name, to: `/workforce/teams/${t.id}` },
-            { label: 'Members' },
-          ]}
+          lastLabel="Members"
+          labelOverrides={{ [t.id]: t.name }}
         />
         <TeamTopView team={t} activeTab="members" />
       </div>

@@ -2,7 +2,7 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { departments, departmentLeads, departmentHighlights } from '../data/mock'
-import { RouteCrumbs } from '../components/RouteCrumbs'
+import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -22,14 +22,7 @@ export function DepartmentDetailPage() {
     <div className="space-y-6">
       <div>
         <BackButton to="/workforce/departments" label="Back to departments" />
-        <RouteCrumbs
-          className="mt-2 mb-3"
-          items={[
-            { label: 'Workforce', to: '/workforce/employees' },
-            { label: 'Departments', to: '/workforce/departments' },
-            { label: d.name },
-          ]}
-        />
+        <DynamicRouteCrumbs className="mt-2 mb-3" lastLabel={d.name} />
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="flex items-center gap-3">
             <h1 className="text-headline-lg text-on-background">{d.name}</h1>

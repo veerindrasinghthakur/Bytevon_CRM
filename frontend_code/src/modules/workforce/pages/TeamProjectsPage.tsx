@@ -2,7 +2,7 @@ import { Link, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { teams } from '../data/mock'
 import { projectsFor } from '../data/teamExtraMock'
-import { RouteCrumbs } from '../components/RouteCrumbs'
+import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { TeamTopView } from '../components/TeamTopView'
 import { cn } from '@/shared/lib/cn'
 
@@ -12,7 +12,6 @@ const statusClass: Record<string, string> = {
   'On Hold': 'bg-amber-100 text-amber-800',
 }
 
-/** Map mock project keys to real /projects/$projectId ids */
 const PROJECT_ROUTE_IDS: Record<string, string> = {
   p1: '1024',
   p2: '1027',
@@ -29,14 +28,10 @@ export function TeamProjectsPage() {
     <div className="space-y-6">
       <div>
         <BackButton to={`/workforce/teams/${t.id}`} label="Back to team" />
-        <RouteCrumbs
+        <DynamicRouteCrumbs
           className="mt-2 mb-2"
-          items={[
-            { label: 'Workforce', to: '/workforce/employees' },
-            { label: 'Teams', to: '/workforce/teams' },
-            { label: t.name, to: `/workforce/teams/${t.id}` },
-            { label: 'Projects' },
-          ]}
+          lastLabel="Project History"
+          labelOverrides={{ [t.id]: t.name, projects: 'Project History' }}
         />
         <TeamTopView team={t} activeTab="projects" />
       </div>
