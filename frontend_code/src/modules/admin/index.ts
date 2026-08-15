@@ -1,6 +1,7 @@
 export { AdminHubPage } from './pages/AdminHubPage'
 export { UsersListPage } from './pages/UsersListPage'
 export { UserDetailPage } from './pages/UserDetailPage'
+export { UserCreatePage } from './pages/UserCreatePage'
 export { RolesListPage } from './pages/RolesListPage'
 export { RoleDetailPage } from './pages/RoleDetailPage'
 export { RoleCreatePage } from './pages/RoleCreatePage'
