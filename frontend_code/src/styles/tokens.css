@@ -1,5 +1,6 @@
-/* Bytevon Design Tokens — aligned to Stitch UI screens
-   Never hardcode colors/spacing/radii in components.
+/* Bytevon Design Tokens — Stitch surfaces + app brand accents
+   Surfaces/outline/on-surface match Stitch HTML.
+   secondary stays brand blue so existing pages (text-secondary, bg-secondary/10) keep accent color.
 */
 
 :root {
@@ -17,11 +18,14 @@
   --color-sidebar-item-active: #001f3f;
   --color-surface-sidebar: #000613;
 
-  /* Secondary (Stitch muted blue-gray) */
-  --color-secondary: #565e74;
+  /*
+   * Secondary = brand action blue (app convention).
+   * Stitch "secondary" muted gray is available as on-surface-variant / outline.
+   */
+  --color-secondary: #0058bb;
   --color-on-secondary: #ffffff;
-  --color-secondary-container: #dae2fd;
-  --color-on-secondary-container: #5c647a;
+  --color-secondary-container: #0170ea;
+  --color-on-secondary-container: #ffffff;
   --color-secondary-fixed: #dae2fd;
   --color-secondary-fixed-dim: #bec6e0;
 
@@ -39,7 +43,7 @@
   --color-inverse-surface: #213145;
   --color-inverse-on-surface: #eaf1ff;
 
-  /* On-surface / Text (Stitch navy, not gray) */
+  /* On-surface / Text (Stitch navy) */
   --color-on-surface: #0b1c30;
   --color-on-surface-variant: #414755;
   --color-on-background: #0b1c30;
@@ -55,7 +59,7 @@
   --color-error-container: #ffdad6;
   --color-on-error-container: #93000a;
 
-  /* Status (common badges) */
+  /* Status */
   --color-success: #059669;
   --color-success-container: #d1fae5;
   --color-warning: #d97706;
@@ -63,7 +67,7 @@
   --color-info: #2563eb;
   --color-info-container: #dbeafe;
 
-  /* Elevation / shadow tokens */
+  /* Elevation */
   --shadow-subtle: 0px 1px 3px rgba(0, 0, 0, 0.05), 0px 10px 15px -3px rgba(0, 0, 0, 0.02);
   --shadow-soft: 0px 1px 3px rgba(0, 0, 0, 0.06), 0px 12px 24px -8px rgba(0, 0, 0, 0.08);
   --shadow-card-hover: 0px 4px 16px rgba(0, 88, 188, 0.08), 0px 1px 3px rgba(0, 0, 0, 0.04);
