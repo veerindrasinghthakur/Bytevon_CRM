@@ -1,7 +1,7 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
-import type { TeamRow } from '../types'
+import type { Team } from '../types'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -18,7 +18,7 @@ export function TeamTopView({
   team,
   activeTab,
 }: {
-  team: TeamRow
+  team: Team
   activeTab: Tab
 }) {
   const navigate = useNavigate()
