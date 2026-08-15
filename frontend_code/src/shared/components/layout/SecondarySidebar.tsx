@@ -59,6 +59,7 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
       { id: 'my-leave', label: 'My Leave', icon: 'event_busy', to: '/my-work/leave' },
       { id: 'my-tasks', label: 'My Tasks', icon: 'task_alt', to: '/my-work/tasks' },
       { id: 'my-approvals', label: 'My Approvals', icon: 'fact_check', to: '/my-work/approvals' },
+      { id: 'my-requests', label: 'My Requests', icon: 'request_page', to: '/my-work/requests' },
     ],
   },
   approvals: {
@@ -67,7 +68,6 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     items: [
       { id: 'center', label: 'Approval Center', icon: 'fact_check', to: '/approvals' },
       { id: 'pending', label: 'Pending Approvals', icon: 'pending_actions', to: '/approvals/pending' },
-      { id: 'my-requests', label: 'My Requests', icon: 'request_page', to: '/approvals/my-requests' },
     ],
   },
   admin: {
@@ -129,6 +129,9 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
     }
     if (to === '/my-work/attendance/corrections') {
       return pathname.startsWith('/my-work/attendance/corrections')
+    }
+    if (to === '/my-work/requests') {
+      return pathname === '/my-work/requests' || pathname.startsWith('/my-work/requests/')
     }
     return pathname === to || pathname.startsWith(to + '/')
   }
