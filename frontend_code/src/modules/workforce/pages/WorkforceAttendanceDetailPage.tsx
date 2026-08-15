@@ -1,8 +1,8 @@
-import { useNavigate, useParams } from '@tanstack/react-router'
+import { useParams } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
-import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
 import { todayAttendance, attendanceLogs } from '../data/attendanceMock'
+import { RouteCrumbs } from '../components/RouteCrumbs'
 
 const statusClass: Record<string, string> = {
   PRESENT: 'bg-emerald-100 text-emerald-800',
@@ -13,7 +13,6 @@ const statusClass: Record<string, string> = {
 }
 
 export function WorkforceAttendanceDetailPage() {
-  const navigate = useNavigate()
   const { attendanceId } = useParams({ from: '/workforce/attendance/$attendanceId' })
   const row = todayAttendance.find((r) => r.id === attendanceId) ?? todayAttendance[0]
 
@@ -22,10 +21,17 @@ export function WorkforceAttendanceDetailPage() {
       <PageHeader
         title={row.name}
         description={`${row.department} · attendance detail`}
-        actions={
-          <Button variant="outline" onClick={() => navigate({ to: '/my-work/attendance/corrections' })}>
-            Request correction
-          </Button>
+        showBack
+        backTo="/workforce/attendance"
+        backLabel="Back to attendance"
+        breadcrumbs={
+          <RouteCrumbs
+            items={[
+              { label: 'Workforce', to: '/workforce/employees' },
+              { label: 'Attendance', to: '/workforce/attendance' },
+              { label: row.name },
+            ]}
+          />
         }
       />
 
