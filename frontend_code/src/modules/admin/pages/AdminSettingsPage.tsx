@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
@@ -9,7 +9,7 @@ const SECTIONS = [
   { id: 'locations', label: 'Office Locations', icon: 'apartment' },
   { id: 'branding', label: 'Branding', icon: 'palette' },
   { id: 'regional', label: 'Regional Config', icon: 'language' },
-  { id: 'attendance', label: 'Attendance Management', icon: 'schedule' },
+  { id: 'attendance', label: 'Attendance', icon: 'schedule' },
   { id: 'leave', label: 'Leave Management', icon: 'event_busy' },
 ] as const
 
@@ -17,22 +17,6 @@ type SectionId = (typeof SECTIONS)[number]['id']
 
 export function AdminSettingsPage() {
   const [active, setActive] = useState<SectionId>('organization')
-  const [visible, setVisible] = useState(true)
-  const contentRef = useRef<HTMLDivElement>(null)
-
-  const switchSection = (id: SectionId) => {
-    if (id === active) return
-    setVisible(false)
-    window.setTimeout(() => {
-      setActive(id)
-      setVisible(true)
-      contentRef.current?.scrollTo?.({ top: 0, behavior: 'smooth' })
-    }, 150)
-  }
-
-  useEffect(() => {
-    setVisible(true)
-  }, [])
 
   return (
     <div className="space-y-6">
@@ -51,65 +35,42 @@ export function AdminSettingsPage() {
         }
       />
 
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-4">
-        <Kpi label="Organization" value="1" />
-        <Kpi label="Office Locations" value="8" />
-        <Kpi label="Departments" value="15" />
-        <Kpi label="Employees" value="1,284" />
-        <Kpi label="Policies" value="8" />
-        <Kpi label="Leave Types" value="12" />
+      {/* Horizontal section tabs — same pattern as My Leave (Balance / History / Calendar) */}
+      <div className="flex flex-wrap gap-2 border-b border-outline-variant pb-0">
+        {SECTIONS.map((s) => {
+          const isActive = active === s.id
+          return (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => setActive(s.id)}
+              className={cn(
+                'inline-flex items-center gap-2 px-4 py-2.5 text-label-md font-medium rounded-t-lg border-b-2 transition-all',
+                isActive
+                  ? 'border-secondary text-secondary bg-surface-container-high/60'
+                  : 'border-transparent text-on-surface-variant hover:text-on-surface hover:bg-surface-container-low'
+              )}
+            >
+              <span
+                className="material-symbols-outlined text-lg"
+                style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}
+              >
+                {s.icon}
+              </span>
+              {s.label}
+            </button>
+          )
+        })}
       </div>
 
-      <div className="flex flex-col xl:flex-row gap-6 min-h-0">
-        <nav className="xl:w-64 shrink-0 bg-surface-container-lowest border border-outline-variant rounded-xl p-3 space-y-1 shadow-sm sticky top-4 self-start">
-          <p className="px-3 py-2 text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
-            Section Overview
-          </p>
-          {SECTIONS.map((s) => {
-            const isActive = active === s.id
-            return (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => switchSection(s.id)}
-                className={cn(
-                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-body-sm text-left border-l-4',
-                  'transition-all duration-200 ease-out',
-                  isActive
-                    ? 'bg-secondary/10 text-secondary font-semibold border-secondary shadow-sm'
-                    : 'text-on-surface-variant font-medium border-transparent hover:bg-surface-container-low hover:text-on-surface'
-                )}
-              >
-                <span
-                  className={cn(
-                    'material-symbols-outlined text-[20px] transition-transform duration-200',
-                    isActive && 'scale-110'
-                  )}
-                  style={isActive ? { fontVariationSettings: "'FILL' 1" } : undefined}
-                >
-                  {s.icon}
-                </span>
-                <span className="truncate">{s.label}</span>
-              </button>
-            )
-          })}
-        </nav>
-
-        <div
-          ref={contentRef}
-          className={cn(
-            'flex-1 space-y-6 min-w-0 transition-all duration-200 ease-out',
-            visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'
-          )}
-        >
-          {active === 'organization' && <OrganizationSection />}
-          {active === 'head-office' && <HeadOfficeSection />}
-          {active === 'locations' && <LocationsSection />}
-          {active === 'branding' && <BrandingSection />}
-          {active === 'regional' && <RegionalSection />}
-          {active === 'attendance' && <AttendanceSection />}
-          {active === 'leave' && <LeaveSection />}
-        </div>
+      <div className="space-y-6">
+        {active === 'organization' && <OrganizationSection />}
+        {active === 'head-office' && <HeadOfficeSection />}
+        {active === 'locations' && <LocationsSection />}
+        {active === 'branding' && <BrandingSection />}
+        {active === 'regional' && <RegionalSection />}
+        {active === 'attendance' && <AttendanceSection />}
+        {active === 'leave' && <LeaveSection />}
       </div>
     </div>
   )
