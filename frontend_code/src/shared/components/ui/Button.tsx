@@ -13,18 +13,21 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
 }
 
-/** Stitch-aligned variants: primary = brand blue CTA, outline = light surface */
+/**
+ * Dark/filled variants force white text + icons (on-primary).
+ * Light variants keep on-surface / on-background.
+ */
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-primary text-on-primary hover:bg-[#004493] shadow-subtle active:scale-[0.98]',
+    'bg-primary text-on-primary hover:bg-[#004493] shadow-subtle active:scale-[0.98] [&_.material-symbols-outlined]:text-on-primary',
   secondary:
-    'bg-secondary-container text-on-secondary-container hover:bg-primary-fixed active:scale-[0.98]',
+    'bg-secondary text-on-secondary hover:bg-[#004a9e] active:scale-[0.98] [&_.material-symbols-outlined]:text-on-secondary',
   outline:
     'border border-outline-variant/50 bg-surface-container-lowest text-on-surface hover:bg-surface-variant/10',
   ghost:
     'text-on-surface-variant hover:bg-surface-variant/30 hover:text-primary',
   danger:
-    'bg-error text-on-error hover:opacity-90 active:scale-[0.98]',
+    'bg-error text-on-error hover:opacity-90 active:scale-[0.98] [&_.material-symbols-outlined]:text-on-error',
 }
 
 const sizeClasses: Record<ButtonSize, string> = {

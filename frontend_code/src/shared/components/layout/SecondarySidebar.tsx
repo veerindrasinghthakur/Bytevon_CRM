@@ -55,7 +55,7 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     title: 'My Work',
     items: [
       { id: 'overview', label: 'Overview', icon: 'dashboard', to: '/my-work' },
-      { id: 'break', label: 'Take a Break', icon: 'coffee', to: '/my-work/break' },
+      /* Break lives in header only — not duplicated here */
       { id: 'my-attendance', label: 'My Attendance', icon: 'calendar_today', to: '/my-work/attendance' },
       { id: 'my-leave', label: 'My Leave', icon: 'event_busy', to: '/my-work/leave' },
       { id: 'my-tasks', label: 'My Tasks', icon: 'task_alt', to: '/my-work/tasks' },
@@ -146,14 +146,14 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
       className={cn(
         'h-full bg-surface-container-lowest border-r border-outline-variant flex flex-col',
         'overflow-hidden shrink-0',
-        isCollapsed ? 'w-16' : 'w-60'
+        isCollapsed ? 'w-16' : 'w-60',
       )}
       aria-label="Secondary navigation"
     >
       <div
         className={cn(
           'shrink-0 flex items-center border-b border-outline-variant',
-          isCollapsed ? 'justify-center px-0' : 'justify-between px-3'
+          isCollapsed ? 'justify-center px-0' : 'justify-between px-3',
         )}
         style={{ height: HEADER_HEIGHT_PX }}
       >
@@ -168,7 +168,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
           className={cn(
             'flex items-center justify-center rounded-lg text-on-surface-variant',
             'hover:bg-surface-container hover:text-on-surface',
-            'w-8 h-8'
+            'w-8 h-8',
           )}
           aria-label={isCollapsed ? 'Expand secondary sidebar' : 'Collapse secondary sidebar'}
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
@@ -182,7 +182,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
       <div
         className={cn(
           'flex-1 overflow-y-auto scrollbar-hide',
-          isCollapsed ? 'pt-3 flex flex-col items-center' : 'pt-3 px-1'
+          isCollapsed ? 'pt-3 flex flex-col items-center' : 'pt-3 px-1',
         )}
       >
         <ul className={cn('flex flex-col gap-1', isCollapsed ? 'w-full items-center' : 'w-full')}>
@@ -204,13 +204,13 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                         : 'bg-[#e8f1ff] text-secondary font-semibold border-secondary'
                       : isCollapsed
                         ? 'text-on-surface-variant hover:bg-surface-container border-transparent'
-                        : 'text-on-surface-variant hover:bg-surface-container hover:text-on-background border-transparent'
+                        : 'text-on-surface-variant hover:bg-surface-container hover:text-on-background border-transparent',
                   )}
                 >
                   <span
                     className={cn(
                       'material-symbols-outlined text-2xl shrink-0',
-                      active ? 'text-secondary' : ''
+                      active ? 'text-secondary' : '',
                     )}
                     style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
                     aria-hidden="true"
@@ -226,7 +226,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                             'text-[10px] font-bold px-1.5 py-0.5 rounded',
                             active
                               ? 'bg-secondary/15 text-secondary'
-                              : 'bg-surface-container-highest text-on-surface-variant'
+                              : 'bg-surface-container-highest text-on-surface-variant',
                           )}
                         >
                           {item.badge}

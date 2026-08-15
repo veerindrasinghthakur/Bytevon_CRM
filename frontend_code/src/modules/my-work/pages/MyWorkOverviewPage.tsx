@@ -35,24 +35,24 @@ export function MyWorkOverviewPage() {
       <section className="relative overflow-hidden bg-deep-navy rounded-xl p-8 text-on-primary shadow-sm">
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <h2 className="text-headline-md md:text-headline-lg font-bold tracking-tight mb-3">
+            <h2 className="text-headline-md md:text-headline-lg font-bold tracking-tight mb-3 text-on-primary">
               Good Morning, {currentUser.firstName}
             </h2>
-            <div className="flex flex-wrap gap-3 text-sm text-inverse-primary">
-              <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full">
-                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+            <div className="flex flex-wrap gap-3 text-sm text-on-primary/80">
+              <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full text-on-primary">
+                <span className="material-symbols-outlined text-[18px] text-on-primary" aria-hidden="true">
                   badge
                 </span>
                 {currentUser.employeeId}
               </span>
-              <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full">
-                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+              <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full text-on-primary">
+                <span className="material-symbols-outlined text-[18px] text-on-primary" aria-hidden="true">
                   business_center
                 </span>
                 {currentUser.department}
               </span>
-              <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full">
-                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+              <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full text-on-primary">
+                <span className="material-symbols-outlined text-[18px] text-on-primary" aria-hidden="true">
                   calendar_month
                 </span>
                 {currentUser.todayLabel}
@@ -66,7 +66,7 @@ export function MyWorkOverviewPage() {
               </span>
             </div>
             <div className="flex flex-col">
-              <span className="text-xs uppercase tracking-wider text-inverse-primary">Current Shift</span>
+              <span className="text-xs uppercase tracking-wider text-on-primary/70">Current Shift</span>
               <span className="text-title-lg font-semibold text-on-primary">{currentUser.shift}</span>
             </div>
           </div>
@@ -81,7 +81,7 @@ export function MyWorkOverviewPage() {
           {[
             { icon: 'fingerprint', label: 'Mark Attendance', to: '/my-work/attendance' as const },
             { icon: 'event_available', label: 'Apply Leave', to: '/my-work/leave' as const },
-            { icon: 'coffee', label: 'Take a Break', to: '/my-work/break' as const },
+            { icon: 'payments', label: 'Pay Slip', to: '/profile' as const },
             { icon: 'task', label: 'View Tasks', to: '/my-work/tasks' as const },
             { icon: 'person_edit', label: 'Update Profile', to: '/profile' as const },
           ].map((action) => (
@@ -91,7 +91,10 @@ export function MyWorkOverviewPage() {
               onClick={() => navigate({ to: action.to })}
               className="flex flex-col items-center justify-center p-6 bg-surface-container-lowest border border-outline-variant rounded-xl hover:border-secondary hover:bg-secondary/5 transition-all group shadow-sm"
             >
-              <span className="material-symbols-outlined text-[32px] text-secondary mb-3 group-hover:scale-110 transition-transform" aria-hidden="true">
+              <span
+                className="material-symbols-outlined text-[32px] text-secondary mb-3 group-hover:scale-110 transition-transform"
+                aria-hidden="true"
+              >
                 {action.icon}
               </span>
               <span className="text-label-md font-semibold text-on-background">{action.label}</span>
@@ -231,7 +234,9 @@ export function MyWorkOverviewPage() {
                 <tr key={task.id} className="hover:bg-secondary/5 transition-colors">
                   <td className="px-6 py-4 text-label-md font-semibold text-on-background">{task.name}</td>
                   <td className="px-6 py-4">
-                    <span className={`px-2.5 py-0.5 rounded-full text-label-sm font-bold ${priorityClass[task.priority] ?? ''}`}>
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-label-sm font-bold ${priorityClass[task.priority] ?? ''}`}
+                    >
                       {task.priority}
                     </span>
                   </td>
@@ -260,7 +265,10 @@ export function MyWorkOverviewPage() {
           </div>
           <div className="flex flex-col gap-3">
             {recentNotifications.map((n) => (
-              <div key={n.id} className="flex gap-4 p-3 bg-surface-container-low rounded-lg relative overflow-hidden">
+              <div
+                key={n.id}
+                className="flex gap-4 p-3 bg-surface-container-low rounded-lg relative overflow-hidden"
+              >
                 <div className="w-1 bg-secondary absolute left-0 top-0 h-full" />
                 <div className="bg-surface-container-lowest p-2 h-fit rounded-lg shadow-sm">
                   <span className="material-symbols-outlined text-secondary text-[20px]" aria-hidden="true">
@@ -274,7 +282,9 @@ export function MyWorkOverviewPage() {
                   </div>
                   <p className="text-label-sm text-on-surface-variant mt-1">{n.body}</p>
                   {n.tag && (
-                    <span className="mt-2 text-[10px] font-bold text-secondary uppercase tracking-tight">{n.tag}</span>
+                    <span className="mt-2 text-[10px] font-bold text-secondary uppercase tracking-tight">
+                      {n.tag}
+                    </span>
                   )}
                 </div>
               </div>
