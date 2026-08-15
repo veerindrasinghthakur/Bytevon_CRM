@@ -74,11 +74,12 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     moduleId: 'admin',
     title: 'Administration',
     items: [
+      { id: 'hub', label: 'Admin Hub', icon: 'admin_panel_settings', to: '/admin' },
       { id: 'users', label: 'Users', icon: 'manage_accounts', to: '/admin/users' },
       { id: 'roles', label: 'Roles & Permissions', icon: 'qr_code_2', to: '/admin/roles' },
       { id: 'settings', label: 'Settings', icon: 'settings', to: '/admin/settings' },
       { id: 'audit', label: 'Audit Logs', icon: 'receipt_long', to: '/admin/audit' },
-      { id: 'notifications', label: 'Notifications', icon: 'notifications', to: '/admin/notifications' },
+      { id: 'security', label: 'Security Center', icon: 'security', to: '/admin/security' },
     ],
   },
 }
@@ -120,6 +121,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
     if (to === '/projects') return pathname === '/projects'
     if (to === '/my-work') return pathname === '/my-work'
     if (to === '/approvals') return pathname === '/approvals'
+    if (to === '/admin') return pathname === '/admin'
     if (to === '/my-work/attendance') {
       return (
         pathname === '/my-work/attendance' ||
