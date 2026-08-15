@@ -2,7 +2,7 @@ import { useParams } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { cn } from '@/shared/lib/cn'
 import { todayAttendance, attendanceLogs } from '../data/attendanceMock'
-import { RouteCrumbs } from '../components/RouteCrumbs'
+import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 
 const statusClass: Record<string, string> = {
   PRESENT: 'bg-emerald-100 text-emerald-800',
@@ -13,7 +13,8 @@ const statusClass: Record<string, string> = {
 }
 
 export function WorkforceAttendanceDetailPage() {
-  const { attendanceId } = useParams({ from: '/workforce/attendance/$attendanceId' })
+  const params = useParams({ strict: false }) as { attendanceId?: string }
+  const attendanceId = params.attendanceId
   const row = todayAttendance.find((r) => r.id === attendanceId) ?? todayAttendance[0]
 
   return (
@@ -24,15 +25,7 @@ export function WorkforceAttendanceDetailPage() {
         showBack
         backTo="/workforce/attendance"
         backLabel="Back to attendance"
-        breadcrumbs={
-          <RouteCrumbs
-            items={[
-              { label: 'Workforce', to: '/workforce/employees' },
-              { label: 'Attendance', to: '/workforce/attendance' },
-              { label: row.name },
-            ]}
-          />
-        }
+        breadcrumbs={<DynamicRouteCrumbs lastLabel={row.name} />}
       />
 
       <div className="flex items-center gap-3">
@@ -84,7 +77,9 @@ export function WorkforceAttendanceDetailPage() {
           Punch in/out matched corporate headquarters within 15 meters.
         </p>
         <div className="mt-2 flex flex-wrap gap-2">
-          <span className="rounded-full bg-emerald-50 text-emerald-700 px-2 py-1 text-caption">Trusted network</span>
+          <span className="rounded-full bg-emerald-50 text-emerald-700 px-2 py-1 text-caption">
+            Trusted network
+          </span>
           <span className="rounded-full bg-surface-container text-on-surface-variant px-2 py-1 text-caption">
             HQ perimeter
           </span>

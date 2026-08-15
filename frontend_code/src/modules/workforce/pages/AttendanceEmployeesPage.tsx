@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
+import { Select } from '@/shared/components/ui/Select'
 import { cn } from '@/shared/lib/cn'
 import { todayAttendance } from '../data/attendanceMock'
-import { RouteCrumbs } from '../components/RouteCrumbs'
+import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -20,6 +21,15 @@ const statusClass: Record<string, string> = {
   WFH: 'bg-violet-100 text-violet-800',
   ON_LEAVE: 'bg-sky-100 text-sky-800',
 }
+
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'All statuses' },
+  { value: 'PRESENT', label: 'Present' },
+  { value: 'LATE', label: 'Late' },
+  { value: 'ABSENT', label: 'Absent' },
+  { value: 'WFH', label: 'WFH' },
+  { value: 'ON_LEAVE', label: 'On leave' },
+]
 
 export function AttendanceEmployeesPage() {
   const navigate = useNavigate()
@@ -48,18 +58,15 @@ export function AttendanceEmployeesPage() {
         backTo="/workforce/attendance"
         backLabel="Back to attendance"
         breadcrumbs={
-          <RouteCrumbs
-            items={[
-              { label: 'Workforce', to: '/workforce/employees' },
-              { label: 'Attendance', to: '/workforce/attendance' },
-              { label: 'All employees' },
-            ]}
+          <DynamicRouteCrumbs
+            lastLabel="All employees"
+            labelOverrides={{ employees: 'All employees' }}
           />
         }
       />
 
       <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-outline-variant/30 flex flex-wrap gap-3">
+        <div className="p-4 border-b border-outline-variant/30 flex flex-wrap gap-3 items-center">
           <div className="relative flex-1 min-w-[200px]">
             <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
             <input
@@ -69,18 +76,13 @@ export function AttendanceEmployeesPage() {
               placeholder="Search employee or department…"
             />
           </div>
-          <select
+          <Select
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="border border-outline-variant rounded-lg px-3 py-2 text-body-sm"
-          >
-            <option value="all">All statuses</option>
-            <option value="PRESENT">Present</option>
-            <option value="LATE">Late</option>
-            <option value="ABSENT">Absent</option>
-            <option value="WFH">WFH</option>
-            <option value="ON_LEAVE">On leave</option>
-          </select>
+            onChange={setStatus}
+            options={STATUS_OPTIONS}
+            minWidthClass="min-w-[140px]"
+            aria-label="Filter by status"
+          />
         </div>
         <table className="w-full text-left">
           <thead>
@@ -103,7 +105,10 @@ export function AttendanceEmployeesPage() {
                 key={r.id}
                 className="hover:bg-surface-container-low/50 cursor-pointer"
                 onClick={() =>
-                  navigate({ to: '/workforce/attendance/$attendanceId', params: { attendanceId: r.id } })
+                  navigate({
+                    to: '/workforce/attendance/$attendanceId',
+                    params: { attendanceId: r.id },
+                  })
                 }
               >
                 <td className="px-6 py-4">
@@ -114,9 +119,13 @@ export function AttendanceEmployeesPage() {
                     <span className="font-semibold text-body-sm">{r.name}</span>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-body-sm text-on-surface-variant hidden sm:table-cell">{r.department}</td>
+                <td className="px-6 py-4 text-body-sm text-on-surface-variant hidden sm:table-cell">
+                  {r.department}
+                </td>
                 <td className="px-6 py-4 text-body-sm text-on-surface-variant">{r.checkIn}</td>
-                <td className="px-6 py-4 text-body-sm text-on-surface-variant hidden md:table-cell">{r.checkOut}</td>
+                <td className="px-6 py-4 text-body-sm text-on-surface-variant hidden md:table-cell">
+                  {r.checkOut}
+                </td>
                 <td className="px-6 py-4">
                   <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-bold', statusClass[r.status])}>
                     {r.status.replace('_', ' ')}
@@ -130,7 +139,9 @@ export function AttendanceEmployeesPage() {
           </tbody>
         </table>
         {filtered.length === 0 && (
-          <div className="px-6 py-16 text-center text-body-sm text-on-surface-variant">No records match your filters.</div>
+          <div className="px-6 py-16 text-center text-body-sm text-on-surface-variant">
+            No records match your filters.
+          </div>
         )}
       </div>
     </div>

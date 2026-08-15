@@ -4,7 +4,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { cn } from '@/shared/lib/cn'
-import { RouteCrumbs } from '../components/RouteCrumbs'
+import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import {
   attendanceKpis,
   weeklyAttendance,
@@ -32,12 +32,19 @@ const statusClass: Record<string, string> = {
   Remote: 'bg-violet-100 text-violet-800',
 }
 
-const STATUS_OPTIONS = ['ALL', 'PRESENT', 'LATE', 'ABSENT', 'WFH', 'ON_LEAVE'] as const
+const STATUS_OPTIONS = [
+  { value: 'ALL', label: 'All statuses' },
+  { value: 'PRESENT', label: 'Present' },
+  { value: 'LATE', label: 'Late' },
+  { value: 'ABSENT', label: 'Absent' },
+  { value: 'WFH', label: 'WFH' },
+  { value: 'ON_LEAVE', label: 'On leave' },
+]
 
 export function AttendanceDashboardPage() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('ALL')
+  const [statusFilter, setStatusFilter] = useState('ALL')
   const maxBar = Math.max(...weeklyAttendance.map((d) => Math.max(d.thisWeek, d.lastWeek)), 1)
 
   const rows = useMemo(() => {
@@ -55,14 +62,7 @@ export function AttendanceDashboardPage() {
       <PageHeader
         title="Attendance Dashboard"
         description="Real-time monitoring of your organisation's workforce status."
-        breadcrumbs={
-          <RouteCrumbs
-            items={[
-              { label: 'Workforce', to: '/workforce/employees' },
-              { label: 'Attendance' },
-            ]}
-          />
-        }
+        breadcrumbs={<DynamicRouteCrumbs />}
         actions={
           <Button
             variant="outline"
@@ -130,7 +130,10 @@ export function AttendanceDashboardPage() {
         <section className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-title-md font-semibold">Recent check-ins</h2>
-            <Link to="/workforce/attendance/employees" className="text-label-sm text-secondary hover:underline">
+            <Link
+              to="/workforce/attendance/employees"
+              className="text-label-sm text-secondary hover:underline"
+            >
               View all
             </Link>
           </div>
@@ -159,7 +162,10 @@ export function AttendanceDashboardPage() {
             {/* Search left · status filter to the RIGHT of search */}
             <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1 justify-end">
               <div className="relative min-w-[160px] flex-1 max-w-xs">
-                <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
+                <Icon
+                  name="search"
+                  className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
+                />
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
@@ -169,16 +175,11 @@ export function AttendanceDashboardPage() {
               </div>
               <Select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="min-w-[140px]"
+                onChange={setStatusFilter}
+                options={STATUS_OPTIONS}
+                minWidthClass="min-w-[140px]"
                 aria-label="Filter by status"
-              >
-                {STATUS_OPTIONS.map((s) => (
-                  <option key={s} value={s}>
-                    {s === 'ALL' ? 'All statuses' : s.replace('_', ' ')}
-                  </option>
-                ))}
-              </Select>
+              />
               {(query || statusFilter !== 'ALL') && (
                 <Button
                   variant="ghost"
@@ -196,12 +197,18 @@ export function AttendanceDashboardPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-surface-container-low/50 border-b border-outline-variant/30">
-                <th className="px-4 py-3 text-label-sm font-medium text-on-surface-variant uppercase">Employee</th>
+                <th className="px-4 py-3 text-label-sm font-medium text-on-surface-variant uppercase">
+                  Employee
+                </th>
                 <th className="px-4 py-3 text-label-sm font-medium text-on-surface-variant uppercase hidden sm:table-cell">
                   Department
                 </th>
-                <th className="px-4 py-3 text-label-sm font-medium text-on-surface-variant uppercase">Check in</th>
-                <th className="px-4 py-3 text-label-sm font-medium text-on-surface-variant uppercase">Status</th>
+                <th className="px-4 py-3 text-label-sm font-medium text-on-surface-variant uppercase">
+                  Check in
+                </th>
+                <th className="px-4 py-3 text-label-sm font-medium text-on-surface-variant uppercase">
+                  Status
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/20">
@@ -236,7 +243,12 @@ export function AttendanceDashboardPage() {
                     </td>
                     <td className="px-4 py-3 text-body-sm text-on-surface-variant">{r.checkIn}</td>
                     <td className="px-4 py-3">
-                      <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-bold', statusClass[r.status])}>
+                      <span
+                        className={cn(
+                          'rounded-full px-2 py-0.5 text-[10px] font-bold',
+                          statusClass[r.status],
+                        )}
+                      >
                         {r.status.replace('_', ' ')}
                       </span>
                     </td>
@@ -256,7 +268,10 @@ export function AttendanceDashboardPage() {
           </div>
           <ul className="space-y-4">
             {corrections.map((c) => (
-              <li key={c.id} className="rounded-lg border border-outline-variant/40 bg-surface-container-low/40 p-3">
+              <li
+                key={c.id}
+                className="rounded-lg border border-outline-variant/40 bg-surface-container-low/40 p-3"
+              >
                 <div className="flex justify-between gap-2">
                   <span className="text-body-sm font-medium">{c.name}</span>
                   <span className="text-caption text-on-surface-variant">{c.ago}</span>
