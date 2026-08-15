@@ -65,6 +65,7 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     moduleId: 'approvals',
     title: 'Approvals',
     items: [
+      { id: 'center', label: 'Approval Center', icon: 'fact_check', to: '/approvals' },
       { id: 'pending', label: 'Pending Approvals', icon: 'pending_actions', to: '/approvals/pending' },
       { id: 'my-requests', label: 'My Requests', icon: 'request_page', to: '/approvals/my-requests' },
     ],
@@ -118,6 +119,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
     }
     if (to === '/projects') return pathname === '/projects'
     if (to === '/my-work') return pathname === '/my-work'
+    if (to === '/approvals') return pathname === '/approvals'
     if (to === '/my-work/attendance') {
       return (
         pathname === '/my-work/attendance' ||

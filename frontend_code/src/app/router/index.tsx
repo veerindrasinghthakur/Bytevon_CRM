@@ -64,6 +64,12 @@ import {
   TakeABreakPage,
 } from '@/modules/my-work'
 
+import {
+  ApprovalCenterPage,
+  PendingApprovalsPage,
+  MyRequestsPage,
+} from '@/modules/approvals'
+
 function Placeholder({ title }: { title: string }) {
   return (
     <div>
@@ -402,17 +408,17 @@ const myWorkApprovalDetailRoute = createRoute({
 const approvalsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/approvals',
-  component: () => <Placeholder title="Approvals" />,
+  component: ApprovalCenterPage,
 })
 const approvalsPendingRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/approvals/pending',
-  component: () => <Placeholder title="Pending Approvals" />,
+  component: PendingApprovalsPage,
 })
 const approvalsMyRequestsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/approvals/my-requests',
-  component: () => <Placeholder title="My Requests" />,
+  component: MyRequestsPage,
 })
 
 const adminRoute = createRoute({
