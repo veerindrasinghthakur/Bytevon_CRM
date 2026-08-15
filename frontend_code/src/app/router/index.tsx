@@ -71,6 +71,18 @@ import {
   ApprovalDetailPage,
 } from '@/modules/approvals'
 
+import {
+  AdminHubPage,
+  UsersListPage,
+  UserDetailPage,
+  RolesListPage,
+  RoleDetailPage,
+  RoleCreatePage,
+  AuditLogsPage,
+  AdminSettingsPage,
+  SecurityCenterPage,
+} from '@/modules/admin'
+
 function Placeholder({ title }: { title: string }) {
   return (
     <div>
@@ -437,27 +449,47 @@ const approvalsMyRequestsRedirectRoute = createRoute({
 const adminRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin',
-  component: () => <Placeholder title="Administration" />,
+  component: AdminHubPage,
 })
 const adminUsersRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/users',
-  component: () => <Placeholder title="Users" />,
+  component: UsersListPage,
+})
+const adminUserDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/users/$userId',
+  component: UserDetailPage,
 })
 const adminRolesRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/roles',
-  component: () => <Placeholder title="Roles & Permissions" />,
+  component: RolesListPage,
+})
+const adminRolesNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/roles/new',
+  component: RoleCreatePage,
+})
+const adminRoleDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/roles/$roleId',
+  component: RoleDetailPage,
 })
 const adminSettingsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/settings',
-  component: () => <Placeholder title="Settings" />,
+  component: AdminSettingsPage,
 })
 const adminAuditRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/audit',
-  component: () => <Placeholder title="Audit Logs" />,
+  component: AuditLogsPage,
+})
+const adminSecurityRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/security',
+  component: SecurityCenterPage,
 })
 const adminNotificationsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
@@ -526,9 +558,13 @@ const routeTree = rootRoute.addChildren([
     approvalsMyRequestsRedirectRoute,
     adminRoute,
     adminUsersRoute,
+    adminUserDetailRoute,
     adminRolesRoute,
+    adminRolesNewRoute,
+    adminRoleDetailRoute,
     adminSettingsRoute,
     adminAuditRoute,
+    adminSecurityRoute,
     adminNotificationsRoute,
   ]),
 ])
