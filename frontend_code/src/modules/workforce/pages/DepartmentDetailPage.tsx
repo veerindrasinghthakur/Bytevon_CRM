@@ -1,11 +1,16 @@
 import { useNavigate, useParams } from '@tanstack/react-router'
-import { PageHeader } from '@/shared/components/layout/PageHeader'
+import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { departments, departmentLeads, departmentHighlights } from '../data/mock'
+import { RouteCrumbs } from '../components/RouteCrumbs'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
-  return <span className={cn('material-symbols-outlined', className)} aria-hidden>{name}</span>
+  return (
+    <span className={cn('material-symbols-outlined', className)} aria-hidden>
+      {name}
+    </span>
+  )
 }
 
 export function DepartmentDetailPage() {
@@ -15,19 +20,49 @@ export function DepartmentDetailPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <p className="text-label-sm text-on-surface-variant mb-1">Employees · Departments · {d.name}</p>
+      <div>
+        <BackButton to="/workforce/departments" label="Back to departments" />
+        <RouteCrumbs
+          className="mt-2 mb-3"
+          items={[
+            { label: 'Workforce', to: '/workforce/employees' },
+            { label: 'Departments', to: '/workforce/departments' },
+            { label: d.name },
+          ]}
+        />
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="flex items-center gap-3">
             <h1 className="text-headline-lg text-on-background">{d.name}</h1>
-            <span className="px-3 py-1 bg-surface-container-highest text-secondary text-label-sm rounded-full">{d.code}</span>
+            <span className="px-3 py-1 bg-surface-container-highest text-secondary text-label-sm rounded-full">
+              {d.code}
+            </span>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" leftIcon={<Icon name="edit" />}>Edit Department</Button>
-          <Button variant="primary" leftIcon={<Icon name="person_add" />} onClick={() => navigate({ to: '/workforce/departments/$departmentId/members', params: { departmentId: d.id } })}>
-            Add Member
-          </Button>
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              leftIcon={<Icon name="edit" />}
+              onClick={() =>
+                navigate({
+                  to: '/workforce/departments/$departmentId/edit',
+                  params: { departmentId: d.id },
+                })
+              }
+            >
+              Edit Department
+            </Button>
+            <Button
+              variant="primary"
+              leftIcon={<Icon name="person_add" />}
+              onClick={() =>
+                navigate({
+                  to: '/workforce/departments/$departmentId/add-member',
+                  params: { departmentId: d.id },
+                })
+              }
+            >
+              Add Member
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -61,14 +96,24 @@ export function DepartmentDetailPage() {
             <div className="h-20 bg-gradient-to-r from-primary to-secondary" />
             <div className="px-6 pb-6 -mt-10 relative">
               <div className="w-20 h-20 rounded-2xl border-4 border-surface-container-lowest bg-secondary/10 text-secondary flex items-center justify-center text-xl font-bold shadow-md mb-3">
-                {d.headName.split(' ').map((p) => p[0]).join('').slice(0, 2)}
+                {d.headName
+                  .split(' ')
+                  .map((p) => p[0])
+                  .join('')
+                  .slice(0, 2)}
               </div>
               <h3 className="text-headline-md font-semibold">{d.headName}</h3>
               <p className="text-secondary font-medium mb-4">{d.headTitle ?? 'Department Head'}</p>
               <div className="space-y-2 text-on-surface-variant text-body-sm">
-                <p className="flex items-center gap-2"><Icon name="mail" className="text-lg" /> head@{d.name.toLowerCase()}.bytevon.io</p>
-                <p className="flex items-center gap-2"><Icon name="call" className="text-lg" /> +1 (555) 098-4432</p>
-                <p className="flex items-center gap-2"><Icon name="location_on" className="text-lg" /> HQ — Floor 4</p>
+                <p className="flex items-center gap-2">
+                  <Icon name="mail" className="text-lg" /> head@{d.name.toLowerCase()}.bytevon.io
+                </p>
+                <p className="flex items-center gap-2">
+                  <Icon name="call" className="text-lg" /> +1 (555) 098-4432
+                </p>
+                <p className="flex items-center gap-2">
+                  <Icon name="location_on" className="text-lg" /> HQ — Floor 4
+                </p>
               </div>
             </div>
           </div>
@@ -81,23 +126,41 @@ export function DepartmentDetailPage() {
                 <h4 className="text-title-lg font-semibold">Employee Heads</h4>
                 <p className="text-body-sm text-on-surface-variant">Core leadership within {d.name}</p>
               </div>
-              <button type="button" className="text-secondary text-label-md hover:underline">View All Leads</button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {departmentLeads.map((l) => (
-                <div key={l.id} className="p-4 rounded-xl border border-outline-variant/20 hover:border-secondary/30 flex items-center gap-3 cursor-pointer">
+                <button
+                  key={l.id}
+                  type="button"
+                  className="p-4 rounded-xl border border-outline-variant/20 hover:border-secondary/30 flex items-center gap-3 text-left w-full"
+                  onClick={() =>
+                    navigate({
+                      to: '/workforce/employees/$employeeId',
+                      params: { employeeId: l.id },
+                    })
+                  }
+                >
                   <div className="relative">
                     <div className="w-12 h-12 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-sm font-bold">
-                      {l.name.split(' ').map((p) => p[0]).join('').slice(0, 2)}
+                      {l.name
+                        .split(' ')
+                        .map((p) => p[0])
+                        .join('')
+                        .slice(0, 2)}
                     </div>
-                    <span className={cn('absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white', l.online ? 'bg-green-500' : 'bg-amber-500')} />
+                    <span
+                      className={cn(
+                        'absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white',
+                        l.online ? 'bg-green-500' : 'bg-amber-500',
+                      )}
+                    />
                   </div>
                   <div className="flex-1">
                     <p className="font-bold text-sm">{l.name}</p>
                     <p className="text-xs text-on-surface-variant">{l.title}</p>
                   </div>
                   <Icon name="arrow_forward_ios" className="text-sm text-outline" />
-                </div>
+                </button>
               ))}
             </div>
           </div>
