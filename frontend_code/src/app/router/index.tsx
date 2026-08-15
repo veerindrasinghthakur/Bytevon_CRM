@@ -62,12 +62,13 @@ import {
   MyTaskDetailPage,
   MyApprovalDetailPage,
   TakeABreakPage,
+  MyRequestsPage,
 } from '@/modules/my-work'
 
 import {
   ApprovalCenterPage,
   PendingApprovalsPage,
-  MyRequestsPage,
+  ApprovalDetailPage,
 } from '@/modules/approvals'
 
 function Placeholder({ title }: { title: string }) {
@@ -404,6 +405,11 @@ const myWorkApprovalDetailRoute = createRoute({
   path: '/my-work/approvals/$requestId',
   component: MyApprovalDetailPage,
 })
+const myWorkRequestsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work/requests',
+  component: MyRequestsPage,
+})
 
 const approvalsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
@@ -415,10 +421,17 @@ const approvalsPendingRoute = createRoute({
   path: '/approvals/pending',
   component: PendingApprovalsPage,
 })
-const approvalsMyRequestsRoute = createRoute({
+const approvalsDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/approvals/$requestId',
+  component: ApprovalDetailPage,
+})
+const approvalsMyRequestsRedirectRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/approvals/my-requests',
-  component: MyRequestsPage,
+  beforeLoad: () => {
+    throw redirect({ to: '/my-work/requests' })
+  },
 })
 
 const adminRoute = createRoute({
@@ -506,9 +519,11 @@ const routeTree = rootRoute.addChildren([
     myWorkTaskDetailRoute,
     myWorkApprovalsRoute,
     myWorkApprovalDetailRoute,
+    myWorkRequestsRoute,
     approvalsRoute,
     approvalsPendingRoute,
-    approvalsMyRequestsRoute,
+    approvalsDetailRoute,
+    approvalsMyRequestsRedirectRoute,
     adminRoute,
     adminUsersRoute,
     adminRolesRoute,
