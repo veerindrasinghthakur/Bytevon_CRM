@@ -75,6 +75,7 @@ import {
   AdminHubPage,
   UsersListPage,
   UserDetailPage,
+  UserCreatePage,
   RolesListPage,
   RoleDetailPage,
   RoleCreatePage,
@@ -456,6 +457,11 @@ const adminUsersRoute = createRoute({
   path: '/admin/users',
   component: UsersListPage,
 })
+const adminUsersNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/users/new',
+  component: UserCreatePage,
+})
 const adminUserDetailRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/users/$userId',
@@ -558,6 +564,7 @@ const routeTree = rootRoute.addChildren([
     approvalsMyRequestsRedirectRoute,
     adminRoute,
     adminUsersRoute,
+    adminUsersNewRoute,
     adminUserDetailRoute,
     adminRolesRoute,
     adminRolesNewRoute,
