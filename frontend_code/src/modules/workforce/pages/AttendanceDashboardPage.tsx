@@ -3,6 +3,7 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
+import { RouteCrumbs } from '../components/RouteCrumbs'
 import {
   attendanceKpis,
   weeklyAttendance,
@@ -47,23 +48,22 @@ export function AttendanceDashboardPage() {
       <PageHeader
         title="Attendance Dashboard"
         description="Real-time monitoring of your organisation's workforce status."
+        breadcrumbs={
+          <RouteCrumbs
+            items={[
+              { label: 'Workforce', to: '/workforce/employees' },
+              { label: 'Attendance' },
+            ]}
+          />
+        }
         actions={
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              leftIcon={<Icon name="groups" />}
-              onClick={() => navigate({ to: '/workforce/attendance/employees' })}
-            >
-              All employees
-            </Button>
-            <Button
-              variant="primary"
-              leftIcon={<Icon name="how_to_reg" />}
-              onClick={() => navigate({ to: '/my-work/attendance/mark' })}
-            >
-              Mark attendance
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            leftIcon={<Icon name="groups" />}
+            onClick={() => navigate({ to: '/workforce/attendance/employees' })}
+          >
+            All employees
+          </Button>
         }
       />
 
@@ -226,12 +226,6 @@ export function AttendanceDashboardPage() {
               </li>
             ))}
           </ul>
-          <Link
-            to="/my-work/attendance/corrections"
-            className="mt-4 inline-block text-label-sm text-secondary hover:underline"
-          >
-            View correction history
-          </Link>
         </section>
       </div>
     </div>
