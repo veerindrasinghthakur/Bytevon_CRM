@@ -101,7 +101,7 @@ export function IconRail({
                 isExpanded ? 'px-5 py-3.5' : 'px-0 py-3.5 justify-center',
                 active
                   ? 'bg-sidebar-item-active text-on-primary border-electric-blue'
-                  : 'text-inverse-primary/60 hover:bg-sidebar-item-active/50 hover:text-on-primary border-transparent'
+                  : 'text-white/80 hover:bg-sidebar-item-active/50 hover:text-white border-transparent'
               )}
               title={!isExpanded ? item.label : undefined}
             >
@@ -119,7 +119,7 @@ export function IconRail({
           type="button"
           onClick={onLogout}
           className={cn(
-            'text-inverse-primary/60 hover:text-on-primary flex items-center gap-4 w-full',
+            'text-white/80 hover:text-white flex items-center gap-4 w-full',
             isExpanded ? 'px-5 py-3 justify-start' : 'py-3 justify-center'
           )}
           title="Logout"
