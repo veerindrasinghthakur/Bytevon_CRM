@@ -21,9 +21,9 @@ import {
 import { ProjectsListPage } from '@/modules/projects/pages/ProjectsListPage'
 import { ProjectDetailPage } from '@/modules/projects/pages/ProjectDetailPage'
 import { ProjectCreatePage } from '@/modules/projects/pages/ProjectCreatePage'
-import { TeamsListPage } from '@/modules/projects/pages/TeamsListPage'
+import { TeamsListPage as ProjectTeamsListPage } from '@/modules/projects/pages/TeamsListPage'
 import { TeamCreatePage } from '@/modules/projects/pages/TeamCreatePage'
-import { TeamDetailPage } from '@/modules/projects/pages/TeamDetailPage'
+import { TeamDetailPage as ProjectTeamDetailPage } from '@/modules/projects/pages/TeamDetailPage'
 import { TasksListPage } from '@/modules/projects/pages/TasksListPage'
 import { TaskCreatePage } from '@/modules/projects/pages/TaskCreatePage'
 import { TaskDetailPage } from '@/modules/projects/pages/TaskDetailPage'
@@ -41,8 +41,16 @@ import { CaseStudiesListPage } from '@/modules/sales/pages/CaseStudiesListPage'
 
 import { EmployeesListPage } from '@/modules/workforce/pages/EmployeesListPage'
 import { EmployeeCreatePage } from '@/modules/workforce/pages/EmployeeCreatePage'
+import { EmployeeDetailPage } from '@/modules/workforce/pages/EmployeeDetailPage'
 import { DepartmentsListPage } from '@/modules/workforce/pages/DepartmentsListPage'
 import { DepartmentCreatePage } from '@/modules/workforce/pages/DepartmentCreatePage'
+import { DepartmentDetailPage } from '@/modules/workforce/pages/DepartmentDetailPage'
+import { TeamsListPage } from '@/modules/workforce/pages/TeamsListPage'
+import { TeamDetailPage } from '@/modules/workforce/pages/TeamDetailPage'
+import { AddMemberPage } from '@/modules/workforce/pages/AddMemberPage'
+import { AttendanceDashboardPage } from '@/modules/workforce/pages/AttendanceDashboardPage'
+import { AttendanceEmployeesPage } from '@/modules/workforce/pages/AttendanceEmployeesPage'
+import { WorkforceAttendanceDetailPage } from '@/modules/workforce/pages/WorkforceAttendanceDetailPage'
 
 import { ProfilePage } from '@/modules/profile/pages/ProfilePage'
 import { NotificationsPage } from '@/modules/notifications/pages/NotificationsPage'
@@ -206,7 +214,7 @@ const projectDetailRoute = createRoute({
 const teamsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/projects/teams',
-  component: TeamsListPage,
+  component: ProjectTeamsListPage,
 })
 const teamsNewRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
@@ -216,7 +224,7 @@ const teamsNewRoute = createRoute({
 const teamDetailRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/projects/teams/$teamId',
-  component: TeamDetailPage,
+  component: ProjectTeamDetailPage,
 })
 const tasksRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
@@ -300,7 +308,9 @@ const salesCaseStudiesRoute = createRoute({
 const workforceRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/workforce',
-  component: () => <Placeholder title="Workforce" />,
+  beforeLoad: () => {
+    throw redirect({ to: '/workforce/employees' })
+  },
 })
 const workforceEmployeesRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
@@ -312,6 +322,11 @@ const workforceEmployeesNewRoute = createRoute({
   path: '/workforce/employees/new',
   component: EmployeeCreatePage,
 })
+const workforceEmployeeDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/employees/$employeeId',
+  component: EmployeeDetailPage,
+})
 const workforceDepartmentsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/workforce/departments',
@@ -322,10 +337,40 @@ const workforceDepartmentsNewRoute = createRoute({
   path: '/workforce/departments/new',
   component: DepartmentCreatePage,
 })
+const workforceDepartmentDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/departments/$departmentId',
+  component: DepartmentDetailPage,
+})
+const workforceTeamsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/teams',
+  component: TeamsListPage,
+})
+const workforceTeamDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/teams/$teamId',
+  component: TeamDetailPage,
+})
+const workforceTeamAddMemberRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/teams/$teamId/add-member',
+  component: AddMemberPage,
+})
 const workforceAttendanceRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/workforce/attendance',
-  component: () => <Placeholder title="Attendance" />,
+  component: AttendanceDashboardPage,
+})
+const workforceAttendanceEmployeesRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/attendance/employees',
+  component: AttendanceEmployeesPage,
+})
+const workforceAttendanceDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/attendance/$attendanceId',
+  component: WorkforceAttendanceDetailPage,
 })
 
 const myWorkRoute = createRoute({
@@ -483,9 +528,16 @@ const routeTree = rootRoute.addChildren([
     workforceRoute,
     workforceEmployeesRoute,
     workforceEmployeesNewRoute,
+    workforceEmployeeDetailRoute,
     workforceDepartmentsRoute,
     workforceDepartmentsNewRoute,
+    workforceDepartmentDetailRoute,
+    workforceTeamsRoute,
+    workforceTeamDetailRoute,
+    workforceTeamAddMemberRoute,
     workforceAttendanceRoute,
+    workforceAttendanceEmployeesRoute,
+    workforceAttendanceDetailRoute,
     myWorkRoute,
     myWorkBreakRoute,
     myWorkAttendanceRoute,
