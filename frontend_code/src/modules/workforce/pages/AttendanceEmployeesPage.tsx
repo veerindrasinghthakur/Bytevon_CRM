@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
-import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
 import { todayAttendance } from '../data/attendanceMock'
+import { RouteCrumbs } from '../components/RouteCrumbs'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -44,14 +44,17 @@ export function AttendanceEmployeesPage() {
       <PageHeader
         title="All employees attendance"
         description="View and manage real-time attendance records for the entire organisation."
-        actions={
-          <Button
-            variant="primary"
-            leftIcon={<Icon name="how_to_reg" />}
-            onClick={() => navigate({ to: '/my-work/attendance/mark' })}
-          >
-            Mark attendance
-          </Button>
+        showBack
+        backTo="/workforce/attendance"
+        backLabel="Back to attendance"
+        breadcrumbs={
+          <RouteCrumbs
+            items={[
+              { label: 'Workforce', to: '/workforce/employees' },
+              { label: 'Attendance', to: '/workforce/attendance' },
+              { label: 'All employees' },
+            ]}
+          />
         }
       />
 
