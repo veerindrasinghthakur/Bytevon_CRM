@@ -1,0 +1,144 @@
+export type ApprovalStatus = 'Pending' | 'Approved' | 'Rejected' | 'In-Progress'
+export type ApprovalPriority = 'High' | 'Medium' | 'Normal' | 'Low'
+
+export interface ApprovalRow {
+  id: string
+  type: string
+  typeIcon: string
+  typeColor: string
+  requester: string
+  requesterInitials: string
+  date: string
+  priority: ApprovalPriority
+  status: ApprovalStatus
+  stage?: string
+  approver?: string
+}
+
+export const approvalKpis = {
+  total: 210,
+  pending: 42,
+  approvedToday: 156,
+  rejectedToday: 12,
+  overdue: 8,
+}
+
+export const pendingApprovals: ApprovalRow[] = [
+  {
+    id: 'REQ-8902',
+    type: 'Leave Request',
+    typeIcon: 'flight_takeoff',
+    typeColor: 'bg-blue-100 text-blue-700',
+    requester: 'Sarah Adams',
+    requesterInitials: 'SA',
+    date: 'Oct 24, 2023',
+    priority: 'High',
+    status: 'Pending',
+  },
+  {
+    id: 'REQ-8901',
+    type: 'Expense Claim',
+    typeIcon: 'receipt_long',
+    typeColor: 'bg-purple-100 text-purple-700',
+    requester: 'Marcus Chen',
+    requesterInitials: 'MC',
+    date: 'Oct 23, 2023',
+    priority: 'Medium',
+    status: 'Pending',
+  },
+  {
+    id: 'REQ-8291',
+    type: 'Travel Expense',
+    typeIcon: 'flight_takeoff',
+    typeColor: 'bg-blue-50 text-blue-600',
+    requester: 'Elena Rodriguez',
+    requesterInitials: 'ER',
+    date: 'Oct 24, 2023',
+    priority: 'High',
+    status: 'Pending',
+  },
+  {
+    id: 'REQ-8290',
+    type: 'Leave Request',
+    typeIcon: 'calendar_month',
+    typeColor: 'bg-purple-50 text-purple-600',
+    requester: 'Marcus Chen',
+    requesterInitials: 'MC',
+    date: 'Oct 23, 2023',
+    priority: 'Medium',
+    status: 'Pending',
+  },
+  {
+    id: 'REQ-8285',
+    type: 'Procurement',
+    typeIcon: 'shopping_cart',
+    typeColor: 'bg-orange-50 text-orange-600',
+    requester: 'Sarah Jenkins',
+    requesterInitials: 'SJ',
+    date: 'Oct 22, 2023',
+    priority: 'Normal',
+    status: 'Pending',
+  },
+]
+
+export const myRequests: ApprovalRow[] = [
+  {
+    id: 'REQ-8821',
+    type: 'Hardware Upgrade',
+    typeIcon: 'computer',
+    typeColor: 'bg-surface-container text-secondary',
+    requester: 'You',
+    requesterInitials: 'YO',
+    date: 'Oct 12, 2023',
+    priority: 'Medium',
+    status: 'In-Progress',
+    stage: 'With Manager',
+    approver: 'Robert Chen',
+  },
+  {
+    id: 'REQ-8794',
+    type: 'Annual Leave',
+    typeIcon: 'event_busy',
+    typeColor: 'bg-emerald-50 text-emerald-700',
+    requester: 'You',
+    requesterInitials: 'YO',
+    date: 'Oct 08, 2023',
+    priority: 'Normal',
+    status: 'Approved',
+    stage: 'Completed',
+    approver: 'Sarah Miller',
+  },
+  {
+    id: 'REQ-8750',
+    type: 'SaaS Subscription',
+    typeIcon: 'subscriptions',
+    typeColor: 'bg-blue-50 text-blue-700',
+    requester: 'You',
+    requesterInitials: 'YO',
+    date: 'Oct 05, 2023',
+    priority: 'Medium',
+    status: 'In-Progress',
+    stage: 'HR Review',
+    approver: 'David Wilson',
+  },
+  {
+    id: 'REQ-8622',
+    type: 'Project Budget Up',
+    typeIcon: 'payments',
+    typeColor: 'bg-amber-50 text-amber-800',
+    requester: 'You',
+    requesterInitials: 'YO',
+    date: 'Sep 28, 2023',
+    priority: 'High',
+    status: 'Rejected',
+    stage: 'Finance Denied',
+    approver: 'Elena Rodriguez',
+  },
+]
+
+export const APPROVER_OPTIONS = [
+  { value: 'sarah-chen', label: 'Sarah Chen (Manager)' },
+  { value: 'robert-chen', label: 'Robert Chen (Director)' },
+  { value: 'david-wilson', label: 'David Wilson (HR)' },
+  { value: 'elena-rodriguez', label: 'Elena Rodriguez (Finance)' },
+]
