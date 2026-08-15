@@ -10,6 +10,13 @@ import { attendanceHistory, myApprovals } from '../data/mock'
 
 type CorrectionStatus = 'Pending' | 'Approved' | 'Rejected' | 'Draft'
 
+const APPROVER_OPTIONS = [
+  { value: 'Sarah Chen', label: 'Sarah Chen (Manager)' },
+  { value: 'Robert Chen', label: 'Robert Chen (Director)' },
+  { value: 'David Wilson', label: 'David Wilson (HR)' },
+  { value: 'Elena Rodriguez', label: 'Elena Rodriguez (Finance)' },
+]
+
 interface CorrectionRequest {
   id: string
   date: string
@@ -19,6 +26,7 @@ interface CorrectionRequest {
   reason: string
   status: CorrectionStatus
   submittedOn: string
+  approver: string
 }
 
 const seedFromApprovals: CorrectionRequest[] = myApprovals
@@ -32,6 +40,7 @@ const seedFromApprovals: CorrectionRequest[] = myApprovals
     reason: a.summary,
     status: a.status as CorrectionStatus,
     submittedOn: a.submittedOn,
+    approver: 'Sarah Chen',
   }))
 
 const STATUS_STYLES: Record<CorrectionStatus, string> = {
@@ -50,6 +59,7 @@ export function AttendanceCorrectionsPage() {
   const [checkIn, setCheckIn] = useState('')
   const [checkOut, setCheckOut] = useState('')
   const [reason, setReason] = useState('')
+  const [approver, setApprover] = useState(APPROVER_OPTIONS[0].value)
 
   const candidates = attendanceHistory.filter(
     (r) => r.status === 'Half Day' || r.status === 'Absent' || Boolean(r.note)
@@ -66,7 +76,8 @@ export function AttendanceCorrectionsPage() {
         (r) =>
           r.date.includes(q) ||
           r.reason.toLowerCase().includes(q) ||
-          r.originalStatus.toLowerCase().includes(q)
+          r.originalStatus.toLowerCase().includes(q) ||
+          r.approver.toLowerCase().includes(q)
       )
     }
     return list
@@ -78,12 +89,13 @@ export function AttendanceCorrectionsPage() {
     setCheckIn(row?.checkIn && row.checkIn !== '—' ? row.checkIn : '09:00 AM')
     setCheckOut(row?.checkOut && row.checkOut !== '—' ? row.checkOut : '06:00 PM')
     setReason(row?.note ?? '')
+    setApprover(APPROVER_OPTIONS[0].value)
     setModalOpen(true)
   }
 
   const submit = () => {
     const row = candidates.find((c) => c.id === selectedDateId)
-    if (!row || !reason.trim()) return
+    if (!row || !reason.trim() || !approver) return
     const next: CorrectionRequest = {
       id: `corr-${Date.now()}`,
       date: row.date,
@@ -93,6 +105,7 @@ export function AttendanceCorrectionsPage() {
       reason: reason.trim(),
       status: 'Pending',
       submittedOn: new Date().toISOString().slice(0, 10),
+      approver,
     }
     setRequests((prev) => [next, ...prev])
     setModalOpen(false)
@@ -122,7 +135,7 @@ export function AttendanceCorrectionsPage() {
       <ListToolbar
         search={search}
         onSearchChange={setSearch}
-        searchPlaceholder="Search by date or reason…"
+        searchPlaceholder="Search by date, reason, or approver…"
         filtersActive={filtersActive}
         onResetFilters={() => {
           setSearch('')
@@ -141,7 +154,6 @@ export function AttendanceCorrectionsPage() {
         />
       </ListToolbar>
 
-      {/* Candidates */}
       <section className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-outline-variant/30 flex items-center justify-between">
           <div>
@@ -178,7 +190,6 @@ export function AttendanceCorrectionsPage() {
         )}
       </section>
 
-      {/* Submitted requests */}
       <section className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-outline-variant/30">
           <h3 className="text-title-lg text-on-background">Your requests</h3>
@@ -195,7 +206,7 @@ export function AttendanceCorrectionsPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[720px]">
+            <table className="w-full text-left border-collapse min-w-[820px]">
               <thead>
                 <tr className="border-b border-outline-variant/30 bg-surface/50">
                   <th className="py-3 px-5 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
@@ -206,6 +217,9 @@ export function AttendanceCorrectionsPage() {
                   </th>
                   <th className="py-3 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
                     Requested times
+                  </th>
+                  <th className="py-3 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
+                    Approver
                   </th>
                   <th className="py-3 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
                     Reason
@@ -226,7 +240,8 @@ export function AttendanceCorrectionsPage() {
                     <td className="py-2 px-4 text-body-md text-on-background">
                       {r.requestedCheckIn} – {r.requestedCheckOut}
                     </td>
-                    <td className="py-2 px-4 text-body-sm text-on-surface-variant max-w-[220px] truncate">
+                    <td className="py-2 px-4 text-body-md text-on-background">{r.approver}</td>
+                    <td className="py-2 px-4 text-body-sm text-on-surface-variant max-w-[200px] truncate">
                       {r.reason}
                     </td>
                     <td className="py-2 px-4">
@@ -261,7 +276,6 @@ export function AttendanceCorrectionsPage() {
         </Link>
       </p>
 
-      {/* Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-deep-navy/40 backdrop-blur-sm">
           <div
@@ -342,6 +356,23 @@ export function AttendanceCorrectionsPage() {
                 </div>
               </div>
               <div>
+                <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="corr-approver">
+                  Approver <span className="text-error">*</span>
+                </label>
+                <select
+                  id="corr-approver"
+                  value={approver}
+                  onChange={(e) => setApprover(e.target.value)}
+                  className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface text-body-md text-on-background focus:outline-none focus:ring-2 focus:ring-electric-blue"
+                >
+                  {APPROVER_OPTIONS.map((o) => (
+                    <option key={o.value} value={o.value}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="corr-reason">
                   Reason <span className="text-error">*</span>
                 </label>
@@ -365,7 +396,7 @@ export function AttendanceCorrectionsPage() {
                 variant="primary"
                 size="sm"
                 onClick={submit}
-                disabled={!reason.trim() || !selectedDateId}
+                disabled={!reason.trim() || !selectedDateId || !approver}
               >
                 Submit request
               </Button>
