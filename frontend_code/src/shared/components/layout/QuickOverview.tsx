@@ -38,45 +38,43 @@ export function QuickOverviewProvider({ children }: { children: ReactNode }) {
     [open, content, title, openPanel, closePanel],
   )
 
+  return <QuickOverviewContext.Provider value={value}>{children}</QuickOverviewContext.Provider>
+}
+
+/** Right-side overview drawer — mounted by AppShell next to main content */
+export function QuickOverviewPanel() {
+  const { open, content, title, closePanel } = useQuickOverview()
+
   return (
-    <QuickOverviewContext.Provider value={value}>
-      {children}
-      {/* Drawer — Stitch right panel */}
-      <div
+    <div
+      className={cn(
+        'fixed inset-0 z-40 transition-opacity duration-slow',
+        open ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
+      )}
+      aria-hidden={!open}
+    >
+      <button
+        type="button"
+        className="absolute inset-0 modal-overlay cursor-default border-0"
+        aria-label="Close overview"
+        onClick={closePanel}
+      />
+      <aside
         className={cn(
-          'fixed inset-0 z-40 transition-opacity duration-slow',
-          open ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0',
+          'absolute right-0 top-0 h-full w-full max-w-md',
+          'bg-surface-container-lowest border-l border-outline-variant/30 shadow-drawer',
+          'flex flex-col',
+          open ? 'animate-slide-in-right' : 'translate-x-full',
         )}
-        aria-hidden={!open}
       >
-        <button
-          type="button"
-          className="absolute inset-0 modal-overlay cursor-default border-0"
-          aria-label="Close overview"
-          onClick={closePanel}
-        />
-        <aside
-          className={cn(
-            'absolute right-0 top-0 h-full w-full max-w-md',
-            'bg-surface-container-lowest border-l border-outline-variant/30 shadow-drawer',
-            'flex flex-col',
-            open ? 'animate-slide-in-right' : 'translate-x-full',
-          )}
-        >
-          <div className="p-6 border-b border-outline-variant/30 flex items-center justify-between bg-surface-bright shrink-0">
-            <h3 className="text-headline-md font-semibold text-deep-navy">{title}</h3>
-            <button
-              type="button"
-              onClick={closePanel}
-              className="bv-icon-btn"
-              aria-label="Close"
-            >
-              <span className="material-symbols-outlined">close</span>
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto p-6 space-y-6 animate-fade-in">{content}</div>
-        </aside>
-      </div>
-    </QuickOverviewContext.Provider>
+        <div className="p-6 border-b border-outline-variant/30 flex items-center justify-between bg-surface-bright shrink-0">
+          <h3 className="text-headline-md font-semibold text-deep-navy">{title}</h3>
+          <button type="button" onClick={closePanel} className="bv-icon-btn" aria-label="Close">
+            <span className="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">{content}</div>
+      </aside>
+    </div>
   )
 }
