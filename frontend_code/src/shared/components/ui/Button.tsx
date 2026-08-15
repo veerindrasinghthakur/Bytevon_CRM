@@ -13,28 +13,24 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
 }
 
-/**
- * Explicit text vs background contrast:
- * - Dark / saturated fills → white text
- * - Light / outlined fills → dark on-background text
- */
+/** Stitch-aligned variants: primary = brand blue CTA, outline = light surface */
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-electric-blue text-white hover:bg-[#0062cc] shadow-sm',
+    'bg-primary text-on-primary hover:bg-[#004493] shadow-subtle active:scale-[0.98]',
   secondary:
-    'bg-secondary text-white hover:bg-[#004a9e]',
+    'bg-secondary-container text-on-secondary-container hover:bg-primary-fixed active:scale-[0.98]',
   outline:
-    'border border-outline-variant bg-surface-container-lowest text-on-background hover:bg-surface-container',
+    'border border-outline-variant/50 bg-surface-container-lowest text-on-surface hover:bg-surface-variant/10',
   ghost:
-    'text-on-surface-variant hover:bg-surface-container hover:text-on-background',
+    'text-on-surface-variant hover:bg-surface-variant/30 hover:text-primary',
   danger:
-    'bg-error text-white hover:opacity-90',
+    'bg-error text-on-error hover:opacity-90 active:scale-[0.98]',
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
   sm: 'px-3 py-1.5 text-label-sm',
   md: 'px-4 py-2.5 text-label-md',
-  lg: 'px-6 py-3 text-body-md',
+  lg: 'px-6 py-3 text-body-lg',
 }
 
 export function Button({
@@ -51,12 +47,13 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-lg font-medium',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue focus-visible:ring-offset-2',
-        'disabled:opacity-50 disabled:pointer-events-none',
+        'inline-flex items-center justify-center gap-2 rounded-lg font-medium cursor-pointer',
+        'transition-interactive',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+        'disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed',
         variantClasses[variant],
         sizeClasses[size],
-        className
+        className,
       )}
       disabled={disabled || isLoading}
       {...props}

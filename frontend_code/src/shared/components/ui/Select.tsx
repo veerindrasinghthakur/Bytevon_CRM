@@ -9,7 +9,6 @@ interface SelectProps {
   value: string
   onChange: (value: string) => void
   options: SelectOption[]
-  /** First option used as empty/all (value "") */
   placeholder?: string
   className?: string
   minWidthClass?: string
@@ -18,7 +17,7 @@ interface SelectProps {
   'aria-label'?: string
 }
 
-/** Native select restyled to match surface cards + body font tokens. */
+/** Native select restyled to Stitch surface + focus ring */
 export function Select({
   value,
   onChange,
@@ -39,13 +38,13 @@ export function Select({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className={cn(
-          'w-full appearance-none',
+          'w-full appearance-none cursor-pointer',
           'bg-surface-container-lowest border border-outline-variant/50 rounded-lg',
           'py-2 pl-4 pr-10',
-          'text-body-md font-medium text-on-background',
-          'focus:outline-none focus:border-electric-blue focus:ring-1 focus:ring-electric-blue',
-          'cursor-pointer',
-          'disabled:opacity-50 disabled:cursor-not-allowed'
+          'text-body-md font-medium text-on-surface',
+          'transition-interactive',
+          'focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary',
+          'disabled:opacity-50 disabled:cursor-not-allowed',
         )}
       >
         {placeholder != null && (
@@ -54,7 +53,7 @@ export function Select({
           </option>
         )}
         {options.map((o) => (
-          <option key={o.value} value={o.value} className="text-body-md text-on-background">
+          <option key={o.value} value={o.value} className="text-body-md text-on-surface">
             {o.label}
           </option>
         ))}
