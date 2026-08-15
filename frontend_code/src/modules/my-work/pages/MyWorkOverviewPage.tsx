@@ -10,6 +10,7 @@ import {
   upcomingEvents,
 } from '../data/mock'
 import type { MyTask } from '../types'
+import { BreakStatusCard } from '../components/BreakStatusCard'
 
 const priorityClass: Record<string, string> = {
   Critical: 'bg-red-100 text-red-800',
@@ -31,7 +32,6 @@ export function MyWorkOverviewPage() {
 
   return (
     <div className="space-y-8 max-w-[1440px]">
-      {/* Welcome */}
       <section className="relative overflow-hidden bg-deep-navy rounded-xl p-8 text-on-primary shadow-sm">
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
@@ -40,22 +40,30 @@ export function MyWorkOverviewPage() {
             </h2>
             <div className="flex flex-wrap gap-3 text-sm text-inverse-primary">
               <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full">
-                <span className="material-symbols-outlined text-[18px]">badge</span>
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                  badge
+                </span>
                 {currentUser.employeeId}
               </span>
               <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full">
-                <span className="material-symbols-outlined text-[18px]">business_center</span>
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                  business_center
+                </span>
                 {currentUser.department}
               </span>
               <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full">
-                <span className="material-symbols-outlined text-[18px]">calendar_month</span>
+                <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
+                  calendar_month
+                </span>
                 {currentUser.todayLabel}
               </span>
             </div>
           </div>
           <div className="bg-secondary/20 border border-secondary/40 p-4 rounded-xl flex items-center gap-4">
             <div className="bg-secondary p-2 rounded-lg">
-              <span className="material-symbols-outlined text-on-secondary">schedule</span>
+              <span className="material-symbols-outlined text-on-secondary" aria-hidden="true">
+                schedule
+              </span>
             </div>
             <div className="flex flex-col">
               <span className="text-xs uppercase tracking-wider text-inverse-primary">Current Shift</span>
@@ -65,14 +73,15 @@ export function MyWorkOverviewPage() {
         </div>
       </section>
 
-      {/* Quick actions */}
+      <BreakStatusCard />
+
       <section>
         <h3 className="text-title-lg font-semibold text-on-background mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {[
             { icon: 'fingerprint', label: 'Mark Attendance', to: '/my-work/attendance' as const },
             { icon: 'event_available', label: 'Apply Leave', to: '/my-work/leave' as const },
-            { icon: 'receipt_long', label: 'View Payslip', to: '/my-work' as const },
+            { icon: 'coffee', label: 'Take a Break', to: '/my-work/break' as const },
             { icon: 'task', label: 'View Tasks', to: '/my-work/tasks' as const },
             { icon: 'person_edit', label: 'Update Profile', to: '/profile' as const },
           ].map((action) => (
@@ -82,7 +91,7 @@ export function MyWorkOverviewPage() {
               onClick={() => navigate({ to: action.to })}
               className="flex flex-col items-center justify-center p-6 bg-surface-container-lowest border border-outline-variant rounded-xl hover:border-secondary hover:bg-secondary/5 transition-all group shadow-sm"
             >
-              <span className="material-symbols-outlined text-[32px] text-secondary mb-3 group-hover:scale-110 transition-transform">
+              <span className="material-symbols-outlined text-[32px] text-secondary mb-3 group-hover:scale-110 transition-transform" aria-hidden="true">
                 {action.icon}
               </span>
               <span className="text-label-md font-semibold text-on-background">{action.label}</span>
@@ -91,7 +100,6 @@ export function MyWorkOverviewPage() {
         </div>
       </section>
 
-      {/* KPIs */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {myWorkMetrics.map((m) => (
           <div
@@ -102,7 +110,9 @@ export function MyWorkOverviewPage() {
               <span className="text-label-sm font-medium text-on-surface-variant uppercase tracking-wider">
                 {m.label}
               </span>
-              <span className="material-symbols-outlined text-[18px] text-secondary">{m.icon}</span>
+              <span className="material-symbols-outlined text-[18px] text-secondary" aria-hidden="true">
+                {m.icon}
+              </span>
             </div>
             <div className="flex items-baseline gap-2 flex-wrap">
               <span className="text-headline-md font-bold text-on-background">{m.value}</span>
@@ -120,7 +130,6 @@ export function MyWorkOverviewPage() {
         ))}
       </section>
 
-      {/* Attendance + Leave */}
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
@@ -195,7 +204,6 @@ export function MyWorkOverviewPage() {
         </div>
       </section>
 
-      {/* Tasks */}
       <section className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
         <div className="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
           <h3 className="text-title-lg font-semibold text-on-background">Assigned Tasks</h3>
@@ -242,7 +250,6 @@ export function MyWorkOverviewPage() {
         </div>
       </section>
 
-      {/* Notifications + Events */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-2">
         <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm">
           <div className="flex items-center justify-between mb-6">
@@ -256,7 +263,9 @@ export function MyWorkOverviewPage() {
               <div key={n.id} className="flex gap-4 p-3 bg-surface-container-low rounded-lg relative overflow-hidden">
                 <div className="w-1 bg-secondary absolute left-0 top-0 h-full" />
                 <div className="bg-surface-container-lowest p-2 h-fit rounded-lg shadow-sm">
-                  <span className="material-symbols-outlined text-secondary text-[20px]">{n.icon}</span>
+                  <span className="material-symbols-outlined text-secondary text-[20px]" aria-hidden="true">
+                    {n.icon}
+                  </span>
                 </div>
                 <div className="flex flex-col flex-1 min-w-0">
                   <div className="flex justify-between items-start gap-2">
@@ -289,7 +298,9 @@ export function MyWorkOverviewPage() {
                   <span className="text-label-md font-semibold text-on-background">{e.title}</span>
                   <span className="text-label-sm text-on-surface-variant">{e.subtitle}</span>
                 </div>
-                <span className="material-symbols-outlined text-outline-variant">{e.icon}</span>
+                <span className="material-symbols-outlined text-outline-variant" aria-hidden="true">
+                  {e.icon}
+                </span>
               </div>
             ))}
           </div>

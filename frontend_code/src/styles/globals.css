@@ -13,13 +13,42 @@
     min-height: 100vh;
   }
 
+  /*
+   * Material Symbols must render as icons, never as selectable text ligatures.
+   * font-family is required; without it the glyph names (search, add, …) show as copyable text.
+   */
   .material-symbols-outlined {
+    font-family: 'Material Symbols Outlined' !important;
+    font-weight: normal;
+    font-style: normal;
+    font-size: 1.25rem;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    display: inline-block;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: 'liga';
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-    user-select: none;
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    pointer-events: none; /* clicks go to parent button/link; icon itself not selectable */
   }
 
   .material-symbols-outlined.filled {
     font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+
+  /* Allow pointer on icons that are the sole interactive target if needed */
+  button > .material-symbols-outlined,
+  a > .material-symbols-outlined,
+  [role='button'] > .material-symbols-outlined {
+    pointer-events: none;
   }
 }
 

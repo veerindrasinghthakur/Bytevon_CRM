@@ -23,10 +23,12 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     moduleId: 'sales',
     title: 'Sales',
     items: [
-      { id: 'leads', label: 'Leads', icon: 'person_search', to: '/sales/leads' },
+      { id: 'leads', label: 'Leads', icon: 'person_search', to: '/sales' },
       { id: 'clients', label: 'Clients', icon: 'handshake', to: '/sales/clients' },
+      { id: 'case-studies', label: 'Case Studies', icon: 'library_books', to: '/sales/case-studies' },
       { id: 'analytics', label: 'Analytics', icon: 'analytics', to: '/sales/analytics' },
       { id: 'activity', label: 'Activity', icon: 'timeline', to: '/sales/activity' },
+      { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', to: '/sales/dashboard' },
     ],
   },
   projects: {
@@ -52,13 +54,8 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     title: 'My Work',
     items: [
       { id: 'overview', label: 'Overview', icon: 'dashboard', to: '/my-work' },
+      { id: 'break', label: 'Take a Break', icon: 'coffee', to: '/my-work/break' },
       { id: 'my-attendance', label: 'My Attendance', icon: 'calendar_today', to: '/my-work/attendance' },
-      // {
-      //   id: 'attendance-corrections',
-      //   label: 'Corrections',
-      //   icon: 'edit_calendar',
-      //   to: '/my-work/attendance/corrections',
-      // },
       { id: 'my-leave', label: 'My Leave', icon: 'event_busy', to: '/my-work/leave' },
       { id: 'my-tasks', label: 'My Tasks', icon: 'task_alt', to: '/my-work/tasks' },
       { id: 'my-approvals', label: 'My Approvals', icon: 'fact_check', to: '/my-work/approvals' },
@@ -112,10 +109,21 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
   if (items.length === 0) return null
 
   const isItemActive = (to: string) => {
+    if (to === '/sales') {
+      return (
+        pathname === '/sales' ||
+        pathname === '/sales/leads' ||
+        pathname.startsWith('/sales/leads/')
+      )
+    }
     if (to === '/projects') return pathname === '/projects'
     if (to === '/my-work') return pathname === '/my-work'
     if (to === '/my-work/attendance') {
-      return pathname === '/my-work/attendance' || pathname.startsWith('/my-work/attendance/mark') || pathname.match(/^\/my-work\/attendance\/[^/]+$/)
+      return (
+        pathname === '/my-work/attendance' ||
+        pathname.startsWith('/my-work/attendance/mark') ||
+        !!pathname.match(/^\/my-work\/attendance\/[^/]+$/)
+      )
     }
     if (to === '/my-work/attendance/corrections') {
       return pathname.startsWith('/my-work/attendance/corrections')
@@ -155,7 +163,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
           aria-label={isCollapsed ? 'Expand secondary sidebar' : 'Collapse secondary sidebar'}
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          <span className="material-symbols-outlined text-xl">
+          <span className="material-symbols-outlined text-xl" aria-hidden="true">
             {isCollapsed ? 'menu' : 'menu_open'}
           </span>
         </button>
@@ -195,6 +203,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                       active ? 'text-secondary' : ''
                     )}
                     style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
+                    aria-hidden="true"
                   >
                     {item.icon}
                   </span>

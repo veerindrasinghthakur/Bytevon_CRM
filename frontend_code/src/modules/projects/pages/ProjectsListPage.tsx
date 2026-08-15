@@ -7,7 +7,9 @@ import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { RowActions } from '@/shared/components/ui/RowActions'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
+import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useProjects } from '../hooks/use-projects'
 import type { ProjectStatus } from '../schemas/project'
 import { cn } from '@/shared/lib/cn'
@@ -80,6 +82,12 @@ export function ProjectsListPage() {
   const items = data?.items ?? []
   const total = items.length
   const pageItems = useMemo(() => paginate(items, page, DEFAULT_PAGE_SIZE), [items, page])
+
+  // Selection scoped to currently rendered page of filtered results
+  const selection = useListSelection({
+    items: pageItems,
+    getId: (p) => String(p.id),
+  })
 
   const active = items.filter((p) => p.status === 'IN_PROGRESS').length
   const atRisk = items.filter((p) => p.status === 'ON_HOLD').length
@@ -158,6 +166,21 @@ export function ProjectsListPage() {
         </div>
       </section>
 
+      {selection.selectionMode && (
+        <BulkSelectionBar
+          selectedCount={selection.selectedCount}
+          filteredCount={pageItems.length}
+          onCancel={selection.exitSelectionMode}
+        >
+          <Button variant="outline" size="sm">
+            Export selected
+          </Button>
+          <Button variant="primary" size="sm">
+            Archive
+          </Button>
+        </BulkSelectionBar>
+      )}
+
       {isLoading && <TableSkeleton rows={5} />}
       {isError && (
         <div className="rounded-lg border border-error/30 bg-error/5 p-6 text-center">
@@ -182,7 +205,18 @@ export function ProjectsListPage() {
               <thead>
                 <tr className="border-b border-outline-variant/30 bg-surface/50">
                   <th className="py-4 px-6 w-12">
-                    <input type="checkbox" className="rounded border-outline-variant w-4 h-4" />
+                    {selection.selectionMode ? (
+                      <input
+                        type="checkbox"
+                        className="rounded border-outline-variant w-4 h-4"
+                        checked={selection.allFilteredSelected}
+                        onChange={selection.toggleSelectAllFiltered}
+                        title="Select all filtered rows on this page"
+                        aria-label="Select all filtered rows on this page"
+                      />
+                    ) : (
+                      <span className="sr-only">Select</span>
+                    )}
                   </th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Proj ID</th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Project Name</th>
@@ -195,39 +229,69 @@ export function ProjectsListPage() {
               <tbody className="divide-y divide-outline-variant/20">
                 {pageItems.map((project) => {
                   const track = statusTrackLabel(project.status)
+                  const id = String(project.id)
+                  const isSelected = selection.isSelected(id)
                   const initials = project.name
                     .split(' ')
                     .slice(0, 2)
                     .map((w) => w[0])
                     .join('')
                     .toUpperCase()
+
+                  const openOverviewFor = () =>
+                    openOverview({
+                      id: project.id,
+                      title: project.name,
+                      subtitle: project.code,
+                      badge: project.status.replace('_', ' '),
+                      fields: [
+                        { label: 'Client', value: project.clientName ?? '—' },
+                        { label: 'Progress', value: `${project.progress ?? 0}%` },
+                        { label: 'Tasks', value: String(project.taskCount ?? 0) },
+                        { label: 'Teams', value: String(project.teamCount ?? 0) },
+                        { label: 'Start', value: project.startDate ?? '—' },
+                        { label: 'End', value: project.endDate ?? '—' },
+                      ],
+                      detailTo: '/projects/$projectId',
+                      detailParams: { projectId: String(project.id) },
+                      editTo: '/projects/$projectId',
+                      editParams: { projectId: String(project.id) },
+                    })
+
                   return (
                     <tr
                       key={project.id}
-                      className="h-[72px] cursor-pointer hover:bg-surface-container/40"
-                      onClick={() =>
-                        openOverview({
-                          id: project.id,
-                          title: project.name,
-                          subtitle: project.code,
-                          badge: project.status.replace('_', ' '),
-                          fields: [
-                            { label: 'Client', value: project.clientName ?? '—' },
-                            { label: 'Progress', value: `${project.progress ?? 0}%` },
-                            { label: 'Tasks', value: String(project.taskCount ?? 0) },
-                            { label: 'Teams', value: String(project.teamCount ?? 0) },
-                            { label: 'Start', value: project.startDate ?? '—' },
-                            { label: 'End', value: project.endDate ?? '—' },
-                          ],
-                          detailTo: '/projects/$projectId',
-                          detailParams: { projectId: String(project.id) },
-                          editTo: '/projects/$projectId',
-                          editParams: { projectId: String(project.id) },
-                        })
-                      }
+                      className={cn(
+                        'h-[72px] cursor-pointer select-none',
+                        isSelected ? 'bg-secondary/10' : 'hover:bg-surface-container/40'
+                      )}
+                      onMouseDown={() => selection.onRowPressStart(id)}
+                      onMouseUp={() => selection.onRowPressEnd(id, openOverviewFor)}
+                      onMouseLeave={selection.onRowPressCancel}
+                      onTouchStart={() => selection.onRowPressStart(id)}
+                      onTouchEnd={() => selection.onRowPressEnd(id, openOverviewFor)}
+                      onTouchCancel={selection.onRowPressCancel}
+                      onContextMenu={(e) => e.preventDefault()}
                     >
-                      <td className="py-2 px-6" onClick={(e) => e.stopPropagation()}>
-                        <input type="checkbox" className="rounded border-outline-variant w-4 h-4" />
+                      <td
+                        className="py-2 px-6"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (selection.selectionMode) selection.toggleOne(id)
+                        }}
+                      >
+                        {selection.selectionMode ? (
+                          <input
+                            type="checkbox"
+                            className="rounded border-outline-variant w-4 h-4"
+                            checked={isSelected}
+                            onChange={() => selection.toggleOne(id)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <span className={cn('inline-block w-2.5 h-2.5 rounded-full', track.dot)} title={track.label} />
+                        )}
                       </td>
                       <td className="py-2 px-4 text-[11px] text-on-surface-variant">#{project.code}</td>
                       <td className="py-2 px-4">
@@ -264,7 +328,7 @@ export function ProjectsListPage() {
                           <span className="text-body-sm text-on-surface-variant">{project.progress ?? 0}%</span>
                         </div>
                       </td>
-                      <td className="py-2 px-6 text-right" onClick={(e) => e.stopPropagation()}>
+                      <td className="py-2 px-6 text-right" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
                         <div className="flex justify-end">
                           <RowActions
                             label={`Actions for ${project.name}`}
@@ -291,17 +355,15 @@ export function ProjectsListPage() {
               </tbody>
             </table>
           </div>
-          <Pagination
-            page={page}
-            total={total}
-            onPageChange={setPage}
-            itemLabel="Projects"
-          />
+          <Pagination page={page} total={total} onPageChange={setPage} itemLabel="Projects" />
           {total <= DEFAULT_PAGE_SIZE && (
             <div className="border-t border-outline-variant/30 p-4">
               <p className="text-[11px] text-on-surface-variant">
                 Showing <span className="font-semibold text-on-background">1-{total}</span> of{' '}
                 <span className="font-semibold text-on-background">{total}</span> Projects
+                {!selection.selectionMode && (
+                  <span className="ml-2 opacity-80">· Hold a row 3s to multi-select</span>
+                )}
               </p>
             </div>
           )}
