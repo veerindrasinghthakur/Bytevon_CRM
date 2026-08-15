@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
 import { cn } from '@/shared/lib/cn'
 import { RouteCrumbs } from '../components/RouteCrumbs'
 import {
@@ -31,17 +32,23 @@ const statusClass: Record<string, string> = {
   Remote: 'bg-violet-100 text-violet-800',
 }
 
+const STATUS_OPTIONS = ['ALL', 'PRESENT', 'LATE', 'ABSENT', 'WFH', 'ON_LEAVE'] as const
+
 export function AttendanceDashboardPage() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState<string>('ALL')
   const maxBar = Math.max(...weeklyAttendance.map((d) => Math.max(d.thisWeek, d.lastWeek)), 1)
 
   const rows = useMemo(() => {
     const q = query.toLowerCase()
-    return todayAttendance.filter(
-      (r) => !q || r.name.toLowerCase().includes(q) || r.department.toLowerCase().includes(q),
-    )
-  }, [query])
+    return todayAttendance.filter((r) => {
+      const matchesSearch =
+        !q || r.name.toLowerCase().includes(q) || r.department.toLowerCase().includes(q)
+      const matchesStatus = statusFilter === 'ALL' || r.status === statusFilter
+      return matchesSearch && matchesStatus
+    })
+  }, [query, statusFilter])
 
   return (
     <div className="space-y-6">
@@ -148,15 +155,42 @@ export function AttendanceDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <section className="lg:col-span-2 bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden">
           <div className="p-4 border-b border-outline-variant/30 flex flex-wrap gap-3 items-center justify-between">
-            <h2 className="text-title-md font-semibold">Today's attendance</h2>
-            <div className="relative min-w-[180px] flex-1 max-w-xs">
-              <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
-              <input
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-10 pr-3 py-2 border border-outline-variant rounded-lg text-body-sm"
-                placeholder="Search…"
-              />
+            <h2 className="text-title-md font-semibold">Today&apos;s attendance</h2>
+            {/* Search left · status filter to the RIGHT of search */}
+            <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1 justify-end">
+              <div className="relative min-w-[160px] flex-1 max-w-xs">
+                <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
+                <input
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  className="w-full pl-10 pr-3 py-2 border border-outline-variant rounded-lg text-body-sm"
+                  placeholder="Search…"
+                />
+              </div>
+              <Select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="min-w-[140px]"
+                aria-label="Filter by status"
+              >
+                {STATUS_OPTIONS.map((s) => (
+                  <option key={s} value={s}>
+                    {s === 'ALL' ? 'All statuses' : s.replace('_', ' ')}
+                  </option>
+                ))}
+              </Select>
+              {(query || statusFilter !== 'ALL') && (
+                <Button
+                  variant="ghost"
+                  className="!py-2 !px-2 text-label-sm"
+                  onClick={() => {
+                    setQuery('')
+                    setStatusFilter('ALL')
+                  }}
+                >
+                  Reset
+                </Button>
+              )}
             </div>
           </div>
           <table className="w-full text-left">
@@ -171,31 +205,44 @@ export function AttendanceDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/20">
-              {rows.map((r) => (
-                <tr
-                  key={r.id}
-                  className="hover:bg-surface-container-low/50 cursor-pointer"
-                  onClick={() =>
-                    navigate({ to: '/workforce/attendance/$attendanceId', params: { attendanceId: r.id } })
-                  }
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-xs font-bold">
-                        {r.avatar}
-                      </div>
-                      <span className="font-medium text-body-sm">{r.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-body-sm text-on-surface-variant hidden sm:table-cell">{r.department}</td>
-                  <td className="px-4 py-3 text-body-sm text-on-surface-variant">{r.checkIn}</td>
-                  <td className="px-4 py-3">
-                    <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-bold', statusClass[r.status])}>
-                      {r.status.replace('_', ' ')}
-                    </span>
+              {rows.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-4 py-10 text-center text-on-surface-variant text-body-sm">
+                    No attendance records match your filters.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                rows.map((r) => (
+                  <tr
+                    key={r.id}
+                    className="hover:bg-surface-container-low/50 cursor-pointer"
+                    onClick={() =>
+                      navigate({
+                        to: '/workforce/attendance/$attendanceId',
+                        params: { attendanceId: r.id },
+                      })
+                    }
+                  >
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-xs font-bold">
+                          {r.avatar}
+                        </div>
+                        <span className="font-medium text-body-sm">{r.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-body-sm text-on-surface-variant hidden sm:table-cell">
+                      {r.department}
+                    </td>
+                    <td className="px-4 py-3 text-body-sm text-on-surface-variant">{r.checkIn}</td>
+                    <td className="px-4 py-3">
+                      <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-bold', statusClass[r.status])}>
+                        {r.status.replace('_', ' ')}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </section>
@@ -214,7 +261,7 @@ export function AttendanceDashboardPage() {
                   <span className="text-body-sm font-medium">{c.name}</span>
                   <span className="text-caption text-on-surface-variant">{c.ago}</span>
                 </div>
-                <p className="text-caption text-on-surface-variant mt-1">"{c.note}"</p>
+                <p className="text-caption text-on-surface-variant mt-1">&quot;{c.note}&quot;</p>
                 <div className="mt-2 flex gap-2">
                   <Button variant="primary" className="!py-1 !px-2 !text-[11px]">
                     Approve

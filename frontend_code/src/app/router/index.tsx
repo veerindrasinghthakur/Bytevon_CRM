@@ -230,6 +230,8 @@ const workforceEmployeeDetailRoute = createRoute({ getParentRoute: () => appLayo
 const workforceDepartmentsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/departments', component: DepartmentsListPage })
 const workforceDepartmentsNewRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/departments/new', component: DepartmentCreatePage })
 const workforceDepartmentDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/departments/$departmentId', component: DepartmentDetailPage })
+const workforceDepartmentEditRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/departments/$departmentId/edit', component: DepartmentCreatePage })
+const workforceDepartmentAddMemberRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/departments/$departmentId/add-member', component: AddMemberPage })
 const workforceTeamsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/teams', component: TeamsListPage })
 const workforceTeamDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/teams/$teamId', component: TeamDetailPage })
 const workforceTeamMembersRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/teams/$teamId/members', component: TeamMembersPage })
@@ -302,6 +304,8 @@ const routeTree = rootRoute.addChildren([
     workforceDepartmentsRoute,
     workforceDepartmentsNewRoute,
     workforceDepartmentDetailRoute,
+    workforceDepartmentEditRoute,
+    workforceDepartmentAddMemberRoute,
     workforceTeamsRoute,
     workforceTeamDetailRoute,
     workforceTeamMembersRoute,
