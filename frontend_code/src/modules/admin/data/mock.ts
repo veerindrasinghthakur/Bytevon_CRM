@@ -16,6 +16,11 @@ export interface AdminRole {
   usersCount: number
   permissions: string[]
   status: 'Active' | 'Archived'
+  category: 'Core Role' | 'Operational' | 'Financial' | 'Standard'
+  coveragePct: number
+  coverageLabel: string
+  created: string
+  updated: string
 }
 
 export interface AuditLog {
@@ -27,6 +32,15 @@ export interface AuditLog {
   module: string
   timestamp: string
   ip: string
+}
+
+export interface SecurityEvent {
+  id: string
+  eventType: string
+  identity: string
+  source: string
+  timestamp: string
+  status: 'Success' | 'Blocked' | 'Warning'
 }
 
 export const adminUsers: AdminUser[] = [
@@ -85,35 +99,81 @@ export const adminUsers: AdminUser[] = [
 export const adminRoles: AdminRole[] = [
   {
     id: 'R-01',
-    name: 'Super Admin',
-    description: 'Full system access including security and audit.',
-    usersCount: 2,
+    name: 'Senior Administrator',
+    description: 'Complete access to all system modules, financial reporting, and high-level user governance settings.',
+    usersCount: 4,
     permissions: ['users.manage', 'roles.manage', 'settings.write', 'audit.read', 'security.manage'],
     status: 'Active',
+    category: 'Core Role',
+    coveragePct: 100,
+    coverageLabel: 'Full Access',
+    created: 'Jan 12, 2024',
+    updated: '2h ago',
   },
   {
     id: 'R-02',
-    name: 'HR Manager',
-    description: 'Workforce, leave, and attendance administration.',
-    usersCount: 5,
-    permissions: ['employees.read', 'leave.manage', 'attendance.manage'],
+    name: 'Sales Manager',
+    description: 'Management of sales pipelines, CRM data entry, lead assignment, and regional sales reporting.',
+    usersCount: 12,
+    permissions: ['leads.manage', 'clients.read', 'pipeline.write', 'reports.read'],
     status: 'Active',
+    category: 'Operational',
+    coveragePct: 66,
+    coverageLabel: '12/18 Modules',
+    created: 'Feb 05, 2024',
+    updated: 'Mar 01, 2024',
   },
   {
     id: 'R-03',
-    name: 'Finance Lead',
-    description: 'Expense and budget approval scopes.',
-    usersCount: 3,
-    permissions: ['expenses.approve', 'budget.read'],
+    name: 'Junior Accountant',
+    description: 'Expense submission, invoice tracking, and read-only access to departmental budgets.',
+    usersCount: 8,
+    permissions: ['expenses.submit', 'invoices.read', 'budget.read'],
     status: 'Active',
+    category: 'Financial',
+    coveragePct: 28,
+    coverageLabel: '5/18 Modules',
+    created: 'Mar 18, 2024',
+    updated: 'Apr 02, 2024',
   },
   {
     id: 'R-04',
+    name: 'HR Manager',
+    description: 'Workforce, leave, and attendance administration across departments.',
+    usersCount: 5,
+    permissions: ['employees.read', 'leave.manage', 'attendance.manage', 'departments.read'],
+    status: 'Active',
+    category: 'Operational',
+    coveragePct: 55,
+    coverageLabel: '10/18 Modules',
+    created: 'Jan 20, 2024',
+    updated: '1d ago',
+  },
+  {
+    id: 'R-05',
+    name: 'Finance Lead',
+    description: 'Expense and budget approval scopes with reporting access.',
+    usersCount: 3,
+    permissions: ['expenses.approve', 'budget.read', 'reports.finance'],
+    status: 'Active',
+    category: 'Financial',
+    coveragePct: 40,
+    coverageLabel: '7/18 Modules',
+    created: 'Feb 12, 2024',
+    updated: 'Jul 15, 2024',
+  },
+  {
+    id: 'R-06',
     name: 'Employee',
-    description: 'Standard self-service access.',
+    description: 'Standard self-service access for attendance, leave, and personal tasks.',
     usersCount: 1200,
     permissions: ['my-work.read', 'requests.submit'],
     status: 'Active',
+    category: 'Standard',
+    coveragePct: 15,
+    coverageLabel: '3/18 Modules',
+    created: 'Jan 01, 2024',
+    updated: 'Aug 01, 2024',
   },
 ]
 
@@ -160,10 +220,56 @@ export const auditLogs: AuditLog[] = [
   },
 ]
 
+export const securityEvents: SecurityEvent[] = [
+  {
+    id: 'SEC-1001',
+    eventType: 'Successful Login',
+    identity: 'sarah.chen@bytevon.com',
+    source: '10.0.12.4 · Chrome',
+    timestamp: 'Aug 14, 2026 09:12',
+    status: 'Success',
+  },
+  {
+    id: 'SEC-1000',
+    eventType: 'Account Lockout',
+    identity: 'david.w@bytevon.com',
+    source: '203.0.113.42 · Unknown',
+    timestamp: 'Aug 14, 2026 09:01',
+    status: 'Blocked',
+  },
+  {
+    id: 'SEC-999',
+    eventType: 'Password Changed',
+    identity: 'marcus.chen@bytevon.com',
+    source: '10.0.8.22 · Safari',
+    timestamp: 'Aug 13, 2026 18:44',
+    status: 'Success',
+  },
+  {
+    id: 'SEC-998',
+    eventType: 'Geo-fence Block',
+    identity: 'unknown@external.io',
+    source: '185.220.101.1 · Tor',
+    timestamp: 'Aug 13, 2026 14:22',
+    status: 'Blocked',
+  },
+  {
+    id: 'SEC-997',
+    eventType: 'Session Revoked',
+    identity: 'elena.r@bytevon.com',
+    source: 'Admin action',
+    timestamp: 'Aug 12, 2026 11:05',
+    status: 'Warning',
+  },
+]
+
 export const adminKpis = {
   users: 1284,
   roles: 12,
   activeSessions: 86,
   auditEventsToday: 142,
   configHealth: 'Good' as const,
+  securityScore: 94,
+  mfaAdoption: 88,
+  openAlerts: 0,
 }
