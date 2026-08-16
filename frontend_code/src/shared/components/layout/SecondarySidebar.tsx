@@ -24,7 +24,6 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     items: [
       { id: 'executive', label: 'Executive', icon: 'monitoring', to: '/dashboard' },
       { id: 'employee', label: 'Employee', icon: 'person', to: '/dashboard/employee' },
-      { id: 'payroll', label: 'Payroll', icon: 'payments', to: '/dashboard/payroll' },
     ],
   },
   sales: {
@@ -82,7 +81,6 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     moduleId: 'admin',
     title: 'Administration',
     items: [
-      { id: 'hub', label: 'Admin Hub', icon: 'admin_panel_settings', to: '/admin' },
       { id: 'users', label: 'Users', icon: 'manage_accounts', to: '/admin/users' },
       { id: 'roles', label: 'Roles & Permissions', icon: 'qr_code_2', to: '/admin/roles' },
       { id: 'settings', label: 'Settings', icon: 'settings', to: '/admin/settings' },
@@ -132,7 +130,9 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
     if (to === '/projects') return pathname === '/projects'
     if (to === '/my-work') return pathname === '/my-work'
     if (to === '/approvals') return pathname === '/approvals'
-    if (to === '/admin') return pathname === '/admin'
+    if (to === '/admin/users') {
+      return pathname === '/admin' || pathname === '/admin/users' || pathname.startsWith('/admin/users/')
+    }
     if (to === '/dashboard') return pathname === '/dashboard'
     if (to === '/my-work/attendance') {
       return (

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { adminUsers } from '../data/mock'
+import { adminUsers, adminKpis } from '../data/mock'
 import { cn } from '@/shared/lib/cn'
 
 const statusStyles: Record<string, string> = {
@@ -54,13 +54,29 @@ export function UsersListPage() {
         }
       />
 
-      {/* Metrics */}
+      {/* Hub KPIs moved here + user metrics */}
+      <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <Kpi label="Users" value={adminKpis.users.toLocaleString()} />
+        <Kpi label="Roles" value={String(adminKpis.roles)} />
+        <Kpi label="Active Sessions" value={String(adminKpis.activeSessions)} />
+        <Kpi label="Audit Today" value={String(adminKpis.auditEventsToday)} />
+        <Kpi
+          label="Health"
+          value={
+            <span className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              {adminKpis.configHealth}
+            </span>
+          }
+        />
+      </section>
+
       <section className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         <Metric
           icon="group"
-          iconClass="bg-primary text-white"
+          iconClass="bg-secondary text-on-secondary"
           label="Total Users"
-          value="1,284"
+          value={adminKpis.users.toLocaleString()}
           hint="+12%"
         />
         <Metric
@@ -192,6 +208,15 @@ export function UsersListPage() {
   )
 }
 
+function Kpi({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="p-4 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
+      <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">{label}</p>
+      <div className="text-xl font-bold text-on-background">{value}</div>
+    </div>
+  )
+}
+
 function Metric({
   icon,
   iconClass,
@@ -216,7 +241,7 @@ function Metric({
         <span className="text-xs font-bold text-on-surface-variant">{hint}</span>
       </div>
       <p className="text-label-md text-on-surface-variant uppercase tracking-widest">{label}</p>
-      <h3 className={cn('text-3xl font-black text-primary mt-1', valueClass)}>{value}</h3>
+      <h3 className={cn('text-3xl font-black text-on-surface mt-1', valueClass)}>{value}</h3>
     </div>
   )
 }
