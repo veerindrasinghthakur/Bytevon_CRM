@@ -53,6 +53,16 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
       { id: 'attendance', label: 'Attendance', icon: 'calendar_today', to: '/workforce/attendance' },
     ],
   },
+  payroll: {
+    moduleId: 'payroll',
+    title: 'Payroll',
+    items: [
+      { id: 'overview', label: 'Overview', icon: 'payments', to: '/payroll' },
+      { id: 'monthly', label: 'Monthly Payroll', icon: 'calendar_month', to: '/payroll/monthly' },
+      { id: 'run', label: 'Run Payroll', icon: 'play_arrow', to: '/payroll/run' },
+      { id: 'salary', label: 'Salary Management', icon: 'manage_accounts', to: '/payroll/salary' },
+    ],
+  },
   'my-work': {
     moduleId: 'my-work',
     title: 'My Work',
@@ -92,6 +102,7 @@ function getActiveModule(pathname: string): string {
   if (pathname.startsWith('/sales')) return 'sales'
   if (pathname.startsWith('/projects')) return 'projects'
   if (pathname.startsWith('/workforce')) return 'workforce'
+  if (pathname.startsWith('/payroll')) return 'payroll'
   if (pathname.startsWith('/my-work')) return 'my-work'
   if (pathname.startsWith('/approvals')) return 'approvals'
   if (pathname.startsWith('/admin')) return 'admin'
@@ -130,6 +141,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
       return pathname === '/admin' || pathname === '/admin/users' || pathname.startsWith('/admin/users/')
     }
     if (to === '/dashboard') return pathname === '/dashboard'
+    if (to === '/payroll') return pathname === '/payroll'
     if (to === '/my-work/attendance') {
       return (
         pathname === '/my-work/attendance' ||
