@@ -83,8 +83,16 @@ import {
   AuditLogsPage,
   AdminSettingsPage,
   OfficeFormPage,
+  AttendanceSettingsPage,
+  LeaveSettingsPage,
   SecurityCenterPage,
 } from '@/modules/admin'
+
+import {
+  ExecutiveDashboardPage,
+  EmployeeDashboardPage,
+  PayrollDashboardPage,
+} from '@/modules/dashboard'
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -185,17 +193,17 @@ const indexRoute = createRoute({
 const dashboardRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/dashboard',
-  component: () => (
-    <div>
-      <h1 className="text-headline-lg text-on-background mb-2">Dashboard</h1>
-      <p className="text-body-md text-on-surface-variant">
-        Executive dashboard will be implemented in a later module.
-      </p>
-      <p className="text-body-sm text-on-surface-variant mt-4">
-        Use the left Icon Rail to open Projects, Sales, Workforce, or My Work.
-      </p>
-    </div>
-  ),
+  component: ExecutiveDashboardPage,
+})
+const dashboardEmployeeRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/dashboard/employee',
+  component: EmployeeDashboardPage,
+})
+const dashboardPayrollRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/dashboard/payroll',
+  component: PayrollDashboardPage,
 })
 
 const profileRoute = createRoute({
@@ -504,6 +512,16 @@ const adminOfficeEditRoute = createRoute({
   path: '/admin/settings/offices/$officeId/edit',
   component: OfficeFormPage,
 })
+const adminAttendanceSettingsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/attendance-settings',
+  component: AttendanceSettingsPage,
+})
+const adminLeaveSettingsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/leave-settings',
+  component: LeaveSettingsPage,
+})
 const adminAuditRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/audit',
@@ -531,6 +549,8 @@ const routeTree = rootRoute.addChildren([
   ]),
   appLayoutRoute.addChildren([
     dashboardRoute,
+    dashboardEmployeeRoute,
+    dashboardPayrollRoute,
     profileRoute,
     notificationsRoute,
     projectsIndexRoute,
@@ -590,6 +610,8 @@ const routeTree = rootRoute.addChildren([
     adminSettingsRoute,
     adminOfficeNewRoute,
     adminOfficeEditRoute,
+    adminAttendanceSettingsRoute,
+    adminLeaveSettingsRoute,
     adminAuditRoute,
     adminSecurityRoute,
     adminNotificationsRoute,
