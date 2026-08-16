@@ -10,8 +10,8 @@ const historyRows = [
 ]
 
 const statusStyle: Record<string, string> = {
-  APPROVED: 'bg-[#e8f0fe] text-[#1967d2] border border-[#d2e3fc]',
-  PAID: 'bg-[#e6f4ea] text-[#137333] border border-[#ceead6]',
+  APPROVED: 'bg-primary-fixed text-primary border border-outline-variant',
+  PAID: 'bg-success-emerald/10 text-success-emerald border border-success-emerald/20',
 }
 
 export function EmployeePayrollHistoryPage() {
@@ -28,19 +28,19 @@ export function EmployeePayrollHistoryPage() {
             <span className="material-symbols-outlined text-[16px]">chevron_right</span>
             <span>{emp.name}</span>
             <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-            <span className="text-on-surface">Payroll History</span>
+            <span className="text-deep-navy font-medium">Payroll History</span>
           </div>
           <h1 className="text-headline-lg font-semibold text-deep-navy">Payroll History</h1>
           <p className="text-body-md text-on-surface-variant mt-1">
             Manage and view historical payroll records for the employee.
           </p>
         </div>
-        <div className="flex items-center gap-4 bg-surface-container-lowest p-4 rounded-lg border border-outline-variant shadow-sm">
+        <div className="flex items-center gap-4 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant shadow-sm">
           <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center font-bold text-primary border border-outline-variant">
             {emp.initials}
           </div>
           <div>
-            <h2 className="text-title-lg font-semibold text-on-surface">{emp.name}</h2>
+            <h2 className="text-title-lg font-semibold text-deep-navy">{emp.name}</h2>
             <div className="flex items-center gap-3 text-on-surface-variant text-body-sm mt-1">
               <span className="flex items-center gap-1">
                 <span className="material-symbols-outlined text-[16px]">badge</span> {emp.code}
@@ -57,43 +57,43 @@ export function EmployeePayrollHistoryPage() {
       </header>
 
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-2">
+        <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-2 card-hover">
           <span className="text-label-md text-on-surface-variant flex items-center gap-2">
-            <span className="material-symbols-outlined text-outline">payments</span> Current Gross Salary
+            <span className="material-symbols-outlined text-secondary">payments</span> Current Gross Salary
           </span>
-          <div className="text-headline-lg font-semibold text-on-surface mt-1">$8,500.00</div>
+          <div className="text-headline-lg font-semibold text-deep-navy mt-1">$8,500.00</div>
           <div className="text-body-sm text-on-surface-variant mt-auto">Per pay period</div>
         </div>
-        <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-2">
+        <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-2 card-hover">
           <span className="text-label-md text-on-surface-variant flex items-center gap-2">
-            <span className="material-symbols-outlined text-outline">account_balance_wallet</span> Current Net Salary
+            <span className="material-symbols-outlined text-secondary">account_balance_wallet</span> Current Net Salary
           </span>
-          <div className="text-headline-lg font-semibold text-on-surface mt-1">$6,450.00</div>
+          <div className="text-headline-lg font-semibold text-deep-navy mt-1">$6,450.00</div>
           <div className="text-body-sm text-on-surface-variant mt-auto">Estimated average</div>
         </div>
-        <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-2 relative overflow-hidden">
+        <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col gap-2 relative overflow-hidden card-hover">
           <div className="absolute right-0 bottom-0 opacity-5">
             <span className="material-symbols-outlined text-[120px]">trending_up</span>
           </div>
           <div className="flex justify-between items-start relative z-10">
             <span className="text-label-md text-on-surface-variant flex items-center gap-2">
-              <span className="material-symbols-outlined text-outline">insights</span> Total Paid This Year (YTD)
+              <span className="material-symbols-outlined text-secondary">insights</span> Total Paid This Year (YTD)
             </span>
-            <span className="bg-[#e6f4ea] text-[#137333] px-2 py-1 rounded text-label-sm">+12%</span>
+            <span className="bg-success-emerald/10 text-success-emerald px-2 py-1 rounded text-label-sm">+12%</span>
           </div>
-          <div className="text-headline-lg font-semibold text-on-surface mt-1 relative z-10">$64,500.00</div>
+          <div className="text-headline-lg font-semibold text-deep-navy mt-1 relative z-10">$64,500.00</div>
           <div className="text-body-sm text-on-surface-variant mt-auto relative z-10">As of Nov 2023</div>
         </div>
       </section>
 
       <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm flex flex-col">
-        <div className="p-4 border-b border-outline-variant flex flex-col sm:flex-row justify-between items-center gap-4 bg-surface">
+        <div className="p-4 border-b border-outline-variant flex flex-col sm:flex-row justify-between items-center gap-4 bg-surface-container-lowest">
           <div className="flex items-center gap-3">
-            <select className="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 text-label-md focus:border-electric-blue focus:ring-1 focus:ring-electric-blue outline-none">
+            <select className="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 text-label-md focus:border-primary focus:ring-1 focus:ring-primary outline-none">
               <option>2023</option>
               <option>2022</option>
             </select>
-            <select className="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 text-label-md focus:border-electric-blue focus:ring-1 focus:ring-electric-blue outline-none">
+            <select className="bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 text-label-md focus:border-primary focus:ring-1 focus:ring-primary outline-none">
               <option>Status: All</option>
               <option>Calculated</option>
               <option>Approved</option>
@@ -122,15 +122,15 @@ export function EmployeePayrollHistoryPage() {
             </thead>
             <tbody className="text-body-sm divide-y divide-outline-variant">
               {historyRows.map((r) => (
-                <tr key={r.month} className="hover:bg-surface-container-low transition-colors">
-                  <td className="p-4 text-on-surface font-medium">{r.month}</td>
+                <tr key={r.month} className="bv-row-hover">
+                  <td className="p-4 text-deep-navy font-medium">{r.month}</td>
                   <td className="p-4 text-on-surface-variant">{r.gross}</td>
-                  <td className="p-4 text-[#137333] font-medium">{r.earnings}</td>
-                  <td className="p-4 text-[#c5221f]">{r.deductions}</td>
+                  <td className="p-4 text-success-emerald font-medium">{r.earnings}</td>
+                  <td className="p-4 text-error">{r.deductions}</td>
                   <td className={cn('p-4', r.adjustments.startsWith('-') ? 'text-error font-medium' : 'text-on-surface-variant')}>
                     {r.adjustments}
                   </td>
-                  <td className="p-4 text-on-surface font-semibold">{r.net}</td>
+                  <td className="p-4 text-deep-navy font-semibold">{r.net}</td>
                   <td className="p-4 text-on-surface-variant">{r.paymentDate}</td>
                   <td className="p-4">
                     <span className={cn('inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium', statusStyle[r.status])}>
@@ -142,7 +142,7 @@ export function EmployeePayrollHistoryPage() {
                       <div className="flex items-center justify-end gap-3">
                         <button
                           type="button"
-                          className="text-on-surface-variant hover:text-on-surface text-label-md flex items-center gap-1"
+                          className="text-on-surface-variant hover:text-secondary text-label-md flex items-center gap-1 transition-colors"
                           title="View Payslip"
                           onClick={() =>
                             navigate({ to: '/payroll/payslip/$employeeId', params: { employeeId: emp.id } })
@@ -152,7 +152,7 @@ export function EmployeePayrollHistoryPage() {
                         </button>
                         <button
                           type="button"
-                          className="text-electric-blue hover:text-secondary text-label-md flex items-center gap-1"
+                          className="text-primary hover:text-secondary text-label-md flex items-center gap-1 transition-colors"
                           onClick={() =>
                             navigate({ to: '/payroll/review/$employeeId', params: { employeeId: emp.id } })
                           }
@@ -163,7 +163,7 @@ export function EmployeePayrollHistoryPage() {
                     ) : (
                       <button
                         type="button"
-                        className="text-electric-blue hover:text-secondary text-label-md flex items-center justify-end gap-1 ml-auto"
+                        className="text-primary hover:text-secondary text-label-md flex items-center justify-end gap-1 ml-auto transition-colors"
                         onClick={() =>
                           navigate({ to: '/payroll/review/$employeeId', params: { employeeId: emp.id } })
                         }
@@ -180,18 +180,18 @@ export function EmployeePayrollHistoryPage() {
 
         <div className="p-4 border-t border-outline-variant flex items-center justify-between bg-surface-container-lowest rounded-b-xl">
           <div className="text-body-sm text-on-surface-variant">
-            Showing <span className="font-medium text-on-surface">1</span> to{' '}
-            <span className="font-medium text-on-surface">10</span> of{' '}
-            <span className="font-medium text-on-surface">24</span> results
+            Showing <span className="font-medium text-deep-navy">1</span> to{' '}
+            <span className="font-medium text-deep-navy">10</span> of{' '}
+            <span className="font-medium text-deep-navy">24</span> results
           </div>
           <div className="flex gap-1">
             <button type="button" className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container disabled:opacity-50" disabled>
               <span className="material-symbols-outlined text-[18px]">chevron_left</span>
             </button>
-            <button type="button" className="w-8 h-8 flex items-center justify-center rounded bg-electric-blue text-on-primary text-label-sm">
+            <button type="button" className="w-8 h-8 flex items-center justify-center rounded bg-primary text-on-primary text-label-sm">
               1
             </button>
-            <button type="button" className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface hover:bg-surface-container text-label-sm">
+            <button type="button" className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-deep-navy hover:bg-surface-container text-label-sm">
               2
             </button>
             <button type="button" className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container">
