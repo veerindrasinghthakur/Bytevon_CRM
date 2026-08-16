@@ -78,9 +78,11 @@ import {
   UserCreatePage,
   RolesListPage,
   RoleDetailPage,
+  RoleEditPage,
   RoleCreatePage,
   AuditLogsPage,
   AdminSettingsPage,
+  OfficeFormPage,
   SecurityCenterPage,
 } from '@/modules/admin'
 
@@ -482,10 +484,25 @@ const adminRoleDetailRoute = createRoute({
   path: '/admin/roles/$roleId',
   component: RoleDetailPage,
 })
+const adminRoleEditRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/roles/$roleId/edit',
+  component: RoleEditPage,
+})
 const adminSettingsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/settings',
   component: AdminSettingsPage,
+})
+const adminOfficeNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/settings/offices/new',
+  component: OfficeFormPage,
+})
+const adminOfficeEditRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/settings/offices/$officeId/edit',
+  component: OfficeFormPage,
 })
 const adminAuditRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
@@ -569,7 +586,10 @@ const routeTree = rootRoute.addChildren([
     adminRolesRoute,
     adminRolesNewRoute,
     adminRoleDetailRoute,
+    adminRoleEditRoute,
     adminSettingsRoute,
+    adminOfficeNewRoute,
+    adminOfficeEditRoute,
     adminAuditRoute,
     adminSecurityRoute,
     adminNotificationsRoute,

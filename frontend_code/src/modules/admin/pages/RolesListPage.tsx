@@ -98,7 +98,7 @@ export function RolesListPage() {
                     className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"
                     onClick={() => {
                       setOpenMenu(null)
-                      navigate({ to: '/admin/roles/$roleId', params: { roleId: role.id } })
+                      navigate({ to: '/admin/roles/$roleId/edit', params: { roleId: role.id } })
                     }}
                   >
                     <span className="material-symbols-outlined text-[18px]">edit</span> Edit
