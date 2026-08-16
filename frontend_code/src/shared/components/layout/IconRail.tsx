@@ -20,6 +20,7 @@ const DEFAULT_RAIL_ITEMS: RailItem[] = [
   { id: 'sales', icon: 'trending_up', label: 'Sales', to: '/sales', visible: true },
   { id: 'projects', icon: 'folder_managed', label: 'Projects', to: '/projects', visible: true },
   { id: 'workforce', icon: 'groups', label: 'Workforce', to: '/workforce', visible: true },
+  { id: 'payroll', icon: 'payments', label: 'Payroll', to: '/payroll', visible: true },
   { id: 'my-work', icon: 'person', label: 'My Work', to: '/my-work', visible: true },
   { id: 'approvals', icon: 'fact_check', label: 'Approvals', to: '/approvals', visible: true },
   { id: 'admin', icon: 'admin_panel_settings', label: 'Administration', to: '/admin', visible: true },
