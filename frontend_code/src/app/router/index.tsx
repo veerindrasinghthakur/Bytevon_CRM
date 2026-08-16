@@ -63,6 +63,7 @@ import {
   MyApprovalDetailPage,
   TakeABreakPage,
   MyRequestsPage,
+  MyBankDetailsPage,
 } from '@/modules/my-work'
 
 import {
@@ -405,7 +406,6 @@ const payrollSalaryReviseRoute = createRoute({
   path: '/payroll/salary/$employeeId/revise',
   component: ReviseSalaryPage,
 })
-// Org-wide paid history list (must be registered before parameterized employee history)
 const payrollHistoryListRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/payroll/history',
@@ -491,6 +491,11 @@ const myWorkRequestsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/my-work/requests',
   component: MyRequestsPage,
+})
+const myWorkBankDetailsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work/bank-details',
+  component: MyBankDetailsPage,
 })
 
 const approvalsRoute = createRoute({
@@ -665,6 +670,7 @@ const routeTree = rootRoute.addChildren([
     myWorkApprovalsRoute,
     myWorkApprovalDetailRoute,
     myWorkRequestsRoute,
+    myWorkBankDetailsRoute,
     approvalsRoute,
     approvalsPendingRoute,
     approvalsDetailRoute,
