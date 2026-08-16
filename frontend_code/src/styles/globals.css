@@ -80,6 +80,7 @@
   /*
    * UX effects aligned to Stitch HTML screens
    * Durations: 0.2s ease (card-hover), transition-all / transition-colors defaults
+   * Note: do not @apply opacity modifiers on CSS-variable colors (PostCSS fails).
    */
 
   /* Roles management & similar card grids: .card-hover */
@@ -115,7 +116,8 @@
     @apply transition-colors duration-200 ease-out;
   }
   .bv-row-hover:hover {
-    @apply bg-surface-container-low/50;
+    /* CSS-variable colors cannot use Tailwind opacity modifiers inside @apply */
+    background-color: color-mix(in srgb, var(--color-surface-container-low) 50%, transparent);
   }
 
   /* Primary CTA press: hover:opacity-90 active:scale-95 transition-all */
