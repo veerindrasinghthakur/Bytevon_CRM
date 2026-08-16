@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bytevon CRM — Final Schema Visual Map</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+:root{--bg:#0b1220;--surface:#121a2b;--surface2:#1a2438;--border:#2a3650;--text:#e8eefc;--muted:#93a4c3;--primary:#3b82f6;--append:#22c55e;--versioned:#3b82f6;--admin:#eab308;--seeded:#a855f7;--new:#f97316}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,sans-serif;background:radial-gradient(1200px 600px at 10% -10%,#1e3a5f55,transparent),radial-gradient(900px 500px at 90% 0%,#312e8155,transparent),var(--bg);color:var(--text);line-height:1.5}
+header{position:sticky;top:0;z-index:50;backdrop-filter:blur(12px);background:rgba(11,18,32,.85);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}
+header h1{margin:0;font-size:1.25rem;font-weight:800;background:linear-gradient(90deg,#60a5fa,#a78bfa,#34d399);-webkit-background-clip:text;background-clip:text;color:transparent}
+.legend{display:flex;flex-wrap:wrap;gap:10px}.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid var(--border);background:var(--surface2)}.dot{width:10px;height:10px;border-radius:50%}
+main{max-width:1400px;margin:0 auto;padding:28px}
+.intro{background:linear-gradient(135deg,#1e293b,#0f172a);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:28px}.intro p{color:var(--muted);margin:8px 0 0;max-width:900px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:18px}.stat{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px}.stat b{display:block;font-size:1.5rem;font-weight:800}.stat span{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+nav.toc{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}nav.toc a{color:var(--muted);text-decoration:none;font-size:12px;font-weight:600;padding:6px 12px;border-radius:999px;border:1px solid var(--border);background:var(--surface)}nav.toc a:hover{color:var(--text);border-color:var(--primary)}
+.domain{margin-bottom:28px;border:1px solid var(--border);border-radius:18px;overflow:hidden;background:var(--surface)}
+.domain-head{padding:16px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}.domain-head h2{margin:0;font-size:1.1rem;font-weight:700}.tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:4px 10px;border-radius:999px}
+.domain-body{padding:18px 20px 22px}.tables{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.table-card{background:var(--surface2);border:1px solid var(--border);border-radius:14px;padding:14px;transition:.15s}.table-card:hover{transform:translateY(-2px);border-color:#3b82f688;box-shadow:0 10px 30px #0005}
+.table-card h3{margin:0 0 8px;font-size:.95rem;font-family:"JetBrains Mono",monospace;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px;border:1px solid transparent}
+.b-append{background:#14532d55;color:#86efac;border-color:#22c55e55}.b-version{background:#1e3a8a55;color:#93c5fd;border-color:#3b82f655}.b-admin{background:#713f1255;color:#fde68a;border-color:#eab30855}.b-seed{background:#581c8755;color:#e9d5ff;border-color:#a855f755}.b-new{background:#7c2d1255;color:#fdba74;border-color:#f9731655}
+.fields{font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px}.fields span{background:#0b1220;border:1px solid #243049;border-radius:6px;padding:2px 6px}.fields .pk{color:#fbbf24;border-color:#f59e0b55}.fields .fk{color:#67e8f9;border-color:#06b6d455}
+.flow{margin-top:14px;background:#0b1220;border:1px dashed #334155;border-radius:12px;padding:12px 14px;font-family:"JetBrains Mono",monospace;font-size:12px;color:#cbd5e1;white-space:pre-wrap}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:24px;border-top:1px solid var(--border);margin-top:12px}
+</style>
+</head>
+<body>
+<header>
+  <h1>Bytevon CRM · Final Database Schema Map</h1>
+  <div class="legend">
+    <span class="pill"><span class="dot" style="background:var(--append)"></span> Append-only</span>
+    <span class="pill"><span class="dot" style="background:var(--versioned)"></span> Versioned</span>
+    <span class="pill"><span class="dot" style="background:var(--admin)"></span> Admin-managed</span>
+    <span class="pill"><span class="dot" style="background:var(--seeded)"></span> Seeded</span>
+    <span class="pill"><span class="dot" style="background:var(--new)"></span> Extension / New</span>
+  </div>
+</header>
+<main>
+  <section class="intro">
+    <h2 style="margin:0;font-size:1.35rem">Complete schema at a glance</h2>
+    <p>Consolidated from core schema, Payroll & Salary, Task Time Tracking / Daily Progress, Attendance Breaks, Employee Bank Accounts, and Audit Archive (10-day PG → MinIO JSONL). No tables or locked decisions omitted.</p>
+    <div class="stats">
+      <div class="stat"><b>50+</b><span>Tables</span></div>
+      <div class="stat"><b>13</b><span>Domains</span></div>
+      <div class="stat"><b>30+</b><span>Enums</span></div>
+      <div class="stat"><b>5</b><span>Schema deltas</span></div>
+    </div>
+  </section>
+  <nav class="toc">
+    <a href="#org">Organization</a><a href="#auth">Auth</a><a href="#emp">Employment</a><a href="#rbac">RBAC</a>
+    <a href="#leave">Leave</a><a href="#att">Attendance</a><a href="#appr">Approvals</a><a href="#notif">Notifications</a>
+    <a href="#dev">Developer</a><a href="#sales">Sales</a><a href="#audit">Audit</a><a href="#docs">Notes & Docs</a><a href="#pay">Payroll</a>
+  </nav>
+
+  <section class="domain" id="org"><div class="domain-head" style="background:linear-gradient(90deg,#0f172a,#1e3a5f33)"><h2>Organization</h2><span class="tag" style="background:#1e3a8a55;color:#93c5fd">Core</span></div>
+  <div class="domain-body"><div class="tables">
+    <div class="table-card"><h3>departments <span class="badge b-admin">Admin</span> <span class="badge b-version">Versioned</span></h3><div class="fields"><span class="pk">id PK</span><span>name</span><span class="fk">department_head_employment_id</span><span>is_archived</span></div></div>
+    <div class="table-card"><h3>working_weeks <span class="badge b-version">Versioned</span></h3><div class="fields"><span class="pk">id PK</span><span>name</span><span>working_days_of_week[]</span><span>effective_from/to</span></div></div>
+    <div class="table-card"><h3>shifts <span class="badge b-admin">Admin</span></h3><div class="fields"><span class="pk">id PK</span><span>name</span><span>start/end_time</span><span>grace_late_minutes</span><span>is_overnight</span></div></div>
+    <div class="table-card"><h3>holiday_calendars <span class="badge b-admin">Admin</span></h3><div class="fields"><span class="pk">id PK</span><span>name</span><span>is_archived</span></div></div>
+    <div class="table-card"><h3>holidays <span class="badge b-append">Append-only</span></h3><div class="fields"><span class="pk">id PK</span><span class="fk">holiday_calendar_id</span><span>name</span><span>date</span><span>holiday_type</span></div></div>
+    <div class="table-card"><h3>locations <span class="badge b-admin">Admin</span></h3><div class="fields"><span class="pk">id PK</span><span>name</span><span>timezone</span><span class="fk">working_week_id</span><span class="fk">holiday_calendar_id</span><span>lat/long</span><span>allowed_ip_cidrs[]</span><span>currency</span></div></div>
+    <div class="table-card"><h3>organization_settings <span class="badge b-admin">Singleton</span></h3><div class="fields"><span class="pk">id PK</span><span>company_name</span><span class="fk">head_office_location_id</span><span>default_timezone/currency</span><span>logo_reference</span></div></div>
+  </div></div></section>
+
+  <section class="domain" id="auth"><div class="domain-head" style="background:linear-gradient(90deg,#0f172a,#155e7533)"><h2>Authentication</h2><span class="tag" style="background:#155e7555;color:#67e8f9">Identity</span></div>
+  <div class="domain-body"><div class="tables">
+    <div class="table-card"><h3>persons</h3><div class="fields"><span class="pk">id PK</span><span>first_name</span><span>last_name</span><span>personal_email</span><span>is_anonymized</span></div></div>
+    <div class="table-card"><h3>logins</h3><div class="fields"><span class="pk">id PK</span><span class="fk">person_id UNIQUE</span><span>email UNIQUE</span><span>password_hash</span></div></div>
+    <div class="table-card"><h3>sessions <span class="badge b-append">Append-only</span></h3><div class="fields"><span class="pk">id PK</span><span class="fk">login_id</span><span>refresh_token_hash</span><span>device_type</span><span>status</span><span>expires_at</span></div></div>
+  </div><div class="flow">SessionStatus: ACTIVE | REVOKED | EXPIRED · DeviceType: DESKTOP | MOBILE | TABLET | OTHER</div></div></section>
+
+  <section class="domain" id="emp"><div class="domain-head" style="background:linear-gradient(90deg,#0f172a,#36531433)"><h2>Employment</h2><span class="tag" style="background:#36531455;color:#bef264">Workforce</span></div>
+  <div class="domain-body"><div class="tables">
+    <div class="table-card"><h3>employments</h3><div class="fields"><span class="pk">id PK</span><span class="fk">person_id</span><span>employee_code UNIQUE</span><span>employment_type</span><span>current_state</span><span>joining_date</span></div></div>
+    <div class="table-card"><h3>employment_state_history <span class="badge b-append">Append-only</span></h3><div class="fields"><span class="pk">id PK</span><span class="fk">employment_id</span><span>previous/new_state</span><span>effective_date</span></div></div>
+    <div class="table-card"><h3>employment_assignments <span class="badge b-append">Append-only</span></h3><div class="fields"><span class="pk">id PK</span><span class="fk">employment_id</span><span class="fk">department_id</span><span class="fk">position_id</span><span class="fk">location_id</span><span class="fk">shift_id</span><span>work_mode</span><span>effective_from/to</span></div></div>
+    <div class="table-card"><h3>positions</h3><div class="fields"><span class="pk">id PK</span><span>name</span><span>is_archived</span></div></div>
+  </div><div class="flow">States: ONBOARDING → PROBATION → CONFIRMED → SERVING_NOTICE → RESIGNED | TERMINATED | ALUMNI</div></div></section>
+
+  <section class="domain" id="rbac"><div class="domain-head" style="background:linear-gradient(90deg,#0f172a,#4c1d9533)"><h2>RBAC</h2><span class="tag" style="background:#4c1d9555;color:#d8b4fe">Security</span></div>
+  <div class="domain-body"><div class="tables">
+    <div class="table-card"><h3>resources <span class="badge b-seed">Seeded</span></h3><div class="fields"><span class="pk">id PK</span><span>name</span></div></div>
+    <div class="table-card"><h3>permissions <span class="badge b-seed">Seeded</span></h3><div class="fields"><span class="pk">id PK</span><span class="fk">resource_id</span><span>action</span><span>UNIQUE(resource,action)</span></div></div>
+    <div class="table-card"><h3>scopes <span class="badge b-seed">Seeded</span></h3><div class="fields"><span class="pk">id PK</span><span>SELF TEAM DEPARTMENT LOCATION ORGANIZATION CUSTOM</span></div></div>
+    <div class="table-card"><h3>roles <span class="badge b-admin">Admin</span></h3><div class="fields"><span class="pk">id PK</span><span>name UNIQUE</span><span>is_system_role</span></div></div>
+    <div class="table-card"><h3>role_permissions</h3><div class="fields"><span class="fk">role_id</span><span class="fk">permission_id</span><span class="fk">scope_id</span></div></div>
+    <div class="table-card"><h3>employee_roles</h3><div class="fields"><span class="fk">employment_id</span><span class="fk">role_id</span><span>assigned_at</span></div></div>
+    <div class="table-card"><h3>sensitive_fields <span class="badge b-seed">Seeded</span></h3><div class="fields"><span class="pk">id PK</span><span>field_key</span><span class="fk">resource_id</span></div></div>
+    <div class="table-card"><h3>role_sensitive_field_permissions</h3><div class="fields"><span class="fk">role_id</span><span class="fk">sensitive_field_id</span><span>can_read</span><span>can_update</span></div></div>
+  </div><div class="flow">Action: VIEW | CREATE | UPDATE | DELETE | APPROVE | EXPORT · Permission = Resource × Action × Scope</div></div></section>
+
+  <section class="domain" id="leave"><div class="domain-head" style="background:linear-gradient(90deg,#0f172a,#3f621233)"><h2>Leave</h2><span class="tag" style="background:#3f621255;color:#bef264">Workforce</span></div>
+  <div class="domain-body"><div class="tables">
+    <div class="table-card"><h3>leave_policies <span class="badge b-version">Versioned</span></h3><div class="fields"><span class="pk">id PK</span><span>leave_type</span><span>annual_entitlement</span><span>carry_forward_limit</span><span>effective_from/to</span></div></div>
+    <div class="table-card"><h3>leave_requests</h3><div class="fields"><span class="pk">id PK</span><span class="fk">employment_id</span><span>leave_type</span><span>start/end_date</span><span class="fk">approval_request_id</span><span>status</span></div></div>
+    <div class="table-card"><h3>leave_ledger <span class="badge b-append">Append-only</span></h3><div class="fields"><span class="pk">id PK</span><span class="fk">employment_id</span><span>leave_type</span><span>transaction_type</span><span>days</span></div></div>
+  </div><div class="flow">Balance = SUM(leave_ledger) · Types: CASUAL SICK EARNED MATERNITY PATERNITY LOP COMP_OFF</div></div></section>
+
+  <section class="domain" id="att"><div class="domain-head" style="background:linear-gradient(90deg,#0f172a,#78350f33)"><h2>Attendance</h2><span class="tag" style="background:#78350f55;color:#fcd34d">Workforce</span></div>
+  <div class="domain-body"><div class="tables">
+    <div class="table-card"><h3>attendance_days</h3><div class="fields"><span class="pk">id PK</span><span class="fk">employment_id</span><span class="fk">shift_id</span><span>attendance_date</span><span>status</span><span>working_hours</span></div></div>
+    <div class="table-card"><h3>attendance_punches <span class="badge b-append">Append-only</span></h3><div class="fields"><span class="pk">id PK</span><span class="fk">attendance_day_id</span><span>punch_type</span><span>punch_time</span><span>is_valid_punch</span><span>client_ip</span></div></div>
+    <div class="table-card"><h3>attendance_corrections</h3><div class="fields"><span class="pk">id PK</span><span class="fk">attendance_day_id</span><span>requested_check_in/out</span><span class="fk">approval_request_id</span><span>status</span></div></div>
+    <div class="table-card"><h3>monthly_attendance_summaries <span class="badge b-new">+ is_locked</span></h3><div class="fields"><span class="pk">id PK</span><span class="fk">employment_id</span><span>year/month</span><span>day counts</span><span>working/overtime_hours</span><span>is_locked</span></div></div>
+    <div class="table-card"><h3>attendance_policies <span class="badge b-version">Versioned</span></h3><div class="fields"><span class="pk">id PK</span><span>correction_window_days</span><span>max_corrections_per_month</span><span>allow_multiple_punches</span></div></div>
+    <div class="table-card"><h3>attendance_breaks <span class="badge b-new">New</span></h3><div class="fields"><span class="pk">id PK</span><span class="fk">attendance_day_id</span><span>break_start</span><span>break_end</span><span>duration_minutes</span></div></div>
+  </div><div class="flow">PRESENT ABSENT HALF_DAY HOLIDAY WEEK_OFF ON_LEAVE · is_locked after payroll PAID</div></div></section>
+
+  <section class="domain" id="appr"><div class="domain-head" style="background:linear-gradient(90deg,#0f172a,#1e3a8a33)"><h2>Approvals</h2><span class="tag" style="background:#1e3a8a55;color:#93c5fd">Cross-cutting</span></div>
+  <div class="domain-body"><div class="tables">
+    <div class="table-card"><h3>approval_requests</h3><div class="fields"><span class="pk">id PK</span><span>request_type</span><span>reference_id</span><span class="fk">requester_employment_id</span><span>target</span><span>status</span></div></div>
+    <div class="table-card"><h3>approval_actions <span class="badge b-append">Append-only</span></h3><div class="fields"><span class="pk">id PK</span><span class="fk">approval_request_id</span><span class="fk">employment_id</span><span>action</span><span>remarks</span></div></div>
+  </div><div class="flow">Target: DEPARTMENT_HEAD | DEPARTMENT · Action: APPROVED REJECTED COMMENTED FORWARDED</div></div></section>
+
+  <section class="domain" id="notif"><div class="domain-head" style="background:linear-gradient(90deg,#0f172a,#83184333)"><h2>Notifications</h2><span class="tag" style="background:#83184355;color:#f9a8d4">Cross-cutting</span></div>
+  <div class="domain-body"><div class="tables">
+    <div class="table-card"><h3>notification_templates</h3><div class="fields"><span class="pk">id PK</span><span>code</span><span>channel</span><span>subject/body</span></div></div>
+    <div class="table-card"><h3>notifications</h3><div class="fields"><span class="pk">id PK</span><span class="fk">template_id</span><span>recipient</span><span>payload</span><span>read_at</span></div></div>
+    <div class="table-card"><h3>notification_preferences</h3><div class="fields"><span class="fk">employment_id</span><span>channel</span><span>is_enabled</span></div></div>
+  </div><div class="flow">V1: IN_APP (+ EMAIL optional) · After successful commit only</div></div></section>
+
+  <section class="domain" id="dev"><div class="domain-head" style="background:linear-gradient(90deg,#0f172a,#312e8133)"><h2>Developer / Projects</h2><span class="tag" style="background:#312e8155;color:#c4b5fd">Delivery</span></div>
+  <div class="domain-body"><div class="tables">
+    <div class="table-card"><h3>teams</h3><div class="fields"><span class="pk">id PK</span><span>name</span><span class="fk">team_head_employment_id</span></div></div>
+    <div class="table-card"><h3>team_members <span class="badge b-append">Append-only</span></h3><div class="fields"><span class="pk">id PK</span><span class="fk">team_id</span><span class="fk">employment_id</span><span>team_role</span><span>joined_at</span><span>left_at</span></div></div>
+    <div class="table-card"><h3>projects</h3><div class="fields"><span class="pk">id PK</span><span class="fk">client_id</span><span class="fk">lead_id UNIQUE</span><span>assignment_type</span><span>assigned_to_id</span><span>status</span><span>phase</span></div></div>
+    <div class="table-card"><h3>tasks <span class="badge b-new">+ estimated_hours</span></h3><div class="fields"><span class="pk">id PK</span><span class="fk">project_id</span><span class="fk">assignee_employment_id</span><span>priority</span><span>status</span><span>estimated_hours</span></div></div>
+    <div class="table-card"><h3>task_time_entries <span class="badge b-new">New</span> <span class="badge b-append">Immutable</span></h3><div class="fields"><span class="pk">id PK</span><span class="fk">task_id</span><span class="fk">employment_id</span><span>work_date</span><span>duration_minutes</span><span>UNIQUE(task,emp,date)</span></div></div>
+  </div><div class="flow">Lead WON → Client → Project · actual_minutes = SUM(time_entries) · Daily progress derived (no daily_progress table)</div></div></section>
+
+  <section class="domain" id="sales"><div class="domain-head" style="background:linear-gradient(90deg,#0f172a,#115e5933)"><h2>Sales</h2><span class="tag" style="background:#115e5955;color:#5eead4">Revenue</span></div>
+  <div class="domain-body"><div class="tables">
+    <div class="table-card"><h3>clients</h3><div class="fields"><span class="pk">id PK</span><span>client_type</span><span>client_name</span><span>is_archived</span></div></div>
+    <div class="table-card"><h3>client_contacts</h3><div class="fields"><span class="pk">id PK</span><span class="fk">client_id</span><span>name</span><span>email</span><span>phone</span></div></div>
+    <div class="table-card"><h3>platforms</h3><div class="fields"><span class="pk">id PK</span><span>name</span><span>is_archived</span></div></div>
+    <div class="table-card"><h3>leads</h3><div class="fields"><span class="pk">id PK</span><span>lead_title</span><span class="fk">platform_id</span><span class="fk">assigned_employment_id</span><span>status</span><span>Quotation</span></div></div>
+  </div><div class="flow">WON → reuse/create Client → auto Project (1 lead → 1 project UNIQUE)</div></div></section>
+
+  <section class="domain" id="audit"><div class="domain-head" style="background:linear-gradient(90deg,#0f172a,#7f1d1d33)"><h2>Audit</h2><span class="tag" style="background:#7f1d1d55;color:#fca5a5">Compliance</span></div>
+  <div class="domain-body"><div class="tables">
+    <div class="table-card"><h3>audit_logs <span class="badge b-append">Append-only</span> <span class="badge b-new">10d PG → MinIO</span></h3><div class="fields"><span class="pk">id PK</span><span>reference_type</span><span>reference_id</span><span>action</span><span>description</span><span class="fk">employment_id NULL</span><span>ip_address</span><span>created_at</span></div></div>
+  </div><div class="flow">PG (10 days) → Archive Worker → JSONL → MinIO permanent · Unified Audit Service merges both · Never restore to PG</div></div></section>
+
+  <section class="domain" id="docs"><div class="domain-head" style="background:linear-gradient(90deg,#0f172a,#1e293b)"><h2>Notes & Documents</h2><span class="tag" style="background:#1e293b;color:#cbd5e1">Content</span></div>
+  <div class="domain-body"><div class="tables">
+    <div class="table-card"><h3>notes</h3><div class="fields"><span class="pk">id PK</span><span>reference_type</span><span>reference_id</span><span>title</span><span>content</span></div></div>
+    <div class="table-card"><h3>document_types</h3><div class="fields"><span class="pk">id PK</span><span>name</span><span>is_archived</span></div></div>
+    <div class="table-card"><h3>documents</h3><div class="fields"><span class="pk">id PK</span><span class="fk">document_type_id</span><span class="fk">current_version_id</span><span>status</span></div></div>
+    <div class="table-card"><h3>document_versions <span class="badge b-append">Append-only</span></h3><div class="fields"><span class="pk">id PK</span><span class="fk">document_id</span><span>version_number</span><span>file_reference</span><span>mime_type</span></div></div>
+    <div class="table-card"><h3>document_links <span class="badge b-append">Append-only</span></h3><div class="fields"><span class="pk">id PK</span><span class="fk">document_id</span><span>entity_type</span><span>entity_id</span></div></div>
+  </div></div></section>
+
+  <section class="domain" id="pay"><div class="domain-head" style="background:linear-gradient(90deg,#0f172a,#7c2d1233)"><h2>Payroll & Salary</h2><span class="tag" style="background:#7c2d1255;color:#fdba74">Finance</span></div>
+  <div class="domain-body"><div class="tables">
+    <div class="table-card"><h3>employee_salary <span class="badge b-version">Versioned</span></h3><div class="fields"><span class="pk">id PK</span><span class="fk">employment_id</span><span>effective_from/to</span><span>gross_salary</span></div></div>
+    <div class="table-card"><h3>employee_salary_items</h3><div class="fields"><span class="pk">id PK</span><span class="fk">employee_salary_id</span><span>name</span><span>type EARNING|DEDUCTION</span><span>amount</span></div></div>
+    <div class="table-card"><h3>monthly_payroll</h3><div class="fields"><span class="pk">id PK</span><span class="fk">employment_id</span><span>year/month</span><span>gross/net</span><span>status CALCULATED|APPROVED|PAID</span><span>payment_method/reference/date</span></div></div>
+    <div class="table-card"><h3>monthly_payroll_items</h3><div class="fields"><span class="pk">id PK</span><span class="fk">monthly_payroll_id</span><span>name</span><span>type EARNING|DEDUCTION|ADJUSTMENT</span><span>amount</span></div></div>
+    <div class="table-card"><h3>employee_bank_accounts <span class="badge b-new">New</span></h3><div class="fields"><span class="pk">id PK</span><span class="fk">employment_id</span><span>bank_name</span><span>account_number</span><span>ifsc_code</span><span>is_primary</span><span>is_active</span></div></div>
+  </div><div class="flow">Salary → Payroll snapshot → CALCULATED → APPROVED → PAID → Payslip PDF → lock monthly_attendance_summaries\nPost-pay corrections → next month ADJUSTMENT (never rewrite paid payroll)</div></div></section>
+</main>
+<footer>Bytevon CRM · Final consolidated schema map · Sources: final_schema.md · payroll_doc.md · progreesBreak.md</footer>
+</body>
+</html>
