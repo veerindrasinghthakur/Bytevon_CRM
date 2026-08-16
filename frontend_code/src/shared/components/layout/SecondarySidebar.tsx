@@ -18,7 +18,14 @@ export interface SecondaryNavGroup {
 }
 
 export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
-  dashboard: { moduleId: 'dashboard', title: 'Dashboard', items: [] },
+  dashboard: {
+    moduleId: 'dashboard',
+    title: 'Dashboard',
+    items: [
+      { id: 'executive', label: 'Executive', icon: 'monitoring', to: '/dashboard' },
+      { id: 'employee', label: 'Employee', icon: 'person', to: '/dashboard/employee' },
+    ],
+  },
   sales: {
     moduleId: 'sales',
     title: 'Sales',
@@ -77,8 +84,10 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
       { id: 'users', label: 'Users', icon: 'manage_accounts', to: '/admin/users' },
       { id: 'roles', label: 'Roles & Permissions', icon: 'qr_code_2', to: '/admin/roles' },
       { id: 'settings', label: 'Settings', icon: 'settings', to: '/admin/settings' },
+      { id: 'attendance-settings', label: 'Attendance Settings', icon: 'schedule', to: '/admin/attendance-settings' },
+      { id: 'leave-settings', label: 'Leave Settings', icon: 'event_busy', to: '/admin/leave-settings' },
       { id: 'audit', label: 'Audit Logs', icon: 'receipt_long', to: '/admin/audit' },
-      { id: 'notifications', label: 'Notifications', icon: 'notifications', to: '/admin/notifications' },
+      { id: 'security', label: 'Security Center', icon: 'security', to: '/admin/security' },
     ],
   },
 }
@@ -90,6 +99,7 @@ function getActiveModule(pathname: string): string {
   if (pathname.startsWith('/my-work')) return 'my-work'
   if (pathname.startsWith('/approvals')) return 'approvals'
   if (pathname.startsWith('/admin')) return 'admin'
+  if (pathname.startsWith('/dashboard')) return 'dashboard'
   return 'dashboard'
 }
 
@@ -120,6 +130,10 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
     if (to === '/projects') return pathname === '/projects'
     if (to === '/my-work') return pathname === '/my-work'
     if (to === '/approvals') return pathname === '/approvals'
+    if (to === '/admin/users') {
+      return pathname === '/admin' || pathname === '/admin/users' || pathname.startsWith('/admin/users/')
+    }
+    if (to === '/dashboard') return pathname === '/dashboard'
     if (to === '/my-work/attendance') {
       return (
         pathname === '/my-work/attendance' ||
