@@ -10,8 +10,6 @@ const SECTIONS = [
   { id: 'locations', label: 'Office Locations', icon: 'apartment' },
   { id: 'branding', label: 'Branding', icon: 'palette' },
   { id: 'regional', label: 'Regional Config', icon: 'language' },
-  { id: 'attendance', label: 'Attendance', icon: 'schedule' },
-  { id: 'leave', label: 'Leave Management', icon: 'event_busy' },
 ] as const
 
 type SectionId = (typeof SECTIONS)[number]['id']
@@ -65,7 +63,7 @@ export function AdminSettingsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Administration Settings"
-        description="Unified configuration for your enterprise identity, workforce tracking, and policy management."
+        description="Unified configuration for your enterprise identity and regional policies."
       />
 
       <div className="flex flex-wrap gap-2 border-b border-outline-variant pb-0">
@@ -101,8 +99,6 @@ export function AdminSettingsPage() {
         {active === 'locations' && <LocationsSection />}
         {active === 'branding' && <BrandingSection />}
         {active === 'regional' && <RegionalSection />}
-        {active === 'attendance' && <AttendanceSection />}
-        {active === 'leave' && <LeaveSection />}
       </div>
     </div>
   )
@@ -174,27 +170,6 @@ function Readonly({ label, value }: { label: string; value: string }) {
   )
 }
 
-function Toggle({ label, on = false }: { label: string; on?: boolean }) {
-  return (
-    <div className="flex justify-between items-center gap-4">
-      <span className="text-xs font-medium text-on-surface">{label}</span>
-      <div
-        className={cn(
-          'w-8 h-4 rounded-full relative shrink-0 transition-colors',
-          on ? 'bg-secondary' : 'bg-outline-variant'
-        )}
-      >
-        <div
-          className={cn(
-            'absolute top-0.5 w-3 h-3 bg-white rounded-full transition-all',
-            on ? 'right-0.5' : 'left-0.5'
-          )}
-        />
-      </div>
-    </div>
-  )
-}
-
 function SelectField({ label, value }: { label: string; value: string }) {
   return (
     <div className="space-y-1">
@@ -206,16 +181,6 @@ function SelectField({ label, value }: { label: string; value: string }) {
   )
 }
 
-function Kpi({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="p-4 bg-surface-container-low border border-outline-variant rounded-lg shadow-sm hover:shadow-md transition-shadow">
-      <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">{label}</p>
-      <p className="text-xl font-bold text-on-surface">{value}</p>
-    </div>
-  )
-}
-
-/* ─── Organization: view by default, edit only after pencil ─── */
 function OrganizationSection() {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({
@@ -228,7 +193,6 @@ function OrganizationSection() {
     reg: 'BRN-001293',
     description: 'Leading enterprise solutions provider for global workforce management.',
   })
-
   const set = (k: keyof typeof form, v: string) => setForm((p) => ({ ...p, [k]: v }))
 
   return (
@@ -297,7 +261,6 @@ function OrganizationSection() {
   )
 }
 
-/* ─── Head Office: picker modal ─── */
 function HeadOfficeSection() {
   const [pickerOpen, setPickerOpen] = useState(false)
   const [headId, setHeadId] = useState('ny')
@@ -380,7 +343,6 @@ function HeadOfficeSection() {
   )
 }
 
-/* ─── Office Locations: navigate to add/edit pages ─── */
 function LocationsSection() {
   const navigate = useNavigate()
 
@@ -389,27 +351,11 @@ function LocationsSection() {
       title="Office Locations"
       description="Manage all company offices and branches."
       action={
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => navigate({ to: '/admin/settings/offices/new' })}
-        >
+        <Button variant="primary" size="sm" onClick={() => navigate({ to: '/admin/settings/offices/new' })}>
           + Add Office
         </Button>
       }
     >
-      <div className="flex flex-wrap gap-2 mb-4">
-        <input
-          className="text-xs border border-outline-variant rounded px-3 py-1.5 bg-white w-full md:w-48 outline-none focus:border-secondary"
-          placeholder="Search Office"
-        />
-        <select className="text-xs border border-outline-variant rounded px-3 py-1.5 bg-white">
-          <option>Country</option>
-        </select>
-        <select className="text-xs border border-outline-variant rounded px-3 py-1.5 bg-white">
-          <option>Status</option>
-        </select>
-      </div>
       <div className="overflow-x-auto border border-outline-variant rounded-lg">
         <table className="w-full text-left text-sm">
           <thead className="bg-surface-container-low border-b border-outline-variant text-[10px] font-bold uppercase text-on-surface-variant">
@@ -434,9 +380,7 @@ function LocationsSection() {
                 <td className="px-4 py-3">{o.currency}</td>
                 <td className="px-4 py-3">
                   {o.isPrimary ? (
-                    <span className="px-2 py-0.5 bg-primary text-white text-[10px] font-bold rounded-full">
-                      Primary
-                    </span>
+                    <span className="px-2 py-0.5 bg-primary text-white text-[10px] font-bold rounded-full">Primary</span>
                   ) : (
                     '—'
                   )}
@@ -450,19 +394,11 @@ function LocationsSection() {
                   <button
                     type="button"
                     className="material-symbols-outlined text-sm text-outline hover:text-secondary"
-                    title="Edit"
                     onClick={() =>
                       navigate({ to: '/admin/settings/offices/$officeId/edit', params: { officeId: o.id } })
                     }
                   >
                     edit
-                  </button>
-                  <button
-                    type="button"
-                    className="material-symbols-outlined text-sm text-outline hover:text-error"
-                    title="Archive"
-                  >
-                    archive
                   </button>
                 </td>
               </tr>
@@ -537,241 +473,5 @@ function RegionalSection() {
         <SelectField label="First Day of Week" value="Sunday" />
       </div>
     </SettingsCard>
-  )
-}
-
-function AttendanceSection() {
-  return (
-    <SettingsCard
-      title="Attendance Management"
-      description="Configure organization-wide attendance policies, working hours, and rules."
-    >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="flex justify-between items-end mb-3">
-            <div>
-              <h4 className="font-label-md text-on-surface">Work Shifts</h4>
-              <p className="text-xs text-on-surface-variant">Define standard working hours and break durations.</p>
-            </div>
-            <button type="button" className="text-secondary text-xs font-bold uppercase hover:underline">
-              + Add Shift
-            </button>
-          </div>
-          <div className="overflow-x-auto border border-outline-variant rounded-lg">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-surface-container-low border-b border-outline-variant text-[10px] font-bold uppercase text-on-surface-variant">
-                <tr>
-                  <th className="px-4 py-3">Shift Name</th>
-                  <th className="px-4 py-3">Start</th>
-                  <th className="px-4 py-3">End</th>
-                  <th className="px-4 py-3">Break</th>
-                  <th className="px-4 py-3">Grace</th>
-                  <th className="px-4 py-3">Default</th>
-                  <th className="px-4 py-3">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-t border-outline-variant/30">
-                  <td className="px-4 py-3 font-medium">General Morning</td>
-                  <td className="px-4 py-3">09:00</td>
-                  <td className="px-4 py-3">18:00</td>
-                  <td className="px-4 py-3">1h</td>
-                  <td className="px-4 py-3">15m</td>
-                  <td className="px-4 py-3">
-                    <span className="material-symbols-outlined text-secondary text-sm">check_circle</span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="px-2 py-0.5 bg-green-500/10 text-green-600 text-[10px] font-bold rounded-full">
-                      Active
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-        <div className="space-y-4">
-          <h4 className="font-label-md text-on-surface">Quick Configuration</h4>
-          <div className="p-4 bg-surface-container-low border border-outline-variant rounded-lg space-y-4">
-            <Toggle label="Enable Attendance Tracking" on />
-            <Toggle label="Enable Geolocation" />
-            <Toggle label="Enable IP Validation" />
-            <Toggle label="Enable Overtime" on />
-            <Toggle label="Enable Corrections" on />
-          </div>
-        </div>
-      </div>
-    </SettingsCard>
-  )
-}
-
-/* ─── Leave: Add Type opens highlighted modal ─── */
-function LeaveSection() {
-  const [modalOpen, setModalOpen] = useState(false)
-  const [newType, setNewType] = useState({ name: '', code: '', paid: 'Paid', color: '#3b82f6' })
-
-  return (
-    <>
-      <SettingsCard
-        title="Leave Management"
-        description="Configure leave policies, leave types, eligibility rules, and organization-wide leave settings."
-      >
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Kpi label="Policies" value="8" />
-          <Kpi label="Leave Types" value="12" />
-          <Kpi label="Departments" value="15" />
-          <Kpi label="Employment Types" value="4" />
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 space-y-4">
-            <div className="flex justify-between items-end">
-              <div>
-                <h4 className="font-label-md text-on-surface">Leave Types</h4>
-                <p className="text-xs text-on-surface-variant">
-                  Manage leave categories available across the organization.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setModalOpen(true)}
-                className="inline-flex items-center gap-1 text-secondary text-xs font-bold uppercase hover:underline"
-              >
-                <span className="material-symbols-outlined text-sm">add</span> Add Type
-              </button>
-            </div>
-            <div className="overflow-x-auto border border-outline-variant rounded-lg">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-surface-container-low border-b border-outline-variant text-[10px] font-bold uppercase text-on-surface-variant">
-                  <tr>
-                    <th className="px-4 py-3">Leave Type</th>
-                    <th className="px-4 py-3">Code</th>
-                    <th className="px-4 py-3">Paid/Unpaid</th>
-                    <th className="px-4 py-3">Color</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-outline-variant/30">
-                  {[
-                    { name: 'Casual Leave', code: 'CL', paid: 'Paid', color: 'bg-blue-500' },
-                    { name: 'Sick Leave', code: 'SL', paid: 'Paid', color: 'bg-red-500' },
-                    { name: 'Earned Leave', code: 'EL', paid: 'Paid', color: 'bg-green-500' },
-                  ].map((row) => (
-                    <tr key={row.code} className="hover:bg-surface-container-low/40 transition-colors">
-                      <td className="px-4 py-3 font-medium">{row.name}</td>
-                      <td className="px-4 py-3">{row.code}</td>
-                      <td className="px-4 py-3">{row.paid}</td>
-                      <td className="px-4 py-3">
-                        <div className={cn('w-3 h-3 rounded-full', row.color)} />
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="px-2 py-0.5 bg-secondary/10 text-secondary text-[10px] font-bold rounded-full">
-                          Active
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-right space-x-2">
-                        <button type="button" className="material-symbols-outlined text-sm text-outline hover:text-secondary">
-                          edit
-                        </button>
-                        <button type="button" className="material-symbols-outlined text-sm text-outline hover:text-error">
-                          archive
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <h4 className="font-label-md text-on-surface">Quick Configuration</h4>
-            <div className="p-4 bg-surface-container-low border border-outline-variant rounded-lg space-y-4">
-              <Toggle label="Allow Cancel Leave" on />
-              <Toggle label="Allow Half-Day" on />
-              <Toggle label="Allow Multi-Day" on />
-              <Toggle label="Leave During Probation" />
-              <Toggle label="Enable Carry Forward" on />
-              <Toggle label="Negative Balance" />
-            </div>
-          </div>
-        </div>
-      </SettingsCard>
-
-      {modalOpen && (
-        <>
-          <div className="fixed inset-0 bg-primary/30 backdrop-blur-sm z-40" onClick={() => setModalOpen(false)} />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-surface-container-lowest border-2 border-secondary/40 rounded-xl shadow-2xl w-full max-w-md overflow-hidden ring-4 ring-secondary/10">
-              <div className="px-6 py-4 border-b border-outline-variant bg-secondary/5 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-secondary">event_busy</span>
-                  <h3 className="text-title-lg font-semibold text-on-background">Add Leave Type</h3>
-                </div>
-                <button type="button" className="p-1 rounded-lg hover:bg-surface-container" onClick={() => setModalOpen(false)}>
-                  <span className="material-symbols-outlined">close</span>
-                </button>
-              </div>
-              <div className="p-6 space-y-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-on-surface-variant uppercase">Leave Type Name</label>
-                  <input
-                    value={newType.name}
-                    onChange={(e) => setNewType((p) => ({ ...p, name: e.target.value }))}
-                    placeholder="e.g. Compensatory Off"
-                    className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-on-surface-variant uppercase">Code</label>
-                    <input
-                      value={newType.code}
-                      onChange={(e) => setNewType((p) => ({ ...p, code: e.target.value }))}
-                      placeholder="CO"
-                      className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-on-surface-variant uppercase">Paid / Unpaid</label>
-                    <select
-                      value={newType.paid}
-                      onChange={(e) => setNewType((p) => ({ ...p, paid: e.target.value }))}
-                      className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary bg-white"
-                    >
-                      <option>Paid</option>
-                      <option>Unpaid</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-on-surface-variant uppercase">Color</label>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={newType.color}
-                      onChange={(e) => setNewType((p) => ({ ...p, color: e.target.value }))}
-                      className="w-10 h-10 rounded border border-outline-variant cursor-pointer"
-                    />
-                    <input
-                      value={newType.color}
-                      onChange={(e) => setNewType((p) => ({ ...p, color: e.target.value }))}
-                      className="flex-1 border border-outline-variant rounded-lg px-3 py-2 text-sm outline-none focus:border-secondary"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="px-6 py-4 border-t border-outline-variant flex justify-end gap-2 bg-surface-container-low/40">
-                <Button variant="outline" size="sm" onClick={() => setModalOpen(false)}>
-                  Cancel
-                </Button>
-                <Button variant="primary" size="sm" onClick={() => setModalOpen(false)}>
-                  Create Leave Type
-                </Button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-    </>
   )
 }
