@@ -14,13 +14,13 @@ export function PayslipViewPage() {
           <div className="flex items-center gap-3 mb-1">
             <button
               type="button"
-              className="text-on-surface-variant hover:text-primary p-1 rounded-full hover:bg-surface-container"
+              className="text-on-surface-variant hover:text-secondary p-1 rounded-full hover:bg-surface-container transition-colors"
               onClick={() => navigate({ to: '/payroll/monthly' })}
             >
               <span className="material-symbols-outlined">arrow_back</span>
             </button>
-            <h1 className="text-headline-lg font-bold text-on-surface">Payslip</h1>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+            <h1 className="text-headline-lg font-bold text-deep-navy">Payslip</h1>
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-emerald/10 text-success-emerald">
               PAID
             </span>
           </div>
@@ -41,57 +41,57 @@ export function PayslipViewPage() {
 
       <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col sm:flex-row gap-6 sm:gap-12">
         <div>
-          <p className="text-[10px] text-outline uppercase tracking-wider mb-1">Payment Date</p>
-          <p className="text-label-md font-semibold text-on-surface">Aug 31, 2026</p>
+          <p className="text-[10px] text-on-surface-variant uppercase tracking-wider mb-1">Payment Date</p>
+          <p className="text-label-md font-semibold text-deep-navy">Aug 31, 2026</p>
         </div>
         <div>
-          <p className="text-[10px] text-outline uppercase tracking-wider mb-1">Payment Method</p>
-          <p className="text-label-md font-semibold text-on-surface flex items-center">
-            <span className="material-symbols-outlined text-sm mr-1 text-on-surface-variant">account_balance</span>
+          <p className="text-[10px] text-on-surface-variant uppercase tracking-wider mb-1">Payment Method</p>
+          <p className="text-label-md font-semibold text-deep-navy flex items-center">
+            <span className="material-symbols-outlined text-sm mr-1 text-secondary">account_balance</span>
             Bank Transfer
           </p>
         </div>
         <div>
-          <p className="text-[10px] text-outline uppercase tracking-wider mb-1">Reference Number</p>
-          <p className="text-label-md font-semibold text-on-surface font-mono text-sm">TXN-98234105</p>
+          <p className="text-[10px] text-on-surface-variant uppercase tracking-wider mb-1">Reference Number</p>
+          <p className="text-label-md font-semibold text-deep-navy font-mono text-sm">TXN-98234105</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <SumCard label="Gross Salary" value="₹75,000" />
-        <SumCard label="Total Earnings" value="₹75,000" accent="border-l-4 border-l-surface-tint" />
+        <SumCard label="Total Earnings" value="₹75,000" accent="border-l-4 border-l-secondary" />
         <SumCard label="Total Deductions" value="₹6,500" accent="border-l-4 border-l-error" />
-        <SumCard label="Adjustments" value="+₹1,500" accent="border-l-4 border-l-secondary" />
-        <div className="bg-deep-navy text-white rounded-xl p-5 shadow-md flex flex-col justify-center">
+        <SumCard label="Adjustments" value="+₹1,500" accent="border-l-4 border-l-primary" />
+        <div className="bg-deep-navy text-on-primary rounded-xl p-5 shadow-sm flex flex-col justify-center">
           <p className="text-label-sm text-inverse-primary mb-1 opacity-80">Net Salary</p>
-          <p className="text-headline-md font-bold">₹70,000</p>
+          <p className="text-headline-md font-bold text-on-primary">₹70,000</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
           <div className="bg-surface-container-low px-6 py-4 border-b border-outline-variant flex justify-between items-center">
-            <h3 className="text-title-lg font-semibold text-on-surface flex items-center">
-              <span className="material-symbols-outlined mr-2 text-surface-tint">add_circle</span>
+            <h3 className="text-title-lg font-semibold text-deep-navy flex items-center">
+              <span className="material-symbols-outlined mr-2 text-secondary">add_circle</span>
               Earnings
             </h3>
             <span className="text-label-md text-on-surface-variant font-semibold">₹75,000</span>
           </div>
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-outline-variant/50 bg-surface/50">
-                <th className="py-3 px-6 text-label-sm text-outline font-medium uppercase tracking-wider w-2/3">Component</th>
-                <th className="py-3 px-6 text-label-sm text-outline font-medium uppercase tracking-wider text-right w-1/3">Amount</th>
+              <tr className="border-b border-outline-variant bg-surface-container-low">
+                <th className="py-3 px-6 text-label-sm text-on-surface-variant font-medium uppercase tracking-wider w-2/3">Component</th>
+                <th className="py-3 px-6 text-label-sm text-on-surface-variant font-medium uppercase tracking-wider text-right w-1/3">Amount</th>
               </tr>
             </thead>
-            <tbody className="text-body-md text-on-surface">
+            <tbody className="text-body-md text-deep-navy">
               {[
                 ['Basic Salary', '₹45,000'],
                 ['House Rent Allowance (HRA)', '₹15,000'],
                 ['Conveyance', '₹5,000'],
                 ['Special Allowance', '₹10,000'],
               ].map(([c, a]) => (
-                <tr key={c} className="border-b border-outline-variant/30 hover:bg-surface-container-low/50">
+                <tr key={c} className="border-b border-outline-variant bv-row-hover">
                   <td className="py-4 px-6">{c}</td>
                   <td className="py-4 px-6 text-right font-medium">{a}</td>
                 </tr>
@@ -103,7 +103,7 @@ export function PayslipViewPage() {
         <div className="space-y-6">
           <div className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
             <div className="bg-surface-container-low px-6 py-4 border-b border-outline-variant flex justify-between items-center">
-              <h3 className="text-title-lg font-semibold text-on-surface flex items-center">
+              <h3 className="text-title-lg font-semibold text-deep-navy flex items-center">
                 <span className="material-symbols-outlined mr-2 text-error">remove_circle</span>
                 Deductions
               </h3>
@@ -111,18 +111,18 @@ export function PayslipViewPage() {
             </div>
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-outline-variant/50 bg-surface/50">
-                  <th className="py-3 px-6 text-label-sm text-outline font-medium uppercase tracking-wider w-2/3">Component</th>
-                  <th className="py-3 px-6 text-label-sm text-outline font-medium uppercase tracking-wider text-right w-1/3">Amount</th>
+                <tr className="border-b border-outline-variant bg-surface-container-low">
+                  <th className="py-3 px-6 text-label-sm text-on-surface-variant font-medium uppercase tracking-wider w-2/3">Component</th>
+                  <th className="py-3 px-6 text-label-sm text-on-surface-variant font-medium uppercase tracking-wider text-right w-1/3">Amount</th>
                 </tr>
               </thead>
-              <tbody className="text-body-md text-on-surface">
+              <tbody className="text-body-md text-deep-navy">
                 {[
                   ['Provident Fund (PF)', '-₹3,600'],
                   ['Tax Deducted at Source (TDS)', '-₹2,400'],
                   ['Professional Tax', '-₹500'],
                 ].map(([c, a]) => (
-                  <tr key={c} className="border-b border-outline-variant/30 hover:bg-surface-container-low/50">
+                  <tr key={c} className="border-b border-outline-variant bv-row-hover">
                     <td className="py-4 px-6">{c}</td>
                     <td className="py-4 px-6 text-right font-medium text-error">{a}</td>
                   </tr>
@@ -133,7 +133,7 @@ export function PayslipViewPage() {
 
           <div className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
             <div className="bg-surface-container-low px-6 py-4 border-b border-outline-variant flex justify-between items-center">
-              <h3 className="text-title-lg font-semibold text-on-surface flex items-center">
+              <h3 className="text-title-lg font-semibold text-deep-navy flex items-center">
                 <span className="material-symbols-outlined mr-2 text-secondary">tune</span>
                 Adjustments
               </h3>
@@ -141,18 +141,18 @@ export function PayslipViewPage() {
             </div>
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-outline-variant/50 bg-surface/50">
-                  <th className="py-3 px-6 text-label-sm text-outline font-medium uppercase tracking-wider w-2/3">Description</th>
-                  <th className="py-3 px-6 text-label-sm text-outline font-medium uppercase tracking-wider text-right w-1/3">Amount</th>
+                <tr className="border-b border-outline-variant bg-surface-container-low">
+                  <th className="py-3 px-6 text-label-sm text-on-surface-variant font-medium uppercase tracking-wider w-2/3">Description</th>
+                  <th className="py-3 px-6 text-label-sm text-on-surface-variant font-medium uppercase tracking-wider text-right w-1/3">Amount</th>
                 </tr>
               </thead>
-              <tbody className="text-body-md text-on-surface">
-                <tr className="hover:bg-surface-container-low/50">
+              <tbody className="text-body-md text-deep-navy">
+                <tr className="bv-row-hover">
                   <td className="py-4 px-6">
                     <div>Performance Bonus</div>
-                    <div className="text-xs text-outline mt-1">Q3 Target Achievement</div>
+                    <div className="text-xs text-on-surface-variant mt-1">Q3 Target Achievement</div>
                   </td>
-                  <td className="py-4 px-6 text-right font-medium text-emerald-700">+₹1,500</td>
+                  <td className="py-4 px-6 text-right font-medium text-success-emerald">+₹1,500</td>
                 </tr>
               </tbody>
             </table>
@@ -165,9 +165,9 @@ export function PayslipViewPage() {
 
 function SumCard({ label, value, accent }: { label: string; value: string; accent?: string }) {
   return (
-    <div className={`bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm ${accent ?? ''}`}>
-      <p className="text-label-sm text-outline mb-2">{label}</p>
-      <p className="text-title-lg font-semibold text-on-surface">{value}</p>
+    <div className={`bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm card-hover ${accent ?? ''}`}>
+      <p className="text-label-sm text-on-surface-variant mb-2">{label}</p>
+      <p className="text-title-lg font-semibold text-deep-navy">{value}</p>
     </div>
   )
 }
