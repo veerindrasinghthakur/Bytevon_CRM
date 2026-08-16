@@ -91,8 +91,20 @@ import {
 import {
   ExecutiveDashboardPage,
   EmployeeDashboardPage,
-  PayrollDashboardPage,
+  PayrollDashboardPage as DashboardPayrollPage,
 } from '@/modules/dashboard'
+
+import {
+  PayrollDashboardPage,
+  MonthlyPayrollPage,
+  RunPayrollPage,
+  GeneratingPayrollPage,
+  PayrollReviewPage,
+  PayslipViewPage,
+  SalaryManagementPage,
+  ReviseSalaryPage,
+  EmployeePayrollHistoryPage,
+} from '@/modules/payroll'
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -203,7 +215,7 @@ const dashboardEmployeeRoute = createRoute({
 const dashboardPayrollRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/dashboard/payroll',
-  component: PayrollDashboardPage,
+  component: DashboardPayrollPage,
 })
 
 const profileRoute = createRoute({
@@ -356,6 +368,53 @@ const workforceAttendanceRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/workforce/attendance',
   component: () => <Placeholder title="Attendance" />,
+})
+
+// —— Payroll module ——
+const payrollRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/payroll',
+  component: PayrollDashboardPage,
+})
+const payrollMonthlyRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/payroll/monthly',
+  component: MonthlyPayrollPage,
+})
+const payrollRunRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/payroll/run',
+  component: RunPayrollPage,
+})
+const payrollGeneratingRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/payroll/generating',
+  component: GeneratingPayrollPage,
+})
+const payrollReviewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/payroll/review/$employeeId',
+  component: PayrollReviewPage,
+})
+const payrollPayslipRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/payroll/payslip/$employeeId',
+  component: PayslipViewPage,
+})
+const payrollSalaryRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/payroll/salary',
+  component: SalaryManagementPage,
+})
+const payrollSalaryReviseRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/payroll/salary/revise',
+  component: ReviseSalaryPage,
+})
+const payrollHistoryRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/payroll/history/$employeeId',
+  component: EmployeePayrollHistoryPage,
 })
 
 const myWorkRoute = createRoute({
@@ -580,6 +639,15 @@ const routeTree = rootRoute.addChildren([
     workforceDepartmentsRoute,
     workforceDepartmentsNewRoute,
     workforceAttendanceRoute,
+    payrollRoute,
+    payrollMonthlyRoute,
+    payrollRunRoute,
+    payrollGeneratingRoute,
+    payrollReviewRoute,
+    payrollPayslipRoute,
+    payrollSalaryRoute,
+    payrollSalaryReviseRoute,
+    payrollHistoryRoute,
     myWorkRoute,
     myWorkBreakRoute,
     myWorkAttendanceRoute,
