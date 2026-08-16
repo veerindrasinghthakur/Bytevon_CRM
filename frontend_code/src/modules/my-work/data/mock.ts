@@ -1,4 +1,4 @@
-import type { LeaveBalance, MyTask, MyWorkMetric, NotificationItem, UpcomingEvent } from '../types'
+import type { LeaveBalance, MetricCard, MyTask, NotificationItem, UpcomingEvent } from '../types'
 
 export const currentUser = {
   firstName: 'Alex',
@@ -8,7 +8,7 @@ export const currentUser = {
   shift: '09:00 AM - 06:00 PM',
 }
 
-export const myWorkMetrics: MyWorkMetric[] = [
+export const myWorkMetrics: MetricCard[] = [
   { id: 'att', label: 'Attendance', value: '98%', subtitle: '+2% this month', changeType: 'positive', icon: 'trending_up' },
   { id: 'leave', label: 'Rem. Leave', value: '12 Days', subtitle: 'Expiring Dec 31', changeType: 'neutral', icon: 'event_note' },
   { id: 'pending', label: 'Pending Leave', value: '1', subtitle: 'Awaiting Manager', changeType: 'negative', icon: 'hourglass_empty' },
@@ -82,6 +82,7 @@ export const recentNotifications: NotificationItem[] = [
     time: '12m ago',
     icon: 'event_available',
     tag: 'Leave',
+    unread: true,
   },
   {
     id: 'N-2',
@@ -90,6 +91,7 @@ export const recentNotifications: NotificationItem[] = [
     time: '1h ago',
     icon: 'assignment',
     tag: 'Tasks',
+    unread: true,
   },
   {
     id: 'N-3',
@@ -97,6 +99,7 @@ export const recentNotifications: NotificationItem[] = [
     body: 'Remote check-in rules were updated by Admin.',
     time: 'Yesterday',
     icon: 'policy',
+    unread: false,
   },
 ]
 
