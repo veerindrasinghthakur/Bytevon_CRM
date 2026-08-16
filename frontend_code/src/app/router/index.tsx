@@ -45,7 +45,14 @@ import { DepartmentsListPage } from '@/modules/workforce/pages/DepartmentsListPa
 import { DepartmentCreatePage } from '@/modules/workforce/pages/DepartmentCreatePage'
 
 import { ProfilePage } from '@/modules/profile/pages/ProfilePage'
-import { NotificationsPage } from '@/modules/notifications/pages/NotificationsPage'
+
+import {
+  NotificationsPage,
+  NotificationDetailPage,
+  ComposeNotificationPage,
+  SentNotificationsPage,
+  NotificationSettingsPage,
+} from '@/modules/notifications'
 
 import {
   MyWorkOverviewPage,
@@ -212,10 +219,31 @@ const profileRoute = createRoute({
   component: ProfilePage,
 })
 
+// —— Notifications module ——
 const notificationsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/notifications',
   component: NotificationsPage,
+})
+const notificationsComposeRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/notifications/compose',
+  component: ComposeNotificationPage,
+})
+const notificationsSentRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/notifications/sent',
+  component: SentNotificationsPage,
+})
+const notificationsSettingsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/notifications/settings',
+  component: NotificationSettingsPage,
+})
+const notificationsDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/notifications/$notificationId',
+  component: NotificationDetailPage,
 })
 
 const projectsIndexRoute = createRoute({
@@ -360,7 +388,6 @@ const workforceAttendanceRoute = createRoute({
   component: () => <Placeholder title="Attendance" />,
 })
 
-// —— Payroll module ——
 const payrollRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/payroll',
@@ -601,7 +628,9 @@ const adminSecurityRoute = createRoute({
 const adminNotificationsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/notifications',
-  component: () => <Placeholder title="Notifications Management" />,
+  beforeLoad: () => {
+    throw redirect({ to: '/notifications/sent' })
+  },
 })
 
 const routeTree = rootRoute.addChildren([
@@ -617,6 +646,10 @@ const routeTree = rootRoute.addChildren([
     dashboardRoute,
     profileRoute,
     notificationsRoute,
+    notificationsComposeRoute,
+    notificationsSentRoute,
+ dual notificationsSettingsRoute,
+    notificationsDetailRoute,
     projectsIndexRoute,
     projectsNewRoute,
     projectDetailRoute,
