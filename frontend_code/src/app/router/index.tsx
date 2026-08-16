@@ -72,7 +72,6 @@ import {
 } from '@/modules/approvals'
 
 import {
-  AdminHubPage,
   UsersListPage,
   UserDetailPage,
   UserCreatePage,
@@ -91,7 +90,6 @@ import {
 import {
   ExecutiveDashboardPage,
   EmployeeDashboardPage,
-  PayrollDashboardPage,
 } from '@/modules/dashboard'
 
 function Placeholder({ title }: { title: string }) {
@@ -199,11 +197,6 @@ const dashboardEmployeeRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/dashboard/employee',
   component: EmployeeDashboardPage,
-})
-const dashboardPayrollRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/dashboard/payroll',
-  component: PayrollDashboardPage,
 })
 
 const profileRoute = createRoute({
@@ -460,7 +453,9 @@ const approvalsMyRequestsRedirectRoute = createRoute({
 const adminRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin',
-  component: AdminHubPage,
+  beforeLoad: () => {
+    throw redirect({ to: '/admin/users' })
+  },
 })
 const adminUsersRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
@@ -550,7 +545,6 @@ const routeTree = rootRoute.addChildren([
   appLayoutRoute.addChildren([
     dashboardRoute,
     dashboardEmployeeRoute,
-    dashboardPayrollRoute,
     profileRoute,
     notificationsRoute,
     projectsIndexRoute,
