@@ -1,5 +1,5 @@
 /* Bytevon Design Tokens - Source of Truth
-   Never hardcode colors/spacing/radii in components.
+   Never hardcode colors/spacing/radii in components or CSS.
    All values come from these CSS variables.
 */
 
@@ -8,6 +8,7 @@
   --color-primary: #0058bc;
   --color-on-primary: #ffffff;
   --color-primary-container: #0070eb;
+  --color-primary-fixed: #d6e3ff;
   --color-deep-navy: #001f3f;
   --color-electric-blue: #007bff;
   --color-sidebar-accent: #0070ea;
@@ -17,11 +18,15 @@
   /* Secondary */
   --color-secondary: #0058bb;
   --color-on-secondary: #ffffff;
-  --color-secondary-container: #0170ea;
+  --color-secondary-container: #d6e3ff;
+  --color-on-secondary-container: #001b3d;
 
   /* Surfaces */
   --color-background: #f8f9ff;
   --color-surface: #f8f9ff;
+  --color-surface-bright: #fbfcff;
+  --color-surface-variant: #e1e2e8;
+  --color-surface-tint: #0058bc;
   --color-surface-container: #eceef3;
   --color-surface-container-low: #f2f3f9;
   --color-surface-container-high: #e7e8ee;
@@ -41,6 +46,23 @@
   /* Error */
   --color-error: #ba1a1a;
   --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+
+  /* Status — semantic (payroll, approvals, attendance) */
+  --color-success-emerald: #0f9d58;
+  --color-on-success: #ffffff;
+  --color-success-container: #c8f0d8;
+  --color-warning-amber: #e8a317;
+  --color-on-warning: #1a1400;
+  --color-warning-container: #ffe9b0;
+
+  /* Overlay / elevation (used by globals.css components) */
+  --color-scrim: #0a1128;
+  --color-shadow: #000000;
+  --opacity-scrim: 0.4;
+  --opacity-shadow-soft: 0.05;
+  --opacity-shadow-soft-lg: 0.02;
+  --opacity-glass: 0.95;
 
   /* Layout widths */
   --sidebar-rail-width-collapsed: 80px;
@@ -63,4 +85,10 @@
 
   /* Header — keep in sync with HEADER_HEIGHT_PX (56) */
   --header-height: 56px;
+
+  /* Motion */
+  --duration-fast: 0.2s;
+  --duration-sidebar: 0.3s;
+  --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --easing-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
 }
