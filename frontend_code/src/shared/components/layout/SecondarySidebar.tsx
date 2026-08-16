@@ -61,6 +61,7 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
       { id: 'monthly', label: 'Monthly Payroll', icon: 'calendar_month', to: '/payroll/monthly' },
       { id: 'run', label: 'Run Payroll', icon: 'play_arrow', to: '/payroll/run' },
       { id: 'salary', label: 'Salary Management', icon: 'manage_accounts', to: '/payroll/salary' },
+      { id: 'history', label: 'History', icon: 'history', to: '/payroll/history' },
     ],
   },
   'my-work': {
@@ -71,7 +72,6 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
       { id: 'my-attendance', label: 'My Attendance', icon: 'calendar_today', to: '/my-work/attendance' },
       { id: 'my-leave', label: 'My Leave', icon: 'event_busy', to: '/my-work/leave' },
       { id: 'my-tasks', label: 'My Tasks', icon: 'task_alt', to: '/my-work/tasks' },
-      { id: 'my-approvals', label: 'My Approvals', icon: 'fact_check', to: '/my-work/approvals' },
       { id: 'my-requests', label: 'My Requests', icon: 'request_page', to: '/my-work/requests' },
     ],
   },
@@ -142,6 +142,10 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
     }
     if (to === '/dashboard') return pathname === '/dashboard'
     if (to === '/payroll') return pathname === '/payroll'
+    // History list vs per-employee history
+    if (to === '/payroll/history') {
+      return pathname === '/payroll/history'
+    }
     if (to === '/my-work/attendance') {
       return (
         pathname === '/my-work/attendance' ||
