@@ -4,7 +4,7 @@
 
 @layer base {
   html {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: var(--font-family-sans);
   }
 
   body {
@@ -15,12 +15,13 @@
 
   /*
    * Material Symbols must render as icons, never as selectable text ligatures.
+   * Size/family from tokens.css (--font-size-icon, --font-family-icons).
    */
   .material-symbols-outlined {
-    font-family: 'Material Symbols Outlined' !important;
+    font-family: var(--font-family-icons) !important;
     font-weight: normal;
     font-style: normal;
-    font-size: 1.25rem;
+    font-size: var(--font-size-icon);
     line-height: 1;
     letter-spacing: normal;
     text-transform: none;
@@ -58,57 +59,65 @@
 }
 
 @layer components {
-  /* Shadows — elevation tokens (no hardcoded rgba) */
+  /*
+   * Shadows — elevation tokens from tokens.css
+   * Used on: elevated cards, sticky toolbars (prefer shadow-soft over raw shadow-sm when custom)
+   */
   .shadow-soft {
     box-shadow:
-      0px 1px 3px color-mix(in srgb, var(--color-shadow) calc(var(--opacity-shadow-soft) * 100%), transparent),
-      0px 10px 15px -3px color-mix(in srgb, var(--color-shadow) calc(var(--opacity-shadow-soft-lg) * 100%), transparent);
+      0 var(--elevation-soft-y) var(--elevation-soft-blur)
+        color-mix(in srgb, var(--color-shadow) calc(var(--opacity-shadow-soft) * 100%), transparent),
+      0 var(--elevation-soft-lg-y) var(--elevation-soft-lg-blur) var(--elevation-soft-lg-spread)
+        color-mix(in srgb, var(--color-shadow) calc(var(--opacity-shadow-soft-lg) * 100%), transparent);
   }
 
   .shadow-subtle {
     box-shadow:
-      0px 1px 3px color-mix(in srgb, var(--color-shadow) calc(var(--opacity-shadow-soft) * 100%), transparent),
-      0px 10px 15px -3px color-mix(in srgb, var(--color-shadow) calc(var(--opacity-shadow-soft-lg) * 100%), transparent);
+      0 var(--elevation-soft-y) var(--elevation-soft-blur)
+        color-mix(in srgb, var(--color-shadow) calc(var(--opacity-shadow-soft) * 100%), transparent),
+      0 var(--elevation-soft-lg-y) var(--elevation-soft-lg-blur) var(--elevation-soft-lg-spread)
+        color-mix(in srgb, var(--color-shadow) calc(var(--opacity-shadow-soft-lg) * 100%), transparent);
   }
 
+  /* Modal dim layer — Approval / Leave type / office pickers */
   .modal-overlay {
     background-color: color-mix(
       in srgb,
       var(--color-scrim) calc(var(--opacity-scrim) * 100%),
       transparent
     );
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(var(--blur-modal));
   }
 
+  /* Frosted panels — header glass, floating bars */
   .glass-panel {
     background: color-mix(
       in srgb,
       var(--color-surface-container-lowest) calc(var(--opacity-glass) * 100%),
       transparent
     );
-    backdrop-filter: blur(12px);
+    backdrop-filter: blur(var(--blur-glass));
   }
 
   /*
    * UX effects aligned to Stitch HTML screens
-   * Durations: var(--duration-fast) ease (card-hover)
-   * Note: do not @apply opacity modifiers on CSS-variable colors (PostCSS fails).
+   * Note: do not @apply Tailwind opacity modifiers on CSS-variable colors (PostCSS fails).
    */
 
-  /* Roles management & similar card grids: .card-hover */
+  /* Roles management & similar card grids */
   .card-hover {
     transition: all var(--duration-fast) ease;
   }
   .card-hover:hover {
-    transform: translateY(-2px);
+    transform: translateY(var(--lift-card-hover));
   }
 
-  /* Static surface card (dashboard KPI panels) — shadow-sm only */
+  /* Static surface card (dashboard KPI panels) */
   .bv-surface {
     @apply bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm;
   }
 
-  /* Action tiles: hover:border-secondary transition-all group */
+  /* My Work quick-action tiles */
   .bv-action-tile {
     @apply flex flex-col items-center justify-center p-6 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm cursor-pointer;
     transition: all var(--duration-fast) ease;
@@ -120,27 +129,30 @@
     transition: transform var(--duration-fast) ease;
   }
   .bv-action-tile:hover .bv-action-icon {
-    transform: scale(1.1);
+    transform: scale(var(--scale-action-icon-hover));
   }
 
-  /* Table / list rows — HTML: hover:bg-surface-container-lowest|low transition-colors */
+  /* Table / list rows */
   .bv-row-hover {
     @apply transition-colors duration-200 ease-out;
   }
   .bv-row-hover:hover {
-    /* CSS-variable colors cannot use Tailwind opacity modifiers inside @apply */
-    background-color: color-mix(in srgb, var(--color-surface-container-low) 50%, transparent);
+    background-color: color-mix(
+      in srgb,
+      var(--color-surface-container-low) calc(var(--opacity-row-hover) * 100%),
+      transparent
+    );
   }
 
-  /* Primary CTA press: hover:opacity-90 active:scale-95 transition-all */
+  /* Primary CTA press feedback */
   .bv-pressable {
     transition: all var(--duration-fast) ease;
   }
   .bv-pressable:hover {
-    opacity: 0.9;
+    opacity: var(--opacity-press-hover);
   }
   .bv-pressable:active {
-    transform: scale(0.95);
+    transform: scale(var(--scale-press-active));
   }
 
   /* Icon buttons / chips */
@@ -151,9 +163,9 @@
     @apply bg-surface-container-low text-secondary;
   }
 
-  /* Nav item active press from HTML active:scale-[0.98] */
+  /* Nav item active press */
   .bv-nav-press:active {
-    transform: scale(0.98);
+    transform: scale(var(--scale-nav-press));
   }
 }
 
@@ -166,11 +178,12 @@
     display: none;
   }
 
+  /* Secondary drawers / notification panels sliding from the right */
   .animate-slide-in-right {
-    animation: slideInRight 0.35s var(--easing-emphasized) forwards;
+    animation: slideInRight var(--duration-slide-in) var(--easing-emphasized) forwards;
   }
 
-  /* Sidebar width — HTML: 0.3s cubic-bezier(0.4, 0, 0.2, 1) */
+  /* IconRail + secondary sidebar width */
   .transition-sidebar {
     transition: width var(--duration-sidebar) var(--easing-standard);
   }
