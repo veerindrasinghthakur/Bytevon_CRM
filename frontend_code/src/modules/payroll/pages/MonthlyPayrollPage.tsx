@@ -7,8 +7,8 @@ import { cn } from '@/shared/lib/cn'
 
 const statusBadge: Record<string, string> = {
   Calculated: 'bg-secondary-container text-on-secondary-container',
-  Approved: 'bg-[#e0f2fe] text-[#0369a1]',
-  Paid: 'bg-[#dcfce7] text-[#15803d]',
+  Approved: 'bg-primary-fixed text-primary',
+  Paid: 'bg-success-emerald/10 text-success-emerald',
 }
 
 export function MonthlyPayrollPage() {
@@ -33,11 +33,11 @@ export function MonthlyPayrollPage() {
           <select className="bg-surface-container-lowest border border-outline-variant rounded text-body-md px-3 py-2 focus:ring-1 focus:ring-primary outline-none">
             <option>October</option>
             <option>November</option>
-            <option selected>December</option>
+            <option>December</option>
           </select>
           <select className="bg-surface-container-lowest border border-outline-variant rounded text-body-md px-3 py-2 focus:ring-1 focus:ring-primary outline-none">
             <option>2022</option>
-            <option selected>2023</option>
+            <option>2023</option>
           </select>
           <div className="relative">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">
@@ -85,14 +85,14 @@ export function MonthlyPayrollPage() {
           highlight
         />
         <SummaryCard label="Pending Approval" value={String(monthlySummary.pendingApproval)} valueClass="text-warning-amber" />
-        <SummaryCard label="Pending Payment" value={String(monthlySummary.pendingPayment)} valueClass="text-electric-blue" />
+        <SummaryCard label="Pending Payment" value={String(monthlySummary.pendingPayment)} valueClass="text-primary" />
       </div>
 
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden shadow-sm">
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-surface-container border-b border-outline-variant">
+              <tr className="bg-surface-container-low border-b border-outline-variant">
                 <th className="p-4 text-label-bold text-on-surface-variant">Employee</th>
                 <th className="p-4 text-label-bold text-on-surface-variant">Code</th>
                 <th className="p-4 text-label-bold text-on-surface-variant">Department</th>
@@ -106,33 +106,27 @@ export function MonthlyPayrollPage() {
               </tr>
             </thead>
             <tbody className="text-body-md">
-              {rows.map((r, i) => (
-                <tr
-                  key={r.id}
-                  className={cn(
-                    'border-b border-outline-variant hover:bg-surface-bright transition-colors h-[72px]',
-                    i === 0 && 'bg-surface-container-low'
-                  )}
-                >
+              {rows.map((r) => (
+                <tr key={r.id} className="border-b border-outline-variant bv-row-hover h-[72px]">
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-semibold border border-outline-variant">
                         {r.initials}
                       </div>
                       <div>
-                        <p className="font-semibold text-on-surface">{r.name}</p>
+                        <p className="font-semibold text-deep-navy">{r.name}</p>
                         <p className="text-caption text-on-surface-variant">{r.role}</p>
                       </div>
                     </div>
                   </td>
                   <td className="p-4 text-on-surface-variant">{r.code}</td>
                   <td className="p-4 text-on-surface-variant">{r.department}</td>
-                  <td className="p-4 text-right">{formatMoney(r.gross)}</td>
+                  <td className="p-4 text-right text-deep-navy">{formatMoney(r.gross)}</td>
                   <td className="p-4 text-right text-success-emerald">+{formatMoney(r.earnings)}</td>
                   <td className="p-4 text-right text-error">-{formatMoney(r.deductions)}</td>
-                  <td className="p-4 text-right font-bold text-on-surface">{formatMoney(r.net)}</td>
+                  <td className="p-4 text-right font-bold text-deep-navy">{formatMoney(r.net)}</td>
                   <td className="p-4">
-                    <span className={cn('inline-flex items-center px-2 py-1 rounded text-label-sm', statusBadge[r.status])}>
+                    <span className={cn('inline-flex items-center px-2 py-1 rounded text-label-sm font-medium', statusBadge[r.status])}>
                       {r.status}
                     </span>
                   </td>
@@ -143,7 +137,7 @@ export function MonthlyPayrollPage() {
                         <>
                           <button
                             type="button"
-                            className="text-on-surface-variant hover:text-primary text-sm font-medium"
+                            className="text-on-surface-variant hover:text-secondary text-sm font-medium transition-colors"
                             onClick={() =>
                               navigate({ to: '/payroll/review/$employeeId', params: { employeeId: r.id } })
                             }
@@ -152,7 +146,7 @@ export function MonthlyPayrollPage() {
                           </button>
                           <button
                             type="button"
-                            className="bg-primary text-on-primary px-3 py-1.5 rounded text-label-sm hover:bg-primary-container transition-colors"
+                            className="bg-deep-navy text-on-primary px-3 py-1.5 rounded text-label-sm hover:opacity-90 transition-all"
                             onClick={() =>
                               navigate({ to: '/payroll/review/$employeeId', params: { employeeId: r.id } })
                             }
@@ -165,7 +159,7 @@ export function MonthlyPayrollPage() {
                         <>
                           <button
                             type="button"
-                            className="text-on-surface-variant hover:text-primary text-sm font-medium"
+                            className="text-on-surface-variant hover:text-secondary text-sm font-medium transition-colors"
                             onClick={() =>
                               navigate({ to: '/payroll/review/$employeeId', params: { employeeId: r.id } })
                             }
@@ -187,7 +181,7 @@ export function MonthlyPayrollPage() {
                         <>
                           <button
                             type="button"
-                            className="text-on-surface-variant hover:text-primary text-sm font-medium"
+                            className="text-on-surface-variant hover:text-secondary text-sm font-medium transition-colors"
                             onClick={() =>
                               navigate({ to: '/payroll/payslip/$employeeId', params: { employeeId: r.id } })
                             }
@@ -196,7 +190,7 @@ export function MonthlyPayrollPage() {
                           </button>
                           <button
                             type="button"
-                            className="text-on-surface-variant hover:text-primary"
+                            className="text-on-surface-variant hover:text-secondary transition-colors"
                             title="Download Payslip"
                             onClick={() =>
                               navigate({ to: '/payroll/payslip/$employeeId', params: { employeeId: r.id } })
@@ -213,7 +207,7 @@ export function MonthlyPayrollPage() {
             </tbody>
           </table>
         </div>
-        <div className="bg-surface border-t border-outline-variant p-4 flex items-center justify-between">
+        <div className="bg-surface-container-lowest border-t border-outline-variant p-4 flex items-center justify-between">
           <p className="text-caption text-on-surface-variant">
             Showing 1 to {rows.length} of {monthlySummary.totalEmployees} entries
           </p>
@@ -251,7 +245,7 @@ function SummaryCard({
   return (
     <div
       className={cn(
-        'bg-surface-container-lowest border border-outline-variant rounded-lg p-5 flex flex-col justify-center h-[120px]',
+        'bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex flex-col justify-center h-[120px] shadow-sm card-hover',
         highlight && 'ring-1 ring-primary'
       )}
     >
@@ -263,7 +257,7 @@ function SummaryCard({
       >
         {label}
       </p>
-      <p className={cn('text-headline-lg font-semibold text-on-surface', valueClass)}>{value}</p>
+      <p className={cn('text-headline-lg font-semibold text-deep-navy', valueClass)}>{value}</p>
     </div>
   )
 }
