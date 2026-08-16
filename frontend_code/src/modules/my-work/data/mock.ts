@@ -285,6 +285,6 @@ export const myWorkQuickActions = [
   { icon: 'fingerprint', label: 'Mark Attendance', to: '/my-work/attendance' as const },
   { icon: 'event_available', label: 'Apply Leave', to: '/my-work/leave' as const },
   { icon: 'task', label: 'View Tasks', to: '/my-work/tasks' as const },
-  { icon: 'fact_check', label: 'My Approvals', to: '/my-work/approvals' as const },
+  { icon: 'request_page', label: 'My Requests', to: '/my-work/requests' as const },
   { icon: 'person_edit', label: 'Update Profile', to: '/profile' as const },
 ]
