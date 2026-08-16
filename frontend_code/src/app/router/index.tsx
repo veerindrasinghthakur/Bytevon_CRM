@@ -90,6 +90,25 @@ import {
 import { ExecutiveDashboardPage } from '@/modules/dashboard'
 
 import {
+<<<<<<< HEAD
+  PayrollDashboardPage,
+  MonthlyPayrollPage,
+  RunPayrollPage,
+  GeneratingPayrollPage,
+  PayrollReviewPage,
+  PayslipViewPage,
+  SalaryManagementPage,
+  ReviseSalaryPage,
+  EmployeePayrollHistoryPage,
+} from '@/modules/payroll'
+=======
+  ExecutiveDashboardPage,
+  EmployeeDashboardPage,
+  PayrollDashboardPage as DashboardPayrollPage,
+} from '@/modules/dashboard'
+>>>>>>> origin/payroll
+
+import {
   PayrollDashboardPage,
   MonthlyPayrollPage,
   RunPayrollPage,
@@ -202,6 +221,19 @@ const dashboardRoute = createRoute({
   path: '/dashboard',
   component: ExecutiveDashboardPage,
 })
+<<<<<<< HEAD
+=======
+const dashboardEmployeeRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/dashboard/employee',
+  component: EmployeeDashboardPage,
+})
+const dashboardPayrollRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/dashboard/payroll',
+  component: DashboardPayrollPage,
+})
+>>>>>>> origin/payroll
 
 const profileRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
