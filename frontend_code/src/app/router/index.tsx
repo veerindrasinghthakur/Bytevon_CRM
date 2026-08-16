@@ -648,7 +648,7 @@ const routeTree = rootRoute.addChildren([
     notificationsRoute,
     notificationsComposeRoute,
     notificationsSentRoute,
- dual notificationsSettingsRoute,
+    notificationsSettingsRoute,
     notificationsDetailRoute,
     projectsIndexRoute,
     projectsNewRoute,
