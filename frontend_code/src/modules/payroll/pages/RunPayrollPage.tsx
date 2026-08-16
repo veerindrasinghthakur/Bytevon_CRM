@@ -4,6 +4,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { payrollEmployees, formatMoney } from '../data/mock'
 import { cn } from '@/shared/lib/cn'
 
+/** Simple ready state — validation informational, generate always available. */
 const checks = [
   {
     ok: true,
@@ -13,39 +14,55 @@ const checks = [
   {
     ok: true,
     title: 'Monthly attendance summary available',
-    detail: 'Timesheets are approved for 42/42 employees.',
+    detail: 'Timesheets are available for processing.',
   },
   {
     ok: true,
     title: 'No existing payroll for this month',
-    detail: 'October 2023 is clear to generate.',
+    detail: 'Selected period is clear to generate.',
   },
   {
-    ok: false,
-    title: 'Attendance summary is not locked',
-    detail: 'Lock the attendance period before generating.',
-    action: 'Lock Attendance Now',
+    ok: true,
+    title: 'Period ready',
+    detail: 'You can generate payroll for the selected month.',
   },
 ]
 
 export function RunPayrollPage() {
   const navigate = useNavigate()
-  const hasIssues = checks.some((c) => !c.ok)
 
   return (
     <div className="space-y-8">
+      <div className="flex items-center gap-2 text-on-surface-variant text-label-md">
+        <button type="button" className="hover:text-secondary transition-colors" onClick={() => navigate({ to: '/payroll' })}>
+          Payroll
+        </button>
+        <span className="material-symbols-outlined text-[16px]">chevron_right</span>
+        <span className="text-deep-navy font-medium">Run Monthly Payroll</span>
+      </div>
+
       <PageHeader
         title="Run Monthly Payroll"
         description="Generate payroll records for the current period."
         actions={
-          <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">history</span>}
-            onClick={() => navigate({ to: '/payroll/monthly' })}
-          >
-            Past Payrolls
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">arrow_back</span>}
+              onClick={() => navigate({ to: '/payroll' })}
+            >
+              Back
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">history</span>}
+              onClick={() => navigate({ to: '/payroll/monthly' })}
+            >
+              Past Payrolls
+            </Button>
+          </div>
         }
       />
 
@@ -59,16 +76,16 @@ export function RunPayrollPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-label-bold text-on-surface-variant uppercase">Month</label>
-                <select className="w-full bg-surface border border-outline-variant rounded-lg py-2 pl-3 pr-8 text-body-md focus:ring-1 focus:ring-primary outline-none">
-                  <option selected>October</option>
+                <select className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-2 pl-3 pr-8 text-body-md focus:ring-1 focus:ring-primary outline-none">
+                  <option>October</option>
                   <option>November</option>
                   <option>December</option>
                 </select>
               </div>
               <div className="space-y-1">
                 <label className="text-label-bold text-on-surface-variant uppercase">Year</label>
-                <select className="w-full bg-surface border border-outline-variant rounded-lg py-2 pl-3 pr-8 text-body-md focus:ring-1 focus:ring-primary outline-none">
-                  <option selected>2023</option>
+                <select className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-2 pl-3 pr-8 text-body-md focus:ring-1 focus:ring-primary outline-none">
+                  <option>2023</option>
                   <option>2024</option>
                 </select>
               </div>
@@ -81,43 +98,26 @@ export function RunPayrollPage() {
                 <span className="material-symbols-outlined text-primary">fact_check</span>
                 <h2 className="text-headline-md font-semibold text-deep-navy">Validation Checks</h2>
               </div>
-              <span className="bg-error-container text-error font-bold text-[12px] px-2 py-1 rounded-full flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px]">warning</span>
-                1 Issue
+              <span className="bg-success-emerald/10 text-success-emerald font-bold text-[12px] px-2 py-1 rounded-full flex items-center gap-1">
+                <span className="material-symbols-outlined text-[14px]">check_circle</span>
+                Ready
               </span>
             </div>
             <ul className="space-y-3">
               {checks.map((c) => (
                 <li
                   key={c.title}
-                  className={cn(
-                    'flex items-start gap-3 p-3 rounded-lg border',
-                    c.ok
-                      ? 'bg-surface border-outline-variant'
-                      : 'bg-error-container border-error'
-                  )}
+                  className="flex items-start gap-3 p-3 rounded-lg border bg-surface-container-lowest border-outline-variant"
                 >
                   <span
-                    className={cn(
-                      'material-symbols-outlined mt-0.5',
-                      c.ok ? 'text-success-emerald' : 'text-error'
-                    )}
+                    className="material-symbols-outlined mt-0.5 text-success-emerald"
                     style={{ fontVariationSettings: "'FILL' 1" }}
                   >
-                    {c.ok ? 'check_circle' : 'error'}
+                    check_circle
                   </span>
                   <div>
-                    <p className={cn('text-body-md font-medium', c.ok ? 'text-on-surface' : 'text-error')}>
-                      {c.title}
-                    </p>
-                    <p className={cn('text-caption', c.ok ? 'text-on-surface-variant' : 'text-on-error-container')}>
-                      {c.detail}
-                    </p>
-                    {c.action && (
-                      <button type="button" className="mt-2 text-error font-bold text-[12px] underline">
-                        {c.action}
-                      </button>
-                    )}
+                    <p className="text-body-md font-medium text-deep-navy">{c.title}</p>
+                    <p className="text-caption text-on-surface-variant">{c.detail}</p>
                   </div>
                 </li>
               ))}
@@ -132,23 +132,19 @@ export function RunPayrollPage() {
                 <span className="material-symbols-outlined text-primary">analytics</span>
                 <h2 className="text-headline-md font-semibold text-deep-navy">Preview & Metrics</h2>
               </div>
-              <button type="button" className="text-on-surface-variant hover:text-primary">
-                <span className="material-symbols-outlined">refresh</span>
-              </button>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5 bg-surface">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5">
               {[
-                { label: 'Total Employees', value: '42', bar: 'bg-electric-blue' },
-                { label: 'Gross Salary', value: '$245,600', bar: 'bg-surface-tint' },
-                { label: 'Total Additions', value: '+$12,400', bar: 'bg-success-emerald', valueClass: 'text-success-emerald' },
-                { label: 'Total Deductions', value: '-$45,200', bar: 'bg-warning-amber', valueClass: 'text-error' },
+                { label: 'Total Employees', value: '42' },
+                { label: 'Gross Salary', value: '$245,600' },
+                { label: 'Total Additions', value: '+$12,400', valueClass: 'text-success-emerald' },
+                { label: 'Total Deductions', value: '-$45,200', valueClass: 'text-error' },
               ].map((m) => (
                 <div
                   key={m.label}
-                  className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant relative overflow-hidden"
+                  className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant"
                 >
-                  <div className={cn('absolute top-0 left-0 w-1 h-full', m.bar)} />
                   <p className="text-label-bold text-on-surface-variant uppercase mb-1">{m.label}</p>
                   <p className={cn('text-headline-lg font-semibold text-deep-navy', m.valueClass)}>{m.value}</p>
                 </div>
@@ -169,10 +165,10 @@ export function RunPayrollPage() {
                 </thead>
                 <tbody className="divide-y divide-outline-variant">
                   {payrollEmployees.slice(0, 4).map((r) => (
-                    <tr key={r.id} className="h-[72px] hover:bg-surface transition-colors">
+                    <tr key={r.id} className="h-[72px] bv-row-hover">
                       <td className="p-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-label-bold">
+                          <div className="w-8 h-8 rounded-full bg-secondary-container text-primary flex items-center justify-center font-bold text-label-bold">
                             {r.initials}
                           </div>
                           <div>
@@ -181,12 +177,12 @@ export function RunPayrollPage() {
                           </div>
                         </div>
                       </td>
-                      <td className="p-4 text-right">{formatMoney(r.gross)}</td>
+                      <td className="p-4 text-right text-deep-navy">{formatMoney(r.gross)}</td>
                       <td className="p-4 text-right text-success-emerald">+{formatMoney(r.earnings)}</td>
                       <td className="p-4 text-right text-error">-{formatMoney(r.deductions)}</td>
                       <td className="p-4 text-right font-bold text-deep-navy">{formatMoney(r.net)}</td>
                       <td className="p-4 text-center">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary-container text-on-secondary-container border border-secondary-fixed-dim">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary-container text-on-secondary-container">
                           Ready
                         </span>
                       </td>
@@ -197,40 +193,29 @@ export function RunPayrollPage() {
             </div>
           </section>
 
-          <section className="bg-surface-container-low rounded-xl shadow-sm border border-primary-fixed-dim p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <section className="bg-surface-container-low rounded-xl shadow-sm border border-outline-variant p-6 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex-1">
               <p className="text-label-bold text-on-surface-variant uppercase mb-2">Estimated Net Payroll</p>
-              <p className="text-headline-xl font-black text-primary tracking-tight">$212,800.00</p>
-              <div className="flex items-center gap-4 mt-2">
-                <span className="text-caption text-secondary flex items-center gap-1">
+              <p className="text-headline-lg font-bold text-primary tracking-tight">$212,800.00</p>
+              <div className="flex items-center gap-4 mt-2 flex-wrap">
+                <span className="text-caption text-on-surface-variant flex items-center gap-1">
                   <span className="material-symbols-outlined text-[14px]">calendar_today</span>
-                  Period: Oct 2023
+                  Selected period
                 </span>
-                <span className="text-caption text-secondary flex items-center gap-1">
+                <span className="text-caption text-on-surface-variant flex items-center gap-1">
                   <span className="material-symbols-outlined text-[14px]">group</span>
-                  42 Employees processed
+                  42 Employees
                 </span>
               </div>
             </div>
-            <div className="w-full md:w-auto text-center md:text-right">
-              <button
-                type="button"
-                disabled={hasIssues}
-                onClick={() => navigate({ to: '/payroll/generating' })}
-                className={cn(
-                  'w-full md:w-auto flex items-center justify-center gap-2 font-semibold text-headline-md px-8 py-4 rounded-xl',
-                  hasIssues
-                    ? 'bg-on-surface-variant text-on-secondary cursor-not-allowed opacity-70'
-                    : 'bg-primary text-on-primary hover:bg-primary-container shadow-sm'
-                )}
-              >
-                <span className="material-symbols-outlined">play_arrow</span>
-                Generate Payroll
-              </button>
-              {hasIssues && (
-                <p className="mt-2 text-caption text-error">Resolve validation issues to generate.</p>
-              )}
-            </div>
+            <button
+              type="button"
+              onClick={() => navigate({ to: '/payroll/generating' })}
+              className="w-full md:w-auto flex items-center justify-center gap-2 font-semibold text-body-md px-8 py-4 rounded-xl bg-deep-navy text-on-primary hover:opacity-90 shadow-sm transition-all"
+            >
+              <span className="material-symbols-outlined">play_arrow</span>
+              Generate Payroll
+            </button>
           </section>
         </div>
       </div>
