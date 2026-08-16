@@ -1,67 +1,19 @@
-import { useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { adminRoles } from '../data/mock'
+import { adminRoles, adminUsers } from '../data/mock'
 import { cn } from '@/shared/lib/cn'
-
-const ACTIONS = ['View', 'Create', 'Edit', 'Delete', 'Approve', 'Export', 'Import', 'Manage'] as const
-const MODULES = [
-  'Dashboard',
-  'Employees',
-  'CRM',
-  'Sales',
-  'Inventory',
-  'Reports',
-  'Administration',
-  'Attendance',
-  'Leave',
-  'Payroll',
-]
-
-type Action = (typeof ACTIONS)[number]
-
-function seedMatrix(permissions: string[]) {
-  const init: Record<string, Record<Action, boolean>> = {}
-  MODULES.forEach((m) => {
-    const hasAny = permissions.some((p) => p.toLowerCase().includes(m.toLowerCase().slice(0, 4)))
-    init[m] = Object.fromEntries(
-      ACTIONS.map((a) => [a, hasAny && (a === 'View' || a === 'Create' || a === 'Edit')])
-    ) as Record<Action, boolean>
-  })
-  // Super-admin style full access
-  if (permissions.some((p) => p.includes('manage') || p.includes('security'))) {
-    MODULES.forEach((m) => {
-      init[m] = Object.fromEntries(ACTIONS.map((a) => [a, true])) as Record<Action, boolean>
-    })
-  }
-  return init
-}
 
 export function RoleDetailPage() {
   const { roleId } = useParams({ strict: false }) as { roleId?: string }
   const navigate = useNavigate()
   const role = adminRoles.find((r) => r.id === roleId) ?? adminRoles[0]
 
-  const [name, setName] = useState(role.name)
-  const [description, setDescription] = useState(role.description)
-  const [active, setActive] = useState(role.status === 'Active')
-  const [matrix, setMatrix] = useState(() => seedMatrix(role.permissions))
-
-  const toggleCell = (mod: string, action: Action) => {
-    setMatrix((prev) => ({
-      ...prev,
-      [mod]: { ...prev[mod], [action]: !prev[mod][action] },
-    }))
-  }
-
-  const toggleRowAll = (mod: string) => {
-    const allOn = ACTIONS.every((a) => matrix[mod][a])
-    setMatrix((prev) => ({
-      ...prev,
-      [mod]: Object.fromEntries(ACTIONS.map((a) => [a, !allOn])) as Record<Action, boolean>,
-    }))
-  }
+  const assignees = adminUsers.filter(
+    (u) => u.role.toLowerCase().includes(role.name.toLowerCase().split(' ')[0]) || role.name === 'Employee'
+  )
+  // Fallback: show first N users as mock assignees when filter is empty
+  const assigned = assignees.length > 0 ? assignees : adminUsers.slice(0, Math.min(role.usersCount, 4))
 
   return (
     <div className="space-y-6">
@@ -76,149 +28,171 @@ export function RoleDetailPage() {
         <span className="text-label-md font-medium">Back to Roles &amp; Permissions</span>
       </button>
 
-      <PageHeader
-        title={`Edit Role: ${role.name}`}
-        description="Update functional access levels and module permissions."
-        actions={
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate({ to: '/admin/roles/new' })}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <span
+              className={cn(
+                'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
+                role.category === 'Core Role'
+                  ? 'bg-secondary/10 text-secondary'
+                  : 'bg-surface-container text-on-surface-variant'
+              )}
             >
-              Duplicate
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => navigate({ to: '/admin/roles' })}>
-              Cancel
-            </Button>
-            <Button variant="primary" size="sm">
-              Save Changes
-            </Button>
+              {role.category}
+            </span>
+            <span
+              className={cn(
+                'text-[10px] font-bold uppercase px-2 py-0.5 rounded-full',
+                role.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-surface-container text-on-surface-variant'
+              )}
+            >
+              {role.status}
+            </span>
           </div>
-        }
-      />
+          <PageHeader title={role.name} description={role.description} />
+        </div>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => navigate({ to: '/admin/roles/new' })}
+          >
+            Duplicate
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>}
+            onClick={() =>
+              navigate({ to: '/admin/roles/$roleId/edit', params: { roleId: role.id } })
+            }
+          >
+            Edit Role
+          </Button>
+        </div>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <section className="lg:col-span-4 space-y-4">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6">
-            <div className="flex items-center gap-2 mb-6 pb-4 border-b border-outline-variant">
-              <span className="material-symbols-outlined text-secondary">badge</span>
-              <h3 className="text-title-lg font-semibold text-primary">Role Identity</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Summary */}
+        <div className="space-y-4">
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6 space-y-4">
+            <h3 className="text-title-lg font-semibold text-on-background">Summary</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-[10px] font-bold text-on-surface-variant uppercase">Users assigned</p>
+                <p className="text-2xl font-bold text-on-background">{role.usersCount}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-on-surface-variant uppercase">Coverage</p>
+                <p className="text-body-md font-semibold text-secondary">{role.coverageLabel}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-on-surface-variant uppercase">Created</p>
+                <p className="text-body-sm text-on-surface">{role.created}</p>
+              </div>
+              <div>
+                <p className="text-[10px] font-bold text-on-surface-variant uppercase">Updated</p>
+                <p className="text-body-sm text-on-surface">{role.updated}</p>
+              </div>
             </div>
-            <div className="space-y-5">
-              <div>
-                <label className="block text-label-md text-on-surface-variant mb-2">Role Name</label>
-                <input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full border border-outline-variant rounded-lg px-4 py-2.5 text-body-sm outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/30 bg-transparent"
+            <div>
+              <div className="flex justify-between text-label-sm mb-1">
+                <span className="text-on-surface-variant">Access coverage</span>
+                <span className="font-medium">{role.coveragePct}%</span>
+              </div>
+              <div className="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+                <div
+                  className="bg-secondary h-full rounded-full"
+                  style={{ width: `${role.coveragePct}%` }}
                 />
               </div>
-              <div>
-                <label className="block text-label-md text-on-surface-variant mb-2">Description</label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full border border-outline-variant rounded-lg px-4 py-2.5 text-body-sm min-h-[100px] outline-none focus:border-secondary bg-transparent"
-                  rows={4}
-                />
-              </div>
-              <div className="flex items-center justify-between pt-4 border-t border-outline-variant">
-                <div>
-                  <p className="text-label-md text-primary font-medium">Role Status</p>
-                  <p className="text-label-sm text-on-surface-variant">{role.usersCount} users assigned</p>
-                </div>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={active}
-                  onClick={() => setActive(!active)}
-                  className={cn(
-                    'relative w-11 h-6 rounded-full transition-colors',
-                    active ? 'bg-secondary' : 'bg-outline-variant'
-                  )}
+            </div>
+          </div>
+        </div>
+
+        {/* Permissions */}
+        <div className="lg:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6">
+          <h3 className="text-title-lg font-semibold text-on-background mb-4 flex items-center gap-2">
+            <span className="material-symbols-outlined text-secondary">key</span>
+            Permissions
+          </h3>
+          {role.permissions.length === 0 ? (
+            <p className="text-body-sm text-on-surface-variant">No permissions listed for this role.</p>
+          ) : (
+            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {role.permissions.map((p) => (
+                <li
+                  key={p}
+                  className="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant"
                 >
-                  <span
-                    className={cn(
-                      'absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all',
-                      active ? 'left-[22px]' : 'left-0.5'
-                    )}
-                  />
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6">
-            <h3 className="text-title-lg font-semibold text-on-background mb-3">Summary</h3>
-            <p className="text-body-sm text-on-surface-variant mb-1">Category</p>
-            <p className="text-body-md font-medium mb-3">{role.category}</p>
-            <p className="text-body-sm text-on-surface-variant mb-1">Coverage</p>
-            <p className="text-body-md font-medium">{role.coverageLabel}</p>
-          </div>
-        </section>
+                  <span className="material-symbols-outlined text-secondary text-[18px]">check_circle</span>
+                  <span className="text-body-sm font-mono text-on-background">{p}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
 
-        <section className="lg:col-span-8">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
-            <div className="p-6 border-b border-outline-variant flex justify-between items-center">
-              <div className="flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary">grid_view</span>
-                <h3 className="text-title-lg font-semibold text-primary">Module Permissions Matrix</h3>
-              </div>
-              <button type="button" className="text-label-sm text-secondary hover:underline">
-                Select All View
-              </button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[800px]">
-                <thead className="bg-surface-container-low">
-                  <tr>
-                    <th className="px-6 py-4 border-b border-outline-variant text-label-md text-primary w-1/4">
-                      Module
-                    </th>
-                    {ACTIONS.map((a) => (
-                      <th
-                        key={a}
-                        className="px-3 py-4 border-b border-outline-variant text-label-sm text-on-surface-variant text-center"
-                      >
-                        {a}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-outline-variant">
-                  {MODULES.map((mod) => (
-                    <tr key={mod} className="hover:bg-surface-container-low/40 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-label-md text-primary font-medium">{mod}</span>
-                          <label className="flex items-center gap-1 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              className="rounded border-outline-variant text-secondary h-3 w-3"
-                              checked={ACTIONS.every((a) => matrix[mod][a])}
-                              onChange={() => toggleRowAll(mod)}
-                            />
-                            <span className="text-[10px] text-on-surface-variant">All</span>
-                          </label>
-                        </div>
-                      </td>
-                      {ACTIONS.map((a) => (
-                        <td key={a} className="px-3 py-4 text-center">
-                          <input
-                            type="checkbox"
-                            className="rounded border-outline-variant text-secondary cursor-pointer"
-                            checked={matrix[mod][a]}
-                            onChange={() => toggleCell(mod, a)}
-                          />
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
+      {/* Assigned employees */}
+      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
+          <h3 className="text-title-lg font-semibold text-on-background flex items-center gap-2">
+            <span className="material-symbols-outlined text-secondary">group</span>
+            Assigned Employees
+          </h3>
+          <span className="text-label-sm text-on-surface-variant">{assigned.length} shown</span>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-surface-container-low">
+              <tr>
+                <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase">Employee</th>
+                <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase">Department</th>
+                <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase">Status</th>
+                <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase">Last Login</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-outline-variant">
+              {assigned.map((u) => (
+                <tr
+                  key={u.id}
+                  className="hover:bg-surface-container-low/40 cursor-pointer"
+                  onClick={() => navigate({ to: '/admin/users/$userId', params: { userId: u.id } })}
+                >
+                  <td className="px-6 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-label-sm font-bold">
+                        {u.initials}
+                      </div>
+                      <div>
+                        <p className="font-medium text-on-background">{u.name}</p>
+                        <p className="text-body-sm text-on-surface-variant">{u.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-3 text-on-surface-variant">{u.department}</td>
+                  <td className="px-6 py-3">
+                    <span
+                      className={cn(
+                        'px-2 py-0.5 rounded-full text-[10px] font-bold',
+                        u.status === 'Active'
+                          ? 'bg-green-100 text-green-700'
+                          : u.status === 'Locked'
+                            ? 'bg-red-100 text-red-700'
+                            : 'bg-surface-container text-on-surface-variant'
+                      )}
+                    >
+                      {u.status}
+                    </span>
+                  </td>
+                  <td className="px-6 py-3 text-on-surface-variant">{u.lastLogin}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   )
