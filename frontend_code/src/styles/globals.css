@@ -58,34 +58,46 @@
 }
 
 @layer components {
-  /* Shadows from HTML (shadow-sm / soft elevation) */
+  /* Shadows — elevation tokens (no hardcoded rgba) */
   .shadow-soft {
-    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.05), 0px 10px 15px -3px rgba(0, 0, 0, 0.02);
+    box-shadow:
+      0px 1px 3px color-mix(in srgb, var(--color-shadow) calc(var(--opacity-shadow-soft) * 100%), transparent),
+      0px 10px 15px -3px color-mix(in srgb, var(--color-shadow) calc(var(--opacity-shadow-soft-lg) * 100%), transparent);
   }
 
   .shadow-subtle {
-    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.05), 0px 10px 15px -3px rgba(0, 0, 0, 0.02);
+    box-shadow:
+      0px 1px 3px color-mix(in srgb, var(--color-shadow) calc(var(--opacity-shadow-soft) * 100%), transparent),
+      0px 10px 15px -3px color-mix(in srgb, var(--color-shadow) calc(var(--opacity-shadow-soft-lg) * 100%), transparent);
   }
 
   .modal-overlay {
-    background-color: rgba(10, 17, 40, 0.4);
+    background-color: color-mix(
+      in srgb,
+      var(--color-scrim) calc(var(--opacity-scrim) * 100%),
+      transparent
+    );
     backdrop-filter: blur(4px);
   }
 
   .glass-panel {
-    background: rgba(255, 255, 255, 0.95);
+    background: color-mix(
+      in srgb,
+      var(--color-surface-container-lowest) calc(var(--opacity-glass) * 100%),
+      transparent
+    );
     backdrop-filter: blur(12px);
   }
 
   /*
    * UX effects aligned to Stitch HTML screens
-   * Durations: 0.2s ease (card-hover), transition-all / transition-colors defaults
+   * Durations: var(--duration-fast) ease (card-hover)
    * Note: do not @apply opacity modifiers on CSS-variable colors (PostCSS fails).
    */
 
   /* Roles management & similar card grids: .card-hover */
   .card-hover {
-    transition: all 0.2s ease;
+    transition: all var(--duration-fast) ease;
   }
   .card-hover:hover {
     transform: translateY(-2px);
@@ -99,13 +111,13 @@
   /* Action tiles: hover:border-secondary transition-all group */
   .bv-action-tile {
     @apply flex flex-col items-center justify-center p-6 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm cursor-pointer;
-    transition: all 0.2s ease;
+    transition: all var(--duration-fast) ease;
   }
   .bv-action-tile:hover {
     @apply border-secondary;
   }
   .bv-action-tile .bv-action-icon {
-    transition: transform 0.2s ease;
+    transition: transform var(--duration-fast) ease;
   }
   .bv-action-tile:hover .bv-action-icon {
     transform: scale(1.1);
@@ -122,7 +134,7 @@
 
   /* Primary CTA press: hover:opacity-90 active:scale-95 transition-all */
   .bv-pressable {
-    transition: all 0.2s ease;
+    transition: all var(--duration-fast) ease;
   }
   .bv-pressable:hover {
     opacity: 0.9;
@@ -155,12 +167,12 @@
   }
 
   .animate-slide-in-right {
-    animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    animation: slideInRight 0.35s var(--easing-emphasized) forwards;
   }
 
   /* Sidebar width — HTML: 0.3s cubic-bezier(0.4, 0, 0.2, 1) */
   .transition-sidebar {
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: width var(--duration-sidebar) var(--easing-standard);
   }
 }
 
