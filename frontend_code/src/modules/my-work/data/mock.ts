@@ -1,4 +1,13 @@
-import type { LeaveBalance, MetricCard, MyTask, NotificationItem, UpcomingEvent } from '../types'
+import type {
+  ApprovalRequest,
+  AttendanceRecord,
+  LeaveBalance,
+  LeaveRequest,
+  MetricCard,
+  MyTask,
+  NotificationItem,
+  UpcomingEvent,
+} from '../types'
 
 export const currentUser = {
   firstName: 'Alex',
@@ -39,10 +48,135 @@ export const leaveBalances: LeaveBalance[] = [
   { type: 'Earned', used: 6, total: 12, remaining: 6 },
 ]
 
+export const leaveRequests: LeaveRequest[] = [
+  {
+    id: 'LV-2041',
+    type: 'Casual',
+    from: '2026-08-28',
+    to: '2026-08-28',
+    days: 1,
+    reason: 'Personal appointment',
+    status: 'Pending',
+    appliedOn: '2026-08-14',
+    approver: 'Sarah Chen',
+  },
+  {
+    id: 'LV-2038',
+    type: 'Sick',
+    from: '2026-08-05',
+    to: '2026-08-06',
+    days: 2,
+    reason: 'Fever and rest',
+    status: 'Approved',
+    appliedOn: '2026-08-04',
+    approver: 'Sarah Chen',
+  },
+  {
+    id: 'LV-2030',
+    type: 'Earned',
+    from: '2026-07-18',
+    to: '2026-07-22',
+    days: 5,
+    reason: 'Family trip',
+    status: 'Approved',
+    appliedOn: '2026-07-01',
+    approver: 'Marcus Chen',
+  },
+  {
+    id: 'LV-2022',
+    type: 'Casual',
+    from: '2026-06-12',
+    to: '2026-06-12',
+    days: 1,
+    reason: 'Home maintenance',
+    status: 'Rejected',
+    appliedOn: '2026-06-10',
+    approver: 'Sarah Chen',
+  },
+  {
+    id: 'LV-2015',
+    type: 'Unpaid',
+    from: '2026-05-02',
+    to: '2026-05-02',
+    days: 1,
+    reason: 'Personal',
+    status: 'Cancelled',
+    appliedOn: '2026-04-28',
+    approver: 'Sarah Chen',
+  },
+]
+
+export const attendanceHistory: AttendanceRecord[] = [
+  {
+    id: 'ATT-240',
+    date: '2026-08-14',
+    checkIn: '08:55 AM',
+    checkOut: '—',
+    totalHours: '4.5h',
+    status: 'Present',
+    shift: '09:00 AM - 06:00 PM',
+    note: 'Live session',
+  },
+  {
+    id: 'ATT-239',
+    date: '2026-08-13',
+    checkIn: '09:02 AM',
+    checkOut: '06:05 PM',
+    totalHours: '8.0h',
+    status: 'Present',
+    shift: '09:00 AM - 06:00 PM',
+  },
+  {
+    id: 'ATT-238',
+    date: '2026-08-12',
+    checkIn: '09:18 AM',
+    checkOut: '01:00 PM',
+    totalHours: '3.7h',
+    status: 'Half Day',
+    shift: '09:00 AM - 06:00 PM',
+    note: 'Medical appointment',
+  },
+  {
+    id: 'ATT-237',
+    date: '2026-08-11',
+    checkIn: '08:50 AM',
+    checkOut: '06:10 PM',
+    totalHours: '8.3h',
+    status: 'Present',
+    shift: '09:00 AM - 06:00 PM',
+  },
+  {
+    id: 'ATT-236',
+    date: '2026-08-10',
+    status: 'Weekend',
+  },
+  {
+    id: 'ATT-235',
+    date: '2026-08-09',
+    status: 'Weekend',
+  },
+  {
+    id: 'ATT-234',
+    date: '2026-08-08',
+    checkIn: '09:40 AM',
+    checkOut: '02:00 PM',
+    totalHours: '4.2h',
+    status: 'Half Day',
+    note: 'Missed punch — correction pending',
+  },
+  {
+    id: 'ATT-233',
+    date: '2026-08-07',
+    status: 'Absent',
+    note: 'Unplanned absence',
+  },
+]
+
 export const myTasks: MyTask[] = [
   {
     id: 'T-101',
     name: 'Mobile App Wireframe Review',
+    project: 'Nexus Mobile',
     priority: 'High',
     dueDate: 'Oct 25, 2024',
     status: 'In Progress',
@@ -51,6 +185,7 @@ export const myTasks: MyTask[] = [
   {
     id: 'T-102',
     name: 'Quarterly Design System Audit',
+    project: 'Design System',
     priority: 'Medium',
     dueDate: 'Oct 30, 2024',
     status: 'Pending',
@@ -59,6 +194,7 @@ export const myTasks: MyTask[] = [
   {
     id: 'T-103',
     name: 'Client Meeting: Feedback Integration',
+    project: 'Nexus Global',
     priority: 'High',
     dueDate: 'Oct 26, 2024',
     status: 'Not Started',
@@ -67,10 +203,46 @@ export const myTasks: MyTask[] = [
   {
     id: 'T-104',
     name: 'Accessibility Guidelines Update',
+    project: 'Design System',
     priority: 'Low',
     dueDate: 'Nov 05, 2024',
     status: 'Pending',
     estimatedHours: '12h',
+  },
+]
+
+export const myApprovals: ApprovalRequest[] = [
+  {
+    id: 'APR-501',
+    type: 'Leave',
+    title: 'Casual leave · Aug 28',
+    submittedOn: '2026-08-14',
+    status: 'Pending',
+    summary: '1 day · Personal appointment',
+  },
+  {
+    id: 'APR-498',
+    type: 'Attendance Correction',
+    title: 'Correction · Aug 8 half day',
+    submittedOn: '2026-08-09',
+    status: 'Pending',
+    summary: 'Request full-day punches 09:15–18:00',
+  },
+  {
+    id: 'APR-490',
+    type: 'Leave',
+    title: 'Sick leave · Aug 5–6',
+    submittedOn: '2026-08-04',
+    status: 'Approved',
+    summary: '2 days · Approved by Sarah Chen',
+  },
+  {
+    id: 'APR-480',
+    type: 'Expense',
+    title: 'Client travel reimbursement',
+    submittedOn: '2026-07-28',
+    status: 'Rejected',
+    summary: 'Missing receipt attachment',
   },
 ]
 
