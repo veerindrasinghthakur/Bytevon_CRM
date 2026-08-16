@@ -27,9 +27,6 @@ const statusDot: Record<string, string> = {
   Blocked: 'bg-orange-500',
 }
 
-const card =
-  'bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all'
-
 export function MyWorkOverviewPage() {
   const navigate = useNavigate()
 
@@ -84,10 +81,10 @@ export function MyWorkOverviewPage() {
               key={action.label}
               type="button"
               onClick={() => navigate({ to: action.to })}
-              className="flex flex-col items-center justify-center p-6 bg-surface-container-lowest border border-outline-variant rounded-xl hover:border-secondary hover:bg-secondary/5 hover:shadow-md hover:-translate-y-0.5 transition-all group shadow-sm"
+              className="bv-action-tile group"
             >
               <span
-                className="material-symbols-outlined text-[32px] text-secondary mb-3 group-hover:scale-110 transition-transform"
+                className="material-symbols-outlined text-[32px] text-secondary mb-3 bv-action-icon"
                 aria-hidden="true"
               >
                 {action.icon}
@@ -100,7 +97,7 @@ export function MyWorkOverviewPage() {
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {myWorkMetrics.map((m) => (
-          <div key={m.id} className={`${card} p-5`}>
+          <div key={m.id} className="bv-surface p-5">
             <div className="flex items-center justify-between mb-3">
               <span className="text-label-sm font-medium text-on-surface-variant uppercase tracking-wider">
                 {m.label}
@@ -126,13 +123,13 @@ export function MyWorkOverviewPage() {
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className={`${card} lg:col-span-2 p-6`}>
+        <div className="bv-surface lg:col-span-2 p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-title-lg font-semibold text-on-background">Attendance Overview</h3>
             <button
               type="button"
               onClick={() => navigate({ to: '/my-work/attendance' })}
-              className="text-label-md font-semibold text-secondary hover:underline"
+              className="text-label-md font-semibold text-secondary hover:underline transition-colors duration-200 cursor-pointer"
             >
               Full Report
             </button>
@@ -152,7 +149,7 @@ export function MyWorkOverviewPage() {
               {weekHours.map((d) => (
                 <div
                   key={d.day}
-                  className={`flex-1 rounded-t-sm transition-colors ${
+                  className={`flex-1 rounded-t-sm transition-colors duration-200 cursor-pointer ${
                     d.isToday
                       ? 'bg-secondary'
                       : d.pct > 0
@@ -170,7 +167,7 @@ export function MyWorkOverviewPage() {
           </div>
         </div>
 
-        <div className={`${card} p-6 flex flex-col gap-4`}>
+        <div className="bv-surface p-6 flex flex-col gap-4">
           <h3 className="text-title-lg font-semibold text-on-background mb-1">Leave Summary</h3>
           {leaveBalances.map((lb) => (
             <div
@@ -192,20 +189,20 @@ export function MyWorkOverviewPage() {
           <button
             type="button"
             onClick={() => navigate({ to: '/my-work/leave' })}
-            className="mt-auto w-full py-2.5 bg-deep-navy text-on-primary rounded-lg text-label-md font-medium hover:opacity-90 transition-opacity"
+            className="mt-auto w-full py-2.5 bg-deep-navy text-on-primary rounded-lg text-label-md font-medium hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer"
           >
             Manage Leave
           </button>
         </div>
       </section>
 
-      <section className={`${card} overflow-hidden`}>
+      <section className="bv-surface overflow-hidden">
         <div className="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
           <h3 className="text-title-lg font-semibold text-on-background">Assigned Tasks</h3>
           <button
             type="button"
             onClick={() => navigate({ to: '/my-work/tasks' })}
-            className="px-3 py-1.5 text-label-sm bg-secondary text-on-secondary rounded-md hover:opacity-90"
+            className="px-3 py-1.5 text-label-sm bg-secondary text-on-secondary rounded-md hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer"
           >
             View All
           </button>
@@ -223,7 +220,7 @@ export function MyWorkOverviewPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {myTasks.slice(0, 4).map((task: MyTask) => (
-                <tr key={task.id} className="hover:bg-secondary/5 transition-colors">
+                <tr key={task.id} className="bv-row-hover cursor-pointer">
                   <td className="px-6 py-4 text-label-md font-semibold text-on-background">{task.name}</td>
                   <td className="px-6 py-4">
                     <span
@@ -248,7 +245,7 @@ export function MyWorkOverviewPage() {
       </section>
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-2">
-        <div className={`${card} p-6`}>
+        <div className="bv-surface p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-title-lg font-semibold text-on-background">Recent Notifications</h3>
             <span className="bg-secondary text-on-secondary text-[10px] px-2 py-0.5 rounded-full font-bold">
@@ -257,7 +254,10 @@ export function MyWorkOverviewPage() {
           </div>
           <div className="flex flex-col gap-3">
             {recentNotifications.map((n) => (
-              <div key={n.id} className="flex gap-4 p-3 bg-surface-container-low rounded-lg relative overflow-hidden">
+              <div
+                key={n.id}
+                className="flex gap-4 p-3 bg-surface-container-low rounded-lg relative overflow-hidden cursor-pointer transition-colors duration-200 hover:bg-surface-container"
+              >
                 <div className="w-1 bg-secondary absolute left-0 top-0 h-full" />
                 <div className="bg-surface-container-lowest p-2 h-fit rounded-lg shadow-sm">
                   <span className="material-symbols-outlined text-secondary text-[20px]" aria-hidden="true">
@@ -279,13 +279,13 @@ export function MyWorkOverviewPage() {
           </div>
         </div>
 
-        <div className={`${card} p-6`}>
+        <div className="bv-surface p-6">
           <h3 className="text-title-lg font-semibold text-on-background mb-6">Upcoming Events</h3>
           <div className="flex flex-col gap-3">
             {upcomingEvents.map((e) => (
               <div
                 key={e.id}
-                className="flex items-center gap-4 p-3 border border-outline-variant rounded-lg hover:border-secondary transition-colors"
+                className="flex items-center gap-4 p-3 border border-outline-variant rounded-lg hover:border-secondary transition-all duration-200 cursor-pointer"
               >
                 <div className="flex flex-col items-center justify-center bg-surface-container p-2 rounded-lg min-w-[56px]">
                   <span className="text-label-sm font-bold text-on-surface-variant">{e.month}</span>

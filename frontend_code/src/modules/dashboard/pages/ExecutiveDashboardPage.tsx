@@ -8,9 +8,6 @@ import {
   executiveQuickActions,
 } from '../data/mock'
 
-const card =
-  'bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all'
-
 export function ExecutiveDashboardPage() {
   const navigate = useNavigate()
 
@@ -42,19 +39,19 @@ export function ExecutiveDashboardPage() {
             key={a.label}
             type="button"
             onClick={() => navigate({ to: a.to })}
-            className="bg-surface-container-lowest border border-outline-variant p-4 rounded-xl flex flex-col items-center gap-2 hover:border-secondary hover:shadow-md hover:-translate-y-0.5 transition-all group shadow-sm active:scale-95"
+            className="bv-action-tile group"
           >
-            <div className="w-10 h-10 bg-secondary/10 text-secondary rounded-full flex items-center justify-center group-hover:bg-secondary group-hover:text-on-secondary transition-colors">
-              <span className="material-symbols-outlined">{a.icon}</span>
+            <div className="w-10 h-10 bg-secondary/10 text-secondary rounded-full flex items-center justify-center group-hover:bg-secondary group-hover:text-on-secondary transition-colors duration-200">
+              <span className="material-symbols-outlined bv-action-icon">{a.icon}</span>
             </div>
-            <span className="text-label-md text-on-surface">{a.label}</span>
+            <span className="text-label-md text-on-surface mt-2">{a.label}</span>
           </button>
         ))}
       </section>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {executiveKpis.map((k) => (
-          <div key={k.label} className={`${card} p-5`}>
+          <div key={k.label} className="bv-surface p-5">
             <div className="flex justify-between items-start mb-2">
               <span className="text-label-sm text-on-surface-variant uppercase tracking-wider">{k.label}</span>
               <span className="text-secondary material-symbols-outlined">{k.icon}</span>
@@ -71,10 +68,10 @@ export function ExecutiveDashboardPage() {
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className={`${card} p-6`}>
+        <div className="bv-surface p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-title-lg font-semibold text-on-surface">Attendance Trend</h2>
-            <select className="bg-surface border border-outline-variant text-label-sm rounded-lg px-3 py-1.5 outline-none focus:border-secondary">
+            <select className="bg-surface border border-outline-variant text-label-sm rounded-lg px-3 py-1.5 outline-none focus:border-secondary transition-colors duration-200 cursor-pointer">
               <option>Last 30 Days</option>
               <option>Last Quarter</option>
               <option>Year to Date</option>
@@ -84,13 +81,13 @@ export function ExecutiveDashboardPage() {
             {executiveMeta.attendanceBars.map((h, i) => (
               <div
                 key={i}
-                className="flex-1 bg-secondary/20 hover:bg-secondary rounded-t transition-colors"
+                className="flex-1 bg-secondary/20 hover:bg-secondary rounded-t transition-colors duration-200 cursor-pointer"
                 style={{ height: `${h}%` }}
               />
             ))}
           </div>
         </div>
-        <div className={`${card} p-6`}>
+        <div className="bv-surface p-6">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-title-lg font-semibold text-on-surface">Revenue Trend</h2>
             <div className="flex gap-3 text-label-sm">
@@ -107,7 +104,7 @@ export function ExecutiveDashboardPage() {
               <div
                 key={i}
                 className={cn(
-                  'w-8 rounded-t-sm transition-all',
+                  'w-8 rounded-t-sm transition-colors duration-200 cursor-pointer',
                   i % 3 === 1 ? 'bg-secondary' : 'bg-surface-container-highest hover:bg-secondary'
                 )}
                 style={{ height: `${h}%` }}
@@ -123,7 +120,7 @@ export function ExecutiveDashboardPage() {
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className={`${card} p-6`}>
+        <div className="bv-surface p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-title-lg font-semibold text-on-background">Pending Approvals</h3>
             <span className="bg-error-container text-on-error-container text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
@@ -134,7 +131,7 @@ export function ExecutiveDashboardPage() {
             {executivePending.map((p) => (
               <div
                 key={p.name}
-                className="flex items-center gap-3 p-3 hover:bg-surface-container-low rounded-lg transition-colors border-l-4 border-secondary"
+                className="flex items-center gap-3 p-3 rounded-lg border-l-4 border-secondary bv-row-hover cursor-pointer"
               >
                 <div className="w-10 h-10 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-label-sm font-bold">
                   {p.initials}
@@ -146,13 +143,13 @@ export function ExecutiveDashboardPage() {
                 <div className="flex gap-1">
                   <button
                     type="button"
-                    className="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center hover:opacity-90"
+                    className="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center hover:opacity-90 transition-all duration-200 active:scale-95 cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[18px]">check</span>
                   </button>
                   <button
                     type="button"
-                    className="w-8 h-8 rounded-full border border-outline text-on-surface-variant flex items-center justify-center hover:bg-error hover:text-white hover:border-error"
+                    className="w-8 h-8 rounded-full border border-outline text-on-surface-variant flex items-center justify-center hover:bg-error hover:text-white hover:border-error transition-colors duration-200 cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[18px]">close</span>
                   </button>
@@ -163,13 +160,13 @@ export function ExecutiveDashboardPage() {
           <button
             type="button"
             onClick={() => navigate({ to: '/approvals/pending' })}
-            className="mt-3 text-secondary text-label-md hover:underline w-full text-center py-2"
+            className="mt-3 text-secondary text-label-md hover:underline w-full text-center py-2 transition-colors duration-200 cursor-pointer"
           >
             View all requests
           </button>
         </div>
 
-        <div className={`${card} p-6`}>
+        <div className="bv-surface p-6">
           <h3 className="text-title-lg font-semibold text-on-background mb-4">Recent Activities</h3>
           <div className="space-y-6 relative before:content-[''] before:absolute before:left-[19px] before:top-4 before:bottom-4 before:w-px before:bg-outline-variant">
             {executiveActivities.map((a) => (
@@ -187,10 +184,10 @@ export function ExecutiveDashboardPage() {
           </div>
         </div>
 
-        <div className={`${card} p-6`}>
+        <div className="bv-surface p-6">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-title-lg font-semibold text-on-background">Calendar</h3>
-            <button type="button" className="text-secondary material-symbols-outlined">
+            <button type="button" className="text-secondary material-symbols-outlined bv-icon-btn rounded-full p-1">
               chevron_right
             </button>
           </div>
@@ -209,9 +206,10 @@ export function ExecutiveDashboardPage() {
               <span
                 key={d}
                 className={cn(
-                  'py-2 rounded-lg',
+                  'py-2 rounded-lg transition-colors duration-200 cursor-pointer',
                   d === 24 && 'bg-secondary text-on-secondary font-bold',
-                  d === 26 && 'border border-secondary text-secondary'
+                  d === 26 && 'border border-secondary text-secondary',
+                  d !== 24 && d !== 26 && 'hover:bg-surface-container-low'
                 )}
               >
                 {d}
@@ -220,9 +218,9 @@ export function ExecutiveDashboardPage() {
           </div>
           <p className="text-label-sm text-on-surface-variant uppercase tracking-widest mb-3">Upcoming Deadlines</p>
           <div className="space-y-3">
-            <div className="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg border-l-4 border-error">
-              <div className="flex flex-col items-center justify-center bg-white rounded p-1.5 min-w-[40px] shadow-sm">
-                <span className="text-label-sm font-bold text-error">OCT</span>
+            <div className="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg border-l-4 border-error group cursor-pointer">
+              <div className="flex flex-col items-center justify-center bg-white rounded p-1.5 min-w-[40px] shadow-sm group-hover:bg-error group-hover:text-white transition-colors duration-200">
+                <span className="text-label-sm font-bold text-error group-hover:text-white">OCT</span>
                 <span className="text-title-lg font-bold">26</span>
               </div>
               <div>
@@ -230,9 +228,9 @@ export function ExecutiveDashboardPage() {
                 <p className="text-label-sm text-on-surface-variant">Due at 5:00 PM EST</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg border-l-4 border-secondary">
-              <div className="flex flex-col items-center justify-center bg-white rounded p-1.5 min-w-[40px] shadow-sm">
-                <span className="text-label-sm font-bold text-secondary">OCT</span>
+            <div className="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg border-l-4 border-secondary group cursor-pointer">
+              <div className="flex flex-col items-center justify-center bg-white rounded p-1.5 min-w-[40px] shadow-sm group-hover:bg-secondary group-hover:text-white transition-colors duration-200">
+                <span className="text-label-sm font-bold text-secondary group-hover:text-white">OCT</span>
                 <span className="text-title-lg font-bold">28</span>
               </div>
               <div>

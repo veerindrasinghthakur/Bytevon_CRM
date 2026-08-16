@@ -49,7 +49,7 @@ export function RolesListPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="bg-surface-container-lowest border border-outline-variant rounded-full pl-10 pr-4 py-2 w-64 focus:ring-2 focus:ring-secondary focus:border-transparent outline-none text-body-sm transition-all"
+            className="bg-surface-container-lowest border border-outline-variant rounded-full pl-10 pr-4 py-2 w-64 focus:ring-2 focus:ring-secondary focus:border-transparent outline-none text-body-sm transition-all duration-200"
             placeholder="Search roles..."
             type="text"
           />
@@ -65,14 +65,13 @@ export function RolesListPage() {
             key={role.id}
             className={cn(
               'bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm',
-              'flex flex-col justify-between relative group w-full',
-              'hover:-translate-y-0.5 hover:shadow-md transition-all duration-200'
+              'flex flex-col justify-between relative group w-full card-hover cursor-pointer'
             )}
           >
             <div className="absolute top-4 right-4 z-10">
               <button
                 type="button"
-                className="p-1.5 hover:bg-surface-container rounded-full transition-colors"
+                className="p-1.5 hover:bg-surface-container rounded-full transition-colors duration-200 cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation()
                   setOpenMenu(openMenu === role.id ? null : role.id)
@@ -85,7 +84,7 @@ export function RolesListPage() {
                 <div className="absolute right-0 top-10 w-48 bg-white border border-outline-variant rounded-lg shadow-lg z-20 py-2">
                   <button
                     type="button"
-                    className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"
+                    className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container transition-colors duration-200 flex items-center gap-2 cursor-pointer"
                     onClick={() => {
                       setOpenMenu(null)
                       navigate({ to: '/admin/roles/$roleId', params: { roleId: role.id } })
@@ -95,7 +94,7 @@ export function RolesListPage() {
                   </button>
                   <button
                     type="button"
-                    className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"
+                    className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container transition-colors duration-200 flex items-center gap-2 cursor-pointer"
                     onClick={() => {
                       setOpenMenu(null)
                       navigate({ to: '/admin/roles/$roleId/edit', params: { roleId: role.id } })
@@ -105,20 +104,20 @@ export function RolesListPage() {
                   </button>
                   <button
                     type="button"
-                    className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"
+                    className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container transition-colors duration-200 flex items-center gap-2 cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[18px]">content_copy</span> Duplicate
                   </button>
                   <button
                     type="button"
-                    className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container flex items-center gap-2"
+                    className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container transition-colors duration-200 flex items-center gap-2 cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[18px]">block</span> Disable
                   </button>
                   <div className="h-px bg-outline-variant my-1" />
                   <button
                     type="button"
-                    className="w-full text-left px-4 py-2 text-body-sm hover:bg-error-container text-error flex items-center gap-2"
+                    className="w-full text-left px-4 py-2 text-body-sm hover:bg-error-container text-error transition-colors duration-200 flex items-center gap-2 cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[18px]">delete</span> Delete
                   </button>
@@ -128,7 +127,7 @@ export function RolesListPage() {
 
             <button
               type="button"
-              className="text-left space-y-4 w-full"
+              className="text-left space-y-4 w-full cursor-pointer"
               onClick={() => navigate({ to: '/admin/roles/$roleId', params: { roleId: role.id } })}
             >
               <div>
@@ -168,7 +167,7 @@ export function RolesListPage() {
                 </div>
                 <div className="w-full bg-surface-container-high h-1 rounded-full overflow-hidden">
                   <div
-                    className="bg-secondary h-full rounded-full transition-all duration-500"
+                    className="bg-secondary h-full rounded-full transition-all duration-500 ease-out"
                     style={{ width: `${role.coveragePct}%` }}
                   />
                 </div>
@@ -209,14 +208,14 @@ export function RolesListPage() {
         <div className="flex gap-1">
           <button
             type="button"
-            className="px-3 py-1.5 rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors"
+            className="px-3 py-1.5 rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             disabled
           >
             Previous
           </button>
           <button
             type="button"
-            className="px-3 py-1.5 rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors"
+            className="px-3 py-1.5 rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors duration-200 cursor-pointer"
           >
             Next
           </button>
