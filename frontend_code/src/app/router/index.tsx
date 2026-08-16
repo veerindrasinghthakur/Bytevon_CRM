@@ -97,6 +97,7 @@ import {
   PayrollReviewPage,
   PayslipViewPage,
   SalaryManagementPage,
+  EmployeeSalaryDetailPage,
   ReviseSalaryPage,
   EmployeePayrollHistoryPage,
 } from '@/modules/payroll'
@@ -393,9 +394,14 @@ const payrollSalaryRoute = createRoute({
   path: '/payroll/salary',
   component: SalaryManagementPage,
 })
+const payrollSalaryDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/payroll/salary/$employeeId',
+  component: EmployeeSalaryDetailPage,
+})
 const payrollSalaryReviseRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
-  path: '/payroll/salary/revise',
+  path: '/payroll/salary/$employeeId/revise',
   component: ReviseSalaryPage,
 })
 const payrollHistoryRoute = createRoute({
@@ -633,6 +639,7 @@ const routeTree = rootRoute.addChildren([
     payrollReviewRoute,
     payrollPayslipRoute,
     payrollSalaryRoute,
+    payrollSalaryDetailRoute,
     payrollSalaryReviseRoute,
     payrollHistoryRoute,
     myWorkRoute,
