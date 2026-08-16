@@ -10,10 +10,7 @@ export function PayrollReviewPage() {
   const emp = payrollEmployees.find((e) => e.id === employeeId) ?? payrollEmployees[0]
   const [showPayModal, setShowPayModal] = useState(false)
 
-<<<<<<< HEAD
-=======
   const gross = 8500
->>>>>>> origin/payroll
   const totalEarnings = 9250
   const totalDeductions = 1845
   const netAdj = 125
@@ -24,33 +21,15 @@ export function PayrollReviewPage() {
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
-<<<<<<< HEAD
-            <button type="button" className="text-on-surface-variant hover:text-primary p-2 rounded-full hover:bg-surface-container-highest" onClick={() => navigate({ to: '/payroll/monthly' })}>
-=======
             <button
               type="button"
               className="text-on-surface-variant hover:text-primary p-2 rounded-full hover:bg-surface-container-highest"
               onClick={() => navigate({ to: '/payroll/monthly' })}
             >
->>>>>>> origin/payroll
               <span className="material-symbols-outlined">arrow_back</span>
             </button>
             <h1 className="text-headline-lg font-semibold text-on-surface m-0">Payroll Review</h1>
             <div className="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-label-sm flex items-center gap-1 ml-2">
-<<<<<<< HEAD
-              <span className="material-symbols-outlined text-[16px]">pending_actions</span> CALCULATED
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-body-sm text-on-surface-variant ml-12">
-            <span className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">person</span><span className="font-medium text-on-surface">{emp.name}</span></span>
-            <span className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">badge</span>{emp.code}</span>
-            <span className="flex items-center gap-2"><span className="material-symbols-outlined text-[18px]">work</span>{emp.department}</span>
-          </div>
-        </div>
-        <div className="flex gap-2 ml-12 md:ml-0">
-          <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">print</span>}>Print</Button>
-          <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}>Export</Button>
-=======
               <span className="material-symbols-outlined text-[16px]">pending_actions</span>
               CALCULATED
             </div>
@@ -81,20 +60,10 @@ export function PayrollReviewPage() {
           <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}>
             Export
           </Button>
->>>>>>> origin/payroll
         </div>
       </header>
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-<<<<<<< HEAD
-        <MetricCard title="Gross Salary" value={formatMoney(8500)} hint="Base package" icon="payments" iconBg="bg-surface-container text-secondary" />
-        <MetricCard title="Total Earnings" value={formatMoney(totalEarnings)} hint="Includes allowances" icon="trending_up" iconBg="bg-[#dcfce7] text-[#166534]" />
-        <MetricCard title="Total Deductions" value={`-${formatMoney(totalDeductions)}`} hint="Taxes & benefits" icon="trending_down" iconBg="bg-error-container text-on-error-container" />
-        <div className="bg-deep-navy border border-deep-navy rounded-lg p-6 shadow-sm flex flex-col justify-between relative overflow-hidden">
-          <div className="flex items-start justify-between mb-4 relative z-10">
-            <h3 className="text-body-sm text-inverse-primary">Net Payable</h3>
-            <div className="p-2 bg-white/10 rounded-lg text-white"><span className="material-symbols-outlined">account_balance</span></div>
-=======
         <MetricCard title="Gross Salary" value={formatMoney(gross)} hint="Base package" icon="payments" iconBg="bg-surface-container text-secondary" />
         <MetricCard
           title="Total Earnings"
@@ -121,7 +90,6 @@ export function PayrollReviewPage() {
             <div className="p-2 bg-white/10 rounded-lg text-white">
               <span className="material-symbols-outlined">account_balance</span>
             </div>
->>>>>>> origin/payroll
           </div>
           <div className="relative z-10">
             <div className="text-headline-lg font-semibold text-white">{formatMoney(netPayable)}</div>
@@ -131,13 +99,6 @@ export function PayrollReviewPage() {
       </section>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-<<<<<<< HEAD
-        <div className="lg:col-span-8 space-y-6">
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-outline-variant bg-surface-bright">
-              <h2 className="text-title-lg font-semibold text-on-surface flex items-center gap-2">
-                <span className="material-symbols-outlined text-on-surface-variant">receipt_long</span> Salary Breakdown
-=======
         <div className="lg:col-span-8 flex flex-col gap-6">
           <section className="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-outline-variant flex items-center bg-surface-bright">
@@ -168,16 +129,12 @@ export function PayrollReviewPage() {
               <h2 className="text-title-lg font-semibold text-on-surface flex items-center gap-2">
                 <span className="material-symbols-outlined text-on-surface-variant">receipt_long</span>
                 Salary Breakdown
->>>>>>> origin/payroll
               </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x border-outline-variant">
               <div className="p-6">
                 <h3 className="text-label-md text-on-surface-variant uppercase tracking-wider mb-4">Earnings</h3>
                 <ul className="space-y-4">
-<<<<<<< HEAD
-                  {[['Basic Salary', 5000], ['HRA', 2000], ['Conveyance', 800], ['Special Allowance', 700], ['Overtime', 750]].map(([n, a]) => (
-=======
                   {[
                     ['Basic Salary', 5000],
                     ['House Rent Allowance (HRA)', 2000],
@@ -185,39 +142,20 @@ export function PayrollReviewPage() {
                     ['Special Allowance', 700],
                     ['Overtime Pay', 750],
                   ].map(([n, a]) => (
->>>>>>> origin/payroll
                     <li key={String(n)} className="flex justify-between items-center text-body-md">
                       <span className="text-on-surface">{n}</span>
                       <span className="font-medium text-on-surface">{formatMoney(Number(a))}</span>
                     </li>
                   ))}
                 </ul>
-<<<<<<< HEAD
-                <div className="mt-6 pt-4 border-t border-outline-variant flex justify-between">
-                  <span className="text-label-md text-on-surface-variant">Gross Earnings</span>
-                  <span className="text-title-lg font-semibold">{formatMoney(totalEarnings)}</span>
-=======
                 <div className="mt-6 pt-4 border-t border-outline-variant flex justify-between items-center">
                   <span className="text-label-md text-on-surface-variant">Gross Earnings</span>
                   <span className="text-title-lg font-semibold text-on-surface">{formatMoney(totalEarnings)}</span>
->>>>>>> origin/payroll
                 </div>
               </div>
               <div className="p-6">
                 <h3 className="text-label-md text-on-surface-variant uppercase tracking-wider mb-4">Deductions</h3>
                 <ul className="space-y-4">
-<<<<<<< HEAD
-                  {[['PF', 450], ['TDS', 1350], ['Professional Tax', 45]].map(([n, a]) => (
-                    <li key={String(n)} className="flex justify-between items-center text-body-md">
-                      <span className="text-on-surface">{n}</span>
-                      <span className="font-medium">{formatMoney(Number(a))}</span>
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-6 pt-4 border-t border-outline-variant flex justify-between">
-                  <span className="text-label-md text-on-surface-variant">Total Deductions</span>
-                  <span className="text-title-lg font-semibold">-{formatMoney(totalDeductions)}</span>
-=======
                   {[
                     ['Provident Fund (PF)', 450],
                     ['Tax Deducted at Source (TDS)', 1350],
@@ -232,25 +170,12 @@ export function PayrollReviewPage() {
                 <div className="mt-6 pt-4 border-t border-outline-variant flex justify-between items-center">
                   <span className="text-label-md text-on-surface-variant">Total Deductions</span>
                   <span className="text-title-lg font-semibold text-on-surface">-{formatMoney(totalDeductions)}</span>
->>>>>>> origin/payroll
                 </div>
               </div>
             </div>
           </section>
         </div>
 
-<<<<<<< HEAD
-        <div className="lg:col-span-4">
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm overflow-hidden flex flex-col">
-            <div className="p-6 flex-grow">
-              <h3 className="text-title-lg font-semibold text-on-surface mb-6 flex items-center gap-2">
-                <span className="material-symbols-outlined text-on-surface-variant">calculate</span> Final Calculation
-              </h3>
-              <div className="space-y-3 mb-6">
-                <div className="flex justify-between text-body-md"><span className="text-on-surface-variant">Gross Earnings</span><span className="font-medium">{formatMoney(totalEarnings)}</span></div>
-                <div className="flex justify-between text-body-md"><span className="text-on-surface-variant">Total Deductions</span><span className="font-medium">-{formatMoney(totalDeductions)}</span></div>
-                <div className="flex justify-between text-body-md"><span className="text-on-surface-variant">Net Adjustments</span><span className="font-medium">+{formatMoney(netAdj)}</span></div>
-=======
         <div className="lg:col-span-4 flex flex-col gap-6">
           <section className="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm p-6">
             <h3 className="text-title-lg font-semibold text-on-surface mb-4 flex items-center gap-2">
@@ -300,7 +225,6 @@ export function PayrollReviewPage() {
                   <span className="text-on-surface-variant">Net Adjustments</span>
                   <span className="font-medium">+{formatMoney(netAdj)}</span>
                 </div>
->>>>>>> origin/payroll
               </div>
               <div className="bg-surface-container p-4 rounded-lg border border-secondary-fixed">
                 <div className="text-body-sm text-on-surface-variant mb-1 font-medium">Net Payable</div>
@@ -308,13 +232,6 @@ export function PayrollReviewPage() {
               </div>
             </div>
             <div className="p-6 bg-surface-bright border-t border-outline-variant flex flex-col gap-3">
-<<<<<<< HEAD
-              <button type="button" className="w-full bg-deep-navy text-white font-medium py-3 px-4 rounded-lg hover:opacity-90 transition-colors flex items-center justify-center gap-2 shadow-sm">
-                <span className="material-symbols-outlined text-[20px]">check_circle</span> Approve Payroll
-              </button>
-              <button type="button" className="w-full border border-primary text-primary font-medium py-3 px-4 rounded-lg hover:bg-surface-container-low transition-colors flex items-center justify-center gap-2" onClick={() => setShowPayModal(true)}>
-                <span className="material-symbols-outlined text-[20px]">payments</span> Record Payment
-=======
               <button
                 type="button"
                 className="w-full bg-deep-navy text-white font-medium py-3 px-4 rounded-lg hover:opacity-90 transition-colors flex items-center justify-center gap-2 shadow-sm"
@@ -337,7 +254,6 @@ export function PayrollReviewPage() {
               >
                 <span className="material-symbols-outlined text-[20px]">payments</span>
                 Record Payment
->>>>>>> origin/payroll
               </button>
             </div>
           </section>
@@ -345,28 +261,6 @@ export function PayrollReviewPage() {
       </div>
 
       {showPayModal && (
-<<<<<<< HEAD
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="fixed inset-0 bg-surface-container-lowest/80 backdrop-blur-sm" onClick={() => setShowPayModal(false)} />
-          <div className="relative bg-surface-container-lowest w-full max-w-lg rounded-xl shadow-lg border border-outline-variant z-10 p-6">
-            <h2 className="text-title-lg font-semibold mb-4">Record Payroll Payment</h2>
-            <p className="text-body-md text-on-surface-variant mb-6">Mark payment for {emp.name} — {formatMoney(netPayable)}</p>
-            <div className="flex justify-end gap-3">
-              <button type="button" className="px-5 py-2.5 rounded border border-outline-variant" onClick={() => setShowPayModal(false)}>Cancel</button>
-              <button
-                type="button"
-                className="px-5 py-2.5 rounded bg-electric-blue text-on-primary"
-                onClick={() => {
-                  setShowPayModal(false)
-                  navigate({ to: '/payroll/payslip/$employeeId', params: { employeeId: emp.id } })
-                }}
-              >
-                Mark as Paid
-              </button>
-            </div>
-          </div>
-        </div>
-=======
         <RecordPaymentModal
           employeeName={emp.name}
           employeeCode={emp.code}
@@ -378,15 +272,11 @@ export function PayrollReviewPage() {
             navigate({ to: '/payroll/payslip/$employeeId', params: { employeeId: emp.id } })
           }}
         />
->>>>>>> origin/payroll
       )}
     </div>
   )
 }
 
-<<<<<<< HEAD
-function MetricCard({ title, value, hint, icon, iconBg }: { title: string; value: string; hint: React.ReactNode; icon: string; iconBg: string }) {
-=======
 function MetricCard({
   title,
   value,
@@ -400,18 +290,13 @@ function MetricCard({
   icon: string
   iconBg: string
 }) {
->>>>>>> origin/payroll
   return (
     <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 shadow-sm flex flex-col justify-between">
       <div className="flex items-start justify-between mb-4">
         <h3 className="text-body-sm text-on-surface-variant">{title}</h3>
-<<<<<<< HEAD
-        <div className={cn('p-2 rounded-lg', iconBg)}><span className="material-symbols-outlined">{icon}</span></div>
-=======
         <div className={cn('p-2 rounded-lg', iconBg)}>
           <span className="material-symbols-outlined">{icon}</span>
         </div>
->>>>>>> origin/payroll
       </div>
       <div>
         <div className="text-headline-md font-semibold text-on-surface">{value}</div>
@@ -420,8 +305,6 @@ function MetricCard({
     </div>
   )
 }
-<<<<<<< HEAD
-=======
 
 function RecordPaymentModal({
   employeeName,
@@ -539,4 +422,3 @@ function RecordPaymentModal({
     </div>
   )
 }
->>>>>>> origin/payroll
