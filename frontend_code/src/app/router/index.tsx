@@ -100,6 +100,7 @@ import {
   EmployeeSalaryDetailPage,
   ReviseSalaryPage,
   EmployeePayrollHistoryPage,
+  PayrollHistoryPage,
 } from '@/modules/payroll'
 
 function Placeholder({ title }: { title: string }) {
@@ -404,7 +405,13 @@ const payrollSalaryReviseRoute = createRoute({
   path: '/payroll/salary/$employeeId/revise',
   component: ReviseSalaryPage,
 })
-const payrollHistoryRoute = createRoute({
+// Org-wide paid history list (must be registered before parameterized employee history)
+const payrollHistoryListRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/payroll/history',
+  component: PayrollHistoryPage,
+})
+const payrollHistoryEmployeeRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/payroll/history/$employeeId',
   component: EmployeePayrollHistoryPage,
@@ -641,7 +648,8 @@ const routeTree = rootRoute.addChildren([
     payrollSalaryRoute,
     payrollSalaryDetailRoute,
     payrollSalaryReviseRoute,
-    payrollHistoryRoute,
+    payrollHistoryListRoute,
+    payrollHistoryEmployeeRoute,
     myWorkRoute,
     myWorkBreakRoute,
     myWorkAttendanceRoute,
