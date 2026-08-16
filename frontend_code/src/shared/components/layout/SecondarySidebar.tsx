@@ -73,6 +73,7 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
       { id: 'my-leave', label: 'My Leave', icon: 'event_busy', to: '/my-work/leave' },
       { id: 'my-tasks', label: 'My Tasks', icon: 'task_alt', to: '/my-work/tasks' },
       { id: 'my-requests', label: 'My Requests', icon: 'request_page', to: '/my-work/requests' },
+      { id: 'bank-details', label: 'Bank Details', icon: 'account_balance', to: '/my-work/bank-details' },
     ],
   },
   approvals: {
@@ -142,7 +143,6 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
     }
     if (to === '/dashboard') return pathname === '/dashboard'
     if (to === '/payroll') return pathname === '/payroll'
-    // History list vs per-employee history
     if (to === '/payroll/history') {
       return pathname === '/payroll/history'
     }
@@ -158,6 +158,9 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
     }
     if (to === '/my-work/requests') {
       return pathname === '/my-work/requests' || pathname.startsWith('/my-work/requests/')
+    }
+    if (to === '/my-work/bank-details') {
+      return pathname === '/my-work/bank-details' || pathname.startsWith('/my-work/bank-details/')
     }
     return pathname === to || pathname.startsWith(to + '/')
   }
