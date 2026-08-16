@@ -13,22 +13,18 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
 }
 
-/**
- * Explicit text vs background contrast:
- * - Dark / saturated fills → white text
- * - Light / outlined fills → dark on-background text
- */
+/** HTML screens: hover:opacity-90 active:scale-95 transition-all (0.2s) */
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-electric-blue text-white hover:bg-[#0062cc] shadow-sm',
+    'bg-electric-blue text-white hover:bg-[#0062cc] shadow-sm hover:opacity-90 active:scale-95',
   secondary:
-    'bg-secondary text-white hover:bg-[#004a9e]',
+    'bg-secondary text-white hover:bg-[#004a9e] hover:opacity-90 active:scale-95',
   outline:
-    'border border-outline-variant bg-surface-container-lowest text-on-background hover:bg-surface-container',
+    'border border-outline-variant bg-surface-container-lowest text-on-background hover:bg-surface-container active:scale-95',
   ghost:
     'text-on-surface-variant hover:bg-surface-container hover:text-on-background',
   danger:
-    'bg-error text-white hover:opacity-90',
+    'bg-error text-white hover:opacity-90 active:scale-95',
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -51,9 +47,10 @@ export function Button({
   return (
     <button
       className={cn(
-        'inline-flex items-center justify-center gap-2 rounded-lg font-medium',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue focus-visible:ring-offset-2',
-        'disabled:opacity-50 disabled:pointer-events-none',
+        'inline-flex items-center justify-center gap-2 rounded-lg font-medium cursor-pointer',
+        'transition-all duration-200 ease-out',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40 focus-visible:ring-offset-2',
+        'disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed',
         variantClasses[variant],
         sizeClasses[size],
         className

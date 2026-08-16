@@ -21,10 +21,7 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
   dashboard: {
     moduleId: 'dashboard',
     title: 'Dashboard',
-    items: [
-      { id: 'executive', label: 'Executive', icon: 'monitoring', to: '/dashboard' },
-      { id: 'employee', label: 'Employee', icon: 'person', to: '/dashboard/employee' },
-    ],
+    items: [{ id: 'executive', label: 'Overview', icon: 'monitoring', to: '/dashboard' }],
   },
   sales: {
     moduleId: 'sales',
@@ -61,7 +58,6 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     title: 'My Work',
     items: [
       { id: 'overview', label: 'Overview', icon: 'dashboard', to: '/my-work' },
-      { id: 'break', label: 'Take a Break', icon: 'coffee', to: '/my-work/break' },
       { id: 'my-attendance', label: 'My Attendance', icon: 'calendar_today', to: '/my-work/attendance' },
       { id: 'my-leave', label: 'My Leave', icon: 'event_busy', to: '/my-work/leave' },
       { id: 'my-tasks', label: 'My Tasks', icon: 'task_alt', to: '/my-work/tasks' },
@@ -154,7 +150,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
     <nav
       className={cn(
         'h-full bg-surface-container-lowest border-r border-outline-variant flex flex-col',
-        'overflow-hidden shrink-0',
+        'overflow-hidden shrink-0 transition-sidebar',
         isCollapsed ? 'w-16' : 'w-60'
       )}
       aria-label="Secondary navigation"
@@ -176,8 +172,8 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
           onClick={onToggle}
           className={cn(
             'flex items-center justify-center rounded-lg text-on-surface-variant',
-            'hover:bg-surface-container hover:text-on-surface',
-            'w-8 h-8'
+            'hover:bg-surface-container hover:text-on-surface transition-colors duration-200',
+            'w-8 h-8 cursor-pointer'
           )}
           aria-label={isCollapsed ? 'Expand secondary sidebar' : 'Collapse secondary sidebar'}
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
@@ -203,7 +199,8 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                   to={item.to}
                   title={isCollapsed ? item.label : undefined}
                   className={cn(
-                    'flex items-center group relative border-l-4',
+                    'flex items-center group relative border-l-4 bv-nav-press cursor-pointer',
+                    'transition-colors duration-200 ease-out',
                     isCollapsed
                       ? 'w-10 h-[52px] justify-center rounded-lg border-transparent'
                       : 'w-full px-3 py-3.5 rounded-r-lg gap-3',

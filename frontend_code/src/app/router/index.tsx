@@ -87,10 +87,7 @@ import {
   SecurityCenterPage,
 } from '@/modules/admin'
 
-import {
-  ExecutiveDashboardPage,
-  EmployeeDashboardPage,
-} from '@/modules/dashboard'
+import { ExecutiveDashboardPage } from '@/modules/dashboard'
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -192,11 +189,6 @@ const dashboardRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/dashboard',
   component: ExecutiveDashboardPage,
-})
-const dashboardEmployeeRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/dashboard/employee',
-  component: EmployeeDashboardPage,
 })
 
 const profileRoute = createRoute({
@@ -544,7 +536,6 @@ const routeTree = rootRoute.addChildren([
   ]),
   appLayoutRoute.addChildren([
     dashboardRoute,
-    dashboardEmployeeRoute,
     profileRoute,
     notificationsRoute,
     projectsIndexRoute,

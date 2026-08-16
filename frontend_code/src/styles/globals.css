@@ -15,7 +15,6 @@
 
   /*
    * Material Symbols must render as icons, never as selectable text ligatures.
-   * font-family is required; without it the glyph names (search, add, …) show as copyable text.
    */
   .material-symbols-outlined {
     font-family: 'Material Symbols Outlined' !important;
@@ -37,22 +36,29 @@
     user-select: none !important;
     -webkit-user-select: none !important;
     -moz-user-select: none !important;
-    pointer-events: none; /* clicks go to parent button/link; icon itself not selectable */
+    pointer-events: none;
   }
 
   .material-symbols-outlined.filled {
     font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
 
-  /* Allow pointer on icons that are the sole interactive target if needed */
   button > .material-symbols-outlined,
   a > .material-symbols-outlined,
   [role='button'] > .material-symbols-outlined {
     pointer-events: none;
   }
+
+  /* Interactive affordance — matches HTML cursor-pointer patterns */
+  button:not(:disabled),
+  [role='button']:not([aria-disabled='true']),
+  a[href] {
+    cursor: pointer;
+  }
 }
 
 @layer components {
+  /* Shadows from HTML (shadow-sm / soft elevation) */
   .shadow-soft {
     box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.05), 0px 10px 15px -3px rgba(0, 0, 0, 0.02);
   }
@@ -70,6 +76,73 @@
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(12px);
   }
+
+  /*
+   * UX effects aligned to Stitch HTML screens
+   * Durations: 0.2s ease (card-hover), transition-all / transition-colors defaults
+   * Note: do not @apply opacity modifiers on CSS-variable colors (PostCSS fails).
+   */
+
+  /* Roles management & similar card grids: .card-hover */
+  .card-hover {
+    transition: all 0.2s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+  }
+
+  /* Static surface card (dashboard KPI panels) — shadow-sm only */
+  .bv-surface {
+    @apply bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm;
+  }
+
+  /* Action tiles: hover:border-secondary transition-all group */
+  .bv-action-tile {
+    @apply flex flex-col items-center justify-center p-6 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm cursor-pointer;
+    transition: all 0.2s ease;
+  }
+  .bv-action-tile:hover {
+    @apply border-secondary;
+  }
+  .bv-action-tile .bv-action-icon {
+    transition: transform 0.2s ease;
+  }
+  .bv-action-tile:hover .bv-action-icon {
+    transform: scale(1.1);
+  }
+
+  /* Table / list rows — HTML: hover:bg-surface-container-lowest|low transition-colors */
+  .bv-row-hover {
+    @apply transition-colors duration-200 ease-out;
+  }
+  .bv-row-hover:hover {
+    /* CSS-variable colors cannot use Tailwind opacity modifiers inside @apply */
+    background-color: color-mix(in srgb, var(--color-surface-container-low) 50%, transparent);
+  }
+
+  /* Primary CTA press: hover:opacity-90 active:scale-95 transition-all */
+  .bv-pressable {
+    transition: all 0.2s ease;
+  }
+  .bv-pressable:hover {
+    opacity: 0.9;
+  }
+  .bv-pressable:active {
+    transform: scale(0.95);
+  }
+
+  /* Icon buttons / chips */
+  .bv-icon-btn {
+    @apply transition-colors duration-200 ease-out cursor-pointer;
+  }
+  .bv-icon-btn:hover {
+    @apply bg-surface-container-low text-secondary;
+  }
+
+  /* Nav item active press from HTML active:scale-[0.98] */
+  .bv-nav-press:active {
+    transform: scale(0.98);
+  }
 }
 
 @layer utilities {
@@ -83,6 +156,11 @@
 
   .animate-slide-in-right {
     animation: slideInRight 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Sidebar width — HTML: 0.3s cubic-bezier(0.4, 0, 0.2, 1) */
+  .transition-sidebar {
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 }
 
