@@ -202,16 +202,6 @@ const dashboardRoute = createRoute({
   path: '/dashboard',
   component: ExecutiveDashboardPage,
 })
-const dashboardEmployeeRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/dashboard/employee',
-  component: EmployeeDashboardPage,
-})
-const dashboardPayrollRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/dashboard/payroll',
-  component: DashboardPayrollPage,
-})
 
 const profileRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
@@ -337,7 +327,9 @@ const salesCaseStudiesRoute = createRoute({
 const workforceRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/workforce',
-  component: () => <Placeholder title="Workforce" />,
+  beforeLoad: () => {
+    throw redirect({ to: '/workforce/employees' })
+  },
 })
 const workforceEmployeesRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
