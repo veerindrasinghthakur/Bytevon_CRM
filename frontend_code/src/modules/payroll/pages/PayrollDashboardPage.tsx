@@ -48,7 +48,6 @@ export function PayrollDashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 flex flex-col gap-6">
-          {/* Period / Progress */}
           <section className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant shadow-sm">
             <div className="flex justify-between items-start mb-6 border-b border-outline-variant pb-4">
               <div>
@@ -68,14 +67,14 @@ export function PayrollDashboardPage() {
                   label: 'CALCULATED',
                   count: periodMeta.calculated,
                   icon: 'check',
-                  tone: 'bg-success-emerald text-white',
+                  tone: 'bg-success-emerald text-on-success',
                   text: 'text-success-emerald',
                 },
                 {
                   label: 'APPROVED',
                   count: periodMeta.approved,
                   icon: 'more_horiz',
-                  tone: 'bg-warning-amber text-white',
+                  tone: 'bg-warning-amber text-on-warning',
                   text: 'text-warning-amber',
                 },
                 {
@@ -102,7 +101,6 @@ export function PayrollDashboardPage() {
             </div>
           </section>
 
-          {/* KPI strip */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <KpiCard
               icon="account_balance_wallet"
@@ -133,7 +131,6 @@ export function PayrollDashboardPage() {
           </div>
         </div>
 
-        {/* Right column */}
         <div className="flex flex-col gap-6">
           <section className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant shadow-sm">
             <h3 className="text-headline-md font-semibold text-deep-navy mb-4">Quick Actions</h3>
@@ -179,7 +176,6 @@ export function PayrollDashboardPage() {
         </div>
       </div>
 
-      {/* Summary table */}
       <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
         <div className="p-5 border-b border-outline-variant flex justify-between items-center bg-surface-bright">
           <h3 className="text-headline-md font-semibold text-deep-navy">Payroll Summary</h3>
@@ -188,7 +184,7 @@ export function PayrollDashboardPage() {
               search
             </span>
             <input
-              className="w-full pl-9 pr-4 py-1.5 bg-surface border border-outline-variant rounded focus:ring-1 focus:ring-primary focus:border-primary text-body-md"
+              className="w-full pl-9 pr-4 py-1.5 bg-surface-container-lowest border border-outline-variant rounded focus:ring-1 focus:ring-primary focus:border-primary text-body-md"
               placeholder="Search employee..."
               type="text"
             />
@@ -211,7 +207,7 @@ export function PayrollDashboardPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {payrollEmployees.slice(0, 3).map((r) => (
-                <tr key={r.id} className="h-[72px] hover:bg-surface-container-low transition-colors">
+                <tr key={r.id} className="h-[72px] bv-row-hover">
                   <td className="p-4 pl-6">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center font-bold text-primary text-label-bold">
@@ -242,39 +238,14 @@ export function PayrollDashboardPage() {
                     </span>
                   </td>
                   <td className="p-4 pr-6 text-right">
-                    {r.status === 'Approved' && (
-                      <button
-                        type="button"
-                        className="text-primary text-label-sm hover:underline"
-                        onClick={() =>
-                          navigate({ to: '/payroll/review/$employeeId', params: { employeeId: r.id } })
-                        }
-                      >
-                        Record Payment
-                      </button>
-                    )}
-                    {r.status === 'Calculated' && (
-                      <button
-                        type="button"
-                        className="text-on-surface-variant text-label-sm hover:text-primary"
-                        onClick={() =>
-                          navigate({ to: '/payroll/review/$employeeId', params: { employeeId: r.id } })
-                        }
-                      >
-                        Review
-                      </button>
-                    )}
-                    {r.status === 'Paid' && (
-                      <button
-                        type="button"
-                        className="text-on-surface-variant text-label-sm hover:text-primary"
-                        onClick={() =>
-                          navigate({ to: '/payroll/payslip/$employeeId', params: { employeeId: r.id } })
-                        }
-                      >
-                        View Payslip
-                      </button>
-                    )}
+                    {/* Approve / Pay only on Monthly Payroll — dashboard is view-only */}
+                    <button
+                      type="button"
+                      className="text-primary text-label-sm hover:underline"
+                      onClick={() => navigate({ to: '/payroll/monthly' })}
+                    >
+                      View in Monthly
+                    </button>
                   </td>
                 </tr>
               ))}
