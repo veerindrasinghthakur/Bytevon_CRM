@@ -44,8 +44,12 @@ import { EmployeeCreatePage } from '@/modules/workforce/pages/EmployeeCreatePage
 import { EmployeeDetailPage } from '@/modules/workforce/pages/EmployeeDetailPage'
 import { DepartmentsListPage } from '@/modules/workforce/pages/DepartmentsListPage'
 import { DepartmentCreatePage } from '@/modules/workforce/pages/DepartmentCreatePage'
+import { WorkforceRosterPage } from '@/modules/workforce/pages/WorkforceRosterPage'
+import { AttendanceDayDetailPage } from '@/modules/workforce/pages/AttendanceDayDetailPage'
+import { ChangeAssignmentPage } from '@/modules/workforce/pages/ChangeAssignmentPage'
 
 import { ProfilePage } from '@/modules/profile/pages/ProfilePage'
+import { ActiveSessionsPage } from '@/modules/profile/pages/ActiveSessionsPage'
 import { NotificationsPage } from '@/modules/notifications/pages/NotificationsPage'
 
 import {
@@ -87,7 +91,20 @@ import {
   AttendanceSettingsPage,
   LeaveSettingsPage,
   SecurityCenterPage,
+  LeavePoliciesPage,
+  LeaveLedgerPage,
 } from '@/modules/admin'
+
+import {
+  LocationsListPage,
+  LocationDetailPage,
+  ShiftsListPage,
+  WorkingWeeksPage,
+  HolidayCalendarsPage,
+  HolidaysListPage,
+  PositionsListPage,
+  OrganizationSettingsPage,
+} from '@/modules/organization'
 
 import { ExecutiveDashboardPage } from '@/modules/dashboard'
 
@@ -211,6 +228,12 @@ const profileRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/profile',
   component: ProfilePage,
+})
+
+const profileSessionsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/profile/sessions',
+  component: ActiveSessionsPage,
 })
 
 const notificationsRoute = createRoute({
@@ -350,6 +373,11 @@ const workforceEmployeeDetailRoute = createRoute({
   path: '/workforce/employees/$employeeId',
   component: EmployeeDetailPage,
 })
+const workforceChangeAssignmentRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/employees/$employeeId/assignment',
+  component: ChangeAssignmentPage,
+})
 const workforceDepartmentsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/workforce/departments',
@@ -363,7 +391,15 @@ const workforceDepartmentsNewRoute = createRoute({
 const workforceAttendanceRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/workforce/attendance',
-  component: () => <Placeholder title="Attendance" />,
+  component: WorkforceRosterPage,
+})
+const workforceAttendanceDayRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/attendance/$employmentId',
+  validateSearch: (search: Record<string, unknown>) => ({
+    date: typeof search.date === 'string' ? search.date : undefined,
+  }),
+  component: AttendanceDayDetailPage,
 })
 
 const payrollRoute = createRoute({
@@ -583,6 +619,46 @@ const adminOfficeEditRoute = createRoute({
   path: '/admin/settings/offices/$officeId/edit',
   component: OfficeFormPage,
 })
+const adminOrganizationRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization',
+  component: OrganizationSettingsPage,
+})
+const adminLocationsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/locations',
+  component: LocationsListPage,
+})
+const adminLocationDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/locations/$locationId',
+  component: LocationDetailPage,
+})
+const adminShiftsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/shifts',
+  component: ShiftsListPage,
+})
+const adminWorkingWeeksRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/working-weeks',
+  component: WorkingWeeksPage,
+})
+const adminHolidayCalendarsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/holidays',
+  component: HolidayCalendarsPage,
+})
+const adminHolidaysRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/holidays/$calendarId',
+  component: HolidaysListPage,
+})
+const adminPositionsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/positions',
+  component: PositionsListPage,
+})
 const adminAttendanceSettingsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/attendance-settings',
@@ -592,6 +668,16 @@ const adminLeaveSettingsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/leave-settings',
   component: LeaveSettingsPage,
+})
+const adminLeavePoliciesRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/leave-policies',
+  component: LeavePoliciesPage,
+})
+const adminLeaveLedgerRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/leave-ledger/$employeeId',
+  component: LeaveLedgerPage,
 })
 const adminAuditRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
@@ -621,6 +707,7 @@ const routeTree = rootRoute.addChildren([
   appLayoutRoute.addChildren([
     dashboardRoute,
     profileRoute,
+    profileSessionsRoute,
     notificationsRoute,
     projectsIndexRoute,
     projectsNewRoute,
@@ -647,9 +734,11 @@ const routeTree = rootRoute.addChildren([
     workforceEmployeesRoute,
     workforceEmployeesNewRoute,
     workforceEmployeeDetailRoute,
+    workforceChangeAssignmentRoute,
     workforceDepartmentsRoute,
     workforceDepartmentsNewRoute,
     workforceAttendanceRoute,
+    workforceAttendanceDayRoute,
     payrollRoute,
     payrollMonthlyRoute,
     payrollRunRoute,
@@ -692,8 +781,18 @@ const routeTree = rootRoute.addChildren([
     adminSettingsRoute,
     adminOfficeNewRoute,
     adminOfficeEditRoute,
+    adminOrganizationRoute,
+    adminLocationsRoute,
+    adminLocationDetailRoute,
+    adminShiftsRoute,
+    adminWorkingWeeksRoute,
+    adminHolidayCalendarsRoute,
+    adminHolidaysRoute,
+    adminPositionsRoute,
     adminAttendanceSettingsRoute,
     adminLeaveSettingsRoute,
+    adminLeavePoliciesRoute,
+    adminLeaveLedgerRoute,
     adminAuditRoute,
     adminSecurityRoute,
     adminNotificationsRoute,
