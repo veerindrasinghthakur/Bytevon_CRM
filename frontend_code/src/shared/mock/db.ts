@@ -1,18 +1,27 @@
 /**
  * In-memory mock database.
- * Seeded once from mock-data.json. Mutations (create/update) hit this store only.
- * When real APIs land, delete this module and point api/* at the backend.
+ * Seeded once from mock-data.json + schema-seed.
+ * Mutations hit this store only. When real APIs land, point api/* at the backend.
  */
 import seed from './mock-data.json'
+import { schemaSeed, buildSuperAdminRolePermissions } from './schema-seed'
 
-export type MockSeed = typeof seed
+export type MockSeed = typeof seed & typeof schemaSeed
 
 function clone<T>(value: T): T {
   return structuredClone(value)
 }
 
-/** Live store — starts as a deep copy of the JSON seed */
-const db: MockSeed = clone(seed)
+const merged = {
+  ...clone(seed),
+  ...clone(schemaSeed),
+} as MockSeed
+
+// Wire Super Admin role_permissions from generated permission matrix
+merged.role_permissions = buildSuperAdminRolePermissions(merged.permissions)
+
+/** Live store */
+const db: MockSeed = merged
 
 export function getDb(): MockSeed {
   return db
