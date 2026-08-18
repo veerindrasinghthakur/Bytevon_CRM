@@ -89,6 +89,8 @@ import {
   RoleCreatePage,
   AuditLogsPage,
   AdminSettingsLayout,
+  LeaveSettingsLayout,
+  AttendanceSettingsLayout,
   OrganizationProfileSection,
   HeadOfficeSection,
   BrandingSection,
@@ -620,7 +622,7 @@ const adminRoleEditRoute = createRoute({
   component: RoleEditPage,
 })
 
-/** Admin Settings layout — vertical nav + outlet for all /admin/settings/* pages */
+/** Admin Settings — horizontal nav + outlet */
 const adminSettingsLayoutRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/settings',
@@ -681,7 +683,6 @@ const adminSettingsRegionalRoute = createRoute({
   path: '/regional',
   component: RegionalSection,
 })
-/** Office forms stay under settings path (full page, still nested for nav highlight) */
 const adminSettingsOfficeNewRoute = createRoute({
   getParentRoute: () => adminSettingsLayoutRoute,
   path: '/offices/new',
@@ -757,26 +758,59 @@ const adminOrgPositionsRedirectRoute = createRoute({
   },
 })
 
-const adminAttendanceSettingsRoute = createRoute({
+/** Attendance Settings — horizontal sub-nav */
+const adminAttendanceLayoutRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/attendance-settings',
+  component: AttendanceSettingsLayout,
+})
+const adminAttendanceIndexRoute = createRoute({
+  getParentRoute: () => adminAttendanceLayoutRoute,
+  path: '/',
   component: AttendanceSettingsPage,
 })
-const adminLeaveSettingsRoute = createRoute({
+
+/** Leave Settings — types + policies (+ ledger) */
+const adminLeaveLayoutRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/leave-settings',
+  component: LeaveSettingsLayout,
+})
+const adminLeaveIndexRoute = createRoute({
+  getParentRoute: () => adminLeaveLayoutRoute,
+  path: '/',
   component: LeaveSettingsPage,
 })
 const adminLeavePoliciesRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/admin/leave-policies',
+  getParentRoute: () => adminLeaveLayoutRoute,
+  path: '/policies',
   component: LeavePoliciesPage,
 })
 const adminLeaveLedgerRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/admin/leave-ledger/$employeeId',
+  getParentRoute: () => adminLeaveLayoutRoute,
+  path: '/ledger/$employeeId',
   component: LeaveLedgerPage,
 })
+
+/** Legacy leave-policies / leave-ledger redirects */
+const adminLeavePoliciesLegacyRedirect = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/leave-policies',
+  beforeLoad: () => {
+    throw redirect({ to: '/admin/leave-settings/policies' })
+  },
+})
+const adminLeaveLedgerLegacyRedirect = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/leave-ledger/$employeeId',
+  beforeLoad: ({ params }) => {
+    throw redirect({
+      to: '/admin/leave-settings/ledger/$employeeId',
+      params: { employeeId: params.employeeId },
+    })
+  },
+})
+
 const adminAuditRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/audit',
@@ -901,10 +935,14 @@ const routeTree = rootRoute.addChildren([
     adminOrgHolidaysRedirectRoute,
     adminOrgHolidayDetailRedirectRoute,
     adminOrgPositionsRedirectRoute,
-    adminAttendanceSettingsRoute,
-    adminLeaveSettingsRoute,
-    adminLeavePoliciesRoute,
-    adminLeaveLedgerRoute,
+    adminAttendanceLayoutRoute.addChildren([adminAttendanceIndexRoute]),
+    adminLeaveLayoutRoute.addChildren([
+      adminLeaveIndexRoute,
+      adminLeavePoliciesRoute,
+      adminLeaveLedgerRoute,
+    ]),
+    adminLeavePoliciesLegacyRedirect,
+    adminLeaveLedgerLegacyRedirect,
     adminAuditRoute,
     adminSecurityRoute,
     adminNotificationsRoute,
