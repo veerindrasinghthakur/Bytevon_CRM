@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
-import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
@@ -60,7 +59,7 @@ export function LocationDetailPage() {
     return (
       <ErrorState
         description={error ?? 'Not found'}
-        onBack={() => navigate({ to: '/admin/organization/locations' })}
+        onBack={() => navigate({ to: '/admin/settings/locations' })}
       />
     )
   }
@@ -82,31 +81,33 @@ export function LocationDetailPage() {
 
   return (
     <div className="space-y-6">
-      <BackButton to="/admin/organization/locations" label="Back to locations" />
-      <PageHeader
-        title={loc.name}
-        description={`${loc.city}, ${loc.country} · ${loc.timezone}`}
-        actions={
-          editing ? (
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => { setEditing(false); setDraft(loc) }}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={() => void save()} disabled={saving}>
-                {saving ? 'Saving…' : 'Save'}
-              </Button>
-            </div>
-          ) : (
-            <Button
-              variant="primary"
-              leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
-              onClick={() => setEditing(true)}
-            >
-              Edit
+      <BackButton to="/admin/settings/locations" label="Back to locations" />
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+        <div>
+          <h2 className="text-title-lg font-semibold text-on-background">{loc.name}</h2>
+          <p className="text-body-sm text-on-surface-variant mt-0.5">
+            {loc.city}, {loc.country} · {loc.timezone}
+          </p>
+        </div>
+        {editing ? (
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => { setEditing(false); setDraft(loc) }}>
+              Cancel
             </Button>
-          )
-        }
-      />
+            <Button variant="primary" onClick={() => void save()} disabled={saving}>
+              {saving ? 'Saving…' : 'Save'}
+            </Button>
+          </div>
+        ) : (
+          <Button
+            variant="primary"
+            leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
+            onClick={() => setEditing(true)}
+          >
+            Edit
+          </Button>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm space-y-4 card-hover">

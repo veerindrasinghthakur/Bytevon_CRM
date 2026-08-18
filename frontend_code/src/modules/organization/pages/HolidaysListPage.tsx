@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
-import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
@@ -27,8 +26,11 @@ export function HolidaysListPage() {
 
   return (
     <div className="space-y-6">
-      <BackButton to="/admin/organization/holidays" label="Back to calendars" />
-      <PageHeader title="Holiday schedule" description={`Calendar #${id}`} />
+      <BackButton to="/admin/settings/holidays" label="Back to calendars" />
+      <div>
+        <h2 className="text-title-lg font-semibold text-on-background">Holiday schedule</h2>
+        <p className="text-body-sm text-on-surface-variant mt-0.5">Calendar #{id}</p>
+      </div>
       {items.length === 0 ? (
         <EmptyState title="No holidays" description="Add holidays to this calendar." />
       ) : (
