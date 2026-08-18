@@ -14,6 +14,7 @@ import type {
   ResetPasswordInput,
 } from '../schemas/auth'
 import { MOCK_LOGIN_PASSWORD, MOCK_LOGIN_USERNAME } from '../schemas/auth'
+import { setCurrentEmploymentId } from '@/shared/rbac'
 
 const STORAGE_KEY = 'bytevon_auth_session'
 const RESET_TOKENS_KEY = 'bytevon_reset_tokens'
@@ -25,6 +26,8 @@ const ADMIN_USER: AuthUser = {
   name: 'Admin User',
   role: 'Administrator',
   department: 'Operations',
+  employmentId: 1,
+  personId: 1,
 }
 
 function delay(ms = 500) {
@@ -44,7 +47,16 @@ export function loadStoredSession(): AuthSession | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
-    return JSON.parse(raw) as AuthSession
+    const session = JSON.parse(raw) as AuthSession
+    // Backfill older sessions missing employmentId
+    if (session.user && session.user.employmentId == null) {
+      session.user.employmentId = 1
+      session.user.personId = session.user.personId ?? 1
+    }
+    if (session.user?.employmentId != null) {
+      setCurrentEmploymentId(session.user.employmentId)
+    }
+    return session
   } catch {
     return null
   }
@@ -53,9 +65,11 @@ export function loadStoredSession(): AuthSession | null {
 export function persistSession(session: AuthSession | null) {
   if (!session) {
     localStorage.removeItem(STORAGE_KEY)
+    setCurrentEmploymentId(null)
     return
   }
   localStorage.setItem(STORAGE_KEY, JSON.stringify(session))
+  setCurrentEmploymentId(session.user.employmentId)
 }
 
 export async function loginApi(input: LoginInput): Promise<AuthSession> {
@@ -112,7 +126,7 @@ export async function forgotPasswordApi(input: ForgotPasswordInput): Promise<{ m
 
 export async function resetPasswordApi(
   token: string,
-  input: ResetPasswordInput
+  input: ResetPasswordInput,
 ): Promise<{ message: string }> {
   await delay()
   const map = JSON.parse(localStorage.getItem(RESET_TOKENS_KEY) || '{}') as Record<

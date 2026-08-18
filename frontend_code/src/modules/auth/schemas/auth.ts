@@ -1,31 +1,24 @@
 import { z } from 'zod'
 
-/** Temporary mock credentials until backend Auth API is connected. */
 export const MOCK_LOGIN_USERNAME = 'admin'
 export const MOCK_LOGIN_PASSWORD = '123'
 
 export const loginSchema = z.object({
   username: z.string().min(1, 'Username is required'),
   password: z.string().min(1, 'Password is required'),
-  rememberMe: z.boolean().optional(),
 })
 
 export type LoginInput = z.infer<typeof loginSchema>
 
 export const forgotPasswordSchema = z.object({
-  email: z.string().email('Enter a valid work email'),
+  email: z.string().email('Enter a valid email'),
 })
 
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>
 
 export const resetPasswordSchema = z
   .object({
-    password: z
-      .string()
-      .min(8, 'At least 8 characters')
-      .regex(/[A-Z]/, 'Include an uppercase letter')
-      .regex(/[a-z]/, 'Include a lowercase letter')
-      .regex(/[0-9]/, 'Include a number'),
+    password: z.string().min(8, 'At least 8 characters'),
     confirmPassword: z.string().min(1, 'Confirm your password'),
   })
   .refine((d) => d.password === d.confirmPassword, {
@@ -38,12 +31,7 @@ export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, 'Current password is required'),
-    password: z
-      .string()
-      .min(8, 'At least 8 characters')
-      .regex(/[A-Z]/, 'Include an uppercase letter')
-      .regex(/[a-z]/, 'Include a lowercase letter')
-      .regex(/[0-9]/, 'Include a number'),
+    password: z.string().min(8, 'At least 8 characters'),
     confirmPassword: z.string().min(1, 'Confirm your password'),
     revokeAllSessions: z.boolean().optional(),
   })
@@ -60,16 +48,17 @@ export interface AuthUser {
   email: string
   name: string
   role: string
-  department?: string
-}
-
-export interface AuthTokens {
-  accessToken: string
-  refreshToken: string
-  expiresIn: number
+  department: string
+  /** Schema employment PK for RBAC + My Work */
+  employmentId: number
+  personId: number
 }
 
 export interface AuthSession {
   user: AuthUser
-  tokens: AuthTokens
+  tokens: {
+    accessToken: string
+    refreshToken: string
+    expiresIn: number
+  }
 }
