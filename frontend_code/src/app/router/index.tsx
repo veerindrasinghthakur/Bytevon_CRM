@@ -41,6 +41,7 @@ import { CaseStudiesListPage } from '@/modules/sales/pages/CaseStudiesListPage'
 
 import { EmployeesListPage } from '@/modules/workforce/pages/EmployeesListPage'
 import { EmployeeCreatePage } from '@/modules/workforce/pages/EmployeeCreatePage'
+import { EmployeeDetailPage } from '@/modules/workforce/pages/EmployeeDetailPage'
 import { DepartmentsListPage } from '@/modules/workforce/pages/DepartmentsListPage'
 import { DepartmentCreatePage } from '@/modules/workforce/pages/DepartmentCreatePage'
 
@@ -344,6 +345,11 @@ const workforceEmployeesNewRoute = createRoute({
   path: '/workforce/employees/new',
   component: EmployeeCreatePage,
 })
+const workforceEmployeeDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/employees/$employeeId',
+  component: EmployeeDetailPage,
+})
 const workforceDepartmentsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/workforce/departments',
@@ -360,7 +366,6 @@ const workforceAttendanceRoute = createRoute({
   component: () => <Placeholder title="Attendance" />,
 })
 
-// —— Payroll module ——
 const payrollRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/payroll',
@@ -641,6 +646,7 @@ const routeTree = rootRoute.addChildren([
     workforceRoute,
     workforceEmployeesRoute,
     workforceEmployeesNewRoute,
+    workforceEmployeeDetailRoute,
     workforceDepartmentsRoute,
     workforceDepartmentsNewRoute,
     workforceAttendanceRoute,
