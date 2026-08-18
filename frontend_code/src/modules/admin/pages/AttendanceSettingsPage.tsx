@@ -11,7 +11,6 @@ function Toggle({ on = false, disabled = false }: { on?: boolean; disabled?: boo
   )
 }
 
-/** Content-only attendance rules (header in AttendanceSettingsLayout). */
 export function AttendanceSettingsPage() {
   const [editing, setEditing] = useState(false)
   const [shiftStart, setShiftStart] = useState('09:00')
