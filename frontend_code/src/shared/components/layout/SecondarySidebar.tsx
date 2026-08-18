@@ -50,7 +50,7 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     items: [
       { id: 'employees', label: 'Employees', icon: 'badge', to: '/workforce/employees' },
       { id: 'departments', label: 'Departments', icon: 'domain', to: '/workforce/departments' },
-      { id: 'attendance', label: 'Attendance', icon: 'calendar_today', to: '/workforce/attendance' },
+      { id: 'attendance', label: 'Attendance roster', icon: 'calendar_today', to: '/workforce/attendance' },
     ],
   },
   payroll: {
@@ -90,9 +90,16 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     items: [
       { id: 'users', label: 'Users', icon: 'manage_accounts', to: '/admin/users' },
       { id: 'roles', label: 'Roles & Permissions', icon: 'qr_code_2', to: '/admin/roles' },
+      { id: 'org-settings', label: 'Organization', icon: 'apartment', to: '/admin/organization' },
+      { id: 'locations', label: 'Locations', icon: 'location_on', to: '/admin/organization/locations' },
+      { id: 'shifts', label: 'Shifts', icon: 'schedule', to: '/admin/organization/shifts' },
+      { id: 'weeks', label: 'Working weeks', icon: 'date_range', to: '/admin/organization/working-weeks' },
+      { id: 'holidays', label: 'Holiday calendars', icon: 'celebration', to: '/admin/organization/holidays' },
+      { id: 'positions', label: 'Positions', icon: 'work', to: '/admin/organization/positions' },
       { id: 'settings', label: 'Settings', icon: 'settings', to: '/admin/settings' },
-      { id: 'attendance-settings', label: 'Attendance Settings', icon: 'schedule', to: '/admin/attendance-settings' },
+      { id: 'attendance-settings', label: 'Attendance Settings', icon: 'timer', to: '/admin/attendance-settings' },
       { id: 'leave-settings', label: 'Leave Settings', icon: 'event_busy', to: '/admin/leave-settings' },
+      { id: 'leave-policies', label: 'Leave policies', icon: 'policy', to: '/admin/leave-policies' },
       { id: 'audit', label: 'Audit Logs', icon: 'receipt_long', to: '/admin/audit' },
       { id: 'security', label: 'Security Center', icon: 'security', to: '/admin/security' },
     ],
@@ -141,6 +148,9 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
     if (to === '/admin/users') {
       return pathname === '/admin' || pathname === '/admin/users' || pathname.startsWith('/admin/users/')
     }
+    if (to === '/admin/organization') {
+      return pathname === '/admin/organization'
+    }
     if (to === '/dashboard') return pathname === '/dashboard'
     if (to === '/payroll') return pathname === '/payroll'
     if (to === '/payroll/history') {
@@ -170,14 +180,14 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
       className={cn(
         'h-full bg-surface-container-lowest border-r border-outline-variant flex flex-col',
         'overflow-hidden shrink-0 transition-sidebar',
-        isCollapsed ? 'w-16' : 'w-60'
+        isCollapsed ? 'w-16' : 'w-60',
       )}
       aria-label="Secondary navigation"
     >
       <div
         className={cn(
           'shrink-0 flex items-center border-b border-outline-variant',
-          isCollapsed ? 'justify-center px-0' : 'justify-between px-3'
+          isCollapsed ? 'justify-center px-0' : 'justify-between px-3',
         )}
         style={{ height: HEADER_HEIGHT_PX }}
       >
@@ -192,7 +202,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
           className={cn(
             'flex items-center justify-center rounded-lg text-on-surface-variant',
             'hover:bg-surface-container hover:text-on-surface transition-colors duration-200',
-            'w-8 h-8 cursor-pointer'
+            'w-8 h-8 cursor-pointer',
           )}
           aria-label={isCollapsed ? 'Expand secondary sidebar' : 'Collapse secondary sidebar'}
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
@@ -206,7 +216,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
       <div
         className={cn(
           'flex-1 overflow-y-auto scrollbar-hide',
-          isCollapsed ? 'pt-3 flex flex-col items-center' : 'pt-3 px-1'
+          isCollapsed ? 'pt-3 flex flex-col items-center' : 'pt-3 px-1',
         )}
       >
         <ul className={cn('flex flex-col gap-1', isCollapsed ? 'w-full items-center' : 'w-full')}>
@@ -229,13 +239,13 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                         : 'bg-[#e8f1ff] text-secondary font-semibold border-secondary'
                       : isCollapsed
                         ? 'text-on-surface-variant hover:bg-surface-container border-transparent'
-                        : 'text-on-surface-variant hover:bg-surface-container hover:text-on-background border-transparent'
+                        : 'text-on-surface-variant hover:bg-surface-container hover:text-on-background border-transparent',
                   )}
                 >
                   <span
                     className={cn(
                       'material-symbols-outlined text-2xl shrink-0',
-                      active ? 'text-secondary' : ''
+                      active ? 'text-secondary' : '',
                     )}
                     style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
                     aria-hidden="true"
@@ -251,7 +261,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                             'text-[10px] font-bold px-1.5 py-0.5 rounded',
                             active
                               ? 'bg-secondary/15 text-secondary'
-                              : 'bg-surface-container-highest text-on-surface-variant'
+                              : 'bg-surface-container-highest text-on-surface-variant',
                           )}
                         >
                           {item.badge}

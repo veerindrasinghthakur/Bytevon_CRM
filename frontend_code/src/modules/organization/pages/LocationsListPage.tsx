@@ -96,11 +96,8 @@ export function LocationsListPage() {
         <EmptyState
           title="No locations"
           description="Add an office location to configure attendance radius, timezone, and payroll region."
-          action={
-            <Button variant="primary" onClick={() => navigate({ to: '/admin/settings/offices/new' })}>
-              Add Location
-            </Button>
-          }
+          actionLabel="Add Location"
+          onAction={() => navigate({ to: '/admin/settings/offices/new' })}
         />
       ) : (
         <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
@@ -120,7 +117,10 @@ export function LocationsListPage() {
                   key={loc.id}
                   className="border-b border-outline-variant last:border-0 bv-row-hover cursor-pointer"
                   onClick={() =>
-                    navigate({ to: '/admin/organization/locations/$locationId', params: { locationId: String(loc.id) } })
+                    navigate({
+                      to: '/admin/organization/locations/$locationId',
+                      params: { locationId: String(loc.id) },
+                    })
                   }
                 >
                   <td className="px-5 py-4 font-medium text-on-background">{loc.name}</td>

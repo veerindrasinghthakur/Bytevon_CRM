@@ -36,13 +36,10 @@ export function LeaveLedgerPage() {
 
   return (
     <div className="space-y-6">
-      {employeeId && (
-        <BackButton
-          to="/workforce/employees/$employeeId"
-          params={{ employeeId }}
-          label="Back to employee"
-        />
-      )}
+      <BackButton
+        to={employeeId ? `/workforce/employees/${employeeId}` : '/admin/leave-policies'}
+        label="Back"
+      />
       <PageHeader
         title="Leave ledger"
         description="Append-only balance history — current balance is SUM of days"

@@ -25,22 +25,18 @@ export function ChangeAssignmentPage() {
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    void Promise.all([
-      getSchemaDepartments(),
-      getPositions(),
-      getLocations(),
-      getShifts(),
-    ]).then(([d, p, l, s]) => {
-      setDepartments(d.items)
-      setPositions(p.items)
-      setLocations(l.items)
-      setShifts(s.items)
-    })
+    void Promise.all([getSchemaDepartments(), getPositions(), getLocations(), getShifts()]).then(
+      ([d, p, l, s]) => {
+        setDepartments(d.items)
+        setPositions(p.items)
+        setLocations(l.items)
+        setShifts(s.items)
+      },
+    )
   }, [])
 
   const submit = async () => {
     setSaving(true)
-    // Mock: assignment is append-only; real API will close previous effective_to
     await new Promise((r) => setTimeout(r, 400))
     setSaving(false)
     navigate({ to: '/workforce/employees/$employeeId', params: { employeeId } })
@@ -48,7 +44,7 @@ export function ChangeAssignmentPage() {
 
   const select = (
     label: string,
-    key: keyof typeof form,
+    key: 'department_id' | 'position_id' | 'location_id' | 'shift_id',
     options: { id: number; name: string }[],
   ) => (
     <div>
@@ -69,11 +65,7 @@ export function ChangeAssignmentPage() {
 
   return (
     <div className="space-y-6 max-w-xl">
-      <BackButton
-        to="/workforce/employees/$employeeId"
-        params={{ employeeId }}
-        label="Back to employee"
-      />
+      <BackButton to={`/workforce/employees/${employeeId}`} label="Back to employee" />
       <PageHeader
         title="Change assignment"
         description="Creates a new employment_assignments row and closes the previous effective_to"
