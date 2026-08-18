@@ -15,11 +15,16 @@ import {
   persistSession,
   refreshApi,
 } from '../api/auth'
+import { can as rbacCan, getCurrentEmploymentId } from '@/shared/rbac'
+import type { Action, ResourceName, ScopeName } from '@/shared/schema'
 
 interface AuthContextValue {
   user: AuthUser | null
   isAuthenticated: boolean
   isBootstrapping: boolean
+  /** Schema employment id for current session */
+  employmentId: number | null
+  can: (action: Action | string, resource: ResourceName | string, minScope?: ScopeName | string) => boolean
   login: (input: LoginInput) => Promise<void>
   logout: (revokeAll?: boolean) => Promise<void>
   markSessionExpired: () => void
@@ -52,7 +57,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null)
   }, [])
 
-  // Optional background refresh when tab focuses (mock)
   useEffect(() => {
     if (!session) return
     const onFocus = () => {
@@ -64,16 +68,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('focus', onFocus)
   }, [session, markSessionExpired])
 
+  const employmentId = session?.user.employmentId ?? getCurrentEmploymentId()
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user: session?.user ?? null,
       isAuthenticated: !!session,
       isBootstrapping,
+      employmentId,
+      can: (action, resource, minScope) =>
+        rbacCan({
+          action,
+          resource,
+          minScope,
+          employmentId: employmentId ?? undefined,
+        }),
       login,
       logout,
       markSessionExpired,
     }),
-    [session, isBootstrapping, login, logout, markSessionExpired]
+    [session, isBootstrapping, employmentId, login, logout, markSessionExpired],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
