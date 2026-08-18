@@ -27,6 +27,8 @@ import { TeamDetailPage } from '@/modules/projects/pages/TeamDetailPage'
 import { TasksListPage } from '@/modules/projects/pages/TasksListPage'
 import { TaskCreatePage } from '@/modules/projects/pages/TaskCreatePage'
 import { TaskDetailPage } from '@/modules/projects/pages/TaskDetailPage'
+import { DocumentsPage } from '@/modules/projects/pages/DocumentsPage'
+import { ProjectNotesPage } from '@/modules/projects/pages/ProjectNotesPage'
 
 import { SalesDashboardPage } from '@/modules/sales/pages/SalesDashboardPage'
 import { LeadsListPage } from '@/modules/sales/pages/LeadsListPage'
@@ -256,6 +258,16 @@ const projectDetailRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/projects/$projectId',
   component: ProjectDetailPage,
+})
+const projectNotesRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/projects/$projectId/notes',
+  component: ProjectNotesPage,
+})
+const projectsDocumentsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/projects/documents',
+  component: DocumentsPage,
 })
 const teamsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
@@ -711,7 +723,9 @@ const routeTree = rootRoute.addChildren([
     notificationsRoute,
     projectsIndexRoute,
     projectsNewRoute,
+    projectsDocumentsRoute,
     projectDetailRoute,
+    projectNotesRoute,
     teamsRoute,
     teamsNewRoute,
     teamDetailRoute,
