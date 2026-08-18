@@ -91,12 +91,6 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     items: [
       { id: 'users', label: 'Users', icon: 'manage_accounts', to: '/admin/users' },
       { id: 'roles', label: 'Roles & Permissions', icon: 'qr_code_2', to: '/admin/roles' },
-      { id: 'org-settings', label: 'Organization', icon: 'apartment', to: '/admin/organization' },
-      { id: 'locations', label: 'Locations', icon: 'location_on', to: '/admin/organization/locations' },
-      { id: 'shifts', label: 'Shifts', icon: 'schedule', to: '/admin/organization/shifts' },
-      { id: 'weeks', label: 'Working weeks', icon: 'date_range', to: '/admin/organization/working-weeks' },
-      { id: 'holidays', label: 'Holiday calendars', icon: 'celebration', to: '/admin/organization/holidays' },
-      { id: 'positions', label: 'Positions', icon: 'work', to: '/admin/organization/positions' },
       { id: 'settings', label: 'Settings', icon: 'settings', to: '/admin/settings' },
       { id: 'attendance-settings', label: 'Attendance Settings', icon: 'timer', to: '/admin/attendance-settings' },
       { id: 'leave-settings', label: 'Leave Settings', icon: 'event_busy', to: '/admin/leave-settings' },
@@ -150,8 +144,8 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
     if (to === '/admin/users') {
       return pathname === '/admin' || pathname === '/admin/users' || pathname.startsWith('/admin/users/')
     }
-    if (to === '/admin/organization') {
-      return pathname === '/admin/organization'
+    if (to === '/admin/settings') {
+      return pathname === '/admin/settings' || pathname.startsWith('/admin/settings/')
     }
     if (to === '/dashboard') return pathname === '/dashboard'
     if (to === '/payroll') return pathname === '/payroll'

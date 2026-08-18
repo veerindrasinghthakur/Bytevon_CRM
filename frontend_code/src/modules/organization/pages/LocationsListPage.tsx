@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
-import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
@@ -48,32 +47,34 @@ export function LocationsListPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Locations"
-        description="Manage office locations for the organization"
-        actions={
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
-                search
-              </span>
-              <input
-                className="w-[240px] pl-9 pr-4 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm focus:outline-none focus:border-secondary shadow-sm"
-                placeholder="Filter by name or city..."
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-              />
-            </div>
-            <Button
-              variant="primary"
-              leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
-              onClick={() => navigate({ to: '/admin/settings/offices/new' })}
-            >
-              Add Location
-            </Button>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 className="text-title-lg font-semibold text-on-background">Office Locations</h2>
+          <p className="text-body-sm text-on-surface-variant mt-0.5">
+            Manage office locations for the organization
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
+              search
+            </span>
+            <input
+              className="w-[220px] pl-9 pr-4 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm focus:outline-none focus:border-secondary shadow-sm"
+              placeholder="Filter by name or city..."
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
           </div>
-        }
-      />
+          <Button
+            variant="primary"
+            leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
+            onClick={() => navigate({ to: '/admin/settings/offices/new' })}
+          >
+            Add Location
+          </Button>
+        </div>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
@@ -118,7 +119,7 @@ export function LocationsListPage() {
                   className="border-b border-outline-variant last:border-0 bv-row-hover cursor-pointer"
                   onClick={() =>
                     navigate({
-                      to: '/admin/organization/locations/$locationId',
+                      to: '/admin/settings/locations/$locationId',
                       params: { locationId: String(loc.id) },
                     })
                   }
@@ -143,7 +144,7 @@ export function LocationsListPage() {
                   </td>
                   <td className="px-5 py-4 text-right">
                     <Link
-                      to="/admin/organization/locations/$locationId"
+                      to="/admin/settings/locations/$locationId"
                       params={{ locationId: String(loc.id) }}
                       className="text-secondary text-sm font-medium hover:underline"
                       onClick={(e) => e.stopPropagation()}

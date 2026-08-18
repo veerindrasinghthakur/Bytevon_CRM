@@ -88,7 +88,11 @@ import {
   RoleEditPage,
   RoleCreatePage,
   AuditLogsPage,
-  AdminSettingsPage,
+  AdminSettingsLayout,
+  OrganizationProfileSection,
+  HeadOfficeSection,
+  BrandingSection,
+  RegionalSection,
   OfficeFormPage,
   AttendanceSettingsPage,
   LeaveSettingsPage,
@@ -105,7 +109,6 @@ import {
   HolidayCalendarsPage,
   HolidaysListPage,
   PositionsListPage,
-  OrganizationSettingsPage,
 } from '@/modules/organization'
 
 import { ExecutiveDashboardPage } from '@/modules/dashboard'
@@ -616,61 +619,144 @@ const adminRoleEditRoute = createRoute({
   path: '/admin/roles/$roleId/edit',
   component: RoleEditPage,
 })
-const adminSettingsRoute = createRoute({
+
+/** Admin Settings layout — vertical nav + outlet for all /admin/settings/* pages */
+const adminSettingsLayoutRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/settings',
-  component: AdminSettingsPage,
+  component: AdminSettingsLayout,
 })
-const adminOfficeNewRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/admin/settings/offices/new',
-  component: OfficeFormPage,
+const adminSettingsIndexRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/',
+  component: OrganizationProfileSection,
 })
-const adminOfficeEditRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/admin/settings/offices/$officeId/edit',
-  component: OfficeFormPage,
+const adminSettingsHeadOfficeRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/head-office',
+  component: HeadOfficeSection,
 })
-const adminOrganizationRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/admin/organization',
-  component: OrganizationSettingsPage,
-})
-const adminLocationsRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/admin/organization/locations',
+const adminSettingsLocationsRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/locations',
   component: LocationsListPage,
 })
-const adminLocationDetailRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/admin/organization/locations/$locationId',
+const adminSettingsLocationDetailRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/locations/$locationId',
   component: LocationDetailPage,
 })
-const adminShiftsRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/admin/organization/shifts',
+const adminSettingsShiftsRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/shifts',
   component: ShiftsListPage,
 })
-const adminWorkingWeeksRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/admin/organization/working-weeks',
+const adminSettingsWorkingWeeksRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/working-weeks',
   component: WorkingWeeksPage,
 })
-const adminHolidayCalendarsRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/admin/organization/holidays',
+const adminSettingsHolidaysRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/holidays',
   component: HolidayCalendarsPage,
 })
-const adminHolidaysRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/admin/organization/holidays/$calendarId',
+const adminSettingsHolidayDetailRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/holidays/$calendarId',
   component: HolidaysListPage,
 })
-const adminPositionsRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/admin/organization/positions',
+const adminSettingsPositionsRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/positions',
   component: PositionsListPage,
 })
+const adminSettingsBrandingRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/branding',
+  component: BrandingSection,
+})
+const adminSettingsRegionalRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/regional',
+  component: RegionalSection,
+})
+/** Office forms stay under settings path (full page, still nested for nav highlight) */
+const adminSettingsOfficeNewRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/offices/new',
+  component: OfficeFormPage,
+})
+const adminSettingsOfficeEditRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/offices/$officeId/edit',
+  component: OfficeFormPage,
+})
+
+/** Legacy /admin/organization/* → /admin/settings/* */
+const adminOrgRedirectRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization',
+  beforeLoad: () => {
+    throw redirect({ to: '/admin/settings' })
+  },
+})
+const adminOrgLocationsRedirectRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/locations',
+  beforeLoad: () => {
+    throw redirect({ to: '/admin/settings/locations' })
+  },
+})
+const adminOrgLocationDetailRedirectRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/locations/$locationId',
+  beforeLoad: ({ params }) => {
+    throw redirect({
+      to: '/admin/settings/locations/$locationId',
+      params: { locationId: params.locationId },
+    })
+  },
+})
+const adminOrgShiftsRedirectRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/shifts',
+  beforeLoad: () => {
+    throw redirect({ to: '/admin/settings/shifts' })
+  },
+})
+const adminOrgWeeksRedirectRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/working-weeks',
+  beforeLoad: () => {
+    throw redirect({ to: '/admin/settings/working-weeks' })
+  },
+})
+const adminOrgHolidaysRedirectRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/holidays',
+  beforeLoad: () => {
+    throw redirect({ to: '/admin/settings/holidays' })
+  },
+})
+const adminOrgHolidayDetailRedirectRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/holidays/$calendarId',
+  beforeLoad: ({ params }) => {
+    throw redirect({
+      to: '/admin/settings/holidays/$calendarId',
+      params: { calendarId: params.calendarId },
+    })
+  },
+})
+const adminOrgPositionsRedirectRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/positions',
+  beforeLoad: () => {
+    throw redirect({ to: '/admin/settings/positions' })
+  },
+})
+
 const adminAttendanceSettingsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/attendance-settings',
@@ -792,17 +878,29 @@ const routeTree = rootRoute.addChildren([
     adminRolesNewRoute,
     adminRoleDetailRoute,
     adminRoleEditRoute,
-    adminSettingsRoute,
-    adminOfficeNewRoute,
-    adminOfficeEditRoute,
-    adminOrganizationRoute,
-    adminLocationsRoute,
-    adminLocationDetailRoute,
-    adminShiftsRoute,
-    adminWorkingWeeksRoute,
-    adminHolidayCalendarsRoute,
-    adminHolidaysRoute,
-    adminPositionsRoute,
+    adminSettingsLayoutRoute.addChildren([
+      adminSettingsIndexRoute,
+      adminSettingsHeadOfficeRoute,
+      adminSettingsLocationsRoute,
+      adminSettingsLocationDetailRoute,
+      adminSettingsShiftsRoute,
+      adminSettingsWorkingWeeksRoute,
+      adminSettingsHolidaysRoute,
+      adminSettingsHolidayDetailRoute,
+      adminSettingsPositionsRoute,
+      adminSettingsBrandingRoute,
+      adminSettingsRegionalRoute,
+      adminSettingsOfficeNewRoute,
+      adminSettingsOfficeEditRoute,
+    ]),
+    adminOrgRedirectRoute,
+    adminOrgLocationsRedirectRoute,
+    adminOrgLocationDetailRedirectRoute,
+    adminOrgShiftsRedirectRoute,
+    adminOrgWeeksRedirectRoute,
+    adminOrgHolidaysRedirectRoute,
+    adminOrgHolidayDetailRedirectRoute,
+    adminOrgPositionsRedirectRoute,
     adminAttendanceSettingsRoute,
     adminLeaveSettingsRoute,
     adminLeavePoliciesRoute,

@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { getHolidayCalendars } from '../api/organization'
@@ -24,12 +23,15 @@ export function HolidayCalendarsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Holiday calendars" description="Calendars linked to office locations" />
+      <div>
+        <h2 className="text-title-lg font-semibold text-on-background">Holiday calendars</h2>
+        <p className="text-body-sm text-on-surface-variant mt-0.5">Calendars linked to office locations</p>
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {items.map((c) => (
           <Link
             key={c.id}
-            to="/admin/organization/holidays/$calendarId"
+            to="/admin/settings/holidays/$calendarId"
             params={{ calendarId: String(c.id) }}
             className="block bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm card-hover"
           >
