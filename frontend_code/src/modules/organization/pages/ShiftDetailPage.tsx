@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from '@tanstack/react-router'
+import { useNavigate, useParams, useRouterState } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
@@ -7,17 +7,35 @@ import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { getShifts } from '../api/organization'
 import type { ShiftRow } from '@/shared/schema'
 
+const emptyShift: ShiftRow = {
+  id: 0,
+  name: '',
+  start_time: '09:00:00',
+  end_time: '18:00:00',
+  is_overnight: false,
+  grace_late_minutes: 15,
+  flexible_end: false,
+  break_duration_minutes: 60,
+  is_archived: false,
+  created_at: '',
+  updated_at: '',
+  changed_by: 1,
+}
+
 export function ShiftDetailPage() {
-  const { shiftId } = useParams({ strict: false }) as { shiftId: string }
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const isNew = pathname.endsWith('/shifts/new')
+  const { shiftId } = useParams({ strict: false }) as { shiftId?: string }
   const navigate = useNavigate()
   const id = Number(shiftId)
-  const [shift, setShift] = useState<ShiftRow | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [shift, setShift] = useState<ShiftRow | null>(isNew ? emptyShift : null)
+  const [loading, setLoading] = useState(!isNew)
   const [error, setError] = useState<string | null>(null)
-  const [editing, setEditing] = useState(false)
-  const [draft, setDraft] = useState<Partial<ShiftRow>>({})
+  const [editing, setEditing] = useState(isNew)
+  const [draft, setDraft] = useState<Partial<ShiftRow>>(isNew ? emptyShift : {})
 
   useEffect(() => {
+    if (isNew) return
     setLoading(true)
     getShifts({ includeArchived: true })
       .then((r) => {
@@ -28,7 +46,7 @@ export function ShiftDetailPage() {
       })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false))
-  }, [id])
+  }, [id, isNew])
 
   if (loading) return <PageLoadingSkeleton />
   if (error || !shift) {
@@ -66,31 +84,41 @@ export function ShiftDetailPage() {
       <BackButton to="/admin/settings/shifts" label="Back to shifts" />
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
-          <h2 className="text-title-lg font-semibold text-on-background">{shift.name}</h2>
-          <p className="text-body-sm text-on-surface-variant mt-0.5">
-            {String(shift.start_time).slice(0, 5)} – {String(shift.end_time).slice(0, 5)}
-            {shift.is_overnight ? ' · Overnight' : ''}
-          </p>
+          <h2 className="text-title-lg font-semibold text-on-background">
+            {isNew ? 'Add shift' : shift.name || 'Shift'}
+          </h2>
+          {!isNew && (
+            <p className="text-body-sm text-on-surface-variant mt-0.5">
+              {String(shift.start_time).slice(0, 5)} – {String(shift.end_time).slice(0, 5)}
+              {shift.is_overnight ? ' · Overnight' : ''}
+            </p>
+          )}
         </div>
         {editing ? (
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setEditing(false)
-                setDraft(shift)
-              }}
-            >
-              Cancel
-            </Button>
+            {!isNew && (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setEditing(false)
+                  setDraft(shift)
+                }}
+              >
+                Cancel
+              </Button>
+            )}
             <Button
               variant="primary"
               onClick={() => {
+                if (isNew) {
+                  navigate({ to: '/admin/settings/shifts' })
+                  return
+                }
                 setShift({ ...shift, ...draft } as ShiftRow)
                 setEditing(false)
               }}
             >
-              Save
+              {isNew ? 'Create' : 'Save'}
             </Button>
           </div>
         ) : (
