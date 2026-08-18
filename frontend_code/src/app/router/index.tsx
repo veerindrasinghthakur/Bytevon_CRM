@@ -107,6 +107,7 @@ import {
   LocationsListPage,
   LocationDetailPage,
   ShiftsListPage,
+  ShiftDetailPage,
   WorkingWeeksPage,
   HolidayCalendarsPage,
   HolidaysListPage,
@@ -622,7 +623,6 @@ const adminRoleEditRoute = createRoute({
   component: RoleEditPage,
 })
 
-/** Admin Settings — horizontal nav + outlet */
 const adminSettingsLayoutRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/settings',
@@ -652,6 +652,16 @@ const adminSettingsShiftsRoute = createRoute({
   getParentRoute: () => adminSettingsLayoutRoute,
   path: '/shifts',
   component: ShiftsListPage,
+})
+const adminSettingsShiftNewRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/shifts/new',
+  component: ShiftDetailPage,
+})
+const adminSettingsShiftDetailRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/shifts/$shiftId',
+  component: ShiftDetailPage,
 })
 const adminSettingsWorkingWeeksRoute = createRoute({
   getParentRoute: () => adminSettingsLayoutRoute,
@@ -694,7 +704,6 @@ const adminSettingsOfficeEditRoute = createRoute({
   component: OfficeFormPage,
 })
 
-/** Legacy /admin/organization/* → /admin/settings/* */
 const adminOrgRedirectRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/organization',
@@ -758,7 +767,6 @@ const adminOrgPositionsRedirectRoute = createRoute({
   },
 })
 
-/** Attendance Settings — horizontal sub-nav */
 const adminAttendanceLayoutRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/attendance-settings',
@@ -770,7 +778,6 @@ const adminAttendanceIndexRoute = createRoute({
   component: AttendanceSettingsPage,
 })
 
-/** Leave Settings — types + policies (+ ledger) */
 const adminLeaveLayoutRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/leave-settings',
@@ -792,7 +799,6 @@ const adminLeaveLedgerRoute = createRoute({
   component: LeaveLedgerPage,
 })
 
-/** Legacy leave-policies / leave-ledger redirects */
 const adminLeavePoliciesLegacyRedirect = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/leave-policies',
@@ -918,6 +924,8 @@ const routeTree = rootRoute.addChildren([
       adminSettingsLocationsRoute,
       adminSettingsLocationDetailRoute,
       adminSettingsShiftsRoute,
+      adminSettingsShiftNewRoute,
+      adminSettingsShiftDetailRoute,
       adminSettingsWorkingWeeksRoute,
       adminSettingsHolidaysRoute,
       adminSettingsHolidayDetailRoute,
