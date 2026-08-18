@@ -42,6 +42,7 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
       { id: 'all-projects', label: 'All Projects', icon: 'account_tree', to: '/projects' },
       { id: 'teams', label: 'Teams', icon: 'groups', to: '/projects/teams' },
       { id: 'tasks', label: 'Tasks', icon: 'assignment', to: '/projects/tasks' },
+      { id: 'documents', label: 'Documents', icon: 'folder', to: '/projects/documents' },
     ],
   },
   workforce: {
@@ -143,6 +144,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
       )
     }
     if (to === '/projects') return pathname === '/projects'
+    if (to === '/projects/documents') return pathname === '/projects/documents'
     if (to === '/my-work') return pathname === '/my-work'
     if (to === '/approvals') return pathname === '/approvals'
     if (to === '/admin/users') {
