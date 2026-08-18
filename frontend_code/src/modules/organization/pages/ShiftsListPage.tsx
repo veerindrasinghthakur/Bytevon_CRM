@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { PageHeader } from '@/shared/components/layout/PageHeader'
+import { useNavigate } from '@tanstack/react-router'
+import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
@@ -8,6 +9,7 @@ import type { ShiftRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 
 export function ShiftsListPage() {
+  const navigate = useNavigate()
   const [items, setItems] = useState<ShiftRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -29,15 +31,42 @@ export function ShiftsListPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Shifts" description="Working shift templates used on employment assignments" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 className="text-title-lg font-semibold text-on-background">Shifts</h2>
+          <p className="text-body-sm text-on-surface-variant mt-0.5">
+            Working shift templates used on employment assignments
+          </p>
+        </div>
+        <Button
+          variant="primary"
+          size="sm"
+          leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
+          onClick={() => navigate({ to: '/admin/settings/shifts/new' })}
+        >
+          Add shift
+        </Button>
+      </div>
       {items.length === 0 ? (
-        <EmptyState title="No shifts" description="Create a shift to assign employees." />
+        <EmptyState
+          title="No shifts"
+          description="Create a shift to assign employees."
+          actionLabel="Add shift"
+          onAction={() => navigate({ to: '/admin/settings/shifts/new' })}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {items.map((s) => (
-            <div
+            <button
               key={s.id}
-              className="bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm card-hover"
+              type="button"
+              onClick={() =>
+                navigate({
+                  to: '/admin/settings/shifts/$shiftId',
+                  params: { shiftId: String(s.id) },
+                })
+              }
+              className="text-left bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm card-hover cursor-pointer"
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
@@ -50,7 +79,9 @@ export function ShiftsListPage() {
                 <span
                   className={cn(
                     'px-2.5 py-0.5 rounded-full text-[10px] font-bold',
-                    s.is_archived ? 'bg-surface-container text-on-surface-variant' : 'bg-secondary/15 text-secondary',
+                    s.is_archived
+                      ? 'bg-surface-container text-on-surface-variant'
+                      : 'bg-secondary/15 text-secondary',
                   )}
                 >
                   {s.is_archived ? 'ARCHIVED' : 'ACTIVE'}
@@ -70,7 +101,7 @@ export function ShiftsListPage() {
                   <p className="font-medium">{s.flexible_end ? 'Yes' : 'No'}</p>
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       )}

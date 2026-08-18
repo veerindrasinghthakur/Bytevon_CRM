@@ -2,8 +2,8 @@ import { Link, useRouterState } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
 
 export const LEAVE_SETTINGS_NAV = [
-  { id: 'general', label: 'Leave Types & Rules', icon: 'event_busy', to: '/admin/leave-settings' },
-  { id: 'policies', label: 'Leave Policies', icon: 'policy', to: '/admin/leave-settings/policies' },
+  { id: 'general', label: 'Types & Rules', icon: 'event_busy', to: '/admin/leave-settings' },
+  { id: 'policies', label: 'Policies', icon: 'policy', to: '/admin/leave-settings/policies' },
 ] as const
 
 export function LeaveSettingsNav() {
@@ -21,30 +21,31 @@ export function LeaveSettingsNav() {
 
   return (
     <nav
-      className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-x-auto"
+      className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm scrollbar-hide"
       aria-label="Leave settings sections"
     >
-      <ul className="flex flex-row items-stretch min-w-max">
+      <ul className="flex flex-row items-stretch">
         {LEAVE_SETTINGS_NAV.map((item) => {
           const active = isActive(item.to)
           return (
-            <li key={item.id} className="shrink-0">
+            <li key={item.id} className="flex-1">
               <Link
                 to={item.to}
+                title={item.label}
                 className={cn(
-                  'flex items-center gap-2 px-4 py-3 text-body-sm border-b-2 transition-colors duration-200 whitespace-nowrap',
+                  'flex flex-col items-center justify-center gap-1 px-3 py-2.5 text-[11px] border-b-2 transition-colors duration-200',
                   active
                     ? 'border-secondary text-secondary font-semibold bg-secondary/5'
                     : 'border-transparent text-on-surface-variant hover:bg-surface-container-low hover:text-on-background',
                 )}
               >
                 <span
-                  className="material-symbols-outlined text-[20px] shrink-0"
+                  className="material-symbols-outlined text-[22px]"
                   style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
                 >
                   {item.icon}
                 </span>
-                <span>{item.label}</span>
+                <span className="hidden sm:block">{item.label}</span>
               </Link>
             </li>
           )

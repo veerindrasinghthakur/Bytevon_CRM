@@ -17,11 +17,15 @@ export function OrganizationProfileSection() {
   const set = (k: keyof typeof form, v: string) => setForm((p) => ({ ...p, [k]: v }))
 
   return (
-    <SettingsCard
-      title="Organization Information"
-      description="Manage the primary organization information."
-      action={
-        editing ? (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h2 className="text-title-lg font-semibold text-on-background">Organization Information</h2>
+          <p className="text-body-sm text-on-surface-variant mt-0.5">
+            Primary organization identity. Fields unlock when you enter edit mode.
+          </p>
+        </div>
+        {editing ? (
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => setEditing(false)}>
               Cancel
@@ -31,21 +35,22 @@ export function OrganizationProfileSection() {
             </Button>
           </div>
         ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>}
+          <button
+            type="button"
             onClick={() => setEditing(true)}
+            className="p-2 rounded-lg border border-outline-variant text-on-surface-variant hover:text-secondary hover:border-secondary transition-colors"
+            aria-label="Edit organization"
+            title="Edit"
           >
-            Edit
-          </Button>
-        )
-      }
-    >
-      <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-8">
-        <div className="space-y-4">
-          <label className="block font-label-md text-on-surface-variant">Organization Logo</label>
-          <div className="relative w-32 h-32 border border-outline-variant rounded-lg overflow-hidden bg-surface-container-low flex items-center justify-center">
+            <span className="material-symbols-outlined text-[22px]">edit</span>
+          </button>
+        )}
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-8">
+        <div className="shrink-0 space-y-3">
+          <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Logo</p>
+          <div className="w-28 h-28 rounded-xl bg-surface-container-low flex items-center justify-center border border-dashed border-outline-variant">
             <span className="material-symbols-outlined text-4xl text-outline">image</span>
           </div>
           {editing && (
@@ -54,55 +59,29 @@ export function OrganizationProfileSection() {
             </button>
           )}
         </div>
-        <div className="md:col-span-2 xl:col-span-3 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          <Field label="Organization Name" value={form.name} readOnly={!editing} onChange={(v) => set('name', v)} />
-          <Field label="Legal Name" value={form.legal} readOnly={!editing} onChange={(v) => set('legal', v)} />
-          <Field label="Organization Email" value={form.email} type="email" readOnly={!editing} onChange={(v) => set('email', v)} />
-          <Field label="Primary Contact Number" value={form.phone} type="tel" readOnly={!editing} onChange={(v) => set('phone', v)} />
-          <Field label="Website" value={form.website} type="url" readOnly={!editing} onChange={(v) => set('website', v)} />
-          <Field label="Tax Identification Number" value={form.tax} readOnly={!editing} onChange={(v) => set('tax', v)} />
-          <Field label="Business Registration Number" value={form.reg} readOnly={!editing} onChange={(v) => set('reg', v)} />
-          <div className="md:col-span-2 space-y-1">
-            <label className="text-xs font-bold text-on-surface-variant uppercase">Organization Description</label>
-            <textarea
-              readOnly={!editing}
-              value={form.description}
-              onChange={(e) => set('description', e.target.value)}
-              className={cn(
-                'w-full border border-outline-variant rounded px-3 py-2 text-sm h-20 outline-none',
-                editing
-                  ? 'bg-white focus:border-secondary focus:ring-1 focus:ring-secondary/30'
-                  : 'bg-surface-container-low cursor-default',
-              )}
-            />
+
+        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+          <Field label="Organization Name" value={form.name} editing={editing} onChange={(v) => set('name', v)} />
+          <Field label="Legal Name" value={form.legal} editing={editing} onChange={(v) => set('legal', v)} />
+          <Field label="Email" value={form.email} editing={editing} onChange={(v) => set('email', v)} />
+          <Field label="Phone" value={form.phone} editing={editing} onChange={(v) => set('phone', v)} />
+          <Field label="Website" value={form.website} editing={editing} onChange={(v) => set('website', v)} />
+          <Field label="Tax ID" value={form.tax} editing={editing} onChange={(v) => set('tax', v)} />
+          <Field label="Registration No." value={form.reg} editing={editing} onChange={(v) => set('reg', v)} />
+          <div className="sm:col-span-2">
+            <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Description</p>
+            {editing ? (
+              <textarea
+                value={form.description}
+                onChange={(e) => set('description', e.target.value)}
+                className="w-full min-h-[88px] rounded-lg border border-outline-variant bg-white px-3 py-2 text-body-sm outline-none focus:border-secondary"
+              />
+            ) : (
+              <p className="text-body-md text-on-background">{form.description}</p>
+            )}
           </div>
         </div>
       </div>
-    </SettingsCard>
-  )
-}
-
-function SettingsCard({
-  title,
-  description,
-  action,
-  children,
-}: {
-  title: string
-  description: string
-  action?: React.ReactNode
-  children: React.ReactNode
-}) {
-  return (
-    <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden transition-shadow hover:shadow-md">
-      <div className="px-6 py-5 border-b border-outline-variant flex flex-wrap justify-between items-start gap-4">
-        <div>
-          <h3 className="text-title-lg font-semibold text-on-surface">{title}</h3>
-          <p className="text-body-sm text-on-surface-variant mt-0.5">{description}</p>
-        </div>
-        {action}
-      </div>
-      <div className="p-6">{children}</div>
     </div>
   )
 }
@@ -110,31 +89,26 @@ function SettingsCard({
 function Field({
   label,
   value,
-  type = 'text',
-  readOnly = false,
+  editing,
   onChange,
 }: {
   label: string
-  value?: string
-  type?: string
-  readOnly?: boolean
-  onChange?: (v: string) => void
+  value: string
+  editing: boolean
+  onChange: (v: string) => void
 }) {
   return (
-    <div className="space-y-1">
-      <label className="text-xs font-bold text-on-surface-variant uppercase">{label}</label>
-      <input
-        type={type}
-        value={value}
-        readOnly={readOnly}
-        onChange={(e) => onChange?.(e.target.value)}
-        className={cn(
-          'w-full border border-outline-variant rounded px-3 py-2 text-sm outline-none transition-all',
-          readOnly
-            ? 'bg-surface-container-low text-on-surface cursor-default'
-            : 'bg-white focus:border-secondary focus:ring-1 focus:ring-secondary/30',
-        )}
-      />
+    <div>
+      <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">{label}</p>
+      {editing ? (
+        <input
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-body-sm outline-none focus:border-secondary"
+        />
+      ) : (
+        <p className={cn('text-body-md font-medium text-on-background')}>{value || '—'}</p>
+      )}
     </div>
   )
 }

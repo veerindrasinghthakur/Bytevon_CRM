@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { SessionStatus, DeviceType } from '@/shared/schema'
@@ -59,6 +60,7 @@ export function ActiveSessionsPage() {
 
   return (
     <div className="space-y-6">
+      <BackButton to="/profile" label="Back to profile" />
       <PageHeader
         title="Active sessions"
         description="Manage signed-in devices. Revoking ends refresh tokens for that session."
