@@ -1,6 +1,5 @@
 import { useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
-import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { LeaveType } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 
@@ -37,13 +36,15 @@ export function LeaveLedgerPage() {
   return (
     <div className="space-y-6">
       <BackButton
-        to={employeeId ? `/workforce/employees/${employeeId}` : '/admin/leave-policies'}
+        to={employeeId ? `/workforce/employees/${employeeId}` : '/admin/leave-settings/policies'}
         label="Back"
       />
-      <PageHeader
-        title="Leave ledger"
-        description="Append-only balance history — current balance is SUM of days"
-      />
+      <div>
+        <h2 className="text-title-lg font-semibold text-on-background">Leave ledger</h2>
+        <p className="text-body-sm text-on-surface-variant mt-0.5">
+          Append-only balance history — current balance is SUM of days
+        </p>
+      </div>
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
         <table className="w-full text-left">
           <thead>
