@@ -3,8 +3,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { AdminSettingsNav } from '../components/AdminSettingsNav'
 
 /**
- * Shared shell for all /admin/settings/* pages:
- * vertical settings nav + content outlet.
+ * Shared shell for /admin/settings/* — horizontal (row-wise) nav + content.
  */
 export function AdminSettingsLayout() {
   return (
@@ -13,11 +12,9 @@ export function AdminSettingsLayout() {
         title="Administration Settings"
         description="Organization identity, offices, shifts, holidays, and regional policies."
       />
-      <div className="flex flex-col md:flex-row gap-6 items-start">
-        <AdminSettingsNav />
-        <div className="flex-1 min-w-0 w-full">
-          <Outlet />
-        </div>
+      <AdminSettingsNav />
+      <div className="min-w-0 w-full">
+        <Outlet />
       </div>
     </div>
   )

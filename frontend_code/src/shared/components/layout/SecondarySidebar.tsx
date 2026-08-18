@@ -94,7 +94,6 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
       { id: 'settings', label: 'Settings', icon: 'settings', to: '/admin/settings' },
       { id: 'attendance-settings', label: 'Attendance Settings', icon: 'timer', to: '/admin/attendance-settings' },
       { id: 'leave-settings', label: 'Leave Settings', icon: 'event_busy', to: '/admin/leave-settings' },
-      { id: 'leave-policies', label: 'Leave policies', icon: 'policy', to: '/admin/leave-policies' },
       { id: 'audit', label: 'Audit Logs', icon: 'receipt_long', to: '/admin/audit' },
       { id: 'security', label: 'Security Center', icon: 'security', to: '/admin/security' },
     ],
@@ -146,6 +145,12 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
     }
     if (to === '/admin/settings') {
       return pathname === '/admin/settings' || pathname.startsWith('/admin/settings/')
+    }
+    if (to === '/admin/leave-settings') {
+      return pathname.startsWith('/admin/leave-settings')
+    }
+    if (to === '/admin/attendance-settings') {
+      return pathname.startsWith('/admin/attendance-settings')
     }
     if (to === '/dashboard') return pathname === '/dashboard'
     if (to === '/payroll') return pathname === '/payroll'
