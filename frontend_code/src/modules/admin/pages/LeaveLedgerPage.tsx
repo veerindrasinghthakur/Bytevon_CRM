@@ -34,7 +34,7 @@ export function LeaveLedgerPage() {
   const { employeeId } = useParams({ strict: false }) as { employeeId?: string }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <BackButton
         to={employeeId ? `/workforce/employees/${employeeId}` : '/admin/leave-settings/policies'}
         label="Back"
@@ -45,7 +45,7 @@ export function LeaveLedgerPage() {
           Append-only balance history — current balance is SUM of days
         </p>
       </div>
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+      <div className="bv-surface overflow-hidden">
         <table className="w-full text-left">
           <thead>
             <tr className="bg-surface-container-low border-b border-outline-variant">
@@ -58,7 +58,7 @@ export function LeaveLedgerPage() {
           </thead>
           <tbody>
             {LEDGER.map((r) => (
-              <tr key={r.id} className="border-b border-outline-variant last:border-0 bv-row-hover">
+              <tr key={r.id} className="border-b border-outline-variant last:border-0 zebra-row">
                 <td className="px-5 py-3 text-body-sm">{r.created_at}</td>
                 <td className="px-5 py-3 text-body-sm">{r.leave_type}</td>
                 <td className="px-5 py-3 text-body-sm">{r.transaction_type}</td>
