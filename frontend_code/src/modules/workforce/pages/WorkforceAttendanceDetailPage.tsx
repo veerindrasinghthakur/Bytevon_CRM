@@ -18,7 +18,7 @@ export function WorkforceAttendanceDetailPage() {
   const row = todayAttendance.find((r) => r.id === attendanceId) ?? todayAttendance[0]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title={row.name}
         description={`${row.department} · attendance detail`}
@@ -43,17 +43,14 @@ export function WorkforceAttendanceDetailPage() {
           { label: 'Check out', value: row.checkOut },
           { label: 'Hours', value: row.hours },
         ].map((c) => (
-          <div
-            key={c.label}
-            className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-4 shadow-sm"
-          >
+          <div key={c.label} className="bv-surface card-hover p-4">
             <p className="text-caption text-on-surface-variant">{c.label}</p>
             <p className="text-headline-md font-semibold mt-1">{c.value}</p>
           </div>
         ))}
       </div>
 
-      <section className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm">
+      <section className="bv-surface p-5">
         <h2 className="text-title-md font-semibold mb-3">Punch log</h2>
         <ul className="divide-y divide-outline-variant/20">
           {attendanceLogs.map((l, i) => (
@@ -71,7 +68,7 @@ export function WorkforceAttendanceDetailPage() {
         </ul>
       </section>
 
-      <section className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm">
+      <section className="bv-surface p-5">
         <h2 className="text-title-md font-semibold mb-2">Geolocation</h2>
         <p className="text-body-sm text-on-surface-variant">
           Punch in/out matched corporate headquarters within 15 meters.
