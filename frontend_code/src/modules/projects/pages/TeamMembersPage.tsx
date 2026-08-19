@@ -19,7 +19,7 @@ export function ProjectTeamMembersPage() {
 
   if (isLoading || !team) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 animate-fade-in">
         <Skeleton className="h-10 w-64" />
         <Skeleton className="h-40 w-full" />
       </div>
@@ -27,7 +27,7 @@ export function ProjectTeamMembersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title={`${team.name} · Members`}
         description="Team roster"
@@ -49,7 +49,7 @@ export function ProjectTeamMembersPage() {
         }
       />
 
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-subtle overflow-hidden">
+      <div className="bv-surface overflow-hidden">
         <table className="w-full text-left">
           <thead>
             <tr className="bg-surface-container-low/50 border-b border-outline-variant">
@@ -66,7 +66,7 @@ export function ProjectTeamMembersPage() {
           </thead>
           <tbody className="divide-y divide-outline-variant/30">
             {MOCK_MEMBERS.map((m) => (
-              <tr key={m.id} className="hover:bg-surface-container-low/40">
+              <tr key={m.id} className="zebra-row">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
