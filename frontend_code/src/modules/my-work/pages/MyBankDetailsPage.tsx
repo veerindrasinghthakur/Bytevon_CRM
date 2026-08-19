@@ -61,7 +61,7 @@ export function MyBankDetailsPage() {
       'w-full rounded-lg border px-3 py-2.5 text-body-md outline-none transition-colors',
       disabled
         ? 'bg-surface-container-low border-outline-variant text-deep-navy cursor-default'
-        : 'bg-surface-container-lowest border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary text-deep-navy'
+        : 'bg-surface-container-lowest border-outline-variant focus:border-secondary focus:ring-2 focus:ring-secondary/30 text-deep-navy'
     )
 
   const validate = (data: BankDetailsForm) => {
@@ -105,8 +105,7 @@ export function MyBankDetailsPage() {
   }, [saved])
 
   return (
-    <div className="space-y-8 max-w-[960px]">
-      {/* Breadcrumb */}
+    <div className="space-y-8 max-w-[960px] animate-fade-in">
       <div className="flex items-center gap-2 text-on-surface-variant text-label-md">
         <button
           type="button"
@@ -183,8 +182,7 @@ export function MyBankDetailsPage() {
         </div>
       )}
 
-      {/* Employee chip */}
-      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <section className="bv-surface p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center font-bold text-primary">
             {currentUser.firstName.slice(0, 1)}
@@ -213,9 +211,8 @@ export function MyBankDetailsPage() {
         </span>
       </section>
 
-      {/* Empty state (read, no data) */}
       {!saved && !isEditing && (
-        <section className="bg-surface-container-lowest rounded-xl border border-dashed border-outline-variant p-10 text-center">
+        <section className="bv-surface border-dashed p-10 text-center">
           <div className="mx-auto w-14 h-14 rounded-full bg-surface-container flex items-center justify-center mb-4">
             <span className="material-symbols-outlined text-[28px] text-secondary">account_balance</span>
           </div>
@@ -234,9 +231,8 @@ export function MyBankDetailsPage() {
         </section>
       )}
 
-      {/* Form / read panel */}
       {(saved || isEditing) && (
-        <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+        <section className="bv-surface overflow-hidden">
           <div className="px-6 py-4 border-b border-outline-variant bg-surface-container-low flex items-center justify-between">
             <h2 className="text-title-lg font-semibold text-deep-navy flex items-center gap-2">
               <span className="material-symbols-outlined text-secondary">account_balance</span>
