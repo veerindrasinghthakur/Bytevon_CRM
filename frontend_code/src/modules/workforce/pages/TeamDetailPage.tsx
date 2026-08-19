@@ -31,7 +31,7 @@ export function TeamDetailPage() {
   const projects = projectsFor(t.id).filter((p) => p.status === 'Active').slice(0, 2)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <BackButton to="/workforce/teams" label="Back to Teams" />
         <DynamicRouteCrumbs className="mt-2 mb-2" lastLabel={t.name} />
@@ -41,7 +41,7 @@ export function TeamDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8 space-y-6">
           {t.mission && (
-            <div className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant shadow-sm">
+            <div className="bv-surface p-5">
               <h2 className="text-headline-md font-semibold mb-3 flex items-center gap-2">
                 <Icon name="flag" className="text-secondary" /> Team Mission
               </h2>
@@ -49,8 +49,7 @@ export function TeamDetailPage() {
             </div>
           )}
 
-          {/* Full members list on team detail (UI requirement) */}
-          <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+          <div className="bv-surface overflow-hidden">
             <div className="p-5 flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant">
               <h2 className="text-headline-md font-semibold flex items-center gap-2">
                 <Icon name="groups" className="text-secondary" /> Team Members
@@ -88,7 +87,7 @@ export function TeamDetailPage() {
               </thead>
               <tbody className="divide-y divide-outline-variant/30">
                 {previewMembers.map((m) => (
-                  <tr key={m.id} className="hover:bg-surface-container-low/40">
+                  <tr key={m.id} className="zebra-row">
                     <td className="px-5 py-3">
                       <Link
                         to="/workforce/employees/$employeeId"
@@ -147,7 +146,7 @@ export function TeamDetailPage() {
             )}
           </div>
 
-          <div className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant shadow-sm">
+          <div className="bv-surface p-5">
             <div className="flex justify-between mb-4">
               <h2 className="text-headline-md font-semibold flex items-center gap-2">
                 <Icon name="account_tree" className="text-secondary" /> Active Projects
@@ -170,7 +169,7 @@ export function TeamDetailPage() {
                     key={p.id}
                     to="/projects/$projectId"
                     params={{ projectId: routeId }}
-                    className="block border border-outline-variant rounded-lg p-4 hover:border-secondary transition-colors"
+                    className="block border border-outline-variant rounded-lg p-4 hover:border-secondary transition-colors card-hover"
                   >
                     <div className="flex justify-between mb-2">
                       <div>
@@ -195,7 +194,7 @@ export function TeamDetailPage() {
         </div>
 
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant shadow-sm">
+          <div className="bv-surface p-5">
             <h2 className="text-headline-md font-semibold mb-4 flex items-center gap-2">
               <Icon name="history" className="text-secondary" /> Recent Activity
             </h2>
