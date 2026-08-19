@@ -7,9 +7,10 @@ interface PageHeaderProps {
   description?: string
   breadcrumbs?: ReactNode
   actions?: ReactNode
-  /** Show back control above title (create/detail pages) */
+  /** Show back control above title (detail/create/edit only — not nav root pages) */
   showBack?: boolean
   backTo?: string
+  /** Always defaults to "Back" — do not pass destination names */
   backLabel?: string
   className?: string
 }
@@ -28,13 +29,13 @@ export function PageHeader({
     <div
       className={cn(
         'mb-section-gap flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between',
-        className
+        className,
       )}
     >
       <div className="min-w-0">
         {showBack && (
           <div className="mb-2">
-            <BackButton to={backTo} label={backLabel} />
+            <BackButton to={backTo} label="Back" />
           </div>
         )}
         {breadcrumbs && <div className="mb-1">{breadcrumbs}</div>}

@@ -47,6 +47,7 @@ export function MyTasksPage() {
 
   return (
     <div className="space-y-6">
+      {/* Nav-root page: no back button */}
       <PageHeader
         title="My Tasks"
         description="Tasks assigned to you — or create your own."
@@ -60,6 +61,26 @@ export function MyTasksPage() {
           </Button>
         }
       />
+
+      {/* Clear control ABOVE metric cards — fixed height so list does not jump */}
+      <div className="flex items-center justify-end min-h-[32px]">
+        {filter ? (
+          <button
+            type="button"
+            onClick={() => setFilter(null)}
+            className="inline-flex items-center gap-1.5 text-label-md text-on-surface-variant hover:text-on-surface rounded-md px-2 py-1"
+            aria-label="Clear filter"
+            title="Clear filter"
+          >
+            <span className="material-symbols-outlined text-[20px]">filter_alt_off</span>
+            <span>Clear filter</span>
+          </button>
+        ) : (
+          <span className="invisible text-label-md px-2 py-1" aria-hidden>
+            Clear filter
+          </span>
+        )}
+      </div>
 
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <button
@@ -87,21 +108,6 @@ export function MyTasksPage() {
           <p className="text-headline-md font-bold text-error">{high}</p>
         </button>
       </section>
-
-      {filter && (
-        <div className="flex items-center justify-end">
-          <button
-            type="button"
-            onClick={() => setFilter(null)}
-            className="inline-flex items-center gap-1.5 text-label-md text-on-surface-variant hover:text-on-surface rounded-md px-2 py-1"
-            aria-label="Clear filter"
-            title="Clear filter"
-          >
-            <span className="material-symbols-outlined text-[20px]">filter_alt_off</span>
-            <span>Clear filter</span>
-          </button>
-        </div>
-      )}
 
       <section className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
         <div className="px-6 py-4 border-b border-outline-variant">
@@ -131,14 +137,16 @@ export function MyTasksPage() {
                 <tr
                   key={task.id}
                   className="hover:bg-secondary/5 cursor-pointer"
-                  onClick={() => navigate({ to: '/my-work/tasks/$taskId', params: { taskId: task.id } })}
+                  onClick={() =>
+                    navigate({ to: '/my-work/tasks/$taskId', params: { taskId: task.id } })
+                  }
                 >
-                  <td className="px-6 py-4 text-label-md font-semibold text-on-background text-secondary">
-                    {task.name}
-                  </td>
+                  <td className="px-6 py-4 text-label-md font-semibold text-secondary">{task.name}</td>
                   <td className="px-6 py-4 text-label-md text-on-surface-variant">{task.project ?? '—'}</td>
                   <td className="px-6 py-4">
-                    <span className={`px-2.5 py-0.5 rounded-full text-label-sm font-bold ${priorityClass[task.priority]}`}>
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-label-sm font-bold ${priorityClass[task.priority]}`}
+                    >
                       {task.priority}
                     </span>
                   </td>

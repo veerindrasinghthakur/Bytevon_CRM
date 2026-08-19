@@ -1,72 +1,79 @@
+import { cn } from '@/shared/lib/cn'
 import type { ReactNode } from 'react'
 import { Button } from '@/shared/components/ui/Button'
-import { cn } from '@/shared/lib/cn'
 
 interface ListToolbarProps {
-  search: string
+  /** Preferred prop */
+  searchValue?: string
+  /** Alias used by older pages */
+  search?: string
   onSearchChange: (value: string) => void
   searchPlaceholder?: string
-  /** True when any non-default filter is active (not counting empty search if you prefer) */
-  filtersActive: boolean
-  onResetFilters: () => void
+  filterSlot?: ReactNode
+  actionsSlot?: ReactNode
+  /** Children treated as filter controls (legacy API) */
   children?: ReactNode
+  filtersActive?: boolean
+  onResetFilters?: () => void
   onRefresh?: () => void
   className?: string
 }
 
+/** Search left · filters right — supports legacy children API */
 export function ListToolbar({
+  searchValue,
   search,
   onSearchChange,
   searchPlaceholder = 'Search…',
+  filterSlot,
+  actionsSlot,
+  children,
   filtersActive,
   onResetFilters,
-  children,
   onRefresh,
   className,
 }: ListToolbarProps) {
+  const value = searchValue ?? search ?? ''
+  const filters = filterSlot ?? children
+
   return (
-    <section className={cn('flex flex-wrap items-center gap-4', className)}>
-      <div className="flex items-center flex-1 min-w-[200px] max-w-sm bg-surface-container-lowest border border-outline-variant/50 rounded-lg px-3 py-2 focus-within:border-electric-blue focus-within:ring-1 focus-within:ring-electric-blue">
-        <span className="material-symbols-outlined text-on-surface-variant mr-2 text-lg">search</span>
+    <div className={cn('flex flex-wrap items-center gap-3', className)}>
+      <div className="relative min-w-[200px] flex-1 max-w-md">
+        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
+          search
+        </span>
         <input
-          type="search"
-          placeholder={searchPlaceholder}
-          value={search}
+          value={value}
           onChange={(e) => onSearchChange(e.target.value)}
-          className="bg-transparent border-none outline-none text-body-sm w-full text-on-background placeholder:text-on-surface-variant"
+          placeholder={searchPlaceholder}
+          className={cn(
+            'w-full pl-10 pr-4 py-2',
+            'bg-surface-container-lowest border border-outline-variant/50 rounded-lg',
+            'text-body-md text-on-surface placeholder:text-on-surface-variant/50',
+            'transition-interactive',
+            'focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary',
+          )}
         />
-        {search && (
-          <button
-            type="button"
-            className="text-on-surface-variant hover:text-on-background p-0.5"
-            aria-label="Clear search"
-            onClick={() => onSearchChange('')}
-          >
-            <span className="material-symbols-outlined text-[18px]">close</span>
-          </button>
-        )}
       </div>
-
-      <div className="flex flex-wrap items-center gap-3 ml-auto">
-        {children}
-
-        {filtersActive && (
-          <Button type="button" variant="ghost" size="sm" onClick={onResetFilters}>
+      <div className="flex flex-wrap items-center gap-2 ml-auto">
+        {filters}
+        {actionsSlot}
+        {filtersActive && onResetFilters && (
+          <Button variant="ghost" size="sm" onClick={onResetFilters}>
             Reset
           </Button>
         )}
-
         {onRefresh && (
           <button
             type="button"
             onClick={onRefresh}
-            className="p-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface-variant hover:text-electric-blue"
+            className="p-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface-variant hover:text-primary hover:border-primary transition-colors"
             aria-label="Refresh"
           >
-            <span className="material-symbols-outlined">refresh</span>
+            <span className="material-symbols-outlined text-[20px]">refresh</span>
           </button>
         )}
       </div>
-    </section>
+    </div>
   )
 }
