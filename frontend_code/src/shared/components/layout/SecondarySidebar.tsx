@@ -63,6 +63,16 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
       { id: 'my-approvals', label: 'My Approvals', icon: 'fact_check', to: '/my-work/approvals' },
     ],
   },
+  notifications: {
+    moduleId: 'notifications',
+    title: 'Notifications',
+    items: [
+      { id: 'inbox', label: 'Inbox', icon: 'inbox', to: '/notifications' },
+      { id: 'compose', label: 'Compose', icon: 'edit_note', to: '/notifications/compose' },
+      { id: 'sent', label: 'Sent', icon: 'send', to: '/notifications/sent' },
+      { id: 'settings', label: 'Settings', icon: 'tune', to: '/notifications/settings' },
+    ],
+  },
   approvals: {
     moduleId: 'approvals',
     title: 'Approvals',
@@ -89,6 +99,7 @@ function getActiveModule(pathname: string): string {
   if (pathname.startsWith('/projects')) return 'projects'
   if (pathname.startsWith('/workforce')) return 'workforce'
   if (pathname.startsWith('/my-work')) return 'my-work'
+  if (pathname.startsWith('/notifications')) return 'notifications'
   if (pathname.startsWith('/approvals')) return 'approvals'
   if (pathname.startsWith('/admin')) return 'admin'
   return 'dashboard'
@@ -131,6 +142,9 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
     }
     if (to === '/workforce/shifts') {
       return pathname === '/workforce/shifts' || pathname.startsWith('/workforce/shifts/')
+    }
+    if (to === '/notifications') {
+      return pathname === '/notifications'
     }
     if (to === '/my-work/attendance') {
       return (
