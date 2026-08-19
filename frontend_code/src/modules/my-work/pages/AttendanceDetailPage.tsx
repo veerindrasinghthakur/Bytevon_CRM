@@ -20,7 +20,7 @@ export function AttendanceDetailPage() {
 
   if (!record) {
     return (
-      <div>
+      <div className="animate-fade-in">
         <PageHeader title="Attendance details" showBack />
         <p className="text-body-md text-on-surface-variant">Record not found.</p>
       </div>
@@ -28,7 +28,7 @@ export function AttendanceDetailPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <PageHeader
         title={`Attendance · ${record.date}`}
         description={`${currentUser.name} · ${currentUser.employeeId}`}
@@ -45,9 +45,8 @@ export function AttendanceDetailPage() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
-        {/* Main */}
         <div className="lg:col-span-2 space-y-6">
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+          <section className="bv-surface p-6">
             <h3 className="text-title-lg text-on-background mb-4">Overview</h3>
             <p className="text-body-md text-on-surface-variant">
               {record.note
@@ -70,7 +69,7 @@ export function AttendanceDetailPage() {
             </div>
           </section>
 
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+          <section className="bv-surface p-6">
             <h3 className="text-title-lg text-on-background mb-3">Timeline</h3>
             <ul className="space-y-3">
               <li className="flex gap-3 text-body-md">
@@ -91,16 +90,15 @@ export function AttendanceDetailPage() {
           </section>
         </div>
 
-        {/* Right overview sidebar */}
         <div className="space-y-4">
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+          <section className="bv-surface p-6">
             <h3 className="text-label-md text-on-surface-variant uppercase tracking-wider mb-3">Status</h3>
             <span className={`inline-flex px-2.5 py-1 rounded-full text-label-sm font-semibold ${statusStyles[record.status]}`}>
               {record.status}
             </span>
           </section>
 
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 space-y-4">
+          <section className="bv-surface p-6 space-y-4">
             <div>
               <p className="text-label-sm text-on-surface-variant">Date</p>
               <p className="text-body-md text-on-surface mt-0.5">{record.date}</p>
@@ -119,7 +117,7 @@ export function AttendanceDetailPage() {
             </div>
           </section>
 
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+          <section className="bv-surface p-4">
             <Button
               variant="outline"
               className="w-full"
