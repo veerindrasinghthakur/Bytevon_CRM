@@ -46,6 +46,7 @@ import { EmployeeCreatePage } from '@/modules/workforce/pages/EmployeeCreatePage
 import { EmployeeDetailPage } from '@/modules/workforce/pages/EmployeeDetailPage'
 import { DepartmentsListPage } from '@/modules/workforce/pages/DepartmentsListPage'
 import { DepartmentCreatePage } from '@/modules/workforce/pages/DepartmentCreatePage'
+import { DepartmentDetailPage } from '@/modules/workforce/pages/DepartmentDetailPage'
 import { WorkforceRosterPage } from '@/modules/workforce/pages/WorkforceRosterPage'
 import { AttendanceDayDetailPage } from '@/modules/workforce/pages/AttendanceDayDetailPage'
 import { ChangeAssignmentPage } from '@/modules/workforce/pages/ChangeAssignmentPage'
@@ -405,6 +406,43 @@ const workforceDepartmentsNewRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/workforce/departments/new',
   component: DepartmentCreatePage,
+})
+const workforceDepartmentDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/departments/$departmentId',
+  component: DepartmentDetailPage,
+})
+/** Teams shared with Projects module */
+const workforceTeamsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/teams',
+  component: TeamsListPage,
+})
+const workforceTeamsNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/teams/new',
+  component: TeamCreatePage,
+})
+const workforceTeamDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/teams/$teamId',
+  component: TeamDetailPage,
+})
+/** Shifts — same pages as Admin Settings */
+const workforceShiftsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/shifts',
+  component: ShiftsListPage,
+})
+const workforceShiftNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/shifts/new',
+  component: ShiftDetailPage,
+})
+const workforceShiftDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/shifts/$shiftId',
+  component: ShiftDetailPage,
 })
 const workforceAttendanceRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
@@ -877,6 +915,13 @@ const routeTree = rootRoute.addChildren([
     workforceChangeAssignmentRoute,
     workforceDepartmentsRoute,
     workforceDepartmentsNewRoute,
+    workforceDepartmentDetailRoute,
+    workforceTeamsRoute,
+    workforceTeamsNewRoute,
+    workforceTeamDetailRoute,
+    workforceShiftsRoute,
+    workforceShiftNewRoute,
+    workforceShiftDetailRoute,
     workforceAttendanceRoute,
     workforceAttendanceDayRoute,
     payrollRoute,
