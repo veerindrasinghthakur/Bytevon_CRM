@@ -25,9 +25,9 @@ export function ShiftCreatePage() {
 
   if (!canCreateShift) {
     return (
-      <div className="space-y-4 max-w-lg">
+      <div className="space-y-4 max-w-lg animate-fade-in">
         <BackButton to="/workforce/shifts" label="Back to shifts" />
-        <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-8 text-center">
+        <div className="bv-surface p-8 text-center">
           <Icon name="lock" className="text-4xl text-on-surface-variant mb-3" />
           <h1 className="text-headline-md font-semibold">Permission required</h1>
           <p className="text-body-md text-on-surface-variant mt-2">
@@ -42,7 +42,7 @@ export function ShiftCreatePage() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6 max-w-2xl animate-fade-in">
       <div>
         <BackButton to="/workforce/shifts" label="Back to shifts" />
         <RouteCrumbs
@@ -58,7 +58,7 @@ export function ShiftCreatePage() {
       </div>
 
       <form
-        className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 space-y-4 shadow-sm"
+        className="bv-surface p-6 space-y-4"
         onSubmit={(e) => {
           e.preventDefault()
           navigate({ to: '/workforce/shifts' })
@@ -70,7 +70,7 @@ export function ShiftCreatePage() {
             required
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2"
+            className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none transition-colors"
             placeholder="General Day"
           />
         </label>
@@ -80,18 +80,18 @@ export function ShiftCreatePage() {
             required
             value={code}
             onChange={(e) => setCode(e.target.value)}
-            className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2"
+            className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none transition-colors"
             placeholder="SHIFT-DAY"
           />
         </label>
         <div className="grid grid-cols-2 gap-3">
           <label className="block text-body-sm">
             <span className="text-on-surface-variant">Start</span>
-            <input type="time" value={start} onChange={(e) => setStart(e.target.value)} className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2" />
+            <input type="time" value={start} onChange={(e) => setStart(e.target.value)} className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 focus:ring-2 focus:ring-secondary/30 outline-none transition-colors" />
           </label>
           <label className="block text-body-sm">
             <span className="text-on-surface-variant">End</span>
-            <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2" />
+            <input type="time" value={end} onChange={(e) => setEnd(e.target.value)} className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 focus:ring-2 focus:ring-secondary/30 outline-none transition-colors" />
           </label>
         </div>
         <label className="block text-body-sm">
@@ -101,12 +101,12 @@ export function ShiftCreatePage() {
             min={0}
             value={breakMin}
             onChange={(e) => setBreakMin(Number(e.target.value))}
-            className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2"
+            className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
           />
         </label>
         <label className="block text-body-sm">
           <span className="text-on-surface-variant">Working days</span>
-          <input value={days} onChange={(e) => setDays(e.target.value)} className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2" />
+          <input value={days} onChange={(e) => setDays(e.target.value)} className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 focus:ring-2 focus:ring-secondary/30 outline-none transition-colors" />
         </label>
         <div className="flex justify-end gap-2 pt-2 border-t border-outline-variant">
           <Button type="button" variant="outline" onClick={() => navigate({ to: '/workforce/shifts' })}>
