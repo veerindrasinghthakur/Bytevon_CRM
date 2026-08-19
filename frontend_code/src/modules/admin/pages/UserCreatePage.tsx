@@ -113,7 +113,7 @@ export function UserCreatePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <button
         type="button"
         onClick={() => navigate({ to: '/admin/users' })}
@@ -156,7 +156,7 @@ export function UserCreatePage() {
       {loading ? (
         <div className="p-12 text-center text-on-surface-variant">Loading…</div>
       ) : candidates.length === 0 ? (
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-10 text-center space-y-3">
+        <div className="bv-surface p-10 text-center space-y-3">
           <span className="material-symbols-outlined text-4xl text-on-surface-variant">person_check</span>
           <h3 className="text-title-lg font-semibold">All employees have logins</h3>
           <Button variant="primary" size="sm" onClick={() => navigate({ to: '/workforce/employees/new' })}>
@@ -166,7 +166,7 @@ export function UserCreatePage() {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
-            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6 space-y-5">
+            <div className="bv-surface p-6 space-y-5">
               <h3 className="text-title-lg font-semibold text-on-background flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary">badge</span>
                 Select Employee
@@ -216,7 +216,7 @@ export function UserCreatePage() {
               )}
             </div>
 
-            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6 space-y-5">
+            <div className="bv-surface p-6 space-y-5">
               <h3 className="text-title-lg font-semibold flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary">key</span>
                 Login Credentials
@@ -232,7 +232,7 @@ export function UserCreatePage() {
               </div>
             </div>
 
-            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6 space-y-5">
+            <div className="bv-surface p-6 space-y-5">
               <h3 className="text-title-lg font-semibold flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary">admin_panel_settings</span>
                 Access
@@ -256,7 +256,7 @@ export function UserCreatePage() {
           </div>
 
           <div className="space-y-4">
-            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6 space-y-4">
+            <div className="bv-surface p-6 space-y-4">
               <h3 className="text-title-lg font-semibold">Invite Options</h3>
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
@@ -299,7 +299,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-body-sm outline-none focus:border-secondary bg-transparent"
+        className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-body-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-transparent transition-colors"
       />
     </div>
   )
