@@ -4,6 +4,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { myTasks } from '../data/mock'
 import type { MyTask } from '../types'
+import { cn } from '@/shared/lib/cn'
 
 const priorityClass: Record<string, string> = {
   Critical: 'bg-red-100 text-red-800',
@@ -38,16 +39,8 @@ export function MyTasksPage() {
     return myTasks
   }, [filter])
 
-  const cardClass = (active: boolean) =>
-    `bg-surface-container-lowest rounded-xl border p-5 shadow-sm cursor-pointer transition-colors text-left w-full ${
-      active
-        ? 'border-secondary ring-1 ring-secondary/30'
-        : 'border-outline-variant hover:border-secondary/40'
-    }`
-
   return (
-    <div className="space-y-6">
-      {/* Nav-root page: no back button */}
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="My Tasks"
         description="Tasks assigned to you — or create your own."
@@ -62,13 +55,12 @@ export function MyTasksPage() {
         }
       />
 
-      {/* Clear control ABOVE metric cards — fixed height so list does not jump */}
       <div className="flex items-center justify-end min-h-[32px]">
         {filter ? (
           <button
             type="button"
             onClick={() => setFilter(null)}
-            className="inline-flex items-center gap-1.5 text-label-md text-on-surface-variant hover:text-on-surface rounded-md px-2 py-1"
+            className="inline-flex items-center gap-1.5 text-label-md text-on-surface-variant hover:text-on-surface rounded-md px-2 py-1 transition-colors"
             aria-label="Clear filter"
             title="Clear filter"
           >
@@ -85,7 +77,10 @@ export function MyTasksPage() {
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <button
           type="button"
-          className={cardClass(filter === 'open')}
+          className={cn(
+            'bv-surface card-hover p-5 cursor-pointer text-left w-full',
+            filter === 'open' && 'ring-1 ring-secondary/30 border-secondary'
+          )}
           onClick={() => setFilter((f) => (f === 'open' ? null : 'open'))}
         >
           <p className="text-label-sm text-on-surface-variant mb-1">Open tasks</p>
@@ -93,7 +88,10 @@ export function MyTasksPage() {
         </button>
         <button
           type="button"
-          className={cardClass(filter === 'inProgress')}
+          className={cn(
+            'bv-surface card-hover p-5 cursor-pointer text-left w-full',
+            filter === 'inProgress' && 'ring-1 ring-secondary/30 border-secondary'
+          )}
           onClick={() => setFilter((f) => (f === 'inProgress' ? null : 'inProgress'))}
         >
           <p className="text-label-sm text-on-surface-variant mb-1">In progress</p>
@@ -101,7 +99,10 @@ export function MyTasksPage() {
         </button>
         <button
           type="button"
-          className={cardClass(filter === 'high')}
+          className={cn(
+            'bv-surface card-hover p-5 cursor-pointer text-left w-full',
+            filter === 'high' && 'ring-1 ring-secondary/30 border-secondary'
+          )}
           onClick={() => setFilter((f) => (f === 'high' ? null : 'high'))}
         >
           <p className="text-label-sm text-on-surface-variant mb-1">High / Critical</p>
@@ -109,7 +110,7 @@ export function MyTasksPage() {
         </button>
       </section>
 
-      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+      <section className="bv-surface overflow-hidden">
         <div className="px-6 py-4 border-b border-outline-variant">
           <h3 className="text-title-lg font-semibold text-on-background">All assigned tasks</h3>
         </div>
@@ -136,7 +137,7 @@ export function MyTasksPage() {
               {filtered.map((task: MyTask) => (
                 <tr
                   key={task.id}
-                  className="hover:bg-secondary/5 cursor-pointer"
+                  className="zebra-row cursor-pointer"
                   onClick={() =>
                     navigate({ to: '/my-work/tasks/$taskId', params: { taskId: task.id } })
                   }
