@@ -43,13 +43,13 @@ export function LeaveSettingsPage() {
   const [noticeDays, setNoticeDays] = useState(7)
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <div className="grid grid-cols-12 gap-6">
-        <section className="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm hover:shadow-md transition-all">
+        <section className="col-span-12 lg:col-span-8 bv-surface card-hover p-6">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center gap-2">
               <span className="material-symbols-outlined text-secondary">ballot</span>
-              <h3 className="text-title-lg font-semibold text-on-surface">Leave Types &amp; Entitlements</h3>
+              <h3 className="text-title-lg font-semibold text-on-surface">Leave Types & Entitlements</h3>
             </div>
             {editing && (
               <button
@@ -74,7 +74,7 @@ export function LeaveSettingsPage() {
               </thead>
               <tbody className="divide-y divide-outline-variant">
                 {LEAVE_TYPES.map((row) => (
-                  <tr key={row.name} className="hover:bg-surface-container-low transition-colors">
+                  <tr key={row.name} className="zebra-row">
                     <td className="py-4">
                       <div className="text-body-md font-semibold text-on-surface">{row.name}</div>
                       <div className="text-label-sm text-on-surface-variant">{row.desc}</div>
@@ -97,7 +97,7 @@ export function LeaveSettingsPage() {
           </div>
         </section>
 
-        <section className="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm hover:shadow-md transition-all">
+        <section className="col-span-12 lg:col-span-4 bv-surface card-hover p-6">
           <div className="flex items-center gap-2 mb-6">
             <span className="material-symbols-outlined text-secondary">update</span>
             <h3 className="text-title-lg font-semibold text-on-surface">Accrual Policy</h3>
@@ -110,7 +110,7 @@ export function LeaveSettingsPage() {
                   type="number"
                   value={carryOver}
                   onChange={(e) => setCarryOver(Number(e.target.value))}
-                  className="w-full px-4 py-2.5 rounded-lg bg-white border border-outline-variant focus:border-secondary outline-none text-body-md"
+                  className="w-full px-4 py-2.5 rounded-lg bg-white border border-outline-variant focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none text-body-md transition-colors"
                 />
               ) : (
                 <p className="text-body-md font-medium text-on-surface">{carryOver} days</p>
@@ -123,7 +123,7 @@ export function LeaveSettingsPage() {
                   type="number"
                   value={noticeDays}
                   onChange={(e) => setNoticeDays(Number(e.target.value))}
-                  className="w-full px-4 py-2.5 rounded-lg bg-white border border-outline-variant focus:border-secondary outline-none text-body-md"
+                  className="w-full px-4 py-2.5 rounded-lg bg-white border border-outline-variant focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none text-body-md transition-colors"
                 />
               ) : (
                 <p className="text-body-md font-medium text-on-surface">{noticeDays} days</p>
@@ -137,10 +137,10 @@ export function LeaveSettingsPage() {
         <>
           <div className="fixed inset-0 bg-on-surface/20 backdrop-blur-sm z-40" onClick={() => setModalOpen(false)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-2xl w-full max-w-md">
+            <div className="bv-surface executive-shadow w-full max-w-md">
               <div className="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
                 <h3 className="text-title-lg font-semibold">Add Leave Type</h3>
-                <button type="button" onClick={() => setModalOpen(false)}>
+                <button type="button" onClick={() => setModalOpen(false)} className="hover:bg-surface-container rounded-lg p-1 transition-colors">
                   <span className="material-symbols-outlined">close</span>
                 </button>
               </div>
@@ -149,7 +149,7 @@ export function LeaveSettingsPage() {
                   value={newType.name}
                   onChange={(e) => setNewType((p) => ({ ...p, name: e.target.value }))}
                   placeholder="Leave type name"
-                  className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary bg-white"
+                  className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
                 />
               </div>
               <div className="px-6 py-4 border-t flex justify-end gap-2">
