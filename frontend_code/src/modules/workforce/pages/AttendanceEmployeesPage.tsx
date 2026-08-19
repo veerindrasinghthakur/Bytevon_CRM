@@ -50,7 +50,7 @@ export function AttendanceEmployeesPage() {
   )
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="All employees attendance"
         description="View and manage real-time attendance records for the entire organisation."
@@ -65,14 +65,14 @@ export function AttendanceEmployeesPage() {
         }
       />
 
-      <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden">
+      <div className="bv-surface overflow-hidden">
         <div className="p-4 border-b border-outline-variant/30 flex flex-wrap gap-3 items-center">
           <div className="relative flex-1 min-w-[200px]">
             <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg text-body-sm"
+              className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none transition-colors"
               placeholder="Search employee or department…"
             />
           </div>
@@ -88,13 +88,9 @@ export function AttendanceEmployeesPage() {
           <thead>
             <tr className="bg-surface-container-low/50 border-b border-outline-variant/30">
               <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase">Employee</th>
-              <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase hidden sm:table-cell">
-                Department
-              </th>
+              <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase hidden sm:table-cell">Department</th>
               <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase">Check in</th>
-              <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase hidden md:table-cell">
-                Check out
-              </th>
+              <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase hidden md:table-cell">Check out</th>
               <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase">Status</th>
               <th className="px-6 py-4" />
             </tr>
@@ -103,7 +99,7 @@ export function AttendanceEmployeesPage() {
             {filtered.map((r) => (
               <tr
                 key={r.id}
-                className="hover:bg-surface-container-low/50 cursor-pointer"
+                className="zebra-row cursor-pointer"
                 onClick={() =>
                   navigate({
                     to: '/workforce/attendance/$attendanceId',
@@ -119,13 +115,9 @@ export function AttendanceEmployeesPage() {
                     <span className="font-semibold text-body-sm">{r.name}</span>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-body-sm text-on-surface-variant hidden sm:table-cell">
-                  {r.department}
-                </td>
+                <td className="px-6 py-4 text-body-sm text-on-surface-variant hidden sm:table-cell">{r.department}</td>
                 <td className="px-6 py-4 text-body-sm text-on-surface-variant">{r.checkIn}</td>
-                <td className="px-6 py-4 text-body-sm text-on-surface-variant hidden md:table-cell">
-                  {r.checkOut}
-                </td>
+                <td className="px-6 py-4 text-body-sm text-on-surface-variant hidden md:table-cell">{r.checkOut}</td>
                 <td className="px-6 py-4">
                   <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-bold', statusClass[r.status])}>
                     {r.status.replace('_', ' ')}
