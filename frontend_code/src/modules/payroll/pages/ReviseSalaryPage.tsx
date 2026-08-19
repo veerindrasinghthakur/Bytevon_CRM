@@ -40,7 +40,7 @@ export function ReviseSalaryPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <header className="flex flex-col gap-3">
         <div className="flex items-center gap-2 text-on-surface-variant text-label-md flex-wrap">
           <button type="button" className="hover:text-secondary transition-colors" onClick={() => navigate({ to: '/payroll' })}>
@@ -88,7 +88,7 @@ export function ReviseSalaryPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8 flex flex-col gap-8">
-          <section className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant shadow-sm flex items-start gap-6">
+          <section className="bv-surface p-6 flex items-start gap-6">
             <div className="w-20 h-20 rounded-full bg-secondary-container flex items-center justify-center text-primary font-bold text-xl border border-outline-variant">
               {emp.initials}
             </div>
@@ -110,7 +110,7 @@ export function ReviseSalaryPage() {
             </div>
           </section>
 
-          <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+          <section className="bv-surface overflow-hidden">
             <div className="p-6 border-b border-outline-variant bg-surface-bright">
               <h3 className="text-title-lg font-semibold text-deep-navy flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary">tune</span>
@@ -132,14 +132,14 @@ export function ReviseSalaryPage() {
                   >
                     <div className="col-span-5">
                       <input
-                        className="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-3 py-2 text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                        className="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-3 py-2 text-body-sm focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
                         value={row.name}
                         onChange={(e) => updateRow(row.id, { name: e.target.value })}
                       />
                     </div>
                     <div className="col-span-3">
                       <select
-                        className="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-3 py-2 text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                        className="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-3 py-2 text-body-sm focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
                         value={row.type}
                         onChange={(e) => updateRow(row.id, { type: e.target.value as 'EARNING' | 'DEDUCTION' })}
                       >
@@ -151,7 +151,7 @@ export function ReviseSalaryPage() {
                       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-body-sm text-on-surface-variant">₹</span>
                       <input
                         type="number"
-                        className={`w-full bg-surface-container-lowest border border-outline-variant rounded-md pl-7 pr-3 py-2 text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none text-right font-medium ${
+                        className={`w-full bg-surface-container-lowest border border-outline-variant rounded-md pl-7 pr-3 py-2 text-body-sm focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none text-right font-medium transition-colors ${
                           row.type === 'DEDUCTION' ? 'text-error' : ''
                         }`}
                         value={row.amount}
@@ -184,7 +184,7 @@ export function ReviseSalaryPage() {
         </div>
 
         <div className="lg:col-span-4 flex flex-col gap-8">
-          <section className="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant shadow-sm">
+          <section className="bv-surface p-6">
             <h3 className="text-title-lg font-semibold text-deep-navy flex items-center gap-2 mb-4">
               <span className="material-symbols-outlined text-secondary">calendar_month</span>
               Effective Period
@@ -197,12 +197,11 @@ export function ReviseSalaryPage() {
                 <input
                   type="date"
                   defaultValue="2023-11-01"
-                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-3 py-2 text-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-3 py-2 text-body-sm focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
                 />
               </div>
               <div>
                 <label className="block text-label-md text-deep-navy mb-1">Effective To</label>
-                {/* Locked — system-managed; users cannot set an end date here */}
                 <input
                   type="date"
                   disabled
@@ -218,7 +217,7 @@ export function ReviseSalaryPage() {
             </div>
           </section>
 
-          <section className="bg-deep-navy text-on-primary rounded-xl p-6 shadow-sm relative overflow-hidden">
+          <section className="bg-deep-navy text-on-primary rounded-xl p-6 executive-shadow relative overflow-hidden">
             <div className="absolute -right-10 -top-10 opacity-10">
               <span className="material-symbols-outlined text-[120px]">account_balance</span>
             </div>
