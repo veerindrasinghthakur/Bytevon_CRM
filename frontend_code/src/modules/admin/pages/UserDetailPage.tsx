@@ -37,11 +37,11 @@ export function UserDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <button
         type="button"
         onClick={() => navigate({ to: '/admin/users' })}
-        className="flex items-center gap-2 text-secondary text-label-md hover:text-primary"
+        className="flex items-center gap-2 text-secondary text-label-md hover:text-primary transition-colors"
       >
         <span className="material-symbols-outlined text-[18px]">arrow_back</span>
         Back to Users
@@ -121,7 +121,7 @@ export function UserDetailPage() {
           <Card title="Role Assignment">
             <EditableField label="Primary Role" value={role} editing={editing} onChange={setRole} />
             <p className="text-body-sm text-on-surface-variant mt-2">
-              Additional scoped roles can be assigned from Roles &amp; Permissions.
+              Additional scoped roles can be assigned from Roles & Permissions.
             </p>
           </Card>
         </div>
@@ -154,7 +154,6 @@ export function UserDetailPage() {
         </div>
       </div>
 
-      {/* Reset password modal */}
       {resetOpen && (
         <Modal onClose={() => setResetOpen(false)} title="Reset password">
           {resetSent ? (
@@ -178,7 +177,6 @@ export function UserDetailPage() {
         </Modal>
       )}
 
-      {/* Lock confirmation */}
       {lockOpen && (
         <Modal
           onClose={() => setLockOpen(false)}
@@ -224,7 +222,7 @@ function Modal({
     <>
       <div className="fixed inset-0 bg-on-surface/20 backdrop-blur-sm z-40" onClick={onClose} />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-2xl w-full max-w-md">
+        <div className="bv-surface executive-shadow w-full max-w-md">
           <div
             className={cn(
               'px-6 py-4 border-b border-outline-variant flex items-center justify-between',
@@ -235,7 +233,7 @@ function Modal({
               {danger && <span className="material-symbols-outlined text-error">warning</span>}
               {title}
             </h3>
-            <button type="button" className="p-1 rounded-lg hover:bg-surface-container" onClick={onClose}>
+            <button type="button" className="p-1 rounded-lg hover:bg-surface-container transition-colors" onClick={onClose}>
               <span className="material-symbols-outlined">close</span>
             </button>
           </div>
@@ -248,7 +246,7 @@ function Modal({
 
 function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6">
+    <div className="bv-surface p-6">
       <h3 className="text-title-lg font-semibold text-on-background mb-4">{title}</h3>
       {children}
     </div>
@@ -282,7 +280,7 @@ function EditableField({
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-body-sm outline-none focus:border-secondary"
+          className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-body-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors"
         />
       ) : (
         <p className="text-body-md text-on-background">{value}</p>
