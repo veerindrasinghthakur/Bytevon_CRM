@@ -53,7 +53,7 @@ export function TeamsListPage() {
     })
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h2 className="text-[32px] leading-10 font-bold tracking-tight text-on-background">Teams</h2>
@@ -139,7 +139,7 @@ export function TeamsListPage() {
       )}
 
       {!isLoading && !isError && filtered.length > 0 && (
-        <section className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden flex flex-col">
+        <section className="bv-surface overflow-hidden flex flex-col">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
@@ -155,7 +155,7 @@ export function TeamsListPage() {
                 {pageItems.map((team) => (
                   <tr
                     key={team.id}
-                    className="h-[72px] cursor-pointer hover:bg-surface-container/40"
+                    className="h-[72px] cursor-pointer zebra-row"
                     onClick={() =>
                       openOverview({
                         id: team.id,
@@ -264,7 +264,7 @@ function MetricCard({
   iconClass: string
 }) {
   return (
-    <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
+    <div className="bv-surface card-hover p-5 flex flex-col justify-between h-[160px]">
       <div className="flex justify-between items-start">
         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${iconClass}`}>
           <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
