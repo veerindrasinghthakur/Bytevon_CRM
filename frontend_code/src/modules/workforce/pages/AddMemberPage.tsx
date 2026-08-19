@@ -18,11 +18,6 @@ function Icon({ name, className }: { name: string; className?: string }) {
 
 type Mode = 'choose' | 'existing' | 'new'
 
-/**
- * Shared Add Member page for department and team contexts.
- * Modes: create new employee → /workforce/employees/new
- *         or pick existing employee via searchable list.
- */
 export function AddMemberPage() {
   const params = useParams({ strict: false }) as { departmentId?: string; teamId?: string }
   const navigate = useNavigate()
@@ -97,7 +92,7 @@ export function AddMemberPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <BackButton to={backTo} label="Back" />
         <RouteCrumbs
@@ -125,7 +120,7 @@ export function AddMemberPage() {
           <button
             type="button"
             onClick={() => setMode('existing')}
-            className="text-left rounded-xl border-2 border-outline-variant bg-surface-container-lowest p-6 hover:border-secondary transition-colors shadow-sm"
+            className="text-left bv-surface card-hover p-6 border-2 border-outline-variant hover:border-secondary"
           >
             <div className="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center mb-4">
               <Icon name="person_search" className="text-2xl" />
@@ -138,7 +133,7 @@ export function AddMemberPage() {
           <button
             type="button"
             onClick={goCreateNew}
-            className="text-left rounded-xl border-2 border-outline-variant bg-surface-container-lowest p-6 hover:border-secondary transition-colors shadow-sm"
+            className="text-left bv-surface card-hover p-6 border-2 border-outline-variant hover:border-secondary"
           >
             <div className="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center mb-4">
               <Icon name="person_add" className="text-2xl" />
@@ -162,7 +157,7 @@ export function AddMemberPage() {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary"
+                className="w-full pl-10 pr-4 py-2.5 border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary transition-colors"
                 placeholder="Search by name, title, or department…"
               />
             </div>
@@ -175,15 +170,11 @@ export function AddMemberPage() {
                 <div
                   key={m.id}
                   className={cn(
-                    'bg-surface-container-lowest rounded-xl border shadow-sm p-6 transition-colors',
-                    selected ? 'border-secondary ring-2 ring-secondary/20' : 'border-outline-variant',
+                    'bv-surface card-hover p-6 transition-colors',
+                    selected ? 'border-secondary ring-2 ring-secondary/20' : '',
                   )}
                 >
-                  <button
-                    type="button"
-                    className="w-full text-left"
-                    onClick={() => setSelectedId(m.id)}
-                  >
+                  <button type="button" className="w-full text-left" onClick={() => setSelectedId(m.id)}>
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
                         <div className="w-14 h-14 rounded-full bg-secondary/10 text-secondary flex items-center justify-center font-bold">
@@ -254,7 +245,7 @@ export function AddMemberPage() {
       )}
 
       {toast && (
-        <div className="fixed bottom-8 right-8 bg-inverse-surface text-inverse-on-surface px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50">
+        <div className="fixed bottom-8 right-8 bg-inverse-surface text-inverse-on-surface px-6 py-4 rounded-xl executive-shadow flex items-center gap-3 z-50">
           <Icon name="check_circle" className="text-emerald-400" />
           <div>
             <p className="font-bold text-sm">Member Added Successfully</p>
