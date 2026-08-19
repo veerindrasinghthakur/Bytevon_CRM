@@ -55,7 +55,7 @@ export function CreatePageShell({
   }
 
   return (
-    <div>
+    <div className="animate-fade-in">
       <PageHeader
         title={title}
         showBack
@@ -63,7 +63,9 @@ export function CreatePageShell({
         backLabel={`Back to ${listLabel.toLowerCase()}`}
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to={listPath} className="hover:text-electric-blue">{listLabel}</Link>
+            <Link to={listPath} className="hover:text-electric-blue">
+              {listLabel}
+            </Link>
             <span className="mx-2">/</span>
             <span className="text-on-surface">New</span>
           </nav>
@@ -72,7 +74,7 @@ export function CreatePageShell({
 
       <form
         onSubmit={handleSubmit(handleFormSubmit)}
-        className="max-w-xl space-y-5 rounded-xl border border-outline-variant bg-surface-container-lowest p-6"
+        className="max-w-xl space-y-5 bv-surface p-6"
       >
         <div>
           <label className="block text-label-md text-on-surface mb-1.5" htmlFor="name">
@@ -81,7 +83,7 @@ export function CreatePageShell({
           <input
             id="name"
             {...register('name')}
-            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-electric-blue focus:border-2"
+            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-colors"
             placeholder={namePlaceholder}
           />
           {errors.name && <p className="mt-1 text-body-sm text-error">{errors.name.message}</p>}
@@ -97,7 +99,7 @@ export function CreatePageShell({
             id="description"
             rows={3}
             {...register('description')}
-            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-electric-blue focus:border-2 resize-y"
+            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-1 focus:ring-secondary transition-colors resize-y"
             placeholder="Optional description"
           />
         </div>
