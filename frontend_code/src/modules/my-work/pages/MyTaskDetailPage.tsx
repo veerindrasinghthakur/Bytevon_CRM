@@ -25,7 +25,7 @@ export function MyTaskDetailPage() {
 
   if (!task) {
     return (
-      <div>
+      <div className="animate-fade-in">
         <PageHeader title="Task details" showBack />
         <p className="text-body-md text-on-surface-variant">Task not found.</p>
       </div>
@@ -33,7 +33,7 @@ export function MyTaskDetailPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <PageHeader
         title={task.name}
         description={task.project ?? 'No project linked'}
@@ -51,7 +51,7 @@ export function MyTaskDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
         <div className="lg:col-span-2 space-y-6">
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+          <section className="bv-surface p-6">
             <h3 className="text-title-lg text-on-background mb-4">Overview</h3>
             <p className="text-body-md text-on-surface-variant">
               {task.project
@@ -72,7 +72,7 @@ export function MyTaskDetailPage() {
             </div>
           </section>
 
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+          <section className="bv-surface p-6">
             <h3 className="text-title-lg text-on-background mb-3">Activity</h3>
             <p className="text-body-md text-on-surface-variant">
               No comments or status changes in mock data yet. Wire to task activity feed when backend is ready.
@@ -81,7 +81,7 @@ export function MyTaskDetailPage() {
         </div>
 
         <div className="space-y-4">
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+          <section className="bv-surface p-6">
             <h3 className="text-label-md text-on-surface-variant uppercase tracking-wider mb-3">Status</h3>
             <span className="flex items-center gap-2 text-body-md text-on-surface">
               <span className={`w-2.5 h-2.5 rounded-full ${statusDot[task.status] ?? 'bg-outline'}`} />
@@ -89,7 +89,7 @@ export function MyTaskDetailPage() {
             </span>
           </section>
 
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 space-y-4">
+          <section className="bv-surface p-6 space-y-4">
             <div>
               <p className="text-label-sm text-on-surface-variant">Priority</p>
               <span
@@ -116,7 +116,7 @@ export function MyTaskDetailPage() {
             </div>
           </section>
 
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 space-y-2">
+          <section className="bv-surface p-4 space-y-2">
             <Button
               variant="primary"
               className="w-full"
