@@ -17,7 +17,7 @@ export function MyAttendancePage() {
   const navigate = useNavigate()
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="My Attendance"
         description="Mark attendance, review daily hours, and track history."
@@ -42,29 +42,29 @@ export function MyAttendancePage() {
       />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm">
+        <div className="bv-surface card-hover p-5">
           <p className="text-label-sm text-on-surface-variant mb-1">Today</p>
           <p className="text-headline-md font-bold text-on-background">{currentUser.todayLabel}</p>
           <p className="text-[11px] text-on-surface-variant mt-1.5">Shift · {currentUser.shift}</p>
         </div>
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm">
+        <div className="bv-surface card-hover p-5">
           <p className="text-label-sm text-on-surface-variant mb-1">Check-in</p>
           <p className="text-headline-md font-bold text-secondary">{todayAttendance.checkIn}</p>
           <p className="text-[11px] text-emerald-600 mt-1.5 font-medium">{todayAttendance.checkInNote}</p>
         </div>
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm">
+        <div className="bv-surface card-hover p-5">
           <p className="text-label-sm text-on-surface-variant mb-1">Hours today</p>
           <p className="text-headline-md font-bold text-on-background">{todayAttendance.totalHours}</p>
           <p className="text-[11px] text-on-surface-variant mt-1.5">{todayAttendance.totalHoursNote}</p>
         </div>
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm">
+        <div className="bv-surface card-hover p-5">
           <p className="text-label-sm text-on-surface-variant mb-1">Status</p>
           <p className="text-headline-md font-bold text-emerald-600">Present</p>
           <p className="text-[11px] text-on-surface-variant mt-1.5">Live session open</p>
         </div>
       </section>
 
-      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm">
+      <section className="bv-surface p-6">
         <h3 className="text-title-lg font-semibold text-on-background mb-4">This week</h3>
         <div className="flex items-end gap-3 h-32">
           {weekHours.map((d) => (
@@ -82,7 +82,7 @@ export function MyAttendancePage() {
         </div>
       </section>
 
-      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+      <section className="bv-surface overflow-hidden">
         <div className="px-6 py-4 border-b border-outline-variant">
           <h3 className="text-title-lg font-semibold text-on-background">Attendance history</h3>
         </div>
@@ -102,7 +102,7 @@ export function MyAttendancePage() {
               {attendanceHistory.map((row) => (
                 <tr
                   key={row.id}
-                  className="hover:bg-secondary/5 cursor-pointer"
+                  className="zebra-row cursor-pointer"
                   onClick={() =>
                     navigate({
                       to: '/my-work/attendance/$attendanceId',
