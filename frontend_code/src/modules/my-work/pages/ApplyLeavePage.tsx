@@ -45,7 +45,6 @@ function toISO(y: number, m: number, d: number) {
   return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 }
 
-/** Today in local YYYY-MM-DD (no time) so past dates can be blocked. */
 function todayISO() {
   const n = new Date()
   return toISO(n.getFullYear(), n.getMonth(), n.getDate())
@@ -113,9 +112,7 @@ export function ApplyLeavePage() {
   const isRangeEnd = (iso: string) => to === iso
 
   const selectDay = (iso: string) => {
-    // Block past dates
     if (iso < today) return
-
     if (!from || (from && to)) {
       setValue('from', iso, { shouldValidate: true })
       setValue('to', '', { shouldValidate: true })
@@ -130,10 +127,10 @@ export function ApplyLeavePage() {
   const fromReg = register('from')
 
   return (
-    <div className="relative space-y-6 pb-24">
+    <div className="relative space-y-6 pb-24 animate-fade-in">
       {showToast && (
         <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] w-full max-w-md px-4">
-          <div className="bg-secondary text-white p-4 rounded-xl shadow-xl flex items-center gap-3 border border-secondary/20 animate-pulse">
+          <div className="bg-secondary text-white p-4 rounded-xl executive-shadow flex items-center gap-3 border border-secondary/20">
             <span className="material-symbols-outlined">check_circle</span>
             <p className="text-sm font-medium flex-1">Draft saved successfully!</p>
             <button type="button" onClick={() => setShowToast(false)} className="opacity-80 hover:opacity-100">
@@ -153,10 +150,7 @@ export function ApplyLeavePage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {leaveBalances.map((lb) => (
-          <div
-            key={lb.type}
-            className="bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm hover:border-secondary/40 transition-colors group"
-          >
+          <div key={lb.type} className="bv-surface card-hover p-5 group">
             <div className="flex items-center justify-between mb-3">
               <div className="p-2 rounded-lg bg-surface-container-high text-secondary">
                 <span className="material-symbols-outlined text-xl">{leaveTypeIcons[lb.type] ?? 'event'}</span>
@@ -182,7 +176,7 @@ export function ApplyLeavePage() {
 
       <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <section className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+          <section className="bv-surface overflow-hidden">
             <div className="px-6 py-4 border-b border-outline-variant bg-surface-container-low">
               <h2 className="text-title-md font-semibold flex items-center gap-2 text-on-background">
                 <span className="material-symbols-outlined text-secondary text-xl">info</span>
@@ -197,7 +191,7 @@ export function ApplyLeavePage() {
                 <select
                   id="type"
                   {...register('type')}
-                  className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-electric-blue focus:border-2 transition-colors"
+                  className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors"
                 >
                   {(['Casual', 'Sick', 'Earned', 'Unpaid', 'Comp Off'] as const).map((t) => (
                     <option key={t} value={t}>
@@ -220,7 +214,7 @@ export function ApplyLeavePage() {
                   >
                     <div
                       className={cn(
-                        'absolute top-[2px] left-[2px] size-5 bg-white rounded-full transition-transform shadow',
+                        'absolute top-[2px] left-[2px] size-5 bg-white rounded-full transition-transform executive-shadow',
                         halfDay && 'translate-x-5'
                       )}
                     />
@@ -231,7 +225,7 @@ export function ApplyLeavePage() {
             </div>
           </section>
 
-          <section className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+          <section className="bv-surface overflow-hidden">
             <div className="px-6 py-4 border-b border-outline-variant bg-surface-container-low">
               <h2 className="text-title-md font-semibold flex items-center gap-2 text-on-background">
                 <span className="material-symbols-outlined text-secondary text-xl">event</span>
@@ -264,7 +258,7 @@ export function ApplyLeavePage() {
                           setValue('to', '', { shouldValidate: true })
                         }
                       }}
-                      className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest pl-10 pr-3 py-2.5 text-body-md text-on-surface outline-none focus:border-electric-blue focus:border-2"
+                      className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest pl-10 pr-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors"
                     />
                   </div>
                   {errors.from && <p className="mt-1 text-body-sm text-error">{errors.from.message}</p>}
@@ -288,10 +282,10 @@ export function ApplyLeavePage() {
                       min={from && from > today ? from : today}
                       {...register('to')}
                       className={cn(
-                        'w-full rounded-lg border bg-surface-container-lowest pl-10 pr-3 py-2.5 text-body-md text-on-surface outline-none focus:border-2',
+                        'w-full rounded-lg border bg-surface-container-lowest pl-10 pr-3 py-2.5 text-body-md text-on-surface outline-none focus:ring-2 focus:ring-secondary/30 transition-colors',
                         errors.to
                           ? 'border-error focus:border-error'
-                          : 'border-outline-variant focus:border-electric-blue'
+                          : 'border-outline-variant focus:border-secondary'
                       )}
                     />
                   </div>
@@ -319,7 +313,7 @@ export function ApplyLeavePage() {
                 </span>
               </div>
 
-              <div className="border border-outline-variant rounded-xl p-4 bg-surface-container-lowest">
+              <div className="border border-outline-variant rounded-xl p-4 bv-surface">
                 <div className="flex items-center justify-between mb-4">
                   <p className="text-label-md font-semibold text-on-surface">Visual Timeline Picker</p>
                   <div className="flex items-center gap-2">
@@ -349,7 +343,6 @@ export function ApplyLeavePage() {
                     <div key={`${d}-${i}`}>{d}</div>
                   ))}
                 </div>
-                {/* Continuous range: use a single light sky background strip so the selection reads as one leave block */}
                 <div className="grid grid-cols-7 text-center text-sm gap-y-0.5">
                   {Array.from({ length: firstDay }).map((_, i) => (
                     <div key={`empty-${i}`} className="py-2" />
@@ -364,8 +357,6 @@ export function ApplyLeavePage() {
                     const end = isRangeEnd(iso)
                     const singleDay = start && end
 
-                    // Continuous light range background (thin light sky)
-                    // Start/end get slightly stronger edges so the block looks continuous
                     let rangeClass = ''
                     if (inRange || start || end) {
                       if (singleDay) {
@@ -414,7 +405,7 @@ export function ApplyLeavePage() {
             </div>
           </section>
 
-          <section className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+          <section className="bv-surface overflow-hidden">
             <div className="px-6 py-4 border-b border-outline-variant bg-surface-container-low">
               <h2 className="text-title-md font-semibold flex items-center gap-2 text-on-background">
                 <span className="material-symbols-outlined text-secondary text-xl">notes</span>
@@ -429,7 +420,7 @@ export function ApplyLeavePage() {
                 id="reason"
                 rows={4}
                 {...register('reason')}
-                className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-electric-blue focus:border-2 resize-y"
+                className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 resize-y transition-colors"
                 placeholder="Describe the purpose of your leave request..."
               />
               {errors.reason ? (
@@ -442,7 +433,7 @@ export function ApplyLeavePage() {
         </div>
 
         <div className="space-y-6">
-          <section className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+          <section className="bv-surface overflow-hidden">
             <div className="px-6 py-4 border-b border-outline-variant bg-surface-container-low">
               <h2 className="text-title-md font-semibold flex items-center gap-2 text-on-background">
                 <span className="material-symbols-outlined text-secondary text-xl">attach_file</span>
@@ -463,7 +454,7 @@ export function ApplyLeavePage() {
             </div>
           </section>
 
-          <section className="bg-primary-container text-white rounded-xl p-6 relative overflow-hidden">
+          <section className="bg-primary-container text-white rounded-xl p-6 relative overflow-hidden executive-shadow">
             <div className="relative z-10 space-y-4">
               <h3 className="text-xs font-bold uppercase tracking-widest text-white/70">Approval Workflow</h3>
               <div className="flex items-center gap-3">
@@ -487,7 +478,7 @@ export function ApplyLeavePage() {
             <div className="absolute -bottom-4 -right-4 size-24 bg-white/5 rounded-full blur-2xl" />
           </section>
 
-          <section className="bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm">
+          <section className="bv-surface p-5">
             <h3 className="text-label-md font-semibold text-on-surface mb-3">Leave Policy Reminder</h3>
             <ul className="space-y-2.5">
               <li className="flex gap-2 text-xs text-on-surface-variant">
@@ -503,7 +494,7 @@ export function ApplyLeavePage() {
         </div>
 
         <div className="lg:col-span-3 sticky bottom-0 z-40 -mx-1 px-1">
-          <div className="bg-surface-container-lowest/95 backdrop-blur-md border border-outline-variant rounded-xl px-6 py-4 flex flex-wrap items-center justify-between gap-4 shadow-lg">
+          <div className="bg-surface-container-lowest/95 backdrop-blur-md border border-outline-variant rounded-xl px-6 py-4 flex flex-wrap items-center justify-between gap-4 executive-shadow">
             <div className="flex items-center gap-2 text-on-surface-variant">
               <span className="material-symbols-outlined text-sm">schedule</span>
               <span className="text-xs font-medium">
