@@ -21,7 +21,7 @@ export function PayrollDashboardPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <PageHeader
         title="Payroll"
         description="Manage monthly salary processing, approvals and payments."
@@ -48,7 +48,7 @@ export function PayrollDashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-3 flex flex-col gap-6">
-          <section className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant shadow-sm">
+          <section className="bv-surface p-5">
             <div className="flex justify-between items-start mb-6 border-b border-outline-variant pb-4">
               <div>
                 <h2 className="text-headline-md font-semibold text-deep-navy">{periodMeta.label}</h2>
@@ -132,7 +132,7 @@ export function PayrollDashboardPage() {
         </div>
 
         <div className="flex flex-col gap-6">
-          <section className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant shadow-sm">
+          <section className="bv-surface p-5">
             <h3 className="text-headline-md font-semibold text-deep-navy mb-4">Quick Actions</h3>
             <div className="flex flex-col gap-3">
               <QuickAction
@@ -156,7 +156,7 @@ export function PayrollDashboardPage() {
             </div>
           </section>
 
-          <section className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant shadow-sm flex-1">
+          <section className="bv-surface p-5 flex-1">
             <h3 className="text-headline-md font-semibold text-deep-navy mb-4">Recent Activity</h3>
             <div className="relative pl-4 border-l border-outline-variant space-y-6">
               {recentActivity.map((a) => (
@@ -176,7 +176,7 @@ export function PayrollDashboardPage() {
         </div>
       </div>
 
-      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+      <section className="bv-surface overflow-hidden">
         <div className="p-5 border-b border-outline-variant flex justify-between items-center bg-surface-bright">
           <h3 className="text-headline-md font-semibold text-deep-navy">Payroll Summary</h3>
           <div className="relative w-64">
@@ -184,7 +184,7 @@ export function PayrollDashboardPage() {
               search
             </span>
             <input
-              className="w-full pl-9 pr-4 py-1.5 bg-surface-container-lowest border border-outline-variant rounded focus:ring-1 focus:ring-primary focus:border-primary text-body-md"
+              className="w-full pl-9 pr-4 py-1.5 bg-surface-container-lowest border border-outline-variant rounded focus:ring-2 focus:ring-secondary/30 focus:border-secondary text-body-md outline-none transition-colors"
               placeholder="Search employee..."
               type="text"
             />
@@ -207,7 +207,7 @@ export function PayrollDashboardPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {payrollEmployees.slice(0, 3).map((r) => (
-                <tr key={r.id} className="h-[72px] bv-row-hover">
+                <tr key={r.id} className="h-[72px] zebra-row">
                   <td className="p-4 pl-6">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center font-bold text-primary text-label-bold">
@@ -238,7 +238,6 @@ export function PayrollDashboardPage() {
                     </span>
                   </td>
                   <td className="p-4 pr-6 text-right">
-                    {/* Approve / Pay only on Monthly Payroll — dashboard is view-only */}
                     <button
                       type="button"
                       className="text-primary text-label-sm hover:underline"
@@ -290,7 +289,7 @@ function KpiCard({
   return (
     <div
       className={cn(
-        'bg-surface-container-lowest rounded-lg p-4 border border-outline-variant shadow-sm h-[120px] flex flex-col justify-between',
+        'bv-surface card-hover p-4 h-[120px] flex flex-col justify-between',
         accent
       )}
     >
@@ -321,7 +320,7 @@ function QuickAction({
     <button
       type="button"
       onClick={onClick}
-      className="w-full flex items-center justify-between p-3 rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors group"
+      className="w-full flex items-center justify-between p-3 rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors group card-hover"
     >
       <div className="flex items-center gap-3">
         <div className={cn('p-2 rounded-md transition-colors', iconTone)}>
