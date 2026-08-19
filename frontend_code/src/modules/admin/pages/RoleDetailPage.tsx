@@ -12,11 +12,10 @@ export function RoleDetailPage() {
   const assignees = adminUsers.filter(
     (u) => u.role.toLowerCase().includes(role.name.toLowerCase().split(' ')[0]) || role.name === 'Employee'
   )
-  // Fallback: show first N users as mock assignees when filter is empty
   const assigned = assignees.length > 0 ? assignees : adminUsers.slice(0, Math.min(role.usersCount, 4))
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <button
         type="button"
         onClick={() => navigate({ to: '/admin/roles' })}
@@ -25,7 +24,7 @@ export function RoleDetailPage() {
         <span className="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">
           arrow_back
         </span>
-        <span className="text-label-md font-medium">Back to Roles &amp; Permissions</span>
+        <span className="text-label-md font-medium">Back to Roles & Permissions</span>
       </button>
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -74,9 +73,8 @@ export function RoleDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Summary */}
         <div className="space-y-4">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6 space-y-4">
+          <div className="bv-surface p-6 space-y-4">
             <h3 className="text-title-lg font-semibold text-on-background">Summary</h3>
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -111,8 +109,7 @@ export function RoleDetailPage() {
           </div>
         </div>
 
-        {/* Permissions */}
-        <div className="lg:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6">
+        <div className="lg:col-span-2 bv-surface p-6">
           <h3 className="text-title-lg font-semibold text-on-background mb-4 flex items-center gap-2">
             <span className="material-symbols-outlined text-secondary">key</span>
             Permissions
@@ -135,8 +132,7 @@ export function RoleDetailPage() {
         </div>
       </div>
 
-      {/* Assigned employees */}
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+      <div className="bv-surface overflow-hidden">
         <div className="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
           <h3 className="text-title-lg font-semibold text-on-background flex items-center gap-2">
             <span className="material-symbols-outlined text-secondary">group</span>
@@ -158,7 +154,7 @@ export function RoleDetailPage() {
               {assigned.map((u) => (
                 <tr
                   key={u.id}
-                  className="hover:bg-surface-container-low/40 cursor-pointer"
+                  className="zebra-row cursor-pointer"
                   onClick={() => navigate({ to: '/admin/users/$userId', params: { userId: u.id } })}
                 >
                   <td className="px-6 py-3">
