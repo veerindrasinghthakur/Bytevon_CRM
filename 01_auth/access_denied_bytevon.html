@@ -1,1 +1,148 @@
-PLACEHOLDER
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Access Denied | Bytevon ERP</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<script id="tailwind-config">tailwind.config = {darkMode: "class", theme: {extend: {colors: {"on-tertiary-container": "#848789", "on-primary-fixed-variant": "#2f486a", "on-error": "#ffffff", "on-tertiary": "#ffffff", "primary-fixed-dim": "#afc8f0", "tertiary-fixed": "#e0e3e5", "tertiary-fixed-dim": "#c4c7c9", "surface-bright": "#f8f9ff", "on-secondary-fixed": "#001a41", "tertiary-container": "#1c1f21", "error-container": "#ffdad6", "surface-tint": "#476083", "surface-container-low": "#eff4ff", "on-surface": "#0b1c30", "primary-container": "#001f3f", "on-tertiary-fixed": "#191c1e", tertiary: "#040607", "surface-variant": "#d3e4fe", "inverse-primary": "#afc8f0", "surface-dim": "#cbdbf5", "outline-variant": "#c4c6cf", surface: "#f8f9ff", primary: "#000613", "on-secondary-container": "#fefcff", "on-primary-container": "#6f88ad", "secondary-fixed": "#d8e2ff", outline: "#74777f", "on-background": "#0b1c30", "surface-container-highest": "#d3e4fe", "on-primary-fixed": "#001c3a", "on-tertiary-fixed-variant": "#444749", error: "#ba1a1a", "on-primary": "#ffffff", "inverse-on-surface": "#eaf1ff", "surface-container-high": "#dce9ff", "inverse-surface": "#213145", "secondary-container": "#0070ea", "primary-fixed": "#d4e3ff", "on-secondary-fixed-variant": "#004493", "secondary-fixed-dim": "#adc7ff", secondary: "#0059bb", "on-surface-variant": "#43474e", "on-secondary": "#ffffff", "on-error-container": "#93000a", "surface-container": "#e5eeff", background: "#f8f9ff", "surface-container-lowest": "#ffffff"}, borderRadius: {DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px"}, spacing: {gutter: "24px", "margin-mobile": "16px", "stack-sm": "8px", "margin-desktop": "40px", "stack-md": "16px", unit: "4px", "stack-lg": "32px", "container-max": "1440px"}, fontFamily: {"label-md": ["Inter"], "headline-lg": ["Inter"], "display-lg": ["Inter"], "body-lg": ["Inter"], "label-sm": ["Inter"], "headline-lg-mobile": ["Inter"], "title-lg": ["Inter"], "headline-md": ["Inter"], "body-sm": ["Inter"], "body-md": ["Inter"], headline: ["Inter"], display: ["Inter"], body: ["Inter"], label: ["Inter"]}, fontSize: {"label-md": ["14px", {lineHeight: "20px", letterSpacing: "0.01em", fontWeight: "500"}], "headline-lg": ["32px", {lineHeight: "40px", letterSpacing: "-0.01em", fontWeight: "600"}], "display-lg": ["48px", {lineHeight: "56px", letterSpacing: "-0.02em", fontWeight: "700"}], "body-lg": ["18px", {lineHeight: "28px", fontWeight: "400"}], "label-sm": ["12px", {lineHeight: "16px", fontWeight: "600"}], "headline-lg-mobile": ["24px", {lineHeight: "32px", fontWeight: "600"}], "title-lg": ["20px", {lineHeight: "28px", fontWeight: "600"}], "headline-md": ["24px", {lineHeight: "32px", fontWeight: "600"}], "body-sm": ["14px", {lineHeight: "20px", fontWeight: "400"}], "body-md": ["16px", {lineHeight: "24px", fontWeight: "400"}]}}}};</script>
+<style>
+        body {
+            background-color: #f8f9ff;
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .security-scan-line {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #0070ea, transparent);
+            position: absolute;
+            width: 100%;
+            top: 0;
+            animation: scan 3s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0%; opacity: 0; }
+            50% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+<!-- Top Navigation Bar - Filtered to suppress full nav for task focus -->
+<header class="bg-surface dark:bg-primary docked full-width top-0 z-50">
+<div class="flex justify-between items-center w-full px-margin-desktop py-4 max-w-container-max mx-auto">
+<div class="text-title-lg font-title-lg font-black text-primary dark:text-on-primary-container cursor-pointer">
+                Bytevon
+            </div>
+<div class="flex items-center gap-stack-md">
+<span class="font-label-md text-label-md text-on-surface-variant cursor-pointer hover:text-secondary transition-colors">Support</span>
+</div>
+</div>
+</header>
+<main class="flex-grow flex items-center justify-center px-margin-mobile md:px-0 relative overflow-hidden">
+<!-- Atmospheric Background Elements -->
+<div class="absolute inset-0 z-0 pointer-events-none opacity-40">
+<div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-secondary-container rounded-full blur-[120px]"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-primary-fixed-dim rounded-full blur-[100px]"></div>
+</div>
+<!-- Central Content Container -->
+<div class="relative z-10 w-full max-w-[640px] text-center animate-fade-in" style="transition: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); opacity: 1; transform: translateY(0px);">
+<!-- Security Illustration Container -->
+<div class="mb-stack-lg flex justify-center">
+<div class="relative w-48 h-48 rounded-xl glass-card flex items-center justify-center overflow-hidden shadow-sm">
+<div class="security-scan-line"></div>
+<!-- Professional Lock Illustration -->
+<div class="relative">
+<span class="material-symbols-outlined text-[80px] text-primary" style="font-variation-settings: 'FILL' 1;">
+                            encrypted
+                        </span>
+<div class="absolute -top-2 -right-2 bg-error text-white rounded-full w-10 h-10 flex items-center justify-center border-4 border-surface-container-lowest">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Header Content -->
+<h1 class="font-display-lg text-display-lg text-primary mb-stack-sm md:font-headline-lg md:text-headline-lg">
+                Access Denied
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md mx-auto mb-stack-lg">
+                You do not have permission to access this resource. If you believe this is an error, please contact your systems administrator.
+            </p>
+<!-- Metadata/Reasoning (Bento Style Sub-info) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-stack-md mb-stack-lg">
+<div class="glass-card p-stack-md rounded-lg flex items-start gap-stack-md text-left">
+<div class="bg-surface-container p-2 rounded">
+<span class="material-symbols-outlined text-secondary">info</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-tertiary-container uppercase">Status Code</p>
+<p class="font-title-lg text-title-lg text-primary">403 Forbidden</p>
+</div>
+</div>
+<div class="glass-card p-stack-md rounded-lg flex items-start gap-stack-md text-left">
+<div class="bg-surface-container p-2 rounded">
+<span class="material-symbols-outlined text-secondary">fingerprint</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-tertiary-container uppercase">Session ID</p>
+<p class="font-title-lg text-title-lg text-primary">BV-8849-XP</p>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col md:flex-row items-center justify-center gap-stack-md">
+<button class="w-full md:w-auto bg-primary text-on-primary px-stack-lg py-4 rounded-lg font-label-md text-label-md hover:opacity-90 transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">dashboard</span>
+                    Return to Dashboard
+                </button>
+<button class="w-full md:w-auto bg-transparent border border-outline text-primary px-stack-lg py-4 rounded-lg font-label-md text-label-md hover:bg-surface-container-low transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-[18px]">support_agent</span>
+                    Contact Administrator
+                </button>
+</div>
+</div>
+</main>
+<!-- Footer - As mandated by Shared Components -->
+<footer class="bg-transparent full-width bottom-0">
+<div class="flex flex-col md:flex-row justify-center items-center gap-stack-md w-full py-stack-lg">
+<span class="font-label-md text-label-md font-bold text-primary">Bytevon</span>
+<div class="flex gap-stack-md">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-opacity duration-200 underline" href="#">Privacy Policy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-opacity duration-200 underline" href="#">Terms of Service</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-opacity duration-200 underline" href="#">Security Compliance</a>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant ml-0 md:ml-stack-lg opacity-60">© 2024 Bytevon Systems. All rights reserved.</p>
+</div>
+</footer>
+<script>
+        // Micro-interactions for button hover effects and atmospheric entrance
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.querySelector('.animate-fade-in');
+            container.style.opacity = '0';
+            container.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                container.style.transition = 'all 0.8s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                container.style.opacity = '1';
+                container.style.transform = 'translateY(0)';
+            }, 100);
+
+            // Mock console log for enterprise debugging trace
+            console.info("Bytevon ERP Security Layer: Authorization token mismatch detected. Triggering 403 response cluster.");
+        });
+    </script>
+</body></html>
