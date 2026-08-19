@@ -15,7 +15,7 @@ export function ApprovalCenterPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Approval Center"
         description="Manage and process organizational requests."
@@ -39,7 +39,6 @@ export function ApprovalCenterPage() {
         }
       />
 
-      {/* KPI grid */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard
           icon="stacks"
@@ -75,24 +74,23 @@ export function ApprovalCenterPage() {
         />
       </section>
 
-      {/* Table */}
-      <section className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+      <section className="bv-surface overflow-hidden">
         <div className="px-6 py-4 border-b border-outline-variant flex flex-wrap gap-4 items-center justify-between">
           <div className="flex flex-wrap gap-3 items-center">
-            <select className="pl-3 pr-8 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-secondary outline-none">
+            <select className="pl-3 pr-8 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-secondary outline-none transition-colors">
               <option>All Request Types</option>
               <option>Leave Request</option>
               <option>Expense Claim</option>
               <option>Purchase Order</option>
             </select>
-            <select className="pl-3 pr-8 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-secondary outline-none">
+            <select className="pl-3 pr-8 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-secondary outline-none transition-colors">
               <option>Status: Pending</option>
               <option>Approved</option>
               <option>Rejected</option>
             </select>
             <button
               type="button"
-              className="flex items-center gap-2 px-3 py-2 text-label-md text-secondary hover:bg-secondary/5 rounded-lg"
+              className="flex items-center gap-2 px-3 py-2 text-label-md text-secondary hover:bg-secondary/5 rounded-lg transition-colors"
             >
               <span className="material-symbols-outlined text-[18px]">calendar_month</span>
               Last 30 Days
@@ -134,7 +132,7 @@ export function ApprovalCenterPage() {
               {pendingApprovals.slice(0, 5).map((row) => (
                 <tr
                   key={row.id}
-                  className="hover:bg-surface-container-low/50 cursor-pointer"
+                  className="zebra-row cursor-pointer"
                   onClick={() => navigate({ to: '/approvals/pending' })}
                 >
                   <td className="px-6 py-4 font-medium text-secondary">#{row.id}</td>
@@ -175,21 +173,21 @@ export function ApprovalCenterPage() {
                     <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                       <button
                         type="button"
-                        className="p-2 hover:bg-emerald-100 text-emerald-700 rounded-lg"
+                        className="p-2 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors"
                         title="Quick Approve"
                       >
                         <span className="material-symbols-outlined">check_circle</span>
                       </button>
                       <button
                         type="button"
-                        className="p-2 hover:bg-red-100 text-red-700 rounded-lg"
+                        className="p-2 hover:bg-red-100 text-red-700 rounded-lg transition-colors"
                         title="Quick Reject"
                       >
                         <span className="material-symbols-outlined">cancel</span>
                       </button>
                       <button
                         type="button"
-                        className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant"
+                        className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors"
                         title="View"
                       >
                         <span className="material-symbols-outlined">visibility</span>
@@ -210,10 +208,10 @@ export function ApprovalCenterPage() {
             <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary text-white font-bold text-sm">
               1
             </span>
-            <button type="button" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-sm">
+            <button type="button" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-sm transition-colors">
               2
             </button>
-            <button type="button" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-sm">
+            <button type="button" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-sm transition-colors">
               3
             </button>
           </div>
@@ -249,7 +247,7 @@ function KpiCard({
     <button
       type="button"
       onClick={onClick}
-      className="bg-surface-container-lowest border border-outline-variant p-4 rounded-xl shadow-sm text-left w-full hover:shadow-md"
+      className="bv-surface card-hover p-4 text-left w-full"
     >
       <div className="flex justify-between items-start mb-2">
         <span className={cn('p-2 rounded-lg', iconClass)}>
