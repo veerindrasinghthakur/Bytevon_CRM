@@ -17,7 +17,7 @@ export function SalaryManagementPage() {
   )
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <PageHeader
         title="Salary Management"
         description="View and manage employee gross salary configurations."
@@ -31,7 +31,7 @@ export function SalaryManagementPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary outline-none"
+            className="w-full pl-9 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-md focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none transition-colors"
             placeholder="Search employee, code, department..."
             type="text"
           />
@@ -39,7 +39,7 @@ export function SalaryManagementPage() {
         <p className="text-caption text-on-surface-variant">{rows.length} employees</p>
       </div>
 
-      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+      <section className="bv-surface overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -58,7 +58,7 @@ export function SalaryManagementPage() {
               {rows.map((r) => (
                 <tr
                   key={r.id}
-                  className="bv-row-hover cursor-pointer h-[72px]"
+                  className="zebra-row cursor-pointer h-[72px]"
                   onClick={() =>
                     navigate({ to: '/payroll/salary/$employeeId', params: { employeeId: r.id } })
                   }
