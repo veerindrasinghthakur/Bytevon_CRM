@@ -21,13 +21,13 @@ export function GeneratingPayrollPage() {
   const offset = circumference - (pct / 100) * circumference
 
   return (
-    <div className="min-h-[70vh] flex items-center justify-center relative">
+    <div className="min-h-[70vh] flex items-center justify-center relative animate-fade-in">
       <div
         className="absolute inset-0 opacity-[0.03] pointer-events-none"
         style={{ backgroundImage: 'radial-gradient(#001f3f 1px, transparent 1px)', backgroundSize: '24px 24px' }}
       />
 
-      <div className="w-full max-w-2xl bg-surface-container-lowest rounded-xl shadow-lg border border-outline-variant p-8 flex flex-col items-center text-center relative z-10 overflow-hidden">
+      <div className="w-full max-w-2xl bv-surface executive-shadow p-8 flex flex-col items-center text-center relative z-10 overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-1 bg-electric-blue w-full">
           <div
             className="h-full bg-secondary-container transition-all duration-1000 ease-in-out"
