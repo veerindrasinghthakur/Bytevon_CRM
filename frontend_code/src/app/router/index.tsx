@@ -53,7 +53,13 @@ import { ChangeAssignmentPage } from '@/modules/workforce/pages/ChangeAssignment
 
 import { ProfilePage } from '@/modules/profile/pages/ProfilePage'
 import { ActiveSessionsPage } from '@/modules/profile/pages/ActiveSessionsPage'
-import { NotificationsPage } from '@/modules/notifications/pages/NotificationsPage'
+import {
+  NotificationCenterPage,
+  ComposeNotificationPage,
+  SentNotificationsPage,
+  NotificationSettingsPage,
+  NotificationDetailPage,
+} from '@/modules/notifications'
 
 import {
   MyWorkOverviewPage,
@@ -130,17 +136,6 @@ import {
   EmployeePayrollHistoryPage,
   PayrollHistoryPage,
 } from '@/modules/payroll'
-
-function Placeholder({ title }: { title: string }) {
-  return (
-    <div>
-      <h1 className="text-headline-lg text-on-background mb-2">{title}</h1>
-      <p className="text-body-md text-on-surface-variant">
-        This module will be implemented next. Navigation and shell are ready.
-      </p>
-    </div>
-  )
-}
 
 function requireAuth() {
   const session = loadStoredSession()
@@ -248,7 +243,27 @@ const profileSessionsRoute = createRoute({
 const notificationsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/notifications',
-  component: NotificationsPage,
+  component: NotificationCenterPage,
+})
+const notificationsComposeRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/notifications/compose',
+  component: ComposeNotificationPage,
+})
+const notificationsSentRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/notifications/sent',
+  component: SentNotificationsPage,
+})
+const notificationsSettingsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/notifications/settings',
+  component: NotificationSettingsPage,
+})
+const notificationDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/notifications/$notificationId',
+  component: NotificationDetailPage,
 })
 
 const projectsIndexRoute = createRoute({
@@ -412,7 +427,6 @@ const workforceDepartmentDetailRoute = createRoute({
   path: '/workforce/departments/$departmentId',
   component: DepartmentDetailPage,
 })
-/** Teams shared with Projects module */
 const workforceTeamsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/workforce/teams',
@@ -428,7 +442,6 @@ const workforceTeamDetailRoute = createRoute({
   path: '/workforce/teams/$teamId',
   component: TeamDetailPage,
 })
-/** Shifts — same pages as Admin Settings */
 const workforceShiftsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/workforce/shifts',
@@ -868,7 +881,9 @@ const adminSecurityRoute = createRoute({
 const adminNotificationsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/notifications',
-  component: () => <Placeholder title="Notifications Management" />,
+  beforeLoad: () => {
+    throw redirect({ to: '/notifications/settings' })
+  },
 })
 
 const routeTree = rootRoute.addChildren([
@@ -885,6 +900,10 @@ const routeTree = rootRoute.addChildren([
     profileRoute,
     profileSessionsRoute,
     notificationsRoute,
+    notificationsComposeRoute,
+    notificationsSentRoute,
+    notificationsSettingsRoute,
+    notificationDetailRoute,
     projectsIndexRoute,
     projectsNewRoute,
     projectsDocumentsRoute,
