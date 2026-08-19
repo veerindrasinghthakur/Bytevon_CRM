@@ -50,7 +50,7 @@ export function ChangeAssignmentPage() {
     <div>
       <label className="text-label-sm text-on-surface-variant mb-1 block">{label}</label>
       <select
-        className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-sm"
+        className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-sm focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none transition-colors"
         value={form[key]}
         onChange={(e) => setForm((f) => ({ ...f, [key]: Number(e.target.value) }))}
       >
@@ -64,13 +64,13 @@ export function ChangeAssignmentPage() {
   )
 
   return (
-    <div className="space-y-6 max-w-xl">
+    <div className="space-y-6 max-w-xl animate-fade-in">
       <BackButton to={`/workforce/employees/${employeeId}`} label="Back to employee" />
       <PageHeader
         title="Change assignment"
         description="Creates a new employment_assignments row and closes the previous effective_to"
       />
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm space-y-4">
+      <div className="bv-surface p-6 space-y-4">
         {select('Department', 'department_id', departments)}
         {select('Position', 'position_id', positions)}
         {select('Location', 'location_id', locations)}
@@ -78,7 +78,7 @@ export function ChangeAssignmentPage() {
         <div>
           <label className="text-label-sm text-on-surface-variant mb-1 block">Work mode</label>
           <select
-            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-sm"
+            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-sm focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
             value={form.work_mode}
             onChange={(e) => setForm((f) => ({ ...f, work_mode: e.target.value }))}
           >
@@ -90,7 +90,7 @@ export function ChangeAssignmentPage() {
           <label className="text-label-sm text-on-surface-variant mb-1 block">Effective from</label>
           <input
             type="date"
-            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-sm"
+            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-sm focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
             value={form.effective_from}
             onChange={(e) => setForm((f) => ({ ...f, effective_from: e.target.value }))}
           />
@@ -98,7 +98,7 @@ export function ChangeAssignmentPage() {
         <div>
           <label className="text-label-sm text-on-surface-variant mb-1 block">Change reason</label>
           <input
-            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-sm"
+            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-sm focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
             value={form.change_reason}
             onChange={(e) => setForm((f) => ({ ...f, change_reason: e.target.value }))}
             placeholder="Promotion, transfer, relocation…"
