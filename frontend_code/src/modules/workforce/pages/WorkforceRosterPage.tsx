@@ -27,7 +27,6 @@ export function WorkforceRosterPage() {
     setLoading(true)
     listEmployments()
       .then((r) => {
-        // Demo roster statuses derived from employment id for UI parity
         setRows(
           r.items.map((e, i) => ({
             id: e.id,
@@ -46,21 +45,21 @@ export function WorkforceRosterPage() {
   if (error) return <ErrorState description={error} />
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Workforce attendance roster"
         description="Organization-wide attendance by date"
         actions={
           <input
             type="date"
-            className="rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm shadow-sm"
+            className="rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm executive-shadow"
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
         }
       />
 
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+      <div className="bv-surface overflow-hidden">
         <table className="w-full text-left">
           <thead>
             <tr className="bg-surface-container-low border-b border-outline-variant">
@@ -73,7 +72,7 @@ export function WorkforceRosterPage() {
           </thead>
           <tbody>
             {rows.map((r) => (
-              <tr key={r.id} className="border-b border-outline-variant last:border-0 bv-row-hover">
+              <tr key={r.id} className="border-b border-outline-variant last:border-0 zebra-row">
                 <td className="px-5 py-3 font-medium">{r.fullName}</td>
                 <td className="px-5 py-3 text-body-sm text-on-surface-variant">{r.employee_code}</td>
                 <td className="px-5 py-3 text-body-sm">{r.departmentName}</td>
