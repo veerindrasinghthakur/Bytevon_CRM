@@ -20,7 +20,7 @@ export function ClientCreatePage() {
   const [saving, setSaving] = useState(false)
 
   const fieldClass =
-    'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20'
+    'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors'
   const labelClass = 'block text-label-md text-on-surface-variant mb-1.5'
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,7 +32,7 @@ export function ClientCreatePage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="New Client"
         description="Register a client account and optional chat link."
@@ -55,7 +55,7 @@ export function ClientCreatePage() {
       />
 
       <form onSubmit={handleSubmit} className="space-y-5 max-w-3xl">
-        <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 space-y-4">
+        <section className="bv-surface p-6 space-y-4">
           <h2 className="text-title-md font-semibold">Account</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
@@ -104,7 +104,7 @@ export function ClientCreatePage() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 space-y-4">
+        <section className="bv-surface p-6 space-y-4">
           <h2 className="text-title-md font-semibold">Contact</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -134,7 +134,7 @@ export function ClientCreatePage() {
           </div>
         </section>
 
-        <section className="rounded-xl border border-secondary/30 bg-secondary/5 p-6 space-y-4">
+        <section className="rounded-xl border border-secondary/30 bg-secondary/5 p-6 space-y-4 executive-shadow">
           <h2 className="text-title-md font-semibold flex items-center gap-2">
             <span className="material-symbols-outlined text-secondary">chat</span>
             Chat with client
