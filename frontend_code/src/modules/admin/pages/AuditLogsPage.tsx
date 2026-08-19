@@ -38,7 +38,7 @@ export function AuditLogsPage() {
   }, [search, actionFilter, moduleFilter])
 
   return (
-    <div className="space-y-6 relative">
+    <div className="space-y-6 relative animate-fade-in">
       <PageHeader
         title="Audit Logs"
         description="Immutable record of significant administrative and security actions."
@@ -55,7 +55,6 @@ export function AuditLogsPage() {
         }
       />
 
-      {/* KPI strip */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard icon="event_note" value="1,284" title="Today's Activities" subtitle="Total audit events generated today." />
         <KpiCard icon="shield_person" value="342" title="Login Events" subtitle="Successful login and logout events." />
@@ -63,8 +62,7 @@ export function AuditLogsPage() {
         <KpiCard icon="terminal" value="51" title="System Events" subtitle="Background jobs and automation." />
       </section>
 
-      {/* Filters */}
-      <section className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm">
+      <section className="bv-surface p-5">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-label-md text-on-surface">Global Search</label>
@@ -75,7 +73,7 @@ export function AuditLogsPage() {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none text-body-sm bg-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none text-body-sm bg-transparent transition-colors"
                 placeholder="Search description, employee, ID..."
               />
             </div>
@@ -85,7 +83,7 @@ export function AuditLogsPage() {
             <select
               value={actionFilter}
               onChange={(e) => setActionFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 bg-transparent"
+              className="w-full px-4 py-2 border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 bg-transparent transition-colors"
             >
               {['All Actions', 'Create', 'Update', 'Delete', 'Login', 'Lock'].map((a) => (
                 <option key={a}>{a}</option>
@@ -97,7 +95,7 @@ export function AuditLogsPage() {
             <select
               value={moduleFilter}
               onChange={(e) => setModuleFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 bg-transparent"
+              className="w-full px-4 py-2 border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 bg-transparent transition-colors"
             >
               {['All Modules', 'Roles', 'Auth', 'Settings', 'Users'].map((m) => (
                 <option key={m}>{m}</option>
@@ -120,8 +118,7 @@ export function AuditLogsPage() {
         </div>
       </section>
 
-      {/* Table */}
-      <section className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+      <section className="bv-surface overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[960px]">
             <thead>
@@ -143,7 +140,7 @@ export function AuditLogsPage() {
                 return (
                   <tr
                     key={log.id}
-                    className="hover:bg-surface-container-low/50 cursor-pointer transition-colors"
+                    className="zebra-row cursor-pointer"
                     onClick={() => setDrawerLog(log)}
                   >
                     <td className="px-6 py-4 text-body-sm text-on-surface-variant whitespace-nowrap">
@@ -195,19 +192,18 @@ export function AuditLogsPage() {
         )}
       </section>
 
-      {/* Detail drawer */}
       {drawerLog && (
         <>
           <div
             className="fixed inset-0 bg-primary/20 backdrop-blur-sm z-40 transition-opacity"
             onClick={() => setDrawerLog(null)}
           />
-          <aside className="fixed top-0 right-0 h-full w-full max-w-md bg-surface-container-lowest border-l border-outline-variant shadow-2xl z-50 flex flex-col">
+          <aside className="fixed top-0 right-0 h-full w-full max-w-md bv-surface executive-shadow border-l border-outline-variant z-50 flex flex-col">
             <div className="flex items-center justify-between p-5 border-b border-outline-variant">
               <h3 className="text-title-lg font-semibold text-on-background">Event Details</h3>
               <button
                 type="button"
-                className="p-2 rounded-lg hover:bg-surface-container"
+                className="p-2 rounded-lg hover:bg-surface-container transition-colors"
                 onClick={() => setDrawerLog(null)}
               >
                 <span className="material-symbols-outlined">close</span>
@@ -241,7 +237,7 @@ function KpiCard({
   subtitle: string
 }) {
   return (
-    <div className="bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+    <div className="bv-surface card-hover p-6">
       <div className="flex items-center justify-between mb-2">
         <div className="w-10 h-10 rounded-lg bg-surface-container text-secondary flex items-center justify-center">
           <span className="material-symbols-outlined">{icon}</span>
