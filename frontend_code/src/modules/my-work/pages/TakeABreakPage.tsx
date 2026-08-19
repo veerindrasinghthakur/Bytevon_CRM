@@ -64,7 +64,7 @@ export function TakeABreakPage() {
   }
 
   return (
-    <div className="max-w-lg mx-auto space-y-6">
+    <div className="max-w-lg mx-auto space-y-6 animate-fade-in">
       <PageHeader
         title="Take a Break"
         description="Step away with a timed break, or start a free stopwatch and stop when you are back."
@@ -72,10 +72,10 @@ export function TakeABreakPage() {
 
       <div
         className={cn(
-          'rounded-2xl border shadow-sm p-8 flex flex-col items-center text-center gap-4',
+          'rounded-2xl border executive-shadow p-8 flex flex-col items-center text-center gap-4',
           running
             ? 'bg-secondary/5 border-secondary/30'
-            : 'bg-surface-container-lowest border-outline-variant'
+            : 'bv-surface'
         )}
       >
         <span
@@ -128,7 +128,7 @@ export function TakeABreakPage() {
                   placeholder="e.g. 15 — or leave blank for stopwatch"
                   value={minutesInput}
                   onChange={(e) => setMinutesInput(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary"
+                  className="w-full px-4 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary transition-colors"
                 />
                 <div className="flex flex-wrap gap-2 mt-2">
                   {PRESETS.map((m) => (
@@ -136,7 +136,7 @@ export function TakeABreakPage() {
                       key={m}
                       type="button"
                       onClick={() => setMinutesInput(String(m))}
-                      className="px-3 py-1 rounded-full text-label-sm font-medium border border-outline-variant hover:border-secondary hover:bg-secondary/5 text-on-surface"
+                      className="px-3 py-1 rounded-full text-label-sm font-medium border border-outline-variant hover:border-secondary hover:bg-secondary/5 text-on-surface transition-colors"
                     >
                       {m} min
                     </button>
@@ -144,7 +144,7 @@ export function TakeABreakPage() {
                   <button
                     type="button"
                     onClick={() => setMinutesInput('')}
-                    className="px-3 py-1 rounded-full text-label-sm font-medium border border-outline-variant hover:border-secondary hover:bg-secondary/5 text-on-surface-variant"
+                    className="px-3 py-1 rounded-full text-label-sm font-medium border border-outline-variant hover:border-secondary hover:bg-secondary/5 text-on-surface-variant transition-colors"
                   >
                     Stopwatch
                   </button>
@@ -160,7 +160,7 @@ export function TakeABreakPage() {
                   placeholder="Coffee, walk, lunch…"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary"
+                  className="w-full px-4 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary transition-colors"
                 />
               </div>
             </div>
@@ -171,7 +171,6 @@ export function TakeABreakPage() {
           </>
         )}
 
-        {/* keep tick referenced so eslint doesn't strip interval dependency */}
         <span className="sr-only">{tick}</span>
       </div>
 
