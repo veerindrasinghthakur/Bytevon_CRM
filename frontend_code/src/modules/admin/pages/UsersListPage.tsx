@@ -48,7 +48,7 @@ export function UsersListPage() {
   }, [q, items])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="User Management"
         description="Login accounts linked to employments. Add user only for employees without credentials."
@@ -73,7 +73,7 @@ export function UsersListPage() {
         <Metric icon="person_off" label="Shown" value={String(visible.length)} hint="After filter" />
       </section>
 
-      <section className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+      <section className="bv-surface overflow-hidden">
         <div className="p-4 border-b border-outline-variant flex flex-wrap gap-3 items-center">
           <div className="relative flex-1 min-w-[200px]">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
@@ -83,7 +83,7 @@ export function UsersListPage() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Filter by name, email, role, or code..."
-              className="w-full pl-10 pr-3 py-2 border border-outline-variant rounded-lg text-body-sm bg-transparent outline-none focus:ring-2 focus:ring-secondary/30"
+              className="w-full pl-10 pr-3 py-2 border border-outline-variant rounded-lg text-body-sm bg-transparent outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
             />
           </div>
         </div>
@@ -115,7 +115,7 @@ export function UsersListPage() {
               </thead>
               <tbody className="divide-y divide-outline-variant">
                 {visible.map((u) => (
-                  <tr key={u.id} className="bv-row-hover">
+                  <tr key={u.id} className="zebra-row">
                     <td
                       className="px-6 py-4 cursor-pointer"
                       onClick={() =>
@@ -150,7 +150,7 @@ export function UsersListPage() {
                     <td className="px-6 py-4 text-right">
                       <button
                         type="button"
-                        className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant hover:text-secondary"
+                        className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant hover:text-secondary transition-colors"
                         onClick={() =>
                           navigate({ to: '/admin/users/$userId', params: { userId: String(u.id) } })
                         }
@@ -183,7 +183,7 @@ function Metric({
   valueClass?: string
 }) {
   return (
-    <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm card-hover">
+    <div className="bv-surface card-hover p-5">
       <div className="flex justify-between items-start mb-3">
         <div className="p-2 rounded-lg bg-secondary/15 text-secondary">
           <span className="material-symbols-outlined">{icon}</span>
