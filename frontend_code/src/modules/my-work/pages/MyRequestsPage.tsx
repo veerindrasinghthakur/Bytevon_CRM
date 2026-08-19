@@ -27,7 +27,7 @@ export function MyRequestsPage() {
         )
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="My Requests"
         description="Track and manage your submitted organizational requests and their real-time statuses."
@@ -69,7 +69,7 @@ export function MyRequestsPage() {
         <StatCard icon="cancel" iconClass="bg-red-100 text-red-700" label="Rejected" value={4} />
       </section>
 
-      <section className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+      <section className="bv-surface overflow-hidden">
         <div className="p-4 border-b border-outline-variant flex items-center justify-between flex-wrap gap-3">
           <div className="flex gap-2 flex-wrap">
             {filters.map((f) => (
@@ -78,7 +78,7 @@ export function MyRequestsPage() {
                 type="button"
                 onClick={() => setFilter(f)}
                 className={cn(
-                  'px-4 py-1.5 rounded-full text-label-md font-medium',
+                  'px-4 py-1.5 rounded-full text-label-md font-medium transition-colors',
                   filter === f
                     ? 'bg-primary text-on-primary'
                     : 'hover:bg-surface-container-low text-on-surface-variant'
@@ -125,7 +125,7 @@ export function MyRequestsPage() {
               {visible.map((row) => (
                 <tr
                   key={row.id}
-                  className="hover:bg-surface-container-low group cursor-pointer"
+                  className="zebra-row group cursor-pointer"
                   onClick={() =>
                     navigate({
                       to: '/my-work/approvals/$requestId',
@@ -176,7 +176,7 @@ export function MyRequestsPage() {
                   <td className="px-6 py-5 text-right">
                     <button
                       type="button"
-                      className="opacity-0 group-hover:opacity-100 p-2 hover:bg-surface-container rounded-lg"
+                      className="opacity-0 group-hover:opacity-100 p-2 hover:bg-surface-container rounded-lg transition-all"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <span className="material-symbols-outlined text-on-surface-variant">more_vert</span>
@@ -201,13 +201,13 @@ export function MyRequestsPage() {
             </span>
             <button
               type="button"
-              className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-low text-label-md"
+              className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-low text-label-md transition-colors"
             >
               2
             </button>
             <button
               type="button"
-              className="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low"
+              className="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors"
             >
               <span className="material-symbols-outlined">chevron_right</span>
             </button>
@@ -232,7 +232,7 @@ function StatCard({
   badge?: string
 }) {
   return (
-    <div className="p-6 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
+    <div className="p-6 bv-surface card-hover">
       <div className="flex justify-between items-start mb-4">
         <span className={cn('material-symbols-outlined p-2 rounded-lg', iconClass)}>{icon}</span>
         {badge && (
