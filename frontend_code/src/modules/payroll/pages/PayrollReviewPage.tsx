@@ -17,13 +17,13 @@ export function PayrollReviewPage() {
   const netPayable = 7530
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
             <button
               type="button"
-              className="text-on-surface-variant hover:text-primary p-2 rounded-full hover:bg-surface-container-highest"
+              className="text-on-surface-variant hover:text-primary p-2 rounded-full hover:bg-surface-container-highest transition-colors"
               onClick={() => navigate({ to: '/payroll/monthly' })}
             >
               <span className="material-symbols-outlined">arrow_back</span>
@@ -83,7 +83,7 @@ export function PayrollReviewPage() {
           icon="trending_down"
           iconBg="bg-error-container text-on-error-container"
         />
-        <div className="bg-deep-navy border border-deep-navy rounded-lg p-6 shadow-sm flex flex-col justify-between relative overflow-hidden">
+        <div className="bg-deep-navy border border-deep-navy rounded-lg p-6 executive-shadow flex flex-col justify-between relative overflow-hidden">
           <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl" />
           <div className="flex items-start justify-between mb-4 relative z-10">
             <h3 className="text-body-sm text-inverse-primary">Net Payable</h3>
@@ -100,7 +100,7 @@ export function PayrollReviewPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8 flex flex-col gap-6">
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm overflow-hidden">
+          <section className="bv-surface overflow-hidden">
             <div className="px-6 py-4 border-b border-outline-variant flex items-center bg-surface-bright">
               <h2 className="text-title-lg font-semibold text-on-surface flex items-center gap-2">
                 <span className="material-symbols-outlined text-on-surface-variant">schedule</span>
@@ -116,7 +116,7 @@ export function PayrollReviewPage() {
                 ['Working Hours', '176h'],
                 ['Overtime Hours', '12h'],
               ].map(([l, v]) => (
-                <div key={l} className="bg-surface p-4 rounded-lg border border-surface-variant">
+                <div key={l} className="bg-surface p-4 rounded-lg border border-surface-variant card-hover">
                   <div className="text-body-sm text-on-surface-variant mb-1">{l}</div>
                   <div className="text-title-lg font-semibold text-on-surface">{v}</div>
                 </div>
@@ -124,7 +124,7 @@ export function PayrollReviewPage() {
             </div>
           </section>
 
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm overflow-hidden">
+          <section className="bv-surface overflow-hidden">
             <div className="px-6 py-4 border-b border-outline-variant bg-surface-bright">
               <h2 className="text-title-lg font-semibold text-on-surface flex items-center gap-2">
                 <span className="material-symbols-outlined text-on-surface-variant">receipt_long</span>
@@ -177,7 +177,7 @@ export function PayrollReviewPage() {
         </div>
 
         <div className="lg:col-span-4 flex flex-col gap-6">
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm p-6">
+          <section className="bv-surface p-6">
             <h3 className="text-title-lg font-semibold text-on-surface mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined text-on-surface-variant">tune</span>
               Adjustments
@@ -206,7 +206,7 @@ export function PayrollReviewPage() {
             </div>
           </section>
 
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-lg shadow-sm overflow-hidden flex flex-col">
+          <section className="bv-surface overflow-hidden flex flex-col">
             <div className="p-6 flex-grow">
               <h3 className="text-title-lg font-semibold text-on-surface mb-6 flex items-center gap-2">
                 <span className="material-symbols-outlined text-on-surface-variant">calculate</span>
@@ -234,7 +234,7 @@ export function PayrollReviewPage() {
             <div className="p-6 bg-surface-bright border-t border-outline-variant flex flex-col gap-3">
               <button
                 type="button"
-                className="w-full bg-deep-navy text-white font-medium py-3 px-4 rounded-lg hover:opacity-90 transition-colors flex items-center justify-center gap-2 shadow-sm"
+                className="w-full bg-deep-navy text-white font-medium py-3 px-4 rounded-lg hover:opacity-90 transition-colors flex items-center justify-center gap-2 executive-shadow"
                 onClick={() => setShowPayModal(false)}
               >
                 <span className="material-symbols-outlined text-[20px]">check_circle</span>
@@ -291,7 +291,7 @@ function MetricCard({
   iconBg: string
 }) {
   return (
-    <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 shadow-sm flex flex-col justify-between">
+    <div className="bv-surface card-hover p-6 flex flex-col justify-between">
       <div className="flex items-start justify-between mb-4">
         <h3 className="text-body-sm text-on-surface-variant">{title}</h3>
         <div className={cn('p-2 rounded-lg', iconBg)}>
@@ -324,10 +324,10 @@ function RecordPaymentModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-surface-container-lowest/80 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-surface-container-lowest w-full max-w-2xl rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-outline-variant flex flex-col overflow-hidden z-10">
+      <div className="relative bv-surface executive-shadow w-full max-w-2xl flex flex-col overflow-hidden z-10">
         <div className="flex items-center justify-between px-6 py-5 border-b border-outline-variant">
           <h2 className="text-title-lg font-semibold text-on-surface">Record Payroll Payment</h2>
-          <button type="button" className="text-on-surface-variant hover:text-on-surface p-2 rounded-full hover:bg-surface-container-highest" onClick={onClose}>
+          <button type="button" className="text-on-surface-variant hover:text-on-surface p-2 rounded-full hover:bg-surface-container-highest transition-colors" onClick={onClose}>
             <span className="material-symbols-outlined text-[20px]">close</span>
           </button>
         </div>
@@ -361,7 +361,7 @@ function RecordPaymentModal({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="flex flex-col gap-1">
               <label className="text-label-md text-on-surface">Payment Method</label>
-              <select className="w-full bg-surface-container-lowest border border-outline-variant rounded text-body-md py-2.5 pl-3 pr-10 focus:border-electric-blue focus:ring-1 focus:ring-electric-blue outline-none">
+              <select className="w-full bg-surface-container-lowest border border-outline-variant rounded text-body-md py-2.5 pl-3 pr-10 focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none transition-colors">
                 <option value="neft">NEFT</option>
                 <option value="bank_transfer">Bank Transfer</option>
                 <option value="other">Other</option>
@@ -369,14 +369,14 @@ function RecordPaymentModal({
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-label-md text-on-surface">Payment Date</label>
-              <input type="date" defaultValue="2026-08-31" className="w-full bg-surface-container-lowest border border-outline-variant rounded text-body-md py-2.5 px-3 focus:border-electric-blue focus:ring-1 focus:ring-electric-blue outline-none" />
+              <input type="date" defaultValue="2026-08-31" className="w-full bg-surface-container-lowest border border-outline-variant rounded text-body-md py-2.5 px-3 focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none transition-colors" />
             </div>
             <div className="flex flex-col gap-1 md:col-span-2">
               <label className="text-label-md text-on-surface">Payment Reference (UTR / Txn ID)</label>
               <input
                 type="text"
                 placeholder="e.g. HDFC000123456789"
-                className="w-full bg-surface-container-lowest border border-outline-variant rounded text-body-md py-2.5 px-3 focus:border-electric-blue focus:ring-1 focus:ring-electric-blue outline-none"
+                className="w-full bg-surface-container-lowest border border-outline-variant rounded text-body-md py-2.5 px-3 focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
               />
             </div>
           </div>
@@ -409,7 +409,7 @@ function RecordPaymentModal({
           </button>
           <button
             type="button"
-            className="px-5 py-2.5 rounded font-medium text-on-primary bg-electric-blue hover:bg-secondary transition-colors flex items-center gap-2 shadow-sm"
+            className="px-5 py-2.5 rounded font-medium text-on-primary bg-electric-blue hover:bg-secondary transition-colors flex items-center gap-2 executive-shadow"
             onClick={onConfirm}
           >
             <span className="material-symbols-outlined text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>
