@@ -32,7 +32,7 @@ export function RunPayrollPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <div className="flex items-center gap-2 text-on-surface-variant text-label-md">
         <button type="button" className="hover:text-secondary transition-colors" onClick={() => navigate({ to: '/payroll' })}>
           Payroll
@@ -68,7 +68,7 @@ export function RunPayrollPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
         <div className="space-y-4 lg:col-span-1">
-          <section className="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-5">
+          <section className="bv-surface p-5">
             <div className="flex items-center gap-2 mb-4">
               <span className="material-symbols-outlined text-primary">calendar_month</span>
               <h2 className="text-headline-md font-semibold text-deep-navy">Payroll Period</h2>
@@ -76,7 +76,7 @@ export function RunPayrollPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-label-bold text-on-surface-variant uppercase">Month</label>
-                <select className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-2 pl-3 pr-8 text-body-md focus:ring-1 focus:ring-primary outline-none">
+                <select className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-2 pl-3 pr-8 text-body-md focus:ring-2 focus:ring-secondary/30 outline-none transition-colors">
                   <option>October</option>
                   <option>November</option>
                   <option>December</option>
@@ -84,7 +84,7 @@ export function RunPayrollPage() {
               </div>
               <div className="space-y-1">
                 <label className="text-label-bold text-on-surface-variant uppercase">Year</label>
-                <select className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-2 pl-3 pr-8 text-body-md focus:ring-1 focus:ring-primary outline-none">
+                <select className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-2 pl-3 pr-8 text-body-md focus:ring-2 focus:ring-secondary/30 outline-none transition-colors">
                   <option>2023</option>
                   <option>2024</option>
                 </select>
@@ -92,7 +92,7 @@ export function RunPayrollPage() {
             </div>
           </section>
 
-          <section className="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant p-5">
+          <section className="bv-surface p-5">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">fact_check</span>
@@ -126,7 +126,7 @@ export function RunPayrollPage() {
         </div>
 
         <div className="space-y-4 lg:col-span-2">
-          <section className="bg-surface-container-lowest rounded-xl shadow-sm border border-outline-variant overflow-hidden flex flex-col">
+          <section className="bv-surface overflow-hidden flex flex-col">
             <div className="p-5 border-b border-outline-variant flex justify-between items-center bg-surface-bright">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">analytics</span>
@@ -143,7 +143,7 @@ export function RunPayrollPage() {
               ].map((m) => (
                 <div
                   key={m.label}
-                  className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant"
+                  className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant card-hover"
                 >
                   <p className="text-label-bold text-on-surface-variant uppercase mb-1">{m.label}</p>
                   <p className={cn('text-headline-lg font-semibold text-deep-navy', m.valueClass)}>{m.value}</p>
@@ -165,7 +165,7 @@ export function RunPayrollPage() {
                 </thead>
                 <tbody className="divide-y divide-outline-variant">
                   {payrollEmployees.slice(0, 4).map((r) => (
-                    <tr key={r.id} className="h-[72px] bv-row-hover">
+                    <tr key={r.id} className="h-[72px] zebra-row">
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-secondary-container text-primary flex items-center justify-center font-bold text-label-bold">
@@ -193,7 +193,7 @@ export function RunPayrollPage() {
             </div>
           </section>
 
-          <section className="bg-surface-container-low rounded-xl shadow-sm border border-outline-variant p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+          <section className="bg-surface-container-low rounded-xl executive-shadow border border-outline-variant p-6 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex-1">
               <p className="text-label-bold text-on-surface-variant uppercase mb-2">Estimated Net Payroll</p>
               <p className="text-headline-lg font-bold text-primary tracking-tight">$212,800.00</p>
@@ -211,7 +211,7 @@ export function RunPayrollPage() {
             <button
               type="button"
               onClick={() => navigate({ to: '/payroll/generating' })}
-              className="w-full md:w-auto flex items-center justify-center gap-2 font-semibold text-body-md px-8 py-4 rounded-xl bg-deep-navy text-on-primary hover:opacity-90 shadow-sm transition-all"
+              className="w-full md:w-auto flex items-center justify-center gap-2 font-semibold text-body-md px-8 py-4 rounded-xl bg-deep-navy text-on-primary hover:opacity-90 executive-shadow transition-all"
             >
               <span className="material-symbols-outlined">play_arrow</span>
               Generate Payroll
