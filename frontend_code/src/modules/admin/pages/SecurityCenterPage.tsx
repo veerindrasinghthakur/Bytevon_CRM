@@ -6,9 +6,7 @@ import { cn } from '@/shared/lib/cn'
 
 export function SecurityCenterPage() {
   const [score, setScore] = useState(1)
-  const [mfa, setMfa] = useState(true)
-  const [adaptive, setAdaptive] = useState(true)
-  const [sessionTimeout, setSessionTimeout] = useState(false)
+  const [sessionTimeout, setSessionTimeout] = useState(true)
 
   useEffect(() => {
     let frame = 0
@@ -26,7 +24,7 @@ export function SecurityCenterPage() {
     <div className="space-y-6">
       <PageHeader
         title="Security Center"
-        description="Sessions, lockouts, authentication policy, and infrastructure posture."
+        description="Sessions, lockouts, authentication policy, and infrastructure posture. MFA is not available in V1."
         actions={
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 px-3 py-1 bg-surface-container-low rounded-full border border-outline-variant/30">
@@ -40,7 +38,6 @@ export function SecurityCenterPage() {
         }
       />
 
-      {/* Health Score */}
       <section className="flex flex-col md:flex-row items-center justify-between bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
         <div className="flex items-center gap-6">
           <div
@@ -57,48 +54,37 @@ export function SecurityCenterPage() {
           <div>
             <h2 className="text-title-lg font-semibold text-primary">Security Health Score</h2>
             <p className="text-body-md text-on-surface-variant max-w-md">
-              Your security posture is strong. 2 minor optimizations available in Infrastructure
-              Security settings.
+              Auth V1: no MFA, no password history. Session lockout and revoke-all are supported.
             </p>
           </div>
         </div>
-        <Button
-          variant="primary"
-          className="mt-4 md:mt-0 shadow-lg shadow-secondary/20 active:scale-95 transition-transform"
-        >
-          Run Vulnerability Scan
-        </Button>
       </section>
 
-      {/* KPI cards */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-all group">
+        <div className="bg-surface-container-lowest p-5 rounded-xl border border-dashed border-outline-variant shadow-sm opacity-70 relative">
+          <span className="absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded">
+            Not available
+          </span>
           <div className="flex justify-between items-start mb-3">
-            <span className="material-symbols-outlined p-2 bg-secondary/10 text-secondary rounded-lg">
+            <span className="material-symbols-outlined p-2 bg-surface-container text-outline rounded-lg">
               fingerprint
             </span>
-            <span className="text-green-600 font-bold text-label-sm">+2% vs LW</span>
           </div>
           <p className="text-on-surface-variant text-label-md">MFA Adoption</p>
-          <h3 className="text-3xl font-black text-primary">{adminKpis.mfaAdoption}%</h3>
-          <div className="mt-3 w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
-            <div
-              className="bg-secondary h-full rounded-full group-hover:scale-x-105 transition-transform origin-left"
-              style={{ width: `${adminKpis.mfaAdoption}%` }}
-            />
-          </div>
+          <h3 className="text-3xl font-black text-outline">—</h3>
+          <p className="text-label-sm text-on-surface-variant mt-1">Multi-factor auth is not in product V1</p>
         </div>
 
-        <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-all group">
+        <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm card-hover">
           <div className="flex justify-between items-start mb-3">
             <span className="material-symbols-outlined p-2 bg-blue-100 text-blue-600 rounded-lg">hub</span>
           </div>
-          <p className="text-on-surface-variant text-label-md">Active SSO Sessions</p>
+          <p className="text-on-surface-variant text-label-md">Active Sessions</p>
           <h3 className="text-3xl font-black text-primary">1,240</h3>
-          <p className="text-label-sm text-on-surface-variant/60 mt-1">Global coverage active</p>
+          <p className="text-label-sm text-on-surface-variant/60 mt-1">Refresh tokens hashed on sessions</p>
         </div>
 
-        <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-all group">
+        <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm card-hover">
           <div className="flex justify-between items-start mb-3">
             <span className="material-symbols-outlined p-2 bg-green-100 text-green-600 rounded-lg">
               check_circle
@@ -106,10 +92,9 @@ export function SecurityCenterPage() {
           </div>
           <p className="text-on-surface-variant text-label-md">Open Security Alerts</p>
           <h3 className="text-3xl font-black text-green-600">{adminKpis.openAlerts}</h3>
-          <p className="text-label-sm text-green-600/80 mt-1">All threats mitigated</p>
         </div>
 
-        <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-all group">
+        <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm card-hover">
           <div className="flex justify-between items-start mb-3">
             <span className="material-symbols-outlined p-2 bg-amber-100 text-amber-600 rounded-lg">
               history
@@ -117,41 +102,28 @@ export function SecurityCenterPage() {
           </div>
           <p className="text-on-surface-variant text-label-md">Last System Audit</p>
           <h3 className="text-3xl font-black text-primary">2h ago</h3>
-          <p className="text-label-sm text-amber-600 mt-1">Full integrity report ready</p>
         </div>
       </section>
 
-      {/* Auth + Infrastructure bento */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-4">
         <div className="lg:col-span-7 bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-title-lg font-semibold text-primary">Authentication Protocols</h3>
-            <button type="button" className="text-secondary text-label-md font-bold hover:underline">
-              Advanced Rules
-            </button>
-          </div>
+          <h3 className="text-title-lg font-semibold text-primary mb-6">Authentication Protocols</h3>
           <div className="space-y-3">
-            <ProtocolRow
+            <UnavailableProtocol
               icon="security"
-              iconClass="bg-primary text-white"
               title="Global MFA Enforcement"
-              description="Require multi-factor for all user levels."
-              checked={mfa}
-              onChange={setMfa}
+              description="Multi-factor authentication is not available in V1."
             />
-            <ProtocolRow
+            <UnavailableProtocol
               icon="psychology"
-              iconClass="bg-surface-container text-primary"
               title="Adaptive Authentication"
-              description="Step-up auth based on risk signals."
-              checked={adaptive}
-              onChange={setAdaptive}
+              description="Step-up auth / risk signals — planned for a later release."
             />
             <ProtocolRow
               icon="timer"
               iconClass="bg-surface-container text-primary"
               title="Session Timeout Rules"
-              description="Force re-auth after 30 mins of inactivity."
+              description="Access JWT 5–10 min; inactivity re-auth supported."
               checked={sessionTimeout}
               onChange={setSessionTimeout}
             />
@@ -159,62 +131,35 @@ export function SecurityCenterPage() {
         </div>
 
         <div className="lg:col-span-5 bg-primary text-white rounded-xl shadow-sm p-6 flex flex-col">
-          <h3 className="text-title-lg font-semibold text-white mb-6">Infrastructure Security</h3>
-          <div className="space-y-4 flex-1">
-            <div className="p-4 bg-white/5 rounded-lg border border-white/10">
-              <div className="flex justify-between items-center mb-3">
-                <p className="font-bold text-white flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px]">dns</span>
-                  IP Whitelisting
-                </p>
-                <span className="text-label-sm bg-secondary px-2 py-0.5 rounded text-white">Active</span>
-              </div>
-              <div className="space-y-1">
-                <div className="flex justify-between text-body-sm opacity-80">
-                  <span>Primary HQ</span>
-                  <code>192.168.1.0/24</code>
-                </div>
-                <div className="flex justify-between text-body-sm opacity-80">
-                  <span>Cloud Relay</span>
-                  <code>10.0.4.15/32</code>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="w-full mt-4 py-2 border border-white/20 rounded hover:bg-white/10 transition-all text-label-md"
-              >
-                Manage Ranges
-              </button>
-            </div>
-            <div className="p-4 bg-white/5 rounded-lg border border-white/10">
-              <div className="flex justify-between items-center mb-3">
-                <p className="font-bold text-white flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px]">public</span>
-                  Login Geo-fencing
-                </p>
-                <span className="text-label-sm bg-white/20 px-2 py-0.5 rounded text-white">Restricted</span>
-              </div>
-              <p className="text-body-sm opacity-70">
-                Blocking 14 unauthorized regions. Active policy:{' '}
-                <strong>Strict-North-America</strong>
-              </p>
-            </div>
-          </div>
+          <h3 className="text-title-lg font-semibold text-white mb-6">V1 Policy</h3>
+          <ul className="space-y-3 text-body-sm text-white/85 flex-1">
+            <li className="flex gap-2">
+              <span className="material-symbols-outlined text-[18px]">check</span>
+              No MFA in V1
+            </li>
+            <li className="flex gap-2">
+              <span className="material-symbols-outlined text-[18px]">check</span>
+              No password history
+            </li>
+            <li className="flex gap-2">
+              <span className="material-symbols-outlined text-[18px]">check</span>
+              Account lockout via failed_attempt_count + locked_until
+            </li>
+            <li className="flex gap-2">
+              <span className="material-symbols-outlined text-[18px]">check</span>
+              Always ≥1 super-admin
+            </li>
+            <li className="flex gap-2">
+              <span className="material-symbols-outlined text-[18px]">check</span>
+              Forgot-password with single-use hashed tokens
+            </li>
+          </ul>
         </div>
       </section>
 
-      {/* Recent security events */}
       <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
         <div className="flex items-center justify-between p-6 border-b border-outline-variant">
           <h3 className="text-title-lg font-semibold text-primary">Recent Security Events</h3>
-          <div className="flex gap-2">
-            <span className="px-3 py-1 bg-surface-container rounded text-label-md cursor-pointer hover:bg-surface-variant transition-colors">
-              All Logs
-            </span>
-            <span className="px-3 py-1 bg-surface-container rounded text-label-md cursor-pointer hover:bg-surface-variant transition-colors">
-              Errors Only
-            </span>
-          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
@@ -229,7 +174,7 @@ export function SecurityCenterPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {securityEvents.map((ev) => (
-                <tr key={ev.id} className="hover:bg-surface-container-low/40 transition-colors">
+                <tr key={ev.id} className="bv-row-hover">
                   <td className="px-6 py-4 text-body-sm font-medium text-on-surface">{ev.eventType}</td>
                   <td className="px-6 py-4 text-body-sm text-on-surface-variant">{ev.identity}</td>
                   <td className="px-6 py-4 text-body-sm text-on-surface-variant">{ev.source}</td>
@@ -240,7 +185,7 @@ export function SecurityCenterPage() {
                         'inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-bold',
                         ev.status === 'Success' && 'bg-green-100 text-green-700',
                         ev.status === 'Blocked' && 'bg-red-100 text-red-700',
-                        ev.status === 'Warning' && 'bg-amber-100 text-amber-800'
+                        ev.status === 'Warning' && 'bg-amber-100 text-amber-800',
                       )}
                     >
                       {ev.status}
@@ -252,33 +197,33 @@ export function SecurityCenterPage() {
           </table>
         </div>
       </section>
+    </div>
+  )
+}
 
-      {/* V1 policy notes */}
-      <section className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6 space-y-3">
-        <h3 className="text-title-lg font-semibold text-on-background">Password &amp; Session Policy (V1)</h3>
-        <ul className="space-y-2 text-body-md text-on-surface-variant">
-          <li className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-secondary text-[18px]">check</span>
-            Access JWT lifetime: 5–10 minutes (not stored)
-          </li>
-          <li className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-secondary text-[18px]">check</span>
-            Refresh tokens hashed on sessions; revoke-all supported
-          </li>
-          <li className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-secondary text-[18px]">check</span>
-            Account lockout via failed_attempt_count + locked_until
-          </li>
-          <li className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-secondary text-[18px]">check</span>
-            Always ≥1 super-admin; last super-admin cannot be removed
-          </li>
-          <li className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-on-surface-variant text-[18px]">remove</span>
-            Password history and MFA not enforced in product V1 (UI preview only)
-          </li>
-        </ul>
-      </section>
+function UnavailableProtocol({
+  icon,
+  title,
+  description,
+}: {
+  icon: string
+  title: string
+  description: string
+}) {
+  return (
+    <div className="flex items-center justify-between p-4 bg-surface-container-low/50 border border-dashed border-outline-variant rounded-lg opacity-75">
+      <div className="flex gap-4 items-center">
+        <div className="p-3 rounded-lg bg-surface-container text-outline">
+          <span className="material-symbols-outlined">{icon}</span>
+        </div>
+        <div>
+          <p className="font-bold text-on-surface-variant">{title}</p>
+          <p className="text-body-sm text-on-surface-variant">{description}</p>
+        </div>
+      </div>
+      <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant bg-surface-container px-2 py-1 rounded shrink-0">
+        Not available
+      </span>
     </div>
   )
 }
@@ -316,13 +261,13 @@ function ProtocolRow({
         onClick={() => onChange(!checked)}
         className={cn(
           'relative w-11 h-6 rounded-full transition-colors',
-          checked ? 'bg-secondary' : 'bg-outline-variant'
+          checked ? 'bg-secondary' : 'bg-outline-variant',
         )}
       >
         <span
           className={cn(
             'absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all',
-            checked ? 'left-[22px]' : 'left-0.5'
+            checked ? 'left-[22px]' : 'left-0.5',
           )}
         />
       </button>
