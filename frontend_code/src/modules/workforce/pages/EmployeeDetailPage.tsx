@@ -5,9 +5,9 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { cn } from '@/shared/lib/cn'
-import { getEmployeeDetail } from '../api/employment'
+import { getEmployeeDetail, updateEmployment } from '../api/employment'
 import type { EmployeeDetailDto } from '@/shared/schema'
-import {Can} from '@/shared/rbac'
+import { Can } from '@/shared/rbac'
 import { Action, ResourceName } from '@/shared/schema'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -26,6 +26,9 @@ function formatMoney(n: number) {
   }).format(n)
 }
 
+const inputClass =
+  'w-full rounded-lg border border-outline-variant px-3 py-2 text-body-sm outline-none focus:border-secondary bg-transparent'
+
 export function EmployeeDetailPage() {
   const { employeeId } = useParams({ strict: false }) as { employeeId: string }
   const navigate = useNavigate()
@@ -34,27 +37,87 @@ export function EmployeeDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [tab, setTab] = useState<'overview' | 'history' | 'salary' | 'documents'>('overview')
+  const [editing, setEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
-    let cancelled = false
+  // Edit form — seeded from loaded detail
+  const [firstName, setFirstName] = useState('')
+  const [lastName, setLastName] = useState('')
+  const [personalEmail, setPersonalEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [address, setAddress] = useState('')
+  const [dob, setDob] = useState('')
+
+  const load = async () => {
     setLoading(true)
     setError(null)
-    getEmployeeDetail(id)
-      .then((dto) => {
-        if (cancelled) return
-        if (!dto) setError('Employee not found')
+    try {
+      const dto = await getEmployeeDetail(id)
+      if (!dto) {
+        setError('Employee not found')
+        setData(null)
+      } else {
         setData(dto)
-      })
-      .catch((e: Error) => {
-        if (!cancelled) setError(e.message || 'Failed to load employee')
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false)
-      })
-    return () => {
-      cancelled = true
+        setFirstName(dto.person.first_name)
+        setLastName(dto.person.last_name)
+        setPersonalEmail(dto.person.personal_email ?? '')
+        setPhone(dto.person.personal_phone ?? '')
+        setAddress(dto.person.address ?? '')
+        setDob(dto.person.date_of_birth ?? '')
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to load')
+    } finally {
+      setLoading(false)
     }
+  }
+
+  useEffect(() => {
+    void load()
   }, [id])
+
+  const startEdit = () => {
+    if (!data) return
+    setFirstName(data.person.first_name)
+    setLastName(data.person.last_name)
+    setPersonalEmail(data.person.personal_email ?? '')
+    setPhone(data.person.personal_phone ?? '')
+    setAddress(data.person.address ?? '')
+    setDob(data.person.date_of_birth ?? '')
+    setEditing(true)
+  }
+
+  const cancelEdit = () => {
+    setEditing(false)
+    if (data) {
+      setFirstName(data.person.first_name)
+      setLastName(data.person.last_name)
+      setPersonalEmail(data.person.personal_email ?? '')
+      setPhone(data.person.personal_phone ?? '')
+      setAddress(data.person.address ?? '')
+      setDob(data.person.date_of_birth ?? '')
+    }
+  }
+
+  const saveEdit = async () => {
+    setSaving(true)
+    try {
+      await updateEmployment(id, {
+        firstName,
+        lastName,
+        personalEmail: personalEmail || null,
+        personalPhone: phone || null,
+        address: address || null,
+        dateOfBirth: dob || null,
+      })
+      setEditing(false)
+      await load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Save failed')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -96,17 +159,25 @@ export function EmployeeDetailPage() {
         actions={
           <div className="flex flex-wrap gap-2">
             <Can action={Action.UPDATE} resource={ResourceName.EMPLOYMENT}>
-              <Button
-                variant="primary"
-                leftIcon={<Icon name="edit" className="text-lg" />}
-                onClick={() => navigate({ to: '/workforce/employees/new' })}
-              >
-                Edit Employee
-              </Button>
+              {editing ? (
+                <>
+                  <Button variant="outline" size="sm" onClick={cancelEdit}>
+                    Cancel
+                  </Button>
+                  <Button variant="primary" size="sm" isLoading={saving} onClick={saveEdit}>
+                    Save
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="primary"
+                  leftIcon={<Icon name="edit" className="text-lg" />}
+                  onClick={startEdit}
+                >
+                  Edit Employee
+                </Button>
+              )}
             </Can>
-            <Button variant="outline" leftIcon={<Icon name="print" className="text-lg" />}>
-              Print
-            </Button>
           </div>
         }
       />
@@ -121,7 +192,52 @@ export function EmployeeDetailPage() {
         <span className="text-label-sm text-on-surface-variant">
           Emp code: {data.employment.employee_code}
         </span>
+        {data.hasLogin && (
+          <span className="text-label-sm text-emerald-700">Login: {data.loginEmail}</span>
+        )}
       </div>
+
+      {editing && (
+        <div className="bg-surface-container-lowest border border-secondary/30 rounded-xl p-6 shadow-sm space-y-4">
+          <h3 className="text-title-lg font-semibold flex items-center gap-2">
+            <Icon name="edit" className="text-secondary" /> Edit profile
+          </h3>
+          <p className="text-body-sm text-on-surface-variant">
+            Fields are pre-filled from the current employee record.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label className="text-label-sm text-on-surface-variant">First name</label>
+              <input className={inputClass} value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-label-sm text-on-surface-variant">Last name</label>
+              <input className={inputClass} value={lastName} onChange={(e) => setLastName(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-label-sm text-on-surface-variant">Date of birth</label>
+              <input className={inputClass} type="date" value={dob} onChange={(e) => setDob(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-label-sm text-on-surface-variant">Personal email</label>
+              <input
+                className={inputClass}
+                type="email"
+                value={personalEmail}
+                onChange={(e) => setPersonalEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="text-label-sm text-on-surface-variant">Phone</label>
+              <input className={inputClass} value={phone} onChange={(e) => setPhone(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-label-sm text-on-surface-variant">Address</label>
+              <input className={inputClass} value={address} onChange={(e) => setAddress(e.target.value)} />
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-3 space-y-4">
@@ -237,17 +353,14 @@ export function EmployeeDetailPage() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
                   <h4 className="text-label-md text-on-surface-variant uppercase tracking-wider mb-3">
-                    State history (append-only)
+                    State history
                   </h4>
                   {data.stateHistory.length === 0 ? (
-                    <p className="text-body-sm text-on-surface-variant">No state transitions recorded.</p>
+                    <p className="text-body-sm text-on-surface-variant">No state transitions.</p>
                   ) : (
                     <ul className="space-y-2">
                       {data.stateHistory.map((h) => (
-                        <li
-                          key={h.id}
-                          className="rounded-lg border border-outline-variant p-3 text-body-sm card-hover"
-                        >
+                        <li key={h.id} className="rounded-lg border border-outline-variant p-3 text-body-sm card-hover">
                           <p className="font-semibold">
                             {h.previous_state ?? '—'} → {h.new_state}
                           </p>
@@ -269,17 +382,14 @@ export function EmployeeDetailPage() {
                   ) : (
                     <ul className="space-y-2">
                       {data.assignmentHistory.map((a) => (
-                        <li
-                          key={a.id}
-                          className="rounded-lg border border-outline-variant p-3 text-body-sm card-hover"
-                        >
+                        <li key={a.id} className="rounded-lg border border-outline-variant p-3 text-body-sm card-hover">
                           <p className="font-semibold">
-                            Dept #{a.department_id} · Position #{a.position_id} · {a.work_mode}
+                            {data.department?.name ?? `Dept #${a.department_id}`} ·{' '}
+                            {data.position?.name ?? `Pos #${a.position_id}`} · {a.work_mode}
                           </p>
                           <p className="text-on-surface-variant">
                             {a.effective_from} → {a.effective_to ?? 'present'}
                           </p>
-                          <p className="text-on-surface-variant">{a.change_reason}</p>
                         </li>
                       ))}
                     </ul>
@@ -293,9 +403,7 @@ export function EmployeeDetailPage() {
                 action={Action.VIEW}
                 resource={ResourceName.SALARY}
                 fallback={
-                  <p className="text-body-sm text-on-surface-variant">
-                    You do not have permission to view salary.
-                  </p>
+                  <p className="text-body-sm text-on-surface-variant">No permission to view salary.</p>
                 }
               >
                 {data.currentSalary ? (
@@ -303,12 +411,6 @@ export function EmployeeDetailPage() {
                     <div className="bg-primary text-on-primary p-6 rounded-xl">
                       <p className="text-sm opacity-80 uppercase mb-1">Current gross salary</p>
                       <p className="text-4xl font-bold">{formatMoney(data.currentSalary.gross_salary)}</p>
-                      <p className="text-sm opacity-80 mt-2">
-                        Effective {data.currentSalary.effective_from}
-                        {data.currentSalary.effective_to
-                          ? ` → ${data.currentSalary.effective_to}`
-                          : ' → present'}
-                      </p>
                     </div>
                     <Link
                       to="/payroll/salary/$employeeId"
@@ -327,9 +429,7 @@ export function EmployeeDetailPage() {
             {tab === 'documents' && (
               <div className="rounded-lg border border-dashed border-outline-variant p-8 text-center">
                 <Icon name="folder_open" className="text-4xl text-on-surface-variant" />
-                <p className="mt-2 text-body-sm text-on-surface-variant">
-                  Documents will load from document_links once the Documents module is wired.
-                </p>
+                <p className="mt-2 text-body-sm text-on-surface-variant">Documents module wiring pending.</p>
               </div>
             )}
           </div>

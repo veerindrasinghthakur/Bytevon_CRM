@@ -1,49 +1,57 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
 import {
   createUserLogin,
   listEmploymentsWithoutLogin,
   listRoles,
   type EmploymentWithoutLogin,
 } from '../api/users'
+import { listDepartments } from '@/modules/workforce/api/departments'
 import type { RoleRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 
 export function UserCreatePage() {
   const navigate = useNavigate()
-  // Optional pre-select from employee create success
   const search = useSearch({ strict: false }) as { employmentId?: string }
   const preselectId = search?.employmentId ? Number(search.employmentId) : null
 
   const [candidates, setCandidates] = useState<EmploymentWithoutLogin[]>([])
   const [roles, setRoles] = useState<RoleRow[]>([])
+  const [deptFilter, setDeptFilter] = useState('')
+  const [deptOptions, setDeptOptions] = useState<{ value: string; label: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  const [employmentId, setEmploymentId] = useState<number | ''>(preselectId ?? '')
+  const [employmentId, setEmploymentId] = useState('')
   const [email, setEmail] = useState('')
   const [tempPassword, setTempPassword] = useState('')
-  const [roleId, setRoleId] = useState<number | ''>('')
+  const [roleId, setRoleId] = useState('')
   const [sendInvite, setSendInvite] = useState(true)
 
   useEffect(() => {
     let cancelled = false
     ;(async () => {
       setLoading(true)
-      const [emps, roleList] = await Promise.all([
+      const [emps, roleList, depts] = await Promise.all([
         listEmploymentsWithoutLogin(),
         listRoles(),
+        listDepartments(),
       ])
       if (cancelled) return
       setCandidates(emps)
       setRoles(roleList)
+      setDeptOptions([
+        { value: '', label: 'All departments' },
+        ...depts.items.map((d) => ({ value: d.name, label: d.name })),
+      ])
       const defaultRole = roleList.find((r) => r.name === 'Employee') ?? roleList[0]
-      if (defaultRole) setRoleId(defaultRole.id)
+      if (defaultRole) setRoleId(String(defaultRole.id))
       if (preselectId && emps.some((e) => e.employmentId === preselectId)) {
-        setEmploymentId(preselectId)
+        setEmploymentId(String(preselectId))
         const emp = emps.find((e) => e.employmentId === preselectId)
         if (emp) {
           const slug = emp.name.toLowerCase().replace(/\s+/g, '.')
@@ -57,7 +65,18 @@ export function UserCreatePage() {
     }
   }, [preselectId])
 
-  const selected = candidates.find((c) => c.employmentId === employmentId)
+  const filteredCandidates = useMemo(() => {
+    if (!deptFilter) return candidates
+    return candidates.filter((c) => c.department === deptFilter)
+  }, [candidates, deptFilter])
+
+  const employeeOptions = filteredCandidates.map((c) => ({
+    value: String(c.employmentId),
+    label: `${c.name} (${c.employeeCode})`,
+    meta: `${c.department} · ${c.position}`,
+  }))
+
+  const selected = candidates.find((c) => String(c.employmentId) === employmentId)
 
   const handleCreate = async () => {
     setError('')
@@ -108,7 +127,7 @@ export function UserCreatePage() {
 
       <PageHeader
         title="Add New User"
-        description="Provision a login for an existing employee who does not yet have credentials. Employee profile data is not re-entered."
+        description="Pick an existing employee without login. Department is shown from their assignment (filterable)."
         actions={
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => navigate({ to: '/admin/users' })}>
@@ -135,14 +154,11 @@ export function UserCreatePage() {
       )}
 
       {loading ? (
-        <div className="p-12 text-center text-on-surface-variant">Loading employees without login…</div>
+        <div className="p-12 text-center text-on-surface-variant">Loading…</div>
       ) : candidates.length === 0 ? (
         <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-10 text-center space-y-3">
           <span className="material-symbols-outlined text-4xl text-on-surface-variant">person_check</span>
           <h3 className="text-title-lg font-semibold">All employees have logins</h3>
-          <p className="text-body-sm text-on-surface-variant max-w-md mx-auto">
-            Create a new employee first, then return here to provision their account.
-          </p>
           <Button variant="primary" size="sm" onClick={() => navigate({ to: '/workforce/employees/new' })}>
             Add Employee
           </Button>
@@ -155,33 +171,39 @@ export function UserCreatePage() {
                 <span className="material-symbols-outlined text-secondary">badge</span>
                 Select Employee
               </h3>
-              <p className="text-body-sm text-on-surface-variant">
-                Only employees without an existing login appear in this list.
-              </p>
+
+              <div>
+                <label className="block text-label-sm font-bold text-on-surface-variant uppercase mb-1">
+                  Filter by department
+                </label>
+                <SearchableSelect
+                  options={deptOptions}
+                  value={deptFilter}
+                  onChange={(v) => {
+                    setDeptFilter(v)
+                    setEmploymentId('')
+                  }}
+                  placeholder="Type department name…"
+                />
+              </div>
+
               <div>
                 <label className="block text-label-sm font-bold text-on-surface-variant uppercase mb-1">
                   Employee
                 </label>
-                <select
+                <SearchableSelect
+                  options={employeeOptions}
                   value={employmentId}
-                  onChange={(e) => {
-                    const id = e.target.value ? Number(e.target.value) : ''
-                    setEmploymentId(id)
-                    const emp = candidates.find((c) => c.employmentId === id)
-                    if (emp && !email) {
+                  onChange={(v) => {
+                    setEmploymentId(v)
+                    const emp = candidates.find((c) => String(c.employmentId) === v)
+                    if (emp) {
                       const slug = emp.name.toLowerCase().replace(/\s+/g, '.')
                       setEmail(`${slug}@bytevon.com`)
                     }
                   }}
-                  className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-body-sm outline-none focus:border-secondary bg-transparent"
-                >
-                  <option value="">Choose employee…</option>
-                  {candidates.map((c) => (
-                    <option key={c.employmentId} value={c.employmentId}>
-                      {c.name} · {c.employeeCode} · {c.department}
-                    </option>
-                  ))}
-                </select>
+                  placeholder="Type name or code…"
+                />
               </div>
 
               {selected && (
@@ -195,33 +217,23 @@ export function UserCreatePage() {
             </div>
 
             <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6 space-y-5">
-              <h3 className="text-title-lg font-semibold text-on-background flex items-center gap-2">
+              <h3 className="text-title-lg font-semibold flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary">key</span>
                 Login Credentials
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field
-                  label="Work Email"
-                  value={email}
-                  onChange={setEmail}
-                  placeholder="name@bytevon.com"
-                  type="email"
-                />
+                <Field label="Work Email" value={email} onChange={setEmail} type="email" />
                 <Field
                   label="Temporary Password"
                   value={tempPassword}
                   onChange={setTempPassword}
                   placeholder="Min. 8 characters"
-                  type="text"
                 />
               </div>
-              <p className="text-xs text-on-surface-variant">
-                User must change this password on first login (mock: stored in memory only).
-              </p>
             </div>
 
             <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6 space-y-5">
-              <h3 className="text-title-lg font-semibold text-on-background flex items-center gap-2">
+              <h3 className="text-title-lg font-semibold flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary">admin_panel_settings</span>
                 Access
               </h3>
@@ -229,25 +241,23 @@ export function UserCreatePage() {
                 <label className="block text-label-sm font-bold text-on-surface-variant uppercase mb-1">
                   Primary Role
                 </label>
-                <select
+                <SearchableSelect
+                  options={roles.map((r) => ({
+                    value: String(r.id),
+                    label: r.name,
+                    meta: r.description ?? undefined,
+                  }))}
                   value={roleId}
-                  onChange={(e) => setRoleId(e.target.value ? Number(e.target.value) : '')}
-                  className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-body-sm outline-none focus:border-secondary bg-transparent"
-                >
-                  {roles.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name}
-                      {r.description ? ` — ${r.description}` : ''}
-                    </option>
-                  ))}
-                </select>
+                  onChange={setRoleId}
+                  placeholder="Type role name…"
+                />
               </div>
             </div>
           </div>
 
           <div className="space-y-4">
             <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6 space-y-4">
-              <h3 className="text-title-lg font-semibold text-on-background">Invite Options</h3>
+              <h3 className="text-title-lg font-semibold">Invite Options</h3>
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
@@ -256,22 +266,10 @@ export function UserCreatePage() {
                   className="mt-1 rounded border-outline-variant text-secondary"
                 />
                 <div>
-                  <p className="text-body-md font-medium text-on-background">Send invite email</p>
-                  <p className="text-body-sm text-on-surface-variant">
-                    User receives a secure link to set their password (mock notification).
-                  </p>
+                  <p className="text-body-md font-medium">Send invite email</p>
+                  <p className="text-body-sm text-on-surface-variant">Mock notification only.</p>
                 </div>
               </label>
-            </div>
-            <div className="bg-surface-container-low p-5 rounded-xl border border-secondary/20">
-              <h4 className="text-label-md text-secondary flex items-center gap-2 mb-2 font-medium">
-                <span className="material-symbols-outlined text-[18px]">info</span>
-                Note
-              </h4>
-              <p className="text-body-sm text-on-surface-variant">
-                Creating a user does not create a new employee record. Use Workforce → Add Employee for
-                person and employment data first.
-              </p>
             </div>
           </div>
         </div>
@@ -301,7 +299,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-body-sm outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/30 bg-transparent"
+        className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-body-sm outline-none focus:border-secondary bg-transparent"
       />
     </div>
   )
