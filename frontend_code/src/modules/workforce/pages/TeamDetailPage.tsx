@@ -26,7 +26,8 @@ export function TeamDetailPage() {
   const { teamId } = useParams({ strict: false }) as { teamId: string }
   const navigate = useNavigate()
   const t = teams.find((x) => x.id === teamId) ?? teams[0]
-  const members = membersFor(t.id).slice(0, 3)
+  const allMembers = membersFor(t.id)
+  const previewMembers = allMembers.slice(0, 6)
   const projects = projectsFor(t.id).filter((p) => p.status === 'Active').slice(0, 2)
 
   return (
@@ -47,6 +48,105 @@ export function TeamDetailPage() {
               <p className="text-body-lg text-on-surface-variant leading-relaxed">{t.mission}</p>
             </div>
           )}
+
+          {/* Full members list on team detail (UI requirement) */}
+          <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+            <div className="p-5 flex flex-wrap items-center justify-between gap-3 border-b border-outline-variant">
+              <h2 className="text-headline-md font-semibold flex items-center gap-2">
+                <Icon name="groups" className="text-secondary" /> Team Members
+              </h2>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<Icon name="person_add" />}
+                  onClick={() =>
+                    navigate({ to: '/workforce/teams/$teamId/add-member', params: { teamId: t.id } })
+                  }
+                >
+                  Add Member
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    navigate({ to: '/workforce/teams/$teamId/members', params: { teamId: t.id } })
+                  }
+                >
+                  View all
+                </Button>
+              </div>
+            </div>
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-surface-container-low/50 border-b border-outline-variant">
+                  <th className="px-5 py-3 text-label-sm font-medium text-on-surface-variant uppercase">Member</th>
+                  <th className="px-5 py-3 text-label-sm font-medium text-on-surface-variant uppercase hidden sm:table-cell">Role</th>
+                  <th className="px-5 py-3 text-label-sm font-medium text-on-surface-variant uppercase">Status</th>
+                  <th className="px-5 py-3 text-label-sm font-medium text-on-surface-variant uppercase text-right" />
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-outline-variant/30">
+                {previewMembers.map((m) => (
+                  <tr key={m.id} className="hover:bg-surface-container-low/40">
+                    <td className="px-5 py-3">
+                      <Link
+                        to="/workforce/employees/$employeeId"
+                        params={{ employeeId: m.id }}
+                        className="flex items-center gap-3"
+                      >
+                        <div className="w-9 h-9 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
+                          {m.name
+                            .split(' ')
+                            .map((p) => p[0])
+                            .join('')
+                            .slice(0, 2)}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-body-sm">{m.name}</p>
+                          <p className="text-caption text-on-surface-variant">{m.title}</p>
+                        </div>
+                      </Link>
+                    </td>
+                    <td className="px-5 py-3 text-body-sm hidden sm:table-cell">{m.role}</td>
+                    <td className="px-5 py-3">
+                      <span
+                        className={cn(
+                          'px-2 py-0.5 rounded-full text-[10px] font-bold',
+                          m.status === 'Active' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800',
+                        )}
+                      >
+                        {m.status}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <Link
+                        to="/workforce/employees/$employeeId"
+                        params={{ employeeId: m.id }}
+                        className="text-secondary text-label-md font-semibold hover:underline"
+                      >
+                        View
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {allMembers.length > previewMembers.length && (
+              <div className="p-3 border-t border-outline-variant text-center">
+                <button
+                  type="button"
+                  className="text-secondary text-label-md font-bold"
+                  onClick={() =>
+                    navigate({ to: '/workforce/teams/$teamId/members', params: { teamId: t.id } })
+                  }
+                >
+                  View all {t.memberCount} members
+                </button>
+              </div>
+            )}
+          </div>
+
           <div className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant shadow-sm">
             <div className="flex justify-between mb-4">
               <h2 className="text-headline-md font-semibold flex items-center gap-2">
@@ -93,51 +193,20 @@ export function TeamDetailPage() {
             </div>
           </div>
         </div>
+
         <div className="lg:col-span-4 space-y-6">
-          <div className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant shadow-sm">
-            <h2 className="text-headline-md font-semibold mb-4 flex items-center gap-2">
-              <Icon name="groups" className="text-secondary" /> Key Members
-            </h2>
-            <div className="space-y-3">
-              {members.map((m) => (
-                <Link
-                  key={m.id}
-                  to="/workforce/employees/$employeeId"
-                  params={{ employeeId: m.id }}
-                  className="flex items-center gap-3 rounded-lg p-1 hover:bg-surface-container-low"
-                >
-                  <div className="w-10 h-10 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
-                    {m.name
-                      .split(' ')
-                      .map((p) => p[0])
-                      .join('')
-                      .slice(0, 2)}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-sm">{m.name}</p>
-                    <p className="text-caption text-on-surface-variant">{m.title}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-            <Button
-              variant="outline"
-              className="w-full mt-4"
-              onClick={() =>
-                navigate({ to: '/workforce/teams/$teamId/members', params: { teamId: t.id } })
-              }
-            >
-              View All {t.memberCount} Members
-            </Button>
-          </div>
           <div className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant shadow-sm">
             <h2 className="text-headline-md font-semibold mb-4 flex items-center gap-2">
               <Icon name="history" className="text-secondary" /> Recent Activity
             </h2>
             <div className="space-y-4 border-l-2 border-surface-variant ml-2 pl-4">
               <div>
-                <p className="text-body-sm font-medium">Code merge to main for Nexus Data Migration.</p>
+                <p className="text-body-sm font-medium">New member joined: Alex Kim (QA Engineer).</p>
                 <p className="text-caption text-on-surface-variant">Today, 10:30 AM</p>
+              </div>
+              <div>
+                <p className="text-body-sm font-medium">Code merge to main for Nexus Data Migration.</p>
+                <p className="text-caption text-on-surface-variant">Today, 09:15 AM</p>
               </div>
               <div>
                 <p className="text-body-sm font-medium">Team sync: Q4 Planning finalized.</p>

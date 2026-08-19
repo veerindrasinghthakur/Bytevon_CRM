@@ -18,11 +18,7 @@ export interface SecondaryNavGroup {
 }
 
 export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
-  dashboard: {
-    moduleId: 'dashboard',
-    title: 'Dashboard',
-    items: [{ id: 'executive', label: 'Overview', icon: 'monitoring', to: '/dashboard' }],
-  },
+  dashboard: { moduleId: 'dashboard', title: 'Dashboard', items: [] },
   sales: {
     moduleId: 'sales',
     title: 'Sales',
@@ -50,18 +46,9 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     items: [
       { id: 'employees', label: 'Employees', icon: 'badge', to: '/workforce/employees' },
       { id: 'departments', label: 'Departments', icon: 'domain', to: '/workforce/departments' },
+      { id: 'teams', label: 'Teams', icon: 'groups', to: '/workforce/teams' },
+      { id: 'shifts', label: 'Shifts', icon: 'schedule', to: '/workforce/shifts' },
       { id: 'attendance', label: 'Attendance', icon: 'calendar_today', to: '/workforce/attendance' },
-    ],
-  },
-  payroll: {
-    moduleId: 'payroll',
-    title: 'Payroll',
-    items: [
-      { id: 'overview', label: 'Overview', icon: 'payments', to: '/payroll' },
-      { id: 'monthly', label: 'Monthly Payroll', icon: 'calendar_month', to: '/payroll/monthly' },
-      { id: 'run', label: 'Run Payroll', icon: 'play_arrow', to: '/payroll/run' },
-      { id: 'salary', label: 'Salary Management', icon: 'manage_accounts', to: '/payroll/salary' },
-      { id: 'history', label: 'History', icon: 'history', to: '/payroll/history' },
     ],
   },
   'my-work': {
@@ -69,19 +56,19 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     title: 'My Work',
     items: [
       { id: 'overview', label: 'Overview', icon: 'dashboard', to: '/my-work' },
+      /* Break lives in header only — not duplicated here */
       { id: 'my-attendance', label: 'My Attendance', icon: 'calendar_today', to: '/my-work/attendance' },
       { id: 'my-leave', label: 'My Leave', icon: 'event_busy', to: '/my-work/leave' },
       { id: 'my-tasks', label: 'My Tasks', icon: 'task_alt', to: '/my-work/tasks' },
-      { id: 'my-requests', label: 'My Requests', icon: 'request_page', to: '/my-work/requests' },
-      { id: 'bank-details', label: 'Bank Details', icon: 'account_balance', to: '/my-work/bank-details' },
+      { id: 'my-approvals', label: 'My Approvals', icon: 'fact_check', to: '/my-work/approvals' },
     ],
   },
   approvals: {
     moduleId: 'approvals',
     title: 'Approvals',
     items: [
-      { id: 'center', label: 'Approval Center', icon: 'fact_check', to: '/approvals' },
       { id: 'pending', label: 'Pending Approvals', icon: 'pending_actions', to: '/approvals/pending' },
+      { id: 'my-requests', label: 'My Requests', icon: 'request_page', to: '/approvals/my-requests' },
     ],
   },
   admin: {
@@ -91,10 +78,8 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
       { id: 'users', label: 'Users', icon: 'manage_accounts', to: '/admin/users' },
       { id: 'roles', label: 'Roles & Permissions', icon: 'qr_code_2', to: '/admin/roles' },
       { id: 'settings', label: 'Settings', icon: 'settings', to: '/admin/settings' },
-      { id: 'attendance-settings', label: 'Attendance Settings', icon: 'schedule', to: '/admin/attendance-settings' },
-      { id: 'leave-settings', label: 'Leave Settings', icon: 'event_busy', to: '/admin/leave-settings' },
       { id: 'audit', label: 'Audit Logs', icon: 'receipt_long', to: '/admin/audit' },
-      { id: 'security', label: 'Security Center', icon: 'security', to: '/admin/security' },
+      { id: 'notifications', label: 'Notifications', icon: 'notifications', to: '/admin/notifications' },
     ],
   },
 }
@@ -103,11 +88,9 @@ function getActiveModule(pathname: string): string {
   if (pathname.startsWith('/sales')) return 'sales'
   if (pathname.startsWith('/projects')) return 'projects'
   if (pathname.startsWith('/workforce')) return 'workforce'
-  if (pathname.startsWith('/payroll')) return 'payroll'
   if (pathname.startsWith('/my-work')) return 'my-work'
   if (pathname.startsWith('/approvals')) return 'approvals'
   if (pathname.startsWith('/admin')) return 'admin'
-  if (pathname.startsWith('/dashboard')) return 'dashboard'
   return 'dashboard'
 }
 
@@ -137,14 +120,17 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
     }
     if (to === '/projects') return pathname === '/projects'
     if (to === '/my-work') return pathname === '/my-work'
-    if (to === '/approvals') return pathname === '/approvals'
-    if (to === '/admin/users') {
-      return pathname === '/admin' || pathname === '/admin/users' || pathname.startsWith('/admin/users/')
+    if (to === '/workforce/employees') {
+      return pathname === '/workforce/employees' || pathname.startsWith('/workforce/employees/')
     }
-    if (to === '/dashboard') return pathname === '/dashboard'
-    if (to === '/payroll') return pathname === '/payroll'
-    if (to === '/payroll/history') {
-      return pathname === '/payroll/history'
+    if (to === '/workforce/departments') {
+      return pathname === '/workforce/departments' || pathname.startsWith('/workforce/departments/')
+    }
+    if (to === '/workforce/teams') {
+      return pathname === '/workforce/teams' || pathname.startsWith('/workforce/teams/')
+    }
+    if (to === '/workforce/shifts') {
+      return pathname === '/workforce/shifts' || pathname.startsWith('/workforce/shifts/')
     }
     if (to === '/my-work/attendance') {
       return (
@@ -156,12 +142,6 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
     if (to === '/my-work/attendance/corrections') {
       return pathname.startsWith('/my-work/attendance/corrections')
     }
-    if (to === '/my-work/requests') {
-      return pathname === '/my-work/requests' || pathname.startsWith('/my-work/requests/')
-    }
-    if (to === '/my-work/bank-details') {
-      return pathname === '/my-work/bank-details' || pathname.startsWith('/my-work/bank-details/')
-    }
     return pathname === to || pathname.startsWith(to + '/')
   }
 
@@ -169,15 +149,15 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
     <nav
       className={cn(
         'h-full bg-surface-container-lowest border-r border-outline-variant flex flex-col',
-        'overflow-hidden shrink-0 transition-sidebar',
-        isCollapsed ? 'w-16' : 'w-60'
+        'overflow-hidden shrink-0',
+        isCollapsed ? 'w-16' : 'w-60',
       )}
       aria-label="Secondary navigation"
     >
       <div
         className={cn(
           'shrink-0 flex items-center border-b border-outline-variant',
-          isCollapsed ? 'justify-center px-0' : 'justify-between px-3'
+          isCollapsed ? 'justify-center px-0' : 'justify-between px-3',
         )}
         style={{ height: HEADER_HEIGHT_PX }}
       >
@@ -191,8 +171,8 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
           onClick={onToggle}
           className={cn(
             'flex items-center justify-center rounded-lg text-on-surface-variant',
-            'hover:bg-surface-container hover:text-on-surface transition-colors duration-200',
-            'w-8 h-8 cursor-pointer'
+            'hover:bg-surface-container hover:text-on-surface',
+            'w-8 h-8',
           )}
           aria-label={isCollapsed ? 'Expand secondary sidebar' : 'Collapse secondary sidebar'}
           title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
@@ -206,7 +186,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
       <div
         className={cn(
           'flex-1 overflow-y-auto scrollbar-hide',
-          isCollapsed ? 'pt-3 flex flex-col items-center' : 'pt-3 px-1'
+          isCollapsed ? 'pt-3 flex flex-col items-center' : 'pt-3 px-1',
         )}
       >
         <ul className={cn('flex flex-col gap-1', isCollapsed ? 'w-full items-center' : 'w-full')}>
@@ -218,8 +198,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                   to={item.to}
                   title={isCollapsed ? item.label : undefined}
                   className={cn(
-                    'flex items-center group relative border-l-4 bv-nav-press cursor-pointer',
-                    'transition-colors duration-200 ease-out',
+                    'flex items-center group relative border-l-4',
                     isCollapsed
                       ? 'w-10 h-[52px] justify-center rounded-lg border-transparent'
                       : 'w-full px-3 py-3.5 rounded-r-lg gap-3',
@@ -229,13 +208,13 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                         : 'bg-[#e8f1ff] text-secondary font-semibold border-secondary'
                       : isCollapsed
                         ? 'text-on-surface-variant hover:bg-surface-container border-transparent'
-                        : 'text-on-surface-variant hover:bg-surface-container hover:text-on-background border-transparent'
+                        : 'text-on-surface-variant hover:bg-surface-container hover:text-on-background border-transparent',
                   )}
                 >
                   <span
                     className={cn(
                       'material-symbols-outlined text-2xl shrink-0',
-                      active ? 'text-secondary' : ''
+                      active ? 'text-secondary' : '',
                     )}
                     style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
                     aria-hidden="true"
@@ -251,7 +230,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                             'text-[10px] font-bold px-1.5 py-0.5 rounded',
                             active
                               ? 'bg-secondary/15 text-secondary'
-                              : 'bg-surface-container-highest text-on-surface-variant'
+                              : 'bg-surface-container-highest text-on-surface-variant',
                           )}
                         >
                           {item.badge}

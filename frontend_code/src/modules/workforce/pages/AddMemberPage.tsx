@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { candidateMembers, departments, teams } from '../data/mock'
+import { candidateMembers, departments, employees, teams } from '../data/mock'
 import type { DepartmentRole } from '../types'
 import { RouteCrumbs } from '../components/RouteCrumbs'
 import { cn } from '@/shared/lib/cn'
@@ -16,10 +16,12 @@ function Icon({ name, className }: { name: string; className?: string }) {
   )
 }
 
+type Mode = 'choose' | 'existing' | 'new'
+
 /**
- * Shared Add Member page for:
- * - /workforce/departments/$departmentId/add-member
- * - /workforce/teams/$teamId/add-member
+ * Shared Add Member page for department and team contexts.
+ * Modes: create new employee → /workforce/employees/new
+ *         or pick existing employee via searchable list.
  */
 export function AddMemberPage() {
   const params = useParams({ strict: false }) as { departmentId?: string; teamId?: string }
@@ -31,8 +33,46 @@ export function AddMemberPage() {
     ? `/workforce/teams/${params.teamId}`
     : `/workforce/departments/${dept.id}`
 
+  const [mode, setMode] = useState<Mode>('choose')
+  const [search, setSearch] = useState('')
   const [roles, setRoles] = useState<Record<string, DepartmentRole | null>>({})
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const [toast, setToast] = useState(false)
+
+  const pool = useMemo(() => {
+    const fromCandidates = candidateMembers.map((m) => ({
+      id: m.employeeId || m.id,
+      name: m.name,
+      title: m.title,
+      department: m.department,
+      experienceYears: m.experienceYears,
+      joinedLabel: m.joinedLabel,
+      availability: m.availability ?? 'Available',
+    }))
+    const fromEmployees = employees.map((e) => ({
+      id: e.id,
+      name: e.name,
+      title: e.title,
+      department: e.department,
+      experienceYears: undefined as number | undefined,
+      joinedLabel: e.joiningDate,
+      availability: 'Available' as const,
+    }))
+    const seen = new Set<string>()
+    const merged = [...fromCandidates, ...fromEmployees].filter((m) => {
+      if (seen.has(m.id)) return false
+      seen.add(m.id)
+      return true
+    })
+    const q = search.toLowerCase()
+    return merged.filter(
+      (m) =>
+        !q ||
+        m.name.toLowerCase().includes(q) ||
+        m.title.toLowerCase().includes(q) ||
+        m.department.toLowerCase().includes(q),
+    )
+  }, [search])
 
   const setRole = (id: string, role: DepartmentRole) => {
     setRoles((prev) => ({ ...prev, [id]: role }))
@@ -40,7 +80,20 @@ export function AddMemberPage() {
 
   const addMember = () => {
     setToast(true)
-    setTimeout(() => setToast(false), 3000)
+    setTimeout(() => {
+      setToast(false)
+      navigate({ to: backTo as never })
+    }, 1200)
+  }
+
+  const goCreateNew = () => {
+    navigate({
+      to: '/workforce/employees/new',
+      search: {
+        departmentId: params.departmentId ?? dept.id,
+        teamId: params.teamId,
+      } as never,
+    })
   }
 
   return (
@@ -63,123 +116,142 @@ export function AddMemberPage() {
       </div>
 
       <PageHeader
-        title="Add Team Member"
-        description={`Expand ${contextLabel} by onboarding verified company employees. Ensure team balance across seniority levels.`}
+        title="Add Member"
+        description={`Add someone to ${contextLabel}. Create a new employee record or assign an existing one.`}
       />
 
-      <div className="flex flex-wrap items-center gap-4 bg-surface-container rounded-xl p-4 border border-outline-variant/20">
-        <div className="text-center px-4 border-r border-outline-variant/30">
-          <p className="text-label-sm text-on-surface-variant uppercase">Total Headcount</p>
-          <p className="text-headline-md font-bold">{team ? team.memberCount : dept.staffCount}</p>
-        </div>
-        <div className="flex gap-6 px-2">
-          <div>
-            <p className="text-label-sm text-on-surface-variant">Leads</p>
-            <p className="text-title-lg font-semibold text-secondary">6</p>
-          </div>
-          <div>
-            <p className="text-label-sm text-on-surface-variant">Senior</p>
-            <p className="text-title-lg font-semibold text-secondary">18</p>
-          </div>
-          <div>
-            <p className="text-label-sm text-on-surface-variant">Junior</p>
-            <p className="text-title-lg font-semibold text-secondary">18</p>
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant flex flex-wrap gap-3 items-center">
-        <div className="relative flex-1 min-w-[200px]">
-          <Icon name="filter_list" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
-          <input
-            className="w-full pl-10 pr-4 py-2 border border-outline rounded-lg text-body-sm"
-            placeholder="Filter by name..."
-          />
-        </div>
-        <select className="border border-outline rounded-lg px-3 py-2 text-label-md">
-          <option>All Departments</option>
-        </select>
-        <select className="border border-outline rounded-lg px-3 py-2 text-label-md">
-          <option>Any Experience</option>
-        </select>
-        <select className="border border-outline rounded-lg px-3 py-2 text-label-md">
-          <option>Available Status</option>
-        </select>
-        <Button variant="primary">Apply Filters</Button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {candidateMembers.map((m) => (
-          <div key={m.id} className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-6">
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-14 h-14 rounded-full bg-secondary/10 text-secondary flex items-center justify-center font-bold">
-                  {m.name
-                    .split(' ')
-                    .map((p) => p[0])
-                    .join('')
-                    .slice(0, 2)}
-                </div>
-                <div>
-                  <h3 className="text-title-lg font-semibold">{m.name}</h3>
-                  <p className="text-label-sm text-on-surface-variant uppercase tracking-wide">{m.department}</p>
-                </div>
-              </div>
-              <span
-                className={cn(
-                  'px-2 py-1 rounded text-[10px] font-bold uppercase',
-                  m.availability === 'Available' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700',
-                )}
-              >
-                {m.availability}
-              </span>
+      {mode === 'choose' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-3xl">
+          <button
+            type="button"
+            onClick={() => setMode('existing')}
+            className="text-left rounded-xl border-2 border-outline-variant bg-surface-container-lowest p-6 hover:border-secondary transition-colors shadow-sm"
+          >
+            <div className="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center mb-4">
+              <Icon name="person_search" className="text-2xl" />
             </div>
-            <div className="grid grid-cols-2 gap-4 py-4 border-y border-outline-variant/20 mb-4">
-              <div>
-                <p className="text-label-sm text-on-surface-variant">Experience</p>
-                <p className="font-semibold">{m.experienceYears} Years</p>
-              </div>
-              <div>
-                <p className="text-label-sm text-on-surface-variant">Joined</p>
-                <p className="font-semibold">{m.joinedLabel}</p>
-              </div>
-            </div>
-            <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-2">
-              Assign Role in {contextLabel}
+            <h3 className="text-title-lg font-semibold text-on-background">Add existing employee</h3>
+            <p className="text-body-sm text-on-surface-variant mt-2">
+              Search and pick someone already in the organization, then assign a role.
             </p>
-            <div className="flex flex-wrap gap-2 mb-3">
-              {(['Lead', 'Senior', 'Junior'] as DepartmentRole[]).map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => setRole(m.id, r)}
+          </button>
+          <button
+            type="button"
+            onClick={goCreateNew}
+            className="text-left rounded-xl border-2 border-outline-variant bg-surface-container-lowest p-6 hover:border-secondary transition-colors shadow-sm"
+          >
+            <div className="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center mb-4">
+              <Icon name="person_add" className="text-2xl" />
+            </div>
+            <h3 className="text-title-lg font-semibold text-on-background">Create new employee</h3>
+            <p className="text-body-sm text-on-surface-variant mt-2">
+              Open the full employee create form. New hire will be linked to this {team ? 'team' : 'department'}.
+            </p>
+          </button>
+        </div>
+      )}
+
+      {mode === 'existing' && (
+        <>
+          <div className="flex flex-wrap items-center gap-3">
+            <Button variant="outline" leftIcon={<Icon name="arrow_back" />} onClick={() => setMode('choose')}>
+              Change option
+            </Button>
+            <div className="relative flex-1 min-w-[220px]">
+              <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary"
+                placeholder="Search by name, title, or department…"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {pool.map((m) => {
+              const selected = selectedId === m.id
+              return (
+                <div
+                  key={m.id}
                   className={cn(
-                    'flex-1 py-2 px-3 border rounded-lg text-label-md transition-all',
-                    roles[m.id] === r
-                      ? 'bg-secondary-container text-on-secondary-container border-secondary'
-                      : 'border-outline-variant text-on-surface-variant hover:border-secondary',
+                    'bg-surface-container-lowest rounded-xl border shadow-sm p-6 transition-colors',
+                    selected ? 'border-secondary ring-2 ring-secondary/20' : 'border-outline-variant',
                   )}
                 >
-                  {r}
-                </button>
-              ))}
+                  <button
+                    type="button"
+                    className="w-full text-left"
+                    onClick={() => setSelectedId(m.id)}
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-14 h-14 rounded-full bg-secondary/10 text-secondary flex items-center justify-center font-bold">
+                          {m.name
+                            .split(' ')
+                            .map((p) => p[0])
+                            .join('')
+                            .slice(0, 2)}
+                        </div>
+                        <div>
+                          <h3 className="text-title-lg font-semibold">{m.name}</h3>
+                          <p className="text-label-sm text-on-surface-variant uppercase tracking-wide">{m.department}</p>
+                        </div>
+                      </div>
+                      <span
+                        className={cn(
+                          'px-2 py-1 rounded text-[10px] font-bold uppercase',
+                          m.availability === 'Available' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700',
+                        )}
+                      >
+                        {m.availability}
+                      </span>
+                    </div>
+                    <p className="text-body-sm text-on-surface-variant mb-3">{m.title}</p>
+                  </button>
+                  <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-2">
+                    Assign role in {contextLabel}
+                  </p>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {(['Lead', 'Senior', 'Junior'] as DepartmentRole[]).map((r) => (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => {
+                          setSelectedId(m.id)
+                          setRole(m.id, r)
+                        }}
+                        className={cn(
+                          'flex-1 py-2 px-3 border rounded-lg text-label-md transition-all',
+                          roles[m.id] === r
+                            ? 'bg-secondary-container text-on-secondary-container border-secondary'
+                            : 'border-outline-variant text-on-surface-variant hover:border-secondary',
+                        )}
+                      >
+                        {r}
+                      </button>
+                    ))}
+                  </div>
+                  <Button
+                    variant="primary"
+                    className="w-full"
+                    leftIcon={<Icon name="add_circle" />}
+                    disabled={!roles[m.id]}
+                    onClick={addMember}
+                  >
+                    Add to {team ? 'Team' : 'Department'}
+                  </Button>
+                </div>
+              )
+            })}
+          </div>
+          {pool.length === 0 && (
+            <div className="rounded-xl border border-dashed border-outline-variant p-10 text-center text-on-surface-variant">
+              No employees match your search. Try a different query or create a new employee.
             </div>
-            <Button variant="primary" className="w-full" leftIcon={<Icon name="add_circle" />} onClick={addMember}>
-              Add to {team ? 'Team' : 'Department'}
-            </Button>
-          </div>
-        ))}
-        <div className="border-2 border-dashed border-outline-variant/40 rounded-xl flex flex-col items-center justify-center p-6 text-center min-h-[320px]">
-          <div className="w-16 h-16 rounded-full bg-surface-container-high flex items-center justify-center mb-3">
-            <Icon name="person_search" className="text-3xl text-outline" />
-          </div>
-          <h3 className="text-title-lg font-semibold">External Recruitment</h3>
-          <p className="text-body-sm text-on-surface-variant mt-2 mb-4">
-            Can&apos;t find the right internal candidate? Create a job request.
-          </p>
-          <Button variant="outline">Create Job Req</Button>
-        </div>
-      </div>
+          )}
+        </>
+      )}
 
       {toast && (
         <div className="fixed bottom-8 right-8 bg-inverse-surface text-inverse-on-surface px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50">
