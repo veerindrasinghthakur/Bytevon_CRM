@@ -47,7 +47,7 @@ export function LeadDetailPage() {
 
   if (!lead) {
     return (
-      <div>
+      <div className="animate-fade-in">
         <PageHeader title="Lead not found" showBack backTo="/sales/leads" backLabel="Back to leads" />
         <p className="text-body-md text-on-surface-variant">This lead does not exist in mock data.</p>
       </div>
@@ -55,7 +55,7 @@ export function LeadDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title={lead.title}
         description={`${lead.contactName}${lead.contactTitle ? ` · ${lead.contactTitle}` : ''} at ${lead.company}`}
@@ -82,7 +82,7 @@ export function LeadDetailPage() {
                 href={lead.chatLink}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-secondary/30 text-secondary font-semibold text-sm hover:bg-secondary/5"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-secondary/30 text-secondary font-semibold text-sm hover:bg-secondary/5 transition-colors"
               >
                 <span className="material-symbols-outlined text-lg">chat</span>
                 Open chat
@@ -110,7 +110,7 @@ export function LeadDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+          <section className="bv-surface p-6">
             <h2 className="text-title-md font-semibold mb-4">Overview</h2>
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -141,14 +141,14 @@ export function LeadDetailPage() {
           </section>
 
           {lead.notes && (
-            <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+            <section className="bv-surface p-6">
               <h2 className="text-title-md font-semibold mb-3">Internal notes</h2>
               <p className="text-body-md text-on-surface italic">"{lead.notes}"</p>
             </section>
           )}
 
           {lead.chatLink && (
-            <section className="rounded-xl border border-secondary/30 bg-secondary/5 p-6">
+            <section className="rounded-xl border border-secondary/30 bg-secondary/5 p-6 executive-shadow">
               <h2 className="text-title-md font-semibold mb-2 flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary">chat</span>
                 Client chat
@@ -162,22 +162,22 @@ export function LeadDetailPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5">
+          <div className="bv-surface p-5">
             <p className="text-[10px] font-bold uppercase text-on-surface-variant">Estimated value</p>
             <p className="text-2xl font-bold text-on-background mt-1">{formatBudget(lead.budget)}</p>
           </div>
-          <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5">
+          <div className="bv-surface p-5">
             <p className="text-[10px] font-bold uppercase text-on-surface-variant">Date</p>
             <p className="text-lg font-semibold text-on-background mt-1">{lead.date ?? '—'}</p>
           </div>
           {lead.probability != null && (
-            <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5">
+            <div className="bv-surface p-5">
               <p className="text-[10px] font-bold uppercase text-on-surface-variant">Probability</p>
               <p className="text-lg font-semibold text-on-background mt-1">{lead.probability}%</p>
             </div>
           )}
           {lead.tags && lead.tags.length > 0 && (
-            <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5">
+            <div className="bv-surface p-5">
               <p className="text-[10px] font-bold uppercase text-on-surface-variant mb-2">Tags</p>
               <div className="flex flex-wrap gap-1.5">
                 {lead.tags.map((t) => (
