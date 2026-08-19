@@ -41,7 +41,7 @@ export function LeavePoliciesPage() {
   )
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Leave policies"
         description="Versioned leave configuration (effective dating)"
@@ -56,7 +56,7 @@ export function LeavePoliciesPage() {
           </label>
         }
       />
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+      <div className="bv-surface overflow-hidden">
         <table className="w-full text-left">
           <thead>
             <tr className="bg-surface-container-low border-b border-outline-variant">
@@ -69,7 +69,7 @@ export function LeavePoliciesPage() {
           </thead>
           <tbody>
             {items.map((p) => (
-              <tr key={p.id} className="border-b border-outline-variant last:border-0 bv-row-hover">
+              <tr key={p.id} className="border-b border-outline-variant last:border-0 zebra-row">
                 <td className="px-5 py-3 font-medium">{p.name}</td>
                 <td className="px-5 py-3">
                   <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-secondary/15 text-secondary">
