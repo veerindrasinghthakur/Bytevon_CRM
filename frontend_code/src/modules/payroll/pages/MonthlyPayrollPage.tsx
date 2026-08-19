@@ -38,7 +38,7 @@ export function MonthlyPayrollPage() {
     view === 'ready' && allPaid ? 'locked' : view
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <PageHeader
         title="Monthly Payroll"
         description="Review employee payroll calculations, approvals and payments."
@@ -46,7 +46,7 @@ export function MonthlyPayrollPage() {
           <div className="flex flex-wrap items-center gap-2">
             <label className="text-label-sm text-on-surface-variant">Demo state</label>
             <select
-              className="bg-surface-container-lowest border border-outline-variant rounded text-body-sm px-3 py-2"
+              className="bg-surface-container-lowest border border-outline-variant rounded text-body-sm px-3 py-2 focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
               value={view}
               onChange={(e) => setView(e.target.value as RunView)}
             >
@@ -123,12 +123,12 @@ export function MonthlyPayrollPage() {
 
           <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
             <div className="flex flex-wrap gap-4 items-center">
-              <select className="bg-surface-container-lowest border border-outline-variant rounded text-body-md px-3 py-2 focus:ring-1 focus:ring-primary outline-none">
+              <select className="bg-surface-container-lowest border border-outline-variant rounded text-body-md px-3 py-2 focus:ring-2 focus:ring-secondary/30 outline-none transition-colors">
                 <option>October</option>
                 <option>November</option>
                 <option>December</option>
               </select>
-              <select className="bg-surface-container-lowest border border-outline-variant rounded text-body-md px-3 py-2 focus:ring-1 focus:ring-primary outline-none">
+              <select className="bg-surface-container-lowest border border-outline-variant rounded text-body-md px-3 py-2 focus:ring-2 focus:ring-secondary/30 outline-none transition-colors">
                 <option>2022</option>
                 <option>2023</option>
               </select>
@@ -139,7 +139,7 @@ export function MonthlyPayrollPage() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="bg-surface-container-lowest border border-outline-variant rounded text-body-md pl-9 pr-3 py-2 w-64 focus:ring-1 focus:ring-primary outline-none"
+                  className="bg-surface-container-lowest border border-outline-variant rounded text-body-md pl-9 pr-3 py-2 w-64 focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
                   placeholder="Search employee..."
                   type="text"
                 />
@@ -185,7 +185,7 @@ export function MonthlyPayrollPage() {
             />
           </div>
 
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm">
+          <div className="bv-surface overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -204,7 +204,7 @@ export function MonthlyPayrollPage() {
                 </thead>
                 <tbody className="text-body-md">
                   {rows.map((r) => (
-                    <tr key={r.id} className="border-b border-outline-variant bv-row-hover h-[72px]">
+                    <tr key={r.id} className="border-b border-outline-variant zebra-row h-[72px]">
                       <td className="p-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-semibold border border-outline-variant">
@@ -346,7 +346,7 @@ function SummaryCard({
   return (
     <div
       className={cn(
-        'bg-surface-container-lowest border border-outline-variant rounded-xl p-5 flex flex-col justify-center h-[120px] shadow-sm card-hover',
+        'bv-surface card-hover p-5 flex flex-col justify-center h-[120px]',
         highlight && 'ring-1 ring-primary',
       )}
     >
