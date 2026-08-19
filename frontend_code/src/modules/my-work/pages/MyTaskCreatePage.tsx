@@ -40,12 +40,11 @@ export function MyTaskCreatePage() {
 
   const onSubmit = async (_data: FormValues) => {
     await new Promise((r) => setTimeout(r, 500))
-    // Mock: no persistence yet — return to list
     navigate({ to: '/my-work/tasks' })
   }
 
   return (
-    <div className="space-y-6 max-w-xl">
+    <div className="space-y-6 max-w-xl animate-fade-in">
       <PageHeader
         title="Create task"
         description="Add a personal or assigned task to your list."
@@ -54,7 +53,7 @@ export function MyTaskCreatePage() {
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden"
+        className="bv-surface overflow-hidden"
       >
         <div className="p-6 space-y-5">
           <div>
@@ -64,7 +63,7 @@ export function MyTaskCreatePage() {
             <input
               id="name"
               {...register('name')}
-              className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-electric-blue focus:border-2"
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors"
               placeholder="e.g. Review design specs"
             />
             {errors.name && <p className="mt-1 text-body-sm text-error">{errors.name.message}</p>}
@@ -77,7 +76,7 @@ export function MyTaskCreatePage() {
             <input
               id="project"
               {...register('project')}
-              className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-electric-blue focus:border-2"
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors"
               placeholder="Project name"
             />
           </div>
@@ -90,9 +89,9 @@ export function MyTaskCreatePage() {
                   key={p}
                   type="button"
                   onClick={() => setValue('priority', p)}
-                  className={`flex-1 py-1.5 px-2 rounded text-center text-label-sm font-medium ${
+                  className={`flex-1 py-1.5 px-2 rounded text-center text-label-sm font-medium transition-colors ${
                     priority === p
-                      ? 'bg-surface-container-lowest text-secondary shadow-sm'
+                      ? 'bg-surface-container-lowest text-secondary executive-shadow'
                       : 'text-on-surface-variant hover:bg-surface-container-lowest/50'
                   }`}
                 >
@@ -112,7 +111,7 @@ export function MyTaskCreatePage() {
                 id="dueDate"
                 type="date"
                 {...register('dueDate')}
-                className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-electric-blue focus:border-2"
+                className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors"
               />
             </div>
             <div>
@@ -122,7 +121,7 @@ export function MyTaskCreatePage() {
               <input
                 id="estimatedHours"
                 {...register('estimatedHours')}
-                className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-electric-blue focus:border-2"
+                className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors"
                 placeholder="e.g. 4h"
               />
             </div>
@@ -136,7 +135,7 @@ export function MyTaskCreatePage() {
               id="description"
               rows={3}
               {...register('description')}
-              className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-electric-blue focus:border-2 resize-y"
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors resize-y"
               placeholder="Optional details"
             />
           </div>
