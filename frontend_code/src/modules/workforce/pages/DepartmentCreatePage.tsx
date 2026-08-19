@@ -15,7 +15,7 @@ function Icon({ name, className }: { name: string; className?: string }) {
 }
 
 const inputClass =
-  'w-full px-4 py-3 rounded-lg border border-outline-variant text-body-md bg-transparent outline-none focus:border-secondary'
+  'w-full px-4 py-3 rounded-lg border border-outline-variant text-body-md bg-transparent outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors'
 
 export function DepartmentCreatePage() {
   const navigate = useNavigate()
@@ -59,7 +59,7 @@ export function DepartmentCreatePage() {
   }
 
   return (
-    <div className="space-y-6 pb-28">
+    <div className="space-y-6 pb-28 animate-fade-in">
       <button
         type="button"
         className="flex items-center gap-2 text-secondary text-label-md hover:underline"
@@ -79,7 +79,7 @@ export function DepartmentCreatePage() {
       )}
 
       <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-xl p-8 shadow-sm">
+        <div className="col-span-12 lg:col-span-8 bv-surface p-8">
           <div className="flex items-center gap-3 mb-6">
             <Icon name="info" className="text-secondary" />
             <h3 className="text-title-lg font-semibold">Department Information</h3>
@@ -103,7 +103,7 @@ export function DepartmentCreatePage() {
           </div>
         </div>
 
-        <div className="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-xl p-8 shadow-sm">
+        <div className="col-span-12 lg:col-span-4 bv-surface p-8">
           <div className="flex items-center gap-3 mb-6">
             <Icon name="manage_accounts" className="text-secondary" />
             <h3 className="text-title-lg font-semibold">Management</h3>
@@ -119,7 +119,7 @@ export function DepartmentCreatePage() {
           </div>
         </div>
 
-        <div className="col-span-12 bg-surface-container-lowest border border-outline-variant rounded-xl p-8 shadow-sm">
+        <div className="col-span-12 bv-surface p-8">
           <label className="text-label-md block mb-4">Status</label>
           <div className="flex items-center gap-6">
             {(['Active', 'Inactive'] as const).map((s) => (
@@ -138,7 +138,7 @@ export function DepartmentCreatePage() {
         </div>
       </div>
 
-      <div className="fixed bottom-0 right-0 left-0 z-30 bg-surface-container-lowest border-t border-outline-variant py-4 px-6 flex justify-end gap-3 shadow-2xl">
+      <div className="fixed bottom-0 right-0 left-0 z-30 bg-surface-container-lowest/95 backdrop-blur-md border-t border-outline-variant py-4 px-6 flex justify-end gap-3 executive-shadow">
         <Button variant="outline" onClick={() => navigate({ to: '/workforce/departments' })}>
           Cancel
         </Button>
