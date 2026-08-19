@@ -83,7 +83,6 @@ export function ProjectsListPage() {
   const total = items.length
   const pageItems = useMemo(() => paginate(items, page, DEFAULT_PAGE_SIZE), [items, page])
 
-  // Selection scoped to currently rendered page of filtered results
   const selection = useListSelection({
     items: pageItems,
     getId: (p) => String(p.id),
@@ -101,7 +100,7 @@ export function ProjectsListPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h2 className="text-[32px] leading-10 font-bold tracking-tight text-on-background">
@@ -155,7 +154,7 @@ export function ProjectsListPage() {
         <Metric label="Total Projects" value={String(total || '—')} trend="+12%" icon="folder_open" tone="bg-electric-blue/10 text-electric-blue" />
         <Metric label="Active Projects" value={String(active)} trend="+4.2%" icon="trending_up" tone="bg-purple-100 text-purple-600" />
         <Metric label="At Risk / Delayed" value={String(atRisk)} trend="-2.1%" trendDanger icon="warning" tone="bg-red-100 text-red-600" />
-        <div className="bg-deep-navy border border-white/10 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
+        <div className="bg-deep-navy border border-white/10 rounded-xl p-5 executive-shadow flex flex-col justify-between h-[160px]">
           <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white">
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
           </div>
@@ -199,7 +198,7 @@ export function ProjectsListPage() {
       )}
 
       {!isLoading && !isError && items.length > 0 && (
-        <section className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden flex flex-col">
+        <section className="bv-surface overflow-hidden flex flex-col">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[1000px]">
               <thead>
@@ -263,7 +262,7 @@ export function ProjectsListPage() {
                       key={project.id}
                       className={cn(
                         'h-[72px] cursor-pointer select-none',
-                        isSelected ? 'bg-secondary/10' : 'hover:bg-surface-container/40'
+                        isSelected ? 'bg-secondary/10' : 'zebra-row'
                       )}
                       onMouseDown={() => selection.onRowPressStart(id)}
                       onMouseUp={() => selection.onRowPressEnd(id, openOverviewFor)}
@@ -389,7 +388,7 @@ function Metric({
   tone: string
 }) {
   return (
-    <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm flex flex-col justify-between h-[160px]">
+    <div className="bv-surface card-hover p-5 flex flex-col justify-between h-[160px]">
       <div className="flex justify-between items-start">
         <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', tone)}>
           <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
