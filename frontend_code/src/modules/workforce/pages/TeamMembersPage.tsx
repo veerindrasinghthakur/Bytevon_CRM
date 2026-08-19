@@ -28,7 +28,7 @@ export function TeamMembersPage() {
   }, [members, query])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <BackButton to={`/workforce/teams/${t.id}`} label="Back to team" />
         <DynamicRouteCrumbs
@@ -39,14 +39,14 @@ export function TeamMembersPage() {
         <TeamTopView team={t} activeTab="members" />
       </div>
 
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+      <div className="bv-surface overflow-hidden">
         <div className="p-4 border-b border-outline-variant">
           <div className="relative max-w-sm">
             <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full pl-10 pr-3 py-2 border border-outline-variant rounded-lg text-body-sm"
+              className="w-full pl-10 pr-3 py-2 border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none transition-colors"
               placeholder="Search members…"
             />
           </div>
@@ -55,18 +55,14 @@ export function TeamMembersPage() {
           <thead>
             <tr className="bg-surface-container-low/50 border-b border-outline-variant">
               <th className="px-6 py-3 text-label-sm font-medium text-on-surface-variant uppercase">Member</th>
-              <th className="px-6 py-3 text-label-sm font-medium text-on-surface-variant uppercase hidden md:table-cell">
-                Role
-              </th>
-              <th className="px-6 py-3 text-label-sm font-medium text-on-surface-variant uppercase hidden sm:table-cell">
-                Joined
-              </th>
+              <th className="px-6 py-3 text-label-sm font-medium text-on-surface-variant uppercase hidden md:table-cell">Role</th>
+              <th className="px-6 py-3 text-label-sm font-medium text-on-surface-variant uppercase hidden sm:table-cell">Joined</th>
               <th className="px-6 py-3 text-label-sm font-medium text-on-surface-variant uppercase">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/30">
             {filtered.map((m) => (
-              <tr key={m.id} className="hover:bg-surface-container-low/40">
+              <tr key={m.id} className="zebra-row">
                 <td className="px-6 py-4">
                   <Link
                     to="/workforce/employees/$employeeId"
