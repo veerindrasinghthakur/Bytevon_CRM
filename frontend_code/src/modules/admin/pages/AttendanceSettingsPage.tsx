@@ -20,7 +20,7 @@ export function AttendanceSettingsPage() {
   const [otMin, setOtMin] = useState(60)
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <div className="flex justify-end">
         {editing ? (
           <div className="flex gap-3">
@@ -44,10 +44,10 @@ export function AttendanceSettingsPage() {
       </div>
 
       <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
+        <div className="col-span-12 lg:col-span-8 bv-surface card-hover p-6">
           <div className="flex items-center gap-3 mb-6">
             <span className="material-symbols-outlined text-secondary">schedule</span>
-            <h3 className="text-title-lg font-semibold text-on-surface">Working Hours &amp; Days</h3>
+            <h3 className="text-title-lg font-semibold text-on-surface">Working Hours & Days</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
@@ -57,7 +57,7 @@ export function AttendanceSettingsPage() {
                   type="time"
                   value={shiftStart}
                   onChange={(e) => setShiftStart(e.target.value)}
-                  className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary bg-white"
+                  className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
                 />
               ) : (
                 <p className="text-body-md font-medium text-on-surface">{shiftStart}</p>
@@ -70,7 +70,7 @@ export function AttendanceSettingsPage() {
                   type="time"
                   value={shiftEnd}
                   onChange={(e) => setShiftEnd(e.target.value)}
-                  className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary bg-white"
+                  className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
                 />
               ) : (
                 <p className="text-body-md font-medium text-on-surface">{shiftEnd}</p>
@@ -79,7 +79,7 @@ export function AttendanceSettingsPage() {
           </div>
         </div>
 
-        <div className="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
+        <div className="col-span-12 lg:col-span-4 bv-surface card-hover p-6">
           <div className="flex items-center gap-3 mb-6">
             <span className="material-symbols-outlined text-secondary">gavel</span>
             <h3 className="text-title-lg font-semibold text-on-surface">Check-in Rules</h3>
@@ -92,7 +92,7 @@ export function AttendanceSettingsPage() {
                   type="number"
                   value={grace}
                   onChange={(e) => setGrace(Number(e.target.value))}
-                  className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary bg-white"
+                  className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
                 />
               ) : (
                 <p className="text-body-md font-medium text-on-surface">{grace} min</p>
@@ -105,7 +105,7 @@ export function AttendanceSettingsPage() {
                   type="number"
                   value={earlyOut}
                   onChange={(e) => setEarlyOut(Number(e.target.value))}
-                  className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary bg-white"
+                  className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
                 />
               ) : (
                 <p className="text-body-md font-medium text-on-surface">{earlyOut} min</p>
@@ -118,7 +118,7 @@ export function AttendanceSettingsPage() {
           </div>
         </div>
 
-        <div className="col-span-12 lg:col-span-6 bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
+        <div className="col-span-12 lg:col-span-6 bv-surface card-hover p-6">
           <div className="flex items-center gap-3 mb-6">
             <span className="material-symbols-outlined text-secondary">calculate</span>
             <h3 className="text-title-lg font-semibold text-on-surface">Overtime</h3>
@@ -130,7 +130,7 @@ export function AttendanceSettingsPage() {
                 type="number"
                 value={otMin}
                 onChange={(e) => setOtMin(Number(e.target.value))}
-                className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary bg-white"
+                className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
               />
             ) : (
               <p className="text-body-md font-medium text-on-surface">{otMin} min</p>
@@ -138,7 +138,7 @@ export function AttendanceSettingsPage() {
           </div>
         </div>
 
-        <div className="col-span-12 lg:col-span-6 bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm hover:shadow-md transition-all">
+        <div className="col-span-12 lg:col-span-6 bv-surface card-hover p-6">
           <div className="flex items-center gap-3 mb-6">
             <span className="material-symbols-outlined text-secondary">account_tree</span>
             <h3 className="text-title-lg font-semibold text-on-surface">Approval Workflow</h3>
