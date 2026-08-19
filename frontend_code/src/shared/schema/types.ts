@@ -265,6 +265,21 @@ export interface EmployeeBankAccountRow {
   changed_by: number | null
 }
 
+/** Login / auth identity linked 1:1 to employment (schema: logins). */
+export interface LoginUserRow {
+  id: number
+  employment_id: number
+  email: string
+  /** Mock only — never store real passwords in production */
+  temporary_password: string | null
+  status: 'ACTIVE' | 'INACTIVE' | 'LOCKED'
+  failed_attempt_count: number
+  locked_until: string | null
+  last_login_at: string | null
+  created_at: string
+  updated_at: string
+}
+
 /** Aggregated employee detail for UI (API DTO, not a table). */
 export interface EmployeeDetailDto {
   employment: EmploymentRow
@@ -279,4 +294,6 @@ export interface EmployeeDetailDto {
   roleIds: number[]
   roleNames: string[]
   currentSalary: EmployeeSalaryRow | null
+  hasLogin: boolean
+  loginEmail: string | null
 }
