@@ -20,12 +20,12 @@ export function ApprovalDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={() => navigate({ to: '/approvals/pending' })}
-          className="flex items-center gap-2 text-secondary hover:text-primary text-label-md"
+          className="flex items-center gap-2 text-secondary hover:text-primary text-label-md transition-colors"
         >
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
           Back to Pending
@@ -72,8 +72,7 @@ export function ApprovalDetailPage() {
 
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-12 lg:col-span-8 space-y-6">
-          {/* Requester */}
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex items-center justify-between">
+          <div className="bv-surface p-6 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-secondary/15 text-secondary flex items-center justify-center font-bold text-lg border-2 border-secondary/30">
                 {row.requesterInitials}
@@ -90,21 +89,21 @@ export function ApprovalDetailPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm space-y-2">
+            <div className="bv-surface p-6 space-y-2">
               <div className="flex items-center gap-2 text-secondary">
                 <span className="material-symbols-outlined">description</span>
                 <h4 className="text-label-md font-bold uppercase">Type</h4>
               </div>
               <p className="text-title-lg font-semibold text-on-background">{row.type}</p>
             </div>
-            <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm space-y-2">
+            <div className="bv-surface p-6 space-y-2">
               <div className="flex items-center gap-2 text-secondary">
                 <span className="material-symbols-outlined">calendar_today</span>
                 <h4 className="text-label-md font-bold uppercase">Submitted</h4>
               </div>
               <p className="text-title-lg font-semibold text-on-background">{row.date}</p>
             </div>
-            <div className="md:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm space-y-2">
+            <div className="md:col-span-2 bv-surface p-6 space-y-2">
               <div className="flex items-center gap-2 text-secondary">
                 <span className="material-symbols-outlined">subject</span>
                 <h4 className="text-label-md font-bold uppercase">Summary</h4>
@@ -116,8 +115,7 @@ export function ApprovalDetailPage() {
             </div>
           </div>
 
-          {/* Timeline */}
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm">
+          <div className="bv-surface p-6">
             <h4 className="text-title-lg font-semibold text-on-background mb-8">Approval Timeline</h4>
             <div className="relative space-y-8 pl-10 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-outline-variant">
               <TimelineStep done title="Request Submitted" body={`${row.requester} submitted the request.`} time={row.date} />
@@ -128,9 +126,8 @@ export function ApprovalDetailPage() {
           </div>
         </div>
 
-        {/* Decision Center */}
         <div className="col-span-12 lg:col-span-4">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm sticky top-24 space-y-4">
+          <div className="bv-surface p-6 sticky top-24 space-y-4">
             <h4 className="text-title-lg font-semibold text-on-background mb-2">Decision Center</h4>
             <Button
               variant="primary"
@@ -166,11 +163,11 @@ export function ApprovalDetailPage() {
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              className="w-full border border-outline-variant rounded-lg p-3 text-body-sm focus:ring-2 focus:ring-secondary min-h-[100px] bg-transparent outline-none"
+              className="w-full border border-outline-variant rounded-lg p-3 text-body-sm focus:ring-2 focus:ring-secondary min-h-[100px] bg-transparent outline-none transition-colors"
               placeholder="Add a comment or instruction…"
             />
             <div className="flex justify-between items-center">
-              <button type="button" className="material-symbols-outlined text-on-surface-variant hover:text-primary">
+              <button type="button" className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">
                 attach_file
               </button>
               <Button variant="secondary" size="sm">
@@ -213,7 +210,7 @@ function TimelineStep({
     <div className={cn('relative', muted && 'opacity-40')}>
       <div
         className={cn(
-          'absolute -left-[37px] top-0 w-7 h-7 rounded-full flex items-center justify-center border-4 border-surface-container-lowest z-10',
+          'absolute -left-[37px] top-0 w-7 h-7 rounded-full flex items-center justify-center border-4 border-surface-container-lowest z-10 executive-shadow',
           done && 'bg-secondary text-white',
           active && 'bg-secondary/80 text-white',
           !done && !active && 'bg-outline-variant text-white'
