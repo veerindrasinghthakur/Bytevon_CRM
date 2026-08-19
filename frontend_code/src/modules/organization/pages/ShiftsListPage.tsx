@@ -1,15 +1,21 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { useNavigate, useRouterState } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { getShifts } from '../api/organization'
 import type { ShiftRow } from '@/shared/schema'
+import { can } from '@/shared/rbac/can'
+import { Action, ResourceName } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 
 export function ShiftsListPage() {
   const navigate = useNavigate()
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const base = pathname.startsWith('/workforce') ? '/workforce/shifts' : '/admin/settings/shifts'
+  const canCreate = can(Action.CREATE, ResourceName.SHIFT)
+
   const [items, setItems] = useState<ShiftRow[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -38,22 +44,28 @@ export function ShiftsListPage() {
             Working shift templates used on employment assignments
           </p>
         </div>
-        <Button
-          variant="primary"
-          size="sm"
-          leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
-          onClick={() => navigate({ to: '/admin/settings/shifts/new' })}
-        >
-          Add shift
-        </Button>
+        {canCreate && (
+          <Button
+            variant="primary"
+            size="sm"
+            leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
+            onClick={() => navigate({ to: `${base}/new` as never })}
+          >
+            Add shift
+          </Button>
+        )}
       </div>
       {items.length === 0 ? (
         <EmptyState
           title="No shifts"
           description="Create a shift to assign employees."
-          actionLabel="Add shift"
-          onAction={() => navigate({ to: '/admin/settings/shifts/new' })}
-        />
+        >
+          {canCreate ? (
+            <Button variant="primary" onClick={() => navigate({ to: `${base}/new` as never })}>
+              Add shift
+            </Button>
+          ) : null}
+        </EmptyState>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {items.map((s) => (
@@ -62,8 +74,8 @@ export function ShiftsListPage() {
               type="button"
               onClick={() =>
                 navigate({
-                  to: '/admin/settings/shifts/$shiftId',
-                  params: { shiftId: String(s.id) },
+                  to: `${base}/$shiftId` as never,
+                  params: { shiftId: String(s.id) } as never,
                 })
               }
               className="text-left bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm card-hover cursor-pointer"
