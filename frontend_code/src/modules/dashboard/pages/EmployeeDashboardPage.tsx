@@ -7,15 +7,15 @@ import {
   employeeTasks,
 } from '../data/mock'
 
-const card =
-  'bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all'
+/** Matches HTML: surface-container-lowest + border + executive-shadow + card-hover */
+const card = 'bv-surface card-hover'
 
 export function EmployeeDashboardPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="space-y-8">
-      <section className="relative overflow-hidden bg-deep-navy rounded-xl p-8 text-on-primary shadow-sm">
+    <div className="space-y-8 animate-fade-in">
+      <section className="relative overflow-hidden bg-deep-navy rounded-xl p-8 text-on-primary executive-shadow">
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <h2 className="text-headline-lg font-bold mb-2">Good Morning, {employeeMeta.firstName}</h2>
@@ -51,9 +51,9 @@ export function EmployeeDashboardPage() {
               key={q.label}
               type="button"
               onClick={() => navigate({ to: q.to })}
-              className="flex flex-col items-center justify-center p-6 bg-surface-container-lowest border border-outline-variant rounded-xl hover:border-secondary hover:bg-secondary/5 hover:shadow-md hover:-translate-y-0.5 transition-all group shadow-sm"
+              className="bv-action-tile group"
             >
-              <span className="material-symbols-outlined text-[32px] text-secondary mb-3 group-hover:scale-110 transition-transform">
+              <span className="material-symbols-outlined text-[32px] text-secondary mb-3 bv-action-icon">
                 {q.icon}
               </span>
               <span className="text-label-md font-bold text-on-surface">{q.label}</span>
@@ -100,7 +100,7 @@ export function EmployeeDashboardPage() {
               {employeeMeta.weekBars.map((h, i) => (
                 <div
                   key={i}
-                  className={`flex-1 rounded-t-sm ${i === 4 ? 'bg-secondary' : 'bg-secondary/10'} hover:bg-secondary transition-colors`}
+                  className={`flex-1 rounded-t-sm transition-colors ${i === 4 ? 'bg-secondary' : 'bg-secondary/10'} hover:bg-secondary`}
                   style={{ height: `${h}%` }}
                 />
               ))}
@@ -134,7 +134,7 @@ export function EmployeeDashboardPage() {
           <button
             type="button"
             onClick={() => navigate({ to: '/my-work/tasks/new' })}
-            className="px-3 py-1.5 text-label-sm bg-secondary text-on-secondary rounded-md hover:opacity-90"
+            className="px-3 py-1.5 text-label-sm bg-secondary text-on-secondary rounded-md bv-pressable"
           >
             + New Task
           </button>
@@ -152,7 +152,7 @@ export function EmployeeDashboardPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {employeeTasks.map((t) => (
-                <tr key={t.name} className="hover:bg-secondary/5 transition-colors">
+                <tr key={t.name} className="zebra-row group">
                   <td className="px-6 py-4 font-semibold text-on-surface">{t.name}</td>
                   <td className="px-6 py-4">
                     <span
