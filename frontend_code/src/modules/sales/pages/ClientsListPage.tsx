@@ -140,7 +140,7 @@ export function ClientsListPage() {
   }
 
   return (
-    <div className="space-y-6 relative">
+    <div className="space-y-6 relative animate-fade-in">
       <PageHeader
         title="Client Management"
         description="Manage client accounts, contacts, and commercial relationships."
@@ -162,7 +162,7 @@ export function ClientsListPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {clientMetrics.map((m) => (
-          <div key={m.id} className="p-5 rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+          <div key={m.id} className="bv-surface card-hover p-5">
             <div className="flex justify-between items-start mb-2">
               <span className="p-2 rounded-lg bg-secondary/10 text-secondary">
                 <span className="material-symbols-outlined text-xl">{m.icon}</span>
@@ -196,14 +196,14 @@ export function ClientsListPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary"
+            className="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary transition-colors"
             placeholder="Search by name, industry, or contact..."
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none"
+          className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none focus:border-secondary transition-colors"
         >
           <option value="All">All Status</option>
           <option value="Active">Active</option>
@@ -212,7 +212,7 @@ export function ClientsListPage() {
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none"
+          className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none focus:border-secondary transition-colors"
         >
           <option value="All">All Types</option>
           <option value="Enterprise">Enterprise</option>
@@ -221,7 +221,7 @@ export function ClientsListPage() {
         </select>
         <button
           type="button"
-          className="p-2 text-secondary border border-outline-variant rounded-lg hover:bg-secondary/5"
+          className="p-2 text-secondary border border-outline-variant rounded-lg hover:bg-secondary/5 transition-colors"
           onClick={resetFilters}
           aria-label="Reset filters"
         >
@@ -248,7 +248,7 @@ export function ClientsListPage() {
         </div>
       )}
 
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+      <div className="bv-surface overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -297,8 +297,8 @@ export function ClientsListPage() {
                   <tr
                     key={client.id}
                     className={cn(
-                      'transition-colors cursor-pointer group select-none',
-                      isSelected ? 'bg-secondary/10' : 'hover:bg-surface-container-low/50'
+                      'cursor-pointer group select-none',
+                      isSelected ? 'bg-secondary/10' : 'zebra-row'
                     )}
                     onMouseDown={() => startLongPress(client.id)}
                     onMouseUp={() => endLongPress(client)}
@@ -365,7 +365,7 @@ export function ClientsListPage() {
                       <div className="flex items-center justify-center gap-1">
                         <button
                           type="button"
-                          className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant"
+                          className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant transition-colors"
                           onClick={() => setQuickView(client)}
                         >
                           <span className="material-symbols-outlined text-sm">visibility</span>
@@ -375,7 +375,7 @@ export function ClientsListPage() {
                             href={client.chatLink}
                             target="_blank"
                             rel="noreferrer"
-                            className="p-1.5 hover:bg-surface-container rounded-md text-secondary"
+                            className="p-1.5 hover:bg-surface-container rounded-md text-secondary transition-colors"
                             title="Open chat"
                           >
                             <span className="material-symbols-outlined text-sm">chat</span>
@@ -407,7 +407,7 @@ export function ClientsListPage() {
             onClick={() => setQuickView(null)}
             aria-hidden
           />
-          <div className="fixed top-0 right-0 h-full w-full max-w-md bg-surface-container-lowest shadow-2xl border-l border-outline-variant z-50 flex flex-col">
+          <div className="fixed top-0 right-0 h-full w-full max-w-md bg-surface-container-lowest shadow-drawer border-l border-outline-variant z-50 flex flex-col animate-slide-in-right">
             <div className="p-6 border-b border-outline-variant flex items-center justify-between bg-surface-container-low">
               <h4 className="text-title-lg font-bold flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary">handshake</span>
@@ -415,7 +415,7 @@ export function ClientsListPage() {
               </h4>
               <button
                 type="button"
-                className="p-2 hover:bg-surface-container rounded-full"
+                className="p-2 hover:bg-surface-container rounded-full transition-colors"
                 onClick={() => setQuickView(null)}
               >
                 <span className="material-symbols-outlined">close</span>
