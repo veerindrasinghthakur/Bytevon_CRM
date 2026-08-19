@@ -75,7 +75,7 @@ export function TaskCreatePage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto animate-fade-in">
       <div className="mb-4">
         <BackButton
           to={backTo}
@@ -83,7 +83,7 @@ export function TaskCreatePage() {
         />
       </div>
 
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+      <div className="bv-surface overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-outline-variant bg-surface">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-electric-blue/10 flex items-center justify-center text-electric-blue">
@@ -102,7 +102,7 @@ export function TaskCreatePage() {
           </div>
           <Link
             to={backTo as '/projects/tasks'}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors"
           >
             <span className="material-symbols-outlined">close</span>
           </Link>
@@ -124,7 +124,7 @@ export function TaskCreatePage() {
                 <input
                   id="title"
                   {...register('title')}
-                  className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-lg text-on-surface focus:outline-none focus:border-electric-blue focus:ring-1 focus:ring-electric-blue"
+                  className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-lg text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors"
                   placeholder="e.g., Finalize Q3 Marketing Report"
                 />
                 {errors.title && <p className="mt-1 text-body-sm text-error">{errors.title.message}</p>}
@@ -137,7 +137,7 @@ export function TaskCreatePage() {
                   id="description"
                   rows={3}
                   {...register('description')}
-                  className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-md text-on-surface focus:outline-none focus:border-electric-blue focus:ring-1 focus:ring-electric-blue resize-none"
+                  className="w-full bg-surface border border-outline-variant rounded-lg px-3 py-2 text-body-md text-on-surface focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 resize-none transition-colors"
                   placeholder="Provide detailed instructions or context..."
                 />
               </div>
@@ -178,9 +178,9 @@ export function TaskCreatePage() {
                       key={p}
                       type="button"
                       onClick={() => setValue('priority', p)}
-                      className={`flex-1 py-1.5 px-3 rounded text-center text-body-md font-medium ${
+                      className={`flex-1 py-1.5 px-3 rounded text-center text-body-md font-medium transition-colors ${
                         priority === p
-                          ? 'bg-surface text-electric-blue shadow-sm'
+                          ? 'bg-surface text-electric-blue executive-shadow'
                           : 'text-on-surface-variant hover:bg-surface/50'
                       }`}
                     >
