@@ -22,7 +22,7 @@ export function ProjectTeamAddMemberPage() {
 
   if (isLoading || !team) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 animate-fade-in">
         <Skeleton className="h-10 w-64" />
         <Skeleton className="h-40 w-full" />
       </div>
@@ -30,7 +30,7 @@ export function ProjectTeamAddMemberPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Add Team Member"
         description={`Expand ${team.name} by onboarding company employees.`}
@@ -42,7 +42,7 @@ export function ProjectTeamAddMemberPage() {
         {CANDIDATES.map((m) => (
           <div
             key={m.id}
-            className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-subtle p-6"
+            className="bv-surface card-hover p-6"
           >
             <div className="flex items-start justify-between mb-4">
               <div className="flex items-center gap-3">
@@ -103,7 +103,7 @@ export function ProjectTeamAddMemberPage() {
       </div>
 
       {toast && (
-        <div className="fixed bottom-8 right-8 bg-inverse-surface text-inverse-on-surface px-6 py-4 rounded-xl shadow-2xl flex items-center gap-3 z-50">
+        <div className="fixed bottom-8 right-8 bg-inverse-surface text-inverse-on-surface px-6 py-4 rounded-xl executive-shadow flex items-center gap-3 z-50">
           <span className="material-symbols-outlined text-emerald-400">check_circle</span>
           <div>
             <p className="font-bold text-sm">Member Added</p>
