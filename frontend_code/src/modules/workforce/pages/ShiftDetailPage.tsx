@@ -32,7 +32,7 @@ export function ShiftDetailPage() {
   }, [members, query])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <BackButton to="/workforce/shifts" label="Back to shifts" />
         <DynamicRouteCrumbs className="mt-2 mb-3" lastLabel={shift.name} />
@@ -79,7 +79,7 @@ export function ShiftDetailPage() {
           { label: 'Break', value: `${shift.breakMinutes} min`, icon: 'coffee' },
           { label: 'Assigned', value: `${shift.employeeCount}`, icon: 'group' },
         ].map((m) => (
-          <div key={m.label} className="bg-surface-container-lowest rounded-xl border border-outline-variant p-4 shadow-sm">
+          <div key={m.label} className="bv-surface card-hover p-4">
             <div className="flex items-center gap-2 text-on-surface-variant mb-1">
               <Icon name={m.icon} className="text-secondary text-lg" />
               <span className="text-label-sm">{m.label}</span>
@@ -90,7 +90,7 @@ export function ShiftDetailPage() {
       </div>
 
       {shift.description && (
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm">
+        <div className="bv-surface p-5">
           <h2 className="text-title-md font-semibold mb-2 flex items-center gap-2">
             <Icon name="info" className="text-secondary" /> About this shift
           </h2>
@@ -98,7 +98,7 @@ export function ShiftDetailPage() {
         </div>
       )}
 
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+      <div className="bv-surface overflow-hidden">
         <div className="p-4 border-b border-outline-variant flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-title-md font-semibold flex items-center gap-2">
             <Icon name="badge" className="text-secondary" /> Employees on this shift
@@ -108,7 +108,7 @@ export function ShiftDetailPage() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              className="w-full pl-10 pr-3 py-2 border border-outline-variant rounded-lg text-body-sm"
+              className="w-full pl-10 pr-3 py-2 border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
               placeholder="Search employees…"
             />
           </div>
@@ -124,7 +124,7 @@ export function ShiftDetailPage() {
           </thead>
           <tbody className="divide-y divide-outline-variant/30">
             {filtered.map((m) => (
-              <tr key={m.id} className="hover:bg-surface-container-low/50">
+              <tr key={m.id} className="zebra-row">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
