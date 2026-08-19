@@ -8,12 +8,15 @@ import {
   executiveQuickActions,
 } from '../data/mock'
 
+/** Matches HTML executive dashboard: bv-surface + card-hover + executive-shadow */
+const card = 'bv-surface card-hover'
+
 export function ExecutiveDashboardPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="space-y-8">
-      <section className="relative overflow-hidden rounded-xl bg-deep-navy p-8 text-on-primary shadow-sm">
+    <div className="space-y-8 animate-fade-in">
+      <section className="relative overflow-hidden rounded-xl bg-deep-navy p-8 text-on-primary executive-shadow">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
             <h1 className="text-headline-lg font-semibold mb-1">Welcome back, {executiveMeta.greetingName}</h1>
@@ -51,7 +54,7 @@ export function ExecutiveDashboardPage() {
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {executiveKpis.map((k) => (
-          <div key={k.label} className="bv-surface p-5">
+          <div key={k.label} className={`${card} p-5`}>
             <div className="flex justify-between items-start mb-2">
               <span className="text-label-sm text-on-surface-variant uppercase tracking-wider">{k.label}</span>
               <span className="text-secondary material-symbols-outlined">{k.icon}</span>
@@ -68,7 +71,7 @@ export function ExecutiveDashboardPage() {
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bv-surface p-6">
+        <div className={`${card} p-6`}>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-title-lg font-semibold text-on-surface">Attendance Trend</h2>
             <select className="bg-surface border border-outline-variant text-label-sm rounded-lg px-3 py-1.5 outline-none focus:border-secondary transition-colors duration-200 cursor-pointer">
@@ -87,7 +90,7 @@ export function ExecutiveDashboardPage() {
             ))}
           </div>
         </div>
-        <div className="bv-surface p-6">
+        <div className={`${card} p-6`}>
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-title-lg font-semibold text-on-surface">Revenue Trend</h2>
             <div className="flex gap-3 text-label-sm">
@@ -120,7 +123,7 @@ export function ExecutiveDashboardPage() {
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="bv-surface p-6">
+        <div className={`${card} p-6`}>
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-title-lg font-semibold text-on-background">Pending Approvals</h3>
             <span className="bg-error-container text-on-error-container text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
@@ -143,7 +146,7 @@ export function ExecutiveDashboardPage() {
                 <div className="flex gap-1">
                   <button
                     type="button"
-                    className="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center hover:opacity-90 transition-all duration-200 active:scale-95 cursor-pointer"
+                    className="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center bv-pressable cursor-pointer"
                   >
                     <span className="material-symbols-outlined text-[18px]">check</span>
                   </button>
@@ -166,12 +169,12 @@ export function ExecutiveDashboardPage() {
           </button>
         </div>
 
-        <div className="bv-surface p-6">
+        <div className={`${card} p-6`}>
           <h3 className="text-title-lg font-semibold text-on-background mb-4">Recent Activities</h3>
           <div className="space-y-6 relative before:content-[''] before:absolute before:left-[19px] before:top-4 before:bottom-4 before:w-px before:bg-outline-variant">
             {executiveActivities.map((a) => (
               <div key={a.title} className="relative flex gap-4 pl-10">
-                <div className="absolute left-0 w-10 h-10 bg-surface-container-high rounded-full flex items-center justify-center z-10 border border-white">
+                <div className="absolute left-0 w-10 h-10 bg-surface-container-high rounded-full flex items-center justify-center z-10 border border-white executive-shadow">
                   <span className="material-symbols-outlined text-secondary text-[20px]">{a.icon}</span>
                 </div>
                 <div>
@@ -184,7 +187,7 @@ export function ExecutiveDashboardPage() {
           </div>
         </div>
 
-        <div className="bv-surface p-6">
+        <div className={`${card} p-6`}>
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-title-lg font-semibold text-on-background">Calendar</h3>
             <button type="button" className="text-secondary material-symbols-outlined bv-icon-btn rounded-full p-1">
@@ -219,7 +222,7 @@ export function ExecutiveDashboardPage() {
           <p className="text-label-sm text-on-surface-variant uppercase tracking-widest mb-3">Upcoming Deadlines</p>
           <div className="space-y-3">
             <div className="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg border-l-4 border-error group cursor-pointer">
-              <div className="flex flex-col items-center justify-center bg-white rounded p-1.5 min-w-[40px] shadow-sm group-hover:bg-error group-hover:text-white transition-colors duration-200">
+              <div className="flex flex-col items-center justify-center bg-white rounded p-1.5 min-w-[40px] executive-shadow group-hover:bg-error group-hover:text-white transition-colors duration-200">
                 <span className="text-label-sm font-bold text-error group-hover:text-white">OCT</span>
                 <span className="text-title-lg font-bold">26</span>
               </div>
@@ -229,7 +232,7 @@ export function ExecutiveDashboardPage() {
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg border-l-4 border-secondary group cursor-pointer">
-              <div className="flex flex-col items-center justify-center bg-white rounded p-1.5 min-w-[40px] shadow-sm group-hover:bg-secondary group-hover:text-white transition-colors duration-200">
+              <div className="flex flex-col items-center justify-center bg-white rounded p-1.5 min-w-[40px] executive-shadow group-hover:bg-secondary group-hover:text-white transition-colors duration-200">
                 <span className="text-label-sm font-bold text-secondary group-hover:text-white">OCT</span>
                 <span className="text-title-lg font-bold">28</span>
               </div>
