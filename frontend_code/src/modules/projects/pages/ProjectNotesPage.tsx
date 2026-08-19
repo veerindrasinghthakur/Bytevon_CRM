@@ -7,7 +7,7 @@ export function ProjectNotesPage() {
   const { projectId } = useParams({ strict: false }) as { projectId: string }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <BackButton to={`/projects/${projectId}`} label="Back to project" />
       <PageHeader
         title="Project notes"
