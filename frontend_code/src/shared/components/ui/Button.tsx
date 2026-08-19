@@ -13,12 +13,12 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
 }
 
-/** HTML screens: hover:opacity-90 active:scale-95 transition-all (0.2s) */
+/** HTML screens: hover:opacity-90 active:scale-95 + executive-shadow on solid CTAs */
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-electric-blue text-white hover:bg-[#0062cc] shadow-sm hover:opacity-90 active:scale-95',
+    'bg-electric-blue text-white hover:bg-[#0062cc] executive-shadow hover:opacity-90 active:scale-95',
   secondary:
-    'bg-secondary text-white hover:bg-[#004a9e] hover:opacity-90 active:scale-95',
+    'bg-secondary text-white hover:bg-[#004a9e] executive-shadow hover:opacity-90 active:scale-95',
   outline:
     'border border-outline-variant bg-surface-container-lowest text-on-background hover:bg-surface-container active:scale-95',
   ghost:
