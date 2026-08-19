@@ -20,7 +20,7 @@ export function SentNotificationsPage() {
   }, [query])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <h1 className="text-headline-lg font-semibold text-deep-navy tracking-tight">Sent Notifications</h1>
@@ -43,7 +43,7 @@ export function SentNotificationsPage() {
           <div
             key={k.id}
             className={cn(
-              'bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm hover:border-secondary/40 transition-all',
+              'bv-surface card-hover p-6',
               k.danger && 'border-l-4 border-l-error'
             )}
           >
@@ -65,26 +65,26 @@ export function SentNotificationsPage() {
         ))}
       </div>
 
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+      <div className="bv-surface overflow-hidden">
         <div className="p-4 border-b border-outline-variant flex flex-wrap items-center gap-3">
           <div className="flex-1 min-w-[240px] relative">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">
               search
             </span>
             <input
-              className="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-1 focus:ring-secondary outline-none text-body-sm"
+              className="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg focus:ring-1 focus:ring-secondary outline-none text-body-sm transition-colors"
               placeholder="Search by recipient or title..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
-          <select className="border border-outline-variant rounded-lg px-3 py-2 text-label-md outline-none">
+          <select className="border border-outline-variant rounded-lg px-3 py-2 text-label-md outline-none focus:border-secondary transition-colors">
             <option>All Types</option>
             <option>Email</option>
             <option>Push</option>
             <option>SMS</option>
           </select>
-          <select className="border border-outline-variant rounded-lg px-3 py-2 text-label-md outline-none">
+          <select className="border border-outline-variant rounded-lg px-3 py-2 text-label-md outline-none focus:border-secondary transition-colors">
             <option>All Status</option>
             <option>Delivered</option>
             <option>Pending</option>
@@ -105,7 +105,7 @@ export function SentNotificationsPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {rows.map((r) => (
-                <tr key={r.id} className="hover:bg-surface-container-low/50 transition-colors group bv-row-hover">
+                <tr key={r.id} className="zebra-row group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-secondary-container/30 flex items-center justify-center text-secondary font-bold text-xs">
