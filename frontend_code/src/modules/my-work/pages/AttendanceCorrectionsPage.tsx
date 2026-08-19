@@ -113,7 +113,7 @@ export function AttendanceCorrectionsPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <PageHeader
         title="Attendance corrections"
         description="Request changes to past attendance records when punch times or status need adjustment."
@@ -154,7 +154,7 @@ export function AttendanceCorrectionsPage() {
         />
       </ListToolbar>
 
-      <section className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden">
+      <section className="bv-surface overflow-hidden">
         <div className="px-5 py-4 border-b border-outline-variant/30 flex items-center justify-between">
           <div>
             <h3 className="text-title-lg text-on-background">Suggested days</h3>
@@ -190,7 +190,7 @@ export function AttendanceCorrectionsPage() {
         )}
       </section>
 
-      <section className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden">
+      <section className="bv-surface overflow-hidden">
         <div className="px-5 py-4 border-b border-outline-variant/30">
           <h3 className="text-title-lg text-on-background">Your requests</h3>
         </div>
@@ -234,7 +234,7 @@ export function AttendanceCorrectionsPage() {
               </thead>
               <tbody className="divide-y divide-outline-variant/20">
                 {visible.map((r) => (
-                  <tr key={r.id} className="h-16 hover:bg-surface-container/40 transition-colors">
+                  <tr key={r.id} className="h-16 zebra-row">
                     <td className="py-2 px-5 text-body-md font-semibold text-on-background">{r.date}</td>
                     <td className="py-2 px-4 text-body-md text-on-surface-variant">{r.originalStatus}</td>
                     <td className="py-2 px-4 text-body-md text-on-background">
@@ -279,7 +279,7 @@ export function AttendanceCorrectionsPage() {
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-deep-navy/40 backdrop-blur-sm">
           <div
-            className="bg-surface-container-lowest w-full max-w-lg rounded-xl shadow-2xl border border-outline-variant flex flex-col max-h-[90vh] overflow-hidden"
+            className="bv-surface w-full max-w-lg executive-shadow flex flex-col max-h-[90vh] overflow-hidden"
             role="dialog"
             aria-labelledby="corr-title"
           >
@@ -294,7 +294,7 @@ export function AttendanceCorrectionsPage() {
               </div>
               <button
                 type="button"
-                className="p-1 rounded-lg text-on-surface-variant hover:bg-surface-container"
+                className="p-1 rounded-lg text-on-surface-variant hover:bg-surface-container transition-colors"
                 aria-label="Close"
                 onClick={() => setModalOpen(false)}
               >
@@ -318,7 +318,7 @@ export function AttendanceCorrectionsPage() {
                       setCheckOut(row.checkOut !== '—' ? row.checkOut : '06:00 PM')
                     }
                   }}
-                  className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface text-body-md text-on-background focus:outline-none focus:ring-2 focus:ring-electric-blue"
+                  className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface text-body-md text-on-background focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
                 >
                   {candidates.map((c) => (
                     <option key={c.id} value={c.id}>
@@ -337,7 +337,7 @@ export function AttendanceCorrectionsPage() {
                     value={checkIn}
                     onChange={(e) => setCheckIn(e.target.value)}
                     onKeyDown={(e) => handleEnterAdvance(e)}
-                    className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface text-body-md focus:outline-none focus:ring-2 focus:ring-electric-blue"
+                    className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
                     placeholder="09:00 AM"
                   />
                 </div>
@@ -350,7 +350,7 @@ export function AttendanceCorrectionsPage() {
                     value={checkOut}
                     onChange={(e) => setCheckOut(e.target.value)}
                     onKeyDown={(e) => handleEnterAdvance(e)}
-                    className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface text-body-md focus:outline-none focus:ring-2 focus:ring-electric-blue"
+                    className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
                     placeholder="06:00 PM"
                   />
                 </div>
@@ -363,7 +363,7 @@ export function AttendanceCorrectionsPage() {
                   id="corr-approver"
                   value={approver}
                   onChange={(e) => setApprover(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface text-body-md text-on-background focus:outline-none focus:ring-2 focus:ring-electric-blue"
+                  className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface text-body-md text-on-background focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
                 >
                   {APPROVER_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
@@ -382,7 +382,7 @@ export function AttendanceCorrectionsPage() {
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   onKeyDown={(e) => handleEnterAdvance(e)}
-                  className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface text-body-md resize-none focus:outline-none focus:ring-2 focus:ring-electric-blue"
+                  className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface text-body-md resize-none focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
                   placeholder="Explain why the record needs correction…"
                 />
               </div>
