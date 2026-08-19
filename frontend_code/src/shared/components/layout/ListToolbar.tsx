@@ -3,15 +3,12 @@ import type { ReactNode } from 'react'
 import { Button } from '@/shared/components/ui/Button'
 
 interface ListToolbarProps {
-  /** Preferred prop */
   searchValue?: string
-  /** Alias used by older pages */
   search?: string
   onSearchChange: (value: string) => void
   searchPlaceholder?: string
   filterSlot?: ReactNode
   actionsSlot?: ReactNode
-  /** Children treated as filter controls (legacy API) */
   children?: ReactNode
   filtersActive?: boolean
   onResetFilters?: () => void
@@ -19,7 +16,7 @@ interface ListToolbarProps {
   className?: string
 }
 
-/** Search left · filters right — supports legacy children API */
+/** Search left · filters right — HTML-aligned focus ring + hover */
 export function ListToolbar({
   searchValue,
   search,
@@ -48,10 +45,10 @@ export function ListToolbar({
           placeholder={searchPlaceholder}
           className={cn(
             'w-full pl-10 pr-4 py-2',
-            'bg-surface-container-lowest border border-outline-variant/50 rounded-lg',
+            'bg-surface-container-lowest border border-outline-variant rounded-lg',
             'text-body-md text-on-surface placeholder:text-on-surface-variant/50',
-            'transition-interactive',
-            'focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary',
+            'transition-colors duration-200',
+            'focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary',
           )}
         />
       </div>
@@ -67,7 +64,7 @@ export function ListToolbar({
           <button
             type="button"
             onClick={onRefresh}
-            className="p-2 bg-surface-container-lowest border border-outline-variant/50 rounded-lg text-on-surface-variant hover:text-primary hover:border-primary transition-colors"
+            className="p-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface-variant hover:text-secondary hover:bg-surface-container transition-colors duration-200"
             aria-label="Refresh"
           >
             <span className="material-symbols-outlined text-[20px]">refresh</span>
