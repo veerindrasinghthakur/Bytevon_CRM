@@ -9,7 +9,7 @@ export function EmployeeSalaryDetailPage() {
   const emp = payrollEmployees.find((e) => e.id === employeeId) ?? payrollEmployees[0]
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <header className="flex flex-col gap-3">
         <div className="flex items-center gap-2 text-on-surface-variant text-label-md">
           <button
@@ -45,7 +45,7 @@ export function EmployeeSalaryDetailPage() {
               <p className="text-body-md text-on-surface-variant mt-0.5">Gross salary configuration only</p>
             </div>
           </div>
-          <div className="flex items-center gap-4 bg-surface-container-lowest px-6 py-4 rounded-xl border border-outline-variant shadow-sm">
+          <div className="flex items-center gap-4 bv-surface px-6 py-4">
             <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center font-bold text-primary">
               {emp.initials}
             </div>
@@ -65,7 +65,7 @@ export function EmployeeSalaryDetailPage() {
         </div>
       </header>
 
-      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-8 card-hover">
+      <section className="bv-surface card-hover p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
         <div className="flex gap-12 flex-wrap">
           <div>
             <p className="text-on-surface-variant text-label-md uppercase tracking-wider mb-2">Gross Salary</p>
@@ -117,22 +117,22 @@ export function EmployeeSalaryDetailPage() {
         </div>
       </section>
 
-      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-6">
+      <section className="bv-surface p-6">
         <h3 className="text-title-lg font-semibold text-deep-navy mb-4">Gross salary summary</h3>
         <p className="text-body-md text-on-surface-variant mb-6">
-          This view shows only the employee&apos;s configured gross salary. Earnings and deductions are
+          This view shows only the employee's configured gross salary. Earnings and deductions are
           calculated during monthly payroll runs — not managed here.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="bg-surface-container-low rounded-lg p-4 border border-outline-variant">
+          <div className="bg-surface-container-low rounded-lg p-4 border border-outline-variant card-hover">
             <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Gross / month</p>
             <p className="text-headline-md font-bold text-deep-navy">{formatMoney(emp.gross)}</p>
           </div>
-          <div className="bg-surface-container-low rounded-lg p-4 border border-outline-variant">
+          <div className="bg-surface-container-low rounded-lg p-4 border border-outline-variant card-hover">
             <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Currency</p>
             <p className="text-headline-md font-bold text-deep-navy">USD</p>
           </div>
-          <div className="bg-surface-container-low rounded-lg p-4 border border-outline-variant">
+          <div className="bg-surface-container-low rounded-lg p-4 border border-outline-variant card-hover">
             <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Pay frequency</p>
             <p className="text-headline-md font-bold text-deep-navy">Monthly</p>
           </div>
