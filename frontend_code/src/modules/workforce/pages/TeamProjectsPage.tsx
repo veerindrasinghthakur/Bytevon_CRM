@@ -25,7 +25,7 @@ export function TeamProjectsPage() {
   const projects = projectsFor(t.id)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <BackButton to={`/workforce/teams/${t.id}`} label="Back to team" />
         <DynamicRouteCrumbs
@@ -44,7 +44,7 @@ export function TeamProjectsPage() {
               key={p.id}
               to="/projects/$projectId"
               params={{ projectId: routeId }}
-              className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm flex flex-col sm:flex-row sm:items-center gap-4 justify-between hover:border-secondary transition-colors"
+              className="bv-surface card-hover p-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2 mb-1">
