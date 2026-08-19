@@ -11,7 +11,7 @@ export function NotificationDetailPage() {
   const n = inboxNotifications.find((x) => x.id === notificationId) ?? inboxNotifications[0]
 
   return (
-    <div className="space-y-6 max-w-6xl">
+    <div className="space-y-6 max-w-6xl animate-fade-in">
       <nav className="flex items-center gap-2 text-label-md text-on-surface-variant flex-wrap">
         <button type="button" className="hover:text-secondary" onClick={() => navigate({ to: '/notifications' })}>
           Notification Center
@@ -22,7 +22,7 @@ export function NotificationDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-8 space-y-6">
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm">
+          <section className="bv-surface p-6">
             <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
               <div className="space-y-2">
                 <div className="flex items-center gap-3 flex-wrap">
@@ -66,7 +66,7 @@ export function NotificationDetailPage() {
             </div>
           </section>
 
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-wrap gap-3 items-center justify-between">
+          <div className="bv-surface p-4 flex flex-wrap gap-3 items-center justify-between">
             <div className="flex flex-wrap gap-3">
               <Button variant="primary" size="md" leftIcon={<span className="material-symbols-outlined text-[20px]">check_circle</span>}>
                 Mark as Resolved
@@ -82,7 +82,7 @@ export function NotificationDetailPage() {
         </div>
 
         <div className="lg:col-span-4 space-y-6">
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden">
+          <section className="bv-surface overflow-hidden">
             <div className="p-4 bg-surface-container-low border-b border-outline-variant">
               <h2 className="text-title-lg font-semibold text-deep-navy">Delivery Information</h2>
             </div>
