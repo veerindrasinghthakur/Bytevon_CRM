@@ -37,7 +37,7 @@ export function ComposeNotificationPage() {
   const removeRole = (r: string) => setRoles((prev) => prev.filter((x) => x !== r))
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <nav className="flex items-center gap-2 text-label-md text-on-surface-variant">
         <button type="button" className="hover:text-secondary" onClick={() => navigate({ to: '/notifications' })}>
           Notification Center
@@ -74,7 +74,7 @@ export function ComposeNotificationPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-8 space-y-6">
-          <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-6">
+          <section className="bv-surface p-6">
             <h3 className="text-title-lg font-semibold text-deep-navy mb-6 flex items-center gap-2">
               <span className="material-symbols-outlined text-secondary">mail</span>
               Notification Content
@@ -83,7 +83,7 @@ export function ComposeNotificationPage() {
               <div>
                 <label className="block text-label-md text-on-surface-variant mb-2">Notification Title</label>
                 <input
-                  className="w-full h-12 bg-surface-container-lowest px-4 rounded-lg border border-outline-variant focus:border-secondary focus:ring-1 focus:ring-secondary outline-none text-body-md"
+                  className="w-full h-12 bg-surface-container-lowest px-4 rounded-lg border border-outline-variant focus:border-secondary focus:ring-1 focus:ring-secondary outline-none text-body-md transition-colors"
                   placeholder="e.g., Scheduled Maintenance Downtime"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
@@ -122,7 +122,7 @@ export function ComposeNotificationPage() {
                 <div className="border border-outline-variant rounded-lg overflow-hidden focus-within:border-secondary">
                   <div className="bg-surface-container-low border-b border-outline-variant p-2 flex items-center gap-1">
                     {['format_bold', 'format_italic', 'format_list_bulleted', 'link', 'image'].map((ic) => (
-                      <button key={ic} type="button" className="p-1.5 rounded hover:bg-surface-container">
+                      <button key={ic} type="button" className="p-1.5 rounded hover:bg-surface-container transition-colors">
                         <span className="material-symbols-outlined text-[20px]">{ic}</span>
                       </button>
                     ))}
@@ -147,7 +147,7 @@ export function ComposeNotificationPage() {
               <div>
                 <label className="block text-label-md text-on-surface-variant mb-2">Related Module Context</label>
                 <select
-                  className="w-full h-12 bg-surface-container-lowest px-4 rounded-lg border border-outline-variant focus:border-secondary outline-none text-body-md"
+                  className="w-full h-12 bg-surface-container-lowest px-4 rounded-lg border border-outline-variant focus:border-secondary outline-none text-body-md transition-colors"
                   value={moduleCtx}
                   onChange={(e) => setModuleCtx(e.target.value)}
                 >
@@ -163,7 +163,7 @@ export function ComposeNotificationPage() {
         </div>
 
         <div className="lg:col-span-4 space-y-6">
-          <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-6">
+          <section className="bv-surface p-6">
             <h3 className="text-title-lg font-semibold text-deep-navy mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined text-secondary">group_add</span>
               Recipients
@@ -194,7 +194,7 @@ export function ComposeNotificationPage() {
             <label className="block text-label-sm text-on-surface-variant mb-2">Target Roles/Teams</label>
             <div className="relative mb-3">
               <input
-                className="w-full h-10 bg-surface-container-lowest px-4 pl-10 rounded-lg border border-outline-variant text-body-sm outline-none focus:ring-1 focus:ring-secondary"
+                className="w-full h-10 bg-surface-container-lowest px-4 pl-10 rounded-lg border border-outline-variant text-body-sm outline-none focus:ring-1 focus:ring-secondary transition-colors"
                 placeholder="Search roles or teams..."
               />
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
@@ -216,7 +216,7 @@ export function ComposeNotificationPage() {
             </div>
           </section>
 
-          <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-6">
+          <section className="bv-surface p-6">
             <h3 className="text-title-lg font-semibold text-deep-navy mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined text-secondary">hub</span>
               Channels
@@ -227,7 +227,7 @@ export function ComposeNotificationPage() {
                   { key: 'inApp' as const, icon: 'dashboard', label: 'In-App Dashboard' },
                   { key: 'email' as const, icon: 'mail', label: 'Official Email' },
                   { key: 'sms' as const, icon: 'sms', label: 'SMS Alert' },
-                  { key: 'push' as const, icon: 'notifications_active', label: 'Mobile Push' },
+                  { key: 'push' as const, icon: 'push', label: 'Mobile Push' },
                 ] as const
               ).map((c) => (
                 <label
@@ -247,7 +247,7 @@ export function ComposeNotificationPage() {
             </div>
           </section>
 
-          <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-6">
+          <section className="bv-surface p-6">
             <h3 className="text-title-lg font-semibold text-deep-navy mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined text-secondary">schedule</span>
               Scheduling
