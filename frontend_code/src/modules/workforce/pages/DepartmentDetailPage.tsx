@@ -82,12 +82,12 @@ export function DepartmentDetailPage() {
   }
 
   if (loading) {
-    return <div className="p-12 text-center text-on-surface-variant">Loading department…</div>
+    return <div className="p-12 text-center text-on-surface-variant animate-fade-in">Loading department…</div>
   }
 
   if (!d) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 animate-fade-in">
         <BackButton to="/workforce/departments" label="Back to departments" />
         <p className="text-title-lg">Department not found</p>
       </div>
@@ -95,7 +95,7 @@ export function DepartmentDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <BackButton to="/workforce/departments" label="Back to departments" />
         <DynamicRouteCrumbs className="mt-2 mb-3" lastLabel={d.name} />
@@ -130,21 +130,21 @@ export function DepartmentDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm card-hover">
+        <div className="bv-surface card-hover p-6">
           <p className="text-on-surface-variant text-label-md mb-2">Total Staff</p>
           <p className="text-display-lg font-bold">{d.staffCount}</p>
         </div>
-        <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm card-hover">
+        <div className="bv-surface card-hover p-6">
           <p className="text-on-surface-variant text-label-md mb-2">Department Head</p>
           <p className="text-title-lg font-bold">{d.headName}</p>
         </div>
-        <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm card-hover">
+        <div className="bv-surface card-hover p-6">
           <p className="text-on-surface-variant text-label-md mb-2">Active assignments</p>
           <p className="text-display-lg font-bold">{staff.length}</p>
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+      <div className="bv-surface overflow-hidden">
         <div className="px-6 py-4 border-b border-outline-variant">
           <h3 className="text-title-lg font-semibold">Employees in this department</h3>
           <p className="text-body-sm text-on-surface-variant">Current employment assignments</p>
@@ -171,7 +171,7 @@ export function DepartmentDetailPage() {
                 {staff.map((e) => (
                   <tr
                     key={e.employmentId}
-                    className="bv-row-hover cursor-pointer"
+                    className="zebra-row cursor-pointer"
                     onClick={() =>
                       navigate({
                         to: '/workforce/employees/$employeeId',
@@ -194,7 +194,6 @@ export function DepartmentDetailPage() {
         )}
       </div>
 
-      {/* Add member modal */}
       {addOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <button
@@ -203,7 +202,7 @@ export function DepartmentDetailPage() {
             aria-label="Close"
             onClick={() => setAddOpen(false)}
           />
-          <div className="relative bg-surface-container-lowest rounded-xl border border-outline-variant shadow-2xl w-full max-w-md p-6 space-y-4 z-10">
+          <div className="relative bv-surface executive-shadow w-full max-w-md p-6 space-y-4 z-10">
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-title-lg font-semibold text-on-background">Add Member</h3>
@@ -213,7 +212,7 @@ export function DepartmentDetailPage() {
               </div>
               <button
                 type="button"
-                className="p-1 rounded-lg hover:bg-surface-container"
+                className="p-1 rounded-lg hover:bg-surface-container transition-colors"
                 onClick={() => setAddOpen(false)}
               >
                 <Icon name="close" />
