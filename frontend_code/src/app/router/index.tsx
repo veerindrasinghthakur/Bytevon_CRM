@@ -57,6 +57,9 @@ import { AddMemberPage } from '@/modules/workforce/pages/AddMemberPage'
 import { AttendanceDashboardPage } from '@/modules/workforce/pages/AttendanceDashboardPage'
 import { AttendanceEmployeesPage } from '@/modules/workforce/pages/AttendanceEmployeesPage'
 import { WorkforceAttendanceDetailPage } from '@/modules/workforce/pages/WorkforceAttendanceDetailPage'
+import { ShiftsListPage } from '@/modules/workforce/pages/ShiftsListPage'
+import { ShiftDetailPage } from '@/modules/workforce/pages/ShiftDetailPage'
+import { ShiftCreatePage } from '@/modules/workforce/pages/ShiftCreatePage'
 
 import { ProfilePage } from '@/modules/profile/pages/ProfilePage'
 import { NotificationsPage } from '@/modules/notifications/pages/NotificationsPage'
@@ -243,6 +246,9 @@ const workforceTeamProjectsRoute = createRoute({ getParentRoute: () => appLayout
 const workforceTeamEditRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/teams/$teamId/edit', component: TeamEditPage })
 const workforceTeamAssignProjectRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/teams/$teamId/assign-project', component: AssignProjectPage })
 const workforceTeamAddMemberRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/teams/$teamId/add-member', component: AddMemberPage })
+const workforceShiftsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/shifts', component: ShiftsListPage })
+const workforceShiftsNewRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/shifts/new', component: ShiftCreatePage })
+const workforceShiftDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/shifts/$shiftId', component: ShiftDetailPage })
 const workforceAttendanceRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/attendance', component: AttendanceDashboardPage })
 const workforceAttendanceEmployeesRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/attendance/employees', component: AttendanceEmployeesPage })
 const workforceAttendanceDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/attendance/$attendanceId', component: WorkforceAttendanceDetailPage })
@@ -319,6 +325,9 @@ const routeTree = rootRoute.addChildren([
     workforceTeamEditRoute,
     workforceTeamAssignProjectRoute,
     workforceTeamAddMemberRoute,
+    workforceShiftsRoute,
+    workforceShiftsNewRoute,
+    workforceShiftDetailRoute,
     workforceAttendanceRoute,
     workforceAttendanceEmployeesRoute,
     workforceAttendanceDetailRoute,
