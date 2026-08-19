@@ -18,7 +18,7 @@ export function LeaveDetailPage() {
 
   if (!req) {
     return (
-      <div>
+      <div className="animate-fade-in">
         <PageHeader title="Leave details" showBack />
         <p className="text-body-md text-on-surface-variant">Request not found.</p>
       </div>
@@ -30,7 +30,7 @@ export function LeaveDetailPage() {
     (req.status === 'Pending' || req.status === 'Approved' ? req.days : 0)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title={`Leave Request #${req.id.toUpperCase()}`}
         description={`${req.type} · ${req.from} → ${req.to} · ${req.days} day(s)`}
@@ -64,10 +64,8 @@ export function LeaveDetailPage() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left column */}
         <div className="lg:col-span-8 space-y-6">
-          {/* Employee overview */}
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center gap-5">
+          <section className="bv-surface p-5 flex flex-col sm:flex-row items-start sm:items-center gap-5">
             <div className="w-16 h-16 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary shrink-0">
               <span className="material-symbols-outlined text-3xl">person</span>
             </div>
@@ -90,8 +88,7 @@ export function LeaveDetailPage() {
             </div>
           </section>
 
-          {/* Request details */}
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm">
+          <section className="bv-surface p-6">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
               <h3 className="text-title-lg font-semibold text-on-background">Request Details</h3>
               {req.status === 'Pending' && (
@@ -161,8 +158,7 @@ export function LeaveDetailPage() {
             </div>
           </section>
 
-          {/* Discussion */}
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm">
+          <section className="bv-surface p-6">
             <h3 className="text-title-lg font-semibold text-on-background mb-5 flex items-center gap-2">
               <span className="material-symbols-outlined">forum</span>
               Discussion & Approver Notes
@@ -198,7 +194,7 @@ export function LeaveDetailPage() {
                 </div>
                 <div className="flex-1">
                   <textarea
-                    className="w-full p-3 bg-surface-container-low border border-outline-variant rounded-xl text-body-sm outline-none focus:border-secondary resize-none"
+                    className="w-full p-3 bg-surface-container-low border border-outline-variant rounded-xl text-body-sm outline-none focus:border-secondary transition-colors resize-none"
                     placeholder="Add a note or reply…"
                     rows={2}
                   />
@@ -213,14 +209,12 @@ export function LeaveDetailPage() {
           </section>
         </div>
 
-        {/* Right column */}
         <div className="lg:col-span-4 space-y-4">
-          {/* Approval timeline */}
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm">
+          <section className="bv-surface p-6">
             <h3 className="text-title-lg font-semibold text-on-background mb-5">Approval Timeline</h3>
             <div className="relative space-y-6 before:content-[''] before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-outline-variant/40">
               <div className="relative flex items-start pl-8">
-                <div className="absolute left-0 top-0.5 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center z-10 border-2 border-surface-container-lowest">
+                <div className="absolute left-0 top-0.5 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center z-10 border-2 border-surface-container-lowest executive-shadow">
                   <span className="material-symbols-outlined text-white text-sm">check</span>
                 </div>
                 <div>
@@ -235,7 +229,7 @@ export function LeaveDetailPage() {
               {req.status !== 'Pending' && req.approver && (
                 <div className="relative flex items-start pl-8">
                   <div
-                    className={`absolute left-0 top-0.5 w-6 h-6 rounded-full flex items-center justify-center z-10 border-2 border-surface-container-lowest ${
+                    className={`absolute left-0 top-0.5 w-6 h-6 rounded-full flex items-center justify-center z-10 border-2 border-surface-container-lowest executive-shadow ${
                       req.status === 'Approved' ? 'bg-emerald-500' : 'bg-error'
                     }`}
                   >
@@ -254,7 +248,7 @@ export function LeaveDetailPage() {
 
               {req.status === 'Pending' && (
                 <div className="relative flex items-start pl-8">
-                  <div className="absolute left-0 top-0.5 w-6 h-6 rounded-full bg-secondary flex items-center justify-center z-10 border-2 border-surface-container-lowest ring-4 ring-secondary/15">
+                  <div className="absolute left-0 top-0.5 w-6 h-6 rounded-full bg-secondary flex items-center justify-center z-10 border-2 border-surface-container-lowest ring-4 ring-secondary/15 executive-shadow">
                     <span className="material-symbols-outlined text-white text-sm">pending</span>
                   </div>
                   <div>
@@ -277,8 +271,7 @@ export function LeaveDetailPage() {
             </div>
           </section>
 
-          {/* Balance impact */}
-          <section className="bg-primary text-white rounded-xl p-6 shadow-lg relative overflow-hidden">
+          <section className="bg-primary text-white rounded-xl p-6 executive-shadow relative overflow-hidden">
             <div className="relative z-10 space-y-4">
               <h3 className="text-label-md font-semibold text-white/80 uppercase tracking-wider">
                 Balance after request
@@ -311,8 +304,7 @@ export function LeaveDetailPage() {
             <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-secondary/20 rounded-full blur-2xl" />
           </section>
 
-          {/* Meta + actions */}
-          <section className="bg-surface-container-lowest border border-outline-variant rounded-xl p-5 space-y-3 shadow-sm">
+          <section className="bv-surface p-5 space-y-3">
             <div>
               <p className="text-label-sm text-on-surface-variant">Approver</p>
               <p className="text-body-md text-on-surface mt-0.5">{req.approver ?? '—'}</p>
