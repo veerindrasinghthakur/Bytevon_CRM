@@ -28,7 +28,7 @@ export function DocumentsPage() {
   }, [items, q])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Documents"
         description="Organization and entity-linked files"
@@ -39,7 +39,7 @@ export function DocumentsPage() {
                 search
               </span>
               <input
-                className="w-[240px] pl-9 pr-4 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm focus:outline-none focus:border-secondary shadow-sm"
+                className="w-[240px] pl-9 pr-4 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm focus:outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors"
                 placeholder="Search documents…"
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
@@ -63,7 +63,7 @@ export function DocumentsPage() {
           description="Upload a file or adjust your search."
         />
       ) : (
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+        <div className="bv-surface overflow-hidden">
           <table className="w-full text-left">
             <thead>
               <tr className="bg-surface-container-low border-b border-outline-variant">
@@ -76,7 +76,7 @@ export function DocumentsPage() {
             </thead>
             <tbody>
               {filtered.map((d) => (
-                <tr key={d.id} className="border-b border-outline-variant last:border-0 bv-row-hover">
+                <tr key={d.id} className="border-b border-outline-variant last:border-0 zebra-row">
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
                       <span className="material-symbols-outlined text-secondary">{iconFor(d.mime_type)}</span>
