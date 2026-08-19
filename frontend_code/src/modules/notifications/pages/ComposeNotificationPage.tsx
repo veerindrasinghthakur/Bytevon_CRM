@@ -10,6 +10,16 @@ const PRIORITIES = [
   { id: 'Critical', color: 'bg-red-600' },
 ] as const
 
+const ROLE_SUGGESTIONS = [
+  'Management',
+  'IT Support',
+  'HR Admin',
+  'Finance',
+  'Engineering',
+  'All Managers',
+  'Super Admin',
+]
+
 export function ComposeNotificationPage() {
   const navigate = useNavigate()
   const [title, setTitle] = useState('')
@@ -17,10 +27,23 @@ export function ComposeNotificationPage() {
   const [priority, setPriority] = useState<(typeof PRIORITIES)[number]['id']>('Normal')
   const [broadcastAll, setBroadcastAll] = useState(false)
   const [roles, setRoles] = useState(['Management', 'IT Support'])
+  const [roleQuery, setRoleQuery] = useState('')
   const [channels, setChannels] = useState({ inApp: true, email: true, sms: false, push: false })
   const [scheduleMode, setScheduleMode] = useState<'now' | 'later'>('now')
   const [moduleCtx, setModuleCtx] = useState('General / System')
   const [toast, setToast] = useState<string | null>(null)
+
+  const roleMatches = ROLE_SUGGESTIONS.filter(
+    (r) =>
+      roleQuery &&
+      r.toLowerCase().includes(roleQuery.toLowerCase()) &&
+      !roles.includes(r),
+  )
+
+  const addRole = (r: string) => {
+    if (!roles.includes(r)) setRoles((prev) => [...prev, r])
+    setRoleQuery('')
+  }
 
   const send = () => {
     if (!title.trim() || !body.trim()) {
@@ -32,6 +55,11 @@ export function ComposeNotificationPage() {
       setToast(null)
       navigate({ to: '/notifications/sent' })
     }, 900)
+  }
+
+  const saveDraft = () => {
+    setToast('Draft template saved (mock).')
+    window.setTimeout(() => setToast(null), 2000)
   }
 
   const removeRole = (r: string) => setRoles((prev) => prev.filter((x) => x !== r))
@@ -49,7 +77,9 @@ export function ComposeNotificationPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
           <h1 className="text-headline-lg font-semibold text-deep-navy tracking-tight">Compose Notification</h1>
-          <p className="text-body-md text-on-surface-variant mt-1">Design and broadcast system-wide or targeted alerts.</p>
+          <p className="text-body-md text-on-surface-variant mt-1">
+            Design and broadcast system-wide or targeted alerts.
+          </p>
         </div>
         <div className="flex gap-3">
           <Button variant="outline" size="md" onClick={() => navigate({ to: '/notifications' })}>
@@ -101,14 +131,20 @@ export function ComposeNotificationPage() {
                         'flex-1 min-w-[100px] py-3 px-4 rounded-lg border flex items-center justify-center gap-2 transition-all',
                         priority === p.id
                           ? 'border-2 border-secondary bg-secondary/5'
-                          : 'border-outline-variant hover:border-outline'
+                          : 'border-outline-variant hover:border-outline',
                       )}
                     >
-                      <div className={cn('w-2.5 h-2.5 rounded-full', p.color)} />
+                      <div
+                        className={cn(
+                          'w-2.5 h-2.5 rounded-full',
+                          p.color,
+                          p.id === 'Critical' && priority === p.id && 'animate-pulse',
+                        )}
+                      />
                       <span
                         className={cn(
                           'text-label-md',
-                          priority === p.id ? 'text-deep-navy font-semibold' : 'text-on-surface-variant'
+                          priority === p.id ? 'text-deep-navy font-semibold' : 'text-on-surface-variant',
                         )}
                       >
                         {p.id}
@@ -122,7 +158,11 @@ export function ComposeNotificationPage() {
                 <div className="border border-outline-variant rounded-lg overflow-hidden focus-within:border-secondary">
                   <div className="bg-surface-container-low border-b border-outline-variant p-2 flex items-center gap-1">
                     {['format_bold', 'format_italic', 'format_list_bulleted', 'link', 'image'].map((ic) => (
-                      <button key={ic} type="button" className="p-1.5 rounded hover:bg-surface-container transition-colors">
+                      <button
+                        key={ic}
+                        type="button"
+                        className="p-1.5 rounded hover:bg-surface-container transition-colors"
+                      >
                         <span className="material-symbols-outlined text-[20px]">{ic}</span>
                       </button>
                     ))}
@@ -160,6 +200,14 @@ export function ComposeNotificationPage() {
               </div>
             </div>
           </section>
+          <button
+            type="button"
+            onClick={saveDraft}
+            className="flex items-center gap-2 text-secondary font-medium text-label-md hover:underline"
+          >
+            <span className="material-symbols-outlined text-[20px]">description</span>
+            Save as Draft Template
+          </button>
         </div>
 
         <div className="lg:col-span-4 space-y-6">
@@ -180,26 +228,49 @@ export function ComposeNotificationPage() {
                 onClick={() => setBroadcastAll((v) => !v)}
                 className={cn(
                   'w-11 h-6 rounded-full relative transition-colors',
-                  broadcastAll ? 'bg-secondary' : 'bg-outline-variant'
+                  broadcastAll ? 'bg-secondary' : 'bg-outline-variant',
                 )}
               >
                 <span
                   className={cn(
                     'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform',
-                    broadcastAll && 'translate-x-5'
+                    broadcastAll && 'translate-x-5',
                   )}
                 />
               </button>
             </div>
             <label className="block text-label-sm text-on-surface-variant mb-2">Target Roles/Teams</label>
-            <div className="relative mb-3">
+            <div className="relative mb-2">
               <input
                 className="w-full h-10 bg-surface-container-lowest px-4 pl-10 rounded-lg border border-outline-variant text-body-sm outline-none focus:ring-1 focus:ring-secondary transition-colors"
                 placeholder="Search roles or teams..."
+                value={roleQuery}
+                onChange={(e) => setRoleQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && roleMatches[0]) {
+                    e.preventDefault()
+                    addRole(roleMatches[0])
+                  }
+                }}
               />
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
                 search
               </span>
+              {roleMatches.length > 0 && (
+                <ul className="absolute z-10 left-0 right-0 mt-1 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                  {roleMatches.map((r) => (
+                    <li key={r}>
+                      <button
+                        type="button"
+                        className="w-full text-left px-3 py-2 text-body-sm hover:bg-surface-container"
+                        onClick={() => addRole(r)}
+                      >
+                        {r}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
             <div className="flex flex-wrap gap-2">
               {roles.map((r) => (
@@ -221,13 +292,14 @@ export function ComposeNotificationPage() {
               <span className="material-symbols-outlined text-secondary">hub</span>
               Channels
             </h3>
+            <p className="text-[11px] text-on-surface-variant mb-3">V1 primary: In-App + Email. SMS/Push optional later.</p>
             <div className="space-y-2">
               {(
                 [
                   { key: 'inApp' as const, icon: 'dashboard', label: 'In-App Dashboard' },
                   { key: 'email' as const, icon: 'mail', label: 'Official Email' },
                   { key: 'sms' as const, icon: 'sms', label: 'SMS Alert' },
-                  { key: 'push' as const, icon: 'push', label: 'Mobile Push' },
+                  { key: 'push' as const, icon: 'notifications_active', label: 'Mobile Push' },
                 ] as const
               ).map((c) => (
                 <label
@@ -275,12 +347,22 @@ export function ComposeNotificationPage() {
               </label>
               <div className={cn('space-y-3 pt-2', scheduleMode === 'now' && 'opacity-50 pointer-events-none')}>
                 <div>
-                  <label className="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">Select Date</label>
-                  <input type="date" className="w-full h-10 px-4 rounded-lg border border-outline-variant text-label-md outline-none" />
+                  <label className="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">
+                    Select Date
+                  </label>
+                  <input
+                    type="date"
+                    className="w-full h-10 px-4 rounded-lg border border-outline-variant text-label-md outline-none"
+                  />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">Select Time</label>
-                  <input type="time" className="w-full h-10 px-4 rounded-lg border border-outline-variant text-label-md outline-none" />
+                  <label className="block text-[11px] font-bold text-on-surface-variant uppercase mb-1">
+                    Select Time
+                  </label>
+                  <input
+                    type="time"
+                    className="w-full h-10 px-4 rounded-lg border border-outline-variant text-label-md outline-none"
+                  />
                 </div>
               </div>
             </div>

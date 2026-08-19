@@ -7,17 +7,24 @@ import { cn } from '@/shared/lib/cn'
 export function SentNotificationsPage() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
+  const [typeFilter, setTypeFilter] = useState('All')
+  const [statusFilter, setStatusFilter] = useState('All')
 
   const rows = useMemo(() => {
-    if (!query) return sentNotifications
-    const q = query.toLowerCase()
-    return sentNotifications.filter(
-      (r) =>
-        r.recipientName.toLowerCase().includes(q) ||
-        r.title.toLowerCase().includes(q) ||
-        r.recipientContact.toLowerCase().includes(q)
-    )
-  }, [query])
+    return sentNotifications.filter((r) => {
+      if (typeFilter !== 'All' && r.type !== typeFilter) return false
+      if (statusFilter !== 'All' && r.status !== statusFilter) return false
+      if (query) {
+        const q = query.toLowerCase()
+        return (
+          r.recipientName.toLowerCase().includes(q) ||
+          r.title.toLowerCase().includes(q) ||
+          r.recipientContact.toLowerCase().includes(q)
+        )
+      }
+      return true
+    })
+  }, [query, typeFilter, statusFilter])
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -40,20 +47,24 @@ export function SentNotificationsPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
         {sentKpis.map((k) => (
-          <div
-            key={k.id}
-            className={cn(
-              'bv-surface card-hover p-6',
-              k.danger && 'border-l-4 border-l-error'
-            )}
-          >
+          <div key={k.id} className={cn('bv-surface card-hover p-6', k.danger && 'border-l-4 border-l-error')}>
             <div className="flex justify-between items-start">
               <span className="text-on-surface-variant text-label-md uppercase tracking-wider">{k.label}</span>
-              <div className={cn('p-2 rounded-lg', k.danger ? 'bg-error-container text-error' : 'bg-surface-container-highest text-secondary')}>
+              <div
+                className={cn(
+                  'p-2 rounded-lg',
+                  k.danger ? 'bg-error-container text-error' : 'bg-surface-container-highest text-secondary',
+                )}
+              >
                 <span className="material-symbols-outlined">{k.icon}</span>
               </div>
             </div>
-            <h3 className={cn('text-headline-lg font-bold mt-4 tracking-tight', k.danger ? 'text-error' : 'text-deep-navy')}>
+            <h3
+              className={cn(
+                'text-headline-lg font-bold mt-4 tracking-tight',
+                k.danger ? 'text-error' : 'text-deep-navy',
+              )}
+            >
               {k.value}
             </h3>
             {k.hint && (
@@ -78,17 +89,25 @@ export function SentNotificationsPage() {
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
-          <select className="border border-outline-variant rounded-lg px-3 py-2 text-label-md outline-none focus:border-secondary transition-colors">
-            <option>All Types</option>
-            <option>Email</option>
-            <option>Push</option>
-            <option>SMS</option>
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+            className="border border-outline-variant rounded-lg px-3 py-2 text-label-md outline-none focus:border-secondary transition-colors"
+          >
+            <option value="All">All Types</option>
+            <option value="Email">Email</option>
+            <option value="Push">Push</option>
+            <option value="SMS">SMS</option>
           </select>
-          <select className="border border-outline-variant rounded-lg px-3 py-2 text-label-md outline-none focus:border-secondary transition-colors">
-            <option>All Status</option>
-            <option>Delivered</option>
-            <option>Pending</option>
-            <option>Failed</option>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="border border-outline-variant rounded-lg px-3 py-2 text-label-md outline-none focus:border-secondary transition-colors"
+          >
+            <option value="All">All Status</option>
+            <option value="Delivered">Delivered</option>
+            <option value="Pending">Pending</option>
+            <option value="Failed">Failed</option>
           </select>
         </div>
 
@@ -97,49 +116,63 @@ export function SentNotificationsPage() {
             <thead className="bg-surface-container-low border-b border-outline-variant">
               <tr>
                 {['Recipient', 'Notification Title', 'Status', 'Type', 'Sent Date/Time', ''].map((h) => (
-                  <th key={h} className="px-6 py-4 text-label-md text-on-surface-variant font-bold uppercase tracking-wider">
+                  <th
+                    key={h || 'actions'}
+                    className="px-6 py-4 text-label-md text-on-surface-variant font-bold uppercase tracking-wider"
+                  >
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
-              {rows.map((r) => (
-                <tr key={r.id} className="zebra-row group">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-secondary-container/30 flex items-center justify-center text-secondary font-bold text-xs">
-                        {r.initials ?? r.recipientName.slice(0, 2).toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="text-label-md font-bold text-deep-navy">{r.recipientName}</p>
-                        <p className="text-label-sm text-on-surface-variant">{r.recipientContact}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <p className="text-label-md text-deep-navy font-medium">{r.title}</p>
-                    <p className="text-on-surface-variant text-[11px] truncate max-w-[220px]">{r.preview}</p>
-                  </td>
-                  <td className="px-6 py-4">
-                    <StatusPill status={r.status} />
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-on-surface-variant">
-                      <span className="material-symbols-outlined text-lg">
-                        {r.type === 'Email' ? 'mail' : r.type === 'SMS' ? 'sms' : 'notifications'}
-                      </span>
-                      <span className="text-label-sm">{r.type}</span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-on-surface-variant text-label-sm">{r.sentAt}</td>
-                  <td className="px-6 py-4 text-right">
-                    <button type="button" className="p-1 hover:bg-surface-container rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                      <span className="material-symbols-outlined">more_vert</span>
-                    </button>
+              {rows.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-on-surface-variant">
+                    No sent notifications match your filters.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                rows.map((r) => (
+                  <tr key={r.id} className="zebra-row group">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-secondary-container/30 flex items-center justify-center text-secondary font-bold text-xs">
+                          {r.initials ?? r.recipientName.slice(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="text-label-md font-bold text-deep-navy">{r.recipientName}</p>
+                          <p className="text-label-sm text-on-surface-variant">{r.recipientContact}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-label-md text-deep-navy font-medium">{r.title}</p>
+                      <p className="text-on-surface-variant text-[11px] truncate max-w-[220px]">{r.preview}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <StatusPill status={r.status} />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2 text-on-surface-variant">
+                        <span className="material-symbols-outlined text-lg">
+                          {r.type === 'Email' ? 'mail' : r.type === 'SMS' ? 'sms' : 'notifications'}
+                        </span>
+                        <span className="text-label-sm">{r.type}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-on-surface-variant text-label-sm">{r.sentAt}</td>
+                    <td className="px-6 py-4 text-right">
+                      <button
+                        type="button"
+                        className="p-1 hover:bg-surface-container rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <span className="material-symbols-outlined">more_vert</span>
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
