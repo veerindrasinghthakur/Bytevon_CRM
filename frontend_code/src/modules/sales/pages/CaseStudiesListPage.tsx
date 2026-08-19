@@ -30,7 +30,7 @@ export function CaseStudiesListPage() {
   }, [search, statusFilter])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Case Study Management"
         description="Published wins and drafts used in sales conversations."
@@ -52,7 +52,7 @@ export function CaseStudiesListPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {caseStudyMetrics.map((m) => (
-          <div key={m.id} className="p-5 rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm">
+          <div key={m.id} className="bv-surface card-hover p-5">
             <div className="flex justify-between items-start mb-2">
               <span className="p-2 rounded-lg bg-secondary/10 text-secondary">
                 <span className="material-symbols-outlined text-xl">{m.icon}</span>
@@ -83,14 +83,14 @@ export function CaseStudiesListPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30"
+            className="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
             placeholder="Search case studies..."
           />
         </div>
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none"
+          className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none focus:border-secondary transition-colors"
         >
           <option value="All">All status</option>
           <option value="Published">Published</option>
@@ -101,10 +101,7 @@ export function CaseStudiesListPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map((cs) => (
-          <article
-            key={cs.id}
-            className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5 shadow-sm hover:shadow-md transition-shadow"
-          >
+          <article key={cs.id} className="bv-surface card-hover p-5">
             <div className="flex items-start justify-between gap-2 mb-3">
               <h3 className="font-semibold text-on-surface text-title-md leading-snug">{cs.title}</h3>
               <span className={cn('shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase', statusStyles[cs.status])}>
