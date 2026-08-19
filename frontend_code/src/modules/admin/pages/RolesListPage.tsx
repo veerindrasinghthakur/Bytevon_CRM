@@ -25,7 +25,7 @@ export function RolesListPage() {
   )
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Roles & Permissions"
         description="Define RBAC roles and the permissions they grant."
@@ -49,7 +49,7 @@ export function RolesListPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="bg-surface-container-lowest border border-outline-variant rounded-full pl-10 pr-4 py-2 w-64 focus:ring-2 focus:ring-secondary focus:border-transparent outline-none text-body-sm transition-all duration-200"
+            className="bg-surface-container-lowest border border-outline-variant rounded-full pl-10 pr-4 py-2 w-64 focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none text-body-sm transition-all duration-200"
             placeholder="Search roles..."
             type="text"
           />
@@ -64,7 +64,7 @@ export function RolesListPage() {
           <div
             key={role.id}
             className={cn(
-              'bg-surface-container-lowest border border-outline-variant p-6 rounded-xl shadow-sm',
+              'bv-surface p-6',
               'flex flex-col justify-between relative group w-full card-hover cursor-pointer'
             )}
           >
@@ -81,7 +81,7 @@ export function RolesListPage() {
                 <span className="material-symbols-outlined text-on-surface-variant">more_vert</span>
               </button>
               {openMenu === role.id && (
-                <div className="absolute right-0 top-10 w-48 bg-white border border-outline-variant rounded-lg shadow-lg z-20 py-2">
+                <div className="absolute right-0 top-10 w-48 bg-white border border-outline-variant rounded-lg executive-shadow z-20 py-2">
                   <button
                     type="button"
                     className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container transition-colors duration-200 flex items-center gap-2 cursor-pointer"
