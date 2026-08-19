@@ -30,7 +30,7 @@ export function TeamEditPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-3xl animate-fade-in">
       <div>
         <BackButton to={`/workforce/teams/${t.id}`} label="Back to team" />
         <RouteCrumbs
@@ -47,7 +47,7 @@ export function TeamEditPage() {
       </div>
 
       <form
-        className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 space-y-5 shadow-sm"
+        className="bv-surface p-6 space-y-5"
         onSubmit={(e) => {
           e.preventDefault()
           save()
@@ -63,7 +63,7 @@ export function TeamEditPage() {
               <input
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md"
+                className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none transition-colors"
                 required
               />
             </label>
@@ -73,14 +73,14 @@ export function TeamEditPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
-                className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md resize-none"
+                className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md resize-none focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
               />
             </label>
             <label className="block text-body-sm">
               <span className="text-on-surface-variant">Department</span>
               <input
                 defaultValue={t.department}
-                className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md"
+                className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
               />
             </label>
           </div>
@@ -95,7 +95,7 @@ export function TeamEditPage() {
             <input
               value={head}
               onChange={(e) => setHead(e.target.value)}
-              className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md"
+              className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
             />
           </label>
           <label className="block text-body-sm mt-3">
@@ -103,7 +103,7 @@ export function TeamEditPage() {
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as 'Active' | 'Inactive')}
-              className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md"
+              className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
             >
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
