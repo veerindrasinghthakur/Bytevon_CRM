@@ -27,7 +27,7 @@ function formatMoney(n: number) {
 }
 
 const inputClass =
-  'w-full rounded-lg border border-outline-variant px-3 py-2 text-body-sm outline-none focus:border-secondary bg-transparent'
+  'w-full rounded-lg border border-outline-variant px-3 py-2 text-body-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-transparent transition-colors'
 
 export function EmployeeDetailPage() {
   const { employeeId } = useParams({ strict: false }) as { employeeId: string }
@@ -40,7 +40,6 @@ export function EmployeeDetailPage() {
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  // Edit form — seeded from loaded detail
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [personalEmail, setPersonalEmail] = useState('')
@@ -130,9 +129,9 @@ export function EmployeeDetailPage() {
 
   if (error || !data) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 animate-fade-in">
         <BackButton to="/workforce/employees" label="Back to employees" />
-        <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-8 text-center">
+        <div className="bv-surface p-8 text-center">
           <Icon name="person_off" className="text-4xl text-on-surface-variant" />
           <p className="mt-2 text-title-md font-semibold">{error ?? 'Employee not found'}</p>
           <Button className="mt-4" variant="outline" onClick={() => navigate({ to: '/workforce/employees' })}>
@@ -147,7 +146,7 @@ export function EmployeeDetailPage() {
   const initials = `${data.person.first_name[0] ?? ''}${data.person.last_name[0] ?? ''}`.toUpperCase()
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <BackButton to="/workforce/employees" label="Back to employees" />
         <DynamicRouteCrumbs className="mt-2 mb-2" lastLabel={fullName} />
@@ -161,19 +160,11 @@ export function EmployeeDetailPage() {
             <Can action={Action.UPDATE} resource={ResourceName.EMPLOYMENT}>
               {editing ? (
                 <>
-                  <Button variant="outline" size="sm" onClick={cancelEdit}>
-                    Cancel
-                  </Button>
-                  <Button variant="primary" size="sm" isLoading={saving} onClick={saveEdit}>
-                    Save
-                  </Button>
+                  <Button variant="outline" size="sm" onClick={cancelEdit}>Cancel</Button>
+                  <Button variant="primary" size="sm" isLoading={saving} onClick={saveEdit}>Save</Button>
                 </>
               ) : (
-                <Button
-                  variant="primary"
-                  leftIcon={<Icon name="edit" className="text-lg" />}
-                  onClick={startEdit}
-                >
+                <Button variant="primary" leftIcon={<Icon name="edit" className="text-lg" />} onClick={startEdit}>
                   Edit Employee
                 </Button>
               )}
@@ -198,7 +189,7 @@ export function EmployeeDetailPage() {
       </div>
 
       {editing && (
-        <div className="bg-surface-container-lowest border border-secondary/30 rounded-xl p-6 shadow-sm space-y-4">
+        <div className="bv-surface border-secondary/30 p-6 space-y-4">
           <h3 className="text-title-lg font-semibold flex items-center gap-2">
             <Icon name="edit" className="text-secondary" /> Edit profile
           </h3>
@@ -220,12 +211,7 @@ export function EmployeeDetailPage() {
             </div>
             <div>
               <label className="text-label-sm text-on-surface-variant">Personal email</label>
-              <input
-                className={inputClass}
-                type="email"
-                value={personalEmail}
-                onChange={(e) => setPersonalEmail(e.target.value)}
-              />
+              <input className={inputClass} type="email" value={personalEmail} onChange={(e) => setPersonalEmail(e.target.value)} />
             </div>
             <div>
               <label className="text-label-sm text-on-surface-variant">Phone</label>
@@ -241,7 +227,7 @@ export function EmployeeDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-3 space-y-4">
-          <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 text-center shadow-sm card-hover">
+          <div className="bv-surface card-hover p-6 text-center">
             <div className="w-28 h-28 mx-auto rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-3xl font-bold mb-3">
               {initials}
             </div>
@@ -306,7 +292,7 @@ export function EmployeeDetailPage() {
         </div>
 
         <div className="lg:col-span-9">
-          <div className="bg-surface-container-lowest rounded-t-xl border border-outline-variant flex overflow-x-auto">
+          <div className="bv-surface rounded-b-none flex overflow-x-auto border-b-0">
             {(
               [
                 ['overview', 'Overview'],
@@ -331,7 +317,7 @@ export function EmployeeDetailPage() {
             ))}
           </div>
 
-          <div className="bg-surface-container-lowest border border-t-0 border-outline-variant rounded-b-xl p-6 space-y-6 shadow-sm">
+          <div className="bv-surface rounded-t-none border-t-0 p-6 space-y-6">
             {tab === 'overview' && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 border border-outline-variant rounded-lg card-hover">
@@ -352,31 +338,22 @@ export function EmployeeDetailPage() {
             {tab === 'history' && (
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
-                  <h4 className="text-label-md text-on-surface-variant uppercase tracking-wider mb-3">
-                    State history
-                  </h4>
+                  <h4 className="text-label-md text-on-surface-variant uppercase tracking-wider mb-3">State history</h4>
                   {data.stateHistory.length === 0 ? (
                     <p className="text-body-sm text-on-surface-variant">No state transitions.</p>
                   ) : (
                     <ul className="space-y-2">
                       {data.stateHistory.map((h) => (
                         <li key={h.id} className="rounded-lg border border-outline-variant p-3 text-body-sm card-hover">
-                          <p className="font-semibold">
-                            {h.previous_state ?? '—'} → {h.new_state}
-                          </p>
-                          <p className="text-on-surface-variant">
-                            {h.effective_date}
-                            {h.reason ? ` · ${h.reason}` : ''}
-                          </p>
+                          <p className="font-semibold">{h.previous_state ?? '—'} → {h.new_state}</p>
+                          <p className="text-on-surface-variant">{h.effective_date}{h.reason ? ` · ${h.reason}` : ''}</p>
                         </li>
                       ))}
                     </ul>
                   )}
                 </div>
                 <div>
-                  <h4 className="text-label-md text-on-surface-variant uppercase tracking-wider mb-3">
-                    Assignment history
-                  </h4>
+                  <h4 className="text-label-md text-on-surface-variant uppercase tracking-wider mb-3">Assignment history</h4>
                   {data.assignmentHistory.length === 0 ? (
                     <p className="text-body-sm text-on-surface-variant">No assignments.</p>
                   ) : (
@@ -387,9 +364,7 @@ export function EmployeeDetailPage() {
                             {data.department?.name ?? `Dept #${a.department_id}`} ·{' '}
                             {data.position?.name ?? `Pos #${a.position_id}`} · {a.work_mode}
                           </p>
-                          <p className="text-on-surface-variant">
-                            {a.effective_from} → {a.effective_to ?? 'present'}
-                          </p>
+                          <p className="text-on-surface-variant">{a.effective_from} → {a.effective_to ?? 'present'}</p>
                         </li>
                       ))}
                     </ul>
@@ -402,9 +377,7 @@ export function EmployeeDetailPage() {
               <Can
                 action={Action.VIEW}
                 resource={ResourceName.SALARY}
-                fallback={
-                  <p className="text-body-sm text-on-surface-variant">No permission to view salary.</p>
-                }
+                fallback={<p className="text-body-sm text-on-surface-variant">No permission to view salary.</p>}
               >
                 {data.currentSalary ? (
                   <div className="space-y-4">
