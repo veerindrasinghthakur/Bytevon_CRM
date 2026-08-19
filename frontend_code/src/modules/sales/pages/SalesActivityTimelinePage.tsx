@@ -30,7 +30,7 @@ export function SalesActivityTimelinePage() {
   }, {})
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Activity Timeline"
         description="Chronological sales events across leads and clients."
@@ -56,13 +56,13 @@ export function SalesActivityTimelinePage() {
                 <li key={a.id} className="ml-6 relative">
                   <span
                     className={cn(
-                      'absolute -left-[1.9rem] top-1 w-8 h-8 rounded-full flex items-center justify-center',
+                      'absolute -left-[1.9rem] top-1 w-8 h-8 rounded-full flex items-center justify-center executive-shadow',
                       typeColor[a.type] ?? 'bg-surface-container text-on-surface-variant'
                     )}
                   >
                     <span className="material-symbols-outlined text-base">{typeIcon[a.type] ?? 'circle'}</span>
                   </span>
-                  <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4 shadow-sm">
+                  <div className="bv-surface p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="font-semibold text-on-surface">{a.title}</p>
