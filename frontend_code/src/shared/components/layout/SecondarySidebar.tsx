@@ -47,6 +47,7 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
       { id: 'employees', label: 'Employees', icon: 'badge', to: '/workforce/employees' },
       { id: 'departments', label: 'Departments', icon: 'domain', to: '/workforce/departments' },
       { id: 'teams', label: 'Teams', icon: 'groups', to: '/workforce/teams' },
+      { id: 'shifts', label: 'Shifts', icon: 'schedule', to: '/workforce/shifts' },
       { id: 'attendance', label: 'Attendance', icon: 'calendar_today', to: '/workforce/attendance' },
     ],
   },
@@ -127,6 +128,9 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
     }
     if (to === '/workforce/teams') {
       return pathname === '/workforce/teams' || pathname.startsWith('/workforce/teams/')
+    }
+    if (to === '/workforce/shifts') {
+      return pathname === '/workforce/shifts' || pathname.startsWith('/workforce/shifts/')
     }
     if (to === '/my-work/attendance') {
       return (
