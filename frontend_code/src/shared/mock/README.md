@@ -4,12 +4,21 @@
 
 | File | Role |
 |------|------|
-| `mock-data.json` | **Single source of truth** for seed rows (projects, teams, tasks, leads, clients, employees, departments, notifications, users). |
-| `db.ts` | Deep-clones the JSON into an **in-memory store**. Create/update APIs mutate this store only. |
+| `mock-data.json` | Legacy UI seed (projects, teams, tasks, leads, clients, employees, departments, notifications, users). |
+| `schema-seed.ts` | **Schema-aligned** tables: organization, locations, shifts, persons, employments, RBAC, salary, bank. |
+| `db.ts` | Deep-clones JSON + schema seed into an **in-memory store**. |
 
 ## Module APIs
 
-Each feature’s `api/*` file reads/writes via `getDb()` — **no inline arrays** in those files.
+Each feature’s `api/*` file reads/writes via `getDb()` — **no inline arrays** in page components.
+
+Data flow:
+
+```
+Page → hooks/query → api/* → getDb() (mock) → later HTTP
+```
+
+Pages receive data via **props** from container/page loaders; never import seed arrays directly.
 
 When backend is ready:
 
@@ -18,4 +27,6 @@ When backend is ready:
 
 ## Editing seed data
 
-Edit `mock-data.json` only. Restart the dev server if the store was already mutated in the browser session (in-memory changes are lost on full reload; reload re-seeds from JSON).
+- UI list fixtures: edit `mock-data.json`.
+- Schema-shaped rows (enums, FKs, versioning): edit `schema-seed.ts`.
+- Restart the dev server after structural seed changes if the in-memory store was mutated.

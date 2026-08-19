@@ -21,14 +21,14 @@ import {
 import { ProjectsListPage } from '@/modules/projects/pages/ProjectsListPage'
 import { ProjectDetailPage } from '@/modules/projects/pages/ProjectDetailPage'
 import { ProjectCreatePage } from '@/modules/projects/pages/ProjectCreatePage'
-import { TeamsListPage as ProjectTeamsListPage } from '@/modules/projects/pages/TeamsListPage'
+import { TeamsListPage } from '@/modules/projects/pages/TeamsListPage'
 import { TeamCreatePage } from '@/modules/projects/pages/TeamCreatePage'
-import { TeamDetailPage as ProjectTeamDetailPage } from '@/modules/projects/pages/TeamDetailPage'
-import { ProjectTeamMembersPage } from '@/modules/projects/pages/TeamMembersPage'
-import { ProjectTeamAddMemberPage } from '@/modules/projects/pages/TeamAddMemberPage'
+import { TeamDetailPage } from '@/modules/projects/pages/TeamDetailPage'
 import { TasksListPage } from '@/modules/projects/pages/TasksListPage'
 import { TaskCreatePage } from '@/modules/projects/pages/TaskCreatePage'
 import { TaskDetailPage } from '@/modules/projects/pages/TaskDetailPage'
+import { DocumentsPage } from '@/modules/projects/pages/DocumentsPage'
+import { ProjectNotesPage } from '@/modules/projects/pages/ProjectNotesPage'
 
 import { SalesDashboardPage } from '@/modules/sales/pages/SalesDashboardPage'
 import { LeadsListPage } from '@/modules/sales/pages/LeadsListPage'
@@ -47,29 +47,13 @@ import { EmployeeDetailPage } from '@/modules/workforce/pages/EmployeeDetailPage
 import { DepartmentsListPage } from '@/modules/workforce/pages/DepartmentsListPage'
 import { DepartmentCreatePage } from '@/modules/workforce/pages/DepartmentCreatePage'
 import { DepartmentDetailPage } from '@/modules/workforce/pages/DepartmentDetailPage'
-import { TeamsListPage } from '@/modules/workforce/pages/TeamsListPage'
-import { TeamDetailPage } from '@/modules/workforce/pages/TeamDetailPage'
-import { TeamMembersPage } from '@/modules/workforce/pages/TeamMembersPage'
-import { TeamProjectsPage } from '@/modules/workforce/pages/TeamProjectsPage'
-import { TeamEditPage } from '@/modules/workforce/pages/TeamEditPage'
-import { AssignProjectPage } from '@/modules/workforce/pages/AssignProjectPage'
-import { AddMemberPage } from '@/modules/workforce/pages/AddMemberPage'
-import { AttendanceDashboardPage } from '@/modules/workforce/pages/AttendanceDashboardPage'
-import { AttendanceEmployeesPage } from '@/modules/workforce/pages/AttendanceEmployeesPage'
-import { WorkforceAttendanceDetailPage } from '@/modules/workforce/pages/WorkforceAttendanceDetailPage'
-import { ShiftsListPage } from '@/modules/workforce/pages/ShiftsListPage'
-import { ShiftDetailPage } from '@/modules/workforce/pages/ShiftDetailPage'
-import { ShiftCreatePage } from '@/modules/workforce/pages/ShiftCreatePage'
+import { WorkforceRosterPage } from '@/modules/workforce/pages/WorkforceRosterPage'
+import { AttendanceDayDetailPage } from '@/modules/workforce/pages/AttendanceDayDetailPage'
+import { ChangeAssignmentPage } from '@/modules/workforce/pages/ChangeAssignmentPage'
 
 import { ProfilePage } from '@/modules/profile/pages/ProfilePage'
-
-import {
-  NotificationsPage,
-  NotificationDetailPage,
-  ComposeNotificationPage,
-  SentNotificationsPage,
-  NotificationSettingsPage,
-} from '@/modules/notifications'
+import { ActiveSessionsPage } from '@/modules/profile/pages/ActiveSessionsPage'
+import { NotificationsPage } from '@/modules/notifications/pages/NotificationsPage'
 
 import {
   MyWorkOverviewPage,
@@ -86,7 +70,66 @@ import {
   MyTaskDetailPage,
   MyApprovalDetailPage,
   TakeABreakPage,
+  MyRequestsPage,
+  MyBankDetailsPage,
 } from '@/modules/my-work'
+
+import {
+  ApprovalCenterPage,
+  PendingApprovalsPage,
+  ApprovalDetailPage,
+} from '@/modules/approvals'
+
+import {
+  UsersListPage,
+  UserDetailPage,
+  UserCreatePage,
+  RolesListPage,
+  RoleDetailPage,
+  RoleEditPage,
+  RoleCreatePage,
+  AuditLogsPage,
+  AdminSettingsLayout,
+  LeaveSettingsLayout,
+  AttendanceSettingsLayout,
+  OrganizationProfileSection,
+  HeadOfficeSection,
+  BrandingSection,
+  RegionalSection,
+  OfficeFormPage,
+  AttendanceSettingsPage,
+  LeaveSettingsPage,
+  SecurityCenterPage,
+  LeavePoliciesPage,
+  LeaveLedgerPage,
+} from '@/modules/admin'
+
+import {
+  LocationsListPage,
+  LocationDetailPage,
+  ShiftsListPage,
+  ShiftDetailPage,
+  WorkingWeeksPage,
+  HolidayCalendarsPage,
+  HolidaysListPage,
+  PositionsListPage,
+} from '@/modules/organization'
+
+import { ExecutiveDashboardPage } from '@/modules/dashboard'
+
+import {
+  PayrollDashboardPage,
+  MonthlyPayrollPage,
+  RunPayrollPage,
+  GeneratingPayrollPage,
+  PayrollReviewPage,
+  PayslipViewPage,
+  SalaryManagementPage,
+  EmployeeSalaryDetailPage,
+  ReviseSalaryPage,
+  EmployeePayrollHistoryPage,
+  PayrollHistoryPage,
+} from '@/modules/payroll'
 
 function Placeholder({ title }: { title: string }) {
   return (
@@ -187,59 +230,93 @@ const indexRoute = createRoute({
 const dashboardRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/dashboard',
-  component: () => (
-    <div>
-      <h1 className="text-headline-lg text-on-background mb-2">Dashboard</h1>
-      <p className="text-body-md text-on-surface-variant">
-        Executive dashboard will be implemented in a later module.
-      </p>
-    </div>
-  ),
+  component: ExecutiveDashboardPage,
 })
 
-const profileRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/profile', component: ProfilePage })
-const notificationsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/notifications', component: NotificationsPage })
+const profileRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/profile',
+  component: ProfilePage,
+})
 
-const projectsIndexRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects', component: ProjectsListPage })
-const projectsNewRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects/new', component: ProjectCreatePage })
-const projectDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects/$projectId', component: ProjectDetailPage })
-const teamsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects/teams', component: ProjectTeamsListPage })
-const teamsNewRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects/teams/new', component: TeamCreatePage })
-const teamDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects/teams/$teamId', component: ProjectTeamDetailPage })
-const teamMembersRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects/teams/$teamId/members', component: ProjectTeamMembersPage })
-const teamAddMemberRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects/teams/$teamId/add-member', component: ProjectTeamAddMemberPage })
-const tasksRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects/tasks', component: TasksListPage })
-const tasksNewRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects/tasks/new', component: TaskCreatePage })
-const taskDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects/tasks/$taskId', component: TaskDetailPage })
-// —— Notifications module ——
+const profileSessionsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/profile/sessions',
+  component: ActiveSessionsPage,
+})
+
 const notificationsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/notifications',
   component: NotificationsPage,
 })
-const notificationsComposeRoute = createRoute({
+
+const projectsIndexRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
-  path: '/notifications/compose',
-  component: ComposeNotificationPage,
+  path: '/projects',
+  component: ProjectsListPage,
 })
-const notificationsSentRoute = createRoute({
+const projectsNewRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
-  path: '/notifications/sent',
-  component: SentNotificationsPage,
+  path: '/projects/new',
+  component: ProjectCreatePage,
 })
-const notificationsSettingsRoute = createRoute({
+const projectDetailRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
-  path: '/notifications/settings',
-  component: NotificationSettingsPage,
+  path: '/projects/$projectId',
+  component: ProjectDetailPage,
 })
-const notificationsDetailRoute = createRoute({
+const projectNotesRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
-  path: '/notifications/$notificationId',
-  component: NotificationDetailPage,
+  path: '/projects/$projectId/notes',
+  component: ProjectNotesPage,
+})
+const projectsDocumentsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/projects/documents',
+  component: DocumentsPage,
+})
+const teamsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/projects/teams',
+  component: TeamsListPage,
+})
+const teamsNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/projects/teams/new',
+  component: TeamCreatePage,
+})
+const teamDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/projects/teams/$teamId',
+  component: TeamDetailPage,
+})
+const tasksRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/projects/tasks',
+  component: TasksListPage,
+})
+const tasksNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/projects/tasks/new',
+  component: TaskCreatePage,
+})
+const taskDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/projects/tasks/$taskId',
+  component: TaskDetailPage,
 })
 
-const salesRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/sales', component: LeadsListPage })
-const salesDashboardRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/sales/dashboard', component: SalesDashboardPage })
+const salesRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/sales',
+  component: LeadsListPage,
+})
+const salesDashboardRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/sales/dashboard',
+  component: SalesDashboardPage,
+})
 const salesLeadsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/sales/leads',
@@ -247,15 +324,51 @@ const salesLeadsRoute = createRoute({
     throw redirect({ to: '/sales' })
   },
 })
-const salesLeadsNewRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/sales/leads/new', component: LeadCreatePage })
-const salesLeadDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/sales/leads/$leadId', component: LeadDetailPage })
-const salesLeadEditRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/sales/leads/$leadId/edit', component: LeadCreatePage })
-const salesClientsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/sales/clients', component: ClientsListPage })
-const salesClientsNewRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/sales/clients/new', component: ClientCreatePage })
-const salesClientDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/sales/clients/$clientId', component: ClientDetailPage })
-const salesAnalyticsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/sales/analytics', component: SalesAnalyticsPage })
-const salesActivityRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/sales/activity', component: SalesActivityTimelinePage })
-const salesCaseStudiesRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/sales/case-studies', component: CaseStudiesListPage })
+const salesLeadsNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/sales/leads/new',
+  component: LeadCreatePage,
+})
+const salesLeadDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/sales/leads/$leadId',
+  component: LeadDetailPage,
+})
+const salesLeadEditRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/sales/leads/$leadId/edit',
+  component: LeadCreatePage,
+})
+const salesClientsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/sales/clients',
+  component: ClientsListPage,
+})
+const salesClientsNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/sales/clients/new',
+  component: ClientCreatePage,
+})
+const salesClientDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/sales/clients/$clientId',
+  component: ClientDetailPage,
+})
+const salesAnalyticsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/sales/analytics',
+  component: SalesAnalyticsPage,
+})
+const salesActivityRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/sales/activity',
+  component: SalesActivityTimelinePage,
+})
+const salesCaseStudiesRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/sales/case-studies',
+  component: CaseStudiesListPage,
+})
 
 const workforceRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
@@ -264,42 +377,87 @@ const workforceRoute = createRoute({
     throw redirect({ to: '/workforce/employees' })
   },
 })
-const workforceEmployeesRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/employees', component: EmployeesListPage })
-const workforceEmployeesNewRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/employees/new', component: EmployeeCreatePage })
-const workforceEmployeeDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/employees/$employeeId', component: EmployeeDetailPage })
-const workforceDepartmentsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/departments', component: DepartmentsListPage })
-const workforceDepartmentsNewRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/departments/new', component: DepartmentCreatePage })
-const workforceDepartmentDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/departments/$departmentId', component: DepartmentDetailPage })
-const workforceDepartmentEditRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/departments/$departmentId/edit', component: DepartmentCreatePage })
-const workforceDepartmentAddMemberRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/departments/$departmentId/add-member', component: AddMemberPage })
-const workforceTeamsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/teams', component: TeamsListPage })
-const workforceTeamDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/teams/$teamId', component: TeamDetailPage })
-const workforceTeamMembersRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/teams/$teamId/members', component: TeamMembersPage })
-const workforceTeamProjectsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/teams/$teamId/projects', component: TeamProjectsPage })
-const workforceTeamEditRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/teams/$teamId/edit', component: TeamEditPage })
-const workforceTeamAssignProjectRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/teams/$teamId/assign-project', component: AssignProjectPage })
-const workforceTeamAddMemberRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/teams/$teamId/add-member', component: AddMemberPage })
-const workforceShiftsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/shifts', component: ShiftsListPage })
-const workforceShiftsNewRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/shifts/new', component: ShiftCreatePage })
-const workforceShiftDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/shifts/$shiftId', component: ShiftDetailPage })
-const workforceAttendanceRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/attendance', component: AttendanceDashboardPage })
-const workforceAttendanceEmployeesRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/attendance/employees', component: AttendanceEmployeesPage })
-const workforceAttendanceDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/attendance/$attendanceId', component: WorkforceAttendanceDetailPage })
+const workforceEmployeesRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/employees',
+  component: EmployeesListPage,
+})
+const workforceEmployeesNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/employees/new',
+  component: EmployeeCreatePage,
+})
+const workforceEmployeeDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/employees/$employeeId',
+  component: EmployeeDetailPage,
+})
+const workforceChangeAssignmentRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/employees/$employeeId/assignment',
+  component: ChangeAssignmentPage,
+})
+const workforceDepartmentsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/departments',
+  component: DepartmentsListPage,
+})
+const workforceDepartmentsNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/departments/new',
+  component: DepartmentCreatePage,
+})
+const workforceDepartmentDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/departments/$departmentId',
+  component: DepartmentDetailPage,
+})
+/** Teams shared with Projects module */
+const workforceTeamsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/teams',
+  component: TeamsListPage,
+})
+const workforceTeamsNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/teams/new',
+  component: TeamCreatePage,
+})
+const workforceTeamDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/teams/$teamId',
+  component: TeamDetailPage,
+})
+/** Shifts — same pages as Admin Settings */
+const workforceShiftsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/shifts',
+  component: ShiftsListPage,
+})
+const workforceShiftNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/shifts/new',
+  component: ShiftDetailPage,
+})
+const workforceShiftDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/shifts/$shiftId',
+  component: ShiftDetailPage,
+})
+const workforceAttendanceRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/attendance',
+  component: WorkforceRosterPage,
+})
+const workforceAttendanceDayRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/workforce/attendance/$employmentId',
+  validateSearch: (search: Record<string, unknown>) => ({
+    date: typeof search.date === 'string' ? search.date : undefined,
+  }),
+  component: AttendanceDayDetailPage,
+})
 
-const myWorkRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work', component: MyWorkOverviewPage })
-const myWorkBreakRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/break', component: TakeABreakPage })
-const myWorkAttendanceRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/attendance', component: MyAttendancePage })
-const myWorkAttendanceMarkRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/attendance/mark', component: MarkAttendancePage })
-const myWorkAttendanceCorrectionsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/attendance/corrections', component: AttendanceCorrectionsPage })
-const myWorkAttendanceDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/attendance/$attendanceId', component: AttendanceDetailPage })
-const myWorkLeaveRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/leave', component: MyLeavePage })
-const myWorkLeaveApplyRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/leave/apply', component: ApplyLeavePage })
-const myWorkLeaveDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/leave/$leaveId', component: LeaveDetailPage })
-const myWorkTasksRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/tasks', component: MyTasksPage })
-const myWorkTasksNewRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/tasks/new', component: MyTaskCreatePage })
-const myWorkTaskDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/tasks/$taskId', component: MyTaskDetailPage })
-const myWorkApprovalsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/approvals', component: MyApprovalsPage })
-const myWorkApprovalDetailRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/my-work/approvals/$requestId', component: MyApprovalDetailPage })
 const payrollRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/payroll',
@@ -356,16 +514,87 @@ const payrollHistoryEmployeeRoute = createRoute({
   component: EmployeePayrollHistoryPage,
 })
 
-const approvalsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/approvals', component: () => <Placeholder title="Approvals" /> })
-const approvalsPendingRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/approvals/pending', component: () => <Placeholder title="Pending Approvals" /> })
-const approvalsMyRequestsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/approvals/my-requests', component: () => <Placeholder title="My Requests" /> })
+const myWorkRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work',
+  component: MyWorkOverviewPage,
+})
+const myWorkBreakRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work/break',
+  component: TakeABreakPage,
+})
+const myWorkAttendanceRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work/attendance',
+  component: MyAttendancePage,
+})
+const myWorkAttendanceMarkRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work/attendance/mark',
+  component: MarkAttendancePage,
+})
+const myWorkAttendanceCorrectionsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work/attendance/corrections',
+  component: AttendanceCorrectionsPage,
+})
+const myWorkAttendanceDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work/attendance/$attendanceId',
+  component: AttendanceDetailPage,
+})
+const myWorkLeaveRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work/leave',
+  component: MyLeavePage,
+})
+const myWorkLeaveApplyRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work/leave/apply',
+  component: ApplyLeavePage,
+})
+const myWorkLeaveDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work/leave/$leaveId',
+  component: LeaveDetailPage,
+})
+const myWorkTasksRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work/tasks',
+  component: MyTasksPage,
+})
+const myWorkTasksNewRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work/tasks/new',
+  component: MyTaskCreatePage,
+})
+const myWorkTaskDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work/tasks/$taskId',
+  component: MyTaskDetailPage,
+})
+const myWorkApprovalsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work/approvals',
+  component: MyApprovalsPage,
+})
+const myWorkApprovalDetailRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work/approvals/$requestId',
+  component: MyApprovalDetailPage,
+})
+const myWorkRequestsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work/requests',
+  component: MyRequestsPage,
+})
+const myWorkBankDetailsRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/my-work/bank-details',
+  component: MyBankDetailsPage,
+})
 
-const adminRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/admin', component: () => <Placeholder title="Administration" /> })
-const adminUsersRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/admin/users', component: () => <Placeholder title="Users" /> })
-const adminRolesRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/admin/roles', component: () => <Placeholder title="Roles & Permissions" /> })
-const adminSettingsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/admin/settings', component: () => <Placeholder title="Settings" /> })
-const adminAuditRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/admin/audit', component: () => <Placeholder title="Audit Logs" /> })
-const adminNotificationsRoute = createRoute({ getParentRoute: () => appLayoutRoute, path: '/admin/notifications', component: () => <Placeholder title="Notifications Management" /> })
 const approvalsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/approvals',
@@ -431,31 +660,201 @@ const adminRoleEditRoute = createRoute({
   path: '/admin/roles/$roleId/edit',
   component: RoleEditPage,
 })
-const adminSettingsRoute = createRoute({
+
+const adminSettingsLayoutRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/settings',
-  component: AdminSettingsPage,
+  component: AdminSettingsLayout,
 })
-const adminOfficeNewRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/admin/settings/offices/new',
+const adminSettingsIndexRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/',
+  component: OrganizationProfileSection,
+})
+const adminSettingsHeadOfficeRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/head-office',
+  component: HeadOfficeSection,
+})
+const adminSettingsLocationsRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/locations',
+  component: LocationsListPage,
+})
+const adminSettingsLocationDetailRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/locations/$locationId',
+  component: LocationDetailPage,
+})
+const adminSettingsShiftsRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/shifts',
+  component: ShiftsListPage,
+})
+const adminSettingsShiftNewRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/shifts/new',
+  component: ShiftDetailPage,
+})
+const adminSettingsShiftDetailRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/shifts/$shiftId',
+  component: ShiftDetailPage,
+})
+const adminSettingsWorkingWeeksRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/working-weeks',
+  component: WorkingWeeksPage,
+})
+const adminSettingsHolidaysRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/holidays',
+  component: HolidayCalendarsPage,
+})
+const adminSettingsHolidayDetailRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/holidays/$calendarId',
+  component: HolidaysListPage,
+})
+const adminSettingsPositionsRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/positions',
+  component: PositionsListPage,
+})
+const adminSettingsBrandingRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/branding',
+  component: BrandingSection,
+})
+const adminSettingsRegionalRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/regional',
+  component: RegionalSection,
+})
+const adminSettingsOfficeNewRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/offices/new',
   component: OfficeFormPage,
 })
-const adminOfficeEditRoute = createRoute({
-  getParentRoute: () => appLayoutRoute,
-  path: '/admin/settings/offices/$officeId/edit',
+const adminSettingsOfficeEditRoute = createRoute({
+  getParentRoute: () => adminSettingsLayoutRoute,
+  path: '/offices/$officeId/edit',
   component: OfficeFormPage,
 })
-const adminAttendanceSettingsRoute = createRoute({
+
+const adminOrgRedirectRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization',
+  beforeLoad: () => {
+    throw redirect({ to: '/admin/settings' })
+  },
+})
+const adminOrgLocationsRedirectRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/locations',
+  beforeLoad: () => {
+    throw redirect({ to: '/admin/settings/locations' })
+  },
+})
+const adminOrgLocationDetailRedirectRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/locations/$locationId',
+  beforeLoad: ({ params }) => {
+    throw redirect({
+      to: '/admin/settings/locations/$locationId',
+      params: { locationId: params.locationId },
+    })
+  },
+})
+const adminOrgShiftsRedirectRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/shifts',
+  beforeLoad: () => {
+    throw redirect({ to: '/admin/settings/shifts' })
+  },
+})
+const adminOrgWeeksRedirectRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/working-weeks',
+  beforeLoad: () => {
+    throw redirect({ to: '/admin/settings/working-weeks' })
+  },
+})
+const adminOrgHolidaysRedirectRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/holidays',
+  beforeLoad: () => {
+    throw redirect({ to: '/admin/settings/holidays' })
+  },
+})
+const adminOrgHolidayDetailRedirectRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/holidays/$calendarId',
+  beforeLoad: ({ params }) => {
+    throw redirect({
+      to: '/admin/settings/holidays/$calendarId',
+      params: { calendarId: params.calendarId },
+    })
+  },
+})
+const adminOrgPositionsRedirectRoute = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/organization/positions',
+  beforeLoad: () => {
+    throw redirect({ to: '/admin/settings/positions' })
+  },
+})
+
+const adminAttendanceLayoutRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/attendance-settings',
+  component: AttendanceSettingsLayout,
+})
+const adminAttendanceIndexRoute = createRoute({
+  getParentRoute: () => adminAttendanceLayoutRoute,
+  path: '/',
   component: AttendanceSettingsPage,
 })
-const adminLeaveSettingsRoute = createRoute({
+
+const adminLeaveLayoutRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/leave-settings',
+  component: LeaveSettingsLayout,
+})
+const adminLeaveIndexRoute = createRoute({
+  getParentRoute: () => adminLeaveLayoutRoute,
+  path: '/',
   component: LeaveSettingsPage,
 })
+const adminLeavePoliciesRoute = createRoute({
+  getParentRoute: () => adminLeaveLayoutRoute,
+  path: '/policies',
+  component: LeavePoliciesPage,
+})
+const adminLeaveLedgerRoute = createRoute({
+  getParentRoute: () => adminLeaveLayoutRoute,
+  path: '/ledger/$employeeId',
+  component: LeaveLedgerPage,
+})
+
+const adminLeavePoliciesLegacyRedirect = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/leave-policies',
+  beforeLoad: () => {
+    throw redirect({ to: '/admin/leave-settings/policies' })
+  },
+})
+const adminLeaveLedgerLegacyRedirect = createRoute({
+  getParentRoute: () => appLayoutRoute,
+  path: '/admin/leave-ledger/$employeeId',
+  beforeLoad: ({ params }) => {
+    throw redirect({
+      to: '/admin/leave-settings/ledger/$employeeId',
+      params: { employeeId: params.employeeId },
+    })
+  },
+})
+
 const adminAuditRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/audit',
@@ -469,30 +868,31 @@ const adminSecurityRoute = createRoute({
 const adminNotificationsRoute = createRoute({
   getParentRoute: () => appLayoutRoute,
   path: '/admin/notifications',
-  beforeLoad: () => {
-    throw redirect({ to: '/notifications/sent' })
-  },
+  component: () => <Placeholder title="Notifications Management" />,
 })
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  authLayoutRoute.addChildren([loginRoute, forgotPasswordRoute, resetPasswordRoute, sessionExpiredRoute, accessDeniedRoute]),
+  authLayoutRoute.addChildren([
+    loginRoute,
+    forgotPasswordRoute,
+    resetPasswordRoute,
+    sessionExpiredRoute,
+    accessDeniedRoute,
+  ]),
   appLayoutRoute.addChildren([
     dashboardRoute,
     profileRoute,
+    profileSessionsRoute,
     notificationsRoute,
-    notificationsComposeRoute,
-    notificationsSentRoute,
-    notificationsSettingsRoute,
-    notificationsDetailRoute,
     projectsIndexRoute,
     projectsNewRoute,
+    projectsDocumentsRoute,
     projectDetailRoute,
+    projectNotesRoute,
     teamsRoute,
     teamsNewRoute,
     teamDetailRoute,
-    teamMembersRoute,
-    teamAddMemberRoute,
     tasksRoute,
     tasksNewRoute,
     taskDetailRoute,
@@ -512,24 +912,29 @@ const routeTree = rootRoute.addChildren([
     workforceEmployeesRoute,
     workforceEmployeesNewRoute,
     workforceEmployeeDetailRoute,
+    workforceChangeAssignmentRoute,
     workforceDepartmentsRoute,
     workforceDepartmentsNewRoute,
     workforceDepartmentDetailRoute,
-    workforceDepartmentEditRoute,
-    workforceDepartmentAddMemberRoute,
     workforceTeamsRoute,
+    workforceTeamsNewRoute,
     workforceTeamDetailRoute,
-    workforceTeamMembersRoute,
-    workforceTeamProjectsRoute,
-    workforceTeamEditRoute,
-    workforceTeamAssignProjectRoute,
-    workforceTeamAddMemberRoute,
     workforceShiftsRoute,
-    workforceShiftsNewRoute,
+    workforceShiftNewRoute,
     workforceShiftDetailRoute,
     workforceAttendanceRoute,
-    workforceAttendanceEmployeesRoute,
-    workforceAttendanceDetailRoute,
+    workforceAttendanceDayRoute,
+    payrollRoute,
+    payrollMonthlyRoute,
+    payrollRunRoute,
+    payrollGeneratingRoute,
+    payrollReviewRoute,
+    payrollPayslipRoute,
+    payrollSalaryRoute,
+    payrollSalaryDetailRoute,
+    payrollSalaryReviseRoute,
+    payrollHistoryListRoute,
+    payrollHistoryEmployeeRoute,
     myWorkRoute,
     myWorkBreakRoute,
     myWorkAttendanceRoute,
@@ -544,14 +949,55 @@ const routeTree = rootRoute.addChildren([
     myWorkTaskDetailRoute,
     myWorkApprovalsRoute,
     myWorkApprovalDetailRoute,
+    myWorkRequestsRoute,
+    myWorkBankDetailsRoute,
     approvalsRoute,
     approvalsPendingRoute,
-    approvalsMyRequestsRoute,
+    approvalsDetailRoute,
+    approvalsMyRequestsRedirectRoute,
     adminRoute,
     adminUsersRoute,
+    adminUsersNewRoute,
+    adminUserDetailRoute,
     adminRolesRoute,
-    adminSettingsRoute,
+    adminRolesNewRoute,
+    adminRoleDetailRoute,
+    adminRoleEditRoute,
+    adminSettingsLayoutRoute.addChildren([
+      adminSettingsIndexRoute,
+      adminSettingsHeadOfficeRoute,
+      adminSettingsLocationsRoute,
+      adminSettingsLocationDetailRoute,
+      adminSettingsShiftsRoute,
+      adminSettingsShiftNewRoute,
+      adminSettingsShiftDetailRoute,
+      adminSettingsWorkingWeeksRoute,
+      adminSettingsHolidaysRoute,
+      adminSettingsHolidayDetailRoute,
+      adminSettingsPositionsRoute,
+      adminSettingsBrandingRoute,
+      adminSettingsRegionalRoute,
+      adminSettingsOfficeNewRoute,
+      adminSettingsOfficeEditRoute,
+    ]),
+    adminOrgRedirectRoute,
+    adminOrgLocationsRedirectRoute,
+    adminOrgLocationDetailRedirectRoute,
+    adminOrgShiftsRedirectRoute,
+    adminOrgWeeksRedirectRoute,
+    adminOrgHolidaysRedirectRoute,
+    adminOrgHolidayDetailRedirectRoute,
+    adminOrgPositionsRedirectRoute,
+    adminAttendanceLayoutRoute.addChildren([adminAttendanceIndexRoute]),
+    adminLeaveLayoutRoute.addChildren([
+      adminLeaveIndexRoute,
+      adminLeavePoliciesRoute,
+      adminLeaveLedgerRoute,
+    ]),
+    adminLeavePoliciesLegacyRedirect,
+    adminLeaveLedgerLegacyRedirect,
     adminAuditRoute,
+    adminSecurityRoute,
     adminNotificationsRoute,
   ]),
 ])
