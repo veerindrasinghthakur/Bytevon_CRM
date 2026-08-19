@@ -68,7 +68,7 @@ export function OfficeFormPage() {
   const set = (k: keyof typeof form, v: string) => setForm((p) => ({ ...p, [k]: v }))
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <button
         type="button"
         onClick={() => navigate({ to: '/admin/settings' })}
@@ -99,7 +99,7 @@ export function OfficeFormPage() {
         }
       />
 
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6 space-y-5">
+      <div className="bv-surface p-6 space-y-5">
         <h3 className="text-title-lg font-semibold text-on-background flex items-center gap-2">
           <span className="material-symbols-outlined text-secondary">apartment</span>
           Office Details
@@ -117,7 +117,7 @@ export function OfficeFormPage() {
             <select
               value={form.timezone}
               onChange={(e) => set('timezone', e.target.value)}
-              className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary bg-white"
+              className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
             >
               {[
                 'UTC-05:00 Eastern Time',
@@ -134,7 +134,7 @@ export function OfficeFormPage() {
             <select
               value={form.currency}
               onChange={(e) => set('currency', e.target.value)}
-              className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary bg-white"
+              className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
             >
               {['USD ($)', 'GBP (£)', 'INR (₹)', 'SGD (S$)', 'EUR (€)'].map((c) => (
                 <option key={c}>{c}</option>
@@ -146,7 +146,7 @@ export function OfficeFormPage() {
             <select
               value={form.fiscal}
               onChange={(e) => set('fiscal', e.target.value)}
-              className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary bg-white"
+              className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
             >
               <option>Jan - Dec</option>
               <option>Apr - Mar</option>
@@ -177,7 +177,7 @@ function Field({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/30 bg-white"
+        className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
       />
     </div>
   )
