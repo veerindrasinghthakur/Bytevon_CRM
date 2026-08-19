@@ -51,7 +51,7 @@ export function NotificationCenterPage() {
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-headline-lg font-semibold text-deep-navy tracking-tight">Notification Center</h1>
@@ -82,13 +82,9 @@ export function NotificationCenterPage() {
         </div>
       </div>
 
-      {/* KPIs */}
       <section className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {notificationKpis.map((k) => (
-          <div
-            key={k.id}
-            className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm hover:border-secondary transition-all duration-200 cursor-default"
-          >
+          <div key={k.id} className="bv-surface card-hover p-5 cursor-default">
             <div className="flex items-center justify-between mb-2">
               <span className="text-on-surface-variant text-label-md">{k.label}</span>
               <span className="material-symbols-outlined text-secondary text-xl">{k.icon}</span>
@@ -108,8 +104,7 @@ export function NotificationCenterPage() {
         ))}
       </section>
 
-      {/* Tabs + filters */}
-      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-2">
+      <section className="bv-surface p-2">
         <div className="flex items-center gap-1 border-b border-outline-variant px-2 overflow-x-auto">
           {tabs.map((t) => (
             <button
@@ -137,13 +132,13 @@ export function NotificationCenterPage() {
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
-          <select className="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm px-3 py-1.5 outline-none focus:ring-1 focus:ring-secondary">
+          <select className="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm px-3 py-1.5 outline-none focus:ring-1 focus:ring-secondary transition-colors">
             <option>Type: All</option>
             <option>System</option>
             <option>Approval</option>
             <option>Mention</option>
           </select>
-          <select className="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm px-3 py-1.5 outline-none focus:ring-1 focus:ring-secondary">
+          <select className="bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm px-3 py-1.5 outline-none focus:ring-1 focus:ring-secondary transition-colors">
             <option>Priority: All</option>
             <option>High</option>
             <option>Normal</option>
@@ -152,7 +147,6 @@ export function NotificationCenterPage() {
         </div>
       </section>
 
-      {/* Dual pane */}
       <section className="flex flex-col lg:flex-row gap-4 min-h-[480px]">
         <div className="lg:w-2/5 flex flex-col gap-3 overflow-y-auto max-h-[640px] pr-1">
           {filtered.map((n) => (
@@ -173,7 +167,7 @@ export function NotificationCenterPage() {
           )}
         </div>
 
-        <div className="flex-1 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm flex flex-col overflow-hidden min-h-[400px]">
+        <div className="flex-1 bv-surface flex flex-col overflow-hidden min-h-[400px]">
           {selected ? (
             <>
               <div className="p-6 border-b border-outline-variant flex items-start justify-between gap-4 bg-surface-container-low">
@@ -269,8 +263,8 @@ function NotificationCard({
       className={cn(
         'text-left rounded-xl p-5 border transition-all duration-200 relative',
         active
-          ? 'bg-surface-container-high border-2 border-secondary shadow-md'
-          : 'bg-surface-container-lowest border-outline-variant shadow-sm hover:border-secondary/50',
+          ? 'bg-surface-container-high border-2 border-secondary executive-shadow'
+          : 'bv-surface hover:border-secondary/50',
         n.status === 'Read' && !active && 'opacity-80'
       )}
     >
