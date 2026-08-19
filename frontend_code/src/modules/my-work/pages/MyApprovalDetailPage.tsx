@@ -24,7 +24,7 @@ export function MyApprovalDetailPage() {
 
   if (!item) {
     return (
-      <div>
+      <div className="animate-fade-in">
         <PageHeader title="Request details" showBack />
         <p className="text-body-md text-on-surface-variant">Request not found.</p>
       </div>
@@ -32,7 +32,7 @@ export function MyApprovalDetailPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <PageHeader
         title={item.title}
         description={item.type}
@@ -41,7 +41,7 @@ export function MyApprovalDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
         <div className="lg:col-span-2 space-y-6">
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+          <section className="bv-surface p-6">
             <div className="flex items-start gap-4 mb-4">
               <div className="w-12 h-12 rounded-lg bg-surface-container-low flex items-center justify-center shrink-0">
                 <span className="material-symbols-outlined text-primary text-2xl">
@@ -57,7 +57,7 @@ export function MyApprovalDetailPage() {
             </div>
           </section>
 
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+          <section className="bv-surface p-6">
             <h3 className="text-title-lg text-on-background mb-3">History</h3>
             <ul className="space-y-3">
               <li className="flex gap-3 text-body-md">
@@ -99,14 +99,14 @@ export function MyApprovalDetailPage() {
         </div>
 
         <div className="space-y-4">
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+          <section className="bv-surface p-6">
             <h3 className="text-label-md text-on-surface-variant uppercase tracking-wider mb-3">Status</h3>
             <span className={`inline-flex px-2.5 py-1 rounded-full text-label-sm font-semibold ${statusStyles[item.status]}`}>
               {item.status}
             </span>
           </section>
 
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 space-y-4">
+          <section className="bv-surface p-6 space-y-4">
             <div>
               <p className="text-label-sm text-on-surface-variant">Type</p>
               <p className="text-body-md text-on-surface mt-0.5">{item.type}</p>
@@ -125,7 +125,7 @@ export function MyApprovalDetailPage() {
             </div>
           </section>
 
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-4">
+          <section className="bv-surface p-4">
             <Button
               variant="outline"
               className="w-full"
