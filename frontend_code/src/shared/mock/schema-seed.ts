@@ -1,5 +1,5 @@
 /**
- * Schema-aligned seed (organization, employment, RBAC).
+ * Schema-aligned seed (organization, employment, RBAC, logins).
  * Merged into the live mock DB at bootstrap.
  * Replace with backend when APIs land — only change api/* modules.
  */
@@ -13,6 +13,7 @@ import type {
   HolidayCalendarRow,
   HolidayRow,
   LocationRow,
+  LoginUserRow,
   OrganizationSettings,
   PermissionRow,
   PersonRow,
@@ -661,6 +662,58 @@ export const schemaSeed = {
       changed_by: 1,
     },
   ] satisfies EmployeeBankAccountRow[],
+
+  /** Logins for employments 1–4. EMP-005 / EMP-006 intentionally have no login (Add User candidates). */
+  login_users: [
+    {
+      id: 1,
+      employment_id: 1,
+      email: 'admin@bytevon.com',
+      temporary_password: null,
+      status: 'ACTIVE',
+      failed_attempt_count: 0,
+      locked_until: null,
+      last_login_at: '2026-08-14T09:12:00Z',
+      created_at: now,
+      updated_at: now,
+    },
+    {
+      id: 2,
+      employment_id: 2,
+      email: 'sarah.jenkins@bytevon.com',
+      temporary_password: null,
+      status: 'ACTIVE',
+      failed_attempt_count: 0,
+      locked_until: null,
+      last_login_at: '2026-08-14T08:40:00Z',
+      created_at: now,
+      updated_at: now,
+    },
+    {
+      id: 3,
+      employment_id: 3,
+      email: 'david.chen@bytevon.com',
+      temporary_password: null,
+      status: 'ACTIVE',
+      failed_attempt_count: 0,
+      locked_until: null,
+      last_login_at: '2026-08-13T17:22:00Z',
+      created_at: now,
+      updated_at: now,
+    },
+    {
+      id: 4,
+      employment_id: 4,
+      email: 'marcus.sterling@bytevon.com',
+      temporary_password: null,
+      status: 'LOCKED',
+      failed_attempt_count: 5,
+      locked_until: '2026-08-20T00:00:00Z',
+      last_login_at: '2026-08-10T11:05:00Z',
+      created_at: now,
+      updated_at: now,
+    },
+  ] satisfies LoginUserRow[],
 }
 
 function buildPermissions(): PermissionRow[] {
