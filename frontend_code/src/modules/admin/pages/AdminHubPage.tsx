@@ -51,7 +51,7 @@ export function AdminHubPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Administration Hub"
         description="Unified configuration for identity, workforce policy, and system governance."
@@ -89,8 +89,8 @@ export function AdminHubPage() {
             type="button"
             onClick={() => navigate({ to: t.to })}
             className={cn(
-              'text-left p-6 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm',
-              'hover:border-secondary/40 hover:bg-surface-container-low'
+              'text-left p-6 bv-surface card-hover',
+              'hover:border-secondary/40'
             )}
           >
             <div className="flex items-start justify-between mb-4">
@@ -110,7 +110,7 @@ export function AdminHubPage() {
 
 function Kpi({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="p-4 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm">
+    <div className="p-4 bv-surface card-hover">
       <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider mb-1">{label}</p>
       <div className="text-xl font-bold text-on-background">{value}</div>
     </div>
