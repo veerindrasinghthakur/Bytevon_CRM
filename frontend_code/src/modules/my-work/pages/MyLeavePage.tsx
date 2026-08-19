@@ -110,7 +110,7 @@ export function MyLeavePage() {
   }, [cy, cm, firstDow, daysInMonth, today])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="My Leave"
         description="Check balances, apply for leave, track requests and view the team calendar."
@@ -151,7 +151,7 @@ export function MyLeavePage() {
       {tab === 'balance' && (
         <div className="space-y-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm hover:-translate-y-0.5 transition-transform">
+            <div className="bv-surface card-hover p-5">
               <div className="flex justify-between items-start mb-3">
                 <div className="p-2 bg-primary/5 rounded-lg">
                   <span className="material-symbols-outlined text-primary">assignment</span>
@@ -166,7 +166,7 @@ export function MyLeavePage() {
                 <span className="text-lg font-medium text-on-surface-variant">days</span>
               </p>
             </div>
-            <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm hover:-translate-y-0.5 transition-transform">
+            <div className="bv-surface card-hover p-5">
               <div className="flex justify-between items-start mb-3">
                 <div className="p-2 bg-error/5 rounded-lg">
                   <span className="material-symbols-outlined text-error">event_busy</span>
@@ -186,7 +186,7 @@ export function MyLeavePage() {
                 />
               </div>
             </div>
-            <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm hover:-translate-y-0.5 transition-transform">
+            <div className="bv-surface card-hover p-5">
               <div className="flex justify-between items-start mb-3">
                 <div className="p-2 bg-secondary/5 rounded-lg">
                   <span className="material-symbols-outlined text-secondary">pending_actions</span>
@@ -200,7 +200,7 @@ export function MyLeavePage() {
                 {pendingDays} <span className="text-lg font-medium text-on-surface-variant">days</span>
               </p>
             </div>
-            <div className="bg-secondary p-5 rounded-xl border border-secondary shadow-lg text-white hover:-translate-y-0.5 transition-transform">
+            <div className="bg-secondary p-5 rounded-xl border border-secondary executive-shadow text-white card-hover">
               <div className="flex justify-between items-start mb-3">
                 <div className="p-2 bg-white/10 rounded-lg">
                   <span className="material-symbols-outlined text-white">account_balance_wallet</span>
@@ -221,7 +221,7 @@ export function MyLeavePage() {
                 Export Report
               </Button>
             </div>
-            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+            <div className="bv-surface overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead className="bg-surface-container-low text-on-surface-variant text-label-sm uppercase tracking-wider">
@@ -237,7 +237,7 @@ export function MyLeavePage() {
                     {leaveBalances.map((lb) => {
                       const pct = lb.total ? Math.round((lb.used / lb.total) * 100) : 0
                       return (
-                        <tr key={lb.type} className="hover:bg-secondary/5 transition-colors">
+                        <tr key={lb.type} className="zebra-row">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
                               <span className="w-2 h-2 rounded-full bg-secondary" />
@@ -268,7 +268,7 @@ export function MyLeavePage() {
 
       {tab === 'history' && (
         <div className="space-y-4">
-          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-wrap items-end gap-4 shadow-sm">
+          <div className="bv-surface p-4 flex flex-wrap items-end gap-4">
             <div className="flex flex-col gap-1 flex-1 min-w-[180px]">
               <label className="text-label-sm text-on-surface-variant">Search</label>
               <div className="relative">
@@ -278,7 +278,7 @@ export function MyLeavePage() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-sm outline-none focus:border-secondary"
+                  className="w-full pl-10 pr-3 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors"
                   placeholder="Request ID or reason..."
                 />
               </div>
@@ -288,7 +288,7 @@ export function MyLeavePage() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-sm outline-none focus:border-secondary"
+                className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-sm outline-none focus:border-secondary transition-colors"
               >
                 {['All', 'Pending', 'Approved', 'Rejected', 'Cancelled'].map((s) => (
                   <option key={s} value={s}>
@@ -302,7 +302,7 @@ export function MyLeavePage() {
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-sm outline-none focus:border-secondary"
+                className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-sm outline-none focus:border-secondary transition-colors"
               >
                 {['All', 'Casual', 'Sick', 'Earned', 'Unpaid', 'Comp Off'].map((t) => (
                   <option key={t} value={t}>
@@ -314,12 +314,12 @@ export function MyLeavePage() {
           </div>
 
           {loading ? (
-            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-12 flex flex-col items-center gap-3">
+            <div className="bv-surface p-12 flex flex-col items-center gap-3">
               <span className="material-symbols-outlined text-4xl text-secondary animate-spin">progress_activity</span>
               <p className="text-body-md text-on-surface-variant">Loading leave history…</p>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-12 flex flex-col items-center gap-3 text-center">
+            <div className="bv-surface p-12 flex flex-col items-center gap-3 text-center">
               <span className="material-symbols-outlined text-5xl text-on-surface-variant">event_busy</span>
               <p className="text-title-lg font-semibold text-on-background">No leave requests found</p>
               <Button variant="primary" className="mt-2" onClick={() => navigate({ to: '/my-work/leave/apply' })}>
@@ -327,7 +327,7 @@ export function MyLeavePage() {
               </Button>
             </div>
           ) : (
-            <div className="bg-surface-container-lowest rounded-xl border border-outline-variant overflow-hidden shadow-sm">
+            <div className="bv-surface overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
                   <thead className="bg-surface-container-low text-on-surface-variant text-label-sm uppercase tracking-wider">
@@ -345,7 +345,7 @@ export function MyLeavePage() {
                     {filtered.map((req) => (
                       <tr
                         key={req.id}
-                        className="hover:bg-secondary/5 cursor-pointer transition-colors"
+                        className="zebra-row cursor-pointer"
                         onClick={() =>
                           navigate({ to: '/my-work/leave/$leaveId', params: { leaveId: req.id } })
                         }
@@ -384,7 +384,7 @@ export function MyLeavePage() {
               <h2 className="text-title-lg font-semibold text-on-background">Leave Calendar</h2>
               <p className="text-body-md text-on-surface-variant">Your availability for {monthLabel}</p>
             </div>
-            <div className="flex items-center gap-1 bg-surface-container-lowest border border-outline-variant rounded-xl p-1.5 shadow-sm">
+            <div className="flex items-center gap-1 bv-surface p-1.5">
               <Button
                 variant="ghost"
                 size="sm"
@@ -397,7 +397,7 @@ export function MyLeavePage() {
               </Button>
               <button
                 type="button"
-                className="p-1.5 rounded hover:bg-surface-container-low"
+                className="p-1.5 rounded hover:bg-surface-container-low transition-colors"
                 aria-label="Previous month"
                 onClick={() => setCalMonth(new Date(cy, cm - 1, 1))}
               >
@@ -406,7 +406,7 @@ export function MyLeavePage() {
               <span className="px-3 text-label-md font-semibold min-w-[140px] text-center">{monthLabel}</span>
               <button
                 type="button"
-                className="p-1.5 rounded hover:bg-surface-container-low"
+                className="p-1.5 rounded hover:bg-surface-container-low transition-colors"
                 aria-label="Next month"
                 onClick={() => setCalMonth(new Date(cy, cm + 1, 1))}
               >
@@ -430,7 +430,7 @@ export function MyLeavePage() {
             </span>
           </div>
 
-          <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant shadow-sm overflow-hidden">
+          <div className="bv-surface overflow-hidden rounded-2xl">
             <div className="grid grid-cols-7 border-b border-outline-variant bg-surface-container-low/50">
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
                 <div
@@ -518,7 +518,7 @@ export function MyLeavePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-surface-container-low p-5 rounded-xl border border-outline-variant flex items-center gap-4">
+            <div className="bv-surface p-5 flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
                 <span className="material-symbols-outlined text-3xl">group</span>
               </div>
@@ -529,7 +529,7 @@ export function MyLeavePage() {
                 </p>
               </div>
             </div>
-            <div className="bg-surface-container-low p-5 rounded-xl border border-outline-variant flex items-center gap-4">
+            <div className="bv-surface p-5 flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
                 <span className="material-symbols-outlined text-3xl">pending_actions</span>
               </div>
@@ -538,7 +538,7 @@ export function MyLeavePage() {
                 <p className="text-headline-md font-bold text-on-background">{totalRemaining} days</p>
               </div>
             </div>
-            <div className="bg-surface-container-low p-5 rounded-xl border border-outline-variant flex items-center gap-4">
+            <div className="bv-surface p-5 flex items-center gap-4">
               <div className="w-12 h-12 rounded-full bg-violet-100 flex items-center justify-center text-violet-600">
                 <span className="material-symbols-outlined text-3xl">celebration</span>
               </div>
