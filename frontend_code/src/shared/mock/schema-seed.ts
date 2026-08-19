@@ -39,7 +39,7 @@ export const schemaSeed = {
       head_office_location_id: 1,
       default_timezone: 'Asia/Kolkata',
       default_currency: 'INR',
-      logo_reference: null,
+      logo_reference: "bytevon_logo.jpg",
       created_at: now,
       updated_at: now,
       changed_by: 1,

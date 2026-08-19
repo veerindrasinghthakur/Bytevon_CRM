@@ -7,7 +7,7 @@ import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { cn } from '@/shared/lib/cn'
 import { getEmployeeDetail } from '../api/employment'
 import type { EmployeeDetailDto } from '@/shared/schema'
-import { Can } from '@/shared/rbac'
+import {Can} from '@/shared/rbac'
 import { Action, ResourceName } from '@/shared/schema'
 
 function Icon({ name, className }: { name: string; className?: string }) {
