@@ -1,6 +1,6 @@
 export function PayrollDashboardPage() {
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <nav className="flex items-center gap-2 text-label-sm text-on-surface-variant mb-1">
@@ -13,19 +13,19 @@ export function PayrollDashboardPage() {
         <div className="flex flex-wrap gap-3">
           <button
             type="button"
-            className="px-5 py-2.5 bg-surface-container border border-outline-variant text-on-surface text-label-md rounded-lg flex items-center gap-2 hover:bg-surface-container-high"
+            className="px-5 py-2.5 bg-surface-container border border-outline-variant text-on-surface text-label-md rounded-lg flex items-center gap-2 hover:bg-surface-container-high transition-colors duration-200"
           >
             <span className="material-symbols-outlined text-[20px]">ios_share</span> Export Payroll
           </button>
           <button
             type="button"
-            className="px-5 py-2.5 bg-surface-container border border-outline-variant text-on-surface text-label-md rounded-lg flex items-center gap-2 hover:bg-surface-container-high"
+            className="px-5 py-2.5 bg-surface-container border border-outline-variant text-on-surface text-label-md rounded-lg flex items-center gap-2 hover:bg-surface-container-high transition-colors duration-200"
           >
             <span className="material-symbols-outlined text-[20px]">description</span> Generate Payslips
           </button>
           <button
             type="button"
-            className="px-6 py-2.5 bg-secondary text-on-secondary text-label-md rounded-lg flex items-center gap-2 shadow-lg shadow-secondary/20 hover:opacity-90"
+            className="px-6 py-2.5 bg-secondary text-on-secondary text-label-md rounded-lg flex items-center gap-2 shadow-lg shadow-secondary/20 bv-pressable"
           >
             <span className="material-symbols-outlined text-[20px]">payments</span> Run Payroll
           </button>
@@ -40,10 +40,7 @@ export function PayrollDashboardPage() {
           { label: 'Deductions', value: '$120K', note: 'Tax & Benefits' },
           { label: 'Bonuses', value: '$85K', note: 'Q3 Incentives' },
         ].map((c) => (
-          <div
-            key={c.label}
-            className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-all"
-          >
+          <div key={c.label} className="bv-surface card-hover p-6">
             <p className="text-label-md text-on-surface-variant mb-2">{c.label}</p>
             <h3 className="text-title-lg text-on-surface mb-2">{c.value}</h3>
             <p className="text-body-sm text-on-surface-variant opacity-70">{c.note}</p>
@@ -52,13 +49,13 @@ export function PayrollDashboardPage() {
       </section>
 
       <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+        <div className="col-span-12 lg:col-span-8 bv-surface card-hover p-6">
           <div className="flex justify-between items-center mb-6">
             <div>
               <h4 className="text-title-lg text-on-surface">Monthly Payroll Trend</h4>
               <p className="text-body-sm text-on-surface-variant">Expenditure over the last 6 months</p>
             </div>
-            <select className="bg-surface-container-low border-none rounded-lg text-label-md px-4 py-2">
+            <select className="bg-surface-container-low border border-outline-variant rounded-lg text-label-md px-4 py-2 outline-none focus:border-secondary transition-colors">
               <option>Last 6 Months</option>
               <option>Current Year</option>
             </select>
@@ -72,8 +69,11 @@ export function PayrollDashboardPage() {
               { m: 'Aug', h: 80 },
               { m: 'Sep', h: 75 },
             ].map((b) => (
-              <div key={b.m} className="flex-1 flex flex-col items-center">
-                <div className="w-full bg-secondary/20 rounded-t relative" style={{ height: `${b.h}%` }}>
+              <div key={b.m} className="flex-1 flex flex-col items-center group cursor-pointer">
+                <div
+                  className="w-full bg-secondary/20 rounded-t relative group-hover:bg-secondary/40 transition-colors"
+                  style={{ height: `${b.h}%` }}
+                >
                   <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-secondary rounded-full ring-4 ring-white" />
                 </div>
                 <span className="mt-3 text-label-sm text-on-surface-variant">{b.m}</span>
@@ -82,7 +82,7 @@ export function PayrollDashboardPage() {
           </div>
         </div>
 
-        <div className="col-span-12 lg:col-span-4 bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+        <div className="col-span-12 lg:col-span-4 bv-surface card-hover p-6">
           <h4 className="text-title-lg text-on-surface mb-4">Department Cost Distribution</h4>
           <div className="flex items-center justify-center py-6">
             <div
@@ -113,7 +113,7 @@ export function PayrollDashboardPage() {
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+      <div className="bv-surface overflow-hidden">
         <div className="p-6 border-b border-outline-variant flex justify-between items-center">
           <h4 className="text-title-lg text-on-surface">Pending Salary Approvals</h4>
           <button type="button" className="text-secondary text-label-md hover:underline">
@@ -136,7 +136,7 @@ export function PayrollDashboardPage() {
                 { name: 'Alex Smith', role: 'Marketing Lead', dept: 'Marketing', amount: '$7,200', initials: 'AS' },
                 { name: 'Michael Ross', role: 'Account Manager', dept: 'Sales', amount: '$6,800', initials: 'MR' },
               ].map((r) => (
-                <tr key={r.name} className="hover:bg-surface-container-low/40">
+                <tr key={r.name} className="zebra-row group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-secondary font-bold text-xs">
@@ -151,10 +151,16 @@ export function PayrollDashboardPage() {
                   <td className="px-6 py-4 text-label-md">{r.dept}</td>
                   <td className="px-6 py-4 text-label-md font-bold">{r.amount}</td>
                   <td className="px-6 py-4 text-right space-x-2">
-                    <button type="button" className="px-3 py-1.5 text-error text-label-md hover:bg-error-container/20 rounded">
+                    <button
+                      type="button"
+                      className="px-3 py-1.5 text-error text-label-md hover:bg-error-container/20 rounded transition-colors"
+                    >
                       Reject
                     </button>
-                    <button type="button" className="px-4 py-1.5 bg-secondary text-on-secondary text-label-md rounded shadow-sm hover:opacity-90">
+                    <button
+                      type="button"
+                      className="px-4 py-1.5 bg-secondary text-on-secondary text-label-md rounded executive-shadow bv-pressable"
+                    >
                       Approve
                     </button>
                   </td>
