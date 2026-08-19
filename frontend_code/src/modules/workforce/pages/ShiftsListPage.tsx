@@ -32,7 +32,7 @@ export function ShiftsListPage() {
   }, [search, status])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Shifts"
         description="Define work schedules and see who is assigned to each shift."
@@ -49,20 +49,20 @@ export function ShiftsListPage() {
         }
       />
 
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-4 flex flex-wrap items-center gap-3">
+      <div className="bv-surface p-4 flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[220px]">
           <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary"
+            className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary transition-colors"
             placeholder="Search shifts by name or code…"
           />
         </div>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as 'All' | 'Active' | 'Inactive')}
-          className="border border-outline-variant rounded-lg px-3 py-2 text-label-md bg-surface-container-lowest"
+          className="border border-outline-variant rounded-lg px-3 py-2 text-label-md bg-surface-container-lowest transition-colors"
         >
           <option value="All">All statuses</option>
           <option value="Active">Active</option>
@@ -76,7 +76,7 @@ export function ShiftsListPage() {
             key={s.id}
             type="button"
             onClick={() => navigate({ to: '/workforce/shifts/$shiftId', params: { shiftId: s.id } })}
-            className="text-left bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm hover:border-secondary transition-colors"
+            className="text-left bv-surface card-hover p-5"
           >
             <div className="flex items-start justify-between gap-2 mb-3">
               <div>
@@ -109,7 +109,7 @@ export function ShiftsListPage() {
       </div>
 
       {filtered.length === 0 && (
-        <div className="rounded-xl border border-dashed border-outline-variant p-12 text-center text-on-surface-variant">
+        <div className="bv-surface border-dashed p-12 text-center text-on-surface-variant">
           No shifts match your filters.
         </div>
       )}
