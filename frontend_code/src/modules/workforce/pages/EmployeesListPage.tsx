@@ -83,7 +83,7 @@ export function EmployeesListPage() {
   )
 
   return (
-    <div className="space-y-6 relative">
+    <div className="space-y-6 relative animate-fade-in">
       <PageHeader
         title="Employee Management"
         description="Manage and organize all human capital records within the organization."
@@ -99,22 +99,21 @@ export function EmployeesListPage() {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-xl ml-auto">
-        <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 shadow-sm">
+        <div className="bv-surface card-hover p-4">
           <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Total</p>
           <p className="text-title-lg font-bold text-on-background">{metrics.total}</p>
         </div>
-        <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 shadow-sm">
+        <div className="bv-surface card-hover p-4">
           <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Active</p>
           <p className="text-title-lg font-bold text-secondary">{metrics.active}</p>
         </div>
-        <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 shadow-sm">
+        <div className="bv-surface card-hover p-4">
           <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Archived</p>
           <p className="text-title-lg font-bold text-on-surface-variant">{metrics.archived}</p>
         </div>
       </div>
 
-      {/* Filter bar — matches Stitch employee management */}
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-4 flex flex-wrap items-center gap-3 shadow-sm">
+      <div className="bv-surface p-4 flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[220px]">
           <Icon
             name="person_search"
@@ -130,7 +129,7 @@ export function EmployeesListPage() {
         <select
           value={deptFilter}
           onChange={(e) => setDeptFilter(e.target.value)}
-          className="rounded-lg border border-outline-variant bg-surface px-3 py-2.5 text-body-sm min-w-[140px] focus:ring-2 focus:ring-secondary/20"
+          className="rounded-lg border border-outline-variant bg-surface px-3 py-2.5 text-body-sm min-w-[140px] focus:ring-2 focus:ring-secondary/20 transition-colors"
         >
           <option value="all">All Departments</option>
           {departments.map((d) => (
@@ -142,7 +141,7 @@ export function EmployeesListPage() {
         <select
           value={stateFilter}
           onChange={(e) => setStateFilter(e.target.value)}
-          className="rounded-lg border border-outline-variant bg-surface px-3 py-2.5 text-body-sm min-w-[140px] focus:ring-2 focus:ring-secondary/20"
+          className="rounded-lg border border-outline-variant bg-surface px-3 py-2.5 text-body-sm min-w-[140px] focus:ring-2 focus:ring-secondary/20 transition-colors"
         >
           <option value="all">All Statuses</option>
           {states.map((s) => (
@@ -154,7 +153,7 @@ export function EmployeesListPage() {
         <select
           value={typeFilter}
           onChange={(e) => setTypeFilter(e.target.value)}
-          className="rounded-lg border border-outline-variant bg-surface px-3 py-2.5 text-body-sm min-w-[140px] focus:ring-2 focus:ring-secondary/20"
+          className="rounded-lg border border-outline-variant bg-surface px-3 py-2.5 text-body-sm min-w-[140px] focus:ring-2 focus:ring-secondary/20 transition-colors"
         >
           <option value="all">All Types</option>
           {types.map((t) => (
@@ -179,7 +178,7 @@ export function EmployeesListPage() {
         )}
       </div>
 
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+      <div className="bv-surface overflow-hidden">
         {loading ? (
           <div className="p-6 space-y-3">
             {Array.from({ length: 6 }).map((_, i) => (
@@ -221,34 +220,20 @@ export function EmployeesListPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-surface-container-low border-b border-outline-variant">
-                  <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">
-                    Employee
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">
-                    Department
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">
-                    Position
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">
-                    Login
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider text-right">
-                    Actions
-                  </th>
+                  <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Employee</th>
+                  <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Department</th>
+                  <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Position</th>
+                  <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Type</th>
+                  <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Status</th>
+                  <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Login</th>
+                  <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/30">
                 {filtered.map((emp) => (
                   <tr
                     key={emp.id}
-                    className="cursor-pointer group bv-row-hover"
+                    className="cursor-pointer group zebra-row"
                     onClick={() =>
                       navigate({
                         to: '/workforce/employees/$employeeId',
@@ -293,7 +278,7 @@ export function EmployeesListPage() {
                     <td className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                       <button
                         type="button"
-                        className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant"
+                        className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors"
                         onClick={() =>
                           navigate({
                             to: '/workforce/employees/$employeeId',
