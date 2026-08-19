@@ -21,7 +21,7 @@ export function SecurityCenterPage() {
   }, [])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Security Center"
         description="Sessions, lockouts, authentication policy, and infrastructure posture. MFA is not available in V1."
@@ -38,7 +38,7 @@ export function SecurityCenterPage() {
         }
       />
 
-      <section className="flex flex-col md:flex-row items-center justify-between bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+      <section className="flex flex-col md:flex-row items-center justify-between bv-surface p-6">
         <div className="flex items-center gap-6">
           <div
             className="relative w-24 h-24 flex items-center justify-center rounded-full p-1"
@@ -61,7 +61,7 @@ export function SecurityCenterPage() {
       </section>
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-surface-container-lowest p-5 rounded-xl border border-dashed border-outline-variant shadow-sm opacity-70 relative">
+        <div className="bv-surface p-5 border-dashed opacity-70 relative">
           <span className="absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider bg-surface-container-high text-on-surface-variant px-2 py-0.5 rounded">
             Not available
           </span>
@@ -75,7 +75,7 @@ export function SecurityCenterPage() {
           <p className="text-label-sm text-on-surface-variant mt-1">Multi-factor auth is not in product V1</p>
         </div>
 
-        <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm card-hover">
+        <div className="bv-surface card-hover p-5">
           <div className="flex justify-between items-start mb-3">
             <span className="material-symbols-outlined p-2 bg-blue-100 text-blue-600 rounded-lg">hub</span>
           </div>
@@ -84,7 +84,7 @@ export function SecurityCenterPage() {
           <p className="text-label-sm text-on-surface-variant/60 mt-1">Refresh tokens hashed on sessions</p>
         </div>
 
-        <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm card-hover">
+        <div className="bv-surface card-hover p-5">
           <div className="flex justify-between items-start mb-3">
             <span className="material-symbols-outlined p-2 bg-green-100 text-green-600 rounded-lg">
               check_circle
@@ -94,7 +94,7 @@ export function SecurityCenterPage() {
           <h3 className="text-3xl font-black text-green-600">{adminKpis.openAlerts}</h3>
         </div>
 
-        <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant shadow-sm card-hover">
+        <div className="bv-surface card-hover p-5">
           <div className="flex justify-between items-start mb-3">
             <span className="material-symbols-outlined p-2 bg-amber-100 text-amber-600 rounded-lg">
               history
@@ -106,7 +106,7 @@ export function SecurityCenterPage() {
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <div className="lg:col-span-7 bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm p-6">
+        <div className="lg:col-span-7 bv-surface p-6">
           <h3 className="text-title-lg font-semibold text-primary mb-6">Authentication Protocols</h3>
           <div className="space-y-3">
             <UnavailableProtocol
@@ -130,7 +130,7 @@ export function SecurityCenterPage() {
           </div>
         </div>
 
-        <div className="lg:col-span-5 bg-primary text-white rounded-xl shadow-sm p-6 flex flex-col">
+        <div className="lg:col-span-5 bg-primary text-white rounded-xl executive-shadow p-6 flex flex-col">
           <h3 className="text-title-lg font-semibold text-white mb-6">V1 Policy</h3>
           <ul className="space-y-3 text-body-sm text-white/85 flex-1">
             <li className="flex gap-2">
@@ -157,7 +157,7 @@ export function SecurityCenterPage() {
         </div>
       </section>
 
-      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+      <section className="bv-surface overflow-hidden">
         <div className="flex items-center justify-between p-6 border-b border-outline-variant">
           <h3 className="text-title-lg font-semibold text-primary">Recent Security Events</h3>
         </div>
@@ -174,7 +174,7 @@ export function SecurityCenterPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {securityEvents.map((ev) => (
-                <tr key={ev.id} className="bv-row-hover">
+                <tr key={ev.id} className="zebra-row">
                   <td className="px-6 py-4 text-body-sm font-medium text-on-surface">{ev.eventType}</td>
                   <td className="px-6 py-4 text-body-sm text-on-surface-variant">{ev.identity}</td>
                   <td className="px-6 py-4 text-body-sm text-on-surface-variant">{ev.source}</td>
