@@ -35,14 +35,14 @@ export function ClientDetailPage() {
 
   if (!client) {
     return (
-      <div>
+      <div className="animate-fade-in">
         <PageHeader title="Client not found" showBack backTo="/sales/clients" backLabel="Back to clients" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title={client.name}
         description={client.legalName ?? client.industry}
@@ -68,7 +68,7 @@ export function ClientDetailPage() {
               href={client.chatLink}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-secondary/30 text-secondary font-semibold text-sm hover:bg-secondary/5"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-secondary/30 text-secondary font-semibold text-sm hover:bg-secondary/5 transition-colors"
             >
               <span className="material-symbols-outlined text-lg">chat</span>
               Open chat
@@ -85,7 +85,7 @@ export function ClientDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
+        <div className="lg:col-span-2 bv-surface p-6">
           <h2 className="text-title-md font-semibold mb-4">Account details</h2>
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -128,11 +128,11 @@ export function ClientDetailPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5">
+          <div className="bv-surface p-5">
             <p className="text-[10px] font-bold uppercase text-on-surface-variant">ARR / Revenue</p>
             <p className="text-2xl font-bold mt-1">{formatMoney(client.arr ?? client.revenue)}</p>
           </div>
-          <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-5 grid grid-cols-2 gap-3">
+          <div className="bv-surface p-5 grid grid-cols-2 gap-3">
             <div>
               <p className="text-[10px] font-bold uppercase text-on-surface-variant">Projects</p>
               <p className="text-xl font-bold mt-1">{client.projects}</p>
@@ -143,7 +143,7 @@ export function ClientDetailPage() {
             </div>
           </div>
           {client.chatLink && (
-            <div className="rounded-xl border border-secondary/30 bg-secondary/5 p-5">
+            <div className="rounded-xl border border-secondary/30 bg-secondary/5 p-5 executive-shadow">
               <p className="text-[10px] font-bold uppercase text-on-surface-variant mb-2">Chat</p>
               <a href={client.chatLink} target="_blank" rel="noreferrer" className="text-secondary text-sm font-semibold hover:underline break-all">
                 {client.chatLink}
