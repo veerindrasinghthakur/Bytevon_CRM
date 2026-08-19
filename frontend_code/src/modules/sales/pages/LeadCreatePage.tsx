@@ -51,11 +51,11 @@ export function LeadCreatePage() {
   }
 
   const fieldClass =
-    'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20'
+    'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors'
   const labelClass = 'block text-label-md text-on-surface-variant mb-1.5'
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title={isEdit ? 'Edit Lead' : 'Create Lead'}
         description={isEdit ? `Update ${existing?.title ?? 'lead'}` : 'Capture a new opportunity and link chat with the client.'}
@@ -78,8 +78,7 @@ export function LeadCreatePage() {
       />
 
       <form onSubmit={handleSubmit} className="space-y-5 max-w-4xl">
-        {/* Identity */}
-        <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 space-y-4">
+        <section className="bv-surface p-6 space-y-4">
           <h2 className="text-title-md font-semibold text-on-background flex items-center gap-2">
             <span className="material-symbols-outlined text-secondary">badge</span>
             Lead identity
@@ -130,11 +129,10 @@ export function LeadCreatePage() {
           </div>
         </section>
 
-        {/* Pipeline */}
-        <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 space-y-4">
+        <section className="bv-surface p-6 space-y-4">
           <h2 className="text-title-md font-semibold text-on-background flex items-center gap-2">
             <span className="material-symbols-outlined text-secondary">filter_alt</span>
-            Pipeline &amp; status
+            Pipeline & status
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
@@ -185,8 +183,7 @@ export function LeadCreatePage() {
           </div>
         </section>
 
-        {/* Commercial */}
-        <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 space-y-4">
+        <section className="bv-surface p-6 space-y-4">
           <h2 className="text-title-md font-semibold text-on-background flex items-center gap-2">
             <span className="material-symbols-outlined text-secondary">payments</span>
             Commercial
@@ -213,8 +210,7 @@ export function LeadCreatePage() {
           </div>
         </section>
 
-        {/* Chat link — required by product */}
-        <section className="rounded-xl border border-secondary/30 bg-secondary/5 p-6 space-y-4">
+        <section className="rounded-xl border border-secondary/30 bg-secondary/5 p-6 space-y-4 executive-shadow">
           <h2 className="text-title-md font-semibold text-on-background flex items-center gap-2">
             <span className="material-symbols-outlined text-secondary">chat</span>
             Chat with client
@@ -237,11 +233,10 @@ export function LeadCreatePage() {
           </div>
         </section>
 
-        {/* Notes */}
-        <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 space-y-4">
+        <section className="bv-surface p-6 space-y-4">
           <h2 className="text-title-md font-semibold text-on-background flex items-center gap-2">
             <span className="material-symbols-outlined text-secondary">notes</span>
-            Background &amp; context
+            Background & context
           </h2>
           <textarea
             rows={5}
