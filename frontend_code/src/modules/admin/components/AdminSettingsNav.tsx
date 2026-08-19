@@ -1,7 +1,7 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
 
-/** Horizontal icon tabs — Calendars holds holidays inside */
+/** Horizontal icon tabs — Calendars holds holidays inside. No vertical scrollbar. */
 export const ADMIN_SETTINGS_NAV = [
   { id: 'organization', label: 'Organization', icon: 'corporate_fare', to: '/admin/settings' },
   { id: 'head-office', label: 'Head Office', icon: 'location_city', to: '/admin/settings/head-office' },
@@ -39,8 +39,9 @@ export function AdminSettingsNav() {
 
   return (
     <nav
-      className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm scrollbar-hide overflow-x-auto"
+      className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-x-auto overflow-y-hidden scrollbar-hide"
       aria-label="Settings sections"
+      style={{ scrollbarWidth: 'none' }}
     >
       <ul className="flex flex-row items-stretch justify-start md:justify-between min-w-0">
         {ADMIN_SETTINGS_NAV.map((item) => {
