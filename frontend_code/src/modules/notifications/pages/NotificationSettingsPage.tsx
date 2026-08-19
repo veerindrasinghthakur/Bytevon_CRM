@@ -18,7 +18,7 @@ export function NotificationSettingsPage() {
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
         <div>
           <h1 className="text-headline-lg font-semibold text-deep-navy mb-2">Notification Settings</h1>
@@ -49,10 +49,7 @@ export function NotificationSettingsPage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {channelCards.map((c) => (
-            <div
-              key={c.id}
-              className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow"
-            >
+            <div key={c.id} className="bv-surface card-hover p-6">
               <div className="flex justify-between items-start mb-4">
                 <div className="w-12 h-12 bg-primary-container/10 rounded-lg flex items-center justify-center">
                   <span className="material-symbols-outlined text-deep-navy">{c.icon}</span>
@@ -79,7 +76,7 @@ export function NotificationSettingsPage() {
             <span className="material-symbols-outlined">add</span> Create New Trigger
           </button>
         </div>
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+        <div className="bv-surface overflow-hidden">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-container-low border-b border-outline-variant">
@@ -92,7 +89,7 @@ export function NotificationSettingsPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {triggers.map((t) => (
-                <tr key={t.id} className="hover:bg-surface-container-low/40 transition-colors">
+                <tr key={t.id} className="zebra-row">
                   <td className="py-4 px-6">
                     <p className="text-body-md font-medium text-deep-navy">{t.event}</p>
                     <p className="text-[12px] text-on-surface-variant">{t.description}</p>
@@ -123,7 +120,7 @@ export function NotificationSettingsPage() {
                     />
                   </td>
                   <td className="py-4 px-6 text-right">
-                    <button type="button" className="text-on-surface-variant hover:text-deep-navy">
+                    <button type="button" className="text-on-surface-variant hover:text-deep-navy transition-colors">
                       <span className="material-symbols-outlined">more_vert</span>
                     </button>
                   </td>
@@ -140,7 +137,7 @@ export function NotificationSettingsPage() {
           <h3 className="text-title-lg font-semibold text-deep-navy">Advanced Preferences</h3>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+          <div className="bv-surface p-6">
             <h4 className="text-title-lg font-semibold text-deep-navy mb-2">Batch Frequency</h4>
             <p className="text-body-sm text-on-surface-variant mb-6">
               Controls how often system updates are delivered to prevent inbox fatigue.
@@ -178,7 +175,7 @@ export function NotificationSettingsPage() {
             </div>
           </div>
 
-          <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm">
+          <div className="bv-surface p-6">
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h4 className="text-title-lg font-semibold text-deep-navy mb-2">Quiet Hours</h4>
@@ -189,11 +186,11 @@ export function NotificationSettingsPage() {
             <div className={cn('grid grid-cols-2 gap-4', !quietOn && 'opacity-50 pointer-events-none')}>
               <div>
                 <label className="block text-label-md text-deep-navy mb-2">Start Time</label>
-                <input type="time" defaultValue="21:00" className="w-full p-3 bg-surface-container-low border border-outline-variant rounded-lg outline-none focus:ring-2 focus:ring-secondary" />
+                <input type="time" defaultValue="21:00" className="w-full p-3 bg-surface-container-low border border-outline-variant rounded-lg outline-none focus:ring-2 focus:ring-secondary transition-colors" />
               </div>
               <div>
                 <label className="block text-label-md text-deep-navy mb-2">End Time</label>
-                <input type="time" defaultValue="07:00" className="w-full p-3 bg-surface-container-low border border-outline-variant rounded-lg outline-none focus:ring-2 focus:ring-secondary" />
+                <input type="time" defaultValue="07:00" className="w-full p-3 bg-surface-container-low border border-outline-variant rounded-lg outline-none focus:ring-2 focus:ring-secondary transition-colors" />
               </div>
             </div>
             <div className="mt-6">
