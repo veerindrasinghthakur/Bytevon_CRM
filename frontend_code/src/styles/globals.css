@@ -13,10 +13,6 @@
     min-height: 100vh;
   }
 
-  /*
-   * Material Symbols must render as icons, never as selectable text ligatures.
-   * Size/family from tokens.css (--font-size-icon, --font-family-icons).
-   */
   .material-symbols-outlined {
     font-family: var(--font-family-icons) !important;
     font-weight: normal;
@@ -50,19 +46,32 @@
     pointer-events: none;
   }
 
-  /* Interactive affordance — matches HTML cursor-pointer patterns */
   button:not(:disabled),
   [role='button']:not([aria-disabled='true']),
   a[href] {
     cursor: pointer;
   }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-surface-container-highest, #d3e4fe);
+    border-radius: 10px;
+  }
 }
 
 @layer components {
-  /*
-   * Shadows — elevation tokens from tokens.css
-   * Used on: elevated cards, sticky toolbars (prefer shadow-soft over raw shadow-sm when custom)
-   */
+  .executive-shadow {
+    box-shadow:
+      0 4px 6px -1px rgba(0, 31, 63, 0.05),
+      0 2px 4px -1px rgba(0, 31, 63, 0.03);
+  }
+
   .shadow-soft {
     box-shadow:
       0 var(--elevation-soft-y) var(--elevation-soft-blur)
@@ -79,7 +88,6 @@
         color-mix(in srgb, var(--color-shadow) calc(var(--opacity-shadow-soft-lg) * 100%), transparent);
   }
 
-  /* Modal dim layer — Approval / Leave type / office pickers */
   .modal-overlay {
     background-color: color-mix(
       in srgb,
@@ -89,7 +97,6 @@
     backdrop-filter: blur(var(--blur-modal));
   }
 
-  /* Frosted panels — header glass, floating bars */
   .glass-panel {
     background: color-mix(
       in srgb,
@@ -99,31 +106,36 @@
     backdrop-filter: blur(var(--blur-glass));
   }
 
-  /*
-   * UX effects aligned to Stitch HTML screens
-   * Note: do not @apply Tailwind opacity modifiers on CSS-variable colors (PostCSS fails).
-   */
+  .bv-surface {
+    @apply bg-surface-container-lowest border border-outline-variant rounded-xl;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 31, 63, 0.05),
+      0 2px 4px -1px rgba(0, 31, 63, 0.03);
+  }
 
-  /* Roles management & similar card grids */
   .card-hover {
     transition: all var(--duration-fast) ease;
   }
   .card-hover:hover {
     transform: translateY(var(--lift-card-hover));
+    box-shadow:
+      0 8px 16px -4px rgba(0, 31, 63, 0.08),
+      0 4px 8px -2px rgba(0, 31, 63, 0.04);
   }
 
-  /* Static surface card (dashboard KPI panels) */
-  .bv-surface {
-    @apply bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm;
-  }
-
-  /* My Work quick-action tiles */
   .bv-action-tile {
-    @apply flex flex-col items-center justify-center p-6 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm cursor-pointer;
+    @apply flex flex-col items-center justify-center p-6 bg-surface-container-lowest border border-outline-variant rounded-xl cursor-pointer;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 31, 63, 0.05),
+      0 2px 4px -1px rgba(0, 31, 63, 0.03);
     transition: all var(--duration-fast) ease;
   }
   .bv-action-tile:hover {
     @apply border-secondary;
+    transform: translateY(-2px);
+    box-shadow:
+      0 8px 16px -4px rgba(0, 31, 63, 0.08),
+      0 4px 8px -2px rgba(0, 31, 63, 0.04);
   }
   .bv-action-tile .bv-action-icon {
     transition: transform var(--duration-fast) ease;
@@ -132,19 +144,19 @@
     transform: scale(var(--scale-action-icon-hover));
   }
 
-  /* Table / list rows */
   .bv-row-hover {
     @apply transition-colors duration-200 ease-out;
   }
   .bv-row-hover:hover {
-    background-color: color-mix(
-      in srgb,
-      var(--color-surface-container-low) calc(var(--opacity-row-hover) * 100%),
-      transparent
-    );
+    background-color: color-mix(in srgb, var(--color-secondary) 5%, transparent);
+  }
+  .zebra-row:nth-child(even) {
+    background-color: var(--color-background);
+  }
+  .zebra-row:hover {
+    background-color: color-mix(in srgb, var(--color-secondary) 5%, transparent);
   }
 
-  /* Primary CTA press feedback */
   .bv-pressable {
     transition: all var(--duration-fast) ease;
   }
@@ -155,17 +167,30 @@
     transform: scale(var(--scale-press-active));
   }
 
-  /* Icon buttons / chips */
   .bv-icon-btn {
-    @apply transition-colors duration-200 ease-out cursor-pointer;
+    @apply transition-colors duration-200 ease-out cursor-pointer rounded-full;
   }
   .bv-icon-btn:hover {
-    @apply bg-surface-container-low text-secondary;
+    @apply bg-surface-container text-secondary;
   }
 
-  /* Nav item active press */
   .bv-nav-press:active {
     transform: scale(var(--scale-nav-press));
+  }
+
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--color-surface-container) 25%,
+      var(--color-surface-container-highest) 50%,
+      var(--color-surface-container) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite linear;
+  }
+
+  .pulsate-subtle {
+    animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 }
 
@@ -178,14 +203,16 @@
     display: none;
   }
 
-  /* Secondary drawers / notification panels sliding from the right */
   .animate-slide-in-right {
     animation: slideInRight var(--duration-slide-in) var(--easing-emphasized) forwards;
   }
 
-  /* IconRail + secondary sidebar width */
   .transition-sidebar {
     transition: width var(--duration-sidebar) var(--easing-standard);
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
   }
 }
 
@@ -195,5 +222,35 @@
   }
   to {
     transform: translateX(0);
+  }
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes pulse-subtle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
