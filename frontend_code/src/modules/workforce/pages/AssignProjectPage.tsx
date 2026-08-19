@@ -28,7 +28,7 @@ export function AssignProjectPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
+    <div className="space-y-6 max-w-3xl animate-fade-in">
       <div>
         <BackButton to={`/workforce/teams/${t.id}`} label="Back to team" />
         <RouteCrumbs
@@ -46,7 +46,7 @@ export function AssignProjectPage() {
         </p>
       </div>
 
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 space-y-5 shadow-sm">
+      <div className="bv-surface p-6 space-y-5">
         <section>
           <h2 className="text-title-md font-semibold mb-3 flex items-center gap-2">
             <Icon name="account_tree" className="text-secondary" /> Select project
@@ -60,7 +60,7 @@ export function AssignProjectPage() {
                     type="button"
                     onClick={() => setSelected(p.id)}
                     className={cn(
-                      'w-full text-left rounded-lg border px-4 py-3 transition-colors',
+                      'w-full text-left rounded-lg border px-4 py-3 transition-all',
                       active
                         ? 'border-secondary bg-secondary/5 ring-1 ring-secondary'
                         : 'border-outline-variant hover:bg-surface-container-low',
@@ -86,7 +86,7 @@ export function AssignProjectPage() {
             <select
               value={role}
               onChange={(e) => setRole(e.target.value)}
-              className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md"
+              className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none transition-colors"
             >
               <option>Primary</option>
               <option>Support</option>
@@ -99,7 +99,7 @@ export function AssignProjectPage() {
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md resize-none"
+              className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md resize-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none transition-colors"
               placeholder="Optional context for project managers…"
             />
           </label>
