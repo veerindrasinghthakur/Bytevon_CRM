@@ -54,7 +54,7 @@ export function SalesDashboardPage() {
   const recentActivity = salesActivities.slice(0, 5)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Sales Dashboard"
         description="Pipeline health, recent leads, and client activity at a glance."
@@ -78,13 +78,9 @@ export function SalesDashboardPage() {
         }
       />
 
-      {/* KPI row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {dashboardMetrics.map((m) => (
-          <div
-            key={m.id}
-            className="p-5 rounded-xl border border-outline-variant bg-surface-container-lowest shadow-sm hover:shadow-md transition-shadow"
-          >
+          <div key={m.id} className="bv-surface card-hover p-5">
             <div className="flex justify-between items-start mb-2">
               <span className="p-2 rounded-lg bg-secondary/10 text-secondary">
                 <span className="material-symbols-outlined text-xl">{m.icon}</span>
@@ -114,8 +110,7 @@ export function SalesDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Recent leads */}
-        <div className="xl:col-span-2 bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+        <div className="xl:col-span-2 bv-surface overflow-hidden">
           <div className="px-5 py-4 border-b border-outline-variant flex items-center justify-between">
             <h2 className="text-title-md font-semibold text-on-background">Recent Leads</h2>
             <button
@@ -148,7 +143,7 @@ export function SalesDashboardPage() {
                 {recentLeads.map((lead) => (
                   <tr
                     key={lead.id}
-                    className="hover:bg-surface-container-low/50 transition-colors cursor-pointer"
+                    className="zebra-row cursor-pointer"
                     onClick={() => navigate({ to: '/sales/leads' })}
                   >
                     <td className="px-4 py-3">
@@ -178,8 +173,7 @@ export function SalesDashboardPage() {
           </div>
         </div>
 
-        {/* Activity */}
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+        <div className="bv-surface overflow-hidden">
           <div className="px-5 py-4 border-b border-outline-variant flex items-center justify-between">
             <h2 className="text-title-md font-semibold text-on-background">Activity</h2>
             <button
@@ -192,7 +186,7 @@ export function SalesDashboardPage() {
           </div>
           <ul className="divide-y divide-outline-variant">
             {recentActivity.map((a) => (
-              <li key={a.id} className="px-5 py-4">
+              <li key={a.id} className="px-5 py-4 bv-row-hover">
                 <div className="flex items-start gap-3">
                   <span className="mt-0.5 w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-lg">
@@ -219,8 +213,7 @@ export function SalesDashboardPage() {
         </div>
       </div>
 
-      {/* Top clients */}
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+      <div className="bv-surface overflow-hidden">
         <div className="px-5 py-4 border-b border-outline-variant flex items-center justify-between">
           <h2 className="text-title-md font-semibold text-on-background">Top Clients</h2>
           <button
@@ -235,7 +228,7 @@ export function SalesDashboardPage() {
           {topClients.map((c) => (
             <div
               key={c.id}
-              className="p-4 rounded-xl border border-outline-variant hover:border-secondary/40 hover:shadow-sm transition-all cursor-pointer"
+              className="p-4 rounded-xl border border-outline-variant hover:border-secondary card-hover cursor-pointer"
               onClick={() => navigate({ to: '/sales/clients' })}
             >
               <div className="flex items-center gap-3 mb-3">
@@ -258,7 +251,6 @@ export function SalesDashboardPage() {
         </div>
       </div>
 
-      {/* Quick links */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {[
           { label: 'Leads', icon: 'person_search', to: '/sales/leads' },
@@ -270,9 +262,9 @@ export function SalesDashboardPage() {
             key={link.to}
             type="button"
             onClick={() => navigate({ to: link.to })}
-            className="flex items-center gap-3 p-4 rounded-xl border border-outline-variant bg-surface-container-lowest hover:bg-secondary/5 hover:border-secondary/30 transition-colors text-left"
+            className="bv-action-tile flex-row gap-3 p-4 text-left justify-start"
           >
-            <span className="material-symbols-outlined text-secondary text-2xl">{link.icon}</span>
+            <span className="material-symbols-outlined text-secondary text-2xl bv-action-icon">{link.icon}</span>
             <span className="font-semibold text-on-surface">{link.label}</span>
           </button>
         ))}
