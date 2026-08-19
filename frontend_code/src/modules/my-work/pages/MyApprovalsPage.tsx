@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { myApprovals } from '../data/mock'
 import type { ApprovalStatus } from '../types'
+import { cn } from '@/shared/lib/cn'
 
 const statusStyles: Record<ApprovalStatus, string> = {
   Pending: 'bg-amber-50 text-amber-800',
@@ -31,15 +32,8 @@ export function MyApprovalsPage() {
     return myApprovals.filter((a) => a.status === filter)
   }, [filter])
 
-  const cardClass = (active: boolean) =>
-    `bg-surface-container-lowest rounded-xl border p-5 shadow-sm cursor-pointer transition-colors text-left w-full ${
-      active
-        ? 'border-secondary ring-1 ring-secondary/30'
-        : 'border-outline-variant hover:border-secondary/40'
-    }`
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="My Requests"
         description="Leave, attendance corrections, and other requests you submitted."
@@ -48,7 +42,10 @@ export function MyApprovalsPage() {
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <button
           type="button"
-          className={cardClass(filter === 'Pending')}
+          className={cn(
+            'bv-surface card-hover p-5 cursor-pointer text-left w-full',
+            filter === 'Pending' && 'ring-1 ring-secondary/30 border-secondary'
+          )}
           onClick={() => setFilter((f) => (f === 'Pending' ? null : 'Pending'))}
         >
           <p className="text-label-sm text-on-surface-variant mb-1">Pending</p>
@@ -57,7 +54,10 @@ export function MyApprovalsPage() {
         </button>
         <button
           type="button"
-          className={cardClass(filter === 'Approved')}
+          className={cn(
+            'bv-surface card-hover p-5 cursor-pointer text-left w-full',
+            filter === 'Approved' && 'ring-1 ring-secondary/30 border-secondary'
+          )}
           onClick={() => setFilter((f) => (f === 'Approved' ? null : 'Approved'))}
         >
           <p className="text-label-sm text-on-surface-variant mb-1">Approved</p>
@@ -71,7 +71,7 @@ export function MyApprovalsPage() {
           <button
             type="button"
             onClick={() => setFilter(null)}
-            className="inline-flex items-center gap-1.5 text-label-md text-on-surface-variant hover:text-on-surface rounded-md px-2 py-1"
+            className="inline-flex items-center gap-1.5 text-label-md text-on-surface-variant hover:text-on-surface rounded-md px-2 py-1 transition-colors"
             aria-label="Clear filter"
             title="Clear filter"
           >
@@ -94,7 +94,7 @@ export function MyApprovalsPage() {
             onClick={() =>
               navigate({ to: '/my-work/approvals/$requestId', params: { requestId: item.id } })
             }
-            className="w-full text-left bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm flex flex-col sm:flex-row sm:items-center gap-4 hover:border-secondary/40 transition-colors"
+            className="w-full text-left bv-surface card-hover p-5 flex flex-col sm:flex-row sm:items-center gap-4"
           >
             <div className="w-11 h-11 rounded-lg bg-surface-container-low flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-primary text-[22px]">
