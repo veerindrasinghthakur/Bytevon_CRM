@@ -75,7 +75,7 @@ export function PayrollHistoryPage() {
     })
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <PageHeader
         title="Payroll History"
         description="Past paid salary records across the organization. Read-only."
@@ -98,7 +98,7 @@ export function PayrollHistoryPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-md focus:ring-1 focus:ring-primary focus:border-primary outline-none"
+            className="w-full pl-9 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-md focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none transition-colors"
             placeholder="Search period, employee, reference..."
             type="text"
           />
@@ -106,7 +106,7 @@ export function PayrollHistoryPage() {
         <p className="text-caption text-on-surface-variant">{rows.length} paid records</p>
       </div>
 
-      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+      <section className="bv-surface overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -124,7 +124,7 @@ export function PayrollHistoryPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {rows.map((r) => (
-                <tr key={r.id} className="bv-row-hover h-[64px]">
+                <tr key={r.id} className="zebra-row h-[64px]">
                   <td className="p-4 pl-6 text-body-md font-medium text-deep-navy">{r.period}</td>
                   <td className="p-4">
                     <div className="flex items-center gap-3">
