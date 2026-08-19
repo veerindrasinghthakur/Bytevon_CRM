@@ -58,7 +58,7 @@ export function AttendanceDashboardPage() {
   }, [query, statusFilter])
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Attendance Dashboard"
         description="Real-time monitoring of your organisation's workforce status."
@@ -76,10 +76,7 @@ export function AttendanceDashboardPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {attendanceKpis.map((k) => (
-          <div
-            key={k.key}
-            className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm"
-          >
+          <div key={k.key} className="bv-surface card-hover p-5">
             <div className="flex justify-between mb-2">
               <span className="text-label-sm text-on-surface-variant uppercase tracking-wider">{k.label}</span>
               <div className="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
@@ -93,7 +90,7 @@ export function AttendanceDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <section className="lg:col-span-2 bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm">
+        <section className="lg:col-span-2 bv-surface p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h2 className="text-title-md font-semibold text-on-background">Weekly attendance</h2>
@@ -127,7 +124,7 @@ export function AttendanceDashboardPage() {
           </div>
         </section>
 
-        <section className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm">
+        <section className="bv-surface p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-title-md font-semibold">Recent check-ins</h2>
             <Link
@@ -156,10 +153,9 @@ export function AttendanceDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <section className="lg:col-span-2 bg-surface-container-lowest border border-outline-variant/30 rounded-xl shadow-sm overflow-hidden">
+        <section className="lg:col-span-2 bv-surface overflow-hidden">
           <div className="p-4 border-b border-outline-variant/30 flex flex-wrap gap-3 items-center justify-between">
-            <h2 className="text-title-md font-semibold">Today&apos;s attendance</h2>
-            {/* Search left · status filter to the RIGHT of search */}
+            <h2 className="text-title-md font-semibold">Today's attendance</h2>
             <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1 justify-end">
               <div className="relative min-w-[160px] flex-1 max-w-xs">
                 <Icon
@@ -169,7 +165,7 @@ export function AttendanceDashboardPage() {
                 <input
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 border border-outline-variant rounded-lg text-body-sm"
+                  className="w-full pl-10 pr-3 py-2 border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
                   placeholder="Search…"
                 />
               </div>
@@ -197,18 +193,10 @@ export function AttendanceDashboardPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-surface-container-low/50 border-b border-outline-variant/30">
-                <th className="px-4 py-3 text-label-sm font-medium text-on-surface-variant uppercase">
-                  Employee
-                </th>
-                <th className="px-4 py-3 text-label-sm font-medium text-on-surface-variant uppercase hidden sm:table-cell">
-                  Department
-                </th>
-                <th className="px-4 py-3 text-label-sm font-medium text-on-surface-variant uppercase">
-                  Check in
-                </th>
-                <th className="px-4 py-3 text-label-sm font-medium text-on-surface-variant uppercase">
-                  Status
-                </th>
+                <th className="px-4 py-3 text-label-sm font-medium text-on-surface-variant uppercase">Employee</th>
+                <th className="px-4 py-3 text-label-sm font-medium text-on-surface-variant uppercase hidden sm:table-cell">Department</th>
+                <th className="px-4 py-3 text-label-sm font-medium text-on-surface-variant uppercase">Check in</th>
+                <th className="px-4 py-3 text-label-sm font-medium text-on-surface-variant uppercase">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant/20">
@@ -222,7 +210,7 @@ export function AttendanceDashboardPage() {
                 rows.map((r) => (
                   <tr
                     key={r.id}
-                    className="hover:bg-surface-container-low/50 cursor-pointer"
+                    className="zebra-row cursor-pointer"
                     onClick={() =>
                       navigate({
                         to: '/workforce/attendance/$attendanceId',
@@ -238,17 +226,10 @@ export function AttendanceDashboardPage() {
                         <span className="font-medium text-body-sm">{r.name}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-body-sm text-on-surface-variant hidden sm:table-cell">
-                      {r.department}
-                    </td>
+                    <td className="px-4 py-3 text-body-sm text-on-surface-variant hidden sm:table-cell">{r.department}</td>
                     <td className="px-4 py-3 text-body-sm text-on-surface-variant">{r.checkIn}</td>
                     <td className="px-4 py-3">
-                      <span
-                        className={cn(
-                          'rounded-full px-2 py-0.5 text-[10px] font-bold',
-                          statusClass[r.status],
-                        )}
-                      >
+                      <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-bold', statusClass[r.status])}>
                         {r.status.replace('_', ' ')}
                       </span>
                     </td>
@@ -259,7 +240,7 @@ export function AttendanceDashboardPage() {
           </table>
         </section>
 
-        <section className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-5 shadow-sm">
+        <section className="bv-surface p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-title-md font-semibold">Corrections</h2>
             <span className="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-[10px] font-bold">
@@ -276,14 +257,10 @@ export function AttendanceDashboardPage() {
                   <span className="text-body-sm font-medium">{c.name}</span>
                   <span className="text-caption text-on-surface-variant">{c.ago}</span>
                 </div>
-                <p className="text-caption text-on-surface-variant mt-1">&quot;{c.note}&quot;</p>
+                <p className="text-caption text-on-surface-variant mt-1">"{c.note}"</p>
                 <div className="mt-2 flex gap-2">
-                  <Button variant="primary" className="!py-1 !px-2 !text-[11px]">
-                    Approve
-                  </Button>
-                  <Button variant="outline" className="!py-1 !px-2 !text-[11px]">
-                    Reject
-                  </Button>
+                  <Button variant="primary" className="!py-1 !px-2 !text-[11px]">Approve</Button>
+                  <Button variant="outline" className="!py-1 !px-2 !text-[11px]">Reject</Button>
                 </div>
               </li>
             ))}
