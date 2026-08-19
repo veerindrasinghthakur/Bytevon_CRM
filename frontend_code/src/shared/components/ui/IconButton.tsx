@@ -13,7 +13,7 @@ const sizeClasses = {
   lg: 'w-11 h-11',
 }
 
-/** Stitch icon control: soft hover bg + scale on press */
+/** Stitch icon control: soft hover bg + scale on press (HTML p-2 hover:bg-surface-container rounded-full) */
 export function IconButton({
   label,
   children,
@@ -31,10 +31,10 @@ export function IconButton({
       className={cn(
         'inline-flex items-center justify-center rounded-full',
         'text-on-surface-variant cursor-pointer',
-        'transition-interactive',
-        'hover:text-primary hover:bg-surface-variant/30',
+        'transition-colors duration-200 ease-out',
+        'hover:text-secondary hover:bg-surface-container',
         'active:scale-95',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40 focus-visible:ring-offset-2',
         'disabled:opacity-50 disabled:pointer-events-none',
         sizeClasses[size],
         className,
