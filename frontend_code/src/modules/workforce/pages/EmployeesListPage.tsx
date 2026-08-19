@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { listEmployments, type EmploymentListItem } from '../api/employment'
+import { listDepartments } from '../api/departments'
 import { cn } from '@/shared/lib/cn'
 
 const stateStyles: Record<string, string> = {
@@ -26,69 +27,95 @@ function Icon({ name, className }: { name: string; className?: string }) {
 export function EmployeesListPage() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
+  const [deptFilter, setDeptFilter] = useState('all')
+  const [stateFilter, setStateFilter] = useState('all')
+  const [typeFilter, setTypeFilter] = useState('all')
   const [items, setItems] = useState<EmploymentListItem[]>([])
+  const [departments, setDepartments] = useState<{ id: number; name: string }[]>([])
   const [metrics, setMetrics] = useState({ total: 0, active: 0, archived: 0 })
   const [loading, setLoading] = useState(true)
 
-  const load = async (q?: string) => {
-    setLoading(true)
-    const res = await listEmployments({ search: q })
-    setItems(res.items)
-    setMetrics(res.metrics)
-    setLoading(false)
-  }
-
   useEffect(() => {
-    void load()
+    let cancelled = false
+    ;(async () => {
+      setLoading(true)
+      const [res, depts] = await Promise.all([
+        listEmployments({}),
+        listDepartments({}),
+      ])
+      if (cancelled) return
+      setItems(res.items)
+      setMetrics(res.metrics)
+      setDepartments(depts.items.map((d) => ({ id: d.id, name: d.name })))
+      setLoading(false)
+    })()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim()
-    if (!q) return items
-    return items.filter(
-      (e) =>
-        e.fullName.toLowerCase().includes(q) ||
-        e.employee_code.toLowerCase().includes(q) ||
-        e.email.toLowerCase().includes(q) ||
-        e.departmentName.toLowerCase().includes(q),
-    )
-  }, [items, search])
+    return items.filter((e) => {
+      if (q) {
+        const match =
+          e.fullName.toLowerCase().includes(q) ||
+          e.employee_code.toLowerCase().includes(q) ||
+          e.email.toLowerCase().includes(q) ||
+          e.departmentName.toLowerCase().includes(q) ||
+          e.positionName.toLowerCase().includes(q)
+        if (!match) return false
+      }
+      if (deptFilter !== 'all' && e.departmentName !== deptFilter) return false
+      if (stateFilter !== 'all' && e.current_state !== stateFilter) return false
+      if (typeFilter !== 'all' && e.employment_type !== typeFilter) return false
+      return true
+    })
+  }, [items, search, deptFilter, stateFilter, typeFilter])
+
+  const states = useMemo(
+    () => Array.from(new Set(items.map((e) => e.current_state))).sort(),
+    [items],
+  )
+  const types = useMemo(
+    () => Array.from(new Set(items.map((e) => e.employment_type))).sort(),
+    [items],
+  )
 
   return (
     <div className="space-y-6 relative">
       <PageHeader
         title="Employee Management"
-        description="Schema-backed workforce directory (persons + employments from mock DB)."
+        description="Manage and organize all human capital records within the organization."
         actions={
-          <div className="flex items-center gap-2 flex-wrap">
-            <Button
-              variant="primary"
-              leftIcon={<Icon name="add" />}
-              onClick={() => navigate({ to: '/workforce/employees/new' })}
-            >
-              Add Employee
-            </Button>
-          </div>
+          <Button
+            variant="primary"
+            leftIcon={<Icon name="add" />}
+            onClick={() => navigate({ to: '/workforce/employees/new' })}
+          >
+            Add Employee
+          </Button>
         }
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-xl ml-auto">
-        <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20">
+        <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 shadow-sm">
           <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Total</p>
           <p className="text-title-lg font-bold text-on-background">{metrics.total}</p>
         </div>
-        <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20">
+        <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 shadow-sm">
           <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Active</p>
-          <p className="text-title-lg font-bold text-on-background">{metrics.active}</p>
+          <p className="text-title-lg font-bold text-secondary">{metrics.active}</p>
         </div>
-        <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20">
+        <div className="bg-surface-container-low p-4 rounded-xl border border-outline-variant/20 shadow-sm">
           <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Archived</p>
-          <p className="text-title-lg font-bold text-on-background">{metrics.archived}</p>
+          <p className="text-title-lg font-bold text-on-surface-variant">{metrics.archived}</p>
         </div>
       </div>
 
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-4">
-        <div className="relative max-w-md">
+      {/* Filter bar — matches Stitch employee management */}
+      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-4 flex flex-wrap items-center gap-3 shadow-sm">
+        <div className="relative flex-1 min-w-[220px]">
           <Icon
             name="person_search"
             className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg"
@@ -96,22 +123,98 @@ export function EmployeesListPage() {
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary"
+            className="w-full pl-10 pr-4 py-2.5 border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary transition-all"
             placeholder="Search by Name, Code, Email, or Department..."
           />
         </div>
+        <select
+          value={deptFilter}
+          onChange={(e) => setDeptFilter(e.target.value)}
+          className="rounded-lg border border-outline-variant bg-surface px-3 py-2.5 text-body-sm min-w-[140px] focus:ring-2 focus:ring-secondary/20"
+        >
+          <option value="all">All Departments</option>
+          {departments.map((d) => (
+            <option key={d.id} value={d.name}>
+              {d.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={stateFilter}
+          onChange={(e) => setStateFilter(e.target.value)}
+          className="rounded-lg border border-outline-variant bg-surface px-3 py-2.5 text-body-sm min-w-[140px] focus:ring-2 focus:ring-secondary/20"
+        >
+          <option value="all">All Statuses</option>
+          {states.map((s) => (
+            <option key={s} value={s}>
+              {s.replace(/_/g, ' ')}
+            </option>
+          ))}
+        </select>
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="rounded-lg border border-outline-variant bg-surface px-3 py-2.5 text-body-sm min-w-[140px] focus:ring-2 focus:ring-secondary/20"
+        >
+          <option value="all">All Types</option>
+          {types.map((t) => (
+            <option key={t} value={t}>
+              {t.replace(/_/g, ' ')}
+            </option>
+          ))}
+        </select>
+        {(search || deptFilter !== 'all' || stateFilter !== 'all' || typeFilter !== 'all') && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              setSearch('')
+              setDeptFilter('all')
+              setStateFilter('all')
+              setTypeFilter('all')
+            }}
+          >
+            Clear
+          </Button>
+        )}
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
         {loading ? (
-          <div className="p-12 text-center text-on-surface-variant">Loading employees…</div>
+          <div className="p-6 space-y-3">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 animate-pulse">
+                <div className="w-10 h-10 rounded-full bg-surface-container-high" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-40 bg-surface-container-high rounded" />
+                  <div className="h-3 w-24 bg-surface-container rounded" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : filtered.length === 0 ? (
           <div className="p-12 text-center space-y-3">
             <Icon name="person_search" className="text-4xl text-on-surface-variant" />
             <p className="text-title-lg font-semibold">No employees found</p>
-            <Button variant="primary" onClick={() => navigate({ to: '/workforce/employees/new' })}>
-              Add Employee
-            </Button>
+            <p className="text-body-sm text-on-surface-variant">
+              Try adjusting filters or add a new team member.
+            </p>
+            <div className="flex justify-center gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearch('')
+                  setDeptFilter('all')
+                  setStateFilter('all')
+                  setTypeFilter('all')
+                }}
+              >
+                Clear Filters
+              </Button>
+              <Button variant="primary" onClick={() => navigate({ to: '/workforce/employees/new' })}>
+                Add Employee
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -187,10 +290,7 @@ export function EmployeesListPage() {
                         <span className="text-label-sm text-amber-700 font-medium">No login</span>
                       )}
                     </td>
-                    <td
-                      className="px-4 py-4 text-right"
-                      onClick={(e) => e.stopPropagation()}
-                    >
+                    <td className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                       <button
                         type="button"
                         className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant"
@@ -211,7 +311,7 @@ export function EmployeesListPage() {
           </div>
         )}
         <div className="px-6 py-4 border-t border-outline-variant text-label-sm text-on-surface-variant">
-          Showing {filtered.length} of {items.length} employees (mock DB)
+          Showing {filtered.length} of {items.length} employees
         </div>
       </div>
     </div>

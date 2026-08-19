@@ -4,6 +4,7 @@
 
 import { delay, getDb, nextId } from '@/shared/mock/db'
 import type { DepartmentRow } from '@/shared/schema'
+import { WorkMode } from '@/shared/schema'
 
 export interface DepartmentListItem {
   id: number
@@ -114,6 +115,67 @@ export async function listDepartmentEmployees(departmentId: number): Promise<Dep
   })
 }
 
+/** Employees not currently assigned to this department (for Add existing). */
+export async function listEmployeesNotInDepartment(departmentId: number) {
+  await delay(150)
+  const db = getDb()
+  const inDept = new Set(
+    db.employment_assignments
+      .filter((a) => a.department_id === departmentId && a.effective_to == null)
+      .map((a) => a.employment_id),
+  )
+  return db.employments
+    .filter((e) => !inDept.has(e.id))
+    .map((e) => {
+      const person = db.persons.find((p) => p.id === e.person_id)
+      const name = person ? `${person.first_name} ${person.last_name}` : e.employee_code
+      const assignment = db.employment_assignments.find(
+        (a) => a.employment_id === e.id && a.effective_to == null,
+      )
+      const dept = assignment
+        ? db.schema_departments.find((d) => d.id === assignment.department_id)
+        : null
+      return {
+        value: String(e.id),
+        label: `${name} (${e.employee_code})`,
+        meta: dept?.name ?? e.current_state,
+      }
+    })
+}
+
+/** Assign existing employee into department (closes prior assignment version). */
+export async function assignEmployeeToDepartment(
+  employmentId: number,
+  departmentId: number,
+) {
+  await delay(350)
+  const db = getDb()
+  const today = new Date().toISOString().slice(0, 10)
+  const now = new Date().toISOString()
+  const current = db.employment_assignments.find(
+    (a) => a.employment_id === employmentId && a.effective_to == null,
+  )
+  if (current) {
+    if (current.department_id === departmentId) return { ok: true as const }
+    current.effective_to = today
+  }
+  db.employment_assignments.push({
+    id: nextId(db.employment_assignments),
+    employment_id: employmentId,
+    department_id: departmentId,
+    position_id: current?.position_id ?? 5,
+    location_id: current?.location_id ?? 1,
+    shift_id: current?.shift_id ?? 1,
+    work_mode: current?.work_mode ?? WorkMode.OFFICE,
+    effective_from: today,
+    effective_to: null,
+    change_reason: 'Assigned to department',
+    created_at: now,
+    changed_by: 1,
+  })
+  return { ok: true as const }
+}
+
 export async function createDepartment(input: {
   name: string
   headEmploymentId?: number | null
@@ -157,6 +219,36 @@ export async function listEmploymentOptionsForPicker() {
       value: String(e.id),
       label: `${name} (${e.employee_code})`,
       meta: e.current_state,
+    }
+  })
+}
+
+/** Employees on a given shift (from active assignments). */
+export async function listEmployeesOnShift(shiftId: number) {
+  await delay()
+  const db = getDb()
+  const empIds = db.employment_assignments
+    .filter((a) => a.shift_id === shiftId && a.effective_to == null)
+    .map((a) => a.employment_id)
+  return empIds.map((eid) => {
+    const emp = db.employments.find((e) => e.id === eid)!
+    const person = db.persons.find((p) => p.id === emp.person_id)
+    const assignment = db.employment_assignments.find(
+      (a) => a.employment_id === eid && a.effective_to == null,
+    )
+    const dept = assignment
+      ? db.schema_departments.find((d) => d.id === assignment.department_id)
+      : null
+    const position = assignment
+      ? db.positions.find((p) => p.id === assignment.position_id)
+      : null
+    return {
+      employmentId: eid,
+      employeeCode: emp.employee_code,
+      name: person ? `${person.first_name} ${person.last_name}` : emp.employee_code,
+      departmentName: dept?.name ?? '—',
+      positionName: position?.name ?? '—',
+      state: emp.current_state,
     }
   })
 }
