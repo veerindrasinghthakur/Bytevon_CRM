@@ -31,8 +31,8 @@ export function MyWorkOverviewPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="space-y-8 max-w-[1440px]">
-      <section className="relative overflow-hidden bg-deep-navy rounded-xl p-8 text-on-primary shadow-sm">
+    <div className="space-y-8 max-w-[1440px] animate-fade-in">
+      <section className="relative overflow-hidden bg-deep-navy rounded-xl p-8 text-on-primary executive-shadow">
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <h2 className="text-headline-md md:text-headline-lg font-bold tracking-tight mb-3">
@@ -97,7 +97,7 @@ export function MyWorkOverviewPage() {
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {myWorkMetrics.map((m) => (
-          <div key={m.id} className="bv-surface p-5">
+          <div key={m.id} className="bv-surface card-hover p-5">
             <div className="flex items-center justify-between mb-3">
               <span className="text-label-sm font-medium text-on-surface-variant uppercase tracking-wider">
                 {m.label}
@@ -220,7 +220,7 @@ export function MyWorkOverviewPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {myTasks.slice(0, 4).map((task: MyTask) => (
-                <tr key={task.id} className="bv-row-hover cursor-pointer">
+                <tr key={task.id} className="zebra-row cursor-pointer">
                   <td className="px-6 py-4 text-label-md font-semibold text-on-background">{task.name}</td>
                   <td className="px-6 py-4">
                     <span
@@ -259,7 +259,7 @@ export function MyWorkOverviewPage() {
                 className="flex gap-4 p-3 bg-surface-container-low rounded-lg relative overflow-hidden cursor-pointer transition-colors duration-200 hover:bg-surface-container"
               >
                 <div className="w-1 bg-secondary absolute left-0 top-0 h-full" />
-                <div className="bg-surface-container-lowest p-2 h-fit rounded-lg shadow-sm">
+                <div className="bg-surface-container-lowest p-2 h-fit rounded-lg executive-shadow">
                   <span className="material-symbols-outlined text-secondary text-[20px]" aria-hidden="true">
                     {n.icon}
                   </span>
@@ -285,7 +285,7 @@ export function MyWorkOverviewPage() {
             {upcomingEvents.map((e) => (
               <div
                 key={e.id}
-                className="flex items-center gap-4 p-3 border border-outline-variant rounded-lg hover:border-secondary transition-all duration-200 cursor-pointer"
+                className="flex items-center gap-4 p-3 border border-outline-variant rounded-lg hover:border-secondary card-hover cursor-pointer"
               >
                 <div className="flex flex-col items-center justify-center bg-surface-container p-2 rounded-lg min-w-[56px]">
                   <span className="text-label-sm font-bold text-on-surface-variant">{e.month}</span>
