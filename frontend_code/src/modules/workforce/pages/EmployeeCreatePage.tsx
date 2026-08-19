@@ -50,7 +50,7 @@ function Field({
 }
 
 const inputClass =
-  'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-1 focus:ring-secondary'
+  'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors'
 
 type Step = 'profile' | 'auth' | 'done'
 
@@ -88,7 +88,6 @@ export function EmployeeCreatePage() {
   const [accountNumber, setAccountNumber] = useState('')
   const [ifsc, setIfsc] = useState('')
 
-  // Auth step
   const [workEmail, setWorkEmail] = useState('')
   const [tempPassword, setTempPassword] = useState('')
   const [roleId, setRoleId] = useState<number | ''>('')
@@ -197,7 +196,7 @@ export function EmployeeCreatePage() {
 
   if (step === 'done') {
     return (
-      <div className="space-y-6 max-w-lg mx-auto py-12 text-center">
+      <div className="space-y-6 max-w-lg mx-auto py-12 text-center animate-fade-in">
         <div className="w-16 h-16 mx-auto rounded-full bg-secondary/15 text-secondary flex items-center justify-center">
           <Icon name="check_circle" className="text-4xl" />
         </div>
@@ -230,7 +229,7 @@ export function EmployeeCreatePage() {
 
   if (step === 'auth') {
     return (
-      <div className="space-y-6 pb-28 max-w-2xl">
+      <div className="space-y-6 pb-28 max-w-2xl animate-fade-in">
         <PageHeader
           title="Create login account"
           description={`Optional next step for ${createdName}. Skip if credentials will be provisioned later from Admin → Users."`}
@@ -239,7 +238,7 @@ export function EmployeeCreatePage() {
         {error && (
           <div className="rounded-lg border border-error/30 bg-error/5 px-4 py-3 text-body-sm text-error">{error}</div>
         )}
-        <section className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm space-y-4">
+        <section className="bv-surface p-6 space-y-4">
           <div className="flex items-center gap-2 text-secondary mb-2">
             <Icon name="key" />
             <h3 className="text-title-lg font-bold text-on-background">Authentication</h3>
@@ -275,13 +274,8 @@ export function EmployeeCreatePage() {
             </select>
           </Field>
         </section>
-        <div className="fixed bottom-0 right-0 left-0 md:left-[var(--shell-left,0)] z-30 bg-surface border-t border-outline-variant px-6 py-4 flex justify-between items-center shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
-          <Button
-            variant="ghost"
-            onClick={() => setStep('done')}
-          >
-            Skip for now
-          </Button>
+        <div className="fixed bottom-0 right-0 left-0 md:left-[var(--shell-left,0)] z-30 bg-surface-container-lowest/95 backdrop-blur-md border-t border-outline-variant px-6 py-4 flex justify-between items-center executive-shadow">
+          <Button variant="ghost" onClick={() => setStep('done')}>Skip for now</Button>
           <div className="flex gap-3">
             <Button
               variant="outline"
@@ -304,7 +298,7 @@ export function EmployeeCreatePage() {
   }
 
   return (
-    <div className="space-y-6 pb-28 max-w-5xl">
+    <div className="space-y-6 pb-28 max-w-5xl animate-fade-in">
       <PageHeader
         title="Add New Employee"
         description="Create person + employment from organization masters. Login can be added on the next step if you have permission."
@@ -315,7 +309,7 @@ export function EmployeeCreatePage() {
         <div className="rounded-lg border border-error/30 bg-error/5 px-4 py-3 text-body-sm text-error">{error}</div>
       )}
 
-      <section className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm space-y-4">
+      <section className="bv-surface p-6 space-y-4">
         <div className="flex items-center gap-2 text-secondary mb-2">
           <Icon name="person" />
           <h3 className="text-title-lg font-bold text-on-background">Personal Information</h3>
@@ -331,12 +325,7 @@ export function EmployeeCreatePage() {
             <input className={inputClass} type="date" value={dob} onChange={(e) => setDob(e.target.value)} />
           </Field>
           <Field label="Personal Email">
-            <input
-              className={inputClass}
-              type="email"
-              value={personalEmail}
-              onChange={(e) => setPersonalEmail(e.target.value)}
-            />
+            <input className={inputClass} type="email" value={personalEmail} onChange={(e) => setPersonalEmail(e.target.value)} />
           </Field>
           <Field label="Phone">
             <input className={inputClass} value={phone} onChange={(e) => setPhone(e.target.value)} />
@@ -347,89 +336,54 @@ export function EmployeeCreatePage() {
         </div>
       </section>
 
-      <section className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm space-y-4">
+      <section className="bv-surface p-6 space-y-4">
         <div className="flex items-center gap-2 text-secondary mb-2">
           <Icon name="work" />
           <h3 className="text-title-lg font-bold text-on-background">Employment</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field label="Joining Date" required>
-            <input
-              className={inputClass}
-              type="date"
-              value={joiningDate}
-              onChange={(e) => setJoiningDate(e.target.value)}
-            />
+            <input className={inputClass} type="date" value={joiningDate} onChange={(e) => setJoiningDate(e.target.value)} />
           </Field>
           <Field label="Employment Type" required>
-            <select
-              className={inputClass}
-              value={employmentType}
-              onChange={(e) => setEmploymentType(e.target.value)}
-            >
+            <select className={inputClass} value={employmentType} onChange={(e) => setEmploymentType(e.target.value)}>
               {Object.values(EmploymentType).map((t) => (
-                <option key={t} value={t}>
-                  {t.replace(/_/g, ' ')}
-                </option>
+                <option key={t} value={t}>{t.replace(/_/g, ' ')}</option>
               ))}
             </select>
           </Field>
           <Field label="Department" required>
-            <select
-              className={inputClass}
-              value={departmentId}
-              onChange={(e) => setDepartmentId(e.target.value ? Number(e.target.value) : '')}
-            >
+            <select className={inputClass} value={departmentId} onChange={(e) => setDepartmentId(e.target.value ? Number(e.target.value) : '')}>
               {(masters?.departments ?? []).map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
+                <option key={d.id} value={d.id}>{d.name}</option>
               ))}
             </select>
           </Field>
           <Field label="Position" required>
-            <select
-              className={inputClass}
-              value={positionId}
-              onChange={(e) => setPositionId(e.target.value ? Number(e.target.value) : '')}
-            >
+            <select className={inputClass} value={positionId} onChange={(e) => setPositionId(e.target.value ? Number(e.target.value) : '')}>
               {(masters?.positions ?? []).map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
+                <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
           </Field>
           <Field label="Location" required>
-            <select
-              className={inputClass}
-              value={locationId}
-              onChange={(e) => setLocationId(e.target.value ? Number(e.target.value) : '')}
-            >
+            <select className={inputClass} value={locationId} onChange={(e) => setLocationId(e.target.value ? Number(e.target.value) : '')}>
               {(masters?.locations ?? []).map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.name}
-                </option>
+                <option key={l.id} value={l.id}>{l.name}</option>
               ))}
             </select>
           </Field>
           <Field label="Shift" required>
-            <select
-              className={inputClass}
-              value={shiftId}
-              onChange={(e) => setShiftId(e.target.value ? Number(e.target.value) : '')}
-            >
+            <select className={inputClass} value={shiftId} onChange={(e) => setShiftId(e.target.value ? Number(e.target.value) : '')}>
               {(masters?.shifts ?? []).map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
+                <option key={s.id} value={s.id}>{s.name}</option>
               ))}
             </select>
           </Field>
         </div>
       </section>
 
-      <section className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm space-y-4">
+      <section className="bv-surface p-6 space-y-4">
         <div className="flex items-center gap-2 text-secondary mb-2">
           <Icon name="payments" />
           <h3 className="text-title-lg font-bold text-on-background">Bank (optional)</h3>
@@ -439,11 +393,7 @@ export function EmployeeCreatePage() {
             <input className={inputClass} value={bankName} onChange={(e) => setBankName(e.target.value)} />
           </Field>
           <Field label="Account Number">
-            <input
-              className={inputClass}
-              value={accountNumber}
-              onChange={(e) => setAccountNumber(e.target.value)}
-            />
+            <input className={inputClass} value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} />
           </Field>
           <Field label="IFSC">
             <input className={inputClass} value={ifsc} onChange={(e) => setIfsc(e.target.value)} />
@@ -451,7 +401,7 @@ export function EmployeeCreatePage() {
         </div>
       </section>
 
-      <div className="fixed bottom-0 right-0 left-0 md:left-[var(--shell-left,0)] z-30 bg-surface border-t border-outline-variant px-6 py-4 flex justify-between items-center shadow-[0_-4px_10px_rgba(0,0,0,0.05)]">
+      <div className="fixed bottom-0 right-0 left-0 md:left-[var(--shell-left,0)] z-30 bg-surface-container-lowest/95 backdrop-blur-md border-t border-outline-variant px-6 py-4 flex justify-between items-center executive-shadow">
         <Button variant="ghost" onClick={() => navigate({ to: '/workforce/employees' })}>
           Cancel
         </Button>
