@@ -47,7 +47,7 @@ export function EmployeePayrollHistoryPage() {
   const emp = payrollEmployees.find((e) => e.id === employeeId) ?? payrollEmployees[0]
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       <header className="flex flex-col gap-3">
         <div className="flex items-center gap-2 text-on-surface-variant text-label-md flex-wrap">
           <button type="button" className="hover:text-secondary transition-colors" onClick={() => navigate({ to: '/payroll' })}>
@@ -86,7 +86,7 @@ export function EmployeePayrollHistoryPage() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-4 bg-surface-container-lowest p-4 rounded-xl border border-outline-variant shadow-sm">
+          <div className="flex items-center gap-4 bv-surface p-4">
             <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center font-bold text-primary border border-outline-variant">
               {emp.initials}
             </div>
@@ -106,7 +106,7 @@ export function EmployeePayrollHistoryPage() {
         </div>
       </header>
 
-      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm flex flex-col">
+      <section className="bv-surface flex flex-col">
         <div className="p-4 border-b border-outline-variant flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-label-md text-on-surface-variant">
             Showing paid payrolls only — no pending or in-progress entries.
@@ -133,7 +133,7 @@ export function EmployeePayrollHistoryPage() {
             </thead>
             <tbody className="text-body-sm divide-y divide-outline-variant">
               {historyRows.map((r) => (
-                <tr key={r.month} className="bv-row-hover">
+                <tr key={r.month} className="zebra-row">
                   <td className="p-4 text-deep-navy font-medium">{r.month}</td>
                   <td className="p-4 text-on-surface-variant">{r.gross}</td>
                   <td className="p-4 text-success-emerald font-medium">{r.earnings}</td>
