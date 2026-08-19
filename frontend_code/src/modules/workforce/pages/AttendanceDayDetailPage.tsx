@@ -32,7 +32,7 @@ export function AttendanceDayDetailPage() {
   const date = search.date ?? new Date().toISOString().slice(0, 10)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <BackButton to="/workforce/attendance" label="Back to roster" />
       <PageHeader
         title="Attendance day detail"
@@ -40,7 +40,7 @@ export function AttendanceDayDetailPage() {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm card-hover">
+        <div className="bv-surface card-hover p-5">
           <h3 className="text-title-md font-semibold mb-4">Punches</h3>
           <ul className="space-y-3">
             {MOCK_PUNCHES.map((p) => (
@@ -66,7 +66,7 @@ export function AttendanceDayDetailPage() {
             ))}
           </ul>
         </div>
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm card-hover">
+        <div className="bv-surface card-hover p-5">
           <h3 className="text-title-md font-semibold mb-4">Breaks</h3>
           <ul className="space-y-3">
             {MOCK_BREAKS.map((b) => (
