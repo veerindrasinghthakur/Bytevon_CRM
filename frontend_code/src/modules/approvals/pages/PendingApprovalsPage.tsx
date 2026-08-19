@@ -15,12 +15,12 @@ export function PendingApprovalsPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-2 mb-1">
         <button
           type="button"
           onClick={() => navigate({ to: '/approvals' })}
-          className="flex items-center gap-2 text-secondary hover:text-primary text-label-md"
+          className="flex items-center gap-2 text-secondary hover:text-primary text-label-md transition-colors"
         >
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
           Back to Approval Center
@@ -51,7 +51,7 @@ export function PendingApprovalsPage() {
       />
 
       <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant shadow-sm">
+        <div className="bv-surface card-hover p-4">
           <div className="flex justify-between items-start mb-2">
             <span className="p-2 bg-surface-container text-secondary rounded-lg material-symbols-outlined">
               pending_actions
@@ -61,7 +61,7 @@ export function PendingApprovalsPage() {
           <p className="text-label-md text-on-surface-variant">Pending</p>
           <h3 className="text-headline-lg font-semibold text-on-background mt-1">24</h3>
         </div>
-        <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant shadow-sm">
+        <div className="bv-surface card-hover p-4">
           <div className="flex justify-between items-start mb-2">
             <span className="p-2 bg-emerald-50 text-emerald-700 rounded-lg material-symbols-outlined">
               check_circle
@@ -71,7 +71,7 @@ export function PendingApprovalsPage() {
           <p className="text-label-md text-on-surface-variant">Approved Today</p>
           <h3 className="text-headline-lg font-semibold text-on-background mt-1">156</h3>
         </div>
-        <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant shadow-sm">
+        <div className="bv-surface card-hover p-4">
           <div className="flex justify-between items-start mb-2">
             <span className="p-2 bg-red-50 text-error rounded-lg material-symbols-outlined">cancel</span>
             <span className="text-label-sm text-on-surface-variant">Today</span>
@@ -79,7 +79,7 @@ export function PendingApprovalsPage() {
           <p className="text-label-md text-on-surface-variant">Rejected Today</p>
           <h3 className="text-headline-lg font-semibold text-on-background mt-1">4</h3>
         </div>
-        <div className="bg-secondary p-4 rounded-xl border border-outline-variant shadow-sm text-white">
+        <div className="bg-secondary p-4 rounded-xl border border-outline-variant executive-shadow text-white card-hover">
           <div className="flex justify-between items-start mb-2">
             <span className="p-2 bg-white/20 rounded-lg material-symbols-outlined">priority_high</span>
           </div>
@@ -88,7 +88,7 @@ export function PendingApprovalsPage() {
         </div>
       </section>
 
-      <section className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+      <section className="bv-surface overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead className="bg-surface-container-low border-b border-outline-variant">
@@ -104,7 +104,7 @@ export function PendingApprovalsPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {pendingApprovals.map((row) => (
-                <tr key={row.id} className="hover:bg-surface-container-low">
+                <tr key={row.id} className="zebra-row">
                   <td className="px-6 py-4 text-body-sm font-medium">#{row.id}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
@@ -140,13 +140,13 @@ export function PendingApprovalsPage() {
                   </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-1">
-                      <button type="button" className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg" title="Approve">
+                      <button type="button" className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Approve">
                         <span className="material-symbols-outlined">check</span>
                       </button>
-                      <button type="button" className="p-2 text-error hover:bg-red-50 rounded-lg" title="Reject">
+                      <button type="button" className="p-2 text-error hover:bg-red-50 rounded-lg transition-colors" title="Reject">
                         <span className="material-symbols-outlined">close</span>
                       </button>
-                      <button type="button" className="p-2 text-on-surface-variant hover:bg-surface-container rounded-lg" title="View">
+                      <button type="button" className="p-2 text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors" title="View">
                         <span className="material-symbols-outlined">visibility</span>
                       </button>
                     </div>
@@ -165,7 +165,7 @@ export function PendingApprovalsPage() {
               <span className="material-symbols-outlined">chevron_left</span>
             </button>
             <span className="text-label-md px-2">1</span>
-            <button type="button" className="p-1 border border-outline-variant rounded hover:bg-white">
+            <button type="button" className="p-1 border border-outline-variant rounded hover:bg-white transition-colors">
               <span className="material-symbols-outlined">chevron_right</span>
             </button>
           </div>
