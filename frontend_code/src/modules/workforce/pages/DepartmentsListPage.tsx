@@ -43,7 +43,7 @@ export function DepartmentsListPage() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Department Management"
         description={`Total Departments: ${items.length} (mock DB)`}
@@ -60,20 +60,20 @@ export function DepartmentsListPage() {
         }
       />
 
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 flex flex-wrap gap-4 items-center shadow-sm">
+      <div className="bv-surface p-4 flex flex-wrap gap-4 items-center">
         <div className="relative flex-1 min-w-[200px]">
           <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-outline text-lg" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-outline-variant rounded-lg text-body-sm outline-none focus:border-secondary"
+            className="w-full pl-10 pr-4 py-2.5 border border-outline-variant rounded-lg text-body-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors"
             placeholder="Search departments..."
           />
         </div>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="border border-outline-variant rounded-lg px-3 py-2 text-body-sm"
+          className="border border-outline-variant rounded-lg px-3 py-2 text-body-sm transition-colors"
         >
           <option value="All">All Statuses</option>
           <option value="Active">Active</option>
@@ -81,7 +81,7 @@ export function DepartmentsListPage() {
         </select>
       </div>
 
-      <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+      <div className="bv-surface overflow-hidden">
         {loading ? (
           <div className="p-12 text-center text-on-surface-variant">Loading departments…</div>
         ) : (
@@ -89,31 +89,19 @@ export function DepartmentsListPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-surface-container-low border-b border-outline-variant">
-                  <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest">
-                    Department Name
-                  </th>
-                  <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest">
-                    Code
-                  </th>
-                  <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest">
-                    Department Head
-                  </th>
-                  <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest text-center">
-                    Staff
-                  </th>
-                  <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest text-right">
-                    Actions
-                  </th>
+                  <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest">Department Name</th>
+                  <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest">Code</th>
+                  <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest">Department Head</th>
+                  <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest text-center">Staff</th>
+                  <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest">Status</th>
+                  <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
                 {filtered.map((d) => (
                   <tr
                     key={d.id}
-                    className="bv-row-hover cursor-pointer group"
+                    className="zebra-row cursor-pointer group"
                     onClick={() =>
                       navigate({
                         to: '/workforce/departments/$departmentId',
@@ -156,7 +144,7 @@ export function DepartmentsListPage() {
                     <td className="px-6 py-5 text-right" onClick={(e) => e.stopPropagation()}>
                       <button
                         type="button"
-                        className="p-2 hover:bg-secondary/10 rounded-lg text-on-surface-variant"
+                        className="p-2 hover:bg-secondary/10 rounded-lg text-on-surface-variant transition-colors"
                         onClick={() =>
                           navigate({
                             to: '/workforce/departments/$departmentId',
