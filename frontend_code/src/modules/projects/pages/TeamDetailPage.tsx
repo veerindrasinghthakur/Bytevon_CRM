@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useParams, useSearch, useRouterState } from '@tanstack/react-router'
+import { Link, useParams, useSearch, useRouterState, useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
 import { useTeam, useUpdateTeam } from '../hooks/use-teams'
+import { useProjects } from '../hooks/use-projects'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import type { TeamStatus } from '../api/teams'
 import { listEmployments } from '@/modules/workforce/api/employment'
@@ -19,6 +20,7 @@ interface TeamMember {
 }
 
 export function TeamDetailPage() {
+  const navigate = useNavigate()
   const params = useParams({ strict: false }) as { teamId?: string }
   const search = useSearch({ strict: false }) as { edit?: string }
   const pathname = useRouterState({ select: (s) => s.location.pathname })
@@ -27,6 +29,7 @@ export function TeamDetailPage() {
   const { data: team, isLoading, isError, refetch } = useTeam(
     Number.isFinite(id) ? id : undefined,
   )
+  const { data: projectsData } = useProjects({})
   const updateMutation = useUpdateTeam()
 
   const [editing, setEditing] = useState(search.edit === '1')
@@ -43,6 +46,8 @@ export function TeamDetailPage() {
   const [empOptions, setEmpOptions] = useState<{ value: string; label: string; meta?: string }[]>([])
   const [picked, setPicked] = useState('')
 
+  const recentProjects = useMemo(() => (projectsData?.items ?? []).slice(0, 5), [projectsData])
+
   useEffect(() => {
     if (team) {
       setDraft({
@@ -54,7 +59,6 @@ export function TeamDetailPage() {
         status: team.status,
       })
       setEditing(search.edit === '1')
-      // Seed members from head + directory sample for demo realism
       void listEmployments({}).then((res) => {
         const opts = res.items.map((e) => ({
           value: String(e.id),
@@ -157,7 +161,7 @@ export function TeamDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title={editing ? draft.name || team.name : team.name}
         description={team.department ?? 'Team'}
@@ -204,33 +208,28 @@ export function TeamDetailPage() {
         }
       />
 
-      {/* Stats row — aligned with team_detail HTML */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Members" value={String(members.length || team.memberCount)} icon="group" />
-        <StatCard label="Projects" value={String(team.projectCount)} icon="account_tree" />
-        <StatCard label="Status" value={team.status} icon="check_circle" />
+        <StatCard label="Total Members" value={String(members.length || team.memberCount)} icon="group" tone="bg-secondary/10 text-secondary" />
+        <StatCard label="Projects" value={String(team.projectCount)} icon="account_tree" tone="bg-purple-100 text-purple-700" />
+        <StatCard label="Status" value={team.status} icon="check_circle" tone="bg-emerald-100 text-emerald-700" />
         <StatCard
           label="Created"
           value={new Date(team.createdAt).toLocaleDateString()}
           icon="calendar_today"
+          tone="bg-surface-container text-on-surface-variant"
         />
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         <div className="flex-1 min-w-0 space-y-6">
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
-            <h3 className="text-title-lg text-on-background mb-4 flex items-center gap-2">
+          <section className="bv-surface p-6">
+            <h3 className="text-title-md font-semibold mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined text-secondary">flag</span>
               Team Mission / Details
             </h3>
             {editing ? (
               <div className="space-y-4">
-                <FieldInput
-                  label="Name"
-                  id="team-name"
-                  value={draft.name}
-                  onChange={(v) => setDraft((d) => ({ ...d, name: v }))}
-                />
+                <FieldInput label="Name" id="team-name" value={draft.name} onChange={(v) => setDraft((d) => ({ ...d, name: v }))} />
                 <div>
                   <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="team-desc">
                     Description
@@ -244,24 +243,9 @@ export function TeamDetailPage() {
                     className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-secondary resize-none"
                   />
                 </div>
-                <FieldInput
-                  label="Department"
-                  id="team-dept"
-                  value={draft.department}
-                  onChange={(v) => setDraft((d) => ({ ...d, department: v }))}
-                />
-                <FieldInput
-                  label="Head name"
-                  id="team-head"
-                  value={draft.headName}
-                  onChange={(v) => setDraft((d) => ({ ...d, headName: v }))}
-                />
-                <FieldInput
-                  label="Head role"
-                  id="team-role"
-                  value={draft.headRole}
-                  onChange={(v) => setDraft((d) => ({ ...d, headRole: v }))}
-                />
+                <FieldInput label="Department" id="team-dept" value={draft.department} onChange={(v) => setDraft((d) => ({ ...d, department: v }))} />
+                <FieldInput label="Head name" id="team-head" value={draft.headName} onChange={(v) => setDraft((d) => ({ ...d, headName: v }))} />
+                <FieldInput label="Head role" id="team-role" value={draft.headRole} onChange={(v) => setDraft((d) => ({ ...d, headRole: v }))} />
                 <div>
                   <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="team-status">
                     Status
@@ -284,9 +268,9 @@ export function TeamDetailPage() {
             )}
           </section>
 
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 shadow-sm">
+          <section className="bv-surface p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-title-lg text-on-background flex items-center gap-2">
+              <h3 className="text-title-md font-semibold flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary">groups</span>
                 Team members ({members.length})
               </h3>
@@ -341,10 +325,53 @@ export function TeamDetailPage() {
               </ul>
             )}
           </section>
+
+          <section className="bv-surface overflow-hidden">
+            <div className="px-5 py-4 border-b border-outline-variant flex justify-between items-center">
+              <h3 className="text-title-md font-semibold flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary">folder_open</span>
+                Recent projects
+              </h3>
+              <Link to="/projects" className="text-sm font-semibold text-secondary hover:underline">
+                View all
+              </Link>
+            </div>
+            {recentProjects.length === 0 ? (
+              <p className="p-5 text-sm text-on-surface-variant">No projects in sample data.</p>
+            ) : (
+              <ul className="divide-y divide-outline-variant">
+                {recentProjects.map((p) => (
+                  <li
+                    key={p.id}
+                    className="px-5 py-3 flex items-center justify-between hover:bg-surface-container-low cursor-pointer"
+                    onClick={() =>
+                      navigate({ to: '/projects/$projectId', params: { projectId: String(p.id) } })
+                    }
+                  >
+                    <div>
+                      <p className="font-medium text-sm text-on-surface">{p.name}</p>
+                      <p className="text-xs text-on-surface-variant">
+                        {p.code} · {p.clientName ?? '—'}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="w-16 h-1.5 rounded-full bg-surface-container overflow-hidden">
+                        <div
+                          className="h-full bg-secondary rounded-full"
+                          style={{ width: `${p.progress ?? 0}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-on-surface-variant w-8 text-right">{p.progress ?? 0}%</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </section>
         </div>
 
-        <aside className="w-full lg:w-[280px] shrink-0 rounded-xl border border-outline-variant bg-surface-container-lowest p-5 space-y-4 shadow-sm">
-          <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Overview</p>
+        <aside className="w-full lg:w-[280px] shrink-0 bv-surface p-5 space-y-4">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Overview</p>
           <OverviewRow label="Status" value={team.status} />
           <OverviewRow label="Department" value={team.department ?? '—'} />
           <OverviewRow label="Head" value={team.headName ?? 'Unassigned'} />
@@ -387,11 +414,21 @@ export function TeamDetailPage() {
   )
 }
 
-function StatCard({ label, value, icon }: { label: string; value: string; icon: string }) {
+function StatCard({
+  label,
+  value,
+  icon,
+  tone,
+}: {
+  label: string
+  value: string
+  icon: string
+  tone: string
+}) {
   return (
-    <div className="bg-surface-container-lowest rounded-xl p-4 border border-outline-variant shadow-sm card-hover">
-      <div className="flex justify-between items-start mb-2">
-        <span className="material-symbols-outlined text-secondary text-xl">{icon}</span>
+    <div className="bv-surface card-hover p-4">
+      <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center mb-3', tone)}>
+        <span className="material-symbols-outlined">{icon}</span>
       </div>
       <p className="text-label-sm text-on-surface-variant">{label}</p>
       <p className="text-title-lg font-bold text-on-background">{value}</p>
