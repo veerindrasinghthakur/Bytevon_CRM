@@ -7,6 +7,7 @@ import { useTask, useUpdateTask } from '../hooks/use-tasks'
 import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import type { TaskPriority, TaskStatus } from '../api/tasks'
+import { cn } from '@/shared/lib/cn'
 
 export function TaskDetailPage() {
   const params = useParams({ strict: false }) as { taskId?: string }
@@ -90,8 +91,15 @@ export function TaskDetailPage() {
     void refetch()
   }
 
+  const initials = (task.assigneeName ?? '?')
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title={editing ? draft.title || task.title : task.title}
         description={task.projectName ?? 'Task'}
@@ -100,7 +108,7 @@ export function TaskDetailPage() {
         backLabel="Back to tasks"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to="/projects/tasks" className="hover:text-electric-blue">
+            <Link to="/projects/tasks" className="hover:text-secondary">
               Tasks
             </Link>
             <span className="mx-2">/</span>
@@ -123,22 +131,42 @@ export function TaskDetailPage() {
               </Button>
             </div>
           ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
-              onClick={startEdit}
-            >
-              Edit
-            </Button>
+            <div className="flex items-center gap-2 flex-wrap">
+              <TaskPriorityLabel priority={task.priority} />
+              <TaskStatusBadge status={task.status} />
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
+                onClick={startEdit}
+              >
+                Edit
+              </Button>
+              <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-lg">archive</span>}>
+                Archive
+              </Button>
+            </div>
           )
         }
       />
 
-      <div className="flex flex-col lg:flex-row gap-6 items-start">
-        <div className="flex-1 min-w-0 space-y-6">
-          <section className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6">
-            <h3 className="text-title-lg text-on-background mb-4">Details</h3>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="text-[11px] font-bold uppercase tracking-wider bg-surface-container px-2 py-0.5 rounded text-on-surface-variant">
+          TASK-{task.id}
+        </span>
+      </div>
+
+      {!editing && task.description && (
+        <p className="text-body-md text-on-surface-variant max-w-3xl">{task.description}</p>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <div className="lg:col-span-2 space-y-6">
+          <section className="bv-surface p-6">
+            <h2 className="text-title-md font-semibold mb-4 flex items-center gap-2">
+              <span className="material-symbols-outlined text-secondary">description</span>
+              Description
+            </h2>
             {editing ? (
               <div className="space-y-4">
                 <div>
@@ -150,7 +178,7 @@ export function TaskDetailPage() {
                     value={draft.title}
                     onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
                     onKeyDown={(e) => handleEnterAdvance(e)}
-                    className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-electric-blue"
+                    className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-secondary"
                   />
                 </div>
                 <div>
@@ -159,20 +187,17 @@ export function TaskDetailPage() {
                   </label>
                   <textarea
                     id="task-desc"
-                    rows={4}
+                    rows={6}
                     value={draft.description}
                     onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
                     onKeyDown={(e) => handleEnterAdvance(e)}
-                    className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-electric-blue resize-none"
+                    className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-secondary resize-none"
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="task-priority">
-                      Priority
-                    </label>
+                    <label className="text-label-sm text-on-surface-variant block mb-1">Priority</label>
                     <select
-                      id="task-priority"
                       value={draft.priority}
                       onChange={(e) =>
                         setDraft((d) => ({ ...d, priority: e.target.value as TaskPriority }))
@@ -186,11 +211,8 @@ export function TaskDetailPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="task-status">
-                      Status
-                    </label>
+                    <label className="text-label-sm text-on-surface-variant block mb-1">Status</label>
                     <select
-                      id="task-status"
                       value={draft.status}
                       onChange={(e) =>
                         setDraft((d) => ({ ...d, status: e.target.value as TaskStatus }))
@@ -206,11 +228,8 @@ export function TaskDetailPage() {
                     </select>
                   </div>
                   <div>
-                    <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="task-assignee">
-                      Assignee
-                    </label>
+                    <label className="text-label-sm text-on-surface-variant block mb-1">Assignee</label>
                     <input
-                      id="task-assignee"
                       value={draft.assigneeName}
                       onChange={(e) => setDraft((d) => ({ ...d, assigneeName: e.target.value }))}
                       onKeyDown={(e) => handleEnterAdvance(e)}
@@ -218,11 +237,8 @@ export function TaskDetailPage() {
                     />
                   </div>
                   <div>
-                    <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="task-due">
-                      Due date
-                    </label>
+                    <label className="text-label-sm text-on-surface-variant block mb-1">Due date</label>
                     <input
-                      id="task-due"
                       type="date"
                       value={draft.dueDate}
                       onChange={(e) => setDraft((d) => ({ ...d, dueDate: e.target.value }))}
@@ -232,38 +248,67 @@ export function TaskDetailPage() {
                 </div>
               </div>
             ) : (
-              <>
-                <p className="text-body-md text-on-surface-variant mb-4">
-                  {task.description || 'No description.'}
-                </p>
-                <div className="flex flex-wrap gap-3">
-                  <TaskPriorityLabel priority={task.priority} />
-                  <TaskStatusBadge status={task.status} />
-                </div>
-              </>
+              <div className="prose prose-sm max-w-none text-on-surface-variant leading-relaxed space-y-3">
+                <p>{task.description || 'No description provided.'}</p>
+              </div>
             )}
           </section>
         </div>
 
-        <aside className="w-full lg:w-[280px] shrink-0 rounded-xl border border-outline-variant bg-surface-container-lowest p-5 space-y-4">
-          <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Overview</p>
-          <OverviewRow label="Project" value={task.projectName ?? '—'} />
-          <OverviewRow label="Assignee" value={task.assigneeName ?? 'Unassigned'} />
-          <OverviewRow label="Priority" value={task.priority} />
-          <OverviewRow label="Status" value={task.status.replace('_', ' ')} />
-          <OverviewRow label="Due" value={task.dueDate ?? '—'} />
-          <OverviewRow label="Created" value={new Date(task.createdAt).toLocaleDateString()} />
+        <aside className="space-y-4">
+          <section className="bv-surface overflow-hidden">
+            <div className="p-4 border-b border-outline-variant bg-surface-container-low/50">
+              <h3 className="font-semibold flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-lg">info</span>
+                Task Details
+              </h3>
+            </div>
+            <div className="p-4 space-y-4">
+              <div>
+                <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant block mb-2">
+                  Assignee
+                </label>
+                <div
+                  className={cn(
+                    'flex items-center justify-between p-2 rounded-lg border border-outline-variant',
+                    'bg-surface-container-low/50 hover:border-secondary/40 transition-colors'
+                  )}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-xs font-bold">
+                      {initials}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-on-surface">
+                        {task.assigneeName ?? 'Unassigned'}
+                      </p>
+                      <p className="text-[11px] text-on-surface-variant">Assignee</p>
+                    </div>
+                  </div>
+                  <span className="material-symbols-outlined text-on-surface-variant text-lg">person_add</span>
+                </div>
+              </div>
+              <MetaRow label="Project" value={task.projectName ?? '—'} />
+              <MetaRow label="Priority" value={task.priority} />
+              <MetaRow label="Status" value={task.status.replace(/_/g, ' ')} />
+              <MetaRow label="Due" value={task.dueDate ?? '—'} />
+              <MetaRow
+                label="Created"
+                value={task.createdAt ? new Date(task.createdAt).toLocaleDateString() : '—'}
+              />
+            </div>
+          </section>
         </aside>
       </div>
     </div>
   )
 }
 
-function OverviewRow({ label, value }: { label: string; value: string }) {
+function MetaRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex justify-between gap-3 text-body-sm">
+    <div className="flex justify-between gap-3 text-sm">
       <span className="text-on-surface-variant">{label}</span>
-      <span className="text-on-background font-medium text-right">{value}</span>
+      <span className="font-medium text-on-background text-right">{value}</span>
     </div>
   )
 }
