@@ -34,7 +34,18 @@ These rules apply to every code or documentation change in this repository.
 
 ---
 
-## 4. Contextual Detail Drawer (Overview Panel) — Locked
+## 4. Design Tokens (CSS) — Locked
+
+- **Single source of truth:** `frontend_code/src/styles/tokens.css`
+- **Never hardcode** colors, spacing, radii, motion durations, elevations, opacities, or scrollbar geometry in CSS or component styles.
+- All values in `globals.css` must reference CSS variables from tokens.
+- Tailwind maps tokens via `tailwind.config.js` (`var(--…)`).
+- When a new visual constant is needed, add a token first, then use it.
+- Prefer semantic names: `--color-*`, `--spacing-*`, `--radius-*`, `--duration-*`, `--opacity-*`, `--elevation-*`.
+
+---
+
+## 5. Contextual Detail Drawer (Overview Panel) — Locked
 
 - Not permanent; drawer from the right on data-item click.
 - Height between App Header and viewport bottom.
@@ -42,13 +53,13 @@ These rules apply to every code or documentation change in this repository.
 
 ---
 
-## 5. Sales Module — Completed
+## 6. Sales Module — Completed
 
 Case studies actions, client/lead detail, dashboard+activity merge.
 
 ---
 
-## 6. Projects Module — Completed (core)
+## 7. Projects Module — Completed (core)
 
 - Project Detail tabs: Overview, Tasks, Team, Timeline, Documents, **Repository (tab only, not separate route)**.
 - Align Repository tab UI with repository information screen.
@@ -56,7 +67,7 @@ Case studies actions, client/lead detail, dashboard+activity merge.
 
 ---
 
-## 7. Workforce Module — Progress (2026-08-20)
+## 8. Workforce Module — Progress (2026-08-20)
 
 - **Add Employee:** photo upload, documents section, gender/nationality, contact, address, emergency contact, employment ID (readonly preview), manager select, bank account holder name.
 - **Add Department:** Identity + Settings sections.
@@ -64,11 +75,11 @@ Case studies actions, client/lead detail, dashboard+activity merge.
 - **Department Detail:** employee cards with role/tags, head section, open positions card when > 0, hover effects; add-member bottom-sheet style.
 - **Employee Detail:** Download + Deactivate actions, reporting manager block, attendance & leave overview cards on Overview tab.
 - **Add Member:** bottom-sheet popup from bottom with search and role assignment.
-- Remaining: finer pixel-match when workforce HTML mockups are attached; manager_id persistence in assignment schema.
+- Remaining: finer pixel-match when workforce HTML mockups are attached; manager_id persistence in assignment schema; empty states polish for team/department lists.
 
 ---
 
-## 8. Commit Discipline
+## 9. Commit Discipline
 
 - Prefer fewer commits with coherent, related changes.
 - Clear conventional commit messages.
