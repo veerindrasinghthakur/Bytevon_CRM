@@ -47,17 +47,18 @@ These rules apply to every code or documentation change in this repository.
 
 ## 5. Page Logic → Custom Hooks — Locked
 
-- Pages with substantial logic (filters, selection, long-press, data loading, form state, computed lists) **must** extract that logic into a custom hook under the module’s `hooks/` folder.
-- Page files should primarily contain React JSX (layout + binding). TypeScript business logic lives in hooks.
-- Naming: `use-<entity>-list.ts`, `use-<entity>-detail.ts`, `use-<action>.ts`.
+- Pages / components with substantial logic (filters, selection, long-press, data loading, form state, computed lists, shell layout math) **must** extract that logic into a custom hook under the module’s `hooks/` folder (or `shared/hooks` for cross-cutting layout).
+- Page/component files should primarily contain React JSX (layout + binding). TypeScript business logic lives in hooks.
+- Naming: `use-<entity>-list.ts`, `use-<entity>-detail.ts`, `use-<action>.ts`, camelCase for shared layout hooks.
 - Data-fetch hooks (react-query wrappers) stay separate from page-UI hooks when both exist.
 - Create `hooks/` under a module if it does not exist yet.
 - Do not extract trivial one-liner pages; only pages with a meaningful amount of logic.
 
-### Hooks inventory (major modules)
+### Hooks inventory
 
-| Module | Hooks |
-|--------|-------|
+| Area | Hooks |
+|------|-------|
+| **shared** | `useListSelection`, `useAppShell`, `useSecondaryNav`, `useIconRail`, `useLiveClock`, `useHeaderBreak`, `useHeaderAttendance` |
 | **sales** | `use-leads-list`, `use-clients-list`, `use-sales-dashboard` |
 | **projects** | `use-projects`, `use-projects-list`, `use-tasks`, `use-tasks-list`, `use-teams` |
 | **workforce** | `use-employees-list`, `use-departments-list`, `use-teams-list` |
