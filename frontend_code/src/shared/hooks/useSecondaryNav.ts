@@ -1,9 +1,6 @@
 import { useRouterState } from '@tanstack/react-router'
-import {
-  SECONDARY_NAV,
-  type SecondaryNavGroup,
-  type SecondaryNavItem,
-} from '@/shared/components/layout/SecondarySidebar'
+import { SECONDARY_NAV } from '@/shared/components/layout/SecondarySidebar'
+import type { SecondaryNavGroup, SecondaryNavItem } from '@/shared/types'
 
 export function getActiveModule(pathname: string): string {
   if (pathname.startsWith('/sales')) return 'sales'

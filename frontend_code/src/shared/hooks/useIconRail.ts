@@ -1,5 +1,5 @@
 import { useRouterState } from '@tanstack/react-router'
-import type { RailItem } from '@/shared/components/layout/IconRail'
+import type { RailItem } from '@/shared/types'
 
 export function isRailItemActive(pathname: string, to: string): boolean {
   if (to === '/dashboard') return pathname === '/dashboard' || pathname === '/'

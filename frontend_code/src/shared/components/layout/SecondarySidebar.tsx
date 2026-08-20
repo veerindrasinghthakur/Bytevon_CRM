@@ -2,21 +2,9 @@ import { cn } from '@/shared/lib/cn'
 import { Link } from '@tanstack/react-router'
 import { HEADER_HEIGHT_PX } from './Header'
 import { useSecondaryNav } from '@/shared/hooks/useSecondaryNav'
+import type { SecondaryNavGroup, SecondaryNavItem } from '@/shared/types'
 
-export interface SecondaryNavItem {
-  id: string
-  label: string
-  icon: string
-  to: string
-  badge?: number | string
-  visible?: boolean
-}
-
-export interface SecondaryNavGroup {
-  moduleId: string
-  title: string
-  items: SecondaryNavItem[]
-}
+export type { SecondaryNavGroup, SecondaryNavItem }
 
 export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
   dashboard: {

@@ -2,19 +2,13 @@ import { cn } from '@/shared/lib/cn'
 import { Link } from '@tanstack/react-router'
 import { BrandLogo } from '@/shared/components/brand/BrandLogo'
 import { useIconRail } from '@/shared/hooks/useIconRail'
+import type { RailItem } from '@/shared/types'
+
+export type { RailItem }
 
 /** Collapsed / expanded rail widths (2px narrower than original 80 / 220) */
 export const RAIL_COLLAPSED_WIDTH = 78
 export const RAIL_EXPANDED_WIDTH = 218
-
-export interface RailItem {
-  id: string
-  icon: string
-  label: string
-  to: string
-  /** If false, item is hidden (permission) */
-  visible?: boolean
-}
 
 const DEFAULT_RAIL_ITEMS: RailItem[] = [
   { id: 'dashboard', icon: 'dashboard', label: 'Dashboard', to: '/dashboard', visible: true },
