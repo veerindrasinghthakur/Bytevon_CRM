@@ -1,35 +1,13 @@
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { payrollEmployees, formatMoney } from '../data/mock'
+import { useRunPayroll } from '../hooks/use-run-payroll'
 import { cn } from '@/shared/lib/cn'
-
-/** Simple ready state — validation informational, generate always available. */
-const checks = [
-  {
-    ok: true,
-    title: 'Employee salary configuration available',
-    detail: 'All active employees have a base salary set.',
-  },
-  {
-    ok: true,
-    title: 'Monthly attendance summary available',
-    detail: 'Timesheets are available for processing.',
-  },
-  {
-    ok: true,
-    title: 'No existing payroll for this month',
-    detail: 'Selected period is clear to generate.',
-  },
-  {
-    ok: true,
-    title: 'Period ready',
-    detail: 'You can generate payroll for the selected month.',
-  },
-]
 
 export function RunPayrollPage() {
   const navigate = useNavigate()
+  const { checks, previewMetrics, previewRows, estimatedNet, employeeCount, formatMoney } =
+    useRunPayroll()
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -135,12 +113,7 @@ export function RunPayrollPage() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-5">
-              {[
-                { label: 'Total Employees', value: '42' },
-                { label: 'Gross Salary', value: '$245,600' },
-                { label: 'Total Additions', value: '+$12,400', valueClass: 'text-success-emerald' },
-                { label: 'Total Deductions', value: '-$45,200', valueClass: 'text-error' },
-              ].map((m) => (
+              {previewMetrics.map((m) => (
                 <div
                   key={m.label}
                   className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant card-hover"
@@ -164,7 +137,7 @@ export function RunPayrollPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant">
-                  {payrollEmployees.slice(0, 4).map((r) => (
+                  {previewRows.map((r) => (
                     <tr key={r.id} className="h-[72px] zebra-row">
                       <td className="p-4">
                         <div className="flex items-center gap-3">
@@ -196,7 +169,7 @@ export function RunPayrollPage() {
           <section className="bg-surface-container-low rounded-xl executive-shadow border border-outline-variant p-6 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex-1">
               <p className="text-label-bold text-on-surface-variant uppercase mb-2">Estimated Net Payroll</p>
-              <p className="text-headline-lg font-bold text-primary tracking-tight">$212,800.00</p>
+              <p className="text-headline-lg font-bold text-primary tracking-tight">{estimatedNet}</p>
               <div className="flex items-center gap-4 mt-2 flex-wrap">
                 <span className="text-caption text-on-surface-variant flex items-center gap-1">
                   <span className="material-symbols-outlined text-[14px]">calendar_today</span>
@@ -204,7 +177,7 @@ export function RunPayrollPage() {
                 </span>
                 <span className="text-caption text-on-surface-variant flex items-center gap-1">
                   <span className="material-symbols-outlined text-[14px]">group</span>
-                  42 Employees
+                  {employeeCount} Employees
                 </span>
               </div>
             </div>

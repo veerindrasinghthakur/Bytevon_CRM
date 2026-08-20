@@ -1,51 +1,7 @@
-import { useNavigate, useParams } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
-import { payrollEmployees } from '../data/mock'
+import { useEmployeePayrollHistory } from '../hooks/use-employee-payroll-history'
 import { cn } from '@/shared/lib/cn'
-
-/** Immutable paid-out payroll history only — no mutable / in-progress rows. */
-const historyRows = [
-  {
-    month: 'November 2023',
-    gross: '$8,500.00',
-    earnings: '+$500.00',
-    deductions: '-$1,250.00',
-    adjustments: '$0.00',
-    net: '$7,750.00',
-    paymentDate: 'Pending',
-    status: 'APPROVED' as const,
-  },
-  {
-    month: 'October 2023',
-    gross: '$8,500.00',
-    earnings: '+$500.00',
-    deductions: '-$1,250.00',
-    adjustments: '$0.00',
-    net: '$7,750.00',
-    paymentDate: 'Oct 30, 2023',
-    status: 'PAID' as const,
-  },
-  {
-    month: 'September 2023',
-    gross: '$8,500.00',
-    earnings: '+$200.00',
-    deductions: '-$1,250.00',
-    adjustments: '-$100.00',
-    net: '$7,350.00',
-    paymentDate: 'Sep 28, 2023',
-    status: 'PAID' as const,
-  },
-  {
-    month: 'August 2023',
-    gross: '$8,500.00',
-    earnings: '+$500.00',
-    deductions: '-$1,250.00',
-    adjustments: '$0.00',
-    net: '$7,750.00',
-    paymentDate: 'Aug 30, 2023',
-    status: 'PAID' as const,
-  },
-]
 
 const statusStyle: Record<string, string> = {
   PAID: 'bg-[#e6f4ea] text-[#137333] border border-[#ceead6]',
@@ -54,8 +10,7 @@ const statusStyle: Record<string, string> = {
 
 export function EmployeePayrollHistoryPage() {
   const navigate = useNavigate()
-  const { employeeId } = useParams({ strict: false }) as { employeeId?: string }
-  const emp = payrollEmployees.find((e) => e.id === employeeId) ?? payrollEmployees[0]
+  const { emp, historyRows, summaryCards, totalResults } = useEmployeePayrollHistory()
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -119,39 +74,26 @@ export function EmployeePayrollHistoryPage() {
         </div>
       </header>
 
-      {/* Summary cards — synced to Payroll_history.html */}
       <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bv-surface p-6 flex flex-col gap-2">
-          <div className="flex justify-between items-start">
-            <span className="text-label-md text-on-surface-variant flex items-center gap-2">
-              <span className="material-symbols-outlined text-outline">payments</span> Current Gross Salary
-            </span>
+        {summaryCards.map((card) => (
+          <div key={card.id} className="bv-surface p-6 flex flex-col gap-2 relative overflow-hidden">
+            {card.id === 'ytd' && (
+              <div className="absolute right-0 bottom-0 opacity-5 pointer-events-none">
+                <span className="material-symbols-outlined text-[120px]">trending_up</span>
+              </div>
+            )}
+            <div className="flex justify-between items-start relative z-10">
+              <span className="text-label-md text-on-surface-variant flex items-center gap-2">
+                <span className="material-symbols-outlined text-outline">{card.icon}</span> {card.label}
+              </span>
+              {'change' in card && card.change && (
+                <span className="bg-[#e6f4ea] text-[#137333] px-2 py-1 rounded text-label-sm">{card.change}</span>
+              )}
+            </div>
+            <div className="text-headline-lg font-semibold text-deep-navy mt-1 relative z-10">{card.value}</div>
+            <div className="text-body-sm text-on-surface-variant mt-auto relative z-10">{card.subtitle}</div>
           </div>
-          <div className="text-headline-lg font-semibold text-deep-navy mt-1">$8,500.00</div>
-          <div className="text-body-sm text-on-surface-variant mt-auto">Per pay period</div>
-        </div>
-        <div className="bv-surface p-6 flex flex-col gap-2">
-          <div className="flex justify-between items-start">
-            <span className="text-label-md text-on-surface-variant flex items-center gap-2">
-              <span className="material-symbols-outlined text-outline">account_balance_wallet</span> Current Net Salary
-            </span>
-          </div>
-          <div className="text-headline-lg font-semibold text-deep-navy mt-1">$6,450.00</div>
-          <div className="text-body-sm text-on-surface-variant mt-auto">Estimated average</div>
-        </div>
-        <div className="bv-surface p-6 flex flex-col gap-2 relative overflow-hidden">
-          <div className="absolute right-0 bottom-0 opacity-5 pointer-events-none">
-            <span className="material-symbols-outlined text-[120px]">trending_up</span>
-          </div>
-          <div className="flex justify-between items-start relative z-10">
-            <span className="text-label-md text-on-surface-variant flex items-center gap-2">
-              <span className="material-symbols-outlined text-outline">insights</span> Total Paid This Year (YTD)
-            </span>
-            <span className="bg-[#e6f4ea] text-[#137333] px-2 py-1 rounded text-label-sm">+12%</span>
-          </div>
-          <div className="text-headline-lg font-semibold text-deep-navy mt-1 relative z-10">$64,500.00</div>
-          <div className="text-body-sm text-on-surface-variant mt-auto relative z-10">As of Nov 2023</div>
-        </div>
+        ))}
       </section>
 
       <section className="bv-surface flex flex-col">
@@ -261,8 +203,8 @@ export function EmployeePayrollHistoryPage() {
         <div className="p-4 border-t border-outline-variant flex items-center justify-between bg-surface-container-lowest rounded-b-xl">
           <div className="text-body-sm text-on-surface-variant">
             Showing <span className="font-medium text-on-surface">1</span> to{' '}
-            <span className="font-medium text-on-surface">4</span> of{' '}
-            <span className="font-medium text-on-surface">24</span> results
+            <span className="font-medium text-on-surface">{historyRows.length}</span> of{' '}
+            <span className="font-medium text-on-surface">{totalResults}</span> results
           </div>
           <div className="flex gap-1">
             <button
