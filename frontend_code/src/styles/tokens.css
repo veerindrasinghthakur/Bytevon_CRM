@@ -93,16 +93,22 @@
 
   /* ===========================================================================
      OVERLAY / SCRIM / SHADOW PRIMITIVES
-     Used by: .modal-overlay, .shadow-soft, .glass-panel in globals.css
+     Used by: .modal-overlay, .shadow-soft, .glass-panel, executive elevation
      =========================================================================== */
   --color-scrim: #0a1128;                /* Modal dim layer base color */
-  --color-shadow: #000000;               /* Box-shadow color base */
+  --color-shadow: #000000;               /* Neutral box-shadow base */
+  --color-shadow-navy: #001f3f;          /* Deep-navy tinted shadow (executive cards) */
   --opacity-scrim: 0.4;                  /* Modal overlay strength */
-  --opacity-shadow-soft: 0.05;           /* Near shadow (1px layer) */
-  --opacity-shadow-soft-lg: 0.02;        /* Far soft shadow (10px layer) */
+  --opacity-shadow-soft: 0.05;           /* Near soft shadow layer */
+  --opacity-shadow-soft-lg: 0.02;        /* Far soft shadow layer */
+  --opacity-shadow-executive-near: 0.05; /* Executive near shadow */
+  --opacity-shadow-executive-far: 0.03;  /* Executive far shadow */
+  --opacity-shadow-hover-near: 0.08;     /* Card hover near shadow */
+  --opacity-shadow-hover-far: 0.04;      /* Card hover far shadow */
   --opacity-glass: 0.95;                 /* Glass panel opacity on white */
   --opacity-press-hover: 0.9;            /* .bv-pressable:hover opacity */
-  --opacity-row-hover: 0.5;              /* .bv-row-hover mix ratio on surface-container-low */
+  --opacity-row-hover: 0.05;             /* Row hover secondary mix ratio */
+  --opacity-pulse-mid: 0.7;              /* Mid-frame opacity for pulse-subtle */
 
   /* ===========================================================================
      ELEVATION / BLUR (effect geometry — not colors)
@@ -113,9 +119,21 @@
   --elevation-soft-lg-y: 10px;           /* Soft large shadow offset Y */
   --elevation-soft-lg-blur: 15px;        /* Soft large shadow blur */
   --elevation-soft-lg-spread: -3px;      /* Soft large shadow spread */
+  --elevation-executive-near-y: 4px;     /* Executive near shadow Y */
+  --elevation-executive-near-blur: 6px;  /* Executive near blur */
+  --elevation-executive-near-spread: -1px;
+  --elevation-executive-far-y: 2px;      /* Executive far shadow Y */
+  --elevation-executive-far-blur: 4px;   /* Executive far blur */
+  --elevation-executive-far-spread: -1px;
+  --elevation-hover-near-y: 8px;         /* Hover near shadow Y */
+  --elevation-hover-near-blur: 16px;     /* Hover near blur */
+  --elevation-hover-near-spread: -4px;
+  --elevation-hover-far-y: 4px;          /* Hover far shadow Y */
+  --elevation-hover-far-blur: 8px;       /* Hover far blur */
+  --elevation-hover-far-spread: -2px;
   --blur-modal: 4px;                     /* Modal backdrop blur */
   --blur-glass: 12px;                    /* Glass panel backdrop blur */
-  --lift-card-hover: -2px;               /* .card-hover translateY on hover */
+  --lift-card-hover: -2px;               /* .card-hover / action-tile translateY on hover */
   --scale-press-active: 0.95;            /* .bv-pressable:active scale */
   --scale-nav-press: 0.98;               /* .bv-nav-press:active scale */
   --scale-action-icon-hover: 1.1;        /* .bv-action-tile icon scale on hover */
@@ -150,6 +168,13 @@
   --radius-full: 9999px;  /* Pills / avatars full round */
 
   /* ===========================================================================
+     SCROLLBAR
+     Used by: globals.css thin scrollbar rules
+     =========================================================================== */
+  --scrollbar-size: 6px;                 /* Thin scrollbar track width/height */
+  --scrollbar-thumb-radius: 10px;        /* Scrollbar thumb corner radius */
+
+  /* ===========================================================================
      TYPOGRAPHY (reference scale — Tailwind fontSize mirrors these)
      Used by: design docs + optional CSS; components use text-body-md etc.
      =========================================================================== */
@@ -179,11 +204,16 @@
 
   /* ===========================================================================
      MOTION
-     Used by: card-hover, action tiles, sidebar width, slide-in panels
+     Used by: card-hover, action tiles, sidebar width, slide-in panels, skeleton
      =========================================================================== */
   --duration-fast: 0.2s;             /* Default micro-interactions */
   --duration-sidebar: 0.3s;          /* IconRail / secondary sidebar width */
   --duration-slide-in: 0.35s;        /* .animate-slide-in-right panel enter */
+  --duration-fade: 0.6s;             /* .animate-fade-in */
+  --duration-skeleton: 1.5s;         /* Skeleton shimmer loop */
+  --duration-pulse: 3s;              /* .pulsate-subtle loop */
   --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);   /* Sidebar / layout */
   --easing-emphasized: cubic-bezier(0.16, 1, 0.3, 1); /* Slide-in panels */
+  --easing-pulse: cubic-bezier(0.4, 0, 0.6, 1);       /* Pulse-subtle */
+  --fade-in-offset-y: 10px;          /* fadeIn keyframe start translateY */
 }

@@ -52,24 +52,28 @@
     cursor: pointer;
   }
 
+  /* Thin scrollbars — hidden-looking when idle via transparent track */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: var(--scrollbar-size);
+    height: var(--scrollbar-size);
   }
   ::-webkit-scrollbar-track {
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--color-surface-container-highest, #d3e4fe);
-    border-radius: 10px;
+    background: var(--color-surface-container-highest);
+    border-radius: var(--scrollbar-thumb-radius);
   }
 }
 
 @layer components {
+  /* Executive elevation — deep-navy tinted soft shadow */
   .executive-shadow {
     box-shadow:
-      0 4px 6px -1px rgba(0, 31, 63, 0.05),
-      0 2px 4px -1px rgba(0, 31, 63, 0.03);
+      0 var(--elevation-executive-near-y) var(--elevation-executive-near-blur) var(--elevation-executive-near-spread)
+        color-mix(in srgb, var(--color-shadow-navy) calc(var(--opacity-shadow-executive-near) * 100%), transparent),
+      0 var(--elevation-executive-far-y) var(--elevation-executive-far-blur) var(--elevation-executive-far-spread)
+        color-mix(in srgb, var(--color-shadow-navy) calc(var(--opacity-shadow-executive-far) * 100%), transparent);
   }
 
   .shadow-soft {
@@ -109,8 +113,10 @@
   .bv-surface {
     @apply bg-surface-container-lowest border border-outline-variant rounded-xl;
     box-shadow:
-      0 4px 6px -1px rgba(0, 31, 63, 0.05),
-      0 2px 4px -1px rgba(0, 31, 63, 0.03);
+      0 var(--elevation-executive-near-y) var(--elevation-executive-near-blur) var(--elevation-executive-near-spread)
+        color-mix(in srgb, var(--color-shadow-navy) calc(var(--opacity-shadow-executive-near) * 100%), transparent),
+      0 var(--elevation-executive-far-y) var(--elevation-executive-far-blur) var(--elevation-executive-far-spread)
+        color-mix(in srgb, var(--color-shadow-navy) calc(var(--opacity-shadow-executive-far) * 100%), transparent);
   }
 
   .card-hover {
@@ -119,23 +125,29 @@
   .card-hover:hover {
     transform: translateY(var(--lift-card-hover));
     box-shadow:
-      0 8px 16px -4px rgba(0, 31, 63, 0.08),
-      0 4px 8px -2px rgba(0, 31, 63, 0.04);
+      0 var(--elevation-hover-near-y) var(--elevation-hover-near-blur) var(--elevation-hover-near-spread)
+        color-mix(in srgb, var(--color-shadow-navy) calc(var(--opacity-shadow-hover-near) * 100%), transparent),
+      0 var(--elevation-hover-far-y) var(--elevation-hover-far-blur) var(--elevation-hover-far-spread)
+        color-mix(in srgb, var(--color-shadow-navy) calc(var(--opacity-shadow-hover-far) * 100%), transparent);
   }
 
   .bv-action-tile {
     @apply flex flex-col items-center justify-center p-6 bg-surface-container-lowest border border-outline-variant rounded-xl cursor-pointer;
     box-shadow:
-      0 4px 6px -1px rgba(0, 31, 63, 0.05),
-      0 2px 4px -1px rgba(0, 31, 63, 0.03);
+      0 var(--elevation-executive-near-y) var(--elevation-executive-near-blur) var(--elevation-executive-near-spread)
+        color-mix(in srgb, var(--color-shadow-navy) calc(var(--opacity-shadow-executive-near) * 100%), transparent),
+      0 var(--elevation-executive-far-y) var(--elevation-executive-far-blur) var(--elevation-executive-far-spread)
+        color-mix(in srgb, var(--color-shadow-navy) calc(var(--opacity-shadow-executive-far) * 100%), transparent);
     transition: all var(--duration-fast) ease;
   }
   .bv-action-tile:hover {
     @apply border-secondary;
-    transform: translateY(-2px);
+    transform: translateY(var(--lift-card-hover));
     box-shadow:
-      0 8px 16px -4px rgba(0, 31, 63, 0.08),
-      0 4px 8px -2px rgba(0, 31, 63, 0.04);
+      0 var(--elevation-hover-near-y) var(--elevation-hover-near-blur) var(--elevation-hover-near-spread)
+        color-mix(in srgb, var(--color-shadow-navy) calc(var(--opacity-shadow-hover-near) * 100%), transparent),
+      0 var(--elevation-hover-far-y) var(--elevation-hover-far-blur) var(--elevation-hover-far-spread)
+        color-mix(in srgb, var(--color-shadow-navy) calc(var(--opacity-shadow-hover-far) * 100%), transparent);
   }
   .bv-action-tile .bv-action-icon {
     transition: transform var(--duration-fast) ease;
@@ -148,13 +160,21 @@
     @apply transition-colors duration-200 ease-out;
   }
   .bv-row-hover:hover {
-    background-color: color-mix(in srgb, var(--color-secondary) 5%, transparent);
+    background-color: color-mix(
+      in srgb,
+      var(--color-secondary) calc(var(--opacity-row-hover) * 100%),
+      transparent
+    );
   }
   .zebra-row:nth-child(even) {
     background-color: var(--color-background);
   }
   .zebra-row:hover {
-    background-color: color-mix(in srgb, var(--color-secondary) 5%, transparent);
+    background-color: color-mix(
+      in srgb,
+      var(--color-secondary) calc(var(--opacity-row-hover) * 100%),
+      transparent
+    );
   }
 
   .bv-pressable {
@@ -186,11 +206,11 @@
       var(--color-surface-container) 75%
     );
     background-size: 200% 100%;
-    animation: skeleton-loading 1.5s infinite linear;
+    animation: skeleton-loading var(--duration-skeleton) infinite linear;
   }
 
   .pulsate-subtle {
-    animation: pulse-subtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    animation: pulse-subtle var(--duration-pulse) var(--easing-pulse) infinite;
   }
 }
 
@@ -212,7 +232,7 @@
   }
 
   .animate-fade-in {
-    animation: fadeIn 0.6s ease-out forwards;
+    animation: fadeIn var(--duration-fade) ease-out forwards;
   }
 }
 
@@ -240,14 +260,14 @@
     opacity: 1;
   }
   50% {
-    opacity: 0.7;
+    opacity: var(--opacity-pulse-mid);
   }
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(var(--fade-in-offset-y));
   }
   to {
     opacity: 1;
