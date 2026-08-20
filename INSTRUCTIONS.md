@@ -49,14 +49,24 @@ Implementation: `QuickOverviewProvider` + `useQuickOverview()` + `QuickOverviewP
 
 ## 5. Sales Module — Completed (2026-08-20)
 
-- **Case Studies:** View / Edit / Share actions on cards.
-- **Client Detail:** KPI row, activity timeline, company information, headquarters — synced with UI mockup.
-- **Lead Detail:** Pipeline progression, contact/company, activity timeline, value/probability panel.
-- **Dashboard + Activity merge:** Sales Dashboard includes revenue overview, monthly lead growth, sales funnel, top performers, and full activity timeline. Secondary nav has a single **Dashboard** entry (Activity removed as separate item). Prefer `/sales/dashboard`; legacy `/sales/activity` page file remains for reference but nav no longer surfaces it.
+- Case Studies: View / Edit / Share actions.
+- Client Detail / Lead Detail: richer layouts synced to UI.
+- Dashboard + Activity merge: revenue, growth, funnel, top performers, timeline.
+- Nav: single Dashboard entry.
 
 ---
 
-## 6. Commit Discipline
+## 6. Projects Module — In progress / completed items (2026-08-20)
+
+- **Project Detail:** Tabbed UI — Overview, Tasks (with search/status filter), Team, Timeline (status enum), Documents, **Repository**.
+- Overview includes KPI cards, description, team summary, client card, key dates, resources, activity.
+- **Task Detail:** Description card + assignee card + metadata sidebar aligned with UI.
+- List page already opens QuickOverview drawer on row click; KPI metrics present.
+- Remaining optional: richer Team Detail layout, extra list filters (phase/priority/lead) when schema supports them.
+
+---
+
+## 7. Commit Discipline
 
 - Prefer fewer commits with coherent, related changes.
 - Use clear conventional commit messages.
