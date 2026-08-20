@@ -1,6 +1,7 @@
 import { cn } from '@/shared/lib/cn'
 import type { ReactNode } from 'react'
 import { createContext, useCallback, useContext, useMemo, useState } from 'react'
+import { HEADER_HEIGHT_PX } from './Header'
 
 interface QuickOverviewContextValue {
   open: boolean
@@ -41,7 +42,15 @@ export function QuickOverviewProvider({ children }: { children: ReactNode }) {
   return <QuickOverviewContext.Provider value={value}>{children}</QuickOverviewContext.Provider>
 }
 
-/** Right-side overview drawer — mounted by AppShell next to main content */
+/**
+ * Contextual Detail Drawer (Overview Panel)
+ *
+ * - Not permanent — appears only when user clicks a data item (card/row)
+ * - Drawer-based, slides in from the right
+ * - Height strictly between App Header and bottom of viewport (footer if present)
+ * - One drawer at a time; selecting another item updates content
+ * - Used across Employees, Projects, Departments, Tasks, Leads, Clients, etc.
+ */
 export function QuickOverviewPanel() {
   const { open, content, title, closePanel } = useQuickOverview()
 
@@ -53,19 +62,26 @@ export function QuickOverviewPanel() {
       )}
       aria-hidden={!open}
     >
+      {/* Full-screen backdrop for outside-click close */}
       <button
         type="button"
         className="absolute inset-0 modal-overlay cursor-default border-0"
         aria-label="Close overview"
         onClick={closePanel}
       />
+
+      {/* Drawer panel — constrained between header and footer */}
       <aside
         className={cn(
-          'absolute right-0 top-0 h-full w-full max-w-md',
+          'absolute right-0 w-full max-w-md',
           'bg-surface-container-lowest border-l border-outline-variant/30 shadow-drawer',
           'flex flex-col',
           open ? 'animate-slide-in-right' : 'translate-x-full',
         )}
+        style={{
+          top: HEADER_HEIGHT_PX,
+          height: `calc(100vh - ${HEADER_HEIGHT_PX}px)`,
+        }}
       >
         <div className="p-6 border-b border-outline-variant/30 flex items-center justify-between bg-surface-bright shrink-0">
           <h3 className="text-headline-md font-semibold text-deep-navy">{title}</h3>
