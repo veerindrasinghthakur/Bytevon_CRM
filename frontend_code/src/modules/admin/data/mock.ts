@@ -1,47 +1,12 @@
-export interface AdminUser {
-  id: string
-  name: string
-  email: string
-  role: string
-  department: string
-  status: 'Active' | 'Inactive' | 'Locked'
-  lastLogin: string
-  initials: string
-}
+import type {
+  AdminUser,
+  AdminRole,
+  AuditLog,
+  SecurityEvent,
+  AdminKpis,
+} from '../types'
 
-export interface AdminRole {
-  id: string
-  name: string
-  description: string
-  usersCount: number
-  permissions: string[]
-  status: 'Active' | 'Archived'
-  category: 'Core Role' | 'Operational' | 'Financial' | 'Standard'
-  coveragePct: number
-  coverageLabel: string
-  created: string
-  updated: string
-}
-
-export interface AuditLog {
-  id: string
-  action: string
-  actor: string
-  actorInitials: string
-  target: string
-  module: string
-  timestamp: string
-  ip: string
-}
-
-export interface SecurityEvent {
-  id: string
-  eventType: string
-  identity: string
-  source: string
-  timestamp: string
-  status: 'Success' | 'Blocked' | 'Warning'
-}
+export type { AdminUser, AdminRole, AuditLog, SecurityEvent } from '../types'
 
 export const adminUsers: AdminUser[] = [
   {
@@ -263,12 +228,12 @@ export const securityEvents: SecurityEvent[] = [
   },
 ]
 
-export const adminKpis = {
+export const adminKpis: AdminKpis = {
   users: 1284,
   roles: 12,
   activeSessions: 86,
   auditEventsToday: 142,
-  configHealth: 'Good' as const,
+  configHealth: 'Good',
   securityScore: 94,
   mfaAdoption: 88,
   openAlerts: 0,

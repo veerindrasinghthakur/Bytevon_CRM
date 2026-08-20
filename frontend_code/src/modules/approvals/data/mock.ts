@@ -1,21 +1,8 @@
-export type ApprovalStatus = 'Pending' | 'Approved' | 'Rejected' | 'In-Progress'
-export type ApprovalPriority = 'High' | 'Medium' | 'Normal' | 'Low'
+import type { ApprovalRow, ApprovalKpis, ApproverOption } from '../types'
 
-export interface ApprovalRow {
-  id: string
-  type: string
-  typeIcon: string
-  typeColor: string
-  requester: string
-  requesterInitials: string
-  date: string
-  priority: ApprovalPriority
-  status: ApprovalStatus
-  stage?: string
-  approver?: string
-}
+export type { ApprovalStatus, ApprovalPriority, ApprovalRow } from '../types'
 
-export const approvalKpis = {
+export const approvalKpis: ApprovalKpis = {
   total: 210,
   pending: 42,
   approvedToday: 156,
@@ -136,7 +123,7 @@ export const myRequests: ApprovalRow[] = [
   },
 ]
 
-export const APPROVER_OPTIONS = [
+export const APPROVER_OPTIONS: ApproverOption[] = [
   { value: 'sarah-chen', label: 'Sarah Chen (Manager)' },
   { value: 'robert-chen', label: 'Robert Chen (Director)' },
   { value: 'david-wilson', label: 'David Wilson (HR)' },

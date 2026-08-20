@@ -1,29 +1,14 @@
-export type PayrollStatus = 'Calculated' | 'Approved' | 'Paid' | 'Pending'
+import type {
+  PayrollEmployeeRow,
+  PayrollActivity,
+  PayrollKpis,
+  PayrollPeriodMeta,
+  MonthlyPayrollSummary,
+} from '../types'
 
-export interface PayrollEmployeeRow {
-  id: string
-  name: string
-  code: string
-  role: string
-  department: string
-  initials: string
-  avatar?: string
-  gross: number
-  earnings: number
-  deductions: number
-  net: number
-  status: PayrollStatus
-  paymentRef?: string
-}
+export type { PayrollStatus, PayrollEmployeeRow, PayrollActivity } from '../types'
 
-export interface PayrollActivity {
-  id: string
-  text: string
-  time: string
-  primary?: boolean
-}
-
-export const payrollKpis = {
+export const payrollKpis: PayrollKpis = {
   totalPayroll: 482500,
   totalEmployees: 186,
   pendingApproval: 44,
@@ -31,11 +16,11 @@ export const payrollKpis = {
   trendPct: 3.2,
 }
 
-export const periodMeta = {
+export const periodMeta: PayrollPeriodMeta = {
   month: 'August',
   year: 2026,
   label: 'August 2026 Payroll',
-  status: 'In Progress' as const,
+  status: 'In Progress',
   calculated: 186,
   approved: 142,
   paid: 0,
@@ -117,7 +102,7 @@ export const recentActivity: PayrollActivity[] = [
   { id: 'a3', text: 'Salary structure adjusted for Engineering', time: 'Yesterday' },
 ]
 
-export const monthlySummary = {
+export const monthlySummary: MonthlyPayrollSummary = {
   totalEmployees: 1248,
   grossSalary: '4.2M',
   earnings: 125000,
