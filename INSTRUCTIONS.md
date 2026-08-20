@@ -47,11 +47,12 @@ Implementation: `QuickOverviewProvider` + `useQuickOverview()` + `QuickOverviewP
 
 ---
 
-## 5. Sales Module Notes (current)
+## 5. Sales Module — Completed (2026-08-20)
 
-- Case Study cards must include View / Edit / Share actions and stay in sync with the case study management UI.
-- Client Detail and Lead Detail pages must match their respective UI screens.
-- Sales Activity page is to be merged into the Sales Dashboard (revenue overview, monthly lead growth, sales funnel, top performers). Replace Activity with the enhanced Dashboard and remove the separate bottom dashboard page if it exists.
+- **Case Studies:** View / Edit / Share actions on cards.
+- **Client Detail:** KPI row, activity timeline, company information, headquarters — synced with UI mockup.
+- **Lead Detail:** Pipeline progression, contact/company, activity timeline, value/probability panel.
+- **Dashboard + Activity merge:** Sales Dashboard includes revenue overview, monthly lead growth, sales funnel, top performers, and full activity timeline. Secondary nav has a single **Dashboard** entry (Activity removed as separate item). Prefer `/sales/dashboard`; legacy `/sales/activity` page file remains for reference but nav no longer surfaces it.
 
 ---
 
