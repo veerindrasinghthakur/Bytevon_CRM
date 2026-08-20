@@ -1,12 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { clients, clientMetrics } from '../data/mock'
-import type { Client, ClientType, RecordStatus } from '../types'
+import { useClientsList } from '../hooks/use-clients-list'
+import type { ClientType, RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
-
-const LONG_PRESS_MS = 3000
 
 function StatusDotOnly({ status }: { status: RecordStatus }) {
   return (
@@ -38,106 +35,29 @@ function formatMoney(n?: number) {
 
 export function ClientsListPage() {
   const navigate = useNavigate()
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('All')
-  const [typeFilter, setTypeFilter] = useState<string>('All')
-  const [quickView, setQuickView] = useState<Client | null>(null)
-
-  const [selectionMode, setSelectionMode] = useState(false)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const longPressTriggered = useRef(false)
-
-  const filtered = useMemo(() => {
-    return clients.filter((c) => {
-      const q = search.toLowerCase()
-      const matchSearch =
-        !q ||
-        c.name.toLowerCase().includes(q) ||
-        c.industry.toLowerCase().includes(q) ||
-        (c.primaryContact?.toLowerCase().includes(q) ?? false) ||
-        c.id.toLowerCase().includes(q)
-      const matchStatus = statusFilter === 'All' || c.status === statusFilter
-      const matchType = typeFilter === 'All' || c.type === typeFilter
-      return matchSearch && matchStatus && matchType
-    })
-  }, [search, statusFilter, typeFilter])
-
-  useEffect(() => {
-    const visible = new Set(filtered.map((c) => c.id))
-    setSelectedIds((prev) => {
-      const next = new Set([...prev].filter((id) => visible.has(id)))
-      if (next.size === 0 && selectionMode) setSelectionMode(false)
-      return next
-    })
-  }, [filtered, selectionMode])
-
-  const clearLongPress = useCallback(() => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current)
-      longPressTimer.current = null
-    }
-  }, [])
-
-  const enterSelectionWith = useCallback((id: string) => {
-    setSelectionMode(true)
-    setSelectedIds(new Set([id]))
-  }, [])
-
-  const toggleOne = useCallback((id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      if (next.size === 0) setSelectionMode(false)
-      else setSelectionMode(true)
-      return next
-    })
-  }, [])
-
-  const allFilteredSelected =
-    filtered.length > 0 && filtered.every((c) => selectedIds.has(c.id))
-
-  const toggleSelectAllFiltered = () => {
-    if (allFilteredSelected) {
-      setSelectedIds(new Set())
-      setSelectionMode(false)
-    } else {
-      setSelectedIds(new Set(filtered.map((c) => c.id)))
-      setSelectionMode(true)
-    }
-  }
-
-  const exitSelectionMode = () => {
-    setSelectedIds(new Set())
-    setSelectionMode(false)
-  }
-
-  const startLongPress = (id: string) => {
-    longPressTriggered.current = false
-    clearLongPress()
-    longPressTimer.current = setTimeout(() => {
-      longPressTriggered.current = true
-      enterSelectionWith(id)
-    }, LONG_PRESS_MS)
-  }
-
-  const endLongPress = (client: Client) => {
-    clearLongPress()
-    if (longPressTriggered.current) {
-      longPressTriggered.current = false
-      return
-    }
-    if (selectionMode) toggleOne(client.id)
-    else setQuickView(client)
-  }
-
-  const resetFilters = () => {
-    setSearch('')
-    setStatusFilter('All')
-    setTypeFilter('All')
-  }
+  const {
+    metrics,
+    totalCount,
+    filtered,
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    typeFilter,
+    setTypeFilter,
+    resetFilters,
+    quickView,
+    setQuickView,
+    selectionMode,
+    selectedIds,
+    allFilteredSelected,
+    toggleOne,
+    toggleSelectAllFiltered,
+    exitSelectionMode,
+    startLongPress,
+    endLongPress,
+    clearLongPress,
+  } = useClientsList()
 
   return (
     <div className="space-y-6 relative animate-fade-in">
@@ -161,7 +81,7 @@ export function ClientsListPage() {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {clientMetrics.map((m) => (
+        {metrics.map((m) => (
           <div key={m.id} className="bv-surface card-hover p-5">
             <div className="flex justify-between items-start mb-2">
               <span className="p-2 rounded-lg bg-secondary/10 text-secondary">
@@ -267,27 +187,13 @@ export function ClientsListPage() {
                     <span className="sr-only">Status</span>
                   )}
                 </th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Client
-                </th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Industry
-                </th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Projects
-                </th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                  Leads
-                </th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                  ARR / Revenue
-                </th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">
-                  Actions
-                </th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Client</th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Type</th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Industry</th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Projects</th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Leads</th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">ARR / Revenue</th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
@@ -342,21 +248,14 @@ export function ClientsListPage() {
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <span
-                        className={cn(
-                          'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase',
-                          typeStyles[client.type]
-                        )}
-                      >
+                      <span className={cn('px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase', typeStyles[client.type])}>
                         {client.type}
                       </span>
                     </td>
                     <td className="px-4 py-4 text-body-sm text-on-surface">{client.industry}</td>
                     <td className="px-4 py-4 font-semibold text-on-surface">{client.projects}</td>
                     <td className="px-4 py-4 font-semibold text-on-surface">{client.leads}</td>
-                    <td className="px-4 py-4 font-semibold text-on-surface">
-                      {formatMoney(client.arr ?? client.revenue)}
-                    </td>
+                    <td className="px-4 py-4 font-semibold text-on-surface">{formatMoney(client.arr ?? client.revenue)}</td>
                     <td
                       className="px-4 py-4 text-center"
                       onMouseDown={(e) => e.stopPropagation()}
@@ -392,7 +291,7 @@ export function ClientsListPage() {
         <div className="px-6 py-4 bg-surface-container-low/30 border-t border-outline-variant">
           <p className="text-xs text-on-surface-variant">
             Showing <span className="font-semibold text-on-surface">1–{filtered.length}</span> of{' '}
-            <span className="font-semibold text-on-surface">{clients.length}</span> clients
+            <span className="font-semibold text-on-surface">{totalCount}</span> clients
             {!selectionMode && (
               <span className="ml-2 text-on-surface-variant/80">· Hold a row 3s to multi-select</span>
             )}
@@ -433,12 +332,7 @@ export function ClientsListPage() {
                   </div>
                   <p className="text-on-surface-variant text-sm">{quickView.industry}</p>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    <span
-                      className={cn(
-                        'px-2 py-0.5 rounded text-[10px] font-bold uppercase',
-                        typeStyles[quickView.type]
-                      )}
-                    >
+                    <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold uppercase', typeStyles[quickView.type])}>
                       {quickView.type}
                     </span>
                   </div>
