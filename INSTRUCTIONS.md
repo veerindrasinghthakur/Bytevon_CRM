@@ -45,7 +45,22 @@ These rules apply to every code or documentation change in this repository.
 
 ---
 
-## 5. Contextual Detail Drawer (Overview Panel) — Locked
+## 5. Page Logic → Custom Hooks — Locked
+
+- Pages with substantial logic (filters, selection, long-press, data loading, form state, computed lists) **must** extract that logic into a custom hook under the module’s `hooks/` folder.
+- Page files should primarily contain React JSX (layout + binding). TypeScript business logic lives in hooks.
+- Naming: `use-<entity>-list.ts`, `use-<entity>-detail.ts`, `use-<action>.ts` (e.g. `use-leads-list.ts`, `use-employees-list.ts`).
+- Data-fetch hooks (react-query wrappers) stay separate from page-UI hooks when both exist (e.g. `use-projects.ts` vs `use-projects-list.ts`).
+- Create `hooks/` under a module if it does not exist yet.
+- Do not extract trivial one-liner pages; only pages with a meaningful amount of logic.
+
+**Done so far:** sales (`use-leads-list`, `use-clients-list`), workforce (`use-employees-list`), projects (`use-projects-list` + existing data hooks), notifications (data hooks).
+
+**Remaining:** wire remaining heavy pages (payroll, my-work, approvals, admin forms, workforce create/detail, sales dashboard, etc.).
+
+---
+
+## 6. Contextual Detail Drawer (Overview Panel) — Locked
 
 - Not permanent; drawer from the right on data-item click.
 - Height between App Header and viewport bottom.
@@ -53,33 +68,27 @@ These rules apply to every code or documentation change in this repository.
 
 ---
 
-## 6. Sales Module — Completed
+## 7. Sales Module — Completed (UI)
 
-Case studies actions, client/lead detail, dashboard+activity merge.
-
----
-
-## 7. Projects Module — Completed (core)
-
-- Project Detail tabs: Overview, Tasks, Team, Timeline, Documents, **Repository (tab only, not separate route)**.
-- Align Repository tab UI with repository information screen.
-- Task Detail cards; Team Detail recent projects.
+Case studies actions, client/lead detail, dashboard+activity merge. List pages use page hooks.
 
 ---
 
-## 8. Workforce Module — Progress (2026-08-20)
+## 8. Projects Module — Completed (core)
 
-- **Add Employee:** photo upload, documents section, gender/nationality, contact, address, emergency contact, employment ID (readonly preview), manager select, bank account holder name.
-- **Add Department:** Identity + Settings sections.
-- **Department Management:** metric cards (total, staffing, active, inactive) + empty state.
-- **Department Detail:** employee cards with role/tags, head section, open positions card when > 0, hover effects; add-member bottom-sheet style.
-- **Employee Detail:** Download + Deactivate actions, reporting manager block, attendance & leave overview cards on Overview tab.
-- **Add Member:** bottom-sheet popup from bottom with search and role assignment.
-- Remaining: finer pixel-match when workforce HTML mockups are attached; manager_id persistence in assignment schema; empty states polish for team/department lists.
+- Project Detail tabs: Overview, Tasks, Team, Timeline, Documents, **Repository (tab only)**.
+- List page uses `useProjectsList`.
 
 ---
 
-## 9. Commit Discipline
+## 9. Workforce Module — Progress
+
+- Employees list uses `useEmployeesList`.
+- Remaining form/detail pages still to extract into hooks.
+
+---
+
+## 10. Commit Discipline
 
 - Prefer fewer commits with coherent, related changes.
 - Clear conventional commit messages.

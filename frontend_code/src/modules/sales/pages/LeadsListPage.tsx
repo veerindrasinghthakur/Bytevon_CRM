@@ -1,14 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { HEADER_HEIGHT_PX } from '@/shared/components/layout/Header'
 import { Button } from '@/shared/components/ui/Button'
-import { leads, salesMetrics } from '../data/mock'
-import type { Lead, PipelineStage, LeadPriority, RecordStatus } from '../types'
+import { useLeadsList } from '../hooks/use-leads-list'
+import type { PipelineStage, LeadPriority, RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 
-const LONG_PRESS_MS = 3000
-/** Space under header + small bottom inset so panel does not touch edges */
 const QUICK_VIEW_BOTTOM_GAP_PX = 12
 
 const stageStyles: Record<PipelineStage, string> = {
@@ -55,7 +52,6 @@ function StatusDotOnly({ status }: { status: RecordStatus }) {
   )
 }
 
-/** Icon glyph — never selectable / copyable text */
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
     <span className={cn('material-symbols-outlined', className)} aria-hidden="true">
@@ -66,111 +62,35 @@ function Icon({ name, className }: { name: string; className?: string }) {
 
 export function LeadsListPage() {
   const navigate = useNavigate()
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('All')
-  const [stageFilter, setStageFilter] = useState<string>('All')
-  const [priorityFilter, setPriorityFilter] = useState<string>('All')
-  const [sourceFilter, setSourceFilter] = useState<string>('All')
-  const [quickView, setQuickView] = useState<Lead | null>(null)
-
-  const [selectionMode, setSelectionMode] = useState(false)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const longPressTriggered = useRef(false)
-
-  const filtered = useMemo(() => {
-    return leads.filter((l) => {
-      const q = search.toLowerCase()
-      const matchSearch =
-        !q ||
-        l.contactName.toLowerCase().includes(q) ||
-        l.title.toLowerCase().includes(q) ||
-        l.id.toLowerCase().includes(q)
-      const matchStatus = statusFilter === 'All' || l.status === statusFilter
-      const matchStage = stageFilter === 'All' || l.stage === stageFilter
-      const matchPriority = priorityFilter === 'All' || l.priority === priorityFilter
-      const matchSource = sourceFilter === 'All' || l.source === sourceFilter
-      return matchSearch && matchStatus && matchStage && matchPriority && matchSource
-    })
-  }, [search, statusFilter, stageFilter, priorityFilter, sourceFilter])
-
-  useEffect(() => {
-    const visible = new Set(filtered.map((l) => l.id))
-    setSelectedIds((prev) => {
-      const next = new Set([...prev].filter((id) => visible.has(id)))
-      if (next.size === 0 && selectionMode) setSelectionMode(false)
-      return next
-    })
-  }, [filtered, selectionMode])
-
-  const clearLongPress = useCallback(() => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current)
-      longPressTimer.current = null
-    }
-  }, [])
-
-  const enterSelectionWith = useCallback((id: string) => {
-    setSelectionMode(true)
-    setSelectedIds(new Set([id]))
-  }, [])
-
-  const toggleOne = useCallback((id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      if (next.size === 0) setSelectionMode(false)
-      else setSelectionMode(true)
-      return next
-    })
-  }, [])
-
-  const allFilteredSelected =
-    filtered.length > 0 && filtered.every((l) => selectedIds.has(l.id))
-
-  const toggleSelectAllFiltered = () => {
-    if (allFilteredSelected) {
-      setSelectedIds(new Set())
-      setSelectionMode(false)
-    } else {
-      setSelectedIds(new Set(filtered.map((l) => l.id)))
-      setSelectionMode(true)
-    }
-  }
-
-  const exitSelectionMode = () => {
-    setSelectedIds(new Set())
-    setSelectionMode(false)
-  }
-
-  const startLongPress = (id: string) => {
-    longPressTriggered.current = false
-    clearLongPress()
-    longPressTimer.current = setTimeout(() => {
-      longPressTriggered.current = true
-      enterSelectionWith(id)
-    }, LONG_PRESS_MS)
-  }
-
-  const endLongPress = (lead: Lead) => {
-    clearLongPress()
-    if (longPressTriggered.current) {
-      longPressTriggered.current = false
-      return
-    }
-    if (selectionMode) toggleOne(lead.id)
-    else setQuickView(lead)
-  }
-
-  const resetFilters = () => {
-    setSearch('')
-    setStatusFilter('All')
-    setStageFilter('All')
-    setPriorityFilter('All')
-    setSourceFilter('All')
-  }
+  const {
+    metrics,
+    totalCount,
+    filtered,
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    stageFilter,
+    setStageFilter,
+    priorityFilter,
+    setPriorityFilter,
+    sourceFilter,
+    setSourceFilter,
+    stages,
+    priorities,
+    resetFilters,
+    quickView,
+    setQuickView,
+    selectionMode,
+    selectedIds,
+    allFilteredSelected,
+    toggleOne,
+    toggleSelectAllFiltered,
+    exitSelectionMode,
+    startLongPress,
+    endLongPress,
+    clearLongPress,
+  } = useLeadsList()
 
   return (
     <div className="space-y-6 relative">
@@ -197,7 +117,7 @@ export function LeadsListPage() {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {salesMetrics.map((m) => (
+        {metrics.map((m) => (
           <div
             key={m.id}
             className={cn(
@@ -250,10 +170,7 @@ export function LeadsListPage() {
 
       <div className="flex flex-wrap items-center gap-3 bg-surface-container-low p-4 rounded-xl border border-outline-variant">
         <div className="relative flex-1 min-w-[200px]">
-          <Icon
-            name="search"
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg"
-          />
+          <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -276,13 +193,11 @@ export function LeadsListPage() {
           className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none"
         >
           <option value="All">All Stages</option>
-          {(['New', 'Contacted', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Lost'] as PipelineStage[]).map(
-            (s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            )
-          )}
+          {stages.map((s) => (
+            <option key={s} value={s}>
+              {s}
+            </option>
+          ))}
         </select>
         <select
           value={priorityFilter}
@@ -290,7 +205,7 @@ export function LeadsListPage() {
           className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none"
         >
           <option value="All">All Priority</option>
-          {(['Critical', 'High', 'Medium', 'Low'] as LeadPriority[]).map((p) => (
+          {priorities.map((p) => (
             <option key={p} value={p}>
               {p}
             </option>
@@ -514,7 +429,7 @@ export function LeadsListPage() {
         <div className="px-6 py-4 bg-surface-container-low/30 border-t border-outline-variant flex items-center justify-between">
           <p className="text-xs text-on-surface-variant">
             Showing <span className="font-semibold text-on-surface">1–{filtered.length}</span> of{' '}
-            <span className="font-semibold text-on-surface">{leads.length}</span> leads
+            <span className="font-semibold text-on-surface">{totalCount}</span> leads
             {!selectionMode && (
               <span className="ml-2 text-on-surface-variant/80">· Hold a row 3s to multi-select</span>
             )}
