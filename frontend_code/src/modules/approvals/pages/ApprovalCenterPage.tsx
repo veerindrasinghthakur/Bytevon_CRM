@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { approvalKpis, pendingApprovals } from '../data/mock'
+import { useApprovalCenter } from '../hooks/use-approval-center'
 import { cn } from '@/shared/lib/cn'
 
 const priorityStyles: Record<string, string> = {
@@ -13,6 +13,7 @@ const priorityStyles: Record<string, string> = {
 
 export function ApprovalCenterPage() {
   const navigate = useNavigate()
+  const { kpis, rows, showingCount, pendingTotal } = useApprovalCenter()
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -21,18 +22,10 @@ export function ApprovalCenterPage() {
         description="Manage and process organizational requests."
         actions={
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-[20px]">history</span>}
-            >
+            <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[20px]">history</span>}>
               Log
             </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-[20px]">file_export</span>}
-            >
+            <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-[20px]">file_export</span>}>
               Export
             </Button>
           </div>
@@ -40,38 +33,10 @@ export function ApprovalCenterPage() {
       />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard
-          icon="stacks"
-          iconClass="bg-secondary/5 text-secondary"
-          label="Total Approvals"
-          value={approvalKpis.total}
-          trend="Stable"
-        />
-        <KpiCard
-          icon="pending_actions"
-          iconClass="bg-secondary/15 text-secondary"
-          label="Pending Approvals"
-          value={approvalKpis.pending}
-          trend="12%"
-          trendUp
-          onClick={() => navigate({ to: '/approvals/pending' })}
-        />
-        <KpiCard
-          icon="task_alt"
-          iconClass="bg-emerald-100 text-emerald-700"
-          label="Approved Today"
-          value={approvalKpis.approvedToday}
-          trend="8%"
-          trendUp
-          trendClass="text-emerald-600"
-        />
-        <KpiCard
-          icon="cancel"
-          iconClass="bg-red-100 text-red-700"
-          label="Rejected Today"
-          value={approvalKpis.rejectedToday}
-          trend="Stable"
-        />
+        <KpiCard icon="stacks" iconClass="bg-secondary/5 text-secondary" label="Total Approvals" value={kpis.total} trend="Stable" />
+        <KpiCard icon="pending_actions" iconClass="bg-secondary/15 text-secondary" label="Pending Approvals" value={kpis.pending} trend="12%" trendUp onClick={() => navigate({ to: '/approvals/pending' })} />
+        <KpiCard icon="task_alt" iconClass="bg-emerald-100 text-emerald-700" label="Approved Today" value={kpis.approvedToday} trend="8%" trendUp trendClass="text-emerald-600" />
+        <KpiCard icon="cancel" iconClass="bg-red-100 text-red-700" label="Rejected Today" value={kpis.rejectedToday} trend="Stable" />
       </section>
 
       <section className="bv-surface overflow-hidden">
@@ -88,16 +53,13 @@ export function ApprovalCenterPage() {
               <option>Approved</option>
               <option>Rejected</option>
             </select>
-            <button
-              type="button"
-              className="flex items-center gap-2 px-3 py-2 text-label-md text-secondary hover:bg-secondary/5 rounded-lg transition-colors"
-            >
+            <button type="button" className="flex items-center gap-2 px-3 py-2 text-label-md text-secondary hover:bg-secondary/5 rounded-lg transition-colors">
               <span className="material-symbols-outlined text-[18px]">calendar_month</span>
               Last 30 Days
             </button>
           </div>
           <p className="text-label-sm text-on-surface-variant">
-            Showing 1–{Math.min(10, pendingApprovals.length)} of {approvalKpis.pending} requests
+            Showing 1–{showingCount} of {pendingTotal} requests
           </p>
         </div>
 
@@ -105,36 +67,18 @@ export function ApprovalCenterPage() {
           <table className="w-full text-left border-collapse min-w-[800px]">
             <thead>
               <tr className="bg-surface-container-low border-b border-outline-variant">
-                <th className="px-6 py-3 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">
-                  ID
-                </th>
-                <th className="px-6 py-3 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">
-                  Type
-                </th>
-                <th className="px-6 py-3 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">
-                  Requester
-                </th>
-                <th className="px-6 py-3 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-6 py-3 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">
-                  Priority
-                </th>
-                <th className="px-6 py-3 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">
-                  Actions
-                </th>
+                <th className="px-6 py-3 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">ID</th>
+                <th className="px-6 py-3 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Type</th>
+                <th className="px-6 py-3 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Requester</th>
+                <th className="px-6 py-3 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Date</th>
+                <th className="px-6 py-3 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Priority</th>
+                <th className="px-6 py-3 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
-              {pendingApprovals.slice(0, 5).map((row) => (
-                <tr
-                  key={row.id}
-                  className="zebra-row cursor-pointer"
-                  onClick={() => navigate({ to: '/approvals/pending' })}
-                >
+              {rows.map((row) => (
+                <tr key={row.id} className="zebra-row cursor-pointer" onClick={() => navigate({ to: '/approvals/pending' })}>
                   <td className="px-6 py-4 font-medium text-secondary">#{row.id}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
@@ -154,12 +98,7 @@ export function ApprovalCenterPage() {
                   </td>
                   <td className="px-6 py-4 text-body-sm text-on-surface-variant">{row.date}</td>
                   <td className="px-6 py-4">
-                    <span
-                      className={cn(
-                        'px-2 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide',
-                        priorityStyles[row.priority]
-                      )}
-                    >
+                    <span className={cn('px-2 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide', priorityStyles[row.priority])}>
                       {row.priority}
                     </span>
                   </td>
@@ -171,25 +110,13 @@ export function ApprovalCenterPage() {
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        className="p-2 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors"
-                        title="Quick Approve"
-                      >
+                      <button type="button" className="p-2 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors" title="Quick Approve">
                         <span className="material-symbols-outlined">check_circle</span>
                       </button>
-                      <button
-                        type="button"
-                        className="p-2 hover:bg-red-100 text-red-700 rounded-lg transition-colors"
-                        title="Quick Reject"
-                      >
+                      <button type="button" className="p-2 hover:bg-red-100 text-red-700 rounded-lg transition-colors" title="Quick Reject">
                         <span className="material-symbols-outlined">cancel</span>
                       </button>
-                      <button
-                        type="button"
-                        className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors"
-                        title="View"
-                      >
+                      <button type="button" className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors" title="View">
                         <span className="material-symbols-outlined">visibility</span>
                       </button>
                     </div>
@@ -201,23 +128,13 @@ export function ApprovalCenterPage() {
         </div>
 
         <div className="px-6 py-4 border-t border-outline-variant flex items-center justify-between">
-          <Button variant="outline" size="sm">
-            Previous
-          </Button>
+          <Button variant="outline" size="sm">Previous</Button>
           <div className="flex gap-2">
-            <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary text-white font-bold text-sm">
-              1
-            </span>
-            <button type="button" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-sm transition-colors">
-              2
-            </button>
-            <button type="button" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-sm transition-colors">
-              3
-            </button>
+            <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary text-white font-bold text-sm">1</span>
+            <button type="button" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-sm transition-colors">2</button>
+            <button type="button" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-sm transition-colors">3</button>
           </div>
-          <Button variant="outline" size="sm">
-            Next
-          </Button>
+          <Button variant="outline" size="sm">Next</Button>
         </div>
       </section>
     </div>
@@ -244,24 +161,13 @@ function KpiCard({
   onClick?: () => void
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="bv-surface card-hover p-4 text-left w-full"
-    >
+    <button type="button" onClick={onClick} className="bv-surface card-hover p-4 text-left w-full">
       <div className="flex justify-between items-start mb-2">
         <span className={cn('p-2 rounded-lg', iconClass)}>
           <span className="material-symbols-outlined">{icon}</span>
         </span>
-        <div
-          className={cn(
-            'flex items-center gap-1 text-label-sm',
-            trendClass ?? 'text-on-surface-variant'
-          )}
-        >
-          <span className="material-symbols-outlined text-[14px]">
-            {trendUp ? 'trending_up' : 'trending_flat'}
-          </span>
+        <div className={cn('flex items-center gap-1 text-label-sm', trendClass ?? 'text-on-surface-variant')}>
+          <span className="material-symbols-outlined text-[14px]">{trendUp ? 'trending_up' : 'trending_flat'}</span>
           <span>{trend}</span>
         </div>
       </div>

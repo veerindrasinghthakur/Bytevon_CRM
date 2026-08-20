@@ -49,14 +49,23 @@ These rules apply to every code or documentation change in this repository.
 
 - Pages with substantial logic (filters, selection, long-press, data loading, form state, computed lists) **must** extract that logic into a custom hook under the module’s `hooks/` folder.
 - Page files should primarily contain React JSX (layout + binding). TypeScript business logic lives in hooks.
-- Naming: `use-<entity>-list.ts`, `use-<entity>-detail.ts`, `use-<action>.ts` (e.g. `use-leads-list.ts`, `use-employees-list.ts`).
-- Data-fetch hooks (react-query wrappers) stay separate from page-UI hooks when both exist (e.g. `use-projects.ts` vs `use-projects-list.ts`).
+- Naming: `use-<entity>-list.ts`, `use-<entity>-detail.ts`, `use-<action>.ts`.
+- Data-fetch hooks (react-query wrappers) stay separate from page-UI hooks when both exist.
 - Create `hooks/` under a module if it does not exist yet.
 - Do not extract trivial one-liner pages; only pages with a meaningful amount of logic.
 
-**Done so far:** sales (`use-leads-list`, `use-clients-list`), workforce (`use-employees-list`), projects (`use-projects-list` + existing data hooks), notifications (data hooks).
+### Hooks inventory (major modules)
 
-**Remaining:** wire remaining heavy pages (payroll, my-work, approvals, admin forms, workforce create/detail, sales dashboard, etc.).
+| Module | Hooks |
+|--------|-------|
+| **sales** | `use-leads-list`, `use-clients-list`, `use-sales-dashboard` |
+| **projects** | `use-projects`, `use-projects-list`, `use-tasks`, `use-tasks-list`, `use-teams` |
+| **workforce** | `use-employees-list`, `use-departments-list`, `use-teams-list` |
+| **payroll** | `use-employee-payroll-history`, `use-run-payroll`, `use-payroll-review`, `use-monthly-payroll` |
+| **notifications** | `use-notifications`, `use-notification-center` |
+| **approvals** | `use-approval-center`, `use-pending-approvals` |
+
+Remaining form-heavy pages (EmployeeCreate, ApplyLeave, MyLeave, etc.) follow the same pattern when next edited.
 
 ---
 
@@ -68,27 +77,7 @@ These rules apply to every code or documentation change in this repository.
 
 ---
 
-## 7. Sales Module — Completed (UI)
-
-Case studies actions, client/lead detail, dashboard+activity merge. List pages use page hooks.
-
----
-
-## 8. Projects Module — Completed (core)
-
-- Project Detail tabs: Overview, Tasks, Team, Timeline, Documents, **Repository (tab only)**.
-- List page uses `useProjectsList`.
-
----
-
-## 9. Workforce Module — Progress
-
-- Employees list uses `useEmployeesList`.
-- Remaining form/detail pages still to extract into hooks.
-
----
-
-## 10. Commit Discipline
+## 7. Commit Discipline
 
 - Prefer fewer commits with coherent, related changes.
 - Clear conventional commit messages.
