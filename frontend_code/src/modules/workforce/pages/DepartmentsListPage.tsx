@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
@@ -31,6 +31,14 @@ export function DepartmentsListPage() {
     void load()
   }, [])
 
+  const metrics = useMemo(() => {
+    const total = items.length
+    const active = items.filter((d) => d.status === 'Active').length
+    const inactive = items.filter((d) => d.status !== 'Active').length
+    const staffing = items.reduce((sum, d) => sum + (d.staffCount ?? 0), 0)
+    return { total, active, inactive, staffing }
+  }, [items])
+
   const filtered = items.filter((d) => {
     const q = search.toLowerCase()
     const matchQ =
@@ -46,7 +54,7 @@ export function DepartmentsListPage() {
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Department Management"
-        description={`Total Departments: ${items.length} (mock DB)`}
+        description="Organize structure, heads, and staffing across the organization."
         actions={
           <div className="flex gap-2">
             <Button
@@ -59,6 +67,13 @@ export function DepartmentsListPage() {
           </div>
         }
       />
+
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricCard label="Total Departments" value={String(metrics.total)} icon="domain" tone="bg-secondary/10 text-secondary" />
+        <MetricCard label="Total Staffing" value={String(metrics.staffing)} icon="groups" tone="bg-purple-100 text-purple-700" />
+        <MetricCard label="Active" value={String(metrics.active)} icon="check_circle" tone="bg-emerald-100 text-emerald-700" />
+        <MetricCard label="Inactive / Archived" value={String(metrics.inactive)} icon="archive" tone="bg-surface-container text-on-surface-variant" />
+      </section>
 
       <div className="bv-surface p-4 flex flex-wrap gap-4 items-center">
         <div className="relative flex-1 min-w-[200px]">
@@ -81,10 +96,25 @@ export function DepartmentsListPage() {
         </select>
       </div>
 
+      {!loading && filtered.length === 0 && (
+        <div className="bv-surface p-16 text-center space-y-3">
+          <Icon name="domain_disabled" className="text-5xl text-on-surface-variant" />
+          <h3 className="text-title-lg font-semibold text-on-background">No departments found</h3>
+          <p className="text-body-sm text-on-surface-variant max-w-md mx-auto">
+            {search || status !== 'All'
+              ? 'Try clearing filters or search.'
+              : 'Create your first department to organize staff and reporting lines.'}
+          </p>
+          <Button variant="primary" onClick={() => navigate({ to: '/workforce/departments/new' })}>
+            Add Department
+          </Button>
+        </div>
+      )}
+
       <div className="bv-surface overflow-hidden">
         {loading ? (
           <div className="p-12 text-center text-on-surface-variant">Loading departments…</div>
-        ) : (
+        ) : filtered.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -113,7 +143,7 @@ export function DepartmentsListPage() {
                       <div className="flex items-center gap-3">
                         <div
                           className={cn(
-                            'w-10 h-10 rounded-lg flex items-center justify-center',
+                            'w-10 h-10 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105',
                             d.status === 'Active'
                               ? 'bg-secondary/15 text-secondary'
                               : 'bg-surface-container-highest text-outline',
@@ -160,10 +190,36 @@ export function DepartmentsListPage() {
               </tbody>
             </table>
           </div>
+        ) : null}
+        {filtered.length > 0 && (
+          <div className="px-6 py-4 border-t border-outline-variant text-body-sm text-on-surface-variant">
+            Showing {filtered.length} of {items.length} departments
+          </div>
         )}
-        <div className="px-6 py-4 border-t border-outline-variant text-body-sm text-on-surface-variant">
-          Showing {filtered.length} of {items.length} departments
-        </div>
+      </div>
+    </div>
+  )
+}
+
+function MetricCard({
+  label,
+  value,
+  icon,
+  tone,
+}: {
+  label: string
+  value: string
+  icon: string
+  tone: string
+}) {
+  return (
+    <div className="bv-surface card-hover p-5 flex flex-col justify-between min-h-[120px]">
+      <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', tone)}>
+        <Icon name={icon} />
+      </div>
+      <div className="mt-3">
+        <p className="text-label-sm text-on-surface-variant">{label}</p>
+        <p className="text-3xl font-bold text-on-background leading-none mt-1">{value}</p>
       </div>
     </div>
   )
