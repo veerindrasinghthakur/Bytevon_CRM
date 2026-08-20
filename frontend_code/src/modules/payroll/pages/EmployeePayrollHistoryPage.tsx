@@ -6,6 +6,16 @@ import { cn } from '@/shared/lib/cn'
 /** Immutable paid-out payroll history only — no mutable / in-progress rows. */
 const historyRows = [
   {
+    month: 'November 2023',
+    gross: '$8,500.00',
+    earnings: '+$500.00',
+    deductions: '-$1,250.00',
+    adjustments: '$0.00',
+    net: '$7,750.00',
+    paymentDate: 'Pending',
+    status: 'APPROVED' as const,
+  },
+  {
     month: 'October 2023',
     gross: '$8,500.00',
     earnings: '+$500.00',
@@ -27,18 +37,19 @@ const historyRows = [
   },
   {
     month: 'August 2023',
-    gross: '$8,200.00',
-    earnings: '+$0.00',
-    deductions: '-$1,200.00',
+    gross: '$8,500.00',
+    earnings: '+$500.00',
+    deductions: '-$1,250.00',
     adjustments: '$0.00',
-    net: '$7,000.00',
-    paymentDate: 'Aug 31, 2023',
+    net: '$7,750.00',
+    paymentDate: 'Aug 30, 2023',
     status: 'PAID' as const,
   },
 ]
 
 const statusStyle: Record<string, string> = {
-  PAID: 'bg-success-emerald/10 text-success-emerald border border-success-emerald/20',
+  PAID: 'bg-[#e6f4ea] text-[#137333] border border-[#ceead6]',
+  APPROVED: 'bg-[#e8f0fe] text-[#1967d2] border border-[#d2e3fc]',
 }
 
 export function EmployeePayrollHistoryPage() {
@@ -82,7 +93,7 @@ export function EmployeePayrollHistoryPage() {
             <div>
               <h1 className="text-headline-lg font-semibold text-deep-navy">Payroll History</h1>
               <p className="text-body-md text-on-surface-variant mt-1">
-                Paid-out payroll records only. Entries are read-only.
+                Manage and view historical payroll records for the employee.
               </p>
             </div>
           </div>
@@ -97,7 +108,9 @@ export function EmployeePayrollHistoryPage() {
                   <span className="material-symbols-outlined text-[16px]">badge</span> {emp.code}
                 </span>
                 <span className="w-1 h-1 rounded-full bg-outline-variant" />
-                <span>{emp.department}</span>
+                <span className="flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[16px]">engineering</span> {emp.department}
+                </span>
                 <span className="w-1 h-1 rounded-full bg-outline-variant" />
                 <span>{emp.role}</span>
               </div>
@@ -106,11 +119,66 @@ export function EmployeePayrollHistoryPage() {
         </div>
       </header>
 
+      {/* Summary cards — synced to Payroll_history.html */}
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bv-surface p-6 flex flex-col gap-2">
+          <div className="flex justify-between items-start">
+            <span className="text-label-md text-on-surface-variant flex items-center gap-2">
+              <span className="material-symbols-outlined text-outline">payments</span> Current Gross Salary
+            </span>
+          </div>
+          <div className="text-headline-lg font-semibold text-deep-navy mt-1">$8,500.00</div>
+          <div className="text-body-sm text-on-surface-variant mt-auto">Per pay period</div>
+        </div>
+        <div className="bv-surface p-6 flex flex-col gap-2">
+          <div className="flex justify-between items-start">
+            <span className="text-label-md text-on-surface-variant flex items-center gap-2">
+              <span className="material-symbols-outlined text-outline">account_balance_wallet</span> Current Net Salary
+            </span>
+          </div>
+          <div className="text-headline-lg font-semibold text-deep-navy mt-1">$6,450.00</div>
+          <div className="text-body-sm text-on-surface-variant mt-auto">Estimated average</div>
+        </div>
+        <div className="bv-surface p-6 flex flex-col gap-2 relative overflow-hidden">
+          <div className="absolute right-0 bottom-0 opacity-5 pointer-events-none">
+            <span className="material-symbols-outlined text-[120px]">trending_up</span>
+          </div>
+          <div className="flex justify-between items-start relative z-10">
+            <span className="text-label-md text-on-surface-variant flex items-center gap-2">
+              <span className="material-symbols-outlined text-outline">insights</span> Total Paid This Year (YTD)
+            </span>
+            <span className="bg-[#e6f4ea] text-[#137333] px-2 py-1 rounded text-label-sm">+12%</span>
+          </div>
+          <div className="text-headline-lg font-semibold text-deep-navy mt-1 relative z-10">$64,500.00</div>
+          <div className="text-body-sm text-on-surface-variant mt-auto relative z-10">As of Nov 2023</div>
+        </div>
+      </section>
+
       <section className="bv-surface flex flex-col">
-        <div className="p-4 border-b border-outline-variant flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-label-md text-on-surface-variant">
-            Showing paid payrolls only — no pending or in-progress entries.
-          </p>
+        <div className="p-4 border-b border-outline-variant flex flex-col sm:flex-row justify-between items-center gap-4 bg-surface">
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="relative">
+              <select className="appearance-none bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 pr-10 text-label-md text-on-surface focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary cursor-pointer">
+                <option>2023</option>
+                <option>2022</option>
+                <option>2021</option>
+              </select>
+              <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]">
+                expand_more
+              </span>
+            </div>
+            <div className="relative">
+              <select className="appearance-none bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 pr-10 text-label-md text-on-surface focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary cursor-pointer">
+                <option>Status: All</option>
+                <option>Calculated</option>
+                <option>Approved</option>
+                <option>Paid</option>
+              </select>
+              <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]">
+                expand_more
+              </span>
+            </div>
+          </div>
           <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}>
             Export
           </Button>
@@ -133,11 +201,11 @@ export function EmployeePayrollHistoryPage() {
             </thead>
             <tbody className="text-body-sm divide-y divide-outline-variant">
               {historyRows.map((r) => (
-                <tr key={r.month} className="zebra-row">
+                <tr key={r.month} className="zebra-row group">
                   <td className="p-4 text-deep-navy font-medium">{r.month}</td>
                   <td className="p-4 text-on-surface-variant">{r.gross}</td>
-                  <td className="p-4 text-success-emerald font-medium">{r.earnings}</td>
-                  <td className="p-4 text-error">{r.deductions}</td>
+                  <td className="p-4 text-[#137333] font-medium">{r.earnings}</td>
+                  <td className="p-4 text-[#c5221f]">{r.deductions}</td>
                   <td
                     className={cn(
                       'p-4',
@@ -159,21 +227,64 @@ export function EmployeePayrollHistoryPage() {
                     </span>
                   </td>
                   <td className="p-4 text-right whitespace-nowrap">
-                    <button
-                      type="button"
-                      className="text-primary hover:text-secondary text-label-md inline-flex items-center gap-1 transition-colors"
-                      onClick={() =>
-                        navigate({ to: '/payroll/payslip/$employeeId', params: { employeeId: emp.id } })
-                      }
-                    >
-                      <span className="material-symbols-outlined text-[18px]">receipt_long</span>
-                      Payslip
-                    </button>
+                    <div className="flex items-center justify-end gap-3">
+                      {r.status === 'PAID' && (
+                        <button
+                          type="button"
+                          className="text-on-surface-variant hover:text-on-surface text-label-md inline-flex items-center gap-1 transition-colors"
+                          title="View Payslip"
+                          onClick={() =>
+                            navigate({ to: '/payroll/payslip/$employeeId', params: { employeeId: emp.id } })
+                          }
+                        >
+                          <span className="material-symbols-outlined text-[18px]">receipt_long</span>
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="text-primary hover:text-secondary text-label-md inline-flex items-center gap-1 transition-colors"
+                        onClick={() =>
+                          navigate({ to: '/payroll/payslip/$employeeId', params: { employeeId: emp.id } })
+                        }
+                      >
+                        <span className="material-symbols-outlined text-[18px]">visibility</span>
+                        {r.status === 'APPROVED' ? 'View Payroll' : ''}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+
+        <div className="p-4 border-t border-outline-variant flex items-center justify-between bg-surface-container-lowest rounded-b-xl">
+          <div className="text-body-sm text-on-surface-variant">
+            Showing <span className="font-medium text-on-surface">1</span> to{' '}
+            <span className="font-medium text-on-surface">4</span> of{' '}
+            <span className="font-medium text-on-surface">24</span> results
+          </div>
+          <div className="flex gap-1">
+            <button
+              type="button"
+              className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container disabled:opacity-50"
+              disabled
+            >
+              <span className="material-symbols-outlined text-[18px]">chevron_left</span>
+            </button>
+            <button type="button" className="w-8 h-8 flex items-center justify-center rounded bg-secondary text-on-primary text-label-sm font-semibold">
+              1
+            </button>
+            <button type="button" className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface hover:bg-surface-container text-label-sm">
+              2
+            </button>
+            <button type="button" className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface hover:bg-surface-container text-label-sm">
+              3
+            </button>
+            <button type="button" className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container">
+              <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+            </button>
+          </div>
         </div>
       </section>
     </div>
