@@ -1,21 +1,7 @@
 import { delay, getDb, nextId } from '@/shared/mock/db'
+import type { Task, TaskPriority } from '../types'
 
-export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
-export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE' | 'BLOCKED' | 'ON_HOLD'
-
-/** Tasks are sub-parts of a project (always owned by projectId). */
-export interface Task {
-  id: number
-  title: string
-  description?: string
-  priority: TaskPriority
-  status: TaskStatus
-  projectId: number
-  projectName?: string
-  assigneeName?: string
-  dueDate?: string | null
-  createdAt: string
-}
+export type { Task, TaskPriority, TaskStatus } from '../types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function asTask(row: any): Task {
@@ -24,7 +10,7 @@ function asTask(row: any): Task {
     title: row.title,
     description: row.description ?? undefined,
     priority: row.priority as TaskPriority,
-    status: row.status as TaskStatus,
+    status: row.status,
     projectId: row.projectId,
     projectName: row.projectName ?? undefined,
     assigneeName: row.assigneeName ?? undefined,
@@ -49,7 +35,7 @@ export async function getTasks(params?: {
       (t) =>
         t.title.toLowerCase().includes(q) ||
         t.projectName?.toLowerCase().includes(q) ||
-        t.assigneeName?.toLowerCase().includes(q)
+        t.assigneeName?.toLowerCase().includes(q),
     )
   }
   if (params?.status) {
@@ -68,7 +54,7 @@ export async function updateTask(
   id: number,
   patch: Partial<
     Pick<Task, 'title' | 'description' | 'priority' | 'status' | 'assigneeName' | 'dueDate'>
-  >
+  >,
 ): Promise<Task> {
   await delay(400)
   const tasks = getDb().tasks

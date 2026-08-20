@@ -1,14 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import {
-  getTasks,
-  getTask,
-  createTask,
-  updateTask,
-  type Task,
-  type TaskPriority,
-} from '../api/tasks'
-
-type TaskListCache = { items: Task[]; total: number }
+import { getTasks, getTask, createTask, updateTask } from '../api/tasks'
+import type { Task, TaskPriority, TaskListCache } from '../types'
 
 export function useTasks(filters?: {
   search?: string
@@ -61,7 +53,6 @@ export function useCreateTask() {
 
       queryClient.setQueriesData<TaskListCache>({ queryKey: ['projects', 'tasks', 'list'] }, (old) => {
         if (!old) return { items: [optimistic], total: 1 }
-        // Only inject into lists that match project filter when present
         return { items: [optimistic, ...old.items], total: old.total + 1 }
       })
 

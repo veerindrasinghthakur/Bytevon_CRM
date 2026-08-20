@@ -1,20 +1,7 @@
 import { delay, getDb, nextId } from '@/shared/mock/db'
+import type { Team } from '../types'
 
-export type TeamStatus = 'ACTIVE' | 'INACTIVE'
-
-export interface Team {
-  id: number
-  name: string
-  description?: string
-  department?: string
-  headName?: string
-  headRole?: string
-  projectName?: string
-  memberCount: number
-  projectCount: number
-  status: TeamStatus
-  createdAt: string
-}
+export type { Team, TeamStatus } from '../types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function asTeam(row: any): Team {
@@ -28,7 +15,7 @@ function asTeam(row: any): Team {
     projectName: row.projectName ?? undefined,
     memberCount: row.memberCount,
     projectCount: row.projectCount,
-    status: row.status as TeamStatus,
+    status: row.status,
     createdAt: row.createdAt,
   }
 }
@@ -42,7 +29,7 @@ export async function getTeams(params?: { search?: string }): Promise<{ items: T
       (t) =>
         t.name.toLowerCase().includes(q) ||
         t.department?.toLowerCase().includes(q) ||
-        t.headName?.toLowerCase().includes(q)
+        t.headName?.toLowerCase().includes(q),
     )
   }
   return { items, total: items.length }
@@ -56,7 +43,7 @@ export async function getTeam(id: number): Promise<Team | null> {
 
 export async function updateTeam(
   id: number,
-  patch: Partial<Pick<Team, 'name' | 'description' | 'department' | 'headName' | 'headRole' | 'status'>>
+  patch: Partial<Pick<Team, 'name' | 'description' | 'department' | 'headName' | 'headRole' | 'status'>>,
 ): Promise<Team> {
   await delay(400)
   const teams = getDb().teams
@@ -72,7 +59,6 @@ export async function createTeam(input: {
   headName?: string
   headRole?: string
   memberNames?: string[]
-  /** When set, team is linked to this project and project.teamCount increments */
   projectId?: number
   projectName?: string
 }): Promise<Team> {
@@ -90,7 +76,7 @@ export async function createTeam(input: {
     projectName: input.projectName ?? null,
     memberCount,
     projectCount: input.projectId ? 1 : 0,
-    status: 'ACTIVE',
+    status: 'ACTIVE' as const,
     createdAt: new Date().toISOString(),
   }
   teams.unshift(row)

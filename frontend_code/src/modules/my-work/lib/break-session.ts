@@ -1,18 +1,8 @@
 /** Local break session — client-only until backend exists */
 
-export type BreakMode = 'countdown' | 'stopwatch'
+import type { BreakSession } from '../types'
 
-export interface BreakSession {
-  id: string
-  mode: BreakMode
-  /** ISO start */
-  startedAt: string
-  /** Minutes when mode is countdown; undefined for stopwatch */
-  durationMinutes?: number
-  /** ISO end when stopped or countdown finished */
-  endedAt?: string
-  note?: string
-}
+export type { BreakMode, BreakSession } from '../types'
 
 const ACTIVE_KEY = 'bytevon.activeBreak'
 const HISTORY_KEY = 'bytevon.breakHistory'
