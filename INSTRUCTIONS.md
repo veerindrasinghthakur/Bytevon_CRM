@@ -41,36 +41,31 @@ These rules apply to every code or documentation change in this repository.
 - All values in `globals.css` must reference CSS variables from tokens.
 - Tailwind maps tokens via `tailwind.config.js` (`var(--…)`).
 - When a new visual constant is needed, add a token first, then use it.
-- Prefer semantic names: `--color-*`, `--spacing-*`, `--radius-*`, `--duration-*`, `--opacity-*`, `--elevation-*`.
 
 ---
 
 ## 5. Page Logic → Custom Hooks — Locked
 
-- Pages / components with substantial logic (filters, selection, long-press, data loading, form state, computed lists, shell layout math) **must** extract that logic into a custom hook under the module’s `hooks/` folder (or `shared/hooks` for cross-cutting layout).
-- Page/component files should primarily contain React JSX (layout + binding). TypeScript business logic lives in hooks.
-- Naming: `use-<entity>-list.ts`, `use-<entity>-detail.ts`, `use-<action>.ts`, camelCase for shared layout hooks.
-- Data-fetch hooks (react-query wrappers) stay separate from page-UI hooks when both exist.
-- Create `hooks/` under a module if it does not exist yet.
-- Do not extract trivial one-liner pages; only pages with a meaningful amount of logic.
-
-### Hooks inventory
-
-| Area | Hooks |
-|------|-------|
-| **shared** | `useListSelection`, `useAppShell`, `useSecondaryNav`, `useIconRail`, `useLiveClock`, `useHeaderBreak`, `useHeaderAttendance` |
-| **sales** | `use-leads-list`, `use-clients-list`, `use-sales-dashboard` |
-| **projects** | `use-projects`, `use-projects-list`, `use-tasks`, `use-tasks-list`, `use-teams` |
-| **workforce** | `use-employees-list`, `use-departments-list`, `use-teams-list` |
-| **payroll** | `use-employee-payroll-history`, `use-run-payroll`, `use-payroll-review`, `use-monthly-payroll` |
-| **notifications** | `use-notifications`, `use-notification-center` |
-| **approvals** | `use-approval-center`, `use-pending-approvals` |
-
-Remaining form-heavy pages (EmployeeCreate, ApplyLeave, MyLeave, etc.) follow the same pattern when next edited.
+- Pages / components with substantial logic must extract that logic into a custom hook under the module’s `hooks/` folder (or `shared/hooks` for cross-cutting layout).
+- Page files should primarily contain React JSX. TypeScript business logic lives in hooks.
 
 ---
 
-## 6. Contextual Detail Drawer (Overview Panel) — Locked
+## 6. Module Types — Locked
+
+- **One `types.ts` file per module** at `modules/<name>/types.ts`.
+- Shared layout/shell types live in `shared/types.ts`.
+- Domain entities, enums, and DTOs belong in `types.ts` — **not** in mock data files, pages, or API modules (API may re-export for convenience).
+- Zod schemas may remain under `schemas/`; `types.ts` should re-export inferred types so consumers import from one place: `import type { X } from '../types'`.
+- Existing inventory:
+  - `shared/types.ts` — SecondaryNavItem/Group, RailItem, MetricCardBase
+  - `sales/types.ts`, `workforce/types.ts`, `notifications/types.ts`, `my-work/types.ts`
+  - `payroll/types.ts`, `approvals/types.ts`, `projects/types.ts`, `admin/types.ts`, `auth/types.ts`
+  - Backend-aligned rows remain under `shared/schema` (do not duplicate into module types).
+
+---
+
+## 7. Contextual Detail Drawer (Overview Panel) — Locked
 
 - Not permanent; drawer from the right on data-item click.
 - Height between App Header and viewport bottom.
@@ -78,7 +73,7 @@ Remaining form-heavy pages (EmployeeCreate, ApplyLeave, MyLeave, etc.) follow th
 
 ---
 
-## 7. Commit Discipline
+## 8. Commit Discipline
 
 - Prefer fewer commits with coherent, related changes.
 - Clear conventional commit messages.

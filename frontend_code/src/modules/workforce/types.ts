@@ -1,6 +1,13 @@
 export type RecordStatus = 'Active' | 'Inactive'
 export type EmploymentType = 'Full-Time Regular' | 'Contractor' | 'Part-Time' | 'Intern'
-export type EmployeeStatus = 'Confirmed' | 'Onboarding' | 'Probation' | 'Remote' | 'Pending' | 'Active' | 'Archived'
+export type EmployeeStatus =
+  | 'Confirmed'
+  | 'Onboarding'
+  | 'Probation'
+  | 'Remote'
+  | 'Pending'
+  | 'Active'
+  | 'Archived'
 export type DepartmentRole = 'Lead' | 'Senior' | 'Junior'
 
 export interface Department {
@@ -22,6 +29,28 @@ export interface Department {
   budgetLabel?: string
   budgetRemaining?: string
   icon?: string
+}
+
+/** API list shape (numeric ids from mock DB) */
+export interface DepartmentListItem {
+  id: number
+  name: string
+  code: string
+  headName: string
+  headEmploymentId: number | null
+  staffCount: number
+  isArchived: boolean
+  status: 'Active' | 'Inactive'
+  createdAt: string
+}
+
+export interface DepartmentEmployee {
+  employmentId: number
+  employeeCode: string
+  name: string
+  positionName: string
+  state: string
+  email: string
 }
 
 export interface Employee {

@@ -5,27 +5,9 @@
 import { delay, getDb, nextId } from '@/shared/mock/db'
 import type { DepartmentRow } from '@/shared/schema'
 import { WorkMode } from '@/shared/schema'
+import type { DepartmentListItem, DepartmentEmployee } from '../types'
 
-export interface DepartmentListItem {
-  id: number
-  name: string
-  code: string
-  headName: string
-  headEmploymentId: number | null
-  staffCount: number
-  isArchived: boolean
-  status: 'Active' | 'Inactive'
-  createdAt: string
-}
-
-export interface DepartmentEmployee {
-  employmentId: number
-  employeeCode: string
-  name: string
-  positionName: string
-  state: string
-  email: string
-}
+export type { DepartmentListItem, DepartmentEmployee }
 
 function staffCountFor(departmentId: number): number {
   const db = getDb()
