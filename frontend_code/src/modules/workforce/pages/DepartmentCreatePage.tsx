@@ -20,8 +20,11 @@ const inputClass =
 export function DepartmentCreatePage() {
   const navigate = useNavigate()
   const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [colorTag, setColorTag] = useState('#0058bc')
   const [status, setStatus] = useState<'Active' | 'Inactive'>('Active')
   const [headId, setHeadId] = useState('')
+  const [parentHint, setParentHint] = useState('')
   const [headOptions, setHeadOptions] = useState<{ value: string; label: string; meta?: string }[]>(
     [],
   )
@@ -69,7 +72,7 @@ export function DepartmentCreatePage() {
       </button>
       <PageHeader
         title="Add New Department"
-        description="Creates a department in the shared mock database — it will appear on the list immediately."
+        description="Define identity, leadership, and operational settings for a new org unit."
       />
 
       {error && (
@@ -79,61 +82,110 @@ export function DepartmentCreatePage() {
       )}
 
       <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-12 lg:col-span-8 bv-surface p-8">
-          <div className="flex items-center gap-3 mb-6">
-            <Icon name="info" className="text-secondary" />
-            <h3 className="text-title-lg font-semibold">Department Information</h3>
-          </div>
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-label-md">
-                Department Name <span className="text-error">*</span>
-              </label>
-              <input
-                className={cn(inputClass, nameError && 'border-error bg-error-container/10')}
-                placeholder="e.g. Engineering, Sales, Human Resources"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-              {nameError && <p className="text-error text-xs">Department name is required</p>}
+        {/* Identity */}
+        <div className="col-span-12 lg:col-span-8 bv-surface p-8 space-y-6">
+          <div className="flex items-center gap-3 border-b border-outline-variant pb-4">
+            <span className="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
+              <Icon name="badge" />
+            </span>
+            <div>
+              <h3 className="text-title-lg font-semibold">Identity</h3>
+              <p className="text-body-sm text-on-surface-variant">Name, description, and visual tag</p>
             </div>
-            <p className="text-body-sm text-on-surface-variant">
-              Code is auto-generated (DEPT-00N) after save.
-            </p>
-          </div>
-        </div>
-
-        <div className="col-span-12 lg:col-span-4 bv-surface p-8">
-          <div className="flex items-center gap-3 mb-6">
-            <Icon name="manage_accounts" className="text-secondary" />
-            <h3 className="text-title-lg font-semibold">Management</h3>
           </div>
           <div className="space-y-2">
-            <label className="text-label-md">Department Head</label>
-            <SearchableSelect
-              options={headOptions}
-              value={headId}
-              onChange={setHeadId}
-              placeholder="Type to search employees…"
+            <label className="text-label-md">
+              Department Name <span className="text-error">*</span>
+            </label>
+            <input
+              className={cn(inputClass, nameError && 'border-error bg-error-container/10')}
+              placeholder="e.g. Engineering, Sales, Human Resources"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
+            {nameError && <p className="text-error text-xs">Department name is required</p>}
           </div>
+          <div className="space-y-2">
+            <label className="text-label-md">Description</label>
+            <textarea
+              className={cn(inputClass, 'resize-none')}
+              rows={3}
+              placeholder="Short mission or scope for this department…"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+            <p className="text-xs text-on-surface-variant">UI field; persist when department schema supports description.</p>
+          </div>
+          <div className="space-y-2">
+            <label className="text-label-md">Color tag</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={colorTag}
+                onChange={(e) => setColorTag(e.target.value)}
+                className="w-12 h-12 rounded-lg border border-outline-variant cursor-pointer"
+              />
+              <input className={inputClass} value={colorTag} onChange={(e) => setColorTag(e.target.value)} />
+            </div>
+          </div>
+          <p className="text-body-sm text-on-surface-variant">
+            Code is auto-generated (DEPT-00N) after save.
+          </p>
         </div>
 
-        <div className="col-span-12 bv-surface p-8">
-          <label className="text-label-md block mb-4">Status</label>
-          <div className="flex items-center gap-6">
-            {(['Active', 'Inactive'] as const).map((s) => (
-              <label key={s} className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="status"
-                  checked={status === s}
-                  onChange={() => setStatus(s)}
-                  className="w-5 h-5 text-secondary"
-                />
-                <span className="text-body-md">{s}</span>
-              </label>
-            ))}
+        {/* Settings */}
+        <div className="col-span-12 lg:col-span-4 space-y-6">
+          <div className="bv-surface p-8 space-y-6">
+            <div className="flex items-center gap-3 border-b border-outline-variant pb-4">
+              <span className="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
+                <Icon name="tune" />
+              </span>
+              <div>
+                <h3 className="text-title-lg font-semibold">Settings</h3>
+                <p className="text-body-sm text-on-surface-variant">Leadership & status</p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <label className="text-label-md">Department Head</label>
+              <SearchableSelect
+                options={headOptions}
+                value={headId}
+                onChange={setHeadId}
+                placeholder="Type to search employees…"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-label-md">Parent department (optional)</label>
+              <input
+                className={inputClass}
+                value={parentHint}
+                onChange={(e) => setParentHint(e.target.value)}
+                placeholder="UI only until hierarchy is wired"
+              />
+            </div>
+            <div>
+              <label className="text-label-md block mb-3">Status</label>
+              <div className="flex flex-col gap-3">
+                {(['Active', 'Inactive'] as const).map((s) => (
+                  <label
+                    key={s}
+                    className={cn(
+                      'flex items-center gap-3 cursor-pointer p-3 rounded-lg border transition-colors',
+                      status === s ? 'border-secondary bg-secondary/5' : 'border-outline-variant',
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="status"
+                      checked={status === s}
+                      onChange={() => setStatus(s)}
+                      className="w-4 h-4 text-secondary"
+                    />
+                    <span className="text-body-md">{s}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
