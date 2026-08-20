@@ -1,32 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { UseListSelectionOptions, UseListSelectionResult } from '@/shared/types'
 
 /** Hold duration before a row enters bulk selection mode */
 export const LIST_LONG_PRESS_MS = 3000
 
-export interface UseListSelectionOptions<T> {
-  /** Currently rendered / filtered rows (selection is scoped to these) */
-  items: T[]
-  /** Stable unique id per row */
-  getId: (item: T) => string
-}
-
-export interface UseListSelectionResult {
-  selectionMode: boolean
-  selectedIds: Set<string>
-  selectedCount: number
-  allFilteredSelected: boolean
-  isSelected: (id: string) => boolean
-  /** Header checkbox: select or clear all *filtered* rows */
-  toggleSelectAllFiltered: () => void
-  toggleOne: (id: string) => void
-  enterSelectionWith: (id: string) => void
-  exitSelectionMode: () => void
-  /** Bind to row: start 3s timer */
-  onRowPressStart: (id: string) => void
-  /** Bind to row: clear timer; if long-press fired do nothing else call onShortPress */
-  onRowPressEnd: (id: string, onShortPress?: () => void) => void
-  onRowPressCancel: () => void
-}
+export type { UseListSelectionOptions, UseListSelectionResult }
 
 /**
  * Shared bulk-selection strategy for every list page.
@@ -116,7 +94,7 @@ export function useListSelection<T>({
         enterSelectionWith(id)
       }, LIST_LONG_PRESS_MS)
     },
-    [clearLongPress, enterSelectionWith]
+    [clearLongPress, enterSelectionWith],
   )
 
   const onRowPressEnd = useCallback(
@@ -132,7 +110,7 @@ export function useListSelection<T>({
         onShortPress?.()
       }
     },
-    [clearLongPress, selectionMode, toggleOne]
+    [clearLongPress, selectionMode, toggleOne],
   )
 
   const isSelected = useCallback((id: string) => selectedIds.has(id), [selectedIds])
