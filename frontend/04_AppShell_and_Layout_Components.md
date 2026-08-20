@@ -3,9 +3,9 @@
 # Bytevon Frontend — AppShell & Layout Components
 
 **Project:** Bytevon ERP/CRM  
-**Version:** 1.0  
+**Version:** 1.1  
 **Status:** Locked  
-**Last Updated:** 2026-08-07
+**Last Updated:** 2026-08-20
 
 ---
 
@@ -48,9 +48,10 @@ All authenticated pages (except pure Auth screens) must render inside the AppShe
 
 **Responsibility**
 - Owns the overall layout grid.
-- Renders IconRail + SecondarySidebar + Header + main content area.
+- Renders IconRail + SecondarySidebar + Header + main content area + Contextual Detail Drawer.
 - Manages collapse state for both sidebars.
 - Provides context for current primary module so SecondarySidebar can render the correct items.
+- Hosts the `QuickOverviewProvider` so any page can open the Contextual Detail Drawer.
 
 **Props / State**
 - `isRailCollapsed` (default: `true`)
@@ -162,9 +163,46 @@ When no secondary items exist for a module (or user has no permission), the seco
 - Logout (belongs in Icon Rail)
 - Primary “New / Create” button (belongs on the page)
 
+**Height:** `HEADER_HEIGHT_PX = 56` (fixed).
+
 ---
 
-### 3.5 PageHeader (optional helper component)
+### 3.5 Contextual Detail Drawer (Overview Panel)
+
+**Status:** Locked (2026-08-20)
+
+**Purpose**  
+Quick look + light actions for any entity while the user remains on the list/grid page.
+
+**Behaviour (locked)**
+- **Not permanent.** There is no always-visible split-pane overview panel.
+- Appears only when the user clicks a primary data item (employee card/row, project card/row, department, task, lead, client, location, role, etc.).
+- Drawer-based — slides in from the right.
+- **Height is strictly between the App Header and the bottom of the viewport** (or footer if present). It never covers the global header.
+- Only one drawer open at a time. Selecting a different item while open simply replaces the drawer content.
+- Closes via X button, Escape key, backdrop click, or navigating away from the page.
+- On mobile: becomes a full-height bottom sheet or full-screen panel.
+
+**Content guidelines**
+- Identity (name, avatar/status)
+- Key status / stage badges
+- Most important metadata (owner, dates, counts)
+- Primary quick actions (Edit, Archive, Assign, …)
+- Optional short activity snippet or related counts
+- Link/button to open the full detail page for deeper work
+
+**Relationship to full detail pages**
+- The drawer is a lightweight companion.
+- Complex editing, multi-tab content, and long forms continue to live on dedicated detail routes or larger form drawers.
+
+**Implementation**
+- Provider: `QuickOverviewProvider` (mounted in AppShell)
+- Hook: `useQuickOverview()` → `openPanel(title, content)`, `closePanel()`
+- Panel: `QuickOverviewPanel` (mounted once in AppShell)
+
+---
+
+### 3.6 PageHeader (optional helper component)
 
 Used inside individual pages for consistency.
 
@@ -180,11 +218,12 @@ Typical structure:
 
 ## 4. Collapse Behaviour Summary
 
-| Element              | Default State | User Controllable | Mobile Behaviour          |
-|----------------------|---------------|-------------------|---------------------------|
-| Icon Rail            | Collapsed     | Yes               | Collapsed / icon-only     |
-| Secondary Sidebar    | Collapsed     | Yes               | Collapsed / icon-only     |
-| Header Search        | Expanded      | Auto (page-based) | Icon only                 |
+| Element                    | Default State | User Controllable | Mobile Behaviour          |
+|----------------------------|---------------|-------------------|---------------------------|
+| Icon Rail                  | Collapsed     | Yes               | Collapsed / icon-only     |
+| Secondary Sidebar          | Collapsed     | Yes               | Collapsed / icon-only     |
+| Header Search              | Expanded      | Auto (page-based) | Icon only                 |
+| Contextual Detail Drawer   | Closed        | On item click     | Bottom sheet / full-screen|
 
 ---
 
@@ -195,7 +234,7 @@ Typical structure:
 - **Mobile (<768px)**:
   - No bottom navigation (decision deferred).
   - Both sidebars start collapsed / icon-only.
-  - Exact mobile navigation pattern (drawer, etc.) will be decided later.
+  - Contextual Detail Drawer becomes a full-height bottom sheet or full-screen panel.
   - Header remains the top bar.
 
 ---
@@ -206,6 +245,7 @@ Typical structure:
 - Icon Rail and Secondary Sidebar should be independent components that receive collapse state via context or props.
 - Active route detection should use the router’s current location.
 - Permission filtering must happen before rendering items.
+- Any list/grid page that shows entity cards or rows should call `openPanel()` on item click so the Contextual Detail Drawer appears.
 
 ---
 
@@ -214,3 +254,4 @@ Typical structure:
 - `02_Layout_Navigation_Routing.md`
 - `03_Frontend_Project_Structure.md`
 - Design System tokens
+- `design-system/09_Layout_System.md` (Contextual Detail Drawer section)
