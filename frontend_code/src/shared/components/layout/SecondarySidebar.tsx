@@ -1,6 +1,7 @@
 import { cn } from '@/shared/lib/cn'
-import { Link, useRouterState } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { HEADER_HEIGHT_PX } from './Header'
+import { useSecondaryNav } from '@/shared/hooks/useSecondaryNav'
 
 export interface SecondaryNavItem {
   id: string
@@ -31,7 +32,6 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
       { id: 'clients', label: 'Clients', icon: 'handshake', to: '/sales/clients' },
       { id: 'case-studies', label: 'Case Studies', icon: 'library_books', to: '/sales/case-studies' },
       { id: 'analytics', label: 'Analytics', icon: 'analytics', to: '/sales/analytics' },
-      // Activity merged into Dashboard — single entry
       { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', to: '/sales/dashboard' },
     ],
   },
@@ -112,19 +112,6 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
   },
 }
 
-function getActiveModule(pathname: string): string {
-  if (pathname.startsWith('/sales')) return 'sales'
-  if (pathname.startsWith('/projects')) return 'projects'
-  if (pathname.startsWith('/workforce')) return 'workforce'
-  if (pathname.startsWith('/payroll')) return 'payroll'
-  if (pathname.startsWith('/my-work')) return 'my-work'
-  if (pathname.startsWith('/approvals')) return 'approvals'
-  if (pathname.startsWith('/notifications')) return 'notifications'
-  if (pathname.startsWith('/admin')) return 'admin'
-  if (pathname.startsWith('/dashboard')) return 'dashboard'
-  return 'dashboard'
-}
-
 export const SECONDARY_COLLAPSED_WIDTH = 64
 export const SECONDARY_EXPANDED_WIDTH = 240
 
@@ -134,72 +121,9 @@ interface SecondarySidebarProps {
 }
 
 export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProps) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
-  const moduleId = getActiveModule(pathname)
-  const group = SECONDARY_NAV[moduleId]
-  const items = (group?.items ?? []).filter((i) => i.visible !== false)
+  const { group, items, isItemActive } = useSecondaryNav()
 
   if (items.length === 0) return null
-
-  const isItemActive = (to: string) => {
-    if (to === '/sales') {
-      return (
-        pathname === '/sales' ||
-        pathname === '/sales/leads' ||
-        pathname.startsWith('/sales/leads/')
-      )
-    }
-    if (to === '/sales/dashboard') {
-      return pathname === '/sales/dashboard' || pathname === '/sales/activity'
-    }
-    if (to === '/projects') return pathname === '/projects'
-    if (to === '/projects/documents') return pathname === '/projects/documents'
-    if (to === '/my-work') return pathname === '/my-work'
-    if (to === '/approvals') return pathname === '/approvals'
-    if (to === '/notifications') {
-      return pathname === '/notifications' || pathname === '/notifications/center'
-    }
-    if (to === '/admin/users') {
-      return pathname === '/admin' || pathname === '/admin/users' || pathname.startsWith('/admin/users/')
-    }
-    if (to === '/admin/settings') {
-      return pathname === '/admin/settings' || pathname.startsWith('/admin/settings/')
-    }
-    if (to === '/admin/leave-settings') {
-      return pathname.startsWith('/admin/leave-settings')
-    }
-    if (to === '/admin/attendance-settings') {
-      return pathname.startsWith('/admin/attendance-settings')
-    }
-    if (to === '/dashboard') return pathname === '/dashboard'
-    if (to === '/payroll') return pathname === '/payroll'
-    if (to === '/payroll/history') {
-      return pathname === '/payroll/history'
-    }
-    if (to === '/workforce/teams') {
-      return pathname.startsWith('/workforce/teams') || pathname.startsWith('/projects/teams')
-    }
-    if (to === '/workforce/shifts') {
-      return pathname.startsWith('/workforce/shifts') || pathname.startsWith('/admin/settings/shifts')
-    }
-    if (to === '/my-work/attendance') {
-      return (
-        pathname === '/my-work/attendance' ||
-        pathname.startsWith('/my-work/attendance/mark') ||
-        !!pathname.match(/^\/my-work\/attendance\/[^/]+$/)
-      )
-    }
-    if (to === '/my-work/attendance/corrections') {
-      return pathname.startsWith('/my-work/attendance/corrections')
-    }
-    if (to === '/my-work/requests') {
-      return pathname === '/my-work/requests' || pathname.startsWith('/my-work/requests/')
-    }
-    if (to === '/my-work/bank-details') {
-      return pathname === '/my-work/bank-details' || pathname.startsWith('/my-work/bank-details/')
-    }
-    return pathname === to || pathname.startsWith(to + '/')
-  }
 
   return (
     <nav
@@ -269,10 +193,7 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
                   )}
                 >
                   <span
-                    className={cn(
-                      'material-symbols-outlined text-2xl shrink-0',
-                      active ? 'text-secondary' : '',
-                    )}
+                    className={cn('material-symbols-outlined text-2xl shrink-0', active ? 'text-secondary' : '')}
                     style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
                     aria-hidden="true"
                   >

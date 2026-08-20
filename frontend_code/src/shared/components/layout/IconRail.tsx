@@ -1,6 +1,7 @@
 import { cn } from '@/shared/lib/cn'
-import { Link, useRouterState } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { BrandLogo } from '@/shared/components/brand/BrandLogo'
+import { useIconRail } from '@/shared/hooks/useIconRail'
 
 /** Collapsed / expanded rail widths (2px narrower than original 80 / 220) */
 export const RAIL_COLLAPSED_WIDTH = 78
@@ -39,14 +40,7 @@ export function IconRail({
   items = DEFAULT_RAIL_ITEMS,
   onLogout,
 }: IconRailProps) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
-
-  const visibleItems = items.filter((i) => i.visible !== false)
-
-  const isActive = (to: string) => {
-    if (to === '/dashboard') return pathname === '/dashboard' || pathname === '/'
-    return pathname === to || pathname.startsWith(to + '/')
-  }
+  const { visibleItems, isActive } = useIconRail(items)
 
   return (
     <nav
@@ -107,9 +101,7 @@ export function IconRail({
               title={!isExpanded ? item.label : undefined}
             >
               <span className="material-symbols-outlined text-2xl shrink-0">{item.icon}</span>
-              {isExpanded && (
-                <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>
-              )}
+              {isExpanded && <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>}
             </Link>
           )
         })}
