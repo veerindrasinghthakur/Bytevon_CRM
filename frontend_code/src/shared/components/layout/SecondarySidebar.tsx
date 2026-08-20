@@ -31,7 +31,7 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
       { id: 'clients', label: 'Clients', icon: 'handshake', to: '/sales/clients' },
       { id: 'case-studies', label: 'Case Studies', icon: 'library_books', to: '/sales/case-studies' },
       { id: 'analytics', label: 'Analytics', icon: 'analytics', to: '/sales/analytics' },
-      { id: 'activity', label: 'Activity', icon: 'timeline', to: '/sales/activity' },
+      // Activity merged into Dashboard — single entry
       { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', to: '/sales/dashboard' },
     ],
   },
@@ -148,6 +148,9 @@ export function SecondarySidebar({ isCollapsed, onToggle }: SecondarySidebarProp
         pathname === '/sales/leads' ||
         pathname.startsWith('/sales/leads/')
       )
+    }
+    if (to === '/sales/dashboard') {
+      return pathname === '/sales/dashboard' || pathname === '/sales/activity'
     }
     if (to === '/projects') return pathname === '/projects'
     if (to === '/projects/documents') return pathname === '/projects/documents'
