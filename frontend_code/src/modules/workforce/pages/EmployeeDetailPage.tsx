@@ -118,6 +118,46 @@ export function EmployeeDetailPage() {
     }
   }
 
+  const deactivate = async () => {
+    if (!confirm('Deactivate this employment record?')) return
+    setSaving(true)
+    try {
+      await updateEmployment(id, { currentState: 'RESIGNED' })
+      await load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Deactivate failed')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const downloadProfile = () => {
+    if (!data) return
+    const blob = new Blob(
+      [
+        JSON.stringify(
+          {
+            employee_code: data.employment.employee_code,
+            name: `${data.person.first_name} ${data.person.last_name}`,
+            department: data.department?.name,
+            position: data.position?.name,
+            state: data.employment.current_state,
+            joining_date: data.employment.joining_date,
+          },
+          null,
+          2,
+        ),
+      ],
+      { type: 'application/json' },
+    )
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${data.employment.employee_code}-profile.json`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   if (loading) {
     return (
       <div className="space-y-4 animate-pulse">
@@ -157,16 +197,35 @@ export function EmployeeDetailPage() {
         description={`${data.position?.name ?? '—'} · ${data.department?.name ?? '—'}`}
         actions={
           <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" leftIcon={<Icon name="download" className="text-lg" />} onClick={downloadProfile}>
+              Download
+            </Button>
             <Can action={Action.UPDATE} resource={ResourceName.EMPLOYMENT}>
               {editing ? (
                 <>
-                  <Button variant="outline" size="sm" onClick={cancelEdit}>Cancel</Button>
-                  <Button variant="primary" size="sm" isLoading={saving} onClick={saveEdit}>Save</Button>
+                  <Button variant="outline" size="sm" onClick={cancelEdit}>
+                    Cancel
+                  </Button>
+                  <Button variant="primary" size="sm" isLoading={saving} onClick={saveEdit}>
+                    Save
+                  </Button>
                 </>
               ) : (
-                <Button variant="primary" leftIcon={<Icon name="edit" className="text-lg" />} onClick={startEdit}>
-                  Edit Employee
-                </Button>
+                <>
+                  <Button variant="primary" leftIcon={<Icon name="edit" className="text-lg" />} onClick={startEdit}>
+                    Edit Employee
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-error border-error/30 hover:bg-error/5"
+                    leftIcon={<Icon name="person_off" className="text-lg" />}
+                    onClick={() => void deactivate()}
+                    isLoading={saving}
+                  >
+                    Deactivate
+                  </Button>
+                </>
               )}
             </Can>
           </div>
@@ -180,12 +239,8 @@ export function EmployeeDetailPage() {
         <span className="px-3 py-1 bg-surface-container text-on-surface-variant text-xs font-bold rounded-full">
           {data.employment.employment_type}
         </span>
-        <span className="text-label-sm text-on-surface-variant">
-          Emp code: {data.employment.employee_code}
-        </span>
-        {data.hasLogin && (
-          <span className="text-label-sm text-emerald-700">Login: {data.loginEmail}</span>
-        )}
+        <span className="text-label-sm text-on-surface-variant">Emp code: {data.employment.employee_code}</span>
+        {data.hasLogin && <span className="text-label-sm text-emerald-700">Login: {data.loginEmail}</span>}
       </div>
 
       {editing && (
@@ -193,9 +248,6 @@ export function EmployeeDetailPage() {
           <h3 className="text-title-lg font-semibold flex items-center gap-2">
             <Icon name="edit" className="text-secondary" /> Edit profile
           </h3>
-          <p className="text-body-sm text-on-surface-variant">
-            Fields are pre-filled from the current employee record.
-          </p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label className="text-label-sm text-on-surface-variant">First name</label>
@@ -289,6 +341,22 @@ export function EmployeeDetailPage() {
               )}
             </div>
           </div>
+
+          {/* Reporting manager */}
+          <div className="bv-surface p-5 card-hover">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-3">
+              Reporting manager
+            </p>
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center">
+                <Icon name="supervisor_account" />
+              </div>
+              <div>
+                <p className="font-semibold text-sm text-on-background">Not linked in mock</p>
+                <p className="text-xs text-on-surface-variant">Wire manager_id when assignment supports it</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="lg:col-span-9">
@@ -319,20 +387,68 @@ export function EmployeeDetailPage() {
 
           <div className="bv-surface rounded-t-none border-t-0 p-6 space-y-6">
             {tab === 'overview' && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 border border-outline-variant rounded-lg card-hover">
-                  <p className="text-label-sm text-on-surface-variant mb-1">Joining date</p>
-                  <p className="text-title-lg font-semibold">{data.employment.joining_date}</p>
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 border border-outline-variant rounded-lg card-hover">
+                    <p className="text-label-sm text-on-surface-variant mb-1">Joining date</p>
+                    <p className="text-title-lg font-semibold">{data.employment.joining_date}</p>
+                  </div>
+                  <div className="p-4 border border-outline-variant rounded-lg card-hover">
+                    <p className="text-label-sm text-on-surface-variant mb-1">Current state</p>
+                    <p className="text-title-lg font-semibold text-secondary">{data.employment.current_state}</p>
+                  </div>
+                  <div className="p-4 border border-outline-variant rounded-lg card-hover">
+                    <p className="text-label-sm text-on-surface-variant mb-1">Employment type</p>
+                    <p className="text-title-lg font-semibold">{data.employment.employment_type}</p>
+                  </div>
                 </div>
-                <div className="p-4 border border-outline-variant rounded-lg card-hover">
-                  <p className="text-label-sm text-on-surface-variant mb-1">Current state</p>
-                  <p className="text-title-lg font-semibold text-secondary">{data.employment.current_state}</p>
+
+                {/* Attendance & leave snapshot (UI mock metrics) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-5 rounded-xl border border-outline-variant bg-surface-container-low/40 card-hover">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Icon name="schedule" className="text-secondary" />
+                      <h4 className="font-semibold">Attendance overview</h4>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3 text-center">
+                      <div>
+                        <p className="text-2xl font-bold text-on-background">22</p>
+                        <p className="text-[10px] uppercase text-on-surface-variant">Present</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-amber-600">1</p>
+                        <p className="text-[10px] uppercase text-on-surface-variant">Late</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-error">0</p>
+                        <p className="text-[10px] uppercase text-on-surface-variant">Absent</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-on-surface-variant mt-3">Month-to-date sample — connect to attendance API later.</p>
+                  </div>
+                  <div className="p-5 rounded-xl border border-outline-variant bg-surface-container-low/40 card-hover">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Icon name="beach_access" className="text-secondary" />
+                      <h4 className="font-semibold">Leave overview</h4>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3 text-center">
+                      <div>
+                        <p className="text-2xl font-bold text-on-background">12</p>
+                        <p className="text-[10px] uppercase text-on-surface-variant">Balance</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-secondary">2</p>
+                        <p className="text-[10px] uppercase text-on-surface-variant">Pending</p>
+                      </div>
+                      <div>
+                        <p className="text-2xl font-bold text-emerald-600">5</p>
+                        <p className="text-[10px] uppercase text-on-surface-variant">Used YTD</p>
+                      </div>
+                    </div>
+                    <p className="text-xs text-on-surface-variant mt-3">Sample leave snapshot — connect to leave ledger later.</p>
+                  </div>
                 </div>
-                <div className="p-4 border border-outline-variant rounded-lg card-hover">
-                  <p className="text-label-sm text-on-surface-variant mb-1">Employment type</p>
-                  <p className="text-title-lg font-semibold">{data.employment.employment_type}</p>
-                </div>
-              </div>
+              </>
             )}
 
             {tab === 'history' && (
@@ -345,8 +461,13 @@ export function EmployeeDetailPage() {
                     <ul className="space-y-2">
                       {data.stateHistory.map((h) => (
                         <li key={h.id} className="rounded-lg border border-outline-variant p-3 text-body-sm card-hover">
-                          <p className="font-semibold">{h.previous_state ?? '—'} → {h.new_state}</p>
-                          <p className="text-on-surface-variant">{h.effective_date}{h.reason ? ` · ${h.reason}` : ''}</p>
+                          <p className="font-semibold">
+                            {h.previous_state ?? '—'} → {h.new_state}
+                          </p>
+                          <p className="text-on-surface-variant">
+                            {h.effective_date}
+                            {h.reason ? ` · ${h.reason}` : ''}
+                          </p>
                         </li>
                       ))}
                     </ul>
@@ -364,7 +485,9 @@ export function EmployeeDetailPage() {
                             {data.department?.name ?? `Dept #${a.department_id}`} ·{' '}
                             {data.position?.name ?? `Pos #${a.position_id}`} · {a.work_mode}
                           </p>
-                          <p className="text-on-surface-variant">{a.effective_from} → {a.effective_to ?? 'present'}</p>
+                          <p className="text-on-surface-variant">
+                            {a.effective_from} → {a.effective_to ?? 'present'}
+                          </p>
                         </li>
                       ))}
                     </ul>
