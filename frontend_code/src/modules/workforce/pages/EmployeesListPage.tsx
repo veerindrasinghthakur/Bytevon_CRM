@@ -1,9 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { listEmployments, type EmploymentListItem } from '../api/employment'
-import { listDepartments } from '../api/departments'
+import { useEmployeesList } from '../hooks/use-employees-list'
 import { cn } from '@/shared/lib/cn'
 
 const stateStyles: Record<string, string> = {
@@ -26,61 +24,25 @@ function Icon({ name, className }: { name: string; className?: string }) {
 
 export function EmployeesListPage() {
   const navigate = useNavigate()
-  const [search, setSearch] = useState('')
-  const [deptFilter, setDeptFilter] = useState('all')
-  const [stateFilter, setStateFilter] = useState('all')
-  const [typeFilter, setTypeFilter] = useState('all')
-  const [items, setItems] = useState<EmploymentListItem[]>([])
-  const [departments, setDepartments] = useState<{ id: number; name: string }[]>([])
-  const [metrics, setMetrics] = useState({ total: 0, active: 0, archived: 0 })
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      setLoading(true)
-      const [res, depts] = await Promise.all([
-        listEmployments({}),
-        listDepartments({}),
-      ])
-      if (cancelled) return
-      setItems(res.items)
-      setMetrics(res.metrics)
-      setDepartments(depts.items.map((d) => ({ id: d.id, name: d.name })))
-      setLoading(false)
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [])
-
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase().trim()
-    return items.filter((e) => {
-      if (q) {
-        const match =
-          e.fullName.toLowerCase().includes(q) ||
-          e.employee_code.toLowerCase().includes(q) ||
-          e.email.toLowerCase().includes(q) ||
-          e.departmentName.toLowerCase().includes(q) ||
-          e.positionName.toLowerCase().includes(q)
-        if (!match) return false
-      }
-      if (deptFilter !== 'all' && e.departmentName !== deptFilter) return false
-      if (stateFilter !== 'all' && e.current_state !== stateFilter) return false
-      if (typeFilter !== 'all' && e.employment_type !== typeFilter) return false
-      return true
-    })
-  }, [items, search, deptFilter, stateFilter, typeFilter])
-
-  const states = useMemo(
-    () => Array.from(new Set(items.map((e) => e.current_state))).sort(),
-    [items],
-  )
-  const types = useMemo(
-    () => Array.from(new Set(items.map((e) => e.employment_type))).sort(),
-    [items],
-  )
+  const {
+    items,
+    filtered,
+    metrics,
+    departments,
+    states,
+    types,
+    loading,
+    search,
+    setSearch,
+    deptFilter,
+    setDeptFilter,
+    stateFilter,
+    setStateFilter,
+    typeFilter,
+    setTypeFilter,
+    filtersActive,
+    resetFilters,
+  } = useEmployeesList()
 
   return (
     <div className="space-y-6 relative animate-fade-in">
@@ -162,17 +124,8 @@ export function EmployeesListPage() {
             </option>
           ))}
         </select>
-        {(search || deptFilter !== 'all' || stateFilter !== 'all' || typeFilter !== 'all') && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              setSearch('')
-              setDeptFilter('all')
-              setStateFilter('all')
-              setTypeFilter('all')
-            }}
-          >
+        {filtersActive && (
+          <Button variant="ghost" size="sm" onClick={resetFilters}>
             Clear
           </Button>
         )}
@@ -199,15 +152,7 @@ export function EmployeesListPage() {
               Try adjusting filters or add a new team member.
             </p>
             <div className="flex justify-center gap-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSearch('')
-                  setDeptFilter('all')
-                  setStateFilter('all')
-                  setTypeFilter('all')
-                }}
-              >
+              <Button variant="outline" onClick={resetFilters}>
                 Clear Filters
               </Button>
               <Button variant="primary" onClick={() => navigate({ to: '/workforce/employees/new' })}>

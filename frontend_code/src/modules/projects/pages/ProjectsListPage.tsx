@@ -1,16 +1,14 @@
-import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
-import { Pagination, paginate, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
+import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { RowActions } from '@/shared/components/ui/RowActions'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
-import { useListSelection } from '@/shared/hooks/useListSelection'
-import { useProjects } from '../hooks/use-projects'
+import { useProjectsList } from '../hooks/use-projects-list'
 import type { ProjectStatus } from '../schemas/project'
 import { cn } from '@/shared/lib/cn'
 
@@ -62,34 +60,25 @@ const STATUS_OPTIONS = [
 export function ProjectsListPage() {
   const navigate = useNavigate()
   const { open: openOverview } = useQuickOverview()
-  const [search, setSearch] = useState('')
-  const [status, setStatus] = useState('')
-  const [page, setPage] = useState(1)
-
-  const { data, isLoading, isError, refetch } = useProjects({
-    search: search || undefined,
-    status: status || undefined,
-  })
-
-  const filtersActive = Boolean(search || status)
-
-  const resetFilters = () => {
-    setSearch('')
-    setStatus('')
-    setPage(1)
-  }
-
-  const items = data?.items ?? []
-  const total = items.length
-  const pageItems = useMemo(() => paginate(items, page, DEFAULT_PAGE_SIZE), [items, page])
-
-  const selection = useListSelection({
-    items: pageItems,
-    getId: (p) => String(p.id),
-  })
-
-  const active = items.filter((p) => p.status === 'IN_PROGRESS').length
-  const atRisk = items.filter((p) => p.status === 'ON_HOLD').length
+  const {
+    search,
+    setSearch,
+    status,
+    setStatus,
+    page,
+    setPage,
+    filtersActive,
+    resetFilters,
+    items,
+    pageItems,
+    total,
+    active,
+    atRisk,
+    isLoading,
+    isError,
+    refetch,
+    selection,
+  } = useProjectsList()
 
   const goDetail = (id: number, edit?: boolean) => {
     navigate({
@@ -130,24 +119,13 @@ export function ProjectsListPage() {
 
       <ListToolbar
         search={search}
-        onSearchChange={(v) => {
-          setSearch(v)
-          setPage(1)
-        }}
+        onSearchChange={setSearch}
         searchPlaceholder="Search by Project Name, Client..."
         filtersActive={filtersActive}
         onResetFilters={resetFilters}
         onRefresh={() => void refetch()}
       >
-        <Select
-          value={status}
-          onChange={(v) => {
-            setStatus(v)
-            setPage(1)
-          }}
-          placeholder="Project Status"
-          options={STATUS_OPTIONS}
-        />
+        <Select value={status} onChange={setStatus} placeholder="Project Status" options={STATUS_OPTIONS} />
       </ListToolbar>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
