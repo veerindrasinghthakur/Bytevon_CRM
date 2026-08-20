@@ -1,13 +1,8 @@
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import {
-  dashboardMetrics,
-  leads,
-  clients,
-  salesActivities,
-} from '../data/mock'
-import type { PipelineStage, RecordStatus, ActivityType } from '../types'
+import { useSalesDashboard } from '../hooks/use-sales-dashboard'
+import type { PipelineStage, RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 
 const stageStyles: Record<PipelineStage, string> = {
@@ -20,15 +15,6 @@ const stageStyles: Record<PipelineStage, string> = {
   Lost: 'bg-red-50 text-red-700',
 }
 
-const funnelStages: PipelineStage[] = [
-  'New',
-  'Contacted',
-  'Qualified',
-  'Proposal',
-  'Negotiation',
-  'Won',
-]
-
 const stageColors: Record<string, string> = {
   New: 'bg-slate-400',
   Contacted: 'bg-blue-400',
@@ -36,18 +22,6 @@ const stageColors: Record<string, string> = {
   Proposal: 'bg-orange-400',
   Negotiation: 'bg-amber-500',
   Won: 'bg-emerald-500',
-}
-
-const typeIcon: Record<ActivityType, string> = {
-  'Lead Created': 'person_add',
-  'Lead Won': 'emoji_events',
-  'Meeting Scheduled': 'event',
-  'Email Sent': 'mail',
-  Call: 'call',
-  'Document Viewed': 'description',
-  'System Alert': 'warning',
-  'Contract Renewed': 'autorenew',
-  'Proposal Sent': 'send',
 }
 
 function StatusDot({ status }: { status: RecordStatus }) {
@@ -58,12 +32,7 @@ function StatusDot({ status }: { status: RecordStatus }) {
         status === 'Active' ? 'text-emerald-700' : 'text-slate-500'
       )}
     >
-      <span
-        className={cn(
-          'w-2.5 h-2.5 rounded-full',
-          status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'
-        )}
-      />
+      <span className={cn('w-2.5 h-2.5 rounded-full', status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400')} />
       {status}
     </span>
   )
@@ -77,40 +46,23 @@ function formatBudget(n: number) {
   }).format(n)
 }
 
-/** Top performers derived from assigned leads in mock set */
-const topPerformers = [
-  { name: 'Alex Rivera', role: 'Global Sales Lead', deals: 3, value: 445000, winRate: '42%' },
-  { name: 'Marcus Sterling', role: 'Enterprise AE', deals: 1, value: 280000, winRate: '38%' },
-  { name: 'Sarah Chen', role: 'Account Executive', deals: 1, value: 120000, winRate: '35%' },
-  { name: 'Sarah Jenkins', role: 'Sales Manager', deals: 2, value: 95000, winRate: '31%' },
-]
-
-const monthlyGrowth = [
-  { month: 'Jul', leads: 98 },
-  { month: 'Aug', leads: 112 },
-  { month: 'Sep', leads: 105 },
-  { month: 'Oct', leads: 128 },
-  { month: 'Nov', leads: 134 },
-  { month: 'Dec', leads: 142 },
-]
-
 export function SalesDashboardPage() {
   const navigate = useNavigate()
-  const recentLeads = leads.slice(0, 5)
-  const topClients = clients.filter((c) => c.status === 'Active').slice(0, 4)
-
-  const stageCounts = funnelStages.map((s) => ({
-    stage: s,
-    count: leads.filter((l) => l.stage === s).length,
-  }))
-  const maxFunnel = Math.max(...stageCounts.map((x) => x.count), 1)
-  const pipelineValue = leads.reduce((sum, l) => sum + l.budget, 0)
-  const maxGrowth = Math.max(...monthlyGrowth.map((m) => m.leads), 1)
-
-  const activityGroups = salesActivities.reduce<Record<string, typeof salesActivities>>((acc, a) => {
-    ;(acc[a.dateGroup] ??= []).push(a)
-    return acc
-  }, {})
+  const {
+    metrics,
+    recentLeads,
+    topClients,
+    stageCounts,
+    maxFunnel,
+    pipelineValue,
+    maxGrowth,
+    monthlyGrowth,
+    topPerformers,
+    activityGroups,
+    wonCount,
+    avgDealSize,
+    typeIcon,
+  } = useSalesDashboard()
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -119,27 +71,18 @@ export function SalesDashboardPage() {
         description="Pipeline health, revenue, funnel, activity, and top performers."
         actions={
           <div className="flex items-center gap-3 flex-wrap">
-            <Button
-              variant="outline"
-              leftIcon={<span className="material-symbols-outlined text-lg">person_search</span>}
-              onClick={() => navigate({ to: '/sales' })}
-            >
+            <Button variant="outline" leftIcon={<span className="material-symbols-outlined text-lg">person_search</span>} onClick={() => navigate({ to: '/sales' })}>
               View Leads
             </Button>
-            <Button
-              variant="primary"
-              leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
-              onClick={() => navigate({ to: '/sales/leads/new' })}
-            >
+            <Button variant="primary" leftIcon={<span className="material-symbols-outlined text-lg">add</span>} onClick={() => navigate({ to: '/sales/leads/new' })}>
               New Lead
             </Button>
           </div>
         }
       />
 
-      {/* KPI metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {dashboardMetrics.map((m) => (
+        {metrics.map((m) => (
           <div key={m.id} className="bv-surface card-hover p-5">
             <div className="flex justify-between items-start mb-2">
               <span className="p-2 rounded-lg bg-secondary/10 text-secondary">
@@ -162,14 +105,11 @@ export function SalesDashboardPage() {
             </div>
             <p className="text-label-md text-on-surface-variant">{m.label}</p>
             <h3 className="text-headline-md font-bold mt-0.5 text-on-background">{m.value}</h3>
-            {m.subtitle && (
-              <p className="text-[11px] mt-1 text-on-surface-variant">{m.subtitle}</p>
-            )}
+            {m.subtitle && <p className="text-[11px] mt-1 text-on-surface-variant">{m.subtitle}</p>}
           </div>
         ))}
       </div>
 
-      {/* Revenue overview + Monthly lead growth */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <section className="bv-surface card-hover p-6">
           <h2 className="text-title-md font-semibold mb-1">Revenue overview</h2>
@@ -187,15 +127,11 @@ export function SalesDashboardPage() {
             </div>
             <div className="p-4 rounded-xl bg-surface-container-low">
               <p className="text-xs text-on-surface-variant font-medium">Avg. deal size</p>
-              <p className="text-xl font-bold mt-1">
-                {formatBudget(Math.round(pipelineValue / Math.max(leads.length, 1)))}
-              </p>
+              <p className="text-xl font-bold mt-1">{formatBudget(avgDealSize)}</p>
             </div>
             <div className="p-4 rounded-xl bg-surface-container-low">
               <p className="text-xs text-on-surface-variant font-medium">Won (sample)</p>
-              <p className="text-xl font-bold mt-1 text-emerald-700">
-                {leads.filter((l) => l.stage === 'Won').length}
-              </p>
+              <p className="text-xl font-bold mt-1 text-emerald-700">{wonCount}</p>
             </div>
           </div>
         </section>
@@ -219,7 +155,6 @@ export function SalesDashboardPage() {
         </section>
       </div>
 
-      {/* Sales funnel + Top performers */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <section className="bv-surface card-hover p-6">
           <h2 className="text-title-md font-semibold mb-5">Sales funnel</h2>
@@ -245,10 +180,7 @@ export function SalesDashboardPage() {
           <h2 className="text-title-md font-semibold mb-5">Top performers</h2>
           <ul className="space-y-3">
             {topPerformers.map((p, i) => (
-              <li
-                key={p.name}
-                className="flex items-center gap-3 p-3 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors"
-              >
+              <li key={p.name} className="flex items-center gap-3 p-3 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors">
                 <span className="w-8 h-8 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-sm font-bold shrink-0">
                   {i + 1}
                 </span>
@@ -268,16 +200,11 @@ export function SalesDashboardPage() {
         </section>
       </div>
 
-      {/* Recent leads + Activity timeline (merged from Activity page) */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <div className="xl:col-span-2 bv-surface overflow-hidden">
           <div className="px-5 py-4 border-b border-outline-variant flex items-center justify-between">
             <h2 className="text-title-md font-semibold text-on-background">Recent Leads</h2>
-            <button
-              type="button"
-              className="text-label-sm text-secondary font-semibold hover:underline"
-              onClick={() => navigate({ to: '/sales' })}
-            >
+            <button type="button" className="text-label-sm text-secondary font-semibold hover:underline" onClick={() => navigate({ to: '/sales' })}>
               View all
             </button>
           </div>
@@ -285,18 +212,10 @@ export function SalesDashboardPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-outline-variant bg-surface-container-low/50">
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                    Lead
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                    Stage
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                    Value
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-right">
-                    Status
-                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Lead</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Stage</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Value</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-right">Status</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
@@ -304,27 +223,18 @@ export function SalesDashboardPage() {
                   <tr
                     key={lead.id}
                     className="zebra-row cursor-pointer"
-                    onClick={() =>
-                      navigate({ to: '/sales/leads/$leadId', params: { leadId: lead.id } })
-                    }
+                    onClick={() => navigate({ to: '/sales/leads/$leadId', params: { leadId: lead.id } })}
                   >
                     <td className="px-4 py-3">
                       <p className="font-semibold text-on-surface">{lead.contactName}</p>
                       <p className="text-xs text-on-surface-variant">{lead.company}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <span
-                        className={cn(
-                          'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase',
-                          stageStyles[lead.stage]
-                        )}
-                      >
+                      <span className={cn('px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase', stageStyles[lead.stage])}>
                         {lead.stage}
                       </span>
                     </td>
-                    <td className="px-4 py-3 font-semibold text-on-surface">
-                      {formatBudget(lead.budget)}
-                    </td>
+                    <td className="px-4 py-3 font-semibold text-on-surface">{formatBudget(lead.budget)}</td>
                     <td className="px-4 py-3 text-right">
                       <StatusDot status={lead.status} />
                     </td>
@@ -343,16 +253,12 @@ export function SalesDashboardPage() {
           <div className="max-h-[420px] overflow-y-auto scrollbar-thin p-4 space-y-6">
             {Object.entries(activityGroups).map(([dateGroup, items]) => (
               <section key={dateGroup}>
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-3">
-                  {dateGroup}
-                </h3>
+                <h3 className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-3">{dateGroup}</h3>
                 <ul className="space-y-3">
                   {items.map((a) => (
                     <li key={a.id} className="flex items-start gap-3">
                       <span className="mt-0.5 w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-lg">
-                          {typeIcon[a.type] ?? 'circle'}
-                        </span>
+                        <span className="material-symbols-outlined text-lg">{typeIcon[a.type] ?? 'circle'}</span>
                       </span>
                       <div className="min-w-0">
                         <p className="text-body-sm font-semibold text-on-surface">{a.title}</p>
@@ -370,15 +276,10 @@ export function SalesDashboardPage() {
         </div>
       </div>
 
-      {/* Top clients */}
       <div className="bv-surface overflow-hidden">
         <div className="px-5 py-4 border-b border-outline-variant flex items-center justify-between">
           <h2 className="text-title-md font-semibold text-on-background">Top Clients</h2>
-          <button
-            type="button"
-            className="text-label-sm text-secondary font-semibold hover:underline"
-            onClick={() => navigate({ to: '/sales/clients' })}
-          >
+          <button type="button" className="text-label-sm text-secondary font-semibold hover:underline" onClick={() => navigate({ to: '/sales/clients' })}>
             View all
           </button>
         </div>
@@ -387,9 +288,7 @@ export function SalesDashboardPage() {
             <div
               key={c.id}
               className="p-4 rounded-xl border border-outline-variant hover:border-secondary card-hover cursor-pointer"
-              onClick={() =>
-                navigate({ to: '/sales/clients/$clientId', params: { clientId: c.id } })
-              }
+              onClick={() => navigate({ to: '/sales/clients/$clientId', params: { clientId: c.id } })}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center text-sm font-bold">
