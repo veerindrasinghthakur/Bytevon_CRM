@@ -36,38 +36,40 @@ These rules apply to every code or documentation change in this repository.
 
 ## 4. Contextual Detail Drawer (Overview Panel) — Locked
 
-- The overview panel is **not permanent**.
-- It appears when the user clicks any data item (employee card, project card, department, task, lead, client, etc.).
-- Behaviour is **drawer-based** (slides in from the right).
-- Height is strictly **between the App Header and the footer / bottom of the viewport**.
-- Only one drawer open at a time; selecting a new item updates its content.
-- Full detail pages remain for deep work.
-
-Implementation: `QuickOverviewProvider` + `useQuickOverview()` + `QuickOverviewPanel` in AppShell.
+- Not permanent; drawer from the right on data-item click.
+- Height between App Header and viewport bottom.
+- One at a time; full detail pages remain for deep work.
 
 ---
 
-## 5. Sales Module — Completed (2026-08-20)
+## 5. Sales Module — Completed
 
-- Case Studies: View / Edit / Share actions.
-- Client Detail / Lead Detail: richer layouts synced to UI.
-- Dashboard + Activity merge: revenue, growth, funnel, top performers, timeline.
-- Nav: single Dashboard entry.
+Case studies actions, client/lead detail, dashboard+activity merge.
 
 ---
 
-## 6. Projects Module — In progress / completed items (2026-08-20)
+## 6. Projects Module — Completed (core)
 
-- **Project Detail:** Tabbed UI — Overview, Tasks (with search/status filter), Team, Timeline (status enum), Documents, **Repository**.
-- Overview includes KPI cards, description, team summary, client card, key dates, resources, activity.
-- **Task Detail:** Description card + assignee card + metadata sidebar aligned with UI.
-- List page already opens QuickOverview drawer on row click; KPI metrics present.
-- Remaining optional: richer Team Detail layout, extra list filters (phase/priority/lead) when schema supports them.
+- Project Detail tabs: Overview, Tasks, Team, Timeline, Documents, **Repository (tab only, not separate route)**.
+- Align Repository tab UI with repository information screen.
+- Task Detail cards; Team Detail recent projects.
 
 ---
 
-## 7. Commit Discipline
+## 7. Workforce Module — Progress (2026-08-20)
+
+- **Add Employee:** photo upload, documents section, gender/nationality, contact, address, emergency contact, employment ID (readonly preview), manager select, bank account holder name.
+- **Add Department:** Identity + Settings sections.
+- **Department Management:** metric cards (total, staffing, active, inactive) + empty state.
+- **Department Detail:** employee cards with role/tags, head section, open positions card when > 0, hover effects; add-member bottom-sheet style.
+- **Employee Detail:** Download + Deactivate actions, reporting manager block, attendance & leave overview cards on Overview tab.
+- **Add Member:** bottom-sheet popup from bottom with search and role assignment.
+- Remaining: finer pixel-match when workforce HTML mockups are attached; manager_id persistence in assignment schema.
+
+---
+
+## 8. Commit Discipline
 
 - Prefer fewer commits with coherent, related changes.
-- Use clear conventional commit messages.
+- Clear conventional commit messages.
 - Do not leave partial or broken intermediate states on `main`.
