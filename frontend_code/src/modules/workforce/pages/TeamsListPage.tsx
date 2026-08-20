@@ -1,10 +1,8 @@
-import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { HEADER_HEIGHT_PX } from '@/shared/components/layout/Header'
 import { Button } from '@/shared/components/ui/Button'
-import { teams, teamMetrics } from '../data/mock'
-import type { Team } from '../types'
+import { useTeamsList } from '../hooks/use-teams-list'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -13,14 +11,16 @@ function Icon({ name, className }: { name: string; className?: string }) {
 
 export function TeamsListPage() {
   const navigate = useNavigate()
-  const [search, setSearch] = useState('')
-  const [drawer, setDrawer] = useState<Team | null>(null)
-  const [createOpen, setCreateOpen] = useState(false)
-
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase()
-    return teams.filter((t) => !q || t.name.toLowerCase().includes(q) || t.department.toLowerCase().includes(q))
-  }, [search])
+  const {
+    metrics,
+    filtered,
+    search,
+    setSearch,
+    drawer,
+    setDrawer,
+    createOpen,
+    setCreateOpen,
+  } = useTeamsList()
 
   return (
     <div className="space-y-6 relative animate-fade-in">
@@ -36,7 +36,7 @@ export function TeamsListPage() {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {teamMetrics.map((m) => (
+        {metrics.map((m) => (
           <div key={m.id} className="bv-surface card-hover p-5">
             <div className="flex justify-between mb-2">
               <span className="text-label-sm text-on-surface-variant uppercase tracking-wider">{m.label}</span>
