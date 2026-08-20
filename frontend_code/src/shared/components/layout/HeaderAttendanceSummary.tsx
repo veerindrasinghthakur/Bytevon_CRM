@@ -1,13 +1,5 @@
-import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import {
-  formatClockTime,
-  formatHoursCompact,
-  getWorkHoursSummary,
-  subscribeAttendanceChange,
-  type WorkHoursSummary,
-} from '@/modules/my-work/lib/attendance-session'
-import { subscribeBreakChange } from '@/modules/my-work/lib/break-session'
+import { useHeaderAttendance } from '@/shared/hooks/useHeaderAttendance'
 import { cn } from '@/shared/lib/cn'
 
 /**
@@ -15,26 +7,11 @@ import { cn } from '@/shared/lib/cn'
  * (work hours = elapsed since check-in minus break time).
  */
 export function HeaderAttendanceSummary() {
-  const [summary, setSummary] = useState<WorkHoursSummary>(() => getWorkHoursSummary())
-
-  useEffect(() => {
-    const refresh = () => setSummary(getWorkHoursSummary())
-    refresh()
-    const id = window.setInterval(refresh, 1000)
-    const unsubA = subscribeAttendanceChange(refresh)
-    const unsubB = subscribeBreakChange(refresh)
-    return () => {
-      window.clearInterval(id)
-      unsubA()
-      unsubB()
-    }
-  }, [])
-
-  const checkedOut = Boolean(summary.checkOutAt)
+  const { summary, checkedOut, formatClockTime, formatHoursCompact } = useHeaderAttendance()
 
   return (
     <Link
-      to='/my-work/attendance/mark'
+      to="/my-work/attendance/mark"
       title="Open attendance — work hours exclude breaks"
       className={cn(
         'hidden sm:flex items-center gap-2 lg:gap-3 select-none',
@@ -43,11 +20,7 @@ export function HeaderAttendanceSummary() {
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue'
       )}
     >
-      <Stat
-        label="In"
-        value={formatClockTime(summary.checkInAt)}
-        tone="text-secondary"
-      />
+      <Stat label="In" value={formatClockTime(summary.checkInAt)} tone="text-secondary" />
       <Divider />
       <Stat
         label="Out"
@@ -56,9 +29,7 @@ export function HeaderAttendanceSummary() {
       />
       <Divider />
       <div className="flex flex-col items-end leading-none min-w-[4.5rem]">
-        <span className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">
-          Work
-        </span>
+        <span className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">Work</span>
         <span className="text-label-md font-bold tabular-nums text-on-background">
           {formatHoursCompact(summary.netMs)}
         </span>
@@ -83,9 +54,7 @@ function Stat({
 }) {
   return (
     <div className="flex flex-col leading-none">
-      <span className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">
-        {label}
-      </span>
+      <span className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">{label}</span>
       <span className={cn('text-label-md font-semibold tabular-nums', tone)}>{value}</span>
     </div>
   )

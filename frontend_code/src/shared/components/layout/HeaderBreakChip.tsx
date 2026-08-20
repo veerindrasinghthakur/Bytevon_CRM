@@ -1,15 +1,6 @@
-import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
-import {
-  formatDuration,
-  getActiveBreak,
-  getElapsedMs,
-  getRemainingMs,
-  isBreakRunning,
-  subscribeBreakChange,
-  syncCountdownExpiry,
-} from '@/modules/my-work/lib/break-session'
+import { useHeaderBreak } from '@/shared/hooks/useHeaderBreak'
 
 interface HeaderBreakChipProps {
   active?: boolean
@@ -17,32 +8,7 @@ interface HeaderBreakChipProps {
 
 /** Header break control — label is simply "Break". */
 export function HeaderBreakChip({ active }: HeaderBreakChipProps) {
-  const [runningLabel, setRunningLabel] = useState<string | null>(null)
-
-  useEffect(() => {
-    const update = () => {
-      const s = syncCountdownExpiry(getActiveBreak())
-      if (!isBreakRunning(s) || !s) {
-        setRunningLabel(null)
-        return
-      }
-      if (s.mode === 'countdown') {
-        const rem = getRemainingMs(s)
-        setRunningLabel(rem != null ? formatDuration(rem) : null)
-      } else {
-        setRunningLabel(formatDuration(getElapsedMs(s)))
-      }
-    }
-    update()
-    const id = window.setInterval(update, 1000)
-    const unsub = subscribeBreakChange(update)
-    return () => {
-      window.clearInterval(id)
-      unsub()
-    }
-  }, [])
-
-  const isOnBreak = runningLabel != null
+  const { runningLabel, isOnBreak } = useHeaderBreak()
 
   return (
     <Link
