@@ -35,6 +35,8 @@ export function DepartmentDetailPage() {
   const [selectedEmp, setSelectedEmp] = useState('')
   const [saving, setSaving] = useState(false)
 
+  const openPositions = Math.max(0, (d as DepartmentListItem & { openPositions?: number })?.openPositions ?? 0)
+
   const reload = async () => {
     const [dept, employees] = await Promise.all([
       getDepartment(id),
@@ -94,6 +96,8 @@ export function DepartmentDetailPage() {
     )
   }
 
+  const headEmployee = staff.find((e) => e.name === d.headName) ?? staff[0]
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
@@ -129,86 +133,154 @@ export function DepartmentDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bv-surface card-hover p-6">
+      {/* Highlight metrics */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bv-surface card-hover p-6 transition-all hover:-translate-y-0.5">
           <p className="text-on-surface-variant text-label-md mb-2">Total Staff</p>
           <p className="text-display-lg font-bold">{d.staffCount}</p>
         </div>
-        <div className="bv-surface card-hover p-6">
-          <p className="text-on-surface-variant text-label-md mb-2">Department Head</p>
-          <p className="text-title-lg font-bold">{d.headName}</p>
-        </div>
-        <div className="bv-surface card-hover p-6">
+        <div className="bv-surface card-hover p-6 transition-all hover:-translate-y-0.5">
           <p className="text-on-surface-variant text-label-md mb-2">Active assignments</p>
           <p className="text-display-lg font-bold">{staff.length}</p>
         </div>
+        {openPositions > 0 && (
+          <div className="bv-surface card-hover p-6 border-secondary/30 transition-all hover:-translate-y-0.5">
+            <p className="text-on-surface-variant text-label-md mb-2 flex items-center gap-1">
+              <Icon name="work" className="text-base text-secondary" /> Open positions
+            </p>
+            <p className="text-display-lg font-bold text-secondary">{openPositions}</p>
+          </div>
+        )}
+        <div className="bv-surface card-hover p-6 transition-all hover:-translate-y-0.5">
+          <p className="text-on-surface-variant text-label-md mb-2">Department Head</p>
+          <p className="text-title-lg font-bold">{d.headName || '—'}</p>
+        </div>
       </div>
 
-      <div className="bv-surface overflow-hidden">
-        <div className="px-6 py-4 border-b border-outline-variant">
-          <h3 className="text-title-lg font-semibold">Employees in this department</h3>
-          <p className="text-body-sm text-on-surface-variant">Current employment assignments</p>
+      {/* Head section */}
+      <section className="bv-surface p-6 card-hover">
+        <h3 className="text-title-md font-semibold mb-4 flex items-center gap-2">
+          <Icon name="star" className="text-amber-500" /> Department Head
+        </h3>
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-xl font-bold">
+            {(d.headName || '?')
+              .split(' ')
+              .map((p) => p[0])
+              .join('')
+              .slice(0, 2)
+              .toUpperCase()}
+          </div>
+          <div className="flex-1">
+            <p className="text-lg font-bold text-on-background">{d.headName || 'Unassigned'}</p>
+            <p className="text-sm text-on-surface-variant">
+              {headEmployee?.positionName ?? 'Department Lead'} · {d.name}
+            </p>
+            {headEmployee?.email && (
+              <p className="text-xs text-on-surface-variant mt-1">{headEmployee.email}</p>
+            )}
+          </div>
+          {headEmployee && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                navigate({
+                  to: '/workforce/employees/$employeeId',
+                  params: { employeeId: String(headEmployee.employmentId) },
+                })
+              }
+            >
+              View profile
+            </Button>
+          )}
         </div>
+      </section>
+
+      {/* Employee cards */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-title-lg font-semibold">Team members</h3>
+          <span className="text-sm text-on-surface-variant">{staff.length} people</span>
+        </div>
+
         {staff.length === 0 ? (
-          <div className="p-10 text-center text-on-surface-variant space-y-3">
+          <div className="bv-surface p-12 text-center text-on-surface-variant space-y-3">
+            <Icon name="group_off" className="text-5xl" />
             <p>No employees assigned yet.</p>
             <Button variant="primary" size="sm" onClick={() => void openAdd()}>
               Add Member
             </Button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-surface-container-low">
-                  <th className="px-6 py-3 text-label-sm uppercase text-on-surface-variant">Employee</th>
-                  <th className="px-6 py-3 text-label-sm uppercase text-on-surface-variant">Position</th>
-                  <th className="px-6 py-3 text-label-sm uppercase text-on-surface-variant">State</th>
-                  <th className="px-6 py-3 text-label-sm uppercase text-on-surface-variant">Email</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant">
-                {staff.map((e) => (
-                  <tr
-                    key={e.employmentId}
-                    className="zebra-row cursor-pointer"
-                    onClick={() =>
-                      navigate({
-                        to: '/workforce/employees/$employeeId',
-                        params: { employeeId: String(e.employmentId) },
-                      })
-                    }
-                  >
-                    <td className="px-6 py-4">
-                      <p className="font-semibold">{e.name}</p>
-                      <p className="text-label-sm text-on-surface-variant">{e.employeeCode}</p>
-                    </td>
-                    <td className="px-6 py-4 text-body-sm">{e.positionName}</td>
-                    <td className="px-6 py-4 text-body-sm">{e.state.replace(/_/g, ' ')}</td>
-                    <td className="px-6 py-4 text-body-sm text-on-surface-variant">{e.email || '—'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {staff.map((e) => {
+              const initials = e.name
+                .split(' ')
+                .map((p) => p[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase()
+              const isHead = e.name === d.headName
+              return (
+                <button
+                  key={e.employmentId}
+                  type="button"
+                  className="bv-surface p-5 text-left card-hover transition-all hover:-translate-y-1 hover:border-secondary/40 group"
+                  onClick={() =>
+                    navigate({
+                      to: '/workforce/employees/$employeeId',
+                      params: { employeeId: String(e.employmentId) },
+                    })
+                  }
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-12 h-12 rounded-full bg-secondary/15 text-secondary flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
+                      {initials}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-on-background truncate flex items-center gap-1">
+                        {e.name}
+                        {isHead && (
+                          <Icon name="star" className="text-amber-500 text-base" />
+                        )}
+                      </p>
+                      <p className="text-sm text-on-surface-variant truncate">{e.positionName}</p>
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant">
+                          {e.employeeCode}
+                        </span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-secondary/10 text-secondary">
+                          {e.state.replace(/_/g, ' ')}
+                        </span>
+                        {isHead && (
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                            Head
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              )
+            })}
           </div>
         )}
       </div>
 
       {addOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <button
             type="button"
             className="absolute inset-0 bg-on-surface/30 backdrop-blur-sm"
             aria-label="Close"
             onClick={() => setAddOpen(false)}
           />
-          <div className="relative bv-surface executive-shadow w-full max-w-md p-6 space-y-4 z-10">
+          <div className="relative bv-surface executive-shadow w-full sm:max-w-md p-6 space-y-4 z-10 rounded-t-2xl sm:rounded-xl animate-slide-up">
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-title-lg font-semibold text-on-background">Add Member</h3>
-                <p className="text-body-sm text-on-surface-variant mt-1">
-                  Add to {d.name}
-                </p>
+                <p className="text-body-sm text-on-surface-variant mt-1">Add to {d.name}</p>
               </div>
               <button
                 type="button"
@@ -237,9 +309,7 @@ export function DepartmentDetailPage() {
                     </span>
                     <div>
                       <p className="font-semibold text-on-background">Create new employee</p>
-                      <p className="text-body-sm text-on-surface-variant">
-                        Full onboarding form, then assign to this department
-                      </p>
+                      <p className="text-body-sm text-on-surface-variant">Full onboarding form</p>
                     </div>
                   </div>
                 </button>
@@ -254,9 +324,7 @@ export function DepartmentDetailPage() {
                     </span>
                     <div>
                       <p className="font-semibold text-on-background">Add existing employee</p>
-                      <p className="text-body-sm text-on-surface-variant">
-                        Search and assign someone already in the directory
-                      </p>
+                      <p className="text-body-sm text-on-surface-variant">Search directory</p>
                     </div>
                   </div>
                 </button>
