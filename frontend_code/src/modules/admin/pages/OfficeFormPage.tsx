@@ -1,71 +1,54 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-
-const EXISTING: Record<
-  string,
-  {
-    name: string
-    country: string
-    city: string
-    timezone: string
-    currency: string
-    fiscal: string
-    address: string
-    postal: string
-  }
-> = {
-  ny: {
-    name: 'New York HQ',
-    country: 'United States',
-    city: 'New York',
-    timezone: 'UTC-05:00 Eastern Time',
-    currency: 'USD ($)',
-    fiscal: 'Jan - Dec',
-    address: '123 Enterprise Way, Suite 500',
-    postal: '10001',
-  },
-  ldn: {
-    name: 'London Office',
-    country: 'United Kingdom',
-    city: 'London',
-    timezone: 'UTC+00:00 GMT',
-    currency: 'GBP (£)',
-    fiscal: 'Apr - Mar',
-    address: '10 Canary Wharf',
-    postal: 'E14 5AB',
-  },
-  blr: {
-    name: 'Bangalore Hub',
-    country: 'India',
-    city: 'Bengaluru',
-    timezone: 'UTC+05:30 IST',
-    currency: 'INR (₹)',
-    fiscal: 'Apr - Mar',
-    address: 'Manyata Tech Park',
-    postal: '560045',
-  },
-}
+import { getOffice } from '../api/offices'
 
 export function OfficeFormPage() {
   const navigate = useNavigate()
   const { officeId } = useParams({ strict: false }) as { officeId?: string }
   const isEdit = Boolean(officeId && officeId !== 'new')
-  const existing = isEdit && officeId ? EXISTING[officeId] : null
 
-  const [form, setForm] = useState({
-    name: existing?.name ?? '',
-    country: existing?.country ?? '',
-    city: existing?.city ?? '',
-    timezone: existing?.timezone ?? 'UTC-05:00 Eastern Time',
-    currency: existing?.currency ?? 'USD ($)',
-    fiscal: existing?.fiscal ?? 'Jan - Dec',
-    address: existing?.address ?? '',
-    postal: existing?.postal ?? '',
+  const officeQuery = useQuery({
+    queryKey: ['admin', 'offices', officeId],
+    queryFn: () => getOffice(officeId as string),
+    enabled: isEdit && Boolean(officeId),
   })
 
+  const existing = officeQuery.data
+
+  const [form, setForm] = useState({
+    name: '',
+    country: '',
+    city: '',
+    timezone: 'UTC-05:00 Eastern Time',
+    currency: 'USD ($)',
+    fiscal: 'Jan - Dec',
+    address: '',
+    postal: '',
+  })
+
+  useEffect(() => {
+    if (existing) {
+      setForm({
+        name: existing.name,
+        country: existing.country,
+        city: existing.city,
+        timezone: existing.timezone,
+        currency: existing.currency,
+        fiscal: existing.fiscal,
+        address: existing.address,
+        postal: existing.postal,
+      })
+    }
+  }, [existing])
+
   const set = (k: keyof typeof form, v: string) => setForm((p) => ({ ...p, [k]: v }))
+
+  if (isEdit && officeQuery.isLoading) {
+    return <div className="p-12 text-center text-on-surface-variant">Loading office…</div>
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -119,12 +102,7 @@ export function OfficeFormPage() {
               onChange={(e) => set('timezone', e.target.value)}
               className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
             >
-              {[
-                'UTC-05:00 Eastern Time',
-                'UTC+00:00 GMT',
-                'UTC+05:30 IST',
-                'UTC+08:00 SGT',
-              ].map((t) => (
+              {['UTC-05:00 Eastern Time', 'UTC+00:00 GMT', 'UTC+05:30 IST', 'UTC+08:00 SGT'].map((t) => (
                 <option key={t}>{t}</option>
               ))}
             </select>
