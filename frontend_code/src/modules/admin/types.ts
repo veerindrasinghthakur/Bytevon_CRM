@@ -143,6 +143,7 @@ export type RolePermissionAction =
   | 'DELETE'
   | 'APPROVE'
   | 'EXPORT'
+  | 'UNLOCK'
 
 export interface RbacResource {
   id: number

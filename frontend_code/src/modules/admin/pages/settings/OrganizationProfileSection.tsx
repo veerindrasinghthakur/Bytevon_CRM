@@ -88,38 +88,41 @@ export function OrganizationProfileSection() {
         )}
       </div>
 
-      <div className="flex flex-col lg:flex-row gap-8">
-        <div className="shrink-0 space-y-3">
-          <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Logo</p>
-          <div className="w-28 h-28 rounded-xl bg-surface-container-low flex items-center justify-center border border-dashed border-outline-variant">
-            <span className="material-symbols-outlined text-4xl text-outline">image</span>
-          </div>
-          {editing && (
-            <button type="button" className="text-xs font-medium text-secondary hover:underline">
-              Upload Logo
-            </button>
-          )}
-        </div>
-
-        <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
-          <Field label="Organization Name" value={form.name} editing={editing} onChange={(v) => set('name', v)} />
-          <Field label="Legal Name" value={form.legal} editing={editing} onChange={(v) => set('legal', v)} />
-          <Field label="Email" value={form.email} editing={editing} onChange={(v) => set('email', v)} />
-          <Field label="Phone" value={form.phone} editing={editing} onChange={(v) => set('phone', v)} />
-          <Field label="Website" value={form.website} editing={editing} onChange={(v) => set('website', v)} />
-          <Field label="Tax ID" value={form.tax} editing={editing} onChange={(v) => set('tax', v)} />
-          <Field label="Registration No." value={form.reg} editing={editing} onChange={(v) => set('reg', v)} />
-          <div className="sm:col-span-2">
-            <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Description</p>
-            {editing ? (
-              <textarea
-                value={form.description}
-                onChange={(e) => set('description', e.target.value)}
-                className="w-full min-h-[88px] rounded-lg border border-outline-variant bg-white px-3 py-2 text-body-sm outline-none focus:border-secondary"
-              />
-            ) : (
-              <p className="text-body-md text-on-background">{form.description}</p>
+      {/* Permanent form boundary — always visible in view and edit modes */}
+      <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 sm:p-8">
+        <div className="flex flex-col lg:flex-row gap-8">
+          <div className="shrink-0 space-y-3">
+            <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Logo</p>
+            <div className="w-28 h-28 rounded-xl bg-surface-container-low flex items-center justify-center border border-dashed border-outline-variant">
+              <span className="material-symbols-outlined text-4xl text-outline">image</span>
+            </div>
+            {editing && (
+              <button type="button" className="text-xs font-medium text-secondary hover:underline">
+                Upload Logo
+              </button>
             )}
+          </div>
+
+          <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+            <Field label="Organization Name" value={form.name} editing={editing} onChange={(v) => set('name', v)} />
+            <Field label="Legal Name" value={form.legal} editing={editing} onChange={(v) => set('legal', v)} />
+            <Field label="Email" value={form.email} editing={editing} onChange={(v) => set('email', v)} />
+            <Field label="Phone" value={form.phone} editing={editing} onChange={(v) => set('phone', v)} />
+            <Field label="Website" value={form.website} editing={editing} onChange={(v) => set('website', v)} />
+            <Field label="Tax ID" value={form.tax} editing={editing} onChange={(v) => set('tax', v)} />
+            <Field label="Registration No." value={form.reg} editing={editing} onChange={(v) => set('reg', v)} />
+            <div className="sm:col-span-2">
+              <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Description</p>
+              {editing ? (
+                <textarea
+                  value={form.description}
+                  onChange={(e) => set('description', e.target.value)}
+                  className="w-full min-h-[88px] rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm outline-none focus:border-secondary"
+                />
+              ) : (
+                <p className="text-body-md text-on-background">{form.description}</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -145,7 +148,7 @@ function Field({
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-body-sm outline-none focus:border-secondary"
+          className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm outline-none focus:border-secondary"
         />
       ) : (
         <p className={cn('text-body-md font-medium text-on-background')}>{value || '—'}</p>
