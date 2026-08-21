@@ -1,17 +1,26 @@
 import { useState } from 'react'
 import { useParams } from '@tanstack/react-router'
-import { payrollEmployees, formatMoney } from '../data/mock'
+import { useQuery } from '@tanstack/react-query'
+import { getPayrollEmployee } from '../api/payroll'
+import { formatMoney } from '../data/mock'
 
 export function usePayrollReview() {
   const { employeeId } = useParams({ strict: false }) as { employeeId?: string }
-  const emp = payrollEmployees.find((e) => e.id === employeeId) ?? payrollEmployees[0]
   const [showPayModal, setShowPayModal] = useState(false)
 
-  const gross = 8500
-  const totalEarnings = 9250
-  const totalDeductions = 1845
+  const query = useQuery({
+    queryKey: ['payroll', 'employee', employeeId],
+    queryFn: () => getPayrollEmployee(employeeId ?? ''),
+    enabled: Boolean(employeeId),
+  })
+
+  const emp = query.data
+
+  const gross = emp?.gross ?? 8500
+  const totalEarnings = emp ? emp.gross + emp.earnings : 9250
+  const totalDeductions = emp?.deductions ?? 1845
   const netAdj = 125
-  const netPayable = 7530
+  const netPayable = emp?.net ?? 7530
 
   const attendanceSummary: [string, string][] = [
     ['Working Days', '22'],
@@ -23,21 +32,33 @@ export function usePayrollReview() {
   ]
 
   const earnings: [string, number][] = [
-    ['Basic Salary', 5000],
-    ['House Rent Allowance (HRA)', 2000],
+    ['Basic Salary', Math.round(gross * 0.59)],
+    ['House Rent Allowance (HRA)', Math.round(gross * 0.24)],
     ['Conveyance Allowance', 800],
     ['Special Allowance', 700],
-    ['Overtime Pay', 750],
+    ['Overtime Pay', emp?.earnings ?? 750],
   ]
 
   const deductions: [string, number][] = [
     ['Provident Fund (PF)', 450],
-    ['Tax Deducted at Source (TDS)', 1350],
+    ['Tax Deducted at Source (TDS)', Math.max(0, totalDeductions - 495)],
     ['Professional Tax', 45],
   ]
 
   return {
-    emp,
+    emp: emp ?? {
+      id: employeeId ?? 'e1',
+      name: '—',
+      code: '—',
+      role: '—',
+      department: '—',
+      initials: '—',
+      gross,
+      earnings: 0,
+      deductions: totalDeductions,
+      net: netPayable,
+      status: 'Calculated' as const,
+    },
     showPayModal,
     setShowPayModal,
     gross,
@@ -50,5 +71,6 @@ export function usePayrollReview() {
     deductions,
     formatMoney,
     periodLabel: 'August 2026',
+    isLoading: query.isLoading,
   }
 }

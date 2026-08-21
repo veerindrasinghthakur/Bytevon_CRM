@@ -1,4 +1,6 @@
-import { payrollEmployees, formatMoney } from '../data/mock'
+import { useQuery } from '@tanstack/react-query'
+import { listPayrollEmployees } from '../api/payroll'
+import { formatMoney } from '../data/mock'
 
 const checks = [
   {
@@ -31,14 +33,20 @@ const previewMetrics = [
 ]
 
 export function useRunPayroll() {
-  const previewRows = payrollEmployees.slice(0, 4)
+  const query = useQuery({
+    queryKey: ['payroll', 'employees', 'run-preview'],
+    queryFn: () => listPayrollEmployees(),
+  })
+
+  const previewRows = (query.data ?? []).slice(0, 4)
 
   return {
     checks,
     previewMetrics,
     previewRows,
     estimatedNet: '$212,800.00',
-    employeeCount: 42,
+    employeeCount: query.data?.length ?? 42,
     formatMoney,
+    isLoading: query.isLoading,
   }
 }

@@ -1,22 +1,22 @@
 import { useMemo, useState } from 'react'
-import { payrollEmployees, formatMoney } from '../data/mock'
+import { useQuery } from '@tanstack/react-query'
+import { listPayrollEmployees } from '../api/payroll'
+import { formatMoney } from '../data/mock'
 
 export function useMonthlyPayroll() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('All')
 
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase()
-    return payrollEmployees.filter((e) => {
-      const matchQ =
-        !q ||
-        e.name.toLowerCase().includes(q) ||
-        e.code.toLowerCase().includes(q) ||
-        e.department.toLowerCase().includes(q)
-      const matchStatus = statusFilter === 'All' || e.status === statusFilter
-      return matchQ && matchStatus
-    })
-  }, [search, statusFilter])
+  const query = useQuery({
+    queryKey: ['payroll', 'employees', search, statusFilter],
+    queryFn: () =>
+      listPayrollEmployees({
+        search: search || undefined,
+        status: statusFilter,
+      }),
+  })
+
+  const filtered = query.data ?? []
 
   const totals = useMemo(() => {
     const gross = filtered.reduce((s, e) => s + e.gross, 0)
@@ -34,6 +34,9 @@ export function useMonthlyPayroll() {
     statusFilter,
     setStatusFilter,
     formatMoney,
-    allCount: payrollEmployees.length,
+    allCount: filtered.length,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
   }
 }
