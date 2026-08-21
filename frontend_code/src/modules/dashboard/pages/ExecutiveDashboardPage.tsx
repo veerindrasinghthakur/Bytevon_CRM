@@ -1,35 +1,36 @@
 import { useNavigate } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
-import {
-  executiveActivities,
-  executiveKpis,
-  executiveMeta,
-  executivePending,
-  executiveQuickActions,
-} from '../data/mock'
+import { useExecutiveDashboard } from '../hooks/use-executive-dashboard'
 
 /** Matches HTML executive dashboard: bv-surface + card-hover + executive-shadow */
 const card = 'bv-surface card-hover'
 
 export function ExecutiveDashboardPage() {
   const navigate = useNavigate()
+  const { kpis, pending, activities, meta, quickActions, isLoading } = useExecutiveDashboard()
+
+  if (isLoading || !meta) {
+    return (
+      <div className="py-16 text-center text-body-sm text-on-surface-variant">Loading dashboard…</div>
+    )
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
       <section className="relative overflow-hidden rounded-xl bg-deep-navy p-8 text-on-primary executive-shadow">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h1 className="text-headline-lg font-semibold mb-1">Welcome back, {executiveMeta.greetingName}</h1>
-            <p className="text-body-md text-inverse-primary max-w-xl opacity-90">{executiveMeta.dateLine}</p>
+            <h1 className="text-headline-lg font-semibold mb-1">Welcome back, {meta.greetingName}</h1>
+            <p className="text-body-md text-inverse-primary max-w-xl opacity-90">{meta.dateLine}</p>
           </div>
           <div className="flex gap-4">
             <div className="bg-white/10 border border-white/20 p-4 rounded-lg backdrop-blur-sm min-w-[140px]">
               <p className="text-label-sm uppercase tracking-wider opacity-70">Uptime</p>
-              <p className="text-headline-md font-bold">{executiveMeta.uptime}</p>
+              <p className="text-headline-md font-bold">{meta.uptime}</p>
             </div>
             <div className="bg-white/10 border border-white/20 p-4 rounded-lg backdrop-blur-sm min-w-[140px]">
               <p className="text-label-sm uppercase tracking-wider opacity-70">Active Users</p>
-              <p className="text-headline-md font-bold">{executiveMeta.activeUsers}</p>
+              <p className="text-headline-md font-bold">{meta.activeUsers}</p>
             </div>
           </div>
         </div>
@@ -37,7 +38,7 @@ export function ExecutiveDashboardPage() {
       </section>
 
       <section className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-        {executiveQuickActions.map((a) => (
+        {quickActions.map((a) => (
           <button
             key={a.label}
             type="button"
@@ -53,7 +54,7 @@ export function ExecutiveDashboardPage() {
       </section>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        {executiveKpis.map((k) => (
+        {kpis.map((k) => (
           <div key={k.label} className={`${card} p-5`}>
             <div className="flex justify-between items-start mb-2">
               <span className="text-label-sm text-on-surface-variant uppercase tracking-wider">{k.label}</span>
@@ -81,7 +82,7 @@ export function ExecutiveDashboardPage() {
             </select>
           </div>
           <div className="min-h-[240px] flex items-end justify-between gap-2 px-2 pb-2">
-            {executiveMeta.attendanceBars.map((h, i) => (
+            {meta.attendanceBars.map((h, i) => (
               <div
                 key={i}
                 className="flex-1 bg-secondary/20 hover:bg-secondary rounded-t transition-colors duration-200 cursor-pointer"
@@ -103,7 +104,7 @@ export function ExecutiveDashboardPage() {
             </div>
           </div>
           <div className="min-h-[240px] flex items-end justify-between gap-3 px-4 pb-2">
-            {executiveMeta.revenueBars.map((h, i) => (
+            {meta.revenueBars.map((h, i) => (
               <div
                 key={i}
                 className={cn(
@@ -115,7 +116,7 @@ export function ExecutiveDashboardPage() {
             ))}
           </div>
           <div className="flex justify-between px-4 border-t border-outline-variant pt-3 mt-2 text-label-sm text-on-surface-variant">
-            {executiveMeta.months.map((m) => (
+            {meta.months.map((m) => (
               <span key={m}>{m}</span>
             ))}
           </div>
@@ -127,11 +128,11 @@ export function ExecutiveDashboardPage() {
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-title-lg font-semibold text-on-background">Pending Approvals</h3>
             <span className="bg-error-container text-on-error-container text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-              3 New
+              {pending.length} New
             </span>
           </div>
           <div className="space-y-3">
-            {executivePending.map((p) => (
+            {pending.map((p) => (
               <div
                 key={p.name}
                 className="flex items-center gap-3 p-3 rounded-lg border-l-4 border-secondary bv-row-hover cursor-pointer"
@@ -144,16 +145,10 @@ export function ExecutiveDashboardPage() {
                   <p className="text-label-sm text-on-surface-variant">{p.detail}</p>
                 </div>
                 <div className="flex gap-1">
-                  <button
-                    type="button"
-                    className="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center bv-pressable cursor-pointer"
-                  >
+                  <button type="button" className="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center bv-pressable cursor-pointer">
                     <span className="material-symbols-outlined text-[18px]">check</span>
                   </button>
-                  <button
-                    type="button"
-                    className="w-8 h-8 rounded-full border border-outline text-on-surface-variant flex items-center justify-center hover:bg-error hover:text-white hover:border-error transition-colors duration-200 cursor-pointer"
-                  >
+                  <button type="button" className="w-8 h-8 rounded-full border border-outline text-on-surface-variant flex items-center justify-center hover:bg-error hover:text-white hover:border-error transition-colors duration-200 cursor-pointer">
                     <span className="material-symbols-outlined text-[18px]">close</span>
                   </button>
                 </div>
@@ -172,7 +167,7 @@ export function ExecutiveDashboardPage() {
         <div className={`${card} p-6`}>
           <h3 className="text-title-lg font-semibold text-on-background mb-4">Recent Activities</h3>
           <div className="space-y-6 relative before:content-[''] before:absolute before:left-[19px] before:top-4 before:bottom-4 before:w-px before:bg-outline-variant">
-            {executiveActivities.map((a) => (
+            {activities.map((a) => (
               <div key={a.title} className="relative flex gap-4 pl-10">
                 <div className="absolute left-0 w-10 h-10 bg-surface-container-high rounded-full flex items-center justify-center z-10 border border-white executive-shadow">
                   <span className="material-symbols-outlined text-secondary text-[20px]">{a.icon}</span>
@@ -201,9 +196,7 @@ export function ExecutiveDashboardPage() {
           </div>
           <div className="grid grid-cols-7 gap-2 text-center text-label-md mb-6">
             {[28, 29, 30, 31].map((d) => (
-              <span key={d} className="py-2 text-outline">
-                {d}
-              </span>
+              <span key={d} className="py-2 text-outline">{d}</span>
             ))}
             {Array.from({ length: 27 }, (_, i) => i + 1).map((d) => (
               <span
