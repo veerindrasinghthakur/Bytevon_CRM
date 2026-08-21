@@ -1,0 +1,104 @@
+/** Admin / org metric aggregates for hub, roles, leave, attendance. */
+
+import { env } from '@/config/env'
+import { apiClient } from '@/shared/lib/axios'
+import { adminKpis, adminRoles, adminUsers, offices } from '../data/mock'
+import { getDb } from '@/shared/mock/db'
+
+function delay(ms = 200) {
+  return new Promise((r) => setTimeout(r, ms))
+}
+
+export interface AdminHubMetrics {
+  users: number
+  roles: number
+  activeSessions: number
+  auditEventsToday: number
+  configHealth: string
+  offices: number
+  departments: number
+  employees: number
+}
+
+export interface RoleListMetrics {
+  totalRoles: number
+  activeRoles: number
+  activeUsers: number
+  archivedRoles: number
+}
+
+export interface LeaveAdminMetrics {
+  leaveTypes: number
+  pendingRequests: number
+  approvedThisMonth: number
+  avgBalanceDays: number
+}
+
+export interface AttendanceAdminMetrics {
+  presentToday: number
+  lateToday: number
+  onLeaveToday: number
+  remoteCheckIns: number
+}
+
+export async function getAdminHubMetrics(): Promise<AdminHubMetrics> {
+  if (env.useMockApi) {
+    await delay()
+    const db = getDb()
+    return {
+      users: adminKpis.users,
+      roles: adminKpis.roles,
+      activeSessions: adminKpis.activeSessions,
+      auditEventsToday: adminKpis.auditEventsToday,
+      configHealth: adminKpis.configHealth,
+      offices: offices.length,
+      departments: db.schema_departments?.length ?? 5,
+      employees: db.employments?.length ?? 6,
+    }
+  }
+  const { data } = await apiClient.get<AdminHubMetrics>('/admin/metrics/hub')
+  return data
+}
+
+export async function getRoleListMetrics(): Promise<RoleListMetrics> {
+  if (env.useMockApi) {
+    await delay()
+    const active = adminRoles.filter((r) => r.status === 'Active')
+    return {
+      totalRoles: adminRoles.length,
+      activeRoles: active.length,
+      activeUsers: adminUsers.filter((u) => u.status === 'Active').length,
+      archivedRoles: adminRoles.filter((r) => r.status === 'Archived').length,
+    }
+  }
+  const { data } = await apiClient.get<RoleListMetrics>('/admin/metrics/roles')
+  return data
+}
+
+export async function getLeaveAdminMetrics(): Promise<LeaveAdminMetrics> {
+  if (env.useMockApi) {
+    await delay()
+    return {
+      leaveTypes: 4,
+      pendingRequests: 7,
+      approvedThisMonth: 23,
+      avgBalanceDays: 12,
+    }
+  }
+  const { data } = await apiClient.get<LeaveAdminMetrics>('/admin/metrics/leave')
+  return data
+}
+
+export async function getAttendanceAdminMetrics(): Promise<AttendanceAdminMetrics> {
+  if (env.useMockApi) {
+    await delay()
+    return {
+      presentToday: 42,
+      lateToday: 3,
+      onLeaveToday: 5,
+      remoteCheckIns: 8,
+    }
+  }
+  const { data } = await apiClient.get<AttendanceAdminMetrics>('/admin/metrics/attendance')
+  return data
+}

@@ -2,25 +2,17 @@ import { useNavigate } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
 
 interface BackButtonProps {
-  /**
-   * Fallback path only when there is no usable history entry
-   * (e.g. user opened the page in a new tab). Prefer leaving this
-   * unset so Back always returns to the route the user came from.
-   */
+  /** Fallback when history cannot go back */
   to?: string
-  /**
-   * Optional originating route for documentation / analytics.
-   * Navigation still prefers history.back(); `to` is the fallback.
-   */
+  /** Optional originating route (documentation); navigation prefers history */
   from?: string
   label?: string
   className?: string
 }
 
 /**
- * Shared back control for create/detail/edit pages.
- * Always prefers browser history so the user returns to the page they came from.
- * `to` is only used when history cannot go back.
+ * Shared back control — matches Role form interaction
+ * (cursor, hover color, arrow slide on hover, focus ring).
  */
 export function BackButton({ to, from: _from, label = 'Back', className }: BackButtonProps) {
   const navigate = useNavigate()
@@ -42,14 +34,18 @@ export function BackButton({ to, from: _from, label = 'Back', className }: BackB
       type="button"
       onClick={handleClick}
       className={cn(
-        'inline-flex items-center gap-1.5 text-body-sm text-on-surface-variant',
-        'hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-md px-1 py-0.5',
+        'inline-flex items-center gap-2 text-secondary cursor-pointer group',
+        'hover:text-primary transition-colors duration-200',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-md px-1 py-0.5',
+        'active:scale-[0.98]',
         className,
       )}
       aria-label={label}
     >
-      <span className="material-symbols-outlined text-[20px]">arrow_back</span>
-      <span>{label}</span>
+      <span className="material-symbols-outlined text-[20px] transition-transform duration-200 group-hover:-translate-x-1">
+        arrow_back
+      </span>
+      <span className="text-label-md font-medium">{label}</span>
     </button>
   )
 }
