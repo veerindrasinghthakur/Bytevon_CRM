@@ -1,22 +1,52 @@
-import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useEffect, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
 import { useLeaveEdit } from '../context/LeaveEditContext'
 import { listLeaveTypeSettings } from '../api/leave'
+import { getLeaveAccrualPolicy, updateLeaveAccrualPolicy } from '../api/settings'
+import type { LeaveAccrualPolicy } from '../types'
 
 /** Content only — Edit lives above sub-nav in LeaveSettingsLayout */
 export function LeaveSettingsPage() {
   const { editing } = useLeaveEdit()
+  const qc = useQueryClient()
   const [modalOpen, setModalOpen] = useState(false)
   const [newType, setNewType] = useState({ name: '', days: '10', eligibility: 'All Employees' })
-  const [carryOver, setCarryOver] = useState(10)
-  const [noticeDays, setNoticeDays] = useState(7)
+  const [accrual, setAccrual] = useState<LeaveAccrualPolicy | null>(null)
 
   const { data: leaveTypes = [], isLoading } = useQuery({
     queryKey: ['admin', 'leave', 'types'],
     queryFn: listLeaveTypeSettings,
   })
+
+  const { data: accrualData, isLoading: accrualLoading } = useQuery({
+    queryKey: ['admin', 'settings', 'leave-accrual'],
+    queryFn: getLeaveAccrualPolicy,
+  })
+
+  useEffect(() => {
+    if (accrualData) setAccrual({ ...accrualData })
+  }, [accrualData])
+
+  const saveAccrual = useMutation({
+    mutationFn: () => updateLeaveAccrualPolicy(accrual!),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'settings', 'leave-accrual'] })
+    },
+  })
+
+  // Persist accrual edits when leaving edit mode via layout is out of scope;
+  // fields update local state while editing; Save is implicit on blur of number fields when editing ends is not forced.
+  useEffect(() => {
+    if (!editing && accrual && accrualData) {
+      const dirty =
+        accrual.maxCarryOverDays !== accrualData.maxCarryOverDays ||
+        accrual.minimumNoticeDays !== accrualData.minimumNoticeDays
+      if (dirty) saveAccrual.mutate()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only when edit flag drops
+  }, [editing])
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -82,34 +112,42 @@ export function LeaveSettingsPage() {
             <span className="material-symbols-outlined text-secondary">update</span>
             <h3 className="text-title-lg font-semibold text-on-surface">Accrual Policy</h3>
           </div>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-label-md text-on-surface-variant mb-2">Max Carry-over (Days)</label>
-              {editing ? (
-                <input
-                  type="number"
-                  value={carryOver}
-                  onChange={(e) => setCarryOver(Number(e.target.value))}
-                  className="w-full px-4 py-2.5 rounded-lg bg-white border border-outline-variant focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none text-body-md transition-colors"
-                />
-              ) : (
-                <p className="text-body-md font-medium text-on-surface">{carryOver} days</p>
-              )}
+          {accrualLoading || !accrual ? (
+            <p className="text-body-sm text-on-surface-variant">Loading policy…</p>
+          ) : (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-label-md text-on-surface-variant mb-2">Max Carry-over (Days)</label>
+                {editing ? (
+                  <input
+                    type="number"
+                    value={accrual.maxCarryOverDays}
+                    onChange={(e) =>
+                      setAccrual((p) => p && { ...p, maxCarryOverDays: Number(e.target.value) })
+                    }
+                    className="w-full px-4 py-2.5 rounded-lg bg-white border border-outline-variant focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none text-body-md transition-colors"
+                  />
+                ) : (
+                  <p className="text-body-md font-medium text-on-surface">{accrual.maxCarryOverDays} days</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-label-md text-on-surface-variant mb-2">Minimum notice</label>
+                {editing ? (
+                  <input
+                    type="number"
+                    value={accrual.minimumNoticeDays}
+                    onChange={(e) =>
+                      setAccrual((p) => p && { ...p, minimumNoticeDays: Number(e.target.value) })
+                    }
+                    className="w-full px-4 py-2.5 rounded-lg bg-white border border-outline-variant focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none text-body-md transition-colors"
+                  />
+                ) : (
+                  <p className="text-body-md font-medium text-on-surface">{accrual.minimumNoticeDays} days</p>
+                )}
+              </div>
             </div>
-            <div>
-              <label className="block text-label-md text-on-surface-variant mb-2">Minimum notice</label>
-              {editing ? (
-                <input
-                  type="number"
-                  value={noticeDays}
-                  onChange={(e) => setNoticeDays(Number(e.target.value))}
-                  className="w-full px-4 py-2.5 rounded-lg bg-white border border-outline-variant focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none text-body-md transition-colors"
-                />
-              ) : (
-                <p className="text-body-md font-medium text-on-surface">{noticeDays} days</p>
-              )}
-            </div>
-          </div>
+          )}
         </section>
       </div>
 

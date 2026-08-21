@@ -1,6 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
+import { getAttendanceSettings, updateAttendanceSettings } from '../api/settings'
+import type { AttendanceSettings } from '../types'
 
 function Toggle({ on = false, disabled = false }: { on?: boolean; disabled?: boolean }) {
   return (
@@ -12,22 +15,50 @@ function Toggle({ on = false, disabled = false }: { on?: boolean; disabled?: boo
 }
 
 export function AttendanceSettingsPage() {
+  const qc = useQueryClient()
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin', 'settings', 'attendance'],
+    queryFn: getAttendanceSettings,
+  })
+
   const [editing, setEditing] = useState(false)
-  const [shiftStart, setShiftStart] = useState('09:00')
-  const [shiftEnd, setShiftEnd] = useState('18:00')
-  const [grace, setGrace] = useState(15)
-  const [earlyOut, setEarlyOut] = useState(30)
-  const [otMin, setOtMin] = useState(60)
+  const [form, setForm] = useState<AttendanceSettings | null>(null)
+
+  useEffect(() => {
+    if (data) setForm({ ...data })
+  }, [data])
+
+  const save = useMutation({
+    mutationFn: () => updateAttendanceSettings(form!),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'settings', 'attendance'] })
+      setEditing(false)
+    },
+  })
+
+  if (isLoading || !form) {
+    return (
+      <div className="py-12 text-center text-on-surface-variant text-body-sm">Loading attendance settings…</div>
+    )
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex justify-end">
         {editing ? (
           <div className="flex gap-3">
-            <Button variant="outline" size="sm" onClick={() => setEditing(false)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (data) setForm({ ...data })
+                setEditing(false)
+              }}
+              disabled={save.isPending}
+            >
               Discard
             </Button>
-            <Button variant="primary" size="sm" onClick={() => setEditing(false)}>
+            <Button variant="primary" size="sm" isLoading={save.isPending} onClick={() => save.mutate()}>
               Save Changes
             </Button>
           </div>
@@ -55,12 +86,12 @@ export function AttendanceSettingsPage() {
               {editing ? (
                 <input
                   type="time"
-                  value={shiftStart}
-                  onChange={(e) => setShiftStart(e.target.value)}
+                  value={form.shiftStart}
+                  onChange={(e) => setForm((p) => p && { ...p, shiftStart: e.target.value })}
                   className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
                 />
               ) : (
-                <p className="text-body-md font-medium text-on-surface">{shiftStart}</p>
+                <p className="text-body-md font-medium text-on-surface">{form.shiftStart}</p>
               )}
             </div>
             <div>
@@ -68,12 +99,12 @@ export function AttendanceSettingsPage() {
               {editing ? (
                 <input
                   type="time"
-                  value={shiftEnd}
-                  onChange={(e) => setShiftEnd(e.target.value)}
+                  value={form.shiftEnd}
+                  onChange={(e) => setForm((p) => p && { ...p, shiftEnd: e.target.value })}
                   className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
                 />
               ) : (
-                <p className="text-body-md font-medium text-on-surface">{shiftEnd}</p>
+                <p className="text-body-md font-medium text-on-surface">{form.shiftEnd}</p>
               )}
             </div>
           </div>
@@ -90,12 +121,12 @@ export function AttendanceSettingsPage() {
               {editing ? (
                 <input
                   type="number"
-                  value={grace}
-                  onChange={(e) => setGrace(Number(e.target.value))}
+                  value={form.graceMinutes}
+                  onChange={(e) => setForm((p) => p && { ...p, graceMinutes: Number(e.target.value) })}
                   className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
                 />
               ) : (
-                <p className="text-body-md font-medium text-on-surface">{grace} min</p>
+                <p className="text-body-md font-medium text-on-surface">{form.graceMinutes} min</p>
               )}
             </div>
             <div>
@@ -103,17 +134,27 @@ export function AttendanceSettingsPage() {
               {editing ? (
                 <input
                   type="number"
-                  value={earlyOut}
-                  onChange={(e) => setEarlyOut(Number(e.target.value))}
+                  value={form.earlyOutMinutes}
+                  onChange={(e) => setForm((p) => p && { ...p, earlyOutMinutes: Number(e.target.value) })}
                   className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
                 />
               ) : (
-                <p className="text-body-md font-medium text-on-surface">{earlyOut} min</p>
+                <p className="text-body-md font-medium text-on-surface">{form.earlyOutMinutes} min</p>
               )}
             </div>
             <div className="flex items-center justify-between p-3 bg-surface rounded-lg">
               <span className="text-label-md text-on-surface">Allow Remote Check-in</span>
-              <Toggle on disabled={!editing} />
+              <button
+                type="button"
+                disabled={!editing}
+                onClick={() =>
+                  editing && setForm((p) => p && { ...p, allowRemoteCheckIn: !p.allowRemoteCheckIn })
+                }
+                className="disabled:cursor-default"
+                aria-label="Toggle remote check-in"
+              >
+                <Toggle on={form.allowRemoteCheckIn} disabled={!editing} />
+              </button>
             </div>
           </div>
         </div>
@@ -128,12 +169,12 @@ export function AttendanceSettingsPage() {
             {editing ? (
               <input
                 type="number"
-                value={otMin}
-                onChange={(e) => setOtMin(Number(e.target.value))}
+                value={form.otMinMinutes}
+                onChange={(e) => setForm((p) => p && { ...p, otMinMinutes: Number(e.target.value) })}
                 className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
               />
             ) : (
-              <p className="text-body-md font-medium text-on-surface">{otMin} min</p>
+              <p className="text-body-md font-medium text-on-surface">{form.otMinMinutes} min</p>
             )}
           </div>
         </div>

@@ -1,20 +1,48 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
+import { getOrganizationProfile, updateOrganizationProfile } from '../../api/settings'
+import type { OrganizationProfile } from '../../types'
+
+const emptyForm: OrganizationProfile = {
+  name: '',
+  legal: '',
+  email: '',
+  phone: '',
+  website: '',
+  tax: '',
+  reg: '',
+  description: '',
+}
 
 export function OrganizationProfileSection() {
-  const [editing, setEditing] = useState(false)
-  const [form, setForm] = useState({
-    name: 'Bytevon Global Holdings',
-    legal: 'Bytevon Global Holdings Inc.',
-    email: 'admin@bytevon.com',
-    phone: '+1 (555) 012-3456',
-    website: 'https://bytevon.com',
-    tax: 'TX-9928341',
-    reg: 'BRN-001293',
-    description: 'Leading enterprise solutions provider for global workforce management.',
+  const qc = useQueryClient()
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin', 'settings', 'organization-profile'],
+    queryFn: getOrganizationProfile,
   })
-  const set = (k: keyof typeof form, v: string) => setForm((p) => ({ ...p, [k]: v }))
+
+  const [editing, setEditing] = useState(false)
+  const [form, setForm] = useState<OrganizationProfile>(emptyForm)
+
+  useEffect(() => {
+    if (data) setForm({ ...data })
+  }, [data])
+
+  const save = useMutation({
+    mutationFn: () => updateOrganizationProfile(form),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['admin', 'settings', 'organization-profile'] })
+      setEditing(false)
+    },
+  })
+
+  const set = (k: keyof OrganizationProfile, v: string) => setForm((p) => ({ ...p, [k]: v }))
+
+  if (isLoading) {
+    return <p className="text-body-sm text-on-surface-variant">Loading organization profile…</p>
+  }
 
   return (
     <div className="space-y-6">
@@ -27,10 +55,23 @@ export function OrganizationProfileSection() {
         </div>
         {editing ? (
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => setEditing(false)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (data) setForm({ ...data })
+                setEditing(false)
+              }}
+              disabled={save.isPending}
+            >
               Cancel
             </Button>
-            <Button variant="primary" size="sm" onClick={() => setEditing(false)}>
+            <Button
+              variant="primary"
+              size="sm"
+              isLoading={save.isPending}
+              onClick={() => save.mutate()}
+            >
               Save Changes
             </Button>
           </div>
