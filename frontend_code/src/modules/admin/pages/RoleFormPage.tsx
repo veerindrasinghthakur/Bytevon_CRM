@@ -1,4 +1,5 @@
 import { PageHeader } from '@/shared/components/layout/PageHeader'
+import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
 import { useRoleForm, type RoleFormMode } from '../hooks/use-role-form'
@@ -12,6 +13,7 @@ const ACTION_LABEL: Record<string, string> = {
   DELETE: 'Delete',
   APPROVE: 'Approve',
   EXPORT: 'Export',
+  UNLOCK: 'Unlock',
 }
 
 type Props = {
@@ -34,20 +36,18 @@ export function RoleFormPage({ mode, roleId }: Props) {
 
   const { modules, actions, matrix } = form
 
+  const grantedCount = modules.reduce(
+    (sum, mod) => sum + actions.filter((a) => matrix[mod]?.[a]).length,
+    0,
+  )
+  const totalCells = modules.length * actions.length
+
   return (
-    <div className="space-y-6">
-      <button
-        type="button"
-        onClick={form.cancel}
-        className="inline-flex items-center gap-2 text-secondary hover:text-primary transition-colors group"
-      >
-        <span className="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">
-          arrow_back
-        </span>
-        <span className="text-label-md font-medium">
-          {mode === 'create' ? 'Back to Roles & Permissions' : 'Back to Role Detail'}
-        </span>
-      </button>
+    <div className="space-y-6 pb-28">
+      <BackButton
+        to={mode === 'create' ? '/admin/roles' : roleId ? `/admin/roles/${roleId}` : '/admin/roles'}
+        label={mode === 'create' ? 'Back to Roles & Permissions' : 'Back to Role Detail'}
+      />
 
       <PageHeader
         title={title}
@@ -166,7 +166,7 @@ export function RoleFormPage({ mode, roleId }: Props) {
           )}
         </section>
 
-        <section className="lg:col-span-8">
+        <section className="lg:col-span-8 space-y-4">
           <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
             <div className="p-6 border-b border-outline-variant flex flex-wrap justify-between items-center gap-3">
               <div className="flex items-center gap-2">
@@ -251,7 +251,47 @@ export function RoleFormPage({ mode, roleId }: Props) {
               </table>
             </div>
           </div>
+
+          {/* Bottom section 1 — permission summary */}
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-5 flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
+                <span className="material-symbols-outlined">checklist</span>
+              </div>
+              <div>
+                <p className="text-label-md font-semibold text-on-surface">Permission summary</p>
+                <p className="text-body-sm text-on-surface-variant">
+                  {grantedCount} of {totalCells} grants selected across {modules.length} modules
+                </p>
+              </div>
+            </div>
+            <div className="text-label-sm text-on-surface-variant">
+              Status:{' '}
+              <span className={cn('font-semibold', form.active ? 'text-secondary' : 'text-on-surface-variant')}>
+                {form.active ? 'Active' : 'Inactive'}
+              </span>
+            </div>
+          </div>
         </section>
+      </div>
+
+      {/* Bottom section 2 — sticky action bar (matches edit_role design) */}
+      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-outline-variant bg-surface-container-lowest/95 backdrop-blur-sm executive-shadow">
+        <div className="max-w-[1600px] mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-body-sm text-on-surface-variant">
+            {mode === 'create'
+              ? 'Review the matrix carefully before creating this role.'
+              : 'Changes apply to all users currently assigned this role.'}
+          </p>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={form.cancel} disabled={form.isSubmitting}>
+              Cancel
+            </Button>
+            <Button variant="primary" size="sm" isLoading={form.isSubmitting} onClick={form.submit}>
+              {mode === 'create' ? 'Create Role' : 'Save Changes'}
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
   )

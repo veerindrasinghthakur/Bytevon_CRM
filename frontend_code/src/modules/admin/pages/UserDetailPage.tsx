@@ -1,7 +1,11 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
+import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
+import { Can } from '@/shared/rbac/Can'
+import { Action, ResourceName } from '@/shared/schema'
+import { useEditMode } from '@/shared/hooks/useEditMode'
 import { adminUsers } from '../data/mock'
 import { cn } from '@/shared/lib/cn'
 
@@ -10,7 +14,7 @@ export function UserDetailPage() {
   const navigate = useNavigate()
   const base = adminUsers.find((u) => u.id === userId) ?? adminUsers[0]
 
-  const [editing, setEditing] = useState(false)
+  const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
   const [status, setStatus] = useState(base.status)
   const [name, setName] = useState(base.name)
   const [email, setEmail] = useState(base.email)
@@ -36,16 +40,17 @@ export function UserDetailPage() {
     }, 1500)
   }
 
+  const handleCancelEdit = () => {
+    setName(base.name)
+    setEmail(base.email)
+    setDepartment(base.department)
+    setRole(base.role)
+    cancelEditing()
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
-      <button
-        type="button"
-        onClick={() => navigate({ to: '/admin/users' })}
-        className="flex items-center gap-2 text-secondary text-label-md hover:text-primary transition-colors"
-      >
-        <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-        Back to Users
-      </button>
+      <BackButton to="/admin/users" label="Back to Users" />
 
       {isLocked && (
         <div
@@ -53,12 +58,17 @@ export function UserDetailPage() {
           role="status"
         >
           <span className="material-symbols-outlined text-error shrink-0">lock</span>
-          <div>
+          <div className="flex-1">
             <p className="font-semibold text-on-background">Account locked</p>
             <p className="text-on-surface-variant">
               This user cannot sign in until the account is unlocked.
             </p>
           </div>
+          <Can action={Action.UNLOCK} resource={ResourceName.USER}>
+            <Button variant="primary" size="sm" onClick={() => setLockOpen(true)}>
+              Unlock
+            </Button>
+          </Can>
         </div>
       )}
 
@@ -73,28 +83,44 @@ export function UserDetailPage() {
           <Button variant="outline" size="sm" onClick={() => setResetOpen(true)}>
             Reset Password
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-error text-error hover:bg-error/10"
-            onClick={() => setLockOpen(true)}
-          >
-            {isLocked ? 'Unlock Account' : 'Lock Account'}
-          </Button>
-          {editing ? (
+          {/* Lock requires UPDATE; Unlock requires UNLOCK permission */}
+          {isLocked ? (
+            <Can action={Action.UNLOCK} resource={ResourceName.USER}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-secondary text-secondary hover:bg-secondary/10"
+                onClick={() => setLockOpen(true)}
+              >
+                Unlock Account
+              </Button>
+            </Can>
+          ) : (
+            <Can action={Action.UPDATE} resource={ResourceName.USER}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-error text-error hover:bg-error/10"
+                onClick={() => setLockOpen(true)}
+              >
+                Lock Account
+              </Button>
+            </Can>
+          )}
+          {isEditing ? (
             <>
-              <Button variant="outline" size="sm" onClick={() => setEditing(false)}>
+              <Button variant="outline" size="sm" onClick={handleCancelEdit}>
                 Cancel
               </Button>
-              <Button variant="primary" size="sm" onClick={() => setEditing(false)}>
+              <Button variant="primary" size="sm" onClick={finishEditing}>
                 Save
               </Button>
             </>
           ) : (
             <button
               type="button"
-              onClick={() => setEditing(true)}
-              className="p-2 rounded-lg border border-outline-variant text-on-surface-variant hover:text-secondary hover:border-secondary transition-colors"
+              onClick={startEditing}
+              className="p-2 rounded-lg border border-outline-variant text-on-surface-variant hover:text-secondary hover:border-secondary transition-colors duration-200 cursor-pointer"
               aria-label="Edit user"
               title="Edit"
             >
@@ -108,18 +134,18 @@ export function UserDetailPage() {
         <div className="lg:col-span-2 space-y-4">
           <Card title="Profile">
             <Field label="User ID" value={base.id} />
-            <EditableField label="Full Name" value={name} editing={editing} onChange={setName} />
-            <EditableField label="Email" value={email} editing={editing} onChange={setEmail} />
+            <EditableField label="Full Name" value={name} editing={isEditing} onChange={setName} />
+            <EditableField label="Email" value={email} editing={isEditing} onChange={setEmail} />
             <EditableField
               label="Department"
               value={department}
-              editing={editing}
+              editing={isEditing}
               onChange={setDepartment}
             />
             <Field label="Last Login" value={base.lastLogin} />
           </Card>
           <Card title="Role Assignment">
-            <EditableField label="Primary Role" value={role} editing={editing} onChange={setRole} />
+            <EditableField label="Primary Role" value={role} editing={isEditing} onChange={setRole} />
             <p className="text-body-sm text-on-surface-variant mt-2">
               Additional scoped roles can be assigned from Roles & Permissions.
             </p>
