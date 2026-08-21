@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
+import { ActivityFeed } from '@/shared/components/ui/ActivityFeed'
 import { useExecutiveDashboard } from '../hooks/use-executive-dashboard'
 
 /** Matches HTML executive dashboard: bv-surface + card-hover + executive-shadow */
@@ -164,23 +165,29 @@ export function ExecutiveDashboardPage() {
           </button>
         </div>
 
-        <div className={`${card} p-6`}>
-          <h3 className="text-title-lg font-semibold text-on-background mb-4">Recent Activities</h3>
-          <div className="space-y-6 relative before:content-[''] before:absolute before:left-[19px] before:top-4 before:bottom-4 before:w-px before:bg-outline-variant">
-            {activities.map((a) => (
-              <div key={a.title} className="relative flex gap-4 pl-10">
-                <div className="absolute left-0 w-10 h-10 bg-surface-container-high rounded-full flex items-center justify-center z-10 border border-white executive-shadow">
-                  <span className="material-symbols-outlined text-secondary text-[20px]">{a.icon}</span>
-                </div>
-                <div>
-                  <p className="text-label-md text-on-surface">{a.title}</p>
-                  <p className="text-body-sm text-on-surface-variant">{a.desc}</p>
-                  <p className="text-label-sm text-outline mt-1">{a.time}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        <ActivityFeed
+          className={card}
+          framed={false}
+          title="Recent Activities"
+          variant="standard"
+          items={activities.map((a) => ({
+            id: a.id,
+            title: a.title,
+            description: a.description,
+            timestamp: a.timestamp,
+            icon: a.icon,
+            badge: a.badge,
+          }))}
+          headerAction={
+            <button
+              type="button"
+              className="text-label-sm text-secondary hover:underline cursor-pointer"
+              onClick={() => navigate({ to: '/dashboard' })}
+            >
+              View All
+            </button>
+          }
+        />
 
         <div className={`${card} p-6`}>
           <div className="flex justify-between items-center mb-4">

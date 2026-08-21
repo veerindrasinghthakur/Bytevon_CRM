@@ -21,24 +21,31 @@ export const executivePending = [
   { name: 'Elena Rossi', detail: 'Training Request • AI Ethics', initials: 'ER' },
 ]
 
+/** ActivityFeed-compatible items for executive dashboard */
 export const executiveActivities = [
   {
+    id: 'act-1',
     icon: 'person_add',
     title: 'New employee onboarded',
-    desc: 'Jordan Smith added to Engineering team',
-    time: '10 minutes ago',
+    description: 'Jordan Smith added to Engineering team',
+    timestamp: '10m ago',
+    badge: 'HR',
   },
   {
+    id: 'act-2',
     icon: 'security',
     title: 'Security Policy Updated',
-    desc: '2FA enforcement enabled for all Admin accounts',
-    time: '1 hour ago',
+    description: '2FA enforcement enabled for all Admin accounts',
+    timestamp: '1h ago',
+    badge: 'AUTH',
   },
   {
+    id: 'act-3',
     icon: 'database',
     title: 'Cloud Backup Completed',
-    desc: 'ERP primary database successfully mirrored to AWS-West',
-    time: '4 hours ago',
+    description: 'ERP primary database successfully mirrored to AWS-West',
+    timestamp: '4h ago',
+    badge: 'SYSTEM',
   },
 ]
 

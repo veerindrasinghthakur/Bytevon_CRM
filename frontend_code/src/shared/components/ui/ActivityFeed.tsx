@@ -23,6 +23,8 @@ export interface ActivityFeedProps {
   title?: string
   /** Optional action on the right of the header (e.g. View All button) */
   headerAction?: ReactNode
+  /** When false, omit outer card chrome (for embedding inside an existing card) */
+  framed?: boolean
   /** @deprecated use title + headerAction */
   header?: ReactNode
 }
@@ -30,6 +32,7 @@ export interface ActivityFeedProps {
 /**
  * Activity timeline — matches Bytevon Component Library: Timeline.
  * Vertical connector + circular icon nodes. Tokens only (light/dark safe).
+ * Variants: standard (detail), compact (sidebar/overview), empty state built-in.
  */
 export function ActivityFeed({
   items,
@@ -39,6 +42,7 @@ export function ActivityFeed({
   className,
   title,
   headerAction,
+  framed = true,
   header,
 }: ActivityFeedProps) {
   const isCompact = variant === 'compact'
@@ -47,8 +51,9 @@ export function ActivityFeed({
   return (
     <div
       className={cn(
-        'bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm',
-        isCompact ? 'p-5' : 'p-6',
+        framed &&
+          'bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm',
+        framed && (isCompact ? 'p-5' : 'p-6'),
         className,
       )}
     >
@@ -110,7 +115,7 @@ function StandardList({ items }: { items: ActivityItem[] }) {
                 <div className="flex items-center gap-2 flex-wrap min-w-0">
                   <span className="text-body-sm font-semibold text-on-surface">{item.title}</span>
                   {item.badge ? (
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant">
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-tertiary-container/10 text-on-tertiary-container">
                       {item.badge}
                     </span>
                   ) : null}
@@ -159,7 +164,7 @@ function CompactList({ items }: { items: ActivityItem[] }) {
                   {item.title}
                 </span>
                 {item.badge ? (
-                  <span className="inline-flex items-center px-1 py-0 rounded text-[9px] font-bold uppercase tracking-wider bg-surface-container text-on-surface-variant shrink-0">
+                  <span className="inline-flex items-center px-1 py-0 rounded text-[9px] font-bold uppercase tracking-wider bg-tertiary-container/10 text-on-tertiary-container shrink-0">
                     {item.badge}
                   </span>
                 ) : null}
