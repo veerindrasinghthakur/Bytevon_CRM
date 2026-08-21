@@ -5,10 +5,11 @@ export interface SearchableOption {
   value: string
   label: string
   meta?: string
+  disabled?: boolean
 }
 
 /**
- * Typeahead select — user can type to filter options.
+ * Typeahead select — panel styling matches redesigned Select options panel.
  */
 export function SearchableSelect({
   options,
@@ -71,41 +72,68 @@ export function SearchableSelect({
             if (value) onChange('')
           }}
           className={cn(
-            'w-full border border-outline-variant rounded-lg px-3 py-2.5 pr-9 text-body-sm',
-            'outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/30 bg-transparent',
-            disabled && 'opacity-60 cursor-not-allowed',
+            'w-full h-11 border border-outline-variant rounded-lg px-4 pr-10 text-body-md',
+            'bg-surface-container-lowest outline-none',
+            'focus:border-secondary focus:ring-1 focus:ring-secondary/40',
+            'transition-colors duration-200',
+            disabled && 'opacity-50 cursor-not-allowed',
           )}
         />
-        <span className="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] pointer-events-none">
+        <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] pointer-events-none">
           {open ? 'expand_less' : 'expand_more'}
         </span>
       </div>
       {open && !disabled && (
-        <ul className="absolute z-40 mt-1 w-full max-h-56 overflow-auto rounded-lg border border-outline-variant bg-surface-container-lowest shadow-lg">
+        <ul
+          className={cn(
+            'absolute z-50 mt-2 w-full max-h-[240px] overflow-y-auto',
+            'rounded-xl border border-outline-variant/50 bg-surface-container-lowest executive-shadow py-1',
+          )}
+          role="listbox"
+        >
           {filtered.length === 0 ? (
-            <li className="px-3 py-2 text-body-sm text-on-surface-variant">{emptyLabel}</li>
+            <li className="px-4 py-3 text-body-sm text-on-surface-variant">{emptyLabel}</li>
           ) : (
-            filtered.map((o) => (
-              <li key={o.value}>
-                <button
-                  type="button"
-                  className={cn(
-                    'w-full text-left px-3 py-2 text-body-sm hover:bg-surface-container-low',
-                    o.value === value && 'bg-secondary/10 text-secondary font-medium',
-                  )}
-                  onClick={() => {
-                    onChange(o.value)
-                    setQuery(o.label)
-                    setOpen(false)
-                  }}
-                >
-                  <span className="block">{o.label}</span>
-                  {o.meta && (
-                    <span className="block text-xs text-on-surface-variant">{o.meta}</span>
-                  )}
-                </button>
-              </li>
-            ))
+            filtered.map((o) => {
+              const isSelected = o.value === value
+              return (
+                <li key={o.value} role="option" aria-selected={isSelected}>
+                  <button
+                    type="button"
+                    disabled={o.disabled}
+                    className={cn(
+                      'w-full h-11 px-4 flex items-center justify-between gap-2 text-left text-body-md',
+                      'transition-colors duration-200',
+                      o.disabled && 'opacity-50 cursor-not-allowed',
+                      !o.disabled && !isSelected && 'hover:bg-surface-container-low cursor-pointer',
+                      isSelected && 'bg-secondary-container text-secondary font-medium',
+                    )}
+                    onClick={() => {
+                      if (o.disabled) return
+                      onChange(o.value)
+                      setQuery(o.label)
+                      setOpen(false)
+                    }}
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate">{o.label}</span>
+                      {o.meta ? (
+                        <span className="block text-xs text-on-surface-variant truncate">{o.meta}</span>
+                      ) : null}
+                    </span>
+                    {isSelected ? (
+                      <span
+                        className="material-symbols-outlined text-secondary text-[20px] shrink-0"
+                        style={{ fontVariationSettings: "'FILL' 1" }}
+                        aria-hidden
+                      >
+                        check
+                      </span>
+                    ) : null}
+                  </button>
+                </li>
+              )
+            })
           )}
         </ul>
       )}
