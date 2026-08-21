@@ -1,0 +1,245 @@
+import { PageHeader } from '@/shared/components/layout/PageHeader'
+import { Button } from '@/shared/components/ui/Button'
+import { cn } from '@/shared/lib/cn'
+import { useRoleForm, type RoleFormMode } from '../hooks/use-role-form'
+
+type Props = {
+  mode: RoleFormMode
+  roleId?: string
+}
+
+export function RoleFormPage({ mode, roleId }: Props) {
+  const form = useRoleForm(mode, roleId)
+
+  if (form.isLoadingRole) {
+    return <div className="p-12 text-center text-on-surface-variant">Loading role…</div>
+  }
+
+  const title = mode === 'create' ? 'Add New Role' : `Edit Role: ${form.role?.name ?? ''}`
+  const description =
+    mode === 'create'
+      ? 'Define access levels and assign granular permissions for a new organizational role.'
+      : 'Update functional access levels and module permissions.'
+
+  return (
+    <div className="space-y-6">
+      <button
+        type="button"
+        onClick={form.cancel}
+        className="inline-flex items-center gap-2 text-secondary hover:text-primary transition-colors group"
+      >
+        <span className="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">
+          arrow_back
+        </span>
+        <span className="text-label-md font-medium">
+          {mode === 'create' ? 'Back to Roles & Permissions' : 'Back to Role Detail'}
+        </span>
+      </button>
+
+      <PageHeader
+        title={title}
+        description={description}
+        actions={
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={form.cancel}>
+              Cancel
+            </Button>
+            <Button variant="primary" size="sm" isLoading={form.isSubmitting} onClick={form.submit}>
+              {mode === 'create' ? 'Create Role' : 'Save Changes'}
+            </Button>
+          </div>
+        }
+      />
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <section className="lg:col-span-4 space-y-4">
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-6">
+            <div className="flex items-center gap-2 mb-6 pb-4 border-b border-outline-variant">
+              <span className="material-symbols-outlined text-secondary">badge</span>
+              <h3 className="text-title-lg font-semibold text-primary">Role Identity</h3>
+            </div>
+            <div className="space-y-5">
+              <div>
+                <label className="block text-label-md text-on-surface-variant mb-2">Role Name</label>
+                <input
+                  value={form.name}
+                  onChange={(e) => form.setName(e.target.value)}
+                  className="w-full border border-outline-variant rounded-lg px-4 py-2.5 text-body-sm outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/30 bg-transparent transition-all"
+                  placeholder="e.g., Senior Financial Analyst"
+                />
+              </div>
+              {mode === 'create' && (
+                <>
+                  <div>
+                    <label className="block text-label-md text-on-surface-variant mb-2">Hierarchy Level</label>
+                    <select
+                      value={form.hierarchy}
+                      onChange={(e) => form.setHierarchy(e.target.value)}
+                      className="w-full border border-outline-variant rounded-lg px-4 py-2.5 text-body-sm outline-none focus:border-secondary bg-transparent"
+                    >
+                      {['Select Level', '1 (Entry)', '2', '3', '4', '5 (Management)', '10 (Executive)'].map(
+                        (o) => (
+                          <option key={o}>{o}</option>
+                        ),
+                      )}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-label-md text-on-surface-variant mb-2">
+                      Inherit permissions from
+                    </label>
+                    <select
+                      value={form.inherit}
+                      onChange={(e) => form.setInherit(e.target.value)}
+                      className="w-full border border-outline-variant rounded-lg px-4 py-2.5 text-body-sm outline-none focus:border-secondary bg-transparent"
+                    >
+                      {['None (Custom)', 'Basic Employee', 'Financial Analyst', 'HR Manager'].map((o) => (
+                        <option key={o}>{o}</option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
+              <div>
+                <label className="block text-label-md text-on-surface-variant mb-2">Description</label>
+                <textarea
+                  value={form.description}
+                  onChange={(e) => form.setDescription(e.target.value)}
+                  className="w-full border border-outline-variant rounded-lg px-4 py-2.5 text-body-sm min-h-[100px] outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/30 bg-transparent"
+                  placeholder="Briefly describe the responsibilities..."
+                  rows={4}
+                />
+              </div>
+              <div className="flex items-center justify-between pt-4 border-t border-outline-variant">
+                <div>
+                  <p className="text-label-md text-primary font-medium">Role Status</p>
+                  <p className="text-label-sm text-on-surface-variant">
+                    {mode === 'edit' && form.role
+                      ? `${form.role.usersCount} users assigned`
+                      : 'Active roles are immediately available.'}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={form.active}
+                  onClick={() => form.setActive(!form.active)}
+                  className={cn(
+                    'relative w-11 h-6 rounded-full transition-colors',
+                    form.active ? 'bg-secondary' : 'bg-outline-variant',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all',
+                      form.active ? 'left-[22px]' : 'left-0.5',
+                    )}
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+          {mode === 'create' && (
+            <div className="bg-surface-container-low p-6 rounded-xl border border-secondary/20">
+              <h4 className="text-label-md text-secondary flex items-center gap-2 mb-2 font-medium">
+                <span className="material-symbols-outlined text-[18px]">info</span>
+                Best Practice
+              </h4>
+              <p className="text-body-sm text-on-surface-variant">
+                Assign the lowest necessary permissions required for the job function to maintain system
+                integrity and data security.
+              </p>
+            </div>
+          )}
+        </section>
+
+        <section className="lg:col-span-8">
+          <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-outline-variant flex flex-wrap justify-between items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary">grid_view</span>
+                <h3 className="text-title-lg font-semibold text-primary">
+                  {mode === 'create' ? 'Permission Matrix' : 'Module Permissions Matrix'}
+                </h3>
+              </div>
+              {mode === 'create' && (
+                <div className="flex gap-4">
+                  <button type="button" className="text-label-sm text-secondary hover:underline" onClick={form.expandAll}>
+                    Expand All
+                  </button>
+                  <button type="button" className="text-label-sm text-secondary hover:underline" onClick={form.resetMatrix}>
+                    Reset Matrix
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[800px]">
+                <thead className="bg-surface-container-low">
+                  <tr>
+                    <th className="px-6 py-4 border-b border-outline-variant text-label-md text-primary w-1/4">
+                      Module
+                    </th>
+                    {form.actions.map((a) => (
+                      <th
+                        key={a}
+                        className="px-3 py-4 border-b border-outline-variant text-label-sm text-on-surface-variant text-center"
+                      >
+                        {a}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-outline-variant">
+                  {mode === 'create' && (
+                    <tr className="bg-surface-container-lowest font-bold">
+                      <td className="px-6 py-3 text-label-md text-primary italic">Select All Columns</td>
+                      {form.actions.map((a) => (
+                        <td key={a} className="px-3 py-3 text-center">
+                          <input
+                            type="checkbox"
+                            className="rounded border-outline-variant text-secondary focus:ring-secondary cursor-pointer"
+                            checked={form.modules.every((m) => form.matrix[m][a])}
+                            onChange={() => form.toggleColAll(a)}
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  )}
+                  {form.modules.map((mod) => (
+                    <tr key={mod} className="hover:bg-surface-container-low/40 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-label-md text-primary font-medium">{mod}</span>
+                          <label className="flex items-center gap-1 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              className="rounded border-outline-variant text-secondary focus:ring-secondary h-3 w-3"
+                              checked={form.actions.every((a) => form.matrix[mod][a])}
+                              onChange={() => form.toggleRowAll(mod)}
+                            />
+                            <span className="text-[10px] text-on-surface-variant font-medium">All</span>
+                          </label>
+                        </div>
+                      </td>
+                      {form.actions.map((a) => (
+                        <td key={a} className="px-3 py-4 text-center">
+                          <input
+                            type="checkbox"
+                            className="rounded border-outline-variant text-secondary focus:ring-secondary cursor-pointer"
+                            checked={form.matrix[mod][a]}
+                            onChange={() => form.toggleCell(mod, a)}
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  )
+}
