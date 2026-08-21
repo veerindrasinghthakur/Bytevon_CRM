@@ -1,0 +1,75 @@
+/* =============================================================================
+   Bytevon — Executive Precision Dark
+   Loaded after tokens.css. Activated via <html data-theme="dark">.
+   Overrides semantic --color-* tokens only; light :root values stay intact.
+   ============================================================================= */
+
+[data-theme="dark"] {
+  /* Brand / primary */
+  --color-primary: #afc8f0;
+  --color-on-primary: #163152;
+  --color-primary-container: #001f3f;
+  --color-primary-fixed: #d4e3ff;
+
+  /* Chrome / sidebar (rail stays deep navy structural) */
+  --color-deep-navy: #001f3f;
+  --color-electric-blue: #adc7ff;
+  --color-sidebar-accent: #afc8f0;
+  --color-sidebar-item-active: #102034;
+  --color-surface-sidebar: #000f21;
+
+  /* Secondary */
+  --color-secondary: #adc7ff;
+  --color-on-secondary: #002e68;
+  --color-secondary-container: #4a8eff;
+  --color-on-secondary-container: #00285b;
+
+  /* Surfaces / background */
+  --color-background: #031427;
+  --color-surface: #031427;
+  --color-surface-bright: #2a3a4f;
+  --color-surface-variant: #26364a;
+  --color-surface-tint: #afc8f0;
+  --color-surface-container: #102034;
+  --color-surface-container-low: #0b1c30;
+  --color-surface-container-high: #1b2b3f;
+  --color-surface-container-highest: #26364a;
+  --color-surface-container-lowest: #000f21;
+
+  /* Text */
+  --color-on-surface: #d3e4fe;
+  --color-on-surface-variant: #c4c6cf;
+  --color-on-background: #d3e4fe;
+  --color-inverse-primary: #476083;
+
+  /* Outline */
+  --color-outline: #8e9198;
+  --color-outline-variant: #43474e;
+
+  /* Error */
+  --color-error: #ffb4ab;
+  --color-on-error: #690005;
+  --color-error-container: #93000a;
+
+  /* Status — dark-readable success / warning */
+  --color-success-emerald: #6dd58c;
+  --color-on-success: #003919;
+  --color-success-container: #005227;
+  --color-warning-amber: #ffb95f;
+  --color-on-warning: #452b00;
+  --color-warning-container: #633f00;
+
+  /* Overlay / shadow — slightly stronger on dark for depth */
+  --color-scrim: #000000;
+  --color-shadow: #000000;
+  --color-shadow-navy: #000000;
+  --opacity-scrim: 0.55;
+  --opacity-glass: 0.92;
+  --opacity-shadow-soft: 0.2;
+  --opacity-shadow-soft-lg: 0.12;
+  --opacity-shadow-executive-near: 0.25;
+  --opacity-shadow-executive-far: 0.15;
+  --opacity-shadow-hover-near: 0.3;
+  --opacity-shadow-hover-far: 0.18;
+  --opacity-row-hover: 0.12;
+}
