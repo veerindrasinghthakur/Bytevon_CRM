@@ -2,6 +2,17 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
 import { useRoleForm, type RoleFormMode } from '../hooks/use-role-form'
+import type { RolePermissionAction } from '../types'
+
+/** Human labels for backend Action enum (seeded permissions). */
+const ACTION_LABEL: Record<string, string> = {
+  VIEW: 'View',
+  CREATE: 'Create',
+  UPDATE: 'Edit',
+  DELETE: 'Delete',
+  APPROVE: 'Approve',
+  EXPORT: 'Export',
+}
 
 type Props = {
   mode: RoleFormMode
@@ -11,8 +22,8 @@ type Props = {
 export function RoleFormPage({ mode, roleId }: Props) {
   const form = useRoleForm(mode, roleId)
 
-  if (form.isLoadingRole) {
-    return <div className="p-12 text-center text-on-surface-variant">Loading role…</div>
+  if (form.isLoadingRole || form.isLoadingCatalog) {
+    return <div className="p-12 text-center text-on-surface-variant">Loading…</div>
   }
 
   const title = mode === 'create' ? 'Add New Role' : `Edit Role: ${form.role?.name ?? ''}`
@@ -20,6 +31,8 @@ export function RoleFormPage({ mode, roleId }: Props) {
     mode === 'create'
       ? 'Define access levels and assign granular permissions for a new organizational role.'
       : 'Update functional access levels and module permissions.'
+
+  const { modules, actions, matrix } = form
 
   return (
     <div className="space-y-6">
@@ -146,8 +159,8 @@ export function RoleFormPage({ mode, roleId }: Props) {
                 Best Practice
               </h4>
               <p className="text-body-sm text-on-surface-variant">
-                Assign the lowest necessary permissions required for the job function to maintain system
-                integrity and data security.
+                Assign the lowest necessary permissions. Modules and actions are loaded from the RBAC
+                seed catalogue (resources + Action enum).
               </p>
             </div>
           )}
@@ -180,12 +193,12 @@ export function RoleFormPage({ mode, roleId }: Props) {
                     <th className="px-6 py-4 border-b border-outline-variant text-label-md text-primary w-1/4">
                       Module
                     </th>
-                    {form.actions.map((a) => (
+                    {actions.map((a) => (
                       <th
                         key={a}
                         className="px-3 py-4 border-b border-outline-variant text-label-sm text-on-surface-variant text-center"
                       >
-                        {a}
+                        {ACTION_LABEL[a] ?? a}
                       </th>
                     ))}
                   </tr>
@@ -194,19 +207,19 @@ export function RoleFormPage({ mode, roleId }: Props) {
                   {mode === 'create' && (
                     <tr className="bg-surface-container-lowest font-bold">
                       <td className="px-6 py-3 text-label-md text-primary italic">Select All Columns</td>
-                      {form.actions.map((a) => (
+                      {actions.map((a) => (
                         <td key={a} className="px-3 py-3 text-center">
                           <input
                             type="checkbox"
                             className="rounded border-outline-variant text-secondary focus:ring-secondary cursor-pointer"
-                            checked={form.modules.every((m) => form.matrix[m][a])}
-                            onChange={() => form.toggleColAll(a)}
+                            checked={modules.length > 0 && modules.every((m) => matrix[m]?.[a])}
+                            onChange={() => form.toggleColAll(a as RolePermissionAction)}
                           />
                         </td>
                       ))}
                     </tr>
                   )}
-                  {form.modules.map((mod) => (
+                  {modules.map((mod) => (
                     <tr key={mod} className="hover:bg-surface-container-low/40 transition-colors">
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-between gap-2">
@@ -215,20 +228,20 @@ export function RoleFormPage({ mode, roleId }: Props) {
                             <input
                               type="checkbox"
                               className="rounded border-outline-variant text-secondary focus:ring-secondary h-3 w-3"
-                              checked={form.actions.every((a) => form.matrix[mod][a])}
+                              checked={actions.length > 0 && actions.every((a) => matrix[mod]?.[a])}
                               onChange={() => form.toggleRowAll(mod)}
                             />
                             <span className="text-[10px] text-on-surface-variant font-medium">All</span>
                           </label>
                         </div>
                       </td>
-                      {form.actions.map((a) => (
+                      {actions.map((a) => (
                         <td key={a} className="px-3 py-4 text-center">
                           <input
                             type="checkbox"
                             className="rounded border-outline-variant text-secondary focus:ring-secondary cursor-pointer"
-                            checked={form.matrix[mod][a]}
-                            onChange={() => form.toggleCell(mod, a)}
+                            checked={Boolean(matrix[mod]?.[a])}
+                            onChange={() => form.toggleCell(mod, a as RolePermissionAction)}
                           />
                         </td>
                       ))}
