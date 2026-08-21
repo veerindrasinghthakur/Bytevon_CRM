@@ -1,8 +1,13 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { MetricCard } from '@/shared/components/ui/MetricCard'
+import { ExportButton } from '@/shared/components/export/ExportButton'
+import { ResourceName } from '@/shared/schema'
 import { adminRoles } from '../data/mock'
+import { getRoleListMetrics } from '../api/metrics'
 import { cn } from '@/shared/lib/cn'
 
 const categoryStyles: Record<string, string> = {
@@ -12,17 +17,32 @@ const categoryStyles: Record<string, string> = {
   Standard: 'bg-surface-container text-on-surface-variant',
 }
 
+const STATUS_OPTIONS = ['All Status', 'Active', 'Archived'] as const
+const CATEGORY_OPTIONS = ['All Categories', 'Core Role', 'Operational', 'Financial', 'Standard'] as const
+
 export function RolesListPage() {
   const navigate = useNavigate()
   const [openMenu, setOpenMenu] = useState<string | null>(null)
   const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState<(typeof STATUS_OPTIONS)[number]>('All Status')
+  const [categoryFilter, setCategoryFilter] = useState<(typeof CATEGORY_OPTIONS)[number]>('All Categories')
 
-  const filtered = adminRoles.filter(
-    (r) =>
-      !search ||
-      r.name.toLowerCase().includes(search.toLowerCase()) ||
-      r.description.toLowerCase().includes(search.toLowerCase())
-  )
+  const { data: metrics } = useQuery({
+    queryKey: ['admin', 'metrics', 'roles'],
+    queryFn: getRoleListMetrics,
+  })
+
+  const filtered = useMemo(() => {
+    return adminRoles.filter((r) => {
+      if (search) {
+        const q = search.toLowerCase()
+        if (!r.name.toLowerCase().includes(q) && !r.description.toLowerCase().includes(q)) return false
+      }
+      if (statusFilter !== 'All Status' && r.status !== statusFilter) return false
+      if (categoryFilter !== 'All Categories' && r.category !== categoryFilter) return false
+      return true
+    })
+  }, [search, statusFilter, categoryFilter])
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -30,33 +50,111 @@ export function RolesListPage() {
         title="Roles & Permissions"
         description="Define RBAC roles and the permissions they grant."
         actions={
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-            onClick={() => navigate({ to: '/admin/roles/new' })}
-          >
-            Add Role
-          </Button>
+          <div className="flex gap-2">
+            <ExportButton
+              resource={ResourceName.ROLE}
+              query={search.trim() || undefined}
+              filters={{
+                status: statusFilter !== 'All Status' ? statusFilter : undefined,
+                category: categoryFilter !== 'All Categories' ? categoryFilter : undefined,
+              }}
+              filenameStem="roles"
+            />
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+              onClick={() => navigate({ to: '/admin/roles/new' })}
+            >
+              Add Role
+            </Button>
+          </div>
         }
       />
 
-      <section className="flex flex-wrap items-center justify-between gap-4">
-        <div className="relative">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
-            search
-          </span>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="bg-surface-container-lowest border border-outline-variant rounded-full pl-10 pr-4 py-2 w-64 focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none text-body-sm transition-all duration-200"
-            placeholder="Search roles..."
-            type="text"
-          />
+      {/* Top metric cards — total roles, active users, etc. */}
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <MetricCard
+          icon="badge"
+          label="Total Roles"
+          value={String(metrics?.totalRoles ?? adminRoles.length)}
+          hint="All defined"
+        />
+        <MetricCard
+          icon="verified_user"
+          label="Active Roles"
+          value={String(metrics?.activeRoles ?? adminRoles.filter((r) => r.status === 'Active').length)}
+          hint="Assignable"
+        />
+        <MetricCard
+          icon="group"
+          label="Active Users"
+          value={String(metrics?.activeUsers ?? 0)}
+          hint="With roles"
+        />
+        <MetricCard
+          icon="archive"
+          label="Archived"
+          value={String(metrics?.archivedRoles ?? 0)}
+          hint="Inactive"
+        />
+      </section>
+
+      {/* Filter bar */}
+      <section className="bv-surface p-4">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="relative flex-1 min-w-[200px]">
+            <label className="block text-label-sm text-on-surface-variant mb-1.5">Search</label>
+            <span className="material-symbols-outlined absolute left-3 bottom-2.5 text-on-surface-variant text-[18px]">
+              search
+            </span>
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none text-body-sm transition-all duration-200"
+              placeholder="Search roles by name or description..."
+              type="text"
+            />
+          </div>
+          <div className="min-w-[140px]">
+            <label className="block text-label-sm text-on-surface-variant mb-1.5">Status</label>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as (typeof STATUS_OPTIONS)[number])}
+              className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 bg-surface-container-lowest transition-colors"
+            >
+              {STATUS_OPTIONS.map((o) => (
+                <option key={o}>{o}</option>
+              ))}
+            </select>
+          </div>
+          <div className="min-w-[160px]">
+            <label className="block text-label-sm text-on-surface-variant mb-1.5">Category</label>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value as (typeof CATEGORY_OPTIONS)[number])}
+              className="w-full border border-outline-variant rounded-lg px-3 py-2 text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 bg-surface-container-lowest transition-colors"
+            >
+              {CATEGORY_OPTIONS.map((o) => (
+                <option key={o}>{o}</option>
+              ))}
+            </select>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setSearch('')
+              setStatusFilter('All Status')
+              setCategoryFilter('All Categories')
+            }}
+          >
+            Clear
+          </Button>
+          <p className="text-label-sm text-on-surface-variant ml-auto self-center">
+            Showing {filtered.length} of {adminRoles.length} roles
+          </p>
         </div>
-        <p className="text-label-sm text-on-surface-variant">
-          Showing {filtered.length} of {adminRoles.length} roles
-        </p>
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -199,6 +297,10 @@ export function RolesListPage() {
           </div>
         ))}
       </section>
+
+      {filtered.length === 0 && (
+        <div className="bv-surface p-12 text-center text-on-surface-variant">No roles match your filters.</div>
+      )}
 
       <div className="flex items-center justify-between text-label-sm text-on-surface-variant pt-2">
         <span>

@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { ExportButton } from '@/shared/components/export/ExportButton'
+import { ResourceName } from '@/shared/schema'
 import { auditLogs } from '../data/mock'
 import { cn } from '@/shared/lib/cn'
 
@@ -44,13 +46,15 @@ export function AuditLogsPage() {
         description="Immutable record of significant administrative and security actions."
         actions={
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}
-            >
-              Export
-            </Button>
+            <ExportButton
+              resource={ResourceName.AUDIT}
+              query={search.trim() || undefined}
+              filters={{
+                action: actionFilter !== 'All Actions' ? actionFilter : undefined,
+                module: moduleFilter !== 'All Modules' ? moduleFilter : undefined,
+              }}
+              filenameStem="audit-logs"
+            />
           </div>
         }
       />
