@@ -5,61 +5,61 @@
    ============================================================================= */
 
 [data-theme="dark"] {
-  /* Brand / primary */
-  --color-primary: #afc8f0;
-  --color-on-primary: #163152;
-  --color-primary-container: #001f3f;
+  /* Brand / primary — solid CTA fill stays deep navy + white label (Manage Leave) */
+  --color-primary: #001f3f;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #0a2d52;
   --color-primary-fixed: #d4e3ff;
 
-  /* Chrome / sidebar (rail stays deep navy structural) */
+  /* Chrome / sidebar */
   --color-deep-navy: #001f3f;
-  --color-electric-blue: #adc7ff;
-  --color-sidebar-accent: #afc8f0;
-  --color-sidebar-item-active: #102034;
-  --color-surface-sidebar: #000f21;
+  --color-electric-blue: #8eb4ff;
+  --color-sidebar-accent: #8eb4ff;
+  --color-sidebar-item-active: #0b1c30;
+  --color-surface-sidebar: #000a18;
 
-  /* Secondary */
-  --color-secondary: #adc7ff;
-  --color-on-secondary: #002e68;
-  --color-secondary-container: #4a8eff;
-  --color-on-secondary-container: #00285b;
+  /* Secondary — bright accent for links / icons on dark surfaces */
+  --color-secondary: #b4cfff;
+  --color-on-secondary: #001a41;
+  --color-secondary-container: #1a3a6e;
+  --color-on-secondary-container: #d8e6ff;
 
   /* Surfaces / background */
   --color-background: #031427;
   --color-surface: #031427;
   --color-surface-bright: #2a3a4f;
   --color-surface-variant: #26364a;
-  --color-surface-tint: #afc8f0;
+  --color-surface-tint: #8eb4ff;
   --color-surface-container: #102034;
   --color-surface-container-low: #0b1c30;
   --color-surface-container-high: #1b2b3f;
   --color-surface-container-highest: #26364a;
   --color-surface-container-lowest: #000f21;
 
-  /* Text */
-  --color-on-surface: #d3e4fe;
-  --color-on-surface-variant: #c4c6cf;
-  --color-on-background: #d3e4fe;
-  --color-inverse-primary: #476083;
+  /* Text — higher contrast on dark surfaces */
+  --color-on-surface: #f0f6ff;
+  --color-on-surface-variant: #d5deeb;
+  --color-on-background: #f5f9ff;
+  --color-inverse-primary: #9ab4d9;
 
-  /* Outline */
-  --color-outline: #8e9198;
-  --color-outline-variant: #43474e;
+  /* Outline — more visible dividers on dark */
+  --color-outline: #a8b0bc;
+  --color-outline-variant: #4a5563;
 
   /* Error */
   --color-error: #ffb4ab;
   --color-on-error: #690005;
   --color-error-container: #93000a;
 
-  /* Status — dark-readable success / warning */
-  --color-success-emerald: #6dd58c;
+  /* Status */
+  --color-success-emerald: #7ee0a0;
   --color-on-success: #003919;
   --color-success-container: #005227;
-  --color-warning-amber: #ffb95f;
+  --color-warning-amber: #ffc46b;
   --color-on-warning: #452b00;
   --color-warning-container: #633f00;
 
-  /* Overlay / shadow — slightly stronger on dark for depth */
+  /* Overlay / shadow */
   --color-scrim: #000000;
   --color-shadow: #000000;
   --color-shadow-navy: #000000;
@@ -71,5 +71,5 @@
   --opacity-shadow-executive-far: 0.15;
   --opacity-shadow-hover-near: 0.3;
   --opacity-shadow-hover-far: 0.18;
-  --opacity-row-hover: 0.12;
+  --opacity-row-hover: 0.14;
 }
