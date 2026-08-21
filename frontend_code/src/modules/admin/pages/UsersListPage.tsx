@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { ExportButton } from '@/shared/components/export/ExportButton'
+import { ResourceName } from '@/shared/schema'
 import { listAdminUsers, type AdminUserListItem } from '../api/users'
 import { cn } from '@/shared/lib/cn'
 
@@ -54,6 +56,11 @@ export function UsersListPage() {
         description="Login accounts linked to employments. Add user only for employees without credentials."
         actions={
           <div className="flex gap-2">
+            <ExportButton
+              resource={ResourceName.USER}
+              query={q.trim() || undefined}
+              filenameStem="users"
+            />
             <Button
               variant="primary"
               size="sm"
