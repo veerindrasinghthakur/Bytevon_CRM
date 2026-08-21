@@ -7,15 +7,9 @@ import {
   isBreakRunning,
   syncCountdownExpiry,
 } from './break-session'
+import type { TodayAttendanceSession, WorkHoursSummary } from '../types'
 
-export interface TodayAttendanceSession {
-  /** ISO date YYYY-MM-DD */
-  date: string
-  /** ISO timestamp */
-  checkInAt: string
-  /** ISO timestamp when checked out */
-  checkOutAt?: string
-}
+export type { TodayAttendanceSession, WorkHoursSummary }
 
 const KEY = 'bytevon.todayAttendance'
 
@@ -106,7 +100,6 @@ export function getTodayBreakMs(now = Date.now()): number {
     if (!b.endedAt) continue
     const bStart = new Date(b.startedAt).getTime()
     const bEnd = new Date(b.endedAt).getTime()
-    // Same calendar day as attendance
     if (new Date(b.startedAt).toISOString().slice(0, 10) !== attendance.date) continue
     const start = Math.max(bStart, windowStart)
     const end = Math.min(bEnd, windowEnd)
@@ -114,14 +107,6 @@ export function getTodayBreakMs(now = Date.now()): number {
   }
 
   return total
-}
-
-export interface WorkHoursSummary {
-  checkInAt: string
-  checkOutAt?: string
-  grossMs: number
-  breakMs: number
-  netMs: number
 }
 
 /** Net work = (out|now − in) − breaks in that window */
@@ -150,5 +135,4 @@ export function formatHoursCompact(ms: number): string {
   return `${h}h ${m}m`
 }
 
-// re-export for callers that need elapsed helpers
 export { getElapsedMs }

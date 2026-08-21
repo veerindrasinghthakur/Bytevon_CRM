@@ -1,4 +1,4 @@
-/** Shared layout / shell types */
+/** Shared layout / shell / common UI types */
 
 export interface SecondaryNavItem {
   id: string
@@ -32,4 +32,30 @@ export interface MetricCardBase {
   change?: string
   changeType?: 'positive' | 'negative' | 'neutral'
   icon: string
+}
+
+/** Bulk list selection (long-press) — shared across list pages */
+export interface UseListSelectionOptions<T> {
+  /** Currently rendered / filtered rows (selection is scoped to these) */
+  items: T[]
+  /** Stable unique id per row */
+  getId: (item: T) => string
+}
+
+export interface UseListSelectionResult {
+  selectionMode: boolean
+  selectedIds: Set<string>
+  selectedCount: number
+  allFilteredSelected: boolean
+  isSelected: (id: string) => boolean
+  /** Header checkbox: select or clear all *filtered* rows */
+  toggleSelectAllFiltered: () => void
+  toggleOne: (id: string) => void
+  enterSelectionWith: (id: string) => void
+  exitSelectionMode: () => void
+  /** Bind to row: start 3s timer */
+  onRowPressStart: (id: string) => void
+  /** Bind to row: clear timer; if long-press fired do nothing else call onShortPress */
+  onRowPressEnd: (id: string, onShortPress?: () => void) => void
+  onRowPressCancel: () => void
 }

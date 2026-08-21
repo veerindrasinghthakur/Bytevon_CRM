@@ -20,6 +20,38 @@ export type ApprovalStatus = 'Pending' | 'Approved' | 'Rejected'
 
 export type ApprovalType = 'Leave' | 'Attendance Correction' | 'Expense' | 'Other'
 
+/** Break session (client-local until backend) */
+export type BreakMode = 'countdown' | 'stopwatch'
+
+export interface BreakSession {
+  id: string
+  mode: BreakMode
+  /** ISO start */
+  startedAt: string
+  /** Minutes when mode is countdown; undefined for stopwatch */
+  durationMinutes?: number
+  /** ISO end when stopped or countdown finished */
+  endedAt?: string
+  note?: string
+}
+
+export interface TodayAttendanceSession {
+  /** ISO date YYYY-MM-DD */
+  date: string
+  /** ISO timestamp */
+  checkInAt: string
+  /** ISO timestamp when checked out */
+  checkOutAt?: string
+}
+
+export interface WorkHoursSummary {
+  checkInAt: string
+  checkOutAt?: string
+  grossMs: number
+  breakMs: number
+  netMs: number
+}
+
 export interface MetricCard {
   id: string
   label: string

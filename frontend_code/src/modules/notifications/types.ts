@@ -3,6 +3,13 @@ export type NotificationStatus = 'Unread' | 'Read' | 'Archived'
 export type DeliveryChannel = 'In-App' | 'Email' | 'SMS' | 'Push'
 export type DeliveryStatus = 'Delivered' | 'Pending' | 'Failed'
 
+export type NotificationTabId = 'all' | 'unread' | 'mentions' | 'high' | 'archived'
+
+export interface NotificationTab {
+  id: NotificationTabId
+  label: string
+}
+
 export interface AppNotification {
   id: string
   title: string

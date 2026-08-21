@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getTeams, getTeam, createTeam, updateTeam, type Team } from '../api/teams'
-
-type TeamListCache = { items: Team[]; total: number }
+import { getTeams, getTeam, createTeam, updateTeam } from '../api/teams'
+import type { Team, TeamListCache } from '../types'
 
 export function useTeams(filters?: { search?: string }) {
   return useQuery({

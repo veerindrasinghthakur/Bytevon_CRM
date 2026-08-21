@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { inboxNotifications, notificationKpis } from '../data/mock'
+import type { NotificationTabId, NotificationTab } from '../types'
 
-export type NotificationTabId = 'all' | 'unread' | 'mentions' | 'high' | 'archived'
+export type { NotificationTabId }
 
 export function useNotificationCenter() {
   const [tab, setTab] = useState<NotificationTabId>('all')
@@ -75,7 +76,7 @@ export function useNotificationCenter() {
     if (n?.status === 'Unread') markRead(id)
   }
 
-  const tabs: { id: NotificationTabId; label: string }[] = [
+  const tabs: NotificationTab[] = [
     { id: 'all', label: `All (${items.length})` },
     { id: 'unread', label: `Unread (${unreadCount})` },
     { id: 'mentions', label: 'Mentions (0)' },
