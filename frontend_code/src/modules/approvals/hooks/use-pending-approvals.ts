@@ -1,32 +1,31 @@
 import { useMemo, useState } from 'react'
-import { pendingApprovals } from '../data/mock'
+import { useQuery } from '@tanstack/react-query'
+import { listPendingApprovals } from '../api/approvals'
 
 export function usePendingApprovals() {
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('All')
   const [priorityFilter, setPriorityFilter] = useState('All')
 
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase()
-    return pendingApprovals.filter((r) => {
-      const matchQ =
-        !q ||
-        r.id.toLowerCase().includes(q) ||
-        r.requester.toLowerCase().includes(q) ||
-        r.type.toLowerCase().includes(q)
-      const matchType = typeFilter === 'All' || r.type === typeFilter
-      const matchPriority = priorityFilter === 'All' || r.priority === priorityFilter
-      return matchQ && matchType && matchPriority
-    })
-  }, [search, typeFilter, priorityFilter])
+  const query = useQuery({
+    queryKey: ['approvals', 'pending', search, typeFilter, priorityFilter],
+    queryFn: () =>
+      listPendingApprovals({
+        search: search || undefined,
+        type: typeFilter,
+        priority: priorityFilter,
+      }),
+  })
+
+  const filtered = query.data ?? []
 
   const types = useMemo(
-    () => Array.from(new Set(pendingApprovals.map((r) => r.type))).sort(),
-    [],
+    () => Array.from(new Set(filtered.map((r) => r.type))).sort(),
+    [filtered],
   )
 
   return {
-    items: pendingApprovals,
+    items: filtered,
     filtered,
     search,
     setSearch,
@@ -35,5 +34,8 @@ export function usePendingApprovals() {
     priorityFilter,
     setPriorityFilter,
     types,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
   }
 }
