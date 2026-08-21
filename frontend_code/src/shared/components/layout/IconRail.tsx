@@ -2,6 +2,7 @@ import { cn } from '@/shared/lib/cn'
 import { Link } from '@tanstack/react-router'
 import { BrandLogo } from '@/shared/components/brand/BrandLogo'
 import { useIconRail } from '@/shared/hooks/useIconRail'
+import { useTheme } from '@/shared/theme/ThemeProvider'
 import type { RailItem } from '@/shared/types'
 
 export type { RailItem }
@@ -35,12 +36,14 @@ export function IconRail({
   onLogout,
 }: IconRailProps) {
   const { visibleItems, isActive } = useIconRail(items)
+  const { theme, toggleTheme } = useTheme()
+  const isDark = theme === 'dark'
 
   return (
     <nav
       className={cn(
         'relative h-full bg-deep-navy flex flex-col items-center py-4 border-r border-sidebar-item-active/30 z-20',
-        'transition-all duration-300 ease-in-out shrink-0 overflow-visible'
+        'transition-all duration-300 ease-in-out shrink-0 overflow-visible',
       )}
       style={{ width: isExpanded ? RAIL_EXPANDED_WIDTH : RAIL_COLLAPSED_WIDTH }}
       aria-label="Primary navigation"
@@ -48,7 +51,7 @@ export function IconRail({
       <div
         className={cn(
           'group relative w-full shrink-0 mb-3 flex items-center',
-          isExpanded ? 'px-4 justify-start' : 'justify-center px-2'
+          isExpanded ? 'px-4 justify-start' : 'justify-center px-2',
         )}
       >
         <BrandLogo
@@ -67,7 +70,7 @@ export function IconRail({
             'shadow-md',
             'opacity-0 group-hover:opacity-100 focus:opacity-100',
             'transition-opacity duration-150',
-            'hover:bg-sidebar-item-active hover:text-on-primary'
+            'hover:bg-sidebar-item-active hover:text-on-primary',
           )}
           aria-label={isExpanded ? 'Collapse navigation' : 'Expand navigation'}
           title={isExpanded ? 'Collapse' : 'Expand'}
@@ -90,26 +93,51 @@ export function IconRail({
                 isExpanded ? 'px-5 py-3.5' : 'px-0 py-3.5 justify-center',
                 active
                   ? 'bg-sidebar-item-active text-on-primary border-electric-blue'
-                  : 'text-white/80 hover:bg-sidebar-item-active/50 hover:text-white border-transparent'
+                  : 'text-white/80 hover:bg-sidebar-item-active/50 hover:text-white border-transparent',
               )}
               title={!isExpanded ? item.label : undefined}
             >
               <span className="material-symbols-outlined text-2xl shrink-0">{item.icon}</span>
-              {isExpanded && <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>}
+              {isExpanded && (
+                <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>
+              )}
             </Link>
           )
         })}
       </div>
 
-      <div className="mt-auto pt-3 flex flex-col items-center gap-2 border-t border-sidebar-item-active/30 w-full shrink-0">
+      <div className="mt-auto pt-3 flex flex-col items-center gap-1 border-t border-sidebar-item-active/30 w-full shrink-0">
+        {/* Theme toggle — immediately above Logout */}
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className={cn(
+            'text-white/80 hover:text-white hover:bg-sidebar-item-active/50 flex items-center gap-4 w-full transition-colors',
+            isExpanded ? 'px-5 py-3 justify-start' : 'py-3 justify-center',
+          )}
+          title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          aria-pressed={isDark}
+        >
+          <span className="material-symbols-outlined text-xl">
+            {isDark ? 'light_mode' : 'dark_mode'}
+          </span>
+          {isExpanded && (
+            <span className="text-sm font-medium whitespace-nowrap">
+              {isDark ? 'Light mode' : 'Dark mode'}
+            </span>
+          )}
+        </button>
+
         <button
           type="button"
           onClick={onLogout}
           className={cn(
             'text-white/80 hover:text-white flex items-center gap-4 w-full',
-            isExpanded ? 'px-5 py-3 justify-start' : 'py-3 justify-center'
+            isExpanded ? 'px-5 py-3 justify-start' : 'py-3 justify-center',
           )}
           title="Logout"
+          aria-label="Logout"
         >
           <span className="material-symbols-outlined text-xl">logout</span>
           {isExpanded && <span className="text-sm font-medium">Logout</span>}
