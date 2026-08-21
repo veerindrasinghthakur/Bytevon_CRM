@@ -4,6 +4,7 @@ import { RouterProvider } from '@tanstack/react-router'
 import { AppProviders } from '@/app/providers/AppProviders'
 import { router } from '@/app/router'
 import '@/styles/tokens.css'
+import '@/styles/tokens-dark.css'
 import '@/styles/globals.css'
 
 createRoot(document.getElementById('root')!).render(
@@ -11,5 +12,5 @@ createRoot(document.getElementById('root')!).render(
     <AppProviders>
       <RouterProvider router={router} />
     </AppProviders>
-  </StrictMode>
+  </StrictMode>,
 )
