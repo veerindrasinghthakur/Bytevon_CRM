@@ -13,18 +13,21 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
 }
 
-/** HTML screens: hover:opacity-90 active:scale-95 + executive-shadow on solid CTAs */
+/**
+ * Primary CTAs use deep-navy brand fill (Manage Leave style) via tokens —
+ * bg-primary / text-on-primary. No hardcoded hex.
+ */
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'bg-electric-blue text-white hover:bg-[#0062cc] executive-shadow hover:opacity-90 active:scale-95',
+    'bg-primary text-on-primary hover:bg-primary-container executive-shadow hover:opacity-95 active:scale-95',
   secondary:
-    'bg-secondary text-white hover:bg-[#004a9e] executive-shadow hover:opacity-90 active:scale-95',
+    'bg-deep-navy text-on-primary hover:bg-primary-container executive-shadow hover:opacity-95 active:scale-95',
   outline:
     'border border-outline-variant bg-surface-container-lowest text-on-background hover:bg-surface-container active:scale-95',
   ghost:
     'text-on-surface-variant hover:bg-surface-container hover:text-on-background',
   danger:
-    'bg-error text-white hover:opacity-90 active:scale-95',
+    'bg-error text-on-error hover:opacity-90 active:scale-95',
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
@@ -49,11 +52,11 @@ export function Button({
       className={cn(
         'inline-flex items-center justify-center gap-2 rounded-lg font-medium cursor-pointer',
         'transition-all duration-200 ease-out',
-        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary/40 focus-visible:ring-offset-2',
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2',
         'disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed',
         variantClasses[variant],
         sizeClasses[size],
-        className
+        className,
       )}
       disabled={disabled || isLoading}
       {...props}
