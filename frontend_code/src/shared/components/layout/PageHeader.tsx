@@ -35,7 +35,7 @@ export function PageHeader({
       <div className="min-w-0">
         {showBack && (
           <div className="mb-2">
-            <BackButton to={backTo} label="Back" />
+            <BackButton to={backTo} label={backLabel} />
           </div>
         )}
         {breadcrumbs && <div className="mb-1">{breadcrumbs}</div>}
