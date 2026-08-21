@@ -1,38 +1,9 @@
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
 import { useLeaveEdit } from '../context/LeaveEditContext'
-
-const LEAVE_TYPES = [
-  {
-    name: 'Annual Leave',
-    desc: 'Standard paid vacation',
-    days: '21 Days',
-    eligibility: 'All Employees',
-    eligibilityStyle: 'bg-secondary/10 text-secondary',
-  },
-  {
-    name: 'Sick Leave',
-    desc: 'Medical and health related',
-    days: '10 Days',
-    eligibility: 'All Employees',
-    eligibilityStyle: 'bg-secondary/10 text-secondary',
-  },
-  {
-    name: 'Maternity Leave',
-    desc: 'Parental support leave',
-    days: '90 Days',
-    eligibility: 'Female only',
-    eligibilityStyle: 'bg-surface-container text-on-surface-variant',
-  },
-  {
-    name: 'Casual Leave',
-    desc: 'Unplanned personal matters',
-    days: '5 Days',
-    eligibility: 'Full-time',
-    eligibilityStyle: 'bg-secondary/10 text-secondary',
-  },
-]
+import { listLeaveTypeSettings } from '../api/leave'
 
 /** Content only — Edit lives above sub-nav in LeaveSettingsLayout */
 export function LeaveSettingsPage() {
@@ -41,6 +12,11 @@ export function LeaveSettingsPage() {
   const [newType, setNewType] = useState({ name: '', days: '10', eligibility: 'All Employees' })
   const [carryOver, setCarryOver] = useState(10)
   const [noticeDays, setNoticeDays] = useState(7)
+
+  const { data: leaveTypes = [], isLoading } = useQuery({
+    queryKey: ['admin', 'leave', 'types'],
+    queryFn: listLeaveTypeSettings,
+  })
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -63,37 +39,41 @@ export function LeaveSettingsPage() {
             )}
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="text-left border-b border-outline-variant">
-                  <th className="pb-3 text-label-md text-on-surface-variant">Leave Type</th>
-                  <th className="pb-3 text-label-md text-on-surface-variant">Base Days/Year</th>
-                  <th className="pb-3 text-label-md text-on-surface-variant">Eligibility</th>
-                  <th className="pb-3 text-label-md text-on-surface-variant">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant">
-                {LEAVE_TYPES.map((row) => (
-                  <tr key={row.name} className="zebra-row">
-                    <td className="py-4">
-                      <div className="text-body-md font-semibold text-on-surface">{row.name}</div>
-                      <div className="text-label-sm text-on-surface-variant">{row.desc}</div>
-                    </td>
-                    <td className="py-4 text-body-md text-on-surface">{row.days}</td>
-                    <td className="py-4">
-                      <span className={cn('px-2 py-1 rounded text-label-sm', row.eligibilityStyle)}>
-                        {row.eligibility}
-                      </span>
-                    </td>
-                    <td className="py-4">
-                      <span className="flex items-center gap-1 text-label-sm text-secondary font-bold">
-                        <span className="w-2 h-2 rounded-full bg-secondary" /> Active
-                      </span>
-                    </td>
+            {isLoading ? (
+              <div className="py-8 text-center text-on-surface-variant text-body-sm">Loading leave types…</div>
+            ) : (
+              <table className="w-full">
+                <thead>
+                  <tr className="text-left border-b border-outline-variant">
+                    <th className="pb-3 text-label-md text-on-surface-variant">Leave Type</th>
+                    <th className="pb-3 text-label-md text-on-surface-variant">Base Days/Year</th>
+                    <th className="pb-3 text-label-md text-on-surface-variant">Eligibility</th>
+                    <th className="pb-3 text-label-md text-on-surface-variant">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-outline-variant">
+                  {leaveTypes.map((row) => (
+                    <tr key={row.name} className="zebra-row">
+                      <td className="py-4">
+                        <div className="text-body-md font-semibold text-on-surface">{row.name}</div>
+                        <div className="text-label-sm text-on-surface-variant">{row.desc}</div>
+                      </td>
+                      <td className="py-4 text-body-md text-on-surface">{row.days}</td>
+                      <td className="py-4">
+                        <span className={cn('px-2 py-1 rounded text-label-sm', row.eligibilityStyle)}>
+                          {row.eligibility}
+                        </span>
+                      </td>
+                      <td className="py-4">
+                        <span className="flex items-center gap-1 text-label-sm text-secondary font-bold">
+                          <span className="w-2 h-2 rounded-full bg-secondary" /> Active
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </section>
 
