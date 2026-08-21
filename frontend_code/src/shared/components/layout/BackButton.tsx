@@ -8,16 +8,21 @@ interface BackButtonProps {
    * unset so Back always returns to the route the user came from.
    */
   to?: string
+  /**
+   * Optional originating route for documentation / analytics.
+   * Navigation still prefers history.back(); `to` is the fallback.
+   */
+  from?: string
   label?: string
   className?: string
 }
 
 /**
- * Back control for create/detail/edit pages.
+ * Shared back control for create/detail/edit pages.
  * Always prefers browser history so the user returns to the page they came from.
  * `to` is only used when history cannot go back.
  */
-export function BackButton({ to, label = 'Back', className }: BackButtonProps) {
+export function BackButton({ to, from: _from, label = 'Back', className }: BackButtonProps) {
   const navigate = useNavigate()
 
   const handleClick = () => {
@@ -38,8 +43,8 @@ export function BackButton({ to, label = 'Back', className }: BackButtonProps) {
       onClick={handleClick}
       className={cn(
         'inline-flex items-center gap-1.5 text-body-sm text-on-surface-variant',
-        'hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue rounded-md px-1 py-0.5',
-        className
+        'hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 rounded-md px-1 py-0.5',
+        className,
       )}
       aria-label={label}
     >
