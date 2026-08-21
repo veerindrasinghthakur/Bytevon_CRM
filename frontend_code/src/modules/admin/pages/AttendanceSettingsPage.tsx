@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
+import { MetricCard } from '@/shared/components/ui/MetricCard'
+import { useEditMode } from '@/shared/hooks/useEditMode'
 import { cn } from '@/shared/lib/cn'
 import { getAttendanceSettings, updateAttendanceSettings } from '../api/settings'
+import { getAttendanceAdminMetrics } from '../api/metrics'
 import type { AttendanceSettings } from '../types'
 
 function Toggle({ on = false, disabled = false }: { on?: boolean; disabled?: boolean }) {
@@ -21,7 +24,12 @@ export function AttendanceSettingsPage() {
     queryFn: getAttendanceSettings,
   })
 
-  const [editing, setEditing] = useState(false)
+  const { data: metrics } = useQuery({
+    queryKey: ['admin', 'metrics', 'attendance'],
+    queryFn: getAttendanceAdminMetrics,
+  })
+
+  const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
   const [form, setForm] = useState<AttendanceSettings | null>(null)
 
   useEffect(() => {
@@ -32,7 +40,7 @@ export function AttendanceSettingsPage() {
     mutationFn: () => updateAttendanceSettings(form!),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'settings', 'attendance'] })
-      setEditing(false)
+      finishEditing()
     },
   })
 
@@ -44,15 +52,44 @@ export function AttendanceSettingsPage() {
 
   return (
     <div className="space-y-8 animate-fade-in">
+      {/* Metric cards only — append, do not change form layout */}
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <MetricCard
+          icon="how_to_reg"
+          label="Present Today"
+          value={String(metrics?.presentToday ?? '—')}
+          hint="Checked in"
+        />
+        <MetricCard
+          icon="schedule"
+          label="Late Today"
+          value={String(metrics?.lateToday ?? '—')}
+          hint="After grace"
+          valueClassName="text-error"
+        />
+        <MetricCard
+          icon="event_busy"
+          label="On Leave"
+          value={String(metrics?.onLeaveToday ?? '—')}
+          hint="Today"
+        />
+        <MetricCard
+          icon="home_work"
+          label="Remote Check-ins"
+          value={String(metrics?.remoteCheckIns ?? '—')}
+          hint="Today"
+        />
+      </section>
+
       <div className="flex justify-end">
-        {editing ? (
+        {isEditing ? (
           <div className="flex gap-3">
             <Button
               variant="outline"
               size="sm"
               onClick={() => {
                 if (data) setForm({ ...data })
-                setEditing(false)
+                cancelEditing()
               }}
               disabled={save.isPending}
             >
@@ -67,7 +104,7 @@ export function AttendanceSettingsPage() {
             variant="outline"
             size="sm"
             leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>}
-            onClick={() => setEditing(true)}
+            onClick={startEditing}
           >
             Edit
           </Button>
@@ -83,7 +120,7 @@ export function AttendanceSettingsPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <label className="block text-label-md text-on-surface-variant mb-2">Standard Shift Start</label>
-              {editing ? (
+              {isEditing ? (
                 <input
                   type="time"
                   value={form.shiftStart}
@@ -96,7 +133,7 @@ export function AttendanceSettingsPage() {
             </div>
             <div>
               <label className="block text-label-md text-on-surface-variant mb-2">Standard Shift End</label>
-              {editing ? (
+              {isEditing ? (
                 <input
                   type="time"
                   value={form.shiftEnd}
@@ -118,7 +155,7 @@ export function AttendanceSettingsPage() {
           <div className="space-y-6">
             <div>
               <label className="block text-label-md text-on-surface-variant mb-2">Late Grace Period (Min)</label>
-              {editing ? (
+              {isEditing ? (
                 <input
                   type="number"
                   value={form.graceMinutes}
@@ -131,7 +168,7 @@ export function AttendanceSettingsPage() {
             </div>
             <div>
               <label className="block text-label-md text-on-surface-variant mb-2">Early-out Threshold (Min)</label>
-              {editing ? (
+              {isEditing ? (
                 <input
                   type="number"
                   value={form.earlyOutMinutes}
@@ -146,14 +183,14 @@ export function AttendanceSettingsPage() {
               <span className="text-label-md text-on-surface">Allow Remote Check-in</span>
               <button
                 type="button"
-                disabled={!editing}
+                disabled={!isEditing}
                 onClick={() =>
-                  editing && setForm((p) => p && { ...p, allowRemoteCheckIn: !p.allowRemoteCheckIn })
+                  isEditing && setForm((p) => p && { ...p, allowRemoteCheckIn: !p.allowRemoteCheckIn })
                 }
-                className="disabled:cursor-default"
+                className="disabled:cursor-default cursor-pointer"
                 aria-label="Toggle remote check-in"
               >
-                <Toggle on={form.allowRemoteCheckIn} disabled={!editing} />
+                <Toggle on={form.allowRemoteCheckIn} disabled={!isEditing} />
               </button>
             </div>
           </div>
@@ -166,7 +203,7 @@ export function AttendanceSettingsPage() {
           </div>
           <div>
             <label className="block text-label-md text-on-surface-variant mb-2">Min OT Duration (Min)</label>
-            {editing ? (
+            {isEditing ? (
               <input
                 type="number"
                 value={form.otMinMinutes}

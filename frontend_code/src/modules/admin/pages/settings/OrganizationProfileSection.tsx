@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
+import { useEditMode } from '@/shared/hooks/useEditMode'
 import { cn } from '@/shared/lib/cn'
 import { getOrganizationProfile, updateOrganizationProfile } from '../../api/settings'
 import type { OrganizationProfile } from '../../types'
@@ -23,7 +24,7 @@ export function OrganizationProfileSection() {
     queryFn: getOrganizationProfile,
   })
 
-  const [editing, setEditing] = useState(false)
+  const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
   const [form, setForm] = useState<OrganizationProfile>(emptyForm)
 
   useEffect(() => {
@@ -34,7 +35,7 @@ export function OrganizationProfileSection() {
     mutationFn: () => updateOrganizationProfile(form),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'settings', 'organization-profile'] })
-      setEditing(false)
+      finishEditing()
     },
   })
 
@@ -53,14 +54,14 @@ export function OrganizationProfileSection() {
             Primary organization identity. Fields unlock when you enter edit mode.
           </p>
         </div>
-        {editing ? (
+        {isEditing ? (
           <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => {
                 if (data) setForm({ ...data })
-                setEditing(false)
+                cancelEditing()
               }}
               disabled={save.isPending}
             >
@@ -78,8 +79,8 @@ export function OrganizationProfileSection() {
         ) : (
           <button
             type="button"
-            onClick={() => setEditing(true)}
-            className="p-2 rounded-lg border border-outline-variant text-on-surface-variant hover:text-secondary hover:border-secondary transition-colors"
+            onClick={startEditing}
+            className="p-2 rounded-lg border border-outline-variant text-on-surface-variant hover:text-secondary hover:border-secondary transition-colors duration-200 cursor-pointer"
             aria-label="Edit organization"
             title="Edit"
           >
@@ -96,24 +97,24 @@ export function OrganizationProfileSection() {
             <div className="w-28 h-28 rounded-xl bg-surface-container-low flex items-center justify-center border border-dashed border-outline-variant">
               <span className="material-symbols-outlined text-4xl text-outline">image</span>
             </div>
-            {editing && (
-              <button type="button" className="text-xs font-medium text-secondary hover:underline">
+            {isEditing && (
+              <button type="button" className="text-xs font-medium text-secondary hover:underline cursor-pointer">
                 Upload Logo
               </button>
             )}
           </div>
 
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
-            <Field label="Organization Name" value={form.name} editing={editing} onChange={(v) => set('name', v)} />
-            <Field label="Legal Name" value={form.legal} editing={editing} onChange={(v) => set('legal', v)} />
-            <Field label="Email" value={form.email} editing={editing} onChange={(v) => set('email', v)} />
-            <Field label="Phone" value={form.phone} editing={editing} onChange={(v) => set('phone', v)} />
-            <Field label="Website" value={form.website} editing={editing} onChange={(v) => set('website', v)} />
-            <Field label="Tax ID" value={form.tax} editing={editing} onChange={(v) => set('tax', v)} />
-            <Field label="Registration No." value={form.reg} editing={editing} onChange={(v) => set('reg', v)} />
+            <Field label="Organization Name" value={form.name} editing={isEditing} onChange={(v) => set('name', v)} />
+            <Field label="Legal Name" value={form.legal} editing={isEditing} onChange={(v) => set('legal', v)} />
+            <Field label="Email" value={form.email} editing={isEditing} onChange={(v) => set('email', v)} />
+            <Field label="Phone" value={form.phone} editing={isEditing} onChange={(v) => set('phone', v)} />
+            <Field label="Website" value={form.website} editing={isEditing} onChange={(v) => set('website', v)} />
+            <Field label="Tax ID" value={form.tax} editing={isEditing} onChange={(v) => set('tax', v)} />
+            <Field label="Registration No." value={form.reg} editing={isEditing} onChange={(v) => set('reg', v)} />
             <div className="sm:col-span-2">
               <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Description</p>
-              {editing ? (
+              {isEditing ? (
                 <textarea
                   value={form.description}
                   onChange={(e) => set('description', e.target.value)}
