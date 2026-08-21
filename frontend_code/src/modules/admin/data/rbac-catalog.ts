@@ -1,6 +1,6 @@
 import type { PermissionCatalog, RolePermissionAction } from '../types'
 
-/** Mirrors backend seeded resources + Action enum (VIEW..EXPORT). */
+/** Mirrors backend seeded resources + Action enum (VIEW..EXPORT, UNLOCK). */
 const ACTIONS: RolePermissionAction[] = [
   'VIEW',
   'CREATE',
@@ -8,6 +8,7 @@ const ACTIONS: RolePermissionAction[] = [
   'DELETE',
   'APPROVE',
   'EXPORT',
+  'UNLOCK',
 ]
 
 const MODULE_NAMES = [

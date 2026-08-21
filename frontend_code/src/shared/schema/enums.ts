@@ -36,6 +36,8 @@ export const Action = {
   DELETE: 'DELETE',
   APPROVE: 'APPROVE',
   EXPORT: 'EXPORT',
+  /** Unlock locked login accounts */
+  UNLOCK: 'UNLOCK',
 } as const
 export type Action = (typeof Action)[keyof typeof Action]
 
