@@ -9,6 +9,9 @@ import type {
   LeavePolicyRow,
   LeaveLedgerRow,
   OfficeLocation,
+  OrganizationProfile,
+  AttendanceSettings,
+  LeaveAccrualPolicy,
 } from '../types'
 
 export type { AdminUser, AdminRole, AuditLog, SecurityEvent } from '../types'
@@ -384,3 +387,31 @@ export const headOfficeList = offices.map((o) => ({
   address: o.address,
   postal: o.postal,
 }))
+
+/** Mutable mock — organisation profile (settings server state) */
+export const organizationProfileMock: OrganizationProfile = {
+  name: 'Bytevon Global Holdings',
+  legal: 'Bytevon Global Holdings Inc.',
+  email: 'admin@bytevon.com',
+  phone: '+1 (555) 012-3456',
+  website: 'https://bytevon.com',
+  tax: 'TX-9928341',
+  reg: 'BRN-001293',
+  description: 'Leading enterprise solutions provider for global workforce management.',
+}
+
+/** Mutable mock — attendance company policy */
+export const attendanceSettingsMock: AttendanceSettings = {
+  shiftStart: '09:00',
+  shiftEnd: '18:00',
+  graceMinutes: 15,
+  earlyOutMinutes: 30,
+  otMinMinutes: 60,
+  allowRemoteCheckIn: true,
+}
+
+/** Mutable mock — leave accrual company policy */
+export const leaveAccrualPolicyMock: LeaveAccrualPolicy = {
+  maxCarryOverDays: 10,
+  minimumNoticeDays: 7,
+}
