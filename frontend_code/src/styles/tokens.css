@@ -10,177 +10,158 @@
 :root {
   /* ===========================================================================
      BRAND / PRIMARY
-     Used for: primary buttons, links, focus rings, active nav accents,
-     payroll/admin CTAs, “Approve” / primary actions.
+     Solid CTA fill = deep navy (Manage Leave). Text on primary = white.
      =========================================================================== */
-  --color-primary: #0058bc;              /* Main action blue — Button primary, focus:ring-primary */
+  --color-primary: #001f3f;              /* Solid CTA fill — Button primary, cards CTAs */
   --color-on-primary: #ffffff;           /* Text/icons on primary fills */
-  --color-primary-container: #0070eb;    /* Stronger primary (hover/filled chips) */
-  --color-primary-fixed: #d6e3ff;        /* Soft primary wash — status “Approved”, icon wells */
+  --color-primary-container: #0a2d52;    /* Primary hover / pressed */
+  --color-primary-fixed: #d6e3ff;        /* Soft primary wash — status chips, icon wells */
 
   /* ===========================================================================
      DEEP NAVY / SIDEBAR / CHROME
-     Used for: page hero banners (My Work), Net Salary highlight cards,
-     IconRail background, active sidebar item, dark CTAs.
      =========================================================================== */
-  --color-deep-navy: #001f3f;            /* Hero banners, dark CTA buttons, titles emphasis */
-  --color-electric-blue: #007bff;        /* Legacy accent / pulse dots (“In Progress”) */
-  --color-sidebar-accent: #0070ea;       /* IconRail hover / secondary accent on dark rail */
+  --color-deep-navy: #001f3f;            /* Hero banners, rail, aligned with primary CTA */
+  --color-electric-blue: #007bff;        /* Decorative accent only (pulse / status dots) */
+  --color-sidebar-accent: #0070ea;       /* IconRail hover accent on dark rail */
   --color-sidebar-item-active: #001f3f;  /* Active item background on rail */
   --color-surface-sidebar: #000613;      /* IconRail + secondary nav dark base */
 
   /* ===========================================================================
      SECONDARY
-     Used for: secondary buttons, quick-action icons, leave borders, charts,
-     “secondary” accents on My Work / admin.
      =========================================================================== */
-  --color-secondary: #0058bb;            /* Secondary accent text/icons, hover borders */
+  --color-secondary: #001f3f;            /* Aligned with navy CTAs for solid secondary */
   --color-on-secondary: #ffffff;         /* Text on solid secondary fills */
   --color-secondary-container: #d6e3ff;  /* Soft secondary bg — avatars, chips, tiles */
   --color-on-secondary-container: #001b3d; /* Text on secondary-container */
 
   /* ===========================================================================
      SURFACES
-     Used for: page background, cards (bv-surface), tables, KPI panels,
-     elevated panels (surface-container-lowest = white cards).
      =========================================================================== */
-  --color-background: #f8f9ff;                 /* App body / canvas */
-  --color-surface: #f8f9ff;                    /* Default surface (aligned with background) */
-  --color-surface-bright: #fbfcff;             /* Slightly brighter table headers / toolbars */
-  --color-surface-variant: #e1e2e8;            /* Muted surface blocks / dividers */
-  --color-surface-tint: #0058bc;               /* Tint for tonal elevation (rare) */
-  --color-surface-container: #eceef3;          /* Mid container (table header bands) */
-  --color-surface-container-low: #f2f3f9;      /* Row hover base, nested panels */
-  --color-surface-container-high: #e7e8ee;     /* Higher emphasis containers */
-  --color-surface-container-highest: #e1e2e8;  /* Highest neutral container */
-  --color-surface-container-lowest: #ffffff;   /* Cards, modals, white panels */
+  --color-background: #f8f9ff;
+  --color-surface: #f8f9ff;
+  --color-surface-bright: #fbfcff;
+  --color-surface-variant: #e1e2e8;
+  --color-surface-tint: #001f3f;
+  --color-surface-container: #eceef3;
+  --color-surface-container-low: #f2f3f9;
+  --color-surface-container-high: #e7e8ee;
+  --color-surface-container-highest: #e1e2e8;
+  --color-surface-container-lowest: #ffffff;
 
   /* ===========================================================================
      TEXT / ON-SURFACE
-     Used for: body copy, captions, titles (deep-navy preferred for headlines).
      =========================================================================== */
-  --color-on-surface: #545d67;           /* Default body text */
-  --color-on-surface-variant: #44474c;   /* Secondary labels, captions, meta */
-  --color-on-background: #191c20;        /* High-contrast text on background */
-  --color-inverse-primary: #bdc7da;      /* Text on deep-navy heroes (muted) */
+  --color-on-surface: #545d67;
+  --color-on-surface-variant: #44474c;
+  --color-on-background: #191c20;
+  --color-inverse-primary: #bdc7da;
 
   /* ===========================================================================
      OUTLINE / BORDERS
-     Used for: card borders, table dividers, input borders, chips.
      =========================================================================== */
-  --color-outline: #75777d;              /* Stronger borders / icons muted */
-  --color-outline-variant: #c5c6cc;      /* Default card/table border */
+  --color-outline: #75777d;
+  --color-outline-variant: #c5c6cc;
 
   /* ===========================================================================
      ERROR
-     Used for: validation, deduction amounts, destructive actions.
      =========================================================================== */
-  --color-error: #ba1a1a;                /* Error text / icons / deduction values */
-  --color-on-error: #ffffff;             /* Text on solid error fills */
-  --color-error-container: #ffdad6;      /* Soft error background */
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
 
   /* ===========================================================================
      STATUS — SUCCESS / WARNING
-     Used for: Paid, Active, Calculated success; Pending Approval warnings;
-     payroll step indicators; trend chips.
      =========================================================================== */
-  --color-success-emerald: #0f9d58;      /* Success text / icons / “Paid” badges */
-  --color-on-success: #ffffff;           /* Text on solid success fills */
-  --color-success-container: #c8f0d8;    /* Soft success background (optional) */
-  --color-warning-amber: #e8a317;        /* Warning text / pending approval KPIs */
-  --color-on-warning: #1a1400;           /* Text on solid warning fills */
-  --color-warning-container: #ffe9b0;    /* Soft warning background (optional) */
+  --color-success-emerald: #0f9d58;
+  --color-on-success: #ffffff;
+  --color-success-container: #c8f0d8;
+  --color-warning-amber: #e8a317;
+  --color-on-warning: #1a1400;
+  --color-warning-container: #ffe9b0;
 
   /* ===========================================================================
      OVERLAY / SCRIM / SHADOW PRIMITIVES
-     Used by: .modal-overlay, .shadow-soft, .glass-panel, executive elevation
      =========================================================================== */
-  --color-scrim: #0a1128;                /* Modal dim layer base color */
-  --color-shadow: #000000;               /* Neutral box-shadow base */
-  --color-shadow-navy: #001f3f;          /* Deep-navy tinted shadow (executive cards) */
-  --opacity-scrim: 0.4;                  /* Modal overlay strength */
-  --opacity-shadow-soft: 0.05;           /* Near soft shadow layer */
-  --opacity-shadow-soft-lg: 0.02;        /* Far soft shadow layer */
-  --opacity-shadow-executive-near: 0.05; /* Executive near shadow */
-  --opacity-shadow-executive-far: 0.03;  /* Executive far shadow */
-  --opacity-shadow-hover-near: 0.08;     /* Card hover near shadow */
-  --opacity-shadow-hover-far: 0.04;      /* Card hover far shadow */
-  --opacity-glass: 0.95;                 /* Glass panel opacity on white */
-  --opacity-press-hover: 0.9;            /* .bv-pressable:hover opacity */
-  --opacity-row-hover: 0.05;             /* Row hover secondary mix ratio */
-  --opacity-pulse-mid: 0.7;              /* Mid-frame opacity for pulse-subtle */
+  --color-scrim: #0a1128;
+  --color-shadow: #000000;
+  --color-shadow-navy: #001f3f;
+  --opacity-scrim: 0.4;
+  --opacity-shadow-soft: 0.05;
+  --opacity-shadow-soft-lg: 0.02;
+  --opacity-shadow-executive-near: 0.05;
+  --opacity-shadow-executive-far: 0.03;
+  --opacity-shadow-hover-near: 0.08;
+  --opacity-shadow-hover-far: 0.04;
+  --opacity-glass: 0.95;
+  --opacity-press-hover: 0.9;
+  --opacity-row-hover: 0.05;
+  --opacity-pulse-mid: 0.7;
 
   /* ===========================================================================
-     ELEVATION / BLUR (effect geometry — not colors)
-     Used by: globals.css shadow-soft, modal-overlay, glass-panel, card-hover
+     ELEVATION / BLUR
      =========================================================================== */
-  --elevation-soft-y: 1px;               /* Soft shadow offset Y */
-  --elevation-soft-blur: 3px;            /* Soft shadow blur */
-  --elevation-soft-lg-y: 10px;           /* Soft large shadow offset Y */
-  --elevation-soft-lg-blur: 15px;        /* Soft large shadow blur */
-  --elevation-soft-lg-spread: -3px;      /* Soft large shadow spread */
-  --elevation-executive-near-y: 4px;     /* Executive near shadow Y */
-  --elevation-executive-near-blur: 6px;  /* Executive near blur */
+  --elevation-soft-y: 1px;
+  --elevation-soft-blur: 3px;
+  --elevation-soft-lg-y: 10px;
+  --elevation-soft-lg-blur: 15px;
+  --elevation-soft-lg-spread: -3px;
+  --elevation-executive-near-y: 4px;
+  --elevation-executive-near-blur: 6px;
   --elevation-executive-near-spread: -1px;
-  --elevation-executive-far-y: 2px;      /* Executive far shadow Y */
-  --elevation-executive-far-blur: 4px;   /* Executive far blur */
+  --elevation-executive-far-y: 2px;
+  --elevation-executive-far-blur: 4px;
   --elevation-executive-far-spread: -1px;
-  --elevation-hover-near-y: 8px;         /* Hover near shadow Y */
-  --elevation-hover-near-blur: 16px;     /* Hover near blur */
+  --elevation-hover-near-y: 8px;
+  --elevation-hover-near-blur: 16px;
   --elevation-hover-near-spread: -4px;
-  --elevation-hover-far-y: 4px;          /* Hover far shadow Y */
-  --elevation-hover-far-blur: 8px;       /* Hover far blur */
+  --elevation-hover-far-y: 4px;
+  --elevation-hover-far-blur: 8px;
   --elevation-hover-far-spread: -2px;
-  --blur-modal: 4px;                     /* Modal backdrop blur */
-  --blur-glass: 12px;                    /* Glass panel backdrop blur */
-  --lift-card-hover: -2px;               /* .card-hover / action-tile translateY on hover */
-  --scale-press-active: 0.95;            /* .bv-pressable:active scale */
-  --scale-nav-press: 0.98;               /* .bv-nav-press:active scale */
-  --scale-action-icon-hover: 1.1;        /* .bv-action-tile icon scale on hover */
+  --blur-modal: 4px;
+  --blur-glass: 12px;
+  --lift-card-hover: -2px;
+  --scale-press-active: 0.95;
+  --scale-nav-press: 0.98;
+  --scale-action-icon-hover: 1.1;
 
   /* ===========================================================================
      LAYOUT WIDTHS
-     Used by: AppShell, IconRail, secondary sidebar, Tailwind width.sidebar-*
      =========================================================================== */
-  --sidebar-rail-width-collapsed: 80px;      /* IconRail collapsed */
-  --sidebar-rail-width-expanded: 220px;      /* IconRail expanded (labels) */
-  --sidebar-secondary-width-collapsed: 0px;  /* Secondary nav hidden */
-  --sidebar-secondary-width-expanded: 240px; /* Secondary nav open */
-  --header-height: 56px;                     /* Top app header height (keep in sync with TS HEADER_HEIGHT_PX) */
+  --sidebar-rail-width-collapsed: 80px;
+  --sidebar-rail-width-expanded: 220px;
+  --sidebar-secondary-width-collapsed: 0px;
+  --sidebar-secondary-width-expanded: 240px;
+  --header-height: 56px;
 
   /* ===========================================================================
      SPACING SCALE
-     Used by: page margins, gutters, section gaps, Tailwind spacing extend
      =========================================================================== */
-  --spacing-unit: 4px;              /* Base unit / nav gap */
-  --spacing-gutter: 24px;           /* Card/grid gutter */
-  --spacing-section: 32px;          /* Between major page sections */
-  --spacing-margin-desktop: 40px;   /* Page horizontal margin (desktop) */
-  --spacing-margin-mobile: 16px;    /* Page horizontal margin (mobile) */
+  --spacing-unit: 4px;
+  --spacing-gutter: 24px;
+  --spacing-section: 32px;
+  --spacing-margin-desktop: 40px;
+  --spacing-margin-mobile: 16px;
 
   /* ===========================================================================
      RADIUS
-     Used by: cards (xl), inputs (sm/md), pills (full), Tailwind borderRadius
      =========================================================================== */
-  --radius-sm: 0.25rem;   /* 4px — default controls */
-  --radius-md: 0.5rem;    /* 8px — buttons, small cards */
-  --radius-lg: 0.75rem;   /* 12px — primary cards (rounded-xl) */
-  --radius-full: 9999px;  /* Pills / avatars full round */
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-full: 9999px;
 
   /* ===========================================================================
      SCROLLBAR
-     Used by: globals.css thin scrollbar rules
      =========================================================================== */
-  --scrollbar-size: 6px;                 /* Thin scrollbar track width/height */
-  --scrollbar-thumb-radius: 10px;        /* Scrollbar thumb corner radius */
+  --scrollbar-size: 6px;
+  --scrollbar-thumb-radius: 10px;
 
   /* ===========================================================================
-     TYPOGRAPHY (reference scale — Tailwind fontSize mirrors these)
-     Used by: design docs + optional CSS; components use text-body-md etc.
+     TYPOGRAPHY
      =========================================================================== */
   --font-family-sans: 'Inter', system-ui, sans-serif;
   --font-family-icons: 'Material Symbols Outlined';
-  --font-size-icon: 1.25rem;         /* Default .material-symbols-outlined size */
+  --font-size-icon: 1.25rem;
   --font-size-body-sm: 14px;
   --font-size-body-md: 16px;
   --font-size-body-lg: 18px;
@@ -204,16 +185,15 @@
 
   /* ===========================================================================
      MOTION
-     Used by: card-hover, action tiles, sidebar width, slide-in panels, skeleton
      =========================================================================== */
-  --duration-fast: 0.2s;             /* Default micro-interactions */
-  --duration-sidebar: 0.3s;          /* IconRail / secondary sidebar width */
-  --duration-slide-in: 0.35s;        /* .animate-slide-in-right panel enter */
-  --duration-fade: 0.6s;             /* .animate-fade-in */
-  --duration-skeleton: 1.5s;         /* Skeleton shimmer loop */
-  --duration-pulse: 3s;              /* .pulsate-subtle loop */
-  --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);   /* Sidebar / layout */
-  --easing-emphasized: cubic-bezier(0.16, 1, 0.3, 1); /* Slide-in panels */
-  --easing-pulse: cubic-bezier(0.4, 0, 0.6, 1);       /* Pulse-subtle */
-  --fade-in-offset-y: 10px;          /* fadeIn keyframe start translateY */
+  --duration-fast: 0.2s;
+  --duration-sidebar: 0.3s;
+  --duration-slide-in: 0.35s;
+  --duration-fade: 0.6s;
+  --duration-skeleton: 1.5s;
+  --duration-pulse: 3s;
+  --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --easing-emphasized: cubic-bezier(0.16, 1, 0.3, 1);
+  --easing-pulse: cubic-bezier(0.4, 0, 0.6, 1);
+  --fade-in-offset-y: 10px;
 }
