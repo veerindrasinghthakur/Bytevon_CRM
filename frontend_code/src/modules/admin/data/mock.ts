@@ -1,9 +1,14 @@
+import { LeaveType } from '@/shared/schema'
 import type {
   AdminUser,
   AdminRole,
   AuditLog,
   SecurityEvent,
   AdminKpis,
+  LeaveTypeSettingRow,
+  LeavePolicyRow,
+  LeaveLedgerRow,
+  OfficeLocation,
 } from '../types'
 
 export type { AdminUser, AdminRole, AuditLog, SecurityEvent } from '../types'
@@ -65,7 +70,8 @@ export const adminRoles: AdminRole[] = [
   {
     id: 'R-01',
     name: 'Senior Administrator',
-    description: 'Complete access to all system modules, financial reporting, and high-level user governance settings.',
+    description:
+      'Complete access to all system modules, financial reporting, and high-level user governance settings.',
     usersCount: 4,
     permissions: ['users.manage', 'roles.manage', 'settings.write', 'audit.read', 'security.manage'],
     status: 'Active',
@@ -78,7 +84,8 @@ export const adminRoles: AdminRole[] = [
   {
     id: 'R-02',
     name: 'Sales Manager',
-    description: 'Management of sales pipelines, CRM data entry, lead assignment, and regional sales reporting.',
+    description:
+      'Management of sales pipelines, CRM data entry, lead assignment, and regional sales reporting.',
     usersCount: 12,
     permissions: ['leads.manage', 'clients.read', 'pipeline.write', 'reports.read'],
     status: 'Active',
@@ -238,3 +245,142 @@ export const adminKpis: AdminKpis = {
   mfaAdoption: 88,
   openAlerts: 0,
 }
+
+/** Leave settings page — type cards */
+export const leaveTypeSettings: LeaveTypeSettingRow[] = [
+  {
+    name: 'Annual Leave',
+    desc: 'Standard paid vacation',
+    days: '21 Days',
+    eligibility: 'All Employees',
+    eligibilityStyle: 'bg-secondary/10 text-secondary',
+  },
+  {
+    name: 'Sick Leave',
+    desc: 'Medical and health related',
+    days: '10 Days',
+    eligibility: 'All Employees',
+    eligibilityStyle: 'bg-secondary/10 text-secondary',
+  },
+  {
+    name: 'Maternity Leave',
+    desc: 'Parental support leave',
+    days: '90 Days',
+    eligibility: 'Female only',
+    eligibilityStyle: 'bg-surface-container text-on-surface-variant',
+  },
+  {
+    name: 'Casual Leave',
+    desc: 'Unplanned personal matters',
+    days: '5 Days',
+    eligibility: 'Full-time',
+    eligibilityStyle: 'bg-secondary/10 text-secondary',
+  },
+]
+
+export const leavePolicies: LeavePolicyRow[] = [
+  {
+    id: 1,
+    name: 'Casual 2026',
+    leave_type: LeaveType.CASUAL,
+    annual_entitlement: 12,
+    carry_forward_limit: 3,
+    effective_from: '2026-01-01',
+    effective_to: null,
+  },
+  {
+    id: 2,
+    name: 'Sick 2026',
+    leave_type: LeaveType.SICK,
+    annual_entitlement: 10,
+    carry_forward_limit: 0,
+    effective_from: '2026-01-01',
+    effective_to: null,
+  },
+  {
+    id: 3,
+    name: 'Earned 2025',
+    leave_type: LeaveType.EARNED,
+    annual_entitlement: 15,
+    carry_forward_limit: 5,
+    effective_from: '2025-01-01',
+    effective_to: '2025-12-31',
+  },
+]
+
+export const leaveLedger: LeaveLedgerRow[] = [
+  {
+    id: 1,
+    leave_type: LeaveType.CASUAL,
+    transaction_type: 'CREDIT',
+    days: 12,
+    reference_type: 'POLICY',
+    created_at: '2026-01-01',
+  },
+  {
+    id: 2,
+    leave_type: LeaveType.CASUAL,
+    transaction_type: 'DEBIT',
+    days: -2,
+    reference_type: 'LEAVE_REQUEST',
+    created_at: '2026-03-12',
+  },
+  {
+    id: 3,
+    leave_type: LeaveType.SICK,
+    transaction_type: 'CREDIT',
+    days: 10,
+    reference_type: 'POLICY',
+    created_at: '2026-01-01',
+  },
+]
+
+/** Offices used by Head Office settings + Office form */
+export const offices: OfficeLocation[] = [
+  {
+    id: 'ny',
+    name: 'New York HQ',
+    country: 'United States',
+    city: 'New York',
+    timezone: 'UTC-05:00 Eastern Time',
+    currency: 'USD ($)',
+    fiscal: 'Jan - Dec',
+    address: '123 Enterprise Way, Suite 500',
+    postal: '10001',
+  },
+  {
+    id: 'ldn',
+    name: 'London Office',
+    country: 'United Kingdom',
+    city: 'London',
+    timezone: 'UTC+00:00 GMT',
+    currency: 'GBP (£)',
+    fiscal: 'Apr - Mar',
+    address: '10 Canary Wharf',
+    postal: 'E14 5AB',
+  },
+  {
+    id: 'blr',
+    name: 'Bangalore Hub',
+    country: 'India',
+    city: 'Bengaluru',
+    timezone: 'UTC+05:30 IST',
+    currency: 'INR (₹)',
+    fiscal: 'Apr - Mar',
+    address: 'Manyata Tech Park',
+    postal: '560045',
+  },
+]
+
+/** Compact labels for Head Office section (same data, shorter display fields) */
+export const headOfficeList = offices.map((o) => ({
+  id: o.id,
+  name: o.name,
+  country: o.id === 'ny' ? 'USA' : o.id === 'ldn' ? 'UK' : 'India',
+  city: o.city,
+  timezone: o.id === 'ny' ? 'EST' : o.id === 'ldn' ? 'GMT' : 'IST',
+  currency: o.id === 'ny' ? 'USD' : o.id === 'ldn' ? 'GBP' : 'INR',
+  fiscal: o.id === 'ny' ? 'Jan-Dec' : 'Apr-Mar',
+  address: o.address,
+  postal: o.postal,
+}))
