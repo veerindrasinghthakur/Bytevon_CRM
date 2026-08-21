@@ -1,33 +1,34 @@
 import { useNavigate } from '@tanstack/react-router'
-import {
-  employeeKpis,
-  employeeLeaveSummary,
-  employeeMeta,
-  employeeQuickActions,
-  employeeTasks,
-} from '../data/mock'
+import { useEmployeeDashboard } from '../hooks/use-employee-dashboard'
 
 /** Matches HTML: surface-container-lowest + border + executive-shadow + card-hover */
 const card = 'bv-surface card-hover'
 
 export function EmployeeDashboardPage() {
   const navigate = useNavigate()
+  const { kpis, tasks, leaveSummary, meta, quickActions, isLoading } = useEmployeeDashboard()
+
+  if (isLoading || !meta) {
+    return (
+      <div className="py-16 text-center text-body-sm text-on-surface-variant">Loading dashboard…</div>
+    )
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
       <section className="relative overflow-hidden bg-deep-navy rounded-xl p-8 text-on-primary executive-shadow">
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <h2 className="text-headline-lg font-bold mb-2">Good Morning, {employeeMeta.firstName}</h2>
+            <h2 className="text-headline-lg font-bold mb-2">Good Morning, {meta.firstName}</h2>
             <div className="flex flex-wrap gap-3 text-inverse-primary">
               <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full text-label-md">
-                <span className="material-symbols-outlined text-[18px]">badge</span> {employeeMeta.employeeId}
+                <span className="material-symbols-outlined text-[18px]">badge</span> {meta.employeeId}
               </span>
               <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full text-label-md">
-                <span className="material-symbols-outlined text-[18px]">business_center</span> {employeeMeta.department}
+                <span className="material-symbols-outlined text-[18px]">business_center</span> {meta.department}
               </span>
               <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full text-label-md">
-                <span className="material-symbols-outlined text-[18px]">calendar_month</span> {employeeMeta.todayLabel}
+                <span className="material-symbols-outlined text-[18px]">calendar_month</span> {meta.todayLabel}
               </span>
             </div>
           </div>
@@ -37,7 +38,7 @@ export function EmployeeDashboardPage() {
             </div>
             <div>
               <span className="text-label-sm opacity-80 uppercase tracking-wider">Current Shift</span>
-              <p className="text-title-lg">{employeeMeta.shift}</p>
+              <p className="text-title-lg">{meta.shift}</p>
             </div>
           </div>
         </div>
@@ -46,7 +47,7 @@ export function EmployeeDashboardPage() {
       <section>
         <h3 className="text-title-lg text-on-background mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-          {employeeQuickActions.map((q) => (
+          {quickActions.map((q) => (
             <button
               key={q.label}
               type="button"
@@ -63,7 +64,7 @@ export function EmployeeDashboardPage() {
       </section>
 
       <section className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        {employeeKpis.map((k) => (
+        {kpis.map((k) => (
           <div key={k.label} className={`${card} p-5`}>
             <div className="flex items-center justify-between mb-3">
               <span className="text-label-sm text-on-surface-variant uppercase tracking-wider">{k.label}</span>
@@ -88,16 +89,16 @@ export function EmployeeDashboardPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-surface-container-low p-4 rounded-lg">
               <span className="text-label-sm text-on-surface-variant">Check-in</span>
-              <p className="text-body-lg font-bold text-secondary">{employeeMeta.checkIn}</p>
-              <span className="text-[10px] text-on-surface-variant">{employeeMeta.checkInNote}</span>
+              <p className="text-body-lg font-bold text-secondary">{meta.checkIn}</p>
+              <span className="text-[10px] text-on-surface-variant">{meta.checkInNote}</span>
             </div>
             <div className="bg-surface-container-low p-4 rounded-lg">
               <span className="text-label-sm text-on-surface-variant">Total Hours</span>
-              <p className="text-body-lg font-bold text-on-background">{employeeMeta.totalHours}</p>
-              <span className="text-[10px] text-on-surface-variant">{employeeMeta.totalHoursNote}</span>
+              <p className="text-body-lg font-bold text-on-background">{meta.totalHours}</p>
+              <span className="text-[10px] text-on-surface-variant">{meta.totalHoursNote}</span>
             </div>
             <div className="md:col-span-2 h-20 flex items-end gap-1">
-              {employeeMeta.weekBars.map((h, i) => (
+              {meta.weekBars.map((h, i) => (
                 <div
                   key={i}
                   className={`flex-1 rounded-t-sm transition-colors ${i === 4 ? 'bg-secondary' : 'bg-secondary/10'} hover:bg-secondary`}
@@ -110,7 +111,7 @@ export function EmployeeDashboardPage() {
 
         <div className={`${card} p-6 flex flex-col gap-4`}>
           <h3 className="text-title-lg text-on-background">Leave Summary</h3>
-          {employeeLeaveSummary.map((l) => (
+          {leaveSummary.map((l) => (
             <div
               key={l.name}
               className={`bg-surface-container-low p-4 rounded-lg flex items-center justify-between border-l-4 ${l.border}`}
@@ -151,7 +152,7 @@ export function EmployeeDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
-              {employeeTasks.map((t) => (
+              {tasks.map((t) => (
                 <tr key={t.name} className="zebra-row group">
                   <td className="px-6 py-4 font-semibold text-on-surface">{t.name}</td>
                   <td className="px-6 py-4">
