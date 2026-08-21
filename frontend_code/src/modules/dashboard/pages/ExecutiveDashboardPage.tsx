@@ -166,7 +166,7 @@ export function ExecutiveDashboardPage() {
         </div>
 
         <ActivityFeed
-          className={card}
+          className={`${card} p-6`}
           framed={false}
           title="Recent Activities"
           variant="standard"
