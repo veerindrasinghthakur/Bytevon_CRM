@@ -101,36 +101,42 @@ export interface OfficeLocation {
   postal: string
 }
 
-/** Role permission matrix */
-export const ROLE_ACTIONS = [
-  'View',
-  'Create',
-  'Edit',
-  'Delete',
-  'Approve',
-  'Export',
-  'Import',
-  'Manage',
-] as const
+/**
+ * RBAC catalog — modules = resources.name from DB (seeded).
+ * Actions = Action enum values from backend (seeded permissions).
+ * Do NOT hardcode for production matrix; fetch via listPermissionCatalog().
+ */
 
-export type RolePermissionAction = (typeof ROLE_ACTIONS)[number]
+/** Backend Action enum (aligned with app.core.db.enums.Action) */
+export type RolePermissionAction =
+  | 'VIEW'
+  | 'CREATE'
+  | 'UPDATE'
+  | 'DELETE'
+  | 'APPROVE'
+  | 'EXPORT'
 
-export const ROLE_MODULES = [
-  'Dashboard',
-  'Employees',
-  'CRM',
-  'Sales',
-  'Inventory',
-  'Reports',
-  'Administration',
-  'Attendance',
-  'Leave',
-  'Payroll',
-] as const
+export interface RbacResource {
+  id: number
+  name: string
+  description?: string | null
+}
 
-export type RolePermissionModule = (typeof ROLE_MODULES)[number]
+export interface RbacPermission {
+  id: number
+  resource_id: number
+  resource_name: string
+  action: RolePermissionAction
+}
 
-export type RolePermissionMatrix = Record<
-  string,
-  Record<RolePermissionAction, boolean>
->
+/** Catalog used to build the role permission matrix UI */
+export interface PermissionCatalog {
+  /** Resource names (modules) — order stable for matrix columns/rows */
+  modules: string[]
+  /** Distinct actions present across permissions (usually full Action enum) */
+  actions: RolePermissionAction[]
+  resources: RbacResource[]
+  permissions: RbacPermission[]
+}
+
+export type RolePermissionMatrix = Record<string, Record<string, boolean>>
