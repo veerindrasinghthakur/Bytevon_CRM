@@ -1,47 +1,19 @@
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
-
-const OFFICES = [
-  {
-    id: 'ny',
-    name: 'New York HQ',
-    country: 'USA',
-    city: 'New York',
-    timezone: 'EST',
-    currency: 'USD',
-    fiscal: 'Jan-Dec',
-    address: '123 Enterprise Way, Suite 500',
-    postal: '10001',
-  },
-  {
-    id: 'ldn',
-    name: 'London Office',
-    country: 'UK',
-    city: 'London',
-    timezone: 'GMT',
-    currency: 'GBP',
-    fiscal: 'Apr-Mar',
-    address: '10 Canary Wharf',
-    postal: 'E14 5AB',
-  },
-  {
-    id: 'blr',
-    name: 'Bangalore Hub',
-    country: 'India',
-    city: 'Bengaluru',
-    timezone: 'IST',
-    currency: 'INR',
-    fiscal: 'Apr-Mar',
-    address: 'Manyata Tech Park',
-    postal: '560045',
-  },
-]
+import { listHeadOfficeOptions } from '../../api/offices'
 
 export function HeadOfficeSection() {
   const [pickerOpen, setPickerOpen] = useState(false)
   const [headId, setHeadId] = useState('ny')
-  const head = OFFICES.find((o) => o.id === headId) ?? OFFICES[0]
+
+  const { data: offices = [], isLoading } = useQuery({
+    queryKey: ['admin', 'offices', 'head-options'],
+    queryFn: listHeadOfficeOptions,
+  })
+
+  const head = offices.find((o) => o.id === headId) ?? offices[0]
 
   return (
     <>
@@ -53,26 +25,32 @@ export function HeadOfficeSection() {
               Configure the organization&apos;s default headquarters.
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => setPickerOpen(true)}>
+          <Button variant="outline" size="sm" onClick={() => setPickerOpen(true)} disabled={isLoading || !head}>
             Change Head Office
           </Button>
         </div>
         <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6">
-            <Readonly label="Head Office Name" value={head.name} />
-            <Readonly label="Country" value={head.country} />
-            <Readonly label="City" value={head.city} />
-            <Readonly label="Timezone" value={head.timezone} />
-            <div className="md:col-span-2">
-              <Readonly label="Address" value={head.address} />
-            </div>
-            <Readonly label="Postal Code" value={head.postal} />
-            <Readonly label="Currency" value={head.currency} />
-            <Readonly label="Fiscal Year" value={head.fiscal} />
-          </div>
-          <p className="mt-6 text-[11px] text-on-surface-variant italic">
-            The Head Office references one of the existing office locations.
-          </p>
+          {isLoading || !head ? (
+            <p className="text-body-sm text-on-surface-variant">Loading offices…</p>
+          ) : (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6">
+                <Readonly label="Head Office Name" value={head.name} />
+                <Readonly label="Country" value={head.country} />
+                <Readonly label="City" value={head.city} />
+                <Readonly label="Timezone" value={head.timezone} />
+                <div className="md:col-span-2">
+                  <Readonly label="Address" value={head.address} />
+                </div>
+                <Readonly label="Postal Code" value={head.postal} />
+                <Readonly label="Currency" value={head.currency} />
+                <Readonly label="Fiscal Year" value={head.fiscal} />
+              </div>
+              <p className="mt-6 text-[11px] text-on-surface-variant italic">
+                The Head Office references one of the existing office locations.
+              </p>
+            </>
+          )}
         </div>
       </div>
 
@@ -92,7 +70,7 @@ export function HeadOfficeSection() {
                 </button>
               </div>
               <div className="p-4 space-y-2 max-h-[60vh] overflow-y-auto">
-                {OFFICES.map((o) => (
+                {offices.map((o) => (
                   <button
                     key={o.id}
                     type="button"
