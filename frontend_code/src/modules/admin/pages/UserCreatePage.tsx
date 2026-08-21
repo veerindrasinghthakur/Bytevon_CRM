@@ -1,122 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useNavigate, useSearch } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
-import {
-  createUserLogin,
-  listEmploymentsWithoutLogin,
-  listRoles,
-  type EmploymentWithoutLogin,
-} from '../api/users'
-import { listDepartments } from '@/modules/workforce/api/departments'
-import type { RoleRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
+import { useUserCreate } from '../hooks/use-user-create'
 
 export function UserCreatePage() {
-  const navigate = useNavigate()
-  const search = useSearch({ strict: false }) as { employmentId?: string }
-  const preselectId = search?.employmentId ? Number(search.employmentId) : null
-
-  const [candidates, setCandidates] = useState<EmploymentWithoutLogin[]>([])
-  const [roles, setRoles] = useState<RoleRow[]>([])
-  const [deptFilter, setDeptFilter] = useState('')
-  const [deptOptions, setDeptOptions] = useState<{ value: string; label: string }[]>([])
-  const [loading, setLoading] = useState(true)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
-
-  const [employmentId, setEmploymentId] = useState('')
-  const [email, setEmail] = useState('')
-  const [tempPassword, setTempPassword] = useState('')
-  const [roleId, setRoleId] = useState('')
-  const [sendInvite, setSendInvite] = useState(true)
-
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      setLoading(true)
-      const [emps, roleList, depts] = await Promise.all([
-        listEmploymentsWithoutLogin(),
-        listRoles(),
-        listDepartments(),
-      ])
-      if (cancelled) return
-      setCandidates(emps)
-      setRoles(roleList)
-      setDeptOptions([
-        { value: '', label: 'All departments' },
-        ...depts.items.map((d) => ({ value: d.name, label: d.name })),
-      ])
-      const defaultRole = roleList.find((r) => r.name === 'Employee') ?? roleList[0]
-      if (defaultRole) setRoleId(String(defaultRole.id))
-      if (preselectId && emps.some((e) => e.employmentId === preselectId)) {
-        setEmploymentId(String(preselectId))
-        const emp = emps.find((e) => e.employmentId === preselectId)
-        if (emp) {
-          const slug = emp.name.toLowerCase().replace(/\s+/g, '.')
-          setEmail(`${slug}@bytevon.com`)
-        }
-      }
-      setLoading(false)
-    })()
-    return () => {
-      cancelled = true
-    }
-  }, [preselectId])
-
-  const filteredCandidates = useMemo(() => {
-    if (!deptFilter) return candidates
-    return candidates.filter((c) => c.department === deptFilter)
-  }, [candidates, deptFilter])
-
-  const employeeOptions = filteredCandidates.map((c) => ({
-    value: String(c.employmentId),
-    label: `${c.name} (${c.employeeCode})`,
-    meta: `${c.department} · ${c.position}`,
-  }))
-
-  const selected = candidates.find((c) => String(c.employmentId) === employmentId)
-
-  const handleCreate = async () => {
-    setError('')
-    if (!employmentId) {
-      setError('Select an employee who does not yet have a login.')
-      return
-    }
-    if (!email.includes('@')) {
-      setError('Enter a valid work email.')
-      return
-    }
-    if (!tempPassword || tempPassword.length < 8) {
-      setError('Temporary password must be at least 8 characters.')
-      return
-    }
-    if (!roleId) {
-      setError('Select a role.')
-      return
-    }
-    setSaving(true)
-    try {
-      await createUserLogin({
-        employmentId: Number(employmentId),
-        email,
-        temporaryPassword: tempPassword,
-        roleId: Number(roleId),
-      })
-      navigate({ to: '/admin/users' })
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to create user')
-    } finally {
-      setSaving(false)
-    }
-  }
+  const form = useUserCreate()
 
   return (
     <div className="space-y-6 animate-fade-in">
       <button
         type="button"
-        onClick={() => navigate({ to: '/admin/users' })}
+        onClick={() => form.navigate({ to: '/admin/users' })}
         className="inline-flex items-center gap-2 text-secondary hover:text-primary transition-colors group"
       >
         <span className="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">
@@ -130,36 +25,36 @@ export function UserCreatePage() {
         description="Pick an existing employee without login. Department is shown from their assignment (filterable)."
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => navigate({ to: '/admin/users' })}>
+            <Button variant="outline" size="sm" onClick={() => form.navigate({ to: '/admin/users' })}>
               Cancel
             </Button>
             <Button
               variant="primary"
               size="sm"
-              isLoading={saving}
+              isLoading={form.saving}
               leftIcon={<span className="material-symbols-outlined text-[18px]">person_add</span>}
-              onClick={handleCreate}
+              onClick={form.handleCreate}
             >
-              {sendInvite ? 'Create & Invite' : 'Create User'}
+              {form.sendInvite ? 'Create & Invite' : 'Create User'}
             </Button>
           </div>
         }
       />
 
-      {error && (
+      {form.error && (
         <div className="rounded-lg border border-error/30 bg-error/5 px-4 py-3 text-body-sm text-error flex items-center gap-2">
           <span className="material-symbols-outlined text-[18px]">error</span>
-          {error}
+          {form.error}
         </div>
       )}
 
-      {loading ? (
+      {form.loading ? (
         <div className="p-12 text-center text-on-surface-variant">Loading…</div>
-      ) : candidates.length === 0 ? (
+      ) : form.candidates.length === 0 ? (
         <div className="bv-surface p-10 text-center space-y-3">
           <span className="material-symbols-outlined text-4xl text-on-surface-variant">person_check</span>
           <h3 className="text-title-lg font-semibold">All employees have logins</h3>
-          <Button variant="primary" size="sm" onClick={() => navigate({ to: '/workforce/employees/new' })}>
+          <Button variant="primary" size="sm" onClick={() => form.navigate({ to: '/workforce/employees/new' })}>
             Add Employee
           </Button>
         </div>
@@ -177,11 +72,11 @@ export function UserCreatePage() {
                   Filter by department
                 </label>
                 <SearchableSelect
-                  options={deptOptions}
-                  value={deptFilter}
+                  options={form.deptOptions}
+                  value={form.deptFilter}
                   onChange={(v) => {
-                    setDeptFilter(v)
-                    setEmploymentId('')
+                    form.setDeptFilter(v)
+                    form.onSelectEmployee('')
                   }}
                   placeholder="Type department name…"
                 />
@@ -192,26 +87,19 @@ export function UserCreatePage() {
                   Employee
                 </label>
                 <SearchableSelect
-                  options={employeeOptions}
-                  value={employmentId}
-                  onChange={(v) => {
-                    setEmploymentId(v)
-                    const emp = candidates.find((c) => String(c.employmentId) === v)
-                    if (emp) {
-                      const slug = emp.name.toLowerCase().replace(/\s+/g, '.')
-                      setEmail(`${slug}@bytevon.com`)
-                    }
-                  }}
+                  options={form.employeeOptions}
+                  value={form.employmentId}
+                  onChange={form.onSelectEmployee}
                   placeholder="Type name or code…"
                 />
               </div>
 
-              {selected && (
+              {form.selected && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 rounded-lg bg-surface-container-low border border-outline-variant">
-                  <ReadOnly label="Code" value={selected.employeeCode} />
-                  <ReadOnly label="Department" value={selected.department} />
-                  <ReadOnly label="Position" value={selected.position} />
-                  <ReadOnly label="Joined" value={selected.joiningDate} />
+                  <ReadOnly label="Code" value={form.selected.employeeCode} />
+                  <ReadOnly label="Department" value={form.selected.department} />
+                  <ReadOnly label="Position" value={form.selected.position} />
+                  <ReadOnly label="Joined" value={form.selected.joiningDate} />
                 </div>
               )}
             </div>
@@ -222,11 +110,11 @@ export function UserCreatePage() {
                 Login Credentials
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Work Email" value={email} onChange={setEmail} type="email" />
+                <Field label="Work Email" value={form.email} onChange={form.setEmail} type="email" />
                 <Field
                   label="Temporary Password"
-                  value={tempPassword}
-                  onChange={setTempPassword}
+                  value={form.tempPassword}
+                  onChange={form.setTempPassword}
                   placeholder="Min. 8 characters"
                 />
               </div>
@@ -242,13 +130,13 @@ export function UserCreatePage() {
                   Primary Role
                 </label>
                 <SearchableSelect
-                  options={roles.map((r) => ({
+                  options={form.roles.map((r) => ({
                     value: String(r.id),
                     label: r.name,
                     meta: r.description ?? undefined,
                   }))}
-                  value={roleId}
-                  onChange={setRoleId}
+                  value={form.roleId}
+                  onChange={form.setRoleId}
                   placeholder="Type role name…"
                 />
               </div>
@@ -261,8 +149,8 @@ export function UserCreatePage() {
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={sendInvite}
-                  onChange={(e) => setSendInvite(e.target.checked)}
+                  checked={form.sendInvite}
+                  onChange={(e) => form.setSendInvite(e.target.checked)}
                   className="mt-1 rounded border-outline-variant text-secondary"
                 />
                 <div>
