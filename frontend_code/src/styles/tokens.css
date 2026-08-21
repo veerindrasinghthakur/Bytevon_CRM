@@ -35,32 +35,33 @@
   --color-on-secondary-container: #001b3d; /* Text on secondary-container */
 
   /* ===========================================================================
-     SURFACES
+     SURFACES — cool blue-grey (aligned with design HTML / Refresh chrome)
      =========================================================================== */
   --color-background: #f8f9ff;
   --color-surface: #f8f9ff;
   --color-surface-bright: #fbfcff;
-  --color-surface-variant: #e1e2e8;
+  --color-surface-variant: #e1e4ed;
   --color-surface-tint: #001f3f;
-  --color-surface-container: #eceef3;
-  --color-surface-container-low: #f2f3f9;
-  --color-surface-container-high: #e7e8ee;
-  --color-surface-container-highest: #e1e2e8;
+  --color-surface-container: #e8ecf4;
+  --color-surface-container-low: #eef1f8;
+  --color-surface-container-high: #e2e6ef;
+  --color-surface-container-highest: #dce0ea;
   --color-surface-container-lowest: #ffffff;
 
   /* ===========================================================================
      TEXT / ON-SURFACE
+     Icon + muted text (search, refresh, header icons) = design #414755
      =========================================================================== */
-  --color-on-surface: #545d67;
-  --color-on-surface-variant: #44474c;
-  --color-on-background: #191c20;
+  --color-on-surface: #3d4654;
+  --color-on-surface-variant: #414755;   /* Refresh / search icons + muted labels */
+  --color-on-background: #0b1c30;
   --color-inverse-primary: #bdc7da;
 
   /* ===========================================================================
-     OUTLINE / BORDERS
+     OUTLINE / BORDERS — blue-tinted neutrals (design HTML)
      =========================================================================== */
-  --color-outline: #75777d;
-  --color-outline-variant: #c5c6cc;
+  --color-outline: #717786;
+  --color-outline-variant: #c1c6d7;
 
   /* ===========================================================================
      ERROR
