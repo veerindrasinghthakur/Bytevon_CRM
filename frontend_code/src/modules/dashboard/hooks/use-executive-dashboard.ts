@@ -1,0 +1,21 @@
+import { useQuery } from '@tanstack/react-query'
+import { getExecutiveDashboard } from '../api/dashboard'
+
+export function useExecutiveDashboard() {
+  const query = useQuery({
+    queryKey: ['dashboard', 'executive'],
+    queryFn: getExecutiveDashboard,
+  })
+
+  return {
+    data: query.data,
+    kpis: query.data?.kpis ?? [],
+    pending: query.data?.pending ?? [],
+    activities: query.data?.activities ?? [],
+    meta: query.data?.meta,
+    quickActions: query.data?.quickActions ?? [],
+    isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
+  }
+}
