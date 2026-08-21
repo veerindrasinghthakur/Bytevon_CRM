@@ -101,6 +101,34 @@ export interface OfficeLocation {
   postal: string
 }
 
+/** Organisation profile — company identity (settings server state) */
+export interface OrganizationProfile {
+  name: string
+  legal: string
+  email: string
+  phone: string
+  website: string
+  tax: string
+  reg: string
+  description: string
+}
+
+/** Attendance company policy (settings server state) */
+export interface AttendanceSettings {
+  shiftStart: string
+  shiftEnd: string
+  graceMinutes: number
+  earlyOutMinutes: number
+  otMinMinutes: number
+  allowRemoteCheckIn: boolean
+}
+
+/** Leave accrual company policy (settings server state) */
+export interface LeaveAccrualPolicy {
+  maxCarryOverDays: number
+  minimumNoticeDays: number
+}
+
 /**
  * RBAC catalog — modules = resources.name from DB (seeded).
  * Actions = Action enum values from backend (seeded permissions).
