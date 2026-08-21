@@ -3,7 +3,11 @@
  * Auth token is attached via request interceptor from the stored session.
  */
 
-import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios'
+import axios, {
+  type AxiosError,
+  type AxiosResponse,
+  type InternalAxiosRequestConfig,
+} from 'axios'
 import { env } from '@/config/env'
 import { loadStoredSession, persistSession } from '@/modules/auth/api/auth'
 
@@ -27,7 +31,7 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 })
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response: AxiosResponse) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       persistSession(null)
