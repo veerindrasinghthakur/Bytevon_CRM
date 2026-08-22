@@ -10,6 +10,15 @@ export interface NotificationTab {
   label: string
 }
 
+export interface NotificationKpi {
+  id: string
+  label: string
+  value: string
+  hint: string
+  hintTone: 'positive' | 'danger' | 'neutral'
+  icon: string
+}
+
 export interface AppNotification {
   id: string
   title: string
@@ -23,7 +32,8 @@ export interface AppNotification {
   tags?: string[]
   actor?: string
   employeeId?: string
-  /** Detail fields */
+  /** Route path for Open related record */
+  relatedHref?: string
   note?: string
   meta?: { label: string; value: string }[]
   timeline?: { title: string; time: string; detail: string; active?: boolean }[]
@@ -41,6 +51,15 @@ export interface SentNotificationRow {
   sentAt: string
 }
 
+export interface SentKpi {
+  id: string
+  label: string
+  value: string
+  hint: string
+  icon: string
+  danger?: boolean
+}
+
 export interface NotificationTrigger {
   id: string
   event: string
@@ -49,4 +68,29 @@ export interface NotificationTrigger {
   recipients: string
   lastTriggered: string
   enabled: boolean
+}
+
+export interface ChannelCard {
+  id: string
+  title: string
+  description: string
+  icon: string
+  enabled: boolean
+}
+
+export interface ComposeNotificationInput {
+  title: string
+  body: string
+  priority: NotificationPriority
+  moduleCtx: string
+  broadcastAll: boolean
+  roles: string[]
+  channels: { inApp: boolean; email: boolean; sms: boolean; push: boolean }
+  scheduleMode: 'now' | 'later'
+  attachmentNames?: string[]
+}
+
+export interface ComposeDeliveryResult {
+  queued: number
+  sentRows: SentNotificationRow[]
 }
