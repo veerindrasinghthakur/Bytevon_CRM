@@ -1,99 +1,99 @@
 import { useEffect, useState } from 'react'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { EditButton } from '@/shared/components/ui/EditButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { useEditMode } from '@/shared/hooks/useEditMode'
 import {
-  getLocations,
-  getOrganizationSettings,
-  updateOrganizationSettings,
-} from '../api/organization'
-import type { LocationRow, OrganizationSettings } from '@/shared/schema'
+  useOrganizationSettings,
+  useOrgLocationsForSelect,
+  useUpdateOrganizationSettings,
+} from '../hooks/use-organization'
+import type { OrganizationSettings } from '@/shared/schema'
 
 export function OrganizationSettingsPage() {
-  const [settings, setSettings] = useState<OrganizationSettings | null>(null)
-  const [locations, setLocations] = useState<LocationRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [editing, setEditing] = useState(false)
+  const settingsQ = useOrganizationSettings()
+  const locationsQ = useOrgLocationsForSelect()
+  const updateMut = useUpdateOrganizationSettings()
+  const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
   const [draft, setDraft] = useState<Partial<OrganizationSettings>>({})
-  const [saving, setSaving] = useState(false)
+
+  const settings = settingsQ.data
+  const locations = locationsQ.data?.items ?? []
 
   useEffect(() => {
-    Promise.all([getOrganizationSettings(), getLocations()])
-      .then(([s, l]) => {
-        setSettings(s)
-        setDraft(s)
-        setLocations(l.items)
-      })
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false))
-  }, [])
+    if (settings) setDraft(settings)
+  }, [settings])
 
-  const save = async () => {
-    setSaving(true)
-    try {
-      const next = await updateOrganizationSettings({
-        company_name: draft.company_name,
-        head_office_location_id: draft.head_office_location_id,
-        default_timezone: draft.default_timezone,
-        default_currency: draft.default_currency,
-      })
-      setSettings(next)
-      setDraft(next)
-      setEditing(false)
-    } catch (e) {
-      setError((e as Error).message)
-    } finally {
-      setSaving(false)
-    }
+  if (settingsQ.isLoading || locationsQ.isLoading) return <PageLoadingSkeleton />
+  if (settingsQ.isError || !settings) {
+    return (
+      <ErrorState
+        description={(settingsQ.error as Error)?.message ?? 'Missing settings'}
+        onRetry={() => void settingsQ.refetch()}
+      />
+    )
   }
-
-  if (loading) return <PageLoadingSkeleton />
-  if (error || !settings) return <ErrorState description={error ?? 'Missing settings'} />
 
   const head =
     locations.find((l) => l.id === settings.head_office_location_id)?.name ??
     `Location #${settings.head_office_location_id}`
 
+  const save = () => {
+    updateMut.mutate(
+      {
+        company_name: draft.company_name,
+        head_office_location_id: draft.head_office_location_id,
+        default_timezone: draft.default_timezone,
+        default_currency: draft.default_currency,
+      },
+      { onSuccess: () => finishEditing() },
+    )
+  }
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Organization settings"
         description="Singleton organization profile"
         actions={
-          editing ? (
+          isEditing ? (
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => { setEditing(false); setDraft(settings) }}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setDraft(settings)
+                  cancelEditing()
+                }}
+              >
                 Cancel
               </Button>
-              <Button variant="primary" onClick={() => void save()} disabled={saving}>
-                {saving ? 'Saving…' : 'Save'}
+              <Button variant="primary" onClick={save} isLoading={updateMut.isPending}>
+                Save
               </Button>
             </div>
           ) : (
-            <Button
-              variant="primary"
-              leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
-              onClick={() => setEditing(true)}
-            >
-              Edit
-            </Button>
+            <EditButton variant="primary" onClick={startEditing} />
           )
         }
       />
 
+      {updateMut.isError && (
+        <p className="text-body-sm text-error">{(updateMut.error as Error).message}</p>
+      )}
+
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm space-y-5 max-w-2xl card-hover">
         <Field
           label="Company name"
-          editing={editing}
+          editing={isEditing}
           value={String(draft.company_name ?? '')}
           display={settings.company_name}
           onChange={(v) => setDraft((d) => ({ ...d, company_name: v }))}
         />
         <div>
           <p className="text-label-sm text-on-surface-variant mb-1">Head office</p>
-          {editing ? (
+          {isEditing ? (
             <select
               className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm"
               value={draft.head_office_location_id ?? ''}
@@ -113,14 +113,14 @@ export function OrganizationSettingsPage() {
         </div>
         <Field
           label="Default timezone"
-          editing={editing}
+          editing={isEditing}
           value={String(draft.default_timezone ?? '')}
           display={settings.default_timezone}
           onChange={(v) => setDraft((d) => ({ ...d, default_timezone: v }))}
         />
         <Field
           label="Default currency"
-          editing={editing}
+          editing={isEditing}
           value={String(draft.default_currency ?? '')}
           display={settings.default_currency}
           onChange={(v) => setDraft((d) => ({ ...d, default_currency: v }))}

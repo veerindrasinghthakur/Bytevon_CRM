@@ -1,29 +1,27 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Button } from '@/shared/components/ui/Button'
+import { EditButton } from '@/shared/components/ui/EditButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
-import { getWorkingWeeks } from '../api/organization'
+import { useWorkingWeeksList } from '../hooks/use-organization'
 import type { WorkingWeekRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 
 const DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 export function WorkingWeeksPage() {
-  const [items, setItems] = useState<WorkingWeekRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data, isLoading, isError, error, refetch } = useWorkingWeeksList()
+  const items = data?.items ?? []
   const [editingId, setEditingId] = useState<number | null>(null)
   const [draftDays, setDraftDays] = useState<number[]>([])
+  const [localItems, setLocalItems] = useState<WorkingWeekRow[] | null>(null)
 
-  useEffect(() => {
-    getWorkingWeeks()
-      .then((r) => setItems(r.items))
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false))
-  }, [])
+  const rows = localItems ?? items
 
-  if (loading) return <PageLoadingSkeleton />
-  if (error) return <ErrorState description={error} />
+  if (isLoading) return <PageLoadingSkeleton />
+  if (isError) {
+    return <ErrorState description={(error as Error).message} onRetry={() => void refetch()} />
+  }
 
   const startEdit = (w: WorkingWeekRow) => {
     setEditingId(w.id)
@@ -37,14 +35,14 @@ export function WorkingWeeksPage() {
   }
 
   const save = (id: number) => {
-    setItems((list) =>
-      list.map((w) => (w.id === id ? { ...w, working_days_of_week: draftDays } : w)),
+    setLocalItems((prev) =>
+      (prev ?? items).map((w) => (w.id === id ? { ...w, working_days_of_week: draftDays } : w)),
     )
     setEditingId(null)
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <h2 className="text-title-lg font-semibold text-on-background">Working weeks</h2>
         <p className="text-body-sm text-on-surface-variant mt-0.5">
@@ -52,7 +50,7 @@ export function WorkingWeeksPage() {
         </p>
       </div>
       <div className="space-y-4">
-        {items.map((w) => {
+        {rows.map((w) => {
           const editing = editingId === w.id
           const days = editing ? draftDays : w.working_days_of_week
           return (
@@ -77,14 +75,7 @@ export function WorkingWeeksPage() {
                     </Button>
                   </div>
                 ) : (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>}
-                    onClick={() => startEdit(w)}
-                  >
-                    Edit
-                  </Button>
+                  <EditButton variant="outline" onClick={() => startEdit(w)} />
                 )}
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
