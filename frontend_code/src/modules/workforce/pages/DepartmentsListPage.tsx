@@ -1,6 +1,10 @@
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
+import { MetricCard } from '@/shared/components/ui/MetricCard'
+import { ExportButton } from '@/shared/components/export/ExportButton'
+import { ResourceName } from '@/shared/schema'
 import { useDepartmentsList } from '../hooks/use-departments-list'
 import { cn } from '@/shared/lib/cn'
 
@@ -31,7 +35,13 @@ export function DepartmentsListPage() {
         title="Department Management"
         description="Organize structure, heads, and staffing across the organization."
         actions={
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <ExportButton
+              resource={ResourceName.DEPARTMENT}
+              query={search}
+              filters={{ status }}
+              filenameStem="departments"
+            />
             <Button
               variant="primary"
               leftIcon={<Icon name="add" />}
@@ -44,10 +54,10 @@ export function DepartmentsListPage() {
       />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard label="Total Departments" value={String(metrics.total)} icon="domain" tone="bg-secondary/10 text-secondary" />
-        <MetricCard label="Total Staffing" value={String(metrics.staffing)} icon="groups" tone="bg-purple-100 text-purple-700" />
-        <MetricCard label="Active" value={String(metrics.active)} icon="check_circle" tone="bg-emerald-100 text-emerald-700" />
-        <MetricCard label="Inactive / Archived" value={String(metrics.inactive)} icon="archive" tone="bg-surface-container text-on-surface-variant" />
+        <MetricCard label="Total Departments" value={String(metrics.total)} icon="domain" />
+        <MetricCard label="Total Staffing" value={String(metrics.staffing)} icon="groups" />
+        <MetricCard label="Active" value={String(metrics.active)} icon="check_circle" valueClassName="text-secondary" />
+        <MetricCard label="Inactive / Archived" value={String(metrics.inactive)} icon="archive" />
       </section>
 
       <div className="bv-surface p-4 flex flex-wrap gap-4 items-center">
@@ -60,15 +70,16 @@ export function DepartmentsListPage() {
             placeholder="Search departments..."
           />
         </div>
-        <select
+        <Select
           value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="border border-outline-variant rounded-lg px-3 py-2 text-body-sm transition-colors"
-        >
-          <option value="All">All Statuses</option>
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select>
+          onChange={setStatus}
+          placeholder="All Statuses"
+          options={[
+            { value: 'All', label: 'All Statuses' },
+            { value: 'Active', label: 'Active' },
+            { value: 'Inactive', label: 'Inactive' },
+          ]}
+        />
       </div>
 
       {!loading && filtered.length === 0 && (
@@ -171,30 +182,6 @@ export function DepartmentsListPage() {
             Showing {filtered.length} of {items.length} departments
           </div>
         )}
-      </div>
-    </div>
-  )
-}
-
-function MetricCard({
-  label,
-  value,
-  icon,
-  tone,
-}: {
-  label: string
-  value: string
-  icon: string
-  tone: string
-}) {
-  return (
-    <div className="bv-surface card-hover p-5 flex flex-col justify-between min-h-[120px]">
-      <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', tone)}>
-        <Icon name={icon} />
-      </div>
-      <div className="mt-3">
-        <p className="text-label-sm text-on-surface-variant">{label}</p>
-        <p className="text-3xl font-bold text-on-background leading-none mt-1">{value}</p>
       </div>
     </div>
   )
