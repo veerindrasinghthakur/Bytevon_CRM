@@ -4,7 +4,10 @@ import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { ExportButton } from '@/shared/components/export/ExportButton'
-import { ResourceName } from '@/shared/schema'
+import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { Can } from '@/shared/rbac'
+import { Action, ResourceName } from '@/shared/schema'
 import { useEmployeesList } from '../hooks/use-employees-list'
 import { cn } from '@/shared/lib/cn'
 
@@ -36,6 +39,7 @@ export function EmployeesListPage() {
     states,
     types,
     loading,
+    error,
     search,
     setSearch,
     deptFilter,
@@ -46,7 +50,22 @@ export function EmployeesListPage() {
     setTypeFilter,
     filtersActive,
     resetFilters,
+    reload,
   } = useEmployeesList()
+
+  if (loading) {
+    return <PageLoadingSkeleton />
+  }
+
+  if (error) {
+    return (
+      <ErrorState
+        title="Could not load employees"
+        description="Employee directory failed to load. Retry or go back."
+        onRetry={() => void reload()}
+      />
+    )
+  }
 
   return (
     <div className="space-y-6 relative animate-fade-in">
@@ -61,13 +80,15 @@ export function EmployeesListPage() {
               filters={{ department: deptFilter, state: stateFilter, type: typeFilter }}
               filenameStem="employees"
             />
-            <Button
-              variant="primary"
-              leftIcon={<Icon name="add" />}
-              onClick={() => navigate({ to: '/workforce/employees/new' })}
-            >
-              Add Employee
-            </Button>
+            <Can action={Action.CREATE} resource={ResourceName.EMPLOYMENT}>
+              <Button
+                variant="primary"
+                leftIcon={<Icon name="add" />}
+                onClick={() => navigate({ to: '/workforce/employees/new' })}
+              >
+                Add Employee
+              </Button>
+            </Can>
           </div>
         }
       />
@@ -126,19 +147,7 @@ export function EmployeesListPage() {
       </div>
 
       <div className="bv-surface overflow-hidden">
-        {loading ? (
-          <div className="p-6 space-y-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3 animate-pulse">
-                <div className="w-10 h-10 rounded-full bg-surface-container-high" />
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 w-40 bg-surface-container-high rounded" />
-                  <div className="h-3 w-24 bg-surface-container rounded" />
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : filtered.length === 0 ? (
+        {filtered.length === 0 ? (
           <div className="p-12 text-center space-y-3">
             <Icon name="person_search" className="text-4xl text-on-surface-variant" />
             <p className="text-title-lg font-semibold">No employees found</p>
@@ -149,9 +158,11 @@ export function EmployeesListPage() {
               <Button variant="outline" onClick={resetFilters}>
                 Clear Filters
               </Button>
-              <Button variant="primary" onClick={() => navigate({ to: '/workforce/employees/new' })}>
-                Add Employee
-              </Button>
+              <Can action={Action.CREATE} resource={ResourceName.EMPLOYMENT}>
+                <Button variant="primary" onClick={() => navigate({ to: '/workforce/employees/new' })}>
+                  Add Employee
+                </Button>
+              </Can>
             </div>
           </div>
         ) : (

@@ -1,14 +1,19 @@
 import { createRoute, redirect } from '@tanstack/react-router'
-import { SalesDashboardPage } from './pages/SalesDashboardPage'
-import { LeadsListPage } from './pages/LeadsListPage'
-import { LeadCreatePage } from './pages/LeadCreatePage'
-import { LeadDetailPage } from './pages/LeadDetailPage'
-import { ClientsListPage } from './pages/ClientsListPage'
-import { ClientCreatePage } from './pages/ClientCreatePage'
-import { ClientDetailPage } from './pages/ClientDetailPage'
-import { SalesAnalyticsPage } from './pages/SalesAnalyticsPage'
-import { SalesActivityTimelinePage } from './pages/SalesActivityTimelinePage'
-import { CaseStudiesListPage } from './pages/CaseStudiesListPage'
+import { lazyPage } from '@/shared/lib/lazyPage'
+
+const SalesDashboardPage = lazyPage(() => import('./pages/SalesDashboardPage'), 'SalesDashboardPage')
+const LeadsListPage = lazyPage(() => import('./pages/LeadsListPage'), 'LeadsListPage')
+const LeadCreatePage = lazyPage(() => import('./pages/LeadCreatePage'), 'LeadCreatePage')
+const LeadDetailPage = lazyPage(() => import('./pages/LeadDetailPage'), 'LeadDetailPage')
+const ClientsListPage = lazyPage(() => import('./pages/ClientsListPage'), 'ClientsListPage')
+const ClientCreatePage = lazyPage(() => import('./pages/ClientCreatePage'), 'ClientCreatePage')
+const ClientDetailPage = lazyPage(() => import('./pages/ClientDetailPage'), 'ClientDetailPage')
+const SalesAnalyticsPage = lazyPage(() => import('./pages/SalesAnalyticsPage'), 'SalesAnalyticsPage')
+const SalesActivityTimelinePage = lazyPage(
+  () => import('./pages/SalesActivityTimelinePage'),
+  'SalesActivityTimelinePage',
+)
+const CaseStudiesListPage = lazyPage(() => import('./pages/CaseStudiesListPage'), 'CaseStudiesListPage')
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createSalesRoutes(appLayoutRoute: any) {

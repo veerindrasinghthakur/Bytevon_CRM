@@ -4,7 +4,10 @@ import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { ExportButton } from '@/shared/components/export/ExportButton'
-import { ResourceName } from '@/shared/schema'
+import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { Can } from '@/shared/rbac'
+import { Action, ResourceName } from '@/shared/schema'
 import { useDepartmentsList } from '../hooks/use-departments-list'
 import { cn } from '@/shared/lib/cn'
 
@@ -23,11 +26,27 @@ export function DepartmentsListPage() {
     filtered,
     metrics,
     loading,
+    error,
     search,
     setSearch,
     status,
     setStatus,
+    reload,
   } = useDepartmentsList()
+
+  if (loading) {
+    return <PageLoadingSkeleton />
+  }
+
+  if (error) {
+    return (
+      <ErrorState
+        title="Could not load departments"
+        description="Department data failed to load. Retry or go back."
+        onRetry={() => void reload()}
+      />
+    )
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -42,13 +61,15 @@ export function DepartmentsListPage() {
               filters={{ status }}
               filenameStem="departments"
             />
-            <Button
-              variant="primary"
-              leftIcon={<Icon name="add" />}
-              onClick={() => navigate({ to: '/workforce/departments/new' })}
-            >
-              Add Department
-            </Button>
+            <Can action={Action.CREATE} resource={ResourceName.DEPARTMENT}>
+              <Button
+                variant="primary"
+                leftIcon={<Icon name="add" />}
+                onClick={() => navigate({ to: '/workforce/departments/new' })}
+              >
+                Add Department
+              </Button>
+            </Can>
           </div>
         }
       />
@@ -82,7 +103,7 @@ export function DepartmentsListPage() {
         />
       </div>
 
-      {!loading && filtered.length === 0 && (
+      {filtered.length === 0 && (
         <div className="bv-surface p-16 text-center space-y-3">
           <Icon name="domain_disabled" className="text-5xl text-on-surface-variant" />
           <h3 className="text-title-lg font-semibold text-on-background">No departments found</h3>
@@ -91,16 +112,16 @@ export function DepartmentsListPage() {
               ? 'Try clearing filters or search.'
               : 'Create your first department to organize staff and reporting lines.'}
           </p>
-          <Button variant="primary" onClick={() => navigate({ to: '/workforce/departments/new' })}>
-            Add Department
-          </Button>
+          <Can action={Action.CREATE} resource={ResourceName.DEPARTMENT}>
+            <Button variant="primary" onClick={() => navigate({ to: '/workforce/departments/new' })}>
+              Add Department
+            </Button>
+          </Can>
         </div>
       )}
 
-      <div className="bv-surface overflow-hidden">
-        {loading ? (
-          <div className="p-12 text-center text-on-surface-variant">Loading departments…</div>
-        ) : filtered.length > 0 ? (
+      {filtered.length > 0 && (
+        <div className="bv-surface overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -176,13 +197,11 @@ export function DepartmentsListPage() {
               </tbody>
             </table>
           </div>
-        ) : null}
-        {filtered.length > 0 && (
           <div className="px-6 py-4 border-t border-outline-variant text-body-sm text-on-surface-variant">
             Showing {filtered.length} of {items.length} departments
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }

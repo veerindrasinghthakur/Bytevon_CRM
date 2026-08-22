@@ -1,15 +1,17 @@
 import { createRoute } from '@tanstack/react-router'
-import { ProjectsListPage } from './pages/ProjectsListPage'
-import { ProjectDetailPage } from './pages/ProjectDetailPage'
-import { ProjectCreatePage } from './pages/ProjectCreatePage'
-import { TeamsListPage } from './pages/TeamsListPage'
-import { TeamCreatePage } from './pages/TeamCreatePage'
-import { TeamDetailPage } from './pages/TeamDetailPage'
-import { TasksListPage } from './pages/TasksListPage'
-import { TaskCreatePage } from './pages/TaskCreatePage'
-import { TaskDetailPage } from './pages/TaskDetailPage'
-import { DocumentsPage } from './pages/DocumentsPage'
-import { ProjectNotesPage } from './pages/ProjectNotesPage'
+import { lazyPage } from '@/shared/lib/lazyPage'
+
+const ProjectsListPage = lazyPage(() => import('./pages/ProjectsListPage'), 'ProjectsListPage')
+const ProjectDetailPage = lazyPage(() => import('./pages/ProjectDetailPage'), 'ProjectDetailPage')
+const ProjectCreatePage = lazyPage(() => import('./pages/ProjectCreatePage'), 'ProjectCreatePage')
+const TeamsListPage = lazyPage(() => import('./pages/TeamsListPage'), 'TeamsListPage')
+const TeamCreatePage = lazyPage(() => import('./pages/TeamCreatePage'), 'TeamCreatePage')
+const TeamDetailPage = lazyPage(() => import('./pages/TeamDetailPage'), 'TeamDetailPage')
+const TasksListPage = lazyPage(() => import('./pages/TasksListPage'), 'TasksListPage')
+const TaskCreatePage = lazyPage(() => import('./pages/TaskCreatePage'), 'TaskCreatePage')
+const TaskDetailPage = lazyPage(() => import('./pages/TaskDetailPage'), 'TaskDetailPage')
+const DocumentsPage = lazyPage(() => import('./pages/DocumentsPage'), 'DocumentsPage')
+const ProjectNotesPage = lazyPage(() => import('./pages/ProjectNotesPage'), 'ProjectNotesPage')
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createProjectsRoutes(appLayoutRoute: any) {
@@ -61,7 +63,7 @@ export function createProjectsRoutes(appLayoutRoute: any) {
       component: TaskCreatePage,
     }),
     createRoute({
-           getParentRoute: () => appLayoutRoute,
+      getParentRoute: () => appLayoutRoute,
       path: '/projects/tasks/$taskId',
       component: TaskDetailPage,
     }),
