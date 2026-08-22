@@ -38,15 +38,61 @@ export const todayAttendance = {
   totalHoursNote: '45% of shift',
 }
 
-/** Week bars — weekends flagged for alternate color in charts */
+/**
+ * Week bars — weekends muted; breakMarkers are red segments on the bar
+ * (multiple points when multiple breaks that day). Today markers come from live session.
+ */
 export const weekHours: WeekHourBar[] = [
-  { day: 'Mon', hours: 8, pct: 90, isToday: false, isWeekend: false },
-  { day: 'Tue', hours: 7.5, pct: 85, isToday: false, isWeekend: false },
-  { day: 'Wed', hours: 8, pct: 90, isToday: false, isWeekend: false },
-  { day: 'Thu', hours: 6, pct: 70, isToday: false, isWeekend: false },
-  { day: 'Fri', hours: 4.5, pct: 50, isToday: true, isWeekend: false },
-  { day: 'Sat', hours: 0, pct: 0, isToday: false, isWeekend: true },
-  { day: 'Sun', hours: 0, pct: 0, isToday: false, isWeekend: true },
+  {
+    day: 'Mon',
+    hours: 8,
+    pct: 90,
+    isToday: false,
+    isWeekend: false,
+    breakMarkers: [
+      { id: 'm-mon-1', startPct: 35, endPct: 42 },
+      { id: 'm-mon-2', startPct: 68, endPct: 72 },
+    ],
+  },
+  {
+    day: 'Tue',
+    hours: 7.5,
+    pct: 85,
+    isToday: false,
+    isWeekend: false,
+    breakMarkers: [{ id: 'm-tue-1', startPct: 40, endPct: 48 }],
+  },
+  {
+    day: 'Wed',
+    hours: 8,
+    pct: 90,
+    isToday: false,
+    isWeekend: false,
+    breakMarkers: [
+      { id: 'm-wed-1', startPct: 28, endPct: 33 },
+      { id: 'm-wed-2', startPct: 55, endPct: 60 },
+      { id: 'm-wed-3', startPct: 78, endPct: 82 },
+    ],
+  },
+  {
+    day: 'Thu',
+    hours: 6,
+    pct: 70,
+    isToday: false,
+    isWeekend: false,
+    breakMarkers: [{ id: 'm-thu-1', startPct: 45, endPct: 55 }],
+  },
+  {
+    day: 'Fri',
+    hours: 4.5,
+    pct: 50,
+    isToday: true,
+    isWeekend: false,
+    // live markers merged on page from getTodayBreaks
+    breakMarkers: [],
+  },
+  { day: 'Sat', hours: 0, pct: 0, isToday: false, isWeekend: true, breakMarkers: [] },
+  { day: 'Sun', hours: 0, pct: 0, isToday: false, isWeekend: true, breakMarkers: [] },
 ]
 
 /** Leave types from policies (mock of DB / leave_policies) */
@@ -262,7 +308,6 @@ export const myApprovals: ApprovalRequest[] = [
   },
 ]
 
-/** Default approver = department head; searchable hierarchy for overrides */
 export const approverDirectory: ApproverOption[] = [
   { id: 'emp-sarah', name: 'Sarah Chen', title: 'Department Head', department: 'Design Dept' },
   { id: 'emp-robert', name: 'Robert Chen', title: 'Director', department: 'Product' },
