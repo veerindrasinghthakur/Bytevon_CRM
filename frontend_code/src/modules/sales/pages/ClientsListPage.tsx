@@ -4,6 +4,8 @@ import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { StatusDot } from '@/shared/components/ui/StatusDot'
+import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { ResourceName } from '@/shared/schema'
 import { useClientsList } from '../hooks/use-clients-list'
 import type { ClientType } from '../types'
@@ -30,6 +32,9 @@ export function ClientsListPage() {
     metrics,
     totalCount,
     filtered,
+    isLoading,
+    isError,
+    refetch,
     search,
     setSearch,
     statusFilter,
@@ -175,145 +180,158 @@ export function ClientsListPage() {
         </div>
       )}
 
-      <div className="bv-surface overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="border-b border-outline-variant bg-surface-container-low/50">
-                <th className="px-3 py-3 w-12 text-center">
-                  {selectionMode ? (
-                    <input
-                      type="checkbox"
-                      className="rounded border-outline-variant text-secondary"
-                      checked={allFilteredSelected}
-                      onChange={toggleSelectAllFiltered}
-                      title="Select all filtered rows"
-                      aria-label="Select all filtered rows"
-                    />
-                  ) : (
-                    <span className="sr-only">Status</span>
-                  )}
-                </th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Client</th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Type</th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Industry</th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Projects</th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Leads</th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">ARR / Revenue</th>
-                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant">
-              {filtered.map((client) => {
-                const isSelected = selectedIds.has(client.id)
-                return (
-                  <tr
-                    key={client.id}
-                    className={cn(
-                      'cursor-pointer group select-none',
-                      isSelected ? 'bg-secondary/10' : 'zebra-row',
+      {isLoading && <TableSkeleton rows={6} />}
+
+      {isError && (
+        <ErrorState
+          title="Failed to load clients"
+          description="We could not load the clients list. Check your connection and try again."
+          onRetry={() => void refetch()}
+          showBack={false}
+        />
+      )}
+
+      {!isLoading && !isError && (
+        <div className="bv-surface overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-outline-variant bg-surface-container-low/50">
+                  <th className="px-3 py-3 w-12 text-center">
+                    {selectionMode ? (
+                      <input
+                        type="checkbox"
+                        className="rounded border-outline-variant text-secondary"
+                        checked={allFilteredSelected}
+                        onChange={toggleSelectAllFiltered}
+                        title="Select all filtered rows"
+                        aria-label="Select all filtered rows"
+                      />
+                    ) : (
+                      <span className="sr-only">Status</span>
                     )}
-                    onMouseDown={() => startLongPress(client.id)}
-                    onMouseUp={() => endLongPress(client)}
-                    onMouseLeave={clearLongPress}
-                    onTouchStart={() => startLongPress(client.id)}
-                    onTouchEnd={() => endLongPress(client)}
-                    onTouchCancel={clearLongPress}
-                    onContextMenu={(e) => e.preventDefault()}
-                  >
-                    <td
-                      className="px-3 py-4 text-center"
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        if (selectionMode) toggleOne(client.id)
-                      }}
-                    >
-                      {selectionMode ? (
-                        <input
-                          type="checkbox"
-                          className="rounded border-outline-variant text-secondary"
-                          checked={isSelected}
-                          onChange={() => toggleOne(client.id)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                      ) : (
-                        <StatusDot status={client.status} />
+                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Client</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Type</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Industry</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Projects</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Leads</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">ARR / Revenue</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-outline-variant">
+                {filtered.map((client) => {
+                  const isSelected = selectedIds.has(client.id)
+                  return (
+                    <tr
+                      key={client.id}
+                      className={cn(
+                        'cursor-pointer group select-none',
+                        isSelected ? 'bg-secondary/10' : 'zebra-row',
                       )}
-                    </td>
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
-                          {client.logoInitials ?? client.name.slice(0, 2).toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="font-semibold text-on-surface group-hover:text-secondary transition-colors">
-                            {client.name}
-                          </p>
-                          <p className="text-xs text-on-surface-variant">{client.country}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
-                      <span className={cn('px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase', typeStyles[client.type])}>
-                        {client.type}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 text-body-sm text-on-surface">{client.industry}</td>
-                    <td className="px-4 py-4 font-semibold text-on-surface">{client.projects}</td>
-                    <td className="px-4 py-4 font-semibold text-on-surface">{client.leads}</td>
-                    <td className="px-4 py-4 font-semibold text-on-surface">{formatMoney(client.arr ?? client.revenue)}</td>
-                    <td
-                      className="px-4 py-4 text-center"
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onClick={(e) => e.stopPropagation()}
+                      onMouseDown={() => startLongPress(client.id)}
+                      onMouseUp={() => endLongPress(client)}
+                      onMouseLeave={clearLongPress}
+                      onTouchStart={() => startLongPress(client.id)}
+                      onTouchEnd={() => endLongPress(client)}
+                      onTouchCancel={clearLongPress}
+                      onContextMenu={(e) => e.preventDefault()}
                     >
-                      <div className="flex items-center justify-center gap-1">
-                        <button
-                          type="button"
-                          className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant transition-colors"
-                          onClick={() => setQuickView(client)}
-                          aria-label="Quick view"
-                        >
-                          <span className="material-symbols-outlined text-sm">visibility</span>
-                        </button>
-                        <button
-                          type="button"
-                          className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant transition-colors"
-                          onClick={() => openFull(client.id)}
-                          aria-label="Open full record"
-                        >
-                          <span className="material-symbols-outlined text-sm">open_in_new</span>
-                        </button>
-                        {client.chatLink && (
-                          <a
-                            href={client.chatLink}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="p-1.5 hover:bg-surface-container rounded-md text-secondary transition-colors"
-                            title="Open chat"
-                          >
-                            <span className="material-symbols-outlined text-sm">chat</span>
-                          </a>
+                      <td
+                        className="px-3 py-4 text-center"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (selectionMode) toggleOne(client.id)
+                        }}
+                      >
+                        {selectionMode ? (
+                          <input
+                            type="checkbox"
+                            className="rounded border-outline-variant text-secondary"
+                            checked={isSelected}
+                            onChange={() => toggleOne(client.id)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <StatusDot status={client.status} />
                         )}
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
+                            {client.logoInitials ?? client.name.slice(0, 2).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-on-surface group-hover:text-secondary transition-colors">
+                              {client.name}
+                            </p>
+                            <p className="text-xs text-on-surface-variant">{client.country}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span className={cn('px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase', typeStyles[client.type])}>
+                          {client.type}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-body-sm text-on-surface">{client.industry}</td>
+                      <td className="px-4 py-4 font-semibold text-on-surface">{client.projects}</td>
+                      <td className="px-4 py-4 font-semibold text-on-surface">{client.leads}</td>
+                      <td className="px-4 py-4 font-semibold text-on-surface">{formatMoney(client.arr ?? client.revenue)}</td>
+                      <td
+                        className="px-4 py-4 text-center"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            type="button"
+                            className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant transition-colors"
+                            onClick={() => setQuickView(client)}
+                            aria-label="Quick view"
+                          >
+                            <span className="material-symbols-outlined text-sm">visibility</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant transition-colors"
+                            onClick={() => openFull(client.id)}
+                            aria-label="Open full record"
+                          >
+                            <span className="material-symbols-outlined text-sm">open_in_new</span>
+                          </button>
+                          {client.chatLink && (
+                            <a
+                              href={client.chatLink}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="p-1.5 hover:bg-surface-container rounded-md text-secondary transition-colors"
+                              title="Open chat"
+                            >
+                              <span className="material-symbols-outlined text-sm">chat</span>
+                            </a>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className="px-6 py-4 bg-surface-container-low/30 border-t border-outline-variant">
+            <p className="text-xs text-on-surface-variant">
+              Showing <span className="font-semibold text-on-surface">1–{filtered.length}</span> of{' '}
+              <span className="font-semibold text-on-surface">{totalCount}</span> clients
+              {!selectionMode && (
+                <span className="ml-2 text-on-surface-variant/80">· Hold a row 3s to multi-select</span>
+              )}
+            </p>
+          </div>
         </div>
-        <div className="px-6 py-4 bg-surface-container-low/30 border-t border-outline-variant">
-          <p className="text-xs text-on-surface-variant">
-            Showing <span className="font-semibold text-on-surface">1–{filtered.length}</span> of{' '}
-            <span className="font-semibold text-on-surface">{totalCount}</span> clients
-            {!selectionMode && (
-              <span className="ml-2 text-on-surface-variant/80">· Hold a row 3s to multi-select</span>
-            )}
-          </p>
-        </div>
-      </div>
+      )}
 
       {quickView && (
         <>
