@@ -1,32 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
-import { getLocations } from '../api/organization'
-import type { LocationRow } from '@/shared/schema'
+import { useLocationsList } from '../hooks/use-locations'
 import { cn } from '@/shared/lib/cn'
 
 export function LocationsListPage() {
   const navigate = useNavigate()
-  const [items, setItems] = useState<LocationRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data, isLoading, isError, error, refetch } = useLocationsList(true)
   const [q, setQ] = useState('')
-
-  const load = () => {
-    setLoading(true)
-    setError(null)
-    getLocations({ includeArchived: true })
-      .then((r) => setItems(r.items))
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false))
-  }
-
-  useEffect(() => {
-    load()
-  }, [])
+  const items = data?.items ?? []
 
   const filtered = useMemo(() => {
     const s = q.trim().toLowerCase()
@@ -42,11 +27,13 @@ export function LocationsListPage() {
   const active = items.filter((l) => !l.is_archived).length
   const archived = items.filter((l) => l.is_archived).length
 
-  if (loading) return <PageLoadingSkeleton />
-  if (error) return <ErrorState description={error} onRetry={load} />
+  if (isLoading) return <PageLoadingSkeleton />
+  if (isError) {
+    return <ErrorState description={(error as Error).message} onRetry={() => void refetch()} />
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-title-lg font-semibold text-on-background">Office Locations</h2>
@@ -83,10 +70,7 @@ export function LocationsListPage() {
           { label: 'Timezones', value: new Set(items.map((l) => l.timezone)).size },
           { label: 'Currencies', value: new Set(items.map((l) => l.currency)).size },
         ].map((k) => (
-          <div
-            key={k.label}
-            className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant shadow-sm card-hover"
-          >
+          <div key={k.label} className="bv-surface p-5 card-hover">
             <span className="text-label-sm text-on-surface-variant uppercase tracking-wider">{k.label}</span>
             <p className="text-display-lg font-bold text-on-background mt-1">{k.value}</p>
           </div>
@@ -101,12 +85,15 @@ export function LocationsListPage() {
           onAction={() => navigate({ to: '/admin/settings/offices/new' })}
         />
       ) : (
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+        <div className="bv-surface overflow-hidden">
           <table className="w-full text-left">
             <thead>
               <tr className="bg-surface-container-low border-b border-outline-variant">
                 {['Name', 'City', 'Timezone', 'Currency', 'Status', ''].map((h) => (
-                  <th key={h} className="px-5 py-3 text-label-sm uppercase tracking-wider text-on-surface-variant">
+                  <th
+                    key={h || 'actions'}
+                    className="px-5 py-3 text-label-sm uppercase tracking-wider text-on-surface-variant"
+                  >
                     {h}
                   </th>
                 ))}

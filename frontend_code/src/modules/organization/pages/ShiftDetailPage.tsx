@@ -2,14 +2,18 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams, useRouterState } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
+import { EditButton } from '@/shared/components/ui/EditButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
-import { getShifts } from '../api/organization'
-import { listEmployeesOnShift } from '@/modules/workforce/api/departments'
-import type { ShiftRow } from '@/shared/schema'
+import { useEditMode } from '@/shared/hooks/useEditMode'
 import { can } from '@/shared/rbac/can'
-import { Action, ResourceName } from '@/shared/schema'
-import { cn } from '@/shared/lib/cn'
+import { Action, ResourceName, type ShiftRow } from '@/shared/schema'
+import {
+  useCreateShift,
+  useShiftDetail,
+  useShiftStaff,
+  useUpdateShift,
+} from '../hooks/use-shifts'
 
 const emptyShift: ShiftRow = {
   id: 0,
@@ -38,63 +42,56 @@ export function ShiftDetailPage() {
   const { shiftId } = useParams({ strict: false }) as { shiftId?: string }
   const navigate = useNavigate()
   const id = Number(shiftId)
-  const canCreate = can(Action.CREATE, ResourceName.SHIFT)
-  const canUpdate = can(Action.UPDATE, ResourceName.SHIFT)
 
-  const [shift, setShift] = useState<ShiftRow | null>(isNew ? emptyShift : null)
-  const [staff, setStaff] = useState<
-    {
-      employmentId: number
-      employeeCode: string
-      name: string
-      departmentName: string
-      positionName: string
-      state: string
-    }[]
-  >([])
-  const [loading, setLoading] = useState(!isNew)
-  const [error, setError] = useState<string | null>(null)
-  const [editing, setEditing] = useState(isNew)
+  // can() takes a single params object — NOT (action, resource)
+  const canCreate = can({ action: Action.CREATE, resource: ResourceName.SHIFT })
+  const canUpdate = can({ action: Action.UPDATE, resource: ResourceName.SHIFT })
+
+  const detailQuery = useShiftDetail(id, !isNew)
+  const staffQuery = useShiftStaff(id, !isNew)
+  const createMut = useCreateShift()
+  const updateMut = useUpdateShift(id)
+  const { isEditing, startEditing, cancelEditing, finishEditing, setEditing } = useEditMode(isNew)
+
+  const shift = isNew ? emptyShift : detailQuery.data ?? null
   const [draft, setDraft] = useState<Partial<ShiftRow>>(isNew ? emptyShift : {})
 
   useEffect(() => {
     if (isNew) {
-      if (!canCreate) {
-        setError('You do not have permission to create shifts.')
-        setShift(null)
-      }
+      setDraft(emptyShift)
+      setEditing(true)
       return
     }
-    setLoading(true)
-    Promise.all([
-      getShifts({ includeArchived: true }),
-      listEmployeesOnShift(id),
-    ])
-      .then(([r, employees]) => {
-        const row = r.items.find((s) => s.id === id) ?? null
-        setShift(row)
-        if (row) setDraft(row)
-        setStaff(employees)
-        if (!row) setError('Shift not found')
-      })
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false))
-  }, [id, isNew, canCreate])
+    if (detailQuery.data) setDraft(detailQuery.data)
+  }, [isNew, detailQuery.data, setEditing])
 
-  if (loading) return <PageLoadingSkeleton />
-  if (error || !shift) {
+  if (!isNew && detailQuery.isLoading) return <PageLoadingSkeleton />
+
+  if (isNew && !canCreate) {
     return (
       <ErrorState
-        description={error ?? 'Not found'}
+        description="You do not have permission to create shifts."
         onBack={() => navigate({ to: listTo as never })}
       />
     )
   }
 
+  if (!isNew && (detailQuery.isError || !shift)) {
+    return (
+      <ErrorState
+        description={(detailQuery.error as Error)?.message ?? 'Shift not found'}
+        onRetry={() => void detailQuery.refetch()}
+        onBack={() => navigate({ to: listTo as never })}
+      />
+    )
+  }
+
+  const staff = staffQuery.data ?? []
+
   const field = (label: string, key: keyof ShiftRow, type: 'text' | 'time' | 'number' = 'text') => (
     <div>
       <p className="text-label-sm text-on-surface-variant mb-1">{label}</p>
-      {editing ? (
+      {isEditing ? (
         <input
           type={type}
           className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm focus:ring-2 focus:ring-secondary/30 outline-none"
@@ -107,98 +104,142 @@ export function ShiftDetailPage() {
           }
         />
       ) : (
-        <p className="text-body-md font-medium text-on-background">{String(shift[key] ?? '—')}</p>
+        <p className="text-body-md font-medium text-on-background">{String(shift![key] ?? '—')}</p>
       )}
     </div>
   )
 
+  const onSave = () => {
+    if (isNew) {
+      createMut.mutate(
+        {
+          name: String(draft.name ?? ''),
+          start_time: String(draft.start_time ?? '09:00:00'),
+          end_time: String(draft.end_time ?? '18:00:00'),
+          is_overnight: Boolean(draft.is_overnight),
+          grace_late_minutes: Number(draft.grace_late_minutes ?? 15),
+          flexible_end: Boolean(draft.flexible_end),
+          break_duration_minutes: Number(draft.break_duration_minutes ?? 60),
+        },
+        {
+          onSuccess: () => navigate({ to: listTo as never }),
+        },
+      )
+      return
+    }
+    updateMut.mutate(
+      {
+        name: draft.name,
+        start_time: draft.start_time,
+        end_time: draft.end_time,
+        grace_late_minutes: draft.grace_late_minutes,
+        break_duration_minutes: draft.break_duration_minutes,
+        is_overnight: draft.is_overnight,
+        flexible_end: draft.flexible_end,
+      },
+      { onSuccess: () => finishEditing() },
+    )
+  }
+
+  const saving = createMut.isPending || updateMut.isPending
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <BackButton to={listTo} label="Back to shifts" />
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
           <h2 className="text-title-lg font-semibold text-on-background">
-            {isNew ? 'Add shift' : shift.name || 'Shift'}
+            {isNew ? 'Add shift' : shift?.name || 'Shift'}
           </h2>
-          {!isNew && (
+          {!isNew && shift && (
             <p className="text-body-sm text-on-surface-variant mt-0.5">
               {String(shift.start_time).slice(0, 5)} – {String(shift.end_time).slice(0, 5)}
               {shift.is_overnight ? ' · Overnight' : ''}
-              {!isNew && ` · ${staff.length} employees`}
+              {` · ${staff.length} employees`}
             </p>
           )}
         </div>
-        {editing ? (
+        {isEditing ? (
           <div className="flex gap-2">
             {!isNew && (
               <Button
                 variant="outline"
                 onClick={() => {
-                  setEditing(false)
-                  setDraft(shift)
+                  if (shift) setDraft(shift)
+                  cancelEditing()
                 }}
               >
                 Cancel
               </Button>
             )}
-            <Button
-              variant="primary"
-              onClick={() => {
-                if (isNew) {
-                  navigate({ to: listTo as never })
-                  return
-                }
-                setShift({ ...shift, ...draft } as ShiftRow)
-                setEditing(false)
-              }}
-            >
+            <Button variant="primary" onClick={onSave} isLoading={saving}>
               {isNew ? 'Create' : 'Save'}
             </Button>
           </div>
         ) : (
-          canUpdate && (
-            <Button
-              variant="primary"
-              leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
-              onClick={() => setEditing(true)}
-            >
-              Edit
-            </Button>
-          )
+          canUpdate && <EditButton variant="primary" onClick={startEditing} />
         )}
       </div>
 
+      {(createMut.isError || updateMut.isError) && (
+        <p className="text-body-sm text-error">
+          {((createMut.error || updateMut.error) as Error).message}
+        </p>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm space-y-4 card-hover">
+        <div className="bv-surface p-6 space-y-4">
           <h3 className="text-title-md font-semibold text-on-background">Schedule</h3>
           {field('Name', 'name')}
           {field('Start time', 'start_time', 'time')}
           {field('End time', 'end_time', 'time')}
           <div>
             <p className="text-label-sm text-on-surface-variant mb-1">Overnight</p>
-            <p className="text-body-md font-medium">{shift.is_overnight ? 'Yes' : 'No'}</p>
+            {isEditing ? (
+              <label className="inline-flex items-center gap-2 text-body-sm">
+                <input
+                  type="checkbox"
+                  checked={Boolean(draft.is_overnight)}
+                  onChange={(e) => setDraft((d) => ({ ...d, is_overnight: e.target.checked }))}
+                />
+                Crosses midnight
+              </label>
+            ) : (
+              <p className="text-body-md font-medium">{shift?.is_overnight ? 'Yes' : 'No'}</p>
+            )}
           </div>
         </div>
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm space-y-4 card-hover">
+        <div className="bv-surface p-6 space-y-4">
           <h3 className="text-title-md font-semibold text-on-background">Rules</h3>
           {field('Grace late (min)', 'grace_late_minutes', 'number')}
           {field('Break duration (min)', 'break_duration_minutes', 'number')}
           <div>
             <p className="text-label-sm text-on-surface-variant mb-1">Flexible end</p>
-            <p className="text-body-md font-medium">{shift.flexible_end ? 'Yes' : 'No'}</p>
+            {isEditing ? (
+              <label className="inline-flex items-center gap-2 text-body-sm">
+                <input
+                  type="checkbox"
+                  checked={Boolean(draft.flexible_end)}
+                  onChange={(e) => setDraft((d) => ({ ...d, flexible_end: e.target.checked }))}
+                />
+                Allow flexible end
+              </label>
+            ) : (
+              <p className="text-body-md font-medium">{shift?.flexible_end ? 'Yes' : 'No'}</p>
+            )}
           </div>
         </div>
       </div>
 
       {!isNew && (
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+        <div className="bv-surface overflow-hidden">
           <div className="px-6 py-4 border-b border-outline-variant">
             <h3 className="text-title-lg font-semibold">Employees on this shift</h3>
-            <p className="text-body-sm text-on-surface-variant">
-              From active employment assignments (shift_id)
-            </p>
+            <p className="text-body-sm text-on-surface-variant">From active employment assignments</p>
           </div>
-          {staff.length === 0 ? (
+          {staffQuery.isLoading ? (
+            <div className="p-8 text-center text-on-surface-variant">Loading staff…</div>
+          ) : staff.length === 0 ? (
             <div className="p-10 text-center text-on-surface-variant">
               No employees currently assigned to this shift.
             </div>

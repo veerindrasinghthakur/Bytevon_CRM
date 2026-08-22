@@ -8,3 +8,7 @@ export { HolidayCalendarsPage } from './pages/HolidayCalendarsPage'
 export { HolidaysListPage } from './pages/HolidaysListPage'
 export { PositionsListPage } from './pages/PositionsListPage'
 export { OrganizationSettingsPage } from './pages/OrganizationSettingsPage'
+export {
+  createOrganizationSettingsRoutes,
+  createWorkforceShiftRoutes,
+} from './routes'
