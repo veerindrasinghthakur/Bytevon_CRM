@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
+import { ExportButton } from '@/shared/components/export/ExportButton'
 import { leaveBalances, leaveRequests } from '../data/mock'
 import type { LeaveStatus } from '../types'
 import { HOLIDAYS_2026 } from './ApplyLeavePage'
@@ -217,9 +219,6 @@ export function MyLeavePage() {
           <section>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-title-lg font-semibold text-on-background">Leave Type Breakdown</h2>
-              <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-base">download</span>}>
-                Export Report
-              </Button>
             </div>
             <div className="bv-surface overflow-hidden">
               <div className="overflow-x-auto">
@@ -283,34 +282,47 @@ export function MyLeavePage() {
                 />
               </div>
             </div>
-            <div className="flex flex-col gap-1 w-40">
+            <div className="flex flex-col gap-1 min-w-[140px]">
               <label className="text-label-sm text-on-surface-variant">Status</label>
-              <select
+              <Select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-sm outline-none focus:border-secondary transition-colors"
-              >
-                {['All', 'Pending', 'Approved', 'Rejected', 'Cancelled'].map((s) => (
-                  <option key={s} value={s}>
-                    {s === 'All' ? 'All Statuses' : s}
-                  </option>
-                ))}
-              </select>
+                onChange={setStatusFilter}
+                minWidthClass="min-w-[140px]"
+                options={[
+                  { value: 'All', label: 'All Statuses' },
+                  { value: 'Pending', label: 'Pending' },
+                  { value: 'Approved', label: 'Approved' },
+                  { value: 'Rejected', label: 'Rejected' },
+                  { value: 'Cancelled', label: 'Cancelled' },
+                ]}
+              />
             </div>
-            <div className="flex flex-col gap-1 w-40">
+            <div className="flex flex-col gap-1 min-w-[140px]">
               <label className="text-label-sm text-on-surface-variant">Leave Type</label>
-              <select
+              <Select
                 value={typeFilter}
-                onChange={(e) => setTypeFilter(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-sm outline-none focus:border-secondary transition-colors"
-              >
-                {['All', 'Casual', 'Sick', 'Earned', 'Unpaid', 'Comp Off'].map((t) => (
-                  <option key={t} value={t}>
-                    {t === 'All' ? 'All Types' : t}
-                  </option>
-                ))}
-              </select>
+                onChange={setTypeFilter}
+                minWidthClass="min-w-[140px]"
+                options={[
+                  { value: 'All', label: 'All Types' },
+                  { value: 'Casual', label: 'Casual' },
+                  { value: 'Sick', label: 'Sick' },
+                  { value: 'Earned', label: 'Earned' },
+                  { value: 'Unpaid', label: 'Unpaid' },
+                  { value: 'Comp Off', label: 'Comp Off' },
+                ]}
+              />
             </div>
+            <ExportButton
+              resource="leave_request"
+              filters={{
+                status: statusFilter !== 'All' ? statusFilter : undefined,
+                type: typeFilter !== 'All' ? typeFilter : undefined,
+              }}
+              query={search || undefined}
+              filenameStem="leave-history"
+              label="Export"
+            />
           </div>
 
           {loading ? (
