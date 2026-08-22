@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
 import {
   createEmployment,
   getOrgMastersForEmployeeForm,
@@ -53,6 +54,14 @@ function Field({
 const inputClass =
   'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors'
 
+const GENDER_OPTIONS = [
+  { value: '', label: 'Select…' },
+  { value: 'Female', label: 'Female' },
+  { value: 'Male', label: 'Male' },
+  { value: 'Non-binary', label: 'Non-binary' },
+  { value: 'Prefer not to say', label: 'Prefer not to say' },
+]
+
 type Step = 'profile' | 'auth' | 'done'
 
 export function EmployeeCreatePage() {
@@ -94,11 +103,11 @@ export function EmployeeCreatePage() {
   const [emergencyPhone, setEmergencyPhone] = useState('')
   const [joiningDate, setJoiningDate] = useState('')
   const [employmentType, setEmploymentType] = useState<string>(EmploymentType.FULL_TIME)
-  const [departmentId, setDepartmentId] = useState<number | ''>('')
-  const [positionId, setPositionId] = useState<number | ''>('')
-  const [locationId, setLocationId] = useState<number | ''>('')
-  const [shiftId, setShiftId] = useState<number | ''>('')
-  const [managerId, setManagerId] = useState<number | ''>('')
+  const [departmentId, setDepartmentId] = useState('')
+  const [positionId, setPositionId] = useState('')
+  const [locationId, setLocationId] = useState('')
+  const [shiftId, setShiftId] = useState('')
+  const [managerId, setManagerId] = useState('')
   const [accountHolderName, setAccountHolderName] = useState('')
   const [bankName, setBankName] = useState('')
   const [accountNumber, setAccountNumber] = useState('')
@@ -107,26 +116,66 @@ export function EmployeeCreatePage() {
 
   const [workEmail, setWorkEmail] = useState('')
   const [tempPassword, setTempPassword] = useState('')
-  const [roleId, setRoleId] = useState<number | ''>('')
+  const [roleId, setRoleId] = useState('')
 
-  // Preview-only immutable employment code (assigned on save)
   const previewEmpCode = 'EMP-AUTO'
+
+  const departmentOptions = useMemo(
+    () => (masters?.departments ?? []).map((d) => ({ value: String(d.id), label: d.name })),
+    [masters],
+  )
+  const positionOptions = useMemo(
+    () => (masters?.positions ?? []).map((p) => ({ value: String(p.id), label: p.name })),
+    [masters],
+  )
+  const locationOptions = useMemo(
+    () => (masters?.locations ?? []).map((l) => ({ value: String(l.id), label: l.name })),
+    [masters],
+  )
+  const shiftOptions = useMemo(
+    () => (masters?.shifts ?? []).map((s) => ({ value: String(s.id), label: s.name })),
+    [masters],
+  )
+  const managerSelectOptions = useMemo(
+    () => [
+      { value: '', label: 'Unassigned' },
+      ...managerOptions.map((m) => ({ value: String(m.id), label: m.name })),
+    ],
+    [managerOptions],
+  )
+  const employmentTypeOptions = useMemo(
+    () =>
+      Object.values(EmploymentType).map((t) => ({
+        value: t,
+        label: t.replace(/_/g, ' '),
+      })),
+    [],
+  )
+  const roleOptions = useMemo(
+    () => roles.map((r) => ({ value: String(r.id), label: r.name })),
+    [roles],
+  )
 
   useEffect(() => {
     ;(async () => {
       const m = await getOrgMastersForEmployeeForm()
-      setMasters(m)
-      if (m.departments[0]) setDepartmentId(m.departments[0].id)
-      if (m.positions[0]) setPositionId(m.positions[0].id)
-      if (m.locations[0]) setLocationId(m.locations[0].id)
-      if (m.shifts[0]) setShiftId(m.shifts[0].id)
+      setMasters({
+        departments: m.departments.map((d) => ({ id: d.id, name: d.name })),
+        positions: m.positions.map((p) => ({ id: p.id, name: p.name })),
+        locations: m.locations.map((l) => ({ id: l.id, name: l.name })),
+        shifts: m.shifts.map((s) => ({ id: s.id, name: s.name })),
+      })
+      if (m.departments[0]) setDepartmentId(String(m.departments[0].id))
+      if (m.positions[0]) setPositionId(String(m.positions[0].id))
+      if (m.locations[0]) setLocationId(String(m.locations[0].id))
+      if (m.shifts[0]) setShiftId(String(m.shifts[0].id))
       const list = await listEmployments({})
       setManagerOptions(list.items.map((e) => ({ id: e.id, name: e.fullName })))
       if (canCreateUser) {
         const r = await listRoles()
         setRoles(r)
         const empRole = r.find((x) => x.name === 'Employee') ?? r[0]
-        if (empRole) setRoleId(empRole.id)
+        if (empRole) setRoleId(String(empRole.id))
       }
     })()
   }, [canCreateUser])
@@ -301,17 +350,14 @@ export function EmployeeCreatePage() {
             />
           </Field>
           <Field label="Primary Role" required>
-            <select
-              className={inputClass}
+            <Select
               value={roleId}
-              onChange={(e) => setRoleId(e.target.value ? Number(e.target.value) : '')}
-            >
-              {roles.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name}
-                </option>
-              ))}
-            </select>
+              onChange={setRoleId}
+              options={roleOptions}
+              placeholder="Select role…"
+              minWidthClass="w-full"
+              aria-label="Primary Role"
+            />
           </Field>
         </section>
         <div className="fixed bottom-0 right-0 left-0 md:left-[var(--shell-left,0)] z-30 bg-surface-container-lowest/95 backdrop-blur-md border-t border-outline-variant px-6 py-4 flex justify-between items-center executive-shadow">
@@ -338,7 +384,6 @@ export function EmployeeCreatePage() {
         <div className="rounded-lg border border-error/30 bg-error/5 px-4 py-3 text-body-sm text-error">{error}</div>
       )}
 
-      {/* Photo upload */}
       <section className="bv-surface p-6">
         <div className="flex flex-col sm:flex-row items-center gap-6">
           <div className="relative group">
@@ -393,13 +438,14 @@ export function EmployeeCreatePage() {
             <input className={inputClass} type="date" value={dob} onChange={(e) => setDob(e.target.value)} />
           </Field>
           <Field label="Gender">
-            <select className={inputClass} value={gender} onChange={(e) => setGender(e.target.value)}>
-              <option value="">Select…</option>
-              <option value="Female">Female</option>
-              <option value="Male">Male</option>
-              <option value="Non-binary">Non-binary</option>
-              <option value="Prefer not to say">Prefer not to say</option>
-            </select>
+            <Select
+              value={gender}
+              onChange={setGender}
+              options={GENDER_OPTIONS}
+              placeholder="Select…"
+              minWidthClass="w-full"
+              aria-label="Gender"
+            />
           </Field>
           <Field label="Nationality">
             <input
@@ -504,82 +550,67 @@ export function EmployeeCreatePage() {
             <input className={cn(inputClass, 'bg-surface-container-low text-on-surface-variant')} value={previewEmpCode} readOnly />
           </Field>
           <Field label="Reporting Manager">
-            <select
-              className={inputClass}
+            <Select
               value={managerId}
-              onChange={(e) => setManagerId(e.target.value ? Number(e.target.value) : '')}
-            >
-              <option value="">Unassigned</option>
-              {managerOptions.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}
-                </option>
-              ))}
-            </select>
+              onChange={setManagerId}
+              options={managerSelectOptions}
+              placeholder="Unassigned"
+              minWidthClass="w-full"
+              aria-label="Reporting Manager"
+            />
           </Field>
           <Field label="Joining Date" required>
             <input className={inputClass} type="date" value={joiningDate} onChange={(e) => setJoiningDate(e.target.value)} />
           </Field>
           <Field label="Employment Type" required>
-            <select className={inputClass} value={employmentType} onChange={(e) => setEmploymentType(e.target.value)}>
-              {Object.values(EmploymentType).map((t) => (
-                <option key={t} value={t}>
-                  {t.replace(/_/g, ' ')}
-                </option>
-              ))}
-            </select>
+            <Select
+              value={employmentType}
+              onChange={setEmploymentType}
+              options={employmentTypeOptions}
+              placeholder="Select type…"
+              minWidthClass="w-full"
+              aria-label="Employment Type"
+            />
           </Field>
           <Field label="Department" required>
-            <select
-              className={inputClass}
+            <Select
               value={departmentId}
-              onChange={(e) => setDepartmentId(e.target.value ? Number(e.target.value) : '')}
-            >
-              {(masters?.departments ?? []).map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
+              onChange={setDepartmentId}
+              options={departmentOptions}
+              placeholder="Select department…"
+              minWidthClass="w-full"
+              aria-label="Department"
+            />
           </Field>
           <Field label="Position" required>
-            <select
-              className={inputClass}
+            <Select
               value={positionId}
-              onChange={(e) => setPositionId(e.target.value ? Number(e.target.value) : '')}
-            >
-              {(masters?.positions ?? []).map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
+              onChange={setPositionId}
+              options={positionOptions}
+              placeholder="Select position…"
+              minWidthClass="w-full"
+              aria-label="Position"
+            />
           </Field>
           <Field label="Location" required>
-            <select
-              className={inputClass}
+            <Select
               value={locationId}
-              onChange={(e) => setLocationId(e.target.value ? Number(e.target.value) : '')}
-            >
-              {(masters?.locations ?? []).map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.name}
-                </option>
-              ))}
-            </select>
+              onChange={setLocationId}
+              options={locationOptions}
+              placeholder="Select location…"
+              minWidthClass="w-full"
+              aria-label="Location"
+            />
           </Field>
           <Field label="Shift" required>
-            <select
-              className={inputClass}
+            <Select
               value={shiftId}
-              onChange={(e) => setShiftId(e.target.value ? Number(e.target.value) : '')}
-            >
-              {(masters?.shifts ?? []).map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.name}
-                </option>
-              ))}
-            </select>
+              onChange={setShiftId}
+              options={shiftOptions}
+              placeholder="Select shift…"
+              minWidthClass="w-full"
+              aria-label="Shift"
+            />
           </Field>
         </div>
       </section>
