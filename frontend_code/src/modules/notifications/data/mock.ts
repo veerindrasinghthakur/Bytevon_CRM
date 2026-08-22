@@ -1,51 +1,12 @@
 import type {
   AppNotification,
+  ChannelCard,
   NotificationTrigger,
   SentNotificationRow,
 } from '../types'
 
-export const notificationKpis = [
-  {
-    id: 'unread',
-    label: 'Unread',
-    value: '12',
-    hint: '-4% from yesterday',
-    hintTone: 'positive' as const,
-    icon: 'mark_email_unread',
-  },
-  {
-    id: 'high',
-    label: 'High Priority',
-    value: '3',
-    hint: 'Requires immediate action',
-    hintTone: 'danger' as const,
-    icon: 'warning',
-  },
-  {
-    id: 'pending',
-    label: 'Pending Actions',
-    value: '8',
-    hint: 'Awaiting your response',
-    hintTone: 'neutral' as const,
-    icon: 'pending_actions',
-  },
-  {
-    id: 'archived',
-    label: 'Archived',
-    value: '156',
-    hint: 'Last 30 days',
-    hintTone: 'neutral' as const,
-    icon: 'inventory_2',
-  },
-  {
-    id: 'today',
-    label: 'Today',
-    value: '24',
-    hint: '+12% vs avg',
-    hintTone: 'positive' as const,
-    icon: 'today',
-  },
-]
+/** Seed KPIs — pages use computeInboxKpis from live items instead. */
+export const notificationKpis = [] as const
 
 export const inboxNotifications: AppNotification[] = [
   {
@@ -61,6 +22,7 @@ export const inboxNotifications: AppNotification[] = [
     tags: ['Pending'],
     actor: 'Sarah Jenkins',
     employeeId: '#EMP-9021',
+    relatedHref: '/approvals/pending',
     note: 'Requesting time off for a family event. I have finalized the Q4 forecast reports and Dave will be covering my active support tickets during this period.',
     meta: [
       { label: 'Status', value: 'Awaiting Approval' },
@@ -92,6 +54,7 @@ export const inboxNotifications: AppNotification[] = [
     timeAgo: '1h ago',
     createdAt: 'Oct 26, 2023 at 08:10 AM',
     icon: 'account_circle',
+    relatedHref: '/sales/clients',
   },
   {
     id: 'n3',
@@ -116,6 +79,7 @@ export const inboxNotifications: AppNotification[] = [
     createdAt: 'Oct 26, 2023 at 03:12 AM',
     icon: 'code',
     tags: ['Urgent'],
+    relatedHref: '/projects/tasks',
   },
   {
     id: 'n5',
@@ -127,6 +91,7 @@ export const inboxNotifications: AppNotification[] = [
     timeAgo: '1d ago',
     createdAt: 'Oct 24, 2023 • 09:12 AM',
     icon: 'verified_user',
+    relatedHref: '/admin/security',
     note: 'Multiple failed login attempts detected for user julian.sterling@bytevon.com from an unrecognized IP address: 192.168.1.45. The system has temporarily locked the account.',
     meta: [
       { label: 'Module', value: 'Security Module' },
@@ -147,6 +112,19 @@ export const inboxNotifications: AppNotification[] = [
         detail: 'Temporary lock applied automatically',
       },
     ],
+  },
+  {
+    id: 'n6',
+    title: 'Mention in task comments',
+    body: '@Alex please review the wireframe package before Friday standup.',
+    module: 'Projects',
+    priority: 'Normal',
+    status: 'Unread',
+    timeAgo: '3h ago',
+    createdAt: 'Oct 26, 2023 at 06:40 AM',
+    icon: 'alternate_email',
+    tags: ['Mention'],
+    relatedHref: '/my-work/tasks',
   },
 ]
 
@@ -195,12 +173,7 @@ export const sentNotifications: SentNotificationRow[] = [
   },
 ]
 
-export const sentKpis = [
-  { id: 'total', label: 'Total Sent', value: '1,248', hint: '+12% from last month', icon: 'send' },
-  { id: 'delivery', label: 'Delivery Rate', value: '99.8%', hint: '', icon: 'check_circle' },
-  { id: 'open', label: 'Open Rate', value: '84%', hint: 'Industry Avg: 22.4%', icon: 'visibility' },
-  { id: 'failed', label: 'Failed Delivery', value: '3', hint: 'Requires Attention', icon: 'error', danger: true },
-]
+export const sentKpis = [] as const
 
 export const notificationTriggers: NotificationTrigger[] = [
   {
@@ -241,7 +214,7 @@ export const notificationTriggers: NotificationTrigger[] = [
   },
 ]
 
-export const channelCards = [
+export const channelCards: ChannelCard[] = [
   {
     id: 'email',
     title: 'Email',
@@ -252,7 +225,7 @@ export const channelCards = [
   {
     id: 'sms',
     title: 'SMS',
-    description: 'Twilio integration for urgent security codes.',
+    description: 'Disabled in V1 — enable later.',
     icon: 'sms',
     enabled: false,
   },
