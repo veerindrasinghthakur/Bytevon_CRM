@@ -1,18 +1,64 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Button } from '@/shared/components/ui/Button'
 import { channelCards, notificationTriggers } from '../data/mock'
 import { cn } from '@/shared/lib/cn'
 
 export function NotificationSettingsPage() {
-  const [channels, setChannels] = useState(
-    Object.fromEntries(channelCards.map((c) => [c.id, c.enabled])) as Record<string, boolean>
+  const initialChannels = useMemo(
+    () => Object.fromEntries(channelCards.map((c) => [c.id, c.enabled])) as Record<string, boolean>,
+    [],
   )
-  const [triggers, setTriggers] = useState(notificationTriggers)
+  const initialTriggers = useMemo(() => notificationTriggers.map((t) => ({ ...t })), [])
+
+  const [channels, setChannels] = useState(initialChannels)
+  const [triggers, setTriggers] = useState(initialTriggers)
   const [freq, setFreq] = useState<'immediate' | 'hourly' | 'daily'>('hourly')
   const [quietOn, setQuietOn] = useState(true)
+  const [quietStart, setQuietStart] = useState('21:00')
+  const [quietEnd, setQuietEnd] = useState('07:00')
+  const [baseline, setBaseline] = useState({
+    channels: initialChannels,
+    triggers: initialTriggers,
+    freq: 'hourly' as const,
+    quietOn: true,
+    quietStart: '21:00',
+    quietEnd: '07:00',
+  })
   const [toast, setToast] = useState<string | null>(null)
 
+  const isDirty = useMemo(() => {
+    if (freq !== baseline.freq) return true
+    if (quietOn !== baseline.quietOn) return true
+    if (quietStart !== baseline.quietStart || quietEnd !== baseline.quietEnd) return true
+    for (const id of Object.keys(channels)) {
+      if (channels[id] !== baseline.channels[id]) return true
+    }
+    if (triggers.length !== baseline.triggers.length) return true
+    for (let i = 0; i < triggers.length; i++) {
+      if (triggers[i].enabled !== baseline.triggers[i]?.enabled) return true
+    }
+    return false
+  }, [channels, triggers, freq, quietOn, quietStart, quietEnd, baseline])
+
+  const discard = () => {
+    setChannels({ ...baseline.channels })
+    setTriggers(baseline.triggers.map((t) => ({ ...t })))
+    setFreq(baseline.freq)
+    setQuietOn(baseline.quietOn)
+    setQuietStart(baseline.quietStart)
+    setQuietEnd(baseline.quietEnd)
+    setToast(null)
+  }
+
   const save = () => {
+    setBaseline({
+      channels: { ...channels },
+      triggers: triggers.map((t) => ({ ...t })),
+      freq,
+      quietOn,
+      quietStart,
+      quietEnd,
+    })
     setToast('Notification settings saved.')
     window.setTimeout(() => setToast(null), 2500)
   }
@@ -26,14 +72,16 @@ export function NotificationSettingsPage() {
             Configure system-wide notification protocols, delivery channels, and trigger-based alerts.
           </p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="outline" size="md">
-            Discard Changes
-          </Button>
-          <Button variant="primary" size="md" onClick={save}>
-            Save Settings
-          </Button>
-        </div>
+        {isDirty && (
+          <div className="flex gap-3">
+            <Button variant="outline" size="md" onClick={discard}>
+              Discard Changes
+            </Button>
+            <Button variant="primary" size="md" onClick={save}>
+              Save Settings
+            </Button>
+          </div>
+        )}
       </div>
 
       {toast && (
@@ -54,7 +102,10 @@ export function NotificationSettingsPage() {
                 <div className="w-12 h-12 bg-primary-container/10 rounded-lg flex items-center justify-center">
                   <span className="material-symbols-outlined text-deep-navy">{c.icon}</span>
                 </div>
-                <Toggle checked={!!channels[c.id]} onChange={() => setChannels((p) => ({ ...p, [c.id]: !p[c.id] }))} />
+                <Toggle
+                  checked={!!channels[c.id]}
+                  onChange={() => setChannels((p) => ({ ...p, [c.id]: !p[c.id] }))}
+                />
               </div>
               <h4 className="text-title-lg font-semibold text-deep-navy mb-1">{c.title}</h4>
               <p className="text-body-sm text-on-surface-variant mb-4">{c.description}</p>
@@ -81,7 +132,7 @@ export function NotificationSettingsPage() {
             <thead>
               <tr className="bg-surface-container-low border-b border-outline-variant">
                 {['Notification Event', 'Channels', 'Recipients', 'Last Triggered', 'Status', ''].map((h) => (
-                  <th key={h} className="py-4 px-6 text-label-md text-on-surface-variant">
+                  <th key={h || 'actions'} className="py-4 px-6 text-label-md text-on-surface-variant">
                     {h}
                   </th>
                 ))}
@@ -98,7 +149,13 @@ export function NotificationSettingsPage() {
                     <div className="flex gap-2 text-on-surface-variant">
                       {t.channels.map((ch) => (
                         <span key={ch} className="material-symbols-outlined text-[20px]" title={ch}>
-                          {ch === 'Email' ? 'mail' : ch === 'SMS' ? 'sms' : ch === 'Push' ? 'ad_units' : 'notification_important'}
+                          {ch === 'Email'
+                            ? 'mail'
+                            : ch === 'SMS'
+                              ? 'sms'
+                              : ch === 'Push'
+                                ? 'ad_units'
+                                : 'notification_important'}
                         </span>
                       ))}
                     </div>
@@ -114,7 +171,7 @@ export function NotificationSettingsPage() {
                       checked={t.enabled}
                       onChange={() =>
                         setTriggers((prev) =>
-                          prev.map((x) => (x.id === t.id ? { ...x, enabled: !x.enabled } : x))
+                          prev.map((x) => (x.id === t.id ? { ...x, enabled: !x.enabled } : x)),
                         )
                       }
                     />
@@ -145,9 +202,21 @@ export function NotificationSettingsPage() {
             <div className="space-y-3">
               {(
                 [
-                  { id: 'immediate' as const, title: 'Immediate Delivery', desc: 'Send triggers the moment they occur.' },
-                  { id: 'hourly' as const, title: 'Hourly Digest', desc: 'Collect notifications and send once per hour.' },
-                  { id: 'daily' as const, title: 'Daily Summary', desc: 'One consolidated report at end of day (18:00).' },
+                  {
+                    id: 'immediate' as const,
+                    title: 'Immediate Delivery',
+                    desc: 'Send triggers the moment they occur.',
+                  },
+                  {
+                    id: 'hourly' as const,
+                    title: 'Hourly Digest',
+                    desc: 'Collect notifications and send once per hour.',
+                  },
+                  {
+                    id: 'daily' as const,
+                    title: 'Daily Summary',
+                    desc: 'One consolidated report at end of day (18:00).',
+                  },
                 ] as const
               ).map((o) => (
                 <label
@@ -156,7 +225,7 @@ export function NotificationSettingsPage() {
                     'flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all',
                     freq === o.id
                       ? 'border-secondary bg-surface-container-high'
-                      : 'border-outline-variant hover:border-secondary bg-surface-container-lowest'
+                      : 'border-outline-variant hover:border-secondary bg-surface-container-lowest',
                   )}
                 >
                   <input
@@ -179,18 +248,30 @@ export function NotificationSettingsPage() {
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h4 className="text-title-lg font-semibold text-deep-navy mb-2">Quiet Hours</h4>
-                <p className="text-body-sm text-on-surface-variant">Suppress non-critical alerts during specified periods.</p>
+                <p className="text-body-sm text-on-surface-variant">
+                  Suppress non-critical alerts during specified periods.
+                </p>
               </div>
               <Toggle checked={quietOn} onChange={() => setQuietOn((v) => !v)} />
             </div>
             <div className={cn('grid grid-cols-2 gap-4', !quietOn && 'opacity-50 pointer-events-none')}>
               <div>
                 <label className="block text-label-md text-deep-navy mb-2">Start Time</label>
-                <input type="time" defaultValue="21:00" className="w-full p-3 bg-surface-container-low border border-outline-variant rounded-lg outline-none focus:ring-2 focus:ring-secondary transition-colors" />
+                <input
+                  type="time"
+                  value={quietStart}
+                  onChange={(e) => setQuietStart(e.target.value)}
+                  className="w-full p-3 bg-surface-container-low border border-outline-variant rounded-lg outline-none focus:ring-2 focus:ring-secondary transition-colors"
+                />
               </div>
               <div>
                 <label className="block text-label-md text-deep-navy mb-2">End Time</label>
-                <input type="time" defaultValue="07:00" className="w-full p-3 bg-surface-container-low border border-outline-variant rounded-lg outline-none focus:ring-2 focus:ring-secondary transition-colors" />
+                <input
+                  type="time"
+                  value={quietEnd}
+                  onChange={(e) => setQuietEnd(e.target.value)}
+                  className="w-full p-3 bg-surface-container-low border border-outline-variant rounded-lg outline-none focus:ring-2 focus:ring-secondary transition-colors"
+                />
               </div>
             </div>
             <div className="mt-6">
@@ -218,12 +299,15 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
       role="switch"
       aria-checked={checked}
       onClick={onChange}
-      className={cn('w-10 h-5 rounded-full relative transition-colors shrink-0', checked ? 'bg-secondary' : 'bg-outline-variant')}
+      className={cn(
+        'w-10 h-5 rounded-full relative transition-colors shrink-0',
+        checked ? 'bg-secondary' : 'bg-outline-variant',
+      )}
     >
       <span
         className={cn(
           'absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform shadow',
-          checked && 'translate-x-5'
+          checked && 'translate-x-5',
         )}
       />
     </button>
