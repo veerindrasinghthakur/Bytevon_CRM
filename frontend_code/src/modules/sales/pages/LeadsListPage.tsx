@@ -2,6 +2,9 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { HEADER_HEIGHT_PX } from '@/shared/components/layout/Header'
 import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
+import { ExportButton } from '@/shared/components/export/ExportButton'
+import { ResourceName } from '@/shared/schema'
 import { useLeadsList } from '../hooks/use-leads-list'
 import type { PipelineStage, LeadPriority, RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
@@ -102,9 +105,18 @@ export function LeadsListPage() {
             <Button variant="outline" leftIcon={<Icon name="upload" className="text-lg" />}>
               Import
             </Button>
-            <Button variant="outline" leftIcon={<Icon name="download" className="text-lg" />}>
-              Export
-            </Button>
+            <ExportButton
+              resource={ResourceName.LEAD}
+              query={search}
+              filters={{
+                status: statusFilter,
+                stage: stageFilter,
+                priority: priorityFilter,
+                source: sourceFilter,
+              }}
+              selectedIds={selectionMode ? Array.from(selectedIds) : undefined}
+              filenameStem="leads"
+            />
             <Button
               variant="primary"
               leftIcon={<Icon name="add" className="text-lg" />}
@@ -178,50 +190,50 @@ export function LeadsListPage() {
             placeholder="Search by name or ID..."
           />
         </div>
-        <select
+        <Select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none"
-        >
-          <option value="All">All Status</option>
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select>
-        <select
+          onChange={setStatusFilter}
+          placeholder="All Status"
+          options={[
+            { value: 'All', label: 'All Status' },
+            { value: 'Active', label: 'Active' },
+            { value: 'Inactive', label: 'Inactive' },
+          ]}
+          minWidthClass="min-w-[130px]"
+        />
+        <Select
           value={stageFilter}
-          onChange={(e) => setStageFilter(e.target.value)}
-          className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none"
-        >
-          <option value="All">All Stages</option>
-          {stages.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
-        <select
+          onChange={setStageFilter}
+          placeholder="All Stages"
+          options={[
+            { value: 'All', label: 'All Stages' },
+            ...stages.map((s) => ({ value: s, label: s })),
+          ]}
+          minWidthClass="min-w-[140px]"
+        />
+        <Select
           value={priorityFilter}
-          onChange={(e) => setPriorityFilter(e.target.value)}
-          className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none"
-        >
-          <option value="All">All Priority</option>
-          {priorities.map((p) => (
-            <option key={p} value={p}>
-              {p}
-            </option>
-          ))}
-        </select>
-        <select
+          onChange={setPriorityFilter}
+          placeholder="All Priority"
+          options={[
+            { value: 'All', label: 'All Priority' },
+            ...priorities.map((p) => ({ value: p, label: p })),
+          ]}
+          minWidthClass="min-w-[130px]"
+        />
+        <Select
           value={sourceFilter}
-          onChange={(e) => setSourceFilter(e.target.value)}
-          className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none"
-        >
-          <option value="All">All Sources</option>
-          <option value="LinkedIn">LinkedIn</option>
-          <option value="Referral">Referral</option>
-          <option value="Website">Website</option>
-          <option value="Direct Referral">Direct Referral</option>
-        </select>
+          onChange={setSourceFilter}
+          placeholder="All Sources"
+          options={[
+            { value: 'All', label: 'All Sources' },
+            { value: 'LinkedIn', label: 'LinkedIn' },
+            { value: 'Referral', label: 'Referral' },
+            { value: 'Website', label: 'Website' },
+            { value: 'Direct Referral', label: 'Direct Referral' },
+          ]}
+          minWidthClass="min-w-[140px]"
+        />
         <button
           type="button"
           className="p-2 text-secondary border border-outline-variant rounded-lg hover:bg-secondary/5"
@@ -242,9 +254,12 @@ export function LeadsListPage() {
           <Button variant="outline" size="sm" onClick={exitSelectionMode}>
             Cancel
           </Button>
-          <Button variant="outline" size="sm">
-            Export selected
-          </Button>
+          <ExportButton
+            resource={ResourceName.LEAD}
+            selectedIds={Array.from(selectedIds)}
+            filenameStem="leads-selected"
+            label="Export selected"
+          />
           <Button variant="primary" size="sm">
             Assign owner
           </Button>
