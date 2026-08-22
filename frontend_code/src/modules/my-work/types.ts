@@ -30,7 +30,7 @@ export interface BreakSession {
   startedAt: string
   /** Minutes when mode is countdown; undefined for stopwatch */
   durationMinutes?: number
-  /** ISO end when stopped or countdown finished */
+  /** ISO end when user stops the break */
   endedAt?: string
   note?: string
 }
@@ -38,7 +38,7 @@ export interface BreakSession {
 export interface TodayAttendanceSession {
   /** ISO date YYYY-MM-DD */
   date: string
-  /** ISO timestamp */
+  /** ISO timestamp — exact check-in time */
   checkInAt: string
   /** ISO timestamp when checked out */
   checkOutAt?: string
@@ -79,6 +79,15 @@ export interface LeaveBalance {
   remaining: number
 }
 
+/** Policy-defined leave type (from leave policies / settings) */
+export interface LeaveTypeOption {
+  id: string
+  name: LeaveType | string
+  code: string
+  annualEntitlement: number
+  description?: string
+}
+
 export interface LeaveRequest {
   id: string
   type: LeaveType
@@ -89,6 +98,7 @@ export interface LeaveRequest {
   status: LeaveStatus
   appliedOn: string
   approver?: string
+  halfDay?: 'start' | 'end' | 'both' | null
 }
 
 export interface MyTask {
@@ -127,4 +137,49 @@ export interface UpcomingEvent {
   month: string
   day: string
   icon: string
+}
+
+export type CorrectionStatus = 'Pending' | 'Approved' | 'Rejected' | 'Draft'
+
+export interface AttendanceCorrectionRequest {
+  id: string
+  date: string
+  originalStatus: string
+  requestedCheckIn: string
+  requestedCheckOut: string
+  reason: string
+  status: CorrectionStatus
+  submittedOn: string
+  approver: string
+  approverId?: string
+}
+
+export interface ApproverOption {
+  id: string
+  name: string
+  title: string
+  department?: string
+}
+
+export type BankAccountType = 'Savings' | 'Current' | 'Salary'
+
+export interface BankDetails {
+  id?: string
+  accountHolderName: string
+  bankName: string
+  accountNumber: string
+  confirmAccountNumber?: string
+  ifscOrRouting: string
+  branchName: string
+  accountType: BankAccountType
+  country: string
+  currency: string
+}
+
+export interface WeekHourBar {
+  day: string
+  hours: number
+  pct: number
+  isToday: boolean
+  isWeekend: boolean
 }

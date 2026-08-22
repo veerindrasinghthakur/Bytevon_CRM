@@ -5,24 +5,30 @@ import {
   getElapsedMs,
   getRemainingMs,
   isBreakRunning,
+  maybeNotifyCountdownComplete,
   subscribeBreakChange,
-  syncCountdownExpiry,
 } from '@/modules/my-work/lib/break-session'
 
-/** Header break chip state — live countdown / elapsed while on break. */
+/** Header break chip — live label only; end-of-break is always user-driven on Take a Break page. */
 export function useHeaderBreak() {
   const [runningLabel, setRunningLabel] = useState<string | null>(null)
 
   useEffect(() => {
     const update = () => {
-      const s = syncCountdownExpiry(getActiveBreak())
+      const s = getActiveBreak()
+      maybeNotifyCountdownComplete(s)
       if (!isBreakRunning(s) || !s) {
         setRunningLabel(null)
         return
       }
       if (s.mode === 'countdown') {
         const rem = getRemainingMs(s)
-        setRunningLabel(rem != null ? formatDuration(rem) : null)
+        // After planned time hits 0, show elapsed overtime instead of 00:00 stuck
+        if (rem === 0) {
+          setRunningLabel(`+${formatDuration(getElapsedMs(s) - (s.durationMinutes ?? 0) * 60_000)}`)
+        } else {
+          setRunningLabel(rem != null ? formatDuration(rem) : null)
+        }
       } else {
         setRunningLabel(formatDuration(getElapsedMs(s)))
       }

@@ -21,7 +21,6 @@ export const executivePending = [
   { name: 'Elena Rossi', detail: 'Training Request • AI Ethics', initials: 'ER' },
 ]
 
-/** ActivityFeed-compatible items for executive dashboard */
 export const executiveActivities = [
   {
     id: 'act-1',
@@ -131,8 +130,9 @@ export const employeeLeaveSummary = [
   },
 ]
 
+/** weekBars: Mon–Sun heights; last two are weekends (muted in UI) */
 export const employeeMeta = {
-  firstName: 'Alex',
+  name: 'Alex',
   employeeId: 'EMP-102',
   department: 'Design Dept',
   todayLabel: 'Oct 24, 2024',
@@ -141,5 +141,13 @@ export const employeeMeta = {
   checkInNote: 'On time',
   totalHours: '4.5h',
   totalHoursNote: '45% of shift',
-  weekBars: [60, 85, 70, 90, 45, 10, 10],
+  weekBars: [
+    { pct: 60, isWeekend: false },
+    { pct: 85, isWeekend: false },
+    { pct: 70, isWeekend: false },
+    { pct: 90, isWeekend: false },
+    { pct: 45, isWeekend: false },
+    { pct: 10, isWeekend: true },
+    { pct: 10, isWeekend: true },
+  ],
 }

@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
+import { cn } from '@/shared/lib/cn'
 import { useEmployeeDashboard } from '../hooks/use-employee-dashboard'
 
-/** Matches HTML: surface-container-lowest + border + executive-shadow + card-hover */
 const card = 'bv-surface card-hover'
 
 export function EmployeeDashboardPage() {
@@ -14,12 +14,15 @@ export function EmployeeDashboardPage() {
     )
   }
 
+  const displayName = 'name' in meta ? (meta as { name: string }).name : (meta as { firstName?: string }).firstName ?? 'there'
+  const weekBars = meta.weekBars as Array<number | { pct: number; isWeekend?: boolean }>
+
   return (
     <div className="space-y-8 animate-fade-in">
       <section className="relative overflow-hidden bg-deep-navy rounded-xl p-8 text-on-primary executive-shadow">
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
-            <h2 className="text-headline-lg font-bold mb-2">Good Morning, {meta.firstName}</h2>
+            <h2 className="text-headline-lg font-bold mb-2">Good Morning, {displayName}</h2>
             <div className="flex flex-wrap gap-3 text-inverse-primary">
               <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full text-label-md">
                 <span className="material-symbols-outlined text-[18px]">badge</span> {meta.employeeId}
@@ -82,7 +85,11 @@ export function EmployeeDashboardPage() {
         <div className={`${card} lg:col-span-2 p-6`}>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-title-lg text-on-background">Attendance Overview</h3>
-            <button type="button" className="text-secondary text-label-md font-bold hover:underline">
+            <button
+              type="button"
+              className="text-secondary text-label-md font-bold hover:underline"
+              onClick={() => navigate({ to: '/my-work/attendance' })}
+            >
               Full Report
             </button>
           </div>
@@ -97,16 +104,30 @@ export function EmployeeDashboardPage() {
               <p className="text-body-lg font-bold text-on-background">{meta.totalHours}</p>
               <span className="text-[10px] text-on-surface-variant">{meta.totalHoursNote}</span>
             </div>
-            <div className="md:col-span-2 h-20 flex items-end gap-1">
-              {meta.weekBars.map((h, i) => (
-                <div
-                  key={i}
-                  className={`flex-1 rounded-t-sm transition-colors ${i === 4 ? 'bg-secondary' : 'bg-secondary/10'} hover:bg-secondary`}
-                  style={{ height: `${h}%` }}
-                />
-              ))}
+            <div className="md:col-span-2 h-24 flex items-end gap-1.5">
+              {weekBars.map((bar, i) => {
+                const pct = typeof bar === 'number' ? bar : bar.pct
+                const isWeekend = typeof bar === 'object' && bar.isWeekend
+                const isToday = i === 4
+                return (
+                  <div
+                    key={i}
+                    className={cn(
+                      'flex-1 rounded-t-sm transition-colors',
+                      isWeekend
+                        ? 'bg-outline-variant/60'
+                        : isToday
+                          ? 'bg-secondary'
+                          : 'bg-secondary/20 hover:bg-secondary/40',
+                    )}
+                    style={{ height: `${Math.max(pct, 4)}%` }}
+                    title={isWeekend ? 'Weekend' : `Day ${i + 1}`}
+                  />
+                )
+              })}
             </div>
           </div>
+          <p className="text-label-sm text-on-surface-variant">Weekly hours · weekends shown in muted color</p>
         </div>
 
         <div className={`${card} p-6 flex flex-col gap-4`}>

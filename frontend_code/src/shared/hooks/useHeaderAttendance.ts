@@ -10,7 +10,7 @@ import { subscribeBreakChange } from '@/modules/my-work/lib/break-session'
 
 /** Header attendance strip — check-in/out + net work hours (excludes breaks). */
 export function useHeaderAttendance() {
-  const [summary, setSummary] = useState<WorkHoursSummary>(() => getWorkHoursSummary())
+  const [summary, setSummary] = useState<WorkHoursSummary | null>(() => getWorkHoursSummary())
 
   useEffect(() => {
     const refresh = () => setSummary(getWorkHoursSummary())
@@ -27,7 +27,8 @@ export function useHeaderAttendance() {
 
   return {
     summary,
-    checkedOut: Boolean(summary.checkOutAt),
+    checkedIn: Boolean(summary?.checkInAt),
+    checkedOut: Boolean(summary?.checkOutAt),
     formatClockTime,
     formatHoursCompact,
   }

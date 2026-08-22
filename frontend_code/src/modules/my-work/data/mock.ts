@@ -1,16 +1,21 @@
 import type {
   ApprovalRequest,
+  ApproverOption,
+  AttendanceCorrectionRequest,
   AttendanceRecord,
+  BankDetails,
   LeaveBalance,
   LeaveRequest,
+  LeaveTypeOption,
   MetricCard,
   MyTask,
   NotificationItem,
   UpcomingEvent,
+  WeekHourBar,
 } from '../types'
 
 export const currentUser = {
-  name: 'Alex',
+  name: 'Alex Rivera',
   employeeId: 'EMP-102',
   department: 'Design Dept',
   todayLabel: 'Oct 24, 2024',
@@ -25,6 +30,7 @@ export const myWorkMetrics: MetricCard[] = [
   { id: 'notif', label: 'Notifications', value: '3', subtitle: 'Unread priority', changeType: 'neutral', icon: 'notifications_active' },
 ]
 
+/** Derived from live session when present; mock fallback for history UI only */
 export const todayAttendance = {
   checkIn: '08:55 AM',
   checkInNote: 'On time',
@@ -32,14 +38,24 @@ export const todayAttendance = {
   totalHoursNote: '45% of shift',
 }
 
-export const weekHours = [
-  { day: 'Mon', hours: 8, pct: 90, isToday: false },
-  { day: 'Tue', hours: 7.5, pct: 85, isToday: false },
-  { day: 'Wed', hours: 8, pct: 90, isToday: false },
-  { day: 'Thu', hours: 6, pct: 70, isToday: false },
-  { day: 'Fri', hours: 4.5, pct: 50, isToday: true },
-  { day: 'Sat', hours: 0, pct: 0, isToday: false },
-  { day: 'Sun', hours: 0, pct: 0, isToday: false },
+/** Week bars — weekends flagged for alternate color in charts */
+export const weekHours: WeekHourBar[] = [
+  { day: 'Mon', hours: 8, pct: 90, isToday: false, isWeekend: false },
+  { day: 'Tue', hours: 7.5, pct: 85, isToday: false, isWeekend: false },
+  { day: 'Wed', hours: 8, pct: 90, isToday: false, isWeekend: false },
+  { day: 'Thu', hours: 6, pct: 70, isToday: false, isWeekend: false },
+  { day: 'Fri', hours: 4.5, pct: 50, isToday: true, isWeekend: false },
+  { day: 'Sat', hours: 0, pct: 0, isToday: false, isWeekend: true },
+  { day: 'Sun', hours: 0, pct: 0, isToday: false, isWeekend: true },
+]
+
+/** Leave types from policies (mock of DB / leave_policies) */
+export const leaveTypeOptions: LeaveTypeOption[] = [
+  { id: 'lt-casual', name: 'Casual', code: 'CASUAL', annualEntitlement: 10, description: 'Personal / unplanned' },
+  { id: 'lt-sick', name: 'Sick', code: 'SICK', annualEntitlement: 8, description: 'Medical' },
+  { id: 'lt-earned', name: 'Earned', code: 'EARNED', annualEntitlement: 12, description: 'Accrued paid leave' },
+  { id: 'lt-unpaid', name: 'Unpaid', code: 'LOSS_OF_PAY', annualEntitlement: 0, description: 'Without pay' },
+  { id: 'lt-comp', name: 'Comp Off', code: 'COMP_OFF', annualEntitlement: 0, description: 'Compensatory off' },
 ]
 
 export const leaveBalances: LeaveBalance[] = [
@@ -245,6 +261,43 @@ export const myApprovals: ApprovalRequest[] = [
     summary: 'Missing receipt attachment',
   },
 ]
+
+/** Default approver = department head; searchable hierarchy for overrides */
+export const approverDirectory: ApproverOption[] = [
+  { id: 'emp-sarah', name: 'Sarah Chen', title: 'Department Head', department: 'Design Dept' },
+  { id: 'emp-robert', name: 'Robert Chen', title: 'Director', department: 'Product' },
+  { id: 'emp-david', name: 'David Wilson', title: 'HR Manager', department: 'People' },
+  { id: 'emp-elena', name: 'Elena Rodriguez', title: 'Finance Lead', department: 'Finance' },
+  { id: 'emp-marcus', name: 'Marcus Chen', title: 'Engineering Manager', department: 'Engineering' },
+]
+
+export const correctionRequestsSeed: AttendanceCorrectionRequest[] = myApprovals
+  .filter((a) => a.type === 'Attendance Correction')
+  .map((a) => ({
+    id: a.id,
+    date: '2026-08-08',
+    originalStatus: 'Half Day',
+    requestedCheckIn: '09:15 AM',
+    requestedCheckOut: '06:00 PM',
+    reason: a.summary ?? '',
+    status: a.status as AttendanceCorrectionRequest['status'],
+    submittedOn: a.submittedOn,
+    approver: 'Sarah Chen',
+    approverId: 'emp-sarah',
+  }))
+
+export const bankDetailsSeed: BankDetails = {
+  id: 'bank-1',
+  accountHolderName: 'Alex Rivera',
+  bankName: 'HDFC Bank',
+  accountNumber: '50100234567890',
+  confirmAccountNumber: '50100234567890',
+  ifscOrRouting: 'HDFC0001234',
+  branchName: 'Koramangala, Bengaluru',
+  accountType: 'Salary',
+  country: 'India',
+  currency: 'INR',
+}
 
 export const recentNotifications: NotificationItem[] = [
   {
