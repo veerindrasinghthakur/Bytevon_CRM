@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
 import { cn } from '@/shared/lib/cn'
 import {
   checkInNow,
@@ -13,10 +14,53 @@ import {
   getWorkHoursSummary,
   subscribeAttendanceChange,
 } from '../lib/attendance-session'
-import { subscribeBreakChange } from '../lib/break-session'
+import {
+  formatDuration,
+  getElapsedMs,
+  getTodayBreaks,
+  subscribeBreakChange,
+} from '../lib/break-session'
 import { currentUser } from '../data/mock'
 
 type WorkStatus = 'Present' | 'WFH' | 'Leave'
+
+type LogRow = {
+  id: string
+  activity: string
+  time: string
+  duration: string
+  statusLabel: string
+  statusTone: 'ok' | 'warn' | 'neutral'
+  location: string
+}
+
+const MANUAL_REASONS = [
+  { value: 'Client Meeting', label: 'Client Meeting' },
+  { value: 'System Issue', label: 'System Issue' },
+  { value: 'Forgot to Log', label: 'Forgot to Log' },
+  { value: 'Travel', label: 'Travel' },
+] as const
+
+function shiftStartToday(): Date {
+  const d = new Date()
+  d.setHours(9, 0, 0, 0)
+  return d
+}
+
+function isOnTime(checkInIso: string): boolean {
+  const inMs = new Date(checkInIso).getTime()
+  const grace = shiftStartToday().getTime() + 15 * 60 * 1000
+  return inMs <= grace
+}
+
+/** Percent of 24h day for timeline marker (0–100). */
+function dayPct(iso: string, now = Date.now()): number {
+  const d = new Date(iso)
+  const start = new Date(d)
+  start.setHours(0, 0, 0, 0)
+  const ms = Math.min(now, d.getTime()) - start.getTime()
+  return Math.min(100, Math.max(0, (ms / 86_400_000) * 100))
+}
 
 export function MarkAttendancePage() {
   const navigate = useNavigate()
@@ -24,6 +68,14 @@ export function MarkAttendancePage() {
   const [status, setStatus] = useState<WorkStatus>('Present')
   const [submitting, setSubmitting] = useState(false)
   const [tick, setTick] = useState(0)
+  const [manualToast, setManualToast] = useState<string | null>(null)
+
+  // Manual attendance entry (correction-style request)
+  const [manualDate, setManualDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [manualReason, setManualReason] = useState<string>('Client Meeting')
+  const [manualIn, setManualIn] = useState('09:00')
+  const [manualOut, setManualOut] = useState('18:00')
+  const [manualNote, setManualNote] = useState('')
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000)
@@ -42,7 +94,8 @@ export function MarkAttendancePage() {
 
   void tick
   const session = getTodayAttendance()
-  const summary = getWorkHoursSummary()
+  const summary = getWorkHoursSummary(now.getTime())
+  const breaks = getTodayBreaks(now.getTime())
   const checkedIn = Boolean(session && !session.checkOutAt)
   const hasSession = Boolean(session)
 
@@ -52,17 +105,84 @@ export function MarkAttendancePage() {
   const displayHours = String(hours % 12 || 12).padStart(2, '0')
   const timeLabel = `${displayHours}:${minutes}`
 
-  const handleCheckIn = async () => {
+  const logRows: LogRow[] = useMemo(() => {
+    const rows: LogRow[] = []
+    if (!session) return rows
+
+    rows.push({
+      id: 'punch-in',
+      activity: 'Punch In',
+      time: formatClockTime(session.checkInAt),
+      duration: '—',
+      statusLabel: isOnTime(session.checkInAt) ? 'On Time' : 'Late',
+      statusTone: isOnTime(session.checkInAt) ? 'ok' : 'warn',
+      location: 'Office WiFi (HQ-GUEST)',
+    })
+
+    for (const b of breaks) {
+      const elapsed = getElapsedMs(b, now.getTime())
+      rows.push({
+        id: b.id,
+        activity: b.endedAt ? 'Break' : 'Break (active)',
+        time: `${formatClockTime(b.startedAt)}${b.endedAt ? ` – ${formatClockTime(b.endedAt)}` : ''}`,
+        duration: formatDuration(elapsed),
+        statusLabel: b.endedAt ? 'Completed' : 'In progress',
+        statusTone: b.endedAt ? 'neutral' : 'warn',
+        location: b.note || '—',
+      })
+    }
+
+    if (session.checkOutAt) {
+      rows.push({
+        id: 'punch-out',
+        activity: 'Punch Out',
+        time: formatClockTime(session.checkOutAt),
+        duration: summary ? formatHoursCompact(summary.netMs) : '—',
+        statusLabel: 'Complete',
+        statusTone: 'ok',
+        location: 'Office WiFi (HQ-GUEST)',
+      })
+    }
+
+    return rows
+  }, [session, breaks, now, summary])
+
+  const markerPct = session ? dayPct(session.checkInAt, now.getTime()) : null
+  const totalLoggedLabel = summary ? formatHoursCompact(summary.netMs) : '0m'
+
+  const handleCheckIn = () => {
     if (status !== 'Present') return
     setSubmitting(true)
     checkInNow()
     setSubmitting(false)
   }
 
-  const handleCheckOut = async () => {
+  const handleCheckOut = () => {
     setSubmitting(true)
     checkOutNow()
     setSubmitting(false)
+  }
+
+  const resetManual = () => {
+    setManualDate(new Date().toISOString().slice(0, 10))
+    setManualReason('Client Meeting')
+    setManualIn('09:00')
+    setManualOut('18:00')
+    setManualNote('')
+  }
+
+  const submitManual = () => {
+    if (!manualDate || !manualNote.trim()) {
+      setManualToast('Date and justification note are required.')
+      window.setTimeout(() => setManualToast(null), 2500)
+      return
+    }
+    // Mock submit — same domain as attendance corrections (HR approval).
+    setManualToast('Manual entry submitted for HR approval.')
+    window.setTimeout(() => {
+      setManualToast(null)
+      navigate({ to: '/my-work/attendance/corrections' })
+    }, 900)
   }
 
   return (
@@ -78,6 +198,12 @@ export function MarkAttendancePage() {
           </div>
         }
       />
+
+      {manualToast && (
+        <div className="rounded-lg border border-secondary/30 bg-secondary/10 px-4 py-3 text-label-md text-secondary">
+          {manualToast}
+        </div>
+      )}
 
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-12 lg:col-span-7 bv-surface p-6 overflow-hidden relative">
@@ -108,7 +234,7 @@ export function MarkAttendancePage() {
                   'flex-1 py-4 rounded-xl font-semibold flex flex-col items-center justify-center gap-1 executive-shadow',
                   hasSession || status !== 'Present'
                     ? 'bg-surface-container text-on-surface-variant opacity-50 cursor-not-allowed'
-                    : 'bg-secondary text-white shadow-secondary/20 hover:opacity-95 cursor-pointer'
+                    : 'bg-secondary text-white shadow-secondary/20 hover:opacity-95 cursor-pointer',
                 )}
               >
                 <span className="material-symbols-outlined text-[32px]" style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -124,7 +250,7 @@ export function MarkAttendancePage() {
                   'flex-1 py-4 rounded-xl font-semibold flex flex-col items-center justify-center gap-1 border border-outline-variant transition-colors',
                   !checkedIn
                     ? 'text-on-surface-variant opacity-50 cursor-not-allowed'
-                    : 'text-on-background hover:bg-surface-container cursor-pointer'
+                    : 'text-on-background hover:bg-surface-container cursor-pointer',
                 )}
               >
                 <span className="material-symbols-outlined text-[32px]">logout</span>
@@ -215,29 +341,51 @@ export function MarkAttendancePage() {
                 </dd>
               </div>
             </dl>
+          </div>
+        </div>
 
-            </div>
-            </div>
-            <div className="col-span-12 bv-surface p-6">
-          <div className="flex justify-between items-center mb-6">
+        {/* Working Hours Log — live from attendance-session + break-session */}
+        <div className="col-span-12 bv-surface p-6">
+          <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
             <h3 className="text-title-lg font-semibold text-on-background">Working Hours Log</h3>
             <div className="text-label-md text-on-surface-variant">
-              Total:{' '}
-              <span className="font-bold text-secondary">{"totalHours"} logged today</span>
+              Total net:{' '}
+              <span className="font-bold text-secondary">{totalLoggedLabel} logged today</span>
             </div>
           </div>
-          <div className="relative h-16 bg-surface-container rounded-full overflow-hidden mb-6 flex">
-            <div className="w-[37%] bg-transparent border-r-2 border-white flex items-center justify-center text-[10px] text-on-surface-variant/40">
-              00:00 – 09:00
+
+          <div className="relative h-16 bg-surface-container rounded-full overflow-hidden mb-6">
+            <div className="absolute inset-0 flex text-[10px] text-on-surface-variant/50 pointer-events-none">
+              <div className="w-[37.5%] border-r border-white/40 flex items-center justify-center">00:00 – 09:00</div>
+              <div className="w-[37.5%] border-r border-white/40 flex items-center justify-center">09:00 – 18:00</div>
+              <div className="flex-1 flex items-center justify-center">18:00 – 24:00</div>
             </div>
-            <div className="w-[5%] bg-secondary/30 border-r-2 border-white flex items-center justify-center text-[10px] font-bold text-secondary">
-              In
-            </div>
-            <div className="flex-1 bg-surface-container-highest/20" />
-            <div className="absolute top-0 bottom-0 left-[42%] w-1 bg-secondary executive-shadow z-10">
-              <div className="absolute -top-1 -left-1 w-3 h-3 bg-secondary rounded-full" />
-            </div>
+            {markerPct != null && (
+              <div
+                className="absolute top-0 bottom-0 w-1 bg-secondary executive-shadow z-10"
+                style={{ left: `${markerPct}%` }}
+              >
+                <div className="absolute -top-1 -left-1 w-3 h-3 bg-secondary rounded-full" />
+                <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] font-bold text-secondary whitespace-nowrap">
+                  In
+                </span>
+              </div>
+            )}
+            {breaks.map((b) => {
+              const startPct = dayPct(b.startedAt, now.getTime())
+              const endPct = b.endedAt ? dayPct(b.endedAt, now.getTime()) : dayPct(now.toISOString(), now.getTime())
+              const width = Math.max(0.5, endPct - startPct)
+              return (
+                <div
+                  key={b.id}
+                  className="absolute top-2 bottom-2 rounded bg-error/70 z-[5]"
+                  style={{ left: `${startPct}%`, width: `${width}%` }}
+                  title={`Break ${formatClockTime(b.startedAt)}`}
+                />
+              )
+            })}
           </div>
+
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead className="text-label-sm text-on-surface-variant border-b border-outline-variant uppercase">
@@ -246,91 +394,120 @@ export function MarkAttendancePage() {
                   <th className="pb-3 font-bold">Time</th>
                   <th className="pb-3 font-bold">Duration</th>
                   <th className="pb-3 font-bold">Status</th>
-                  <th className="pb-3 font-bold">Location</th>
+                  <th className="pb-3 font-bold">Location / Note</th>
                 </tr>
               </thead>
               <tbody className="text-body-sm divide-y divide-outline-variant/30">
-                <tr className="zebra-row">
-                  <td className="py-4 font-medium">Punch In</td>
-                  <td className="py-4">{"todayAttendance.checkIn || '—'"}</td>
-                  <td className="py-4">—</td>
-                  <td className="py-4">
-                    <span className="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-md text-[10px] font-bold uppercase">
-                      On Time
-                    </span>
-                  </td>
-                  <td className="py-4 text-on-surface-variant">Office WiFi (HQ-GUEST)</td>
-                </tr>
+                {logRows.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-on-surface-variant">
+                      No punches yet today. Check in to start the log.
+                    </td>
+                  </tr>
+                ) : (
+                  logRows.map((row) => (
+                    <tr key={row.id} className="zebra-row">
+                      <td className="py-4 font-medium">{row.activity}</td>
+                      <td className="py-4">{row.time}</td>
+                      <td className="py-4">{row.duration}</td>
+                      <td className="py-4">
+                        <span
+                          className={cn(
+                            'px-2 py-1 rounded-md text-[10px] font-bold uppercase',
+                            row.statusTone === 'ok' && 'bg-emerald-100 text-emerald-800',
+                            row.statusTone === 'warn' && 'bg-amber-100 text-amber-800',
+                            row.statusTone === 'neutral' && 'bg-surface-container text-on-surface-variant',
+                          )}
+                        >
+                          {row.statusLabel}
+                        </span>
+                      </td>
+                      <td className="py-4 text-on-surface-variant">{row.location}</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         </div>
-   
 
+        {/* Manual Attendance Entry — state wired; submits as correction-style request */}
         <div className="col-span-12 lg:col-span-8 bv-surface p-6">
           <div className="flex items-center gap-2 mb-2">
             <span className="material-symbols-outlined text-secondary">edit_note</span>
             <h3 className="text-title-lg font-semibold text-on-background">Manual Attendance Entry</h3>
           </div>
           <p className="text-body-sm text-on-surface-variant mb-6">
-            Permitted for off-site client meetings or connectivity issues. Requires HR approval.
+            Permitted for off-site client meetings or connectivity issues. Requires HR approval (same flow as
+            attendance corrections).
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
-              <label className="block text-label-md font-medium text-on-surface-variant">Date</label>
+              <label className="block text-label-md font-medium text-on-surface-variant" htmlFor="manual-date">
+                Date
+              </label>
               <input
+                id="manual-date"
                 type="date"
-                value={"manualDate"}
-                // onChange={(e) => setManualDate(e.target.value)}
+                value={manualDate}
+                onChange={(e) => setManualDate(e.target.value)}
                 className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary outline-none transition-colors"
               />
             </div>
             <div className="space-y-1">
               <label className="block text-label-md font-medium text-on-surface-variant">Reason Category</label>
-              <select
-                value={"manualReason"}
-                // onChange={(e) => setManualReason(e.target.value)}
-                className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary outline-none transition-colors"
-              >
-                <option>Client Meeting</option>
-                <option>System Issue</option>
-                <option>Forgot to Log</option>
-                <option>Travel</option>
-              </select>
+              <Select value={manualReason} onChange={setManualReason} options={[...MANUAL_REASONS]} />
             </div>
             <div className="space-y-1">
-              <label className="block text-label-md font-medium text-on-surface-variant">Time In</label>
+              <label className="block text-label-md font-medium text-on-surface-variant" htmlFor="manual-in">
+                Time In
+              </label>
               <input
+                id="manual-in"
                 type="time"
-                // value={manualIn}
-                // onChange={(e) => setManualIn(e.target.value)}
+                value={manualIn}
+                onChange={(e) => setManualIn(e.target.value)}
                 className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary outline-none transition-colors"
               />
             </div>
             <div className="space-y-1">
-              <label className="block text-label-md font-medium text-on-surface-variant">Time Out</label>
+              <label className="block text-label-md font-medium text-on-surface-variant" htmlFor="manual-out">
+                Time Out
+              </label>
               <input
+                id="manual-out"
                 type="time"
-                // value={manualOut}
-                // onChange={(e) => setManualOut(e.target.value)}
+                value={manualOut}
+                onChange={(e) => setManualOut(e.target.value)}
                 className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary outline-none transition-colors"
               />
             </div>
             <div className="md:col-span-2 space-y-1">
-              <label className="block text-label-md font-medium text-on-surface-variant">Justification Note</label>
+              <label className="block text-label-md font-medium text-on-surface-variant" htmlFor="manual-note">
+                Justification Note
+              </label>
               <textarea
+                id="manual-note"
                 rows={3}
-                // value={manualNote}
-                // onChange={(e) => setManualNote(e.target.value)}
+                value={manualNote}
+                onChange={(e) => setManualNote(e.target.value)}
                 placeholder="Briefly describe the reason for manual entry…"
                 className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary outline-none resize-none transition-colors"
               />
             </div>
             <div className="md:col-span-2 flex justify-end gap-3 mt-2">
-              <Button variant="outline" onClick={() => navigate({ to: '/my-work/attendance' })}>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  resetManual()
+                  navigate({ to: '/my-work/attendance' })
+                }}
+              >
                 Discard
               </Button>
-              <Button variant="primary">Request Approval</Button>
+              <Button variant="primary" onClick={submitManual}>
+                Request Approval
+              </Button>
             </div>
           </div>
         </div>
@@ -364,16 +541,17 @@ export function MarkAttendancePage() {
           </div>
           <div className="mt-6 p-4 bg-white/5 rounded-lg border border-white/10">
             <p className="text-label-sm font-bold mb-2 uppercase opacity-80">Approval Status</p>
-            <div className="flex justify-between items-center">
+            <button
+              type="button"
+              className="w-full flex justify-between items-center text-left hover:opacity-90"
+              onClick={() => navigate({ to: '/my-work/attendance/corrections' })}
+            >
               <span className="text-body-sm">Pending Corrections</span>
-              <span className="px-2 py-0.5 bg-secondary text-white rounded text-[10px] font-bold">
-                2 REQUIRES ACTION
-              </span>
-            </div>
+              <span className="px-2 py-0.5 bg-secondary text-white rounded text-[10px] font-bold">VIEW</span>
+            </button>
           </div>
         </div>
       </div>
     </div>
-    // </div>
   )
 }
