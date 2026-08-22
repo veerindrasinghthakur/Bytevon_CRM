@@ -2,12 +2,17 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
+import { EditButton } from '@/shared/components/ui/EditButton'
+import { Select } from '@/shared/components/ui/Select'
 import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
 import {
   assignEmployeeToDepartment,
   getDepartment,
   listDepartmentEmployees,
   listEmployeesNotInDepartment,
+  listEmploymentOptionsForPicker,
+  removeEmployeeFromDepartment,
+  updateDepartment,
   type DepartmentEmployee,
   type DepartmentListItem,
 } from '../api/departments'
@@ -35,15 +40,26 @@ export function DepartmentDetailPage() {
   const [selectedEmp, setSelectedEmp] = useState('')
   const [saving, setSaving] = useState(false)
 
+  // Edit mode
+  const [isEditing, setIsEditing] = useState(false)
+  const [draftName, setDraftName] = useState('')
+  const [draftHeadId, setDraftHeadId] = useState<string>('')
+  const [headPickerOpen, setHeadPickerOpen] = useState(false)
+  const [headOptions, setHeadOptions] = useState<{ value: string; label: string }[]>([])
+
+  // Remove confirmation
+  const [removeTarget, setRemoveTarget] = useState<DepartmentEmployee | null>(null)
+
   const openPositions = Math.max(0, (d as DepartmentListItem & { openPositions?: number })?.openPositions ?? 0)
 
   const reload = async () => {
-    const [dept, employees] = await Promise.all([
-      getDepartment(id),
-      listDepartmentEmployees(id),
-    ])
+    const [dept, employees] = await Promise.all([getDepartment(id), listDepartmentEmployees(id)])
     setD(dept)
     setStaff(employees)
+    if (dept) {
+      setDraftName(dept.name)
+      setDraftHeadId(dept.headEmploymentId != null ? String(dept.headEmploymentId) : '')
+    }
   }
 
   useEffect(() => {
@@ -58,6 +74,49 @@ export function DepartmentDetailPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
+
+  const startEdit = async () => {
+    if (!d) return
+    setDraftName(d.name)
+    setDraftHeadId(d.headEmploymentId != null ? String(d.headEmploymentId) : '')
+    setIsEditing(true)
+    // Prefer current staff as head candidates; fall back to full directory
+    const fromStaff = staff.map((e) => ({
+      value: String(e.employmentId),
+      label: `${e.name} (${e.employeeCode})`,
+    }))
+    if (fromStaff.length > 0) {
+      setHeadOptions(fromStaff)
+    } else {
+      const all = await listEmploymentOptionsForPicker()
+      setHeadOptions(all.map((o) => ({ value: o.value, label: o.label })))
+    }
+  }
+
+  const cancelEdit = () => {
+    if (d) {
+      setDraftName(d.name)
+      setDraftHeadId(d.headEmploymentId != null ? String(d.headEmploymentId) : '')
+    }
+    setIsEditing(false)
+    setHeadPickerOpen(false)
+  }
+
+  const saveEdit = async () => {
+    if (!d) return
+    setSaving(true)
+    try {
+      await updateDepartment(id, {
+        name: draftName.trim() || d.name,
+        headEmploymentId: draftHeadId ? Number(draftHeadId) : null,
+      })
+      await reload()
+      setIsEditing(false)
+      setHeadPickerOpen(false)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const openAdd = async () => {
     setMode('choose')
@@ -83,6 +142,18 @@ export function DepartmentDetailPage() {
     }
   }
 
+  const confirmRemove = async () => {
+    if (!removeTarget) return
+    setSaving(true)
+    try {
+      await removeEmployeeFromDepartment(removeTarget.employmentId, id)
+      await reload()
+      setRemoveTarget(null)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   if (loading) {
     return <div className="p-12 text-center text-on-surface-variant animate-fade-in">Loading department…</div>
   }
@@ -96,7 +167,16 @@ export function DepartmentDetailPage() {
     )
   }
 
-  const headEmployee = staff.find((e) => e.name === d.headName) ?? staff[0]
+  const headEmployee =
+    staff.find((e) => e.employmentId === d.headEmploymentId) ??
+    staff.find((e) => e.name === d.headName) ??
+    null
+
+  const displayName = isEditing ? draftName : d.name
+  const displayHeadName = isEditing
+    ? headOptions.find((o) => o.value === draftHeadId)?.label?.replace(/\s*\(.*\)$/, '') ??
+      (draftHeadId ? d.headName : 'Unassigned')
+    : d.headName || 'Unassigned'
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -105,7 +185,15 @@ export function DepartmentDetailPage() {
         <DynamicRouteCrumbs className="mt-2 mb-3" lastLabel={d.name} />
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-headline-lg text-on-background">{d.name}</h1>
+            {isEditing ? (
+              <input
+                value={draftName}
+                onChange={(e) => setDraftName(e.target.value)}
+                className="text-headline-lg font-bold text-on-background bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-1 focus:outline-none focus:ring-2 focus:ring-secondary"
+              />
+            ) : (
+              <h1 className="text-headline-lg text-on-background">{displayName}</h1>
+            )}
             <span className="px-3 py-1 bg-surface-container-highest text-secondary text-label-sm rounded-full">
               {d.code}
             </span>
@@ -118,17 +206,24 @@ export function DepartmentDetailPage() {
               {d.status}
             </span>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              leftIcon={<Icon name="edit" />}
-              onClick={() => navigate({ to: '/workforce/departments/new' })}
-            >
-              Edit Department
-            </Button>
-            <Button variant="primary" leftIcon={<Icon name="person_add" />} onClick={() => void openAdd()}>
-              Add Member
-            </Button>
+          <div className="flex gap-2 flex-wrap">
+            {isEditing ? (
+              <>
+                <Button variant="ghost" onClick={cancelEdit} disabled={saving}>
+                  Cancel
+                </Button>
+                <Button variant="primary" onClick={() => void saveEdit()} isLoading={saving}>
+                  Save
+                </Button>
+              </>
+            ) : (
+              <>
+                <EditButton onClick={() => void startEdit()} label="Edit Department" />
+                <Button variant="primary" leftIcon={<Icon name="person_add" />} onClick={() => void openAdd()}>
+                  Add Member
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -153,18 +248,50 @@ export function DepartmentDetailPage() {
         )}
         <div className="bv-surface card-hover p-6 transition-all hover:-translate-y-0.5">
           <p className="text-on-surface-variant text-label-md mb-2">Department Head</p>
-          <p className="text-title-lg font-bold">{d.headName || '—'}</p>
+          <p className="text-title-lg font-bold">{displayHeadName || '—'}</p>
         </div>
       </div>
 
       {/* Head section */}
       <section className="bv-surface p-6 card-hover">
-        <h3 className="text-title-md font-semibold mb-4 flex items-center gap-2">
-          <Icon name="star" className="text-amber-500" /> Department Head
-        </h3>
+        <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
+          <h3 className="text-title-md font-semibold flex items-center gap-2">
+            <Icon name="star" className="text-amber-500" /> Department Head
+          </h3>
+          {isEditing && (
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<Icon name="swap_horiz" />}
+              onClick={() => setHeadPickerOpen((o) => !o)}
+            >
+              {headPickerOpen ? 'Hide picker' : 'Change head'}
+            </Button>
+          )}
+        </div>
+
+        {isEditing && headPickerOpen && (
+          <div className="mb-4 p-4 rounded-xl border border-outline-variant bg-surface-container-low space-y-3">
+            <Select
+              label="Select department head"
+              value={draftHeadId}
+              onChange={setDraftHeadId}
+              options={[
+                { value: '', label: 'Unassigned' },
+                ...headOptions,
+              ]}
+              placeholder="Choose employee…"
+              minWidthClass="min-w-full"
+            />
+            <p className="text-xs text-on-surface-variant">
+              Head is stored on the department record. Prefer someone currently in this department.
+            </p>
+          </div>
+        )}
+
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-xl font-bold">
-            {(d.headName || '?')
+            {(displayHeadName || '?')
               .split(' ')
               .map((p) => p[0])
               .join('')
@@ -172,15 +299,15 @@ export function DepartmentDetailPage() {
               .toUpperCase()}
           </div>
           <div className="flex-1">
-            <p className="text-lg font-bold text-on-background">{d.headName || 'Unassigned'}</p>
+            <p className="text-lg font-bold text-on-background">{displayHeadName || 'Unassigned'}</p>
             <p className="text-sm text-on-surface-variant">
-              {headEmployee?.positionName ?? 'Department Lead'} · {d.name}
+              {headEmployee?.positionName ?? 'Department Lead'} · {displayName}
             </p>
             {headEmployee?.email && (
               <p className="text-xs text-on-surface-variant mt-1">{headEmployee.email}</p>
             )}
           </div>
-          {headEmployee && (
+          {headEmployee && !isEditing && (
             <Button
               variant="outline"
               size="sm"
@@ -208,9 +335,11 @@ export function DepartmentDetailPage() {
           <div className="bv-surface p-12 text-center text-on-surface-variant space-y-3">
             <Icon name="group_off" className="text-5xl" />
             <p>No employees assigned yet.</p>
-            <Button variant="primary" size="sm" onClick={() => void openAdd()}>
-              Add Member
-            </Button>
+            {!isEditing && (
+              <Button variant="primary" size="sm" onClick={() => void openAdd()}>
+                Add Member
+              </Button>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
@@ -221,53 +350,73 @@ export function DepartmentDetailPage() {
                 .join('')
                 .slice(0, 2)
                 .toUpperCase()
-              const isHead = e.name === d.headName
+              const isHead =
+                e.employmentId === d.headEmploymentId ||
+                e.name === d.headName ||
+                (isEditing && draftHeadId === String(e.employmentId))
               return (
-                <button
+                <div
                   key={e.employmentId}
-                  type="button"
-                  className="bv-surface p-5 text-left card-hover transition-all hover:-translate-y-1 hover:border-secondary/40 group"
-                  onClick={() =>
-                    navigate({
-                      to: '/workforce/employees/$employeeId',
-                      params: { employeeId: String(e.employmentId) },
-                    })
-                  }
+                  className="bv-surface p-5 text-left card-hover transition-all hover:-translate-y-1 hover:border-secondary/40 group relative"
                 >
-                  <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-full bg-secondary/15 text-secondary flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
-                      {initials}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-on-background truncate flex items-center gap-1">
-                        {e.name}
-                        {isHead && (
-                          <Icon name="star" className="text-amber-500 text-base" />
-                        )}
-                      </p>
-                      <p className="text-sm text-on-surface-variant truncate">{e.positionName}</p>
-                      <div className="flex flex-wrap gap-1.5 mt-2">
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant">
-                          {e.employeeCode}
-                        </span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-secondary/10 text-secondary">
-                          {e.state.replace(/_/g, ' ')}
-                        </span>
-                        {isHead && (
-                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
-                            Head
+                  {isEditing && (
+                    <button
+                      type="button"
+                      className="absolute top-3 right-3 w-8 h-8 rounded-full bg-error/10 text-error hover:bg-error hover:text-white flex items-center justify-center transition-colors z-10"
+                      aria-label={`Remove ${e.name}`}
+                      onClick={(ev) => {
+                        ev.stopPropagation()
+                        setRemoveTarget(e)
+                      }}
+                    >
+                      <Icon name="remove" className="text-lg" />
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    className="w-full text-left"
+                    onClick={() => {
+                      if (isEditing) return
+                      navigate({
+                        to: '/workforce/employees/$employeeId',
+                        params: { employeeId: String(e.employmentId) },
+                      })
+                    }}
+                  >
+                    <div className="flex items-start gap-3 pr-8">
+                      <div className="w-12 h-12 rounded-full bg-secondary/15 text-secondary flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
+                        {initials}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-on-background truncate flex items-center gap-1">
+                          {e.name}
+                          {isHead && <Icon name="star" className="text-amber-500 text-base" />}
+                        </p>
+                        <p className="text-sm text-on-surface-variant truncate">{e.positionName}</p>
+                        <div className="flex flex-wrap gap-1.5 mt-2">
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant">
+                            {e.employeeCode}
                           </span>
-                        )}
+                          <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-secondary/10 text-secondary">
+                            {e.state.replace(/_/g, ' ')}
+                          </span>
+                          {isHead && (
+                            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                              Head
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </button>
+                  </button>
+                </div>
               )
             })}
           </div>
         )}
       </div>
 
+      {/* Add member modal */}
       {addOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <button
@@ -355,6 +504,50 @@ export function DepartmentDetailPage() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Remove confirmation */}
+      {removeTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <button
+            type="button"
+            className="absolute inset-0 bg-on-surface/40 backdrop-blur-sm"
+            aria-label="Close"
+            onClick={() => setRemoveTarget(null)}
+          />
+          <div className="relative bv-surface executive-shadow w-full max-w-md p-6 space-y-4 z-10 rounded-xl animate-slide-up">
+            <div className="flex items-start gap-3">
+              <span className="w-10 h-10 rounded-full bg-error/10 text-error flex items-center justify-center shrink-0">
+                <Icon name="warning" />
+              </span>
+              <div>
+                <h3 className="text-title-lg font-semibold text-on-background">Remove from department?</h3>
+                <p className="text-body-sm text-on-surface-variant mt-2">
+                  <strong>{removeTarget.name}</strong> will no longer be assigned to{' '}
+                  <strong>{d.name}</strong>. Their assignment history is closed (not deleted).
+                  {removeTarget.employmentId === d.headEmploymentId && (
+                    <span className="block mt-1 text-amber-700">
+                      This person is the department head — head will be cleared.
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="ghost" onClick={() => setRemoveTarget(null)} disabled={saving}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                className="!bg-error !text-white hover:!bg-error/90"
+                isLoading={saving}
+                onClick={() => void confirmRemove()}
+              >
+                Remove
+              </Button>
+            </div>
           </div>
         </div>
       )}
