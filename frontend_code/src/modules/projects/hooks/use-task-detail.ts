@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { useTask, useUpdateTask } from './use-tasks'
 import type { TaskPriority, TaskStatus } from '../types'
@@ -11,25 +12,25 @@ export interface TaskDetailDraft {
   dueDate: string
 }
 
+const empty: TaskDetailDraft = {
+  title: '',
+  description: '',
+  priority: 'MEDIUM',
+  status: 'TODO',
+  assigneeName: '',
+  dueDate: '',
+}
+
 export function useTaskDetail(taskId: number | undefined) {
   const query = useTask(taskId)
   const updateMutation = useUpdateTask()
   const task = query.data ?? null
-
-  const edit = useEditMode<TaskDetailDraft>({
-    initial: {
-      title: '',
-      description: '',
-      priority: 'MEDIUM',
-      status: 'TODO',
-      assigneeName: '',
-      dueDate: '',
-    },
-  })
+  const { isEditing, startEditing: setEditingTrue, cancelEditing, finishEditing } = useEditMode()
+  const [draft, setDraft] = useState<TaskDetailDraft>(empty)
 
   const startEditing = () => {
     if (!task) return
-    edit.startEditing({
+    setDraft({
       title: task.title,
       description: task.description ?? '',
       priority: task.priority,
@@ -37,11 +38,12 @@ export function useTaskDetail(taskId: number | undefined) {
       assigneeName: task.assigneeName ?? '',
       dueDate: task.dueDate ?? '',
     })
+    setEditingTrue()
   }
 
   const cancelEdit = () => {
     if (task) {
-      edit.reset({
+      setDraft({
         title: task.title,
         description: task.description ?? '',
         priority: task.priority,
@@ -50,7 +52,7 @@ export function useTaskDetail(taskId: number | undefined) {
         dueDate: task.dueDate ?? '',
       })
     }
-    edit.stopEditing()
+    cancelEditing()
   }
 
   const save = async () => {
@@ -58,15 +60,15 @@ export function useTaskDetail(taskId: number | undefined) {
     await updateMutation.mutateAsync({
       id: task.id,
       patch: {
-        title: edit.draft.title,
-        description: edit.draft.description,
-        priority: edit.draft.priority,
-        status: edit.draft.status,
-        assigneeName: edit.draft.assigneeName || undefined,
-        dueDate: edit.draft.dueDate || null,
+        title: draft.title,
+        description: draft.description,
+        priority: draft.priority,
+        status: draft.status,
+        assigneeName: draft.assigneeName || undefined,
+        dueDate: draft.dueDate || null,
       },
     })
-    edit.stopEditing()
+    finishEditing()
     void query.refetch()
   }
 
@@ -75,7 +77,9 @@ export function useTaskDetail(taskId: number | undefined) {
     isLoading: query.isLoading,
     isError: query.isError,
     refetch: () => void query.refetch(),
-    edit,
+    isEditing,
+    draft,
+    setDraft,
     startEditing,
     cancelEdit,
     save,

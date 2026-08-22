@@ -22,23 +22,22 @@ export interface TeamDetailDraft {
   status: TeamStatus
 }
 
+const empty: TeamDetailDraft = {
+  name: '',
+  description: '',
+  department: '',
+  headName: '',
+  headRole: '',
+  status: 'ACTIVE',
+}
+
 export function useTeamDetail(teamId: number | undefined) {
   const query = useTeam(teamId)
   const { data: projectsData } = useProjects({})
   const updateMutation = useUpdateTeam()
   const team = query.data ?? null
-
-  const edit = useEditMode<TeamDetailDraft>({
-    initial: {
-      name: '',
-      description: '',
-      department: '',
-      headName: '',
-      headRole: '',
-      status: 'ACTIVE',
-    },
-  })
-
+  const { isEditing, startEditing: setEditingTrue, cancelEditing, finishEditing } = useEditMode()
+  const [draft, setDraft] = useState<TeamDetailDraft>(empty)
   const [members, setMembers] = useState<TeamMemberRow[]>([])
   const [addMemberOpen, setAddMemberOpen] = useState(false)
   const [empOptions, setEmpOptions] = useState<{ value: string; label: string; meta?: string }[]>([])
@@ -48,7 +47,7 @@ export function useTeamDetail(teamId: number | undefined) {
 
   useEffect(() => {
     if (!team) return
-    edit.reset({
+    setDraft({
       name: team.name,
       description: team.description ?? '',
       department: team.department ?? '',
@@ -85,7 +84,6 @@ export function useTeamDetail(teamId: number | undefined) {
         }))
       setMembers([...seed, ...others])
     })
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- seed once per team id
   }, [team?.id])
 
   const memberIds = useMemo(() => new Set(members.map((m) => String(m.employmentId))), [members])
@@ -93,7 +91,7 @@ export function useTeamDetail(teamId: number | undefined) {
 
   const startEditing = () => {
     if (!team) return
-    edit.startEditing({
+    setDraft({
       name: team.name,
       description: team.description ?? '',
       department: team.department ?? '',
@@ -101,11 +99,12 @@ export function useTeamDetail(teamId: number | undefined) {
       headRole: team.headRole ?? '',
       status: team.status,
     })
+    setEditingTrue()
   }
 
   const cancelEdit = () => {
     if (team) {
-      edit.reset({
+      setDraft({
         name: team.name,
         description: team.description ?? '',
         department: team.department ?? '',
@@ -114,7 +113,7 @@ export function useTeamDetail(teamId: number | undefined) {
         status: team.status,
       })
     }
-    edit.stopEditing()
+    cancelEditing()
   }
 
   const save = async () => {
@@ -122,15 +121,15 @@ export function useTeamDetail(teamId: number | undefined) {
     await updateMutation.mutateAsync({
       id: team.id,
       patch: {
-        name: edit.draft.name,
-        description: edit.draft.description,
-        department: edit.draft.department,
-        headName: edit.draft.headName || undefined,
-        headRole: edit.draft.headRole || undefined,
-        status: edit.draft.status,
+        name: draft.name,
+        description: draft.description,
+        department: draft.department,
+        headName: draft.headName || undefined,
+        headRole: draft.headRole || undefined,
+        status: draft.status,
       },
     })
-    edit.stopEditing()
+    finishEditing()
     void query.refetch()
   }
 
@@ -160,7 +159,9 @@ export function useTeamDetail(teamId: number | undefined) {
     isLoading: query.isLoading,
     isError: query.isError,
     refetch: () => void query.refetch(),
-    edit,
+    isEditing,
+    draft,
+    setDraft,
     startEditing,
     cancelEdit,
     save,

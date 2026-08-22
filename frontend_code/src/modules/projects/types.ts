@@ -78,6 +78,8 @@ export interface ProjectDocument {
   uploadedBy: string
   uploadedAt: string
   url?: string
+  referenceType?: string
+  referenceId?: number
 }
 
 export interface ProjectNote {

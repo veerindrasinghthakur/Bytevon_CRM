@@ -3,7 +3,6 @@ import { useEditMode } from '@/shared/hooks/useEditMode'
 import { useProject, useUpdateProject } from './use-projects'
 import { useTasks } from './use-tasks'
 import type { ProjectDetail } from '../schemas/project'
-import type { TaskStatus } from '../types'
 
 export type ProjectDetailTab =
   | 'overview'
@@ -30,39 +29,39 @@ function toDraft(p: ProjectDetail): ProjectDetailDraft {
   }
 }
 
-export function useProjectDetail(projectId: number | undefined, initialTab: ProjectDetailTab = 'overview') {
+const emptyDraft: ProjectDetailDraft = {
+  name: '',
+  description: '',
+  clientName: '',
+  repositoryUrl: '',
+}
+
+export function useProjectDetail(
+  projectId: number | undefined,
+  initialTab: ProjectDetailTab = 'overview',
+) {
   const query = useProject(projectId)
   const tasksQuery = useTasks(projectId != null ? { projectId } : undefined)
   const updateMutation = useUpdateProject()
+  const { isEditing, startEditing: setEditingTrue, cancelEditing, finishEditing } = useEditMode()
 
   const [tab, setTab] = useState<ProjectDetailTab>(initialTab)
   const [taskStatusFilter, setTaskStatusFilter] = useState('')
   const [taskSearch, setTaskSearch] = useState('')
   const [createTaskOpen, setCreateTaskOpen] = useState(false)
+  const [draft, setDraft] = useState<ProjectDetailDraft>(emptyDraft)
 
-  const edit = useEditMode<ProjectDetailDraft>({
-    initial: {
-      name: '',
-      description: '',
-      clientName: '',
-      repositoryUrl: '',
-    },
-  })
-
-  // Seed draft when project loads / edit starts
   const project = query.data ?? null
-  if (project && !edit.isEditing && edit.draft.name === '' && project.name) {
-    // lightweight seed on first paint without effect — callers call seedOnLoad
-  }
-
-  const seedFromProject = () => {
-    if (project) edit.reset(toDraft(project))
-  }
 
   const startEditing = () => {
-    if (project) {
-      edit.startEditing(toDraft(project))
-    }
+    if (!project) return
+    setDraft(toDraft(project))
+    setEditingTrue()
+  }
+
+  const cancelEdit = () => {
+    if (project) setDraft(toDraft(project))
+    cancelEditing()
   }
 
   const save = async () => {
@@ -70,13 +69,13 @@ export function useProjectDetail(projectId: number | undefined, initialTab: Proj
     await updateMutation.mutateAsync({
       id: project.id,
       patch: {
-        name: edit.draft.name,
-        description: edit.draft.description,
-        clientName: edit.draft.clientName,
-        repositoryUrl: edit.draft.repositoryUrl || null,
+        name: draft.name,
+        description: draft.description,
+        clientName: draft.clientName,
+        repositoryUrl: draft.repositoryUrl || null,
       },
     })
-    edit.stopEditing()
+    finishEditing()
   }
 
   const tasks = tasksQuery.data?.items ?? []
@@ -112,19 +111,18 @@ export function useProjectDetail(projectId: number | undefined, initialTab: Proj
     tasksLoading: tasksQuery.isLoading,
     filteredTasks,
     taskStatusFilter,
-    setTaskStatusFilter: setTaskStatusFilter as (v: string) => void,
+    setTaskStatusFilter,
     taskSearch,
     setTaskSearch,
     openTasks,
     progress,
     daysToDeadline,
-    edit,
+    isEditing,
+    draft,
+    setDraft,
     startEditing,
     save,
-    cancelEdit: () => {
-      seedFromProject()
-      edit.stopEditing()
-    },
+    cancelEdit,
     isSaving: updateMutation.isPending,
     createTaskOpen,
     setCreateTaskOpen,
@@ -136,6 +134,6 @@ export function useProjectDetail(projectId: number | undefined, initialTab: Proj
       { value: 'DONE', label: 'Done' },
       { value: 'BLOCKED', label: 'Blocked' },
       { value: 'ON_HOLD', label: 'On hold' },
-    ] as { value: TaskStatus | ''; label: string }[],
+    ],
   }
 }
