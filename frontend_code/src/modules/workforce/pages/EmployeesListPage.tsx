@@ -4,8 +4,10 @@ import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { ExportButton } from '@/shared/components/export/ExportButton'
+import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { useListSelection } from '@/shared/hooks/useListSelection'
 import { Can } from '@/shared/rbac'
 import { Action, ResourceName } from '@/shared/schema'
 import { useEmployeesList } from '../hooks/use-employees-list'
@@ -53,10 +55,19 @@ export function EmployeesListPage() {
     reload,
   } = useEmployeesList()
 
-  if (loading) {
-    return <PageLoadingSkeleton />
+  const selection = useListSelection({
+    items: filtered,
+    getId: (e) => String(e.id),
+  })
+
+  const goDetail = (id: number) => {
+    navigate({
+      to: '/workforce/employees/$employeeId',
+      params: { employeeId: String(id) },
+    })
   }
 
+  if (loading) return <PageLoadingSkeleton />
   if (error) {
     return (
       <ErrorState
@@ -78,6 +89,7 @@ export function EmployeesListPage() {
               resource={ResourceName.EMPLOYMENT}
               query={search}
               filters={{ department: deptFilter, state: stateFilter, type: typeFilter }}
+              selectedIds={selection.selectionMode ? Array.from(selection.selectedIds) : undefined}
               filenameStem="employees"
             />
             <Can action={Action.CREATE} resource={ResourceName.EMPLOYMENT}>
@@ -99,12 +111,24 @@ export function EmployeesListPage() {
         <MetricCard label="Archived" value={metrics.archived} icon="archive" />
       </div>
 
+      {selection.selectionMode && (
+        <BulkSelectionBar
+          selectedCount={selection.selectedCount}
+          filteredCount={filtered.length}
+          onCancel={selection.exitSelectionMode}
+        >
+          <ExportButton
+            resource={ResourceName.EMPLOYMENT}
+            selectedIds={Array.from(selection.selectedIds)}
+            filenameStem="employees-selected"
+            label="Export selected"
+          />
+        </BulkSelectionBar>
+      )}
+
       <div className="bv-surface p-4 flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[220px]">
-          <Icon
-            name="person_search"
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg"
-          />
+          <Icon name="person_search" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -151,25 +175,26 @@ export function EmployeesListPage() {
           <div className="p-12 text-center space-y-3">
             <Icon name="person_search" className="text-4xl text-on-surface-variant" />
             <p className="text-title-lg font-semibold">No employees found</p>
-            <p className="text-body-sm text-on-surface-variant">
-              Try adjusting filters or add a new team member.
-            </p>
-            <div className="flex justify-center gap-2">
-              <Button variant="outline" onClick={resetFilters}>
-                Clear Filters
-              </Button>
-              <Can action={Action.CREATE} resource={ResourceName.EMPLOYMENT}>
-                <Button variant="primary" onClick={() => navigate({ to: '/workforce/employees/new' })}>
-                  Add Employee
-                </Button>
-              </Can>
-            </div>
+            <p className="text-body-sm text-on-surface-variant">Try adjusting filters or add a new team member.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-surface-container-low border-b border-outline-variant">
+                  <th className="px-3 py-3 w-12 text-center">
+                    {selection.selectionMode ? (
+                      <input
+                        type="checkbox"
+                        className="rounded border-outline-variant text-secondary"
+                        checked={selection.allFilteredSelected}
+                        onChange={selection.toggleSelectAllFiltered}
+                        aria-label="Select all filtered employees"
+                      />
+                    ) : (
+                      <span className="sr-only">Select</span>
+                    )}
+                  </th>
                   <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Employee</th>
                   <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Department</th>
                   <th className="px-4 py-3 text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Position</th>
@@ -180,73 +205,103 @@ export function EmployeesListPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/30">
-                {filtered.map((emp) => (
-                  <tr
-                    key={emp.id}
-                    className="cursor-pointer group zebra-row"
-                    onClick={() =>
-                      navigate({
-                        to: '/workforce/employees/$employeeId',
-                        params: { employeeId: String(emp.id) },
-                      })
-                    }
-                  >
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
-                          {emp.avatarInitials}
-                        </div>
-                        <div>
-                          <p className="font-bold text-on-surface group-hover:text-secondary">{emp.fullName}</p>
-                          <p className="text-label-sm text-on-surface-variant">
-                            {emp.employee_code}
-                            {emp.email ? ` · ${emp.email}` : ''}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 text-body-md">{emp.departmentName}</td>
-                    <td className="px-4 py-4 text-body-md">{emp.positionName}</td>
-                    <td className="px-4 py-4 text-body-md">{emp.employment_type.replace(/_/g, ' ')}</td>
-                    <td className="px-4 py-4">
-                      <span
-                        className={cn(
-                          'inline-flex px-2.5 py-0.5 rounded-full text-label-sm font-bold border',
-                          stateStyles[emp.current_state] ?? 'bg-surface-container',
-                        )}
-                      >
-                        {emp.current_state.replace(/_/g, ' ')}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4">
-                      {emp.hasLogin ? (
-                        <span className="text-label-sm text-emerald-700 font-medium">Yes</span>
-                      ) : (
-                        <span className="text-label-sm text-amber-700 font-medium">No login</span>
+                {filtered.map((emp) => {
+                  const sid = String(emp.id)
+                  const isSelected = selection.isSelected(sid)
+                  return (
+                    <tr
+                      key={emp.id}
+                      className={cn(
+                        'cursor-pointer group select-none',
+                        isSelected ? 'bg-secondary/10' : 'zebra-row',
                       )}
-                    </td>
-                    <td className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors"
-                        onClick={() =>
-                          navigate({
-                            to: '/workforce/employees/$employeeId',
-                            params: { employeeId: String(emp.id) },
-                          })
-                        }
+                      onMouseDown={() => selection.onRowPressStart(sid)}
+                      onMouseUp={() => selection.onRowPressEnd(sid, () => goDetail(emp.id))}
+                      onMouseLeave={selection.onRowPressCancel}
+                      onTouchStart={() => selection.onRowPressStart(sid)}
+                      onTouchEnd={() => selection.onRowPressEnd(sid, () => goDetail(emp.id))}
+                      onTouchCancel={selection.onRowPressCancel}
+                      onContextMenu={(e) => e.preventDefault()}
+                    >
+                      <td
+                        className="px-3 py-4 text-center"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (selection.selectionMode) selection.toggleOne(sid)
+                        }}
                       >
-                        <Icon name="visibility" className="text-lg" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                        {selection.selectionMode ? (
+                          <input
+                            type="checkbox"
+                            className="rounded border-outline-variant text-secondary"
+                            checked={isSelected}
+                            onChange={() => selection.toggleOne(sid)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <span className="inline-block w-2 h-2 rounded-full bg-outline-variant" aria-hidden />
+                        )}
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
+                            {emp.avatarInitials}
+                          </div>
+                          <div>
+                            <p className="font-bold text-on-surface group-hover:text-secondary">{emp.fullName}</p>
+                            <p className="text-label-sm text-on-surface-variant">
+                              {emp.employee_code}
+                              {emp.email ? ` · ${emp.email}` : ''}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-body-md">{emp.departmentName}</td>
+                      <td className="px-4 py-4 text-body-md">{emp.positionName}</td>
+                      <td className="px-4 py-4 text-body-md">{emp.employment_type.replace(/_/g, ' ')}</td>
+                      <td className="px-4 py-4">
+                        <span
+                          className={cn(
+                            'inline-flex px-2.5 py-0.5 rounded-full text-label-sm font-bold border',
+                            stateStyles[emp.current_state] ?? 'bg-surface-container',
+                          )}
+                        >
+                          {emp.current_state.replace(/_/g, ' ')}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        {emp.hasLogin ? (
+                          <span className="text-label-sm text-emerald-700 font-medium">Yes</span>
+                        ) : (
+                          <span className="text-label-sm text-amber-700 font-medium">No login</span>
+                        )}
+                      </td>
+                      <td
+                        className="px-4 py-4 text-right"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <button
+                          type="button"
+                          className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors"
+                          onClick={() => goDetail(emp.id)}
+                        >
+                          <Icon name="visibility" className="text-lg" />
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
         )}
         <div className="px-6 py-4 border-t border-outline-variant text-label-sm text-on-surface-variant">
           Showing {filtered.length} of {items.length} employees
+          {!selection.selectionMode && (
+            <span className="ml-2 opacity-80">· Hold a row 3s to multi-select</span>
+          )}
         </div>
       </div>
     </div>
