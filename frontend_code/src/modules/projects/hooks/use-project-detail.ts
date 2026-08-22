@@ -1,7 +1,10 @@
 import { useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { useProject, useUpdateProject } from './use-projects'
 import { useTasks } from './use-tasks'
+import { getTeamsForProject } from '../api/teams'
+import { auditLogs } from '@/modules/admin/data/mock'
 import type { ProjectDetail } from '../schemas/project'
 
 export type ProjectDetailTab =
@@ -36,6 +39,24 @@ const emptyDraft: ProjectDetailDraft = {
   repositoryUrl: '',
 }
 
+function activityFromAudit(projectName?: string) {
+  const logs = auditLogs.slice(0, 8)
+  return logs.map((log) => ({
+    id: log.id,
+    title: log.action,
+    description: `${log.actor} · ${log.target}${projectName ? ` · ${projectName}` : ''}`,
+    timestamp: log.timestamp,
+    icon:
+      log.action.toLowerCase().includes('lock')
+        ? 'lock'
+        : log.action.toLowerCase().includes('permission')
+          ? 'key'
+          : log.action.toLowerCase().includes('setting')
+            ? 'settings'
+            : 'history',
+  }))
+}
+
 export function useProjectDetail(
   projectId: number | undefined,
   initialTab: ProjectDetailTab = 'overview',
@@ -45,6 +66,12 @@ export function useProjectDetail(
   const updateMutation = useUpdateProject()
   const { isEditing, startEditing: setEditingTrue, cancelEditing, finishEditing } = useEditMode()
 
+  const teamsQuery = useQuery({
+    queryKey: ['projects', 'teams-for-project', projectId],
+    queryFn: () => getTeamsForProject(projectId!),
+    enabled: projectId != null && Number.isFinite(projectId),
+  })
+
   const [tab, setTab] = useState<ProjectDetailTab>(initialTab)
   const [taskStatusFilter, setTaskStatusFilter] = useState('')
   const [taskSearch, setTaskSearch] = useState('')
@@ -52,6 +79,11 @@ export function useProjectDetail(
   const [draft, setDraft] = useState<ProjectDetailDraft>(emptyDraft)
 
   const project = query.data ?? null
+  const linkedTeam = teamsQuery.data?.[0] ?? null
+  const activityItems = useMemo(
+    () => activityFromAudit(project?.name),
+    [project?.name],
+  )
 
   const startEditing = () => {
     if (!project) return
@@ -104,6 +136,7 @@ export function useProjectDetail(
     refetch: () => {
       void query.refetch()
       void tasksQuery.refetch()
+      void teamsQuery.refetch()
     },
     tab,
     setTab,
@@ -126,6 +159,8 @@ export function useProjectDetail(
     isSaving: updateMutation.isPending,
     createTaskOpen,
     setCreateTaskOpen,
+    linkedTeam,
+    activityItems,
     taskStatusOptions: [
       { value: '', label: 'All statuses' },
       { value: 'TODO', label: 'To do' },

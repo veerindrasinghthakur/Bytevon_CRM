@@ -20,6 +20,21 @@ function asTeam(row: any): Team {
   }
 }
 
+/** Resolve primary teamId for a project (explicit field or match by projectName). */
+export function resolveProjectTeamId(projectId: number): number | null {
+  const db = getDb()
+  const project = db.projects.find((p) => p.id === projectId) as
+    | { id: number; name?: string; teamId?: number | null }
+    | undefined
+  if (!project) return null
+  if (project.teamId != null) return project.teamId
+  // Fallback: team whose projectName matches this project
+  const byName = db.teams.find(
+    (t) => t.projectName && project.name && t.projectName === project.name,
+  )
+  return byName?.id ?? null
+}
+
 export async function getTeams(params?: { search?: string }): Promise<{ items: Team[]; total: number }> {
   await delay()
   let items = getDb().teams.map(asTeam)
@@ -41,13 +56,12 @@ export async function getTeam(id: number): Promise<Team | null> {
   return row ? asTeam(row) : null
 }
 
-/** Teams linked to a project (via project.teamId primary association). */
+/** Teams linked to a project via teamId (or projectName fallback). */
 export async function getTeamsForProject(projectId: number): Promise<Team[]> {
   await delay()
-  const db = getDb()
-  const project = db.projects.find((p) => p.id === projectId) as { teamId?: number | null } | undefined
-  if (!project?.teamId) return []
-  const team = db.teams.find((t) => t.id === project.teamId)
+  const teamId = resolveProjectTeamId(projectId)
+  if (teamId == null) return []
+  const team = getDb().teams.find((t) => t.id === teamId)
   return team ? [asTeam(team)] : []
 }
 
