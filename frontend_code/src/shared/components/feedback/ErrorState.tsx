@@ -6,24 +6,25 @@ export function ErrorState({
   description = 'We could not load this page. Try again or go back.',
   onRetry,
   onBack,
+  showBack = true,
   className,
 }: {
   title?: string
   description?: string
   onRetry?: () => void
-  /** Prefer explicit handler; when omitted and showBack is true, uses history.back() */
+  /** Explicit back handler; when omitted and showBack, uses history.back() */
   onBack?: () => void
-  /** When true and onBack is omitted, renders Go back via window.history */
+  /** Default true — show Go back using history when onBack not provided */
   showBack?: boolean
   className?: string
 }) {
   const handleBack =
     onBack ??
     (() => {
-      if (window.history.length > 1) window.history.back()
+      if (window.history.length > 1) {
+        window.history.back()
+      }
     })
-
-  const canBack = Boolean(onBack) || (arguments[0] as { showBack?: boolean })?.showBack !== false
 
   return (
     <div
@@ -43,7 +44,7 @@ export function ErrorState({
             Retry
           </Button>
         )}
-        {(onBack || canBack) && (
+        {(onBack || showBack) && (
           <Button variant="outline" onClick={handleBack}>
             Go back
           </Button>

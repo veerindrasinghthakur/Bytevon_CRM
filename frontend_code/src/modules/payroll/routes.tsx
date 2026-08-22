@@ -1,15 +1,29 @@
 import { createRoute } from '@tanstack/react-router'
-import { PayrollDashboardPage } from './pages/PayrollDashboardPage'
-import { MonthlyPayrollPage } from './pages/MonthlyPayrollPage'
-import { RunPayrollPage } from './pages/RunPayrollPage'
-import { GeneratingPayrollPage } from './pages/GeneratingPayrollPage'
-import { PayrollReviewPage } from './pages/PayrollReviewPage'
-import { PayslipViewPage } from './pages/PayslipViewPage'
-import { SalaryManagementPage } from './pages/SalaryManagementPage'
-import { EmployeeSalaryDetailPage } from './pages/EmployeeSalaryDetailPage'
-import { ReviseSalaryPage } from './pages/ReviseSalaryPage'
-import { EmployeePayrollHistoryPage } from './pages/EmployeePayrollHistoryPage'
-import { PayrollHistoryPage } from './pages/PayrollHistoryPage'
+import { lazyPage } from '@/shared/lib/lazyPage'
+
+const PayrollDashboardPage = lazyPage(() => import('./pages/PayrollDashboardPage'), 'PayrollDashboardPage')
+const MonthlyPayrollPage = lazyPage(() => import('./pages/MonthlyPayrollPage'), 'MonthlyPayrollPage')
+const RunPayrollPage = lazyPage(() => import('./pages/RunPayrollPage'), 'RunPayrollPage')
+const GeneratingPayrollPage = lazyPage(
+  () => import('./pages/GeneratingPayrollPage'),
+  'GeneratingPayrollPage',
+)
+const PayrollReviewPage = lazyPage(() => import('./pages/PayrollReviewPage'), 'PayrollReviewPage')
+const PayslipViewPage = lazyPage(() => import('./pages/PayslipViewPage'), 'PayslipViewPage')
+const SalaryManagementPage = lazyPage(
+  () => import('./pages/SalaryManagementPage'),
+  'SalaryManagementPage',
+)
+const EmployeeSalaryDetailPage = lazyPage(
+  () => import('./pages/EmployeeSalaryDetailPage'),
+  'EmployeeSalaryDetailPage',
+)
+const ReviseSalaryPage = lazyPage(() => import('./pages/ReviseSalaryPage'), 'ReviseSalaryPage')
+const EmployeePayrollHistoryPage = lazyPage(
+  () => import('./pages/EmployeePayrollHistoryPage'),
+  'EmployeePayrollHistoryPage',
+)
+const PayrollHistoryPage = lazyPage(() => import('./pages/PayrollHistoryPage'), 'PayrollHistoryPage')
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createPayrollRoutes(appLayoutRoute: any) {

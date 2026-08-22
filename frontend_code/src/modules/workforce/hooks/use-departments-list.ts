@@ -1,30 +1,33 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { listDepartments, type DepartmentListItem } from '../api/departments'
+import { computeDepartmentListMetrics } from '@/shared/compute/workforce-metrics'
 
 export function useDepartmentsList() {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('All')
   const [items, setItems] = useState<DepartmentListItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
   const load = useCallback(async () => {
     setLoading(true)
-    const res = await listDepartments({ includeArchived: true })
-    setItems(res.items)
-    setLoading(false)
+    setError(false)
+    try {
+      const res = await listDepartments({ includeArchived: true })
+      setItems(res.items)
+    } catch {
+      setError(true)
+      setItems([])
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => {
     void load()
   }, [load])
 
-  const metrics = useMemo(() => {
-    const total = items.length
-    const active = items.filter((d) => d.status === 'Active').length
-    const inactive = items.filter((d) => d.status !== 'Active').length
-    const staffing = items.reduce((sum, d) => sum + (d.staffCount ?? 0), 0)
-    return { total, active, inactive, staffing }
-  }, [items])
+  const metrics = useMemo(() => computeDepartmentListMetrics(items), [items])
 
   const filtered = useMemo(() => {
     return items.filter((d) => {
@@ -51,6 +54,7 @@ export function useDepartmentsList() {
     filtered,
     metrics,
     loading,
+    error,
     search,
     setSearch,
     status,

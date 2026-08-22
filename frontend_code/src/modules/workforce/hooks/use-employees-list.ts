@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { listEmployments, type EmploymentListItem } from '../api/employment'
 import { listDepartments } from '../api/departments'
+import { computeEmploymentListMetrics } from '@/shared/compute/workforce-metrics'
 
 export function useEmployeesList() {
   const [search, setSearch] = useState('')
@@ -9,24 +10,29 @@ export function useEmployeesList() {
   const [typeFilter, setTypeFilter] = useState('all')
   const [items, setItems] = useState<EmploymentListItem[]>([])
   const [departments, setDepartments] = useState<{ id: number; name: string }[]>([])
-  const [metrics, setMetrics] = useState({ total: 0, active: 0, archived: 0 })
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      setLoading(true)
+  const load = useCallback(async () => {
+    setLoading(true)
+    setError(false)
+    try {
       const [res, depts] = await Promise.all([listEmployments({}), listDepartments({})])
-      if (cancelled) return
       setItems(res.items)
-      setMetrics(res.metrics)
       setDepartments(depts.items.map((d) => ({ id: d.id, name: d.name })))
+    } catch {
+      setError(true)
+      setItems([])
+    } finally {
       setLoading(false)
-    })()
-    return () => {
-      cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    void load()
+  }, [load])
+
+  const metrics = useMemo(() => computeEmploymentListMetrics(items), [items])
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim()
@@ -74,6 +80,7 @@ export function useEmployeesList() {
     states,
     types,
     loading,
+    error,
     search,
     setSearch,
     deptFilter,
@@ -84,5 +91,6 @@ export function useEmployeesList() {
     setTypeFilter,
     filtersActive,
     resetFilters,
+    reload: load,
   }
 }

@@ -1,30 +1,39 @@
 /**
- * Admin module routes.
- * createAdminRoutes(appLayout) — users, roles, audit, security, redirects, leave/attendance layouts
- * createAdminSettingsShell(appLayout) — returns the settings layout route (call before org settings children)
+ * Admin module routes — heavy pages lazy-loaded via shared lazyPage helper.
  */
 import { createRoute, redirect } from '@tanstack/react-router'
-import { UsersListPage } from './pages/UsersListPage'
-import { UserDetailPage } from './pages/UserDetailPage'
-import { UserCreatePage } from './pages/UserCreatePage'
-import { RolesListPage } from './pages/RolesListPage'
-import { RoleDetailPage } from './pages/RoleDetailPage'
-import { RoleEditPage } from './pages/RoleEditPage'
-import { RoleCreatePage } from './pages/RoleCreatePage'
-import { AuditLogsPage } from './pages/AuditLogsPage'
-import { AdminSettingsLayout } from './pages/AdminSettingsLayout'
-import { LeaveSettingsLayout } from './pages/LeaveSettingsLayout'
-import { AttendanceSettingsLayout } from './pages/AttendanceSettingsLayout'
-import { OrganizationProfileSection } from './pages/settings/OrganizationProfileSection'
-import { HeadOfficeSection } from './pages/settings/HeadOfficeSection'
-import { BrandingSection } from './pages/settings/BrandingSection'
-import { RegionalSection } from './pages/settings/RegionalSection'
-import { OfficeFormPage } from './pages/OfficeFormPage'
-import { AttendanceSettingsPage } from './pages/AttendanceSettingsPage'
-import { LeaveSettingsPage } from './pages/LeaveSettingsPage'
-import { SecurityCenterPage } from './pages/SecurityCenterPage'
-import { LeavePoliciesPage } from './pages/LeavePoliciesPage'
-import { LeaveLedgerPage } from './pages/LeaveLedgerPage'
+import { lazyPage } from '@/shared/lib/lazyPage'
+
+const UsersListPage = lazyPage(() => import('./pages/UsersListPage'), 'UsersListPage')
+const UserDetailPage = lazyPage(() => import('./pages/UserDetailPage'), 'UserDetailPage')
+const UserCreatePage = lazyPage(() => import('./pages/UserCreatePage'), 'UserCreatePage')
+const RolesListPage = lazyPage(() => import('./pages/RolesListPage'), 'RolesListPage')
+const RoleDetailPage = lazyPage(() => import('./pages/RoleDetailPage'), 'RoleDetailPage')
+const RoleEditPage = lazyPage(() => import('./pages/RoleEditPage'), 'RoleEditPage')
+const RoleCreatePage = lazyPage(() => import('./pages/RoleCreatePage'), 'RoleCreatePage')
+const AuditLogsPage = lazyPage(() => import('./pages/AuditLogsPage'), 'AuditLogsPage')
+const AdminSettingsLayout = lazyPage(() => import('./pages/AdminSettingsLayout'), 'AdminSettingsLayout')
+const LeaveSettingsLayout = lazyPage(() => import('./pages/LeaveSettingsLayout'), 'LeaveSettingsLayout')
+const AttendanceSettingsLayout = lazyPage(
+  () => import('./pages/AttendanceSettingsLayout'),
+  'AttendanceSettingsLayout',
+)
+const OrganizationProfileSection = lazyPage(
+  () => import('./pages/settings/OrganizationProfileSection'),
+  'OrganizationProfileSection',
+)
+const HeadOfficeSection = lazyPage(() => import('./pages/settings/HeadOfficeSection'), 'HeadOfficeSection')
+const BrandingSection = lazyPage(() => import('./pages/settings/BrandingSection'), 'BrandingSection')
+const RegionalSection = lazyPage(() => import('./pages/settings/RegionalSection'), 'RegionalSection')
+const OfficeFormPage = lazyPage(() => import('./pages/OfficeFormPage'), 'OfficeFormPage')
+const AttendanceSettingsPage = lazyPage(
+  () => import('./pages/AttendanceSettingsPage'),
+  'AttendanceSettingsPage',
+)
+const LeaveSettingsPage = lazyPage(() => import('./pages/LeaveSettingsPage'), 'LeaveSettingsPage')
+const SecurityCenterPage = lazyPage(() => import('./pages/SecurityCenterPage'), 'SecurityCenterPage')
+const LeavePoliciesPage = lazyPage(() => import('./pages/LeavePoliciesPage'), 'LeavePoliciesPage')
+const LeaveLedgerPage = lazyPage(() => import('./pages/LeaveLedgerPage'), 'LeaveLedgerPage')
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createAdminSettingsLayoutRoute(appLayoutRoute: any) {
@@ -35,7 +44,6 @@ export function createAdminSettingsLayoutRoute(appLayoutRoute: any) {
   })
 }
 
-/** Non-organization children of /admin/settings (org locations/shifts live in organization/routes). */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createAdminSettingsCoreRoutes(settingsLayoutRoute: any) {
   return [
