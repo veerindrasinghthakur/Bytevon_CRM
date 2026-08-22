@@ -3,6 +3,7 @@ import { cn } from '@/shared/lib/cn'
 import { useEmployeeDashboard } from '../hooks/use-employee-dashboard'
 
 const card = 'bv-surface card-hover'
+const WEEK_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
 
 export function EmployeeDashboardPage() {
   const navigate = useNavigate()
@@ -14,7 +15,8 @@ export function EmployeeDashboardPage() {
     )
   }
 
-  const displayName = 'name' in meta ? (meta as { name: string }).name : (meta as { firstName?: string }).firstName ?? 'there'
+  const displayName =
+    'name' in meta ? (meta as { name: string }).name : (meta as { firstName?: string }).firstName ?? 'there'
   const weekBars = meta.weekBars as Array<number | { pct: number; isWeekend?: boolean }>
 
   return (
@@ -104,30 +106,45 @@ export function EmployeeDashboardPage() {
               <p className="text-body-lg font-bold text-on-background">{meta.totalHours}</p>
               <span className="text-[10px] text-on-surface-variant">{meta.totalHoursNote}</span>
             </div>
-            <div className="md:col-span-2 h-24 flex items-end gap-1.5">
-              {weekBars.map((bar, i) => {
-                const pct = typeof bar === 'number' ? bar : bar.pct
-                const isWeekend = typeof bar === 'object' && bar.isWeekend
-                const isToday = i === 4
-                return (
-                  <div
-                    key={i}
-                    className={cn(
-                      'flex-1 rounded-t-sm transition-colors',
-                      isWeekend
-                        ? 'bg-outline-variant/60'
-                        : isToday
-                          ? 'bg-secondary'
-                          : 'bg-secondary/20 hover:bg-secondary/40',
-                    )}
-                    style={{ height: `${Math.max(pct, 4)}%` }}
-                    title={isWeekend ? 'Weekend' : `Day ${i + 1}`}
-                  />
-                )
-              })}
+            <div className="md:col-span-2">
+              <div className="h-28 flex items-end gap-2">
+                {weekBars.map((bar, i) => {
+                  const pct = typeof bar === 'number' ? bar : bar.pct
+                  const isWeekend = typeof bar === 'object' && Boolean(bar.isWeekend)
+                  const isToday = i === 4
+                  const label = WEEK_LABELS[i] ?? `D${i + 1}`
+                  return (
+                    <div key={i} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
+                      <div
+                        className={cn(
+                          'w-full rounded-t-md transition-colors min-h-[4px]',
+                          isWeekend
+                            ? 'bg-outline-variant/55'
+                            : isToday
+                              ? 'bg-secondary'
+                              : 'bg-secondary/25 hover:bg-secondary/40',
+                        )}
+                        style={{ height: `${Math.max(pct, 4)}%` }}
+                        title={`${label}${isWeekend ? ' (weekend)' : ''}: ${pct}%`}
+                      />
+                      <span
+                        className={cn(
+                          'text-[10px] font-medium',
+                          isWeekend ? 'text-on-surface-variant/70' : 'text-on-surface-variant',
+                          isToday && 'text-secondary font-bold',
+                        )}
+                      >
+                        {label}
+                      </span>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           </div>
-          <p className="text-label-sm text-on-surface-variant">Weekly hours · weekends shown in muted color</p>
+          <p className="text-label-sm text-on-surface-variant">
+            Weekly hours · weekends muted · today highlighted
+          </p>
         </div>
 
         <div className={`${card} p-6 flex flex-col gap-4`}>
