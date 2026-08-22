@@ -201,23 +201,16 @@ export function AttendanceCorrectionsPage() {
             </div>
 
             <div className="p-5 space-y-4 overflow-y-auto flex-1">
-              <div>
-                <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="corr-day">
-                  Day
-                </label>
-                <select
-                  id="corr-day"
-                  value={c.selectedDateId}
-                  onChange={(e) => c.onSelectDay(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface text-body-md text-on-background focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
-                >
-                  {c.candidates.map((day) => (
-                    <option key={day.id} value={day.id}>
-                      {day.date} · {day.status}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                label="Day"
+                value={c.selectedDateId}
+                onChange={(v) => c.onSelectDay(v)}
+                options={c.candidates.map((day) => ({
+                  value: day.id,
+                  label: `${day.date} · ${day.status}`,
+                }))}
+                minWidthClass="w-full"
+              />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="corr-in">
@@ -257,17 +250,16 @@ export function AttendanceCorrectionsPage() {
                   placeholder="Search department head or upper hierarchy…"
                   className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors mb-2"
                 />
-                <select
+                <Select
                   value={c.approverId}
-                  onChange={(e) => c.setApproverId(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface text-body-md text-on-background focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
-                >
-                  {c.filteredApprovers.map((o) => (
-                    <option key={o.id} value={o.id}>
-                      {o.name} ({o.title})
-                    </option>
-                  ))}
-                </select>
+                  onChange={c.setApproverId}
+                  options={c.filteredApprovers.map((o) => ({
+                    value: o.id,
+                    label: `${o.name} (${o.title})`,
+                  }))}
+                  minWidthClass="w-full"
+                  placeholder="Select approver"
+                />
               </div>
               <div>
                 <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="corr-reason">
