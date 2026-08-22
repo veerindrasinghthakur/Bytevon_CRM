@@ -1,16 +1,42 @@
+import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { Button } from '@/shared/components/ui/Button'
-import { useEmployeePayrollHistory } from '../hooks/use-employee-payroll-history'
+import { BackButton } from '@/shared/components/layout/BackButton'
+import { ExportButton } from '@/shared/components/export/ExportButton'
+import { Select } from '@/shared/components/ui/Select'
+import { ResourceName } from '@/shared/schema'
+import { useEmployeePayrollHistory } from '../hooks/use-payroll'
 import { cn } from '@/shared/lib/cn'
 
 const statusStyle: Record<string, string> = {
   PAID: 'bg-[#e6f4ea] text-[#137333] border border-[#ceead6]',
   APPROVED: 'bg-[#e8f0fe] text-[#1967d2] border border-[#d2e3fc]',
+  CALCULATED: 'bg-secondary-container text-on-secondary-container border border-outline-variant',
 }
 
 export function EmployeePayrollHistoryPage() {
   const navigate = useNavigate()
-  const { emp, historyRows, summaryCards, totalResults } = useEmployeePayrollHistory()
+  const { emp, historyRows, summaryCards, totalResults, formatMoney, isLoading } =
+    useEmployeePayrollHistory()
+  const [yearFilter, setYearFilter] = useState('2026')
+  const [statusFilter, setStatusFilter] = useState('All')
+
+  if (isLoading) {
+    return <div className="p-8 text-body-md text-on-surface-variant">Loading history…</div>
+  }
+  if (!emp) {
+    return (
+      <div className="p-8 space-y-4">
+        <p className="text-body-md text-error">Employee not found.</p>
+        <BackButton to="/payroll/salary" />
+      </div>
+    )
+  }
+
+  const filtered = historyRows.filter((r) => {
+    if (yearFilter !== 'All' && String(r.year) !== yearFilter) return false
+    if (statusFilter !== 'All' && r.status !== statusFilter) return false
+    return true
+  })
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -37,14 +63,11 @@ export function EmployeePayrollHistoryPage() {
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="flex items-start gap-3">
-            <button
-              type="button"
-              className="text-on-surface-variant hover:text-secondary p-1 rounded-full hover:bg-surface-container transition-colors mt-1"
-              onClick={() => navigate({ to: '/payroll/salary/$employeeId', params: { employeeId: emp.id } })}
-              aria-label="Back"
-            >
-              <span className="material-symbols-outlined">arrow_back</span>
-            </button>
+            <BackButton
+              to={`/payroll/salary/${emp.id}`}
+              label=""
+              className="!px-1 mt-1"
+            />
             <div>
               <h1 className="text-headline-lg font-semibold text-deep-navy">Payroll History</h1>
               <p className="text-body-md text-on-surface-variant mt-1">
@@ -86,9 +109,6 @@ export function EmployeePayrollHistoryPage() {
               <span className="text-label-md text-on-surface-variant flex items-center gap-2">
                 <span className="material-symbols-outlined text-outline">{card.icon}</span> {card.label}
               </span>
-              {'change' in card && card.change && (
-                <span className="bg-[#e6f4ea] text-[#137333] px-2 py-1 rounded text-label-sm">{card.change}</span>
-              )}
             </div>
             <div className="text-headline-lg font-semibold text-deep-navy mt-1 relative z-10">{card.value}</div>
             <div className="text-body-sm text-on-surface-variant mt-auto relative z-10">{card.subtitle}</div>
@@ -99,31 +119,34 @@ export function EmployeePayrollHistoryPage() {
       <section className="bv-surface flex flex-col">
         <div className="p-4 border-b border-outline-variant flex flex-col sm:flex-row justify-between items-center gap-4 bg-surface">
           <div className="flex items-center gap-3 flex-wrap">
-            <div className="relative">
-              <select className="appearance-none bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 pr-10 text-label-md text-on-surface focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary cursor-pointer">
-                <option>2023</option>
-                <option>2022</option>
-                <option>2021</option>
-              </select>
-              <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]">
-                expand_more
-              </span>
-            </div>
-            <div className="relative">
-              <select className="appearance-none bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 pr-10 text-label-md text-on-surface focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary cursor-pointer">
-                <option>Status: All</option>
-                <option>Calculated</option>
-                <option>Approved</option>
-                <option>Paid</option>
-              </select>
-              <span className="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]">
-                expand_more
-              </span>
-            </div>
+            <Select
+              value={yearFilter}
+              onChange={setYearFilter}
+              minWidthClass="min-w-[120px]"
+              options={[
+                { value: 'All', label: 'All years' },
+                { value: '2026', label: '2026' },
+                { value: '2025', label: '2025' },
+              ]}
+            />
+            <Select
+              value={statusFilter}
+              onChange={setStatusFilter}
+              minWidthClass="min-w-[140px]"
+              options={[
+                { value: 'All', label: 'Status: All' },
+                { value: 'PAID', label: 'Paid' },
+                { value: 'APPROVED', label: 'Approved' },
+                { value: 'CALCULATED', label: 'Calculated' },
+              ]}
+            />
           </div>
-          <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}>
-            Export
-          </Button>
+          <ExportButton
+            resource={ResourceName.PAYROLL}
+            filenameStem={`payroll-history-${emp.code}`}
+            filters={{ employeeId: emp.id, year: yearFilter, status: statusFilter }}
+            label="Export"
+          />
         </div>
 
         <div className="overflow-x-auto">
@@ -142,27 +165,28 @@ export function EmployeePayrollHistoryPage() {
               </tr>
             </thead>
             <tbody className="text-body-sm divide-y divide-outline-variant">
-              {historyRows.map((r) => (
-                <tr key={r.month} className="zebra-row group">
+              {filtered.map((r) => (
+                <tr key={r.id} className="zebra-row group">
                   <td className="p-4 text-deep-navy font-medium">{r.month}</td>
-                  <td className="p-4 text-on-surface-variant">{r.gross}</td>
-                  <td className="p-4 text-[#137333] font-medium">{r.earnings}</td>
-                  <td className="p-4 text-[#c5221f]">{r.deductions}</td>
+                  <td className="p-4 text-on-surface-variant">{formatMoney(r.gross)}</td>
+                  <td className="p-4 text-[#137333] font-medium">{formatMoney(r.earnings)}</td>
+                  <td className="p-4 text-[#c5221f]">{formatMoney(r.deductions)}</td>
                   <td
                     className={cn(
                       'p-4',
-                      r.adjustments.startsWith('-') ? 'text-error font-medium' : 'text-on-surface-variant'
+                      r.adjustments < 0 ? 'text-error font-medium' : 'text-on-surface-variant',
                     )}
                   >
-                    {r.adjustments}
+                    {r.adjustments >= 0 ? '+' : ''}
+                    {formatMoney(r.adjustments)}
                   </td>
-                  <td className="p-4 text-deep-navy font-semibold">{r.net}</td>
-                  <td className="p-4 text-on-surface-variant">{r.paymentDate}</td>
+                  <td className="p-4 text-deep-navy font-semibold">{formatMoney(r.net)}</td>
+                  <td className="p-4 text-on-surface-variant">{r.paymentDate ?? '—'}</td>
                   <td className="p-4">
                     <span
                       className={cn(
                         'inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium',
-                        statusStyle[r.status]
+                        statusStyle[r.status],
                       )}
                     >
                       {r.status}
@@ -202,30 +226,8 @@ export function EmployeePayrollHistoryPage() {
 
         <div className="p-4 border-t border-outline-variant flex items-center justify-between bg-surface-container-lowest rounded-b-xl">
           <div className="text-body-sm text-on-surface-variant">
-            Showing <span className="font-medium text-on-surface">1</span> to{' '}
-            <span className="font-medium text-on-surface">{historyRows.length}</span> of{' '}
+            Showing <span className="font-medium text-on-surface">{filtered.length}</span> of{' '}
             <span className="font-medium text-on-surface">{totalResults}</span> results
-          </div>
-          <div className="flex gap-1">
-            <button
-              type="button"
-              className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container disabled:opacity-50"
-              disabled
-            >
-              <span className="material-symbols-outlined text-[18px]">chevron_left</span>
-            </button>
-            <button type="button" className="w-8 h-8 flex items-center justify-center rounded bg-secondary text-on-primary text-label-sm font-semibold">
-              1
-            </button>
-            <button type="button" className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface hover:bg-surface-container text-label-sm">
-              2
-            </button>
-            <button type="button" className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface hover:bg-surface-container text-label-sm">
-              3
-            </button>
-            <button type="button" className="w-8 h-8 flex items-center justify-center rounded border border-outline-variant text-on-surface-variant hover:bg-surface-container">
-              <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-            </button>
           </div>
         </div>
       </section>
