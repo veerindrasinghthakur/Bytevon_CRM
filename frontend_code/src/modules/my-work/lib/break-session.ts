@@ -6,7 +6,7 @@
  * explicitly stops (checkout) the break.
  */
 
-import type { BreakSession } from '../types'
+import type { BreakBarMarker, BreakSession } from '../types'
 
 export type { BreakMode, BreakSession } from '../types'
 
@@ -17,6 +17,10 @@ const NOTIFIED_KEY = 'bytevon.breakNotified'
 
 function uid() {
   return `brk_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`
+}
+
+function dayKey(iso: string) {
+  return iso.slice(0, 10)
 }
 
 export function getActiveBreak(): BreakSession | null {
@@ -69,7 +73,6 @@ export function startBreak(opts: {
     durationMinutes: duration,
     note: opts.note?.trim() || undefined,
   }
-  // clear prior notify flag for this id
   try {
     const map = JSON.parse(localStorage.getItem(NOTIFIED_KEY) ?? '{}') as Record<string, boolean>
     delete map[session.id]
@@ -117,7 +120,6 @@ export function isBreakRunning(session: BreakSession | null): boolean {
 
 /**
  * When countdown hits zero, notify once — but keep the break running until stopBreak().
- * Returns whether a notification was just fired.
  */
 export function maybeNotifyCountdownComplete(session: BreakSession | null, now = Date.now()): boolean {
   if (!session || session.endedAt || session.mode !== 'countdown') return false
@@ -164,4 +166,64 @@ export function subscribeBreakChange(cb: () => void) {
     window.removeEventListener('bytevon:break-change', handler)
     window.removeEventListener('storage', handler)
   }
+}
+
+/** All breaks for a given calendar day (YYYY-MM-DD): completed + active if same day. */
+export function getBreaksForDate(dateIso: string, now = Date.now()): BreakSession[] {
+  const list: BreakSession[] = []
+  for (const b of getBreakHistory()) {
+    if (dayKey(b.startedAt) === dateIso) list.push(b)
+  }
+  const active = getActiveBreak()
+  if (active && dayKey(active.startedAt) === dateIso) {
+    if (!list.some((x) => x.id === active.id)) {
+      list.push(active)
+    }
+  }
+  list.sort((a, b) => new Date(a.startedAt).getTime() - new Date(b.startedAt).getTime())
+  void now
+  return list
+}
+
+export function getTodayBreaks(now = Date.now()): BreakSession[] {
+  return getBreaksForDate(new Date(now).toISOString().slice(0, 10), now)
+}
+
+/** Count + total ms for today's breaks (includes running break until now). */
+export function getTodayBreakStats(now = Date.now()): { count: number; totalMs: number } {
+  const breaks = getTodayBreaks(now)
+  let totalMs = 0
+  for (const b of breaks) {
+    totalMs += getElapsedMs(b, now)
+  }
+  return { count: breaks.length, totalMs }
+}
+
+/**
+ * Map each break into bar markers (0–100 along work window).
+ * windowStart/windowEnd define the day bar span (usually check-in → checkout|now).
+ */
+export function breaksToBarMarkers(
+  breaks: BreakSession[],
+  windowStartMs: number,
+  windowEndMs: number,
+  now = Date.now(),
+): BreakBarMarker[] {
+  const span = Math.max(1, windowEndMs - windowStartMs)
+  const markers: BreakBarMarker[] = []
+  for (const b of breaks) {
+    const bStart = new Date(b.startedAt).getTime()
+    const bEnd = b.endedAt ? new Date(b.endedAt).getTime() : now
+    const start = Math.max(bStart, windowStartMs)
+    const end = Math.min(bEnd, windowEndMs)
+    if (end <= start) continue
+    const startPct = ((start - windowStartMs) / span) * 100
+    const endPct = ((end - windowStartMs) / span) * 100
+    markers.push({
+      id: b.id,
+      startPct: Math.min(100, Math.max(0, startPct)),
+      endPct: Math.min(100, Math.max(0, endPct)),
+    })
+  }
+  return markers
 }

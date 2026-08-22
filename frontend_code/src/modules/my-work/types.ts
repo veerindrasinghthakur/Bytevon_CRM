@@ -35,6 +35,15 @@ export interface BreakSession {
   note?: string
 }
 
+/** Position of a break segment inside a day bar (0–100 from bottom of bar height). */
+export interface BreakBarMarker {
+  id: string
+  /** 0–100: start of break along the work window (bottom = start of day) */
+  startPct: number
+  /** 0–100: end of break; omit for a point marker */
+  endPct?: number
+}
+
 export interface TodayAttendanceSession {
   /** ISO date YYYY-MM-DD */
   date: string
@@ -182,4 +191,6 @@ export interface WeekHourBar {
   pct: number
   isToday: boolean
   isWeekend: boolean
+  /** Red break markers drawn on the bar (multiple per day if multiple breaks) */
+  breakMarkers?: BreakBarMarker[]
 }
