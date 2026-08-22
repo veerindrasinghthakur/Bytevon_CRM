@@ -1,23 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams, useSearch, useRouterState, useNavigate } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { EditButton } from '@/shared/components/ui/EditButton'
+import { Select } from '@/shared/components/ui/Select'
+import { RefreshButton } from '@/shared/components/ui/RefreshButton'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
-import { useTeam, useUpdateTeam } from '../hooks/use-teams'
-import { useProjects } from '../hooks/use-projects'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
-import type { TeamStatus } from '../api/teams'
-import { listEmployments } from '@/modules/workforce/api/employment'
+import { useTeamDetail } from '../hooks/use-team-detail'
+import type { TeamStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
-
-interface TeamMember {
-  employmentId: number
-  name: string
-  code: string
-  role: string
-  isHead?: boolean
-}
 
 export function TeamDetailPage() {
   const navigate = useNavigate()
@@ -26,90 +19,35 @@ export function TeamDetailPage() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const teamsListTo = pathname.startsWith('/workforce') ? '/workforce/teams' : '/projects/teams'
   const id = Number(params.teamId)
-  const { data: team, isLoading, isError, refetch } = useTeam(
-    Number.isFinite(id) ? id : undefined,
-  )
-  const { data: projectsData } = useProjects({})
-  const updateMutation = useUpdateTeam()
 
-  const [editing, setEditing] = useState(search.edit === '1')
-  const [draft, setDraft] = useState({
-    name: '',
-    description: '',
-    department: '',
-    headName: '',
-    headRole: '',
-    status: 'ACTIVE' as TeamStatus,
-  })
-  const [members, setMembers] = useState<TeamMember[]>([])
-  const [pickerOpen, setPickerOpen] = useState(false)
-  const [empOptions, setEmpOptions] = useState<{ value: string; label: string; meta?: string }[]>([])
-  const [picked, setPicked] = useState('')
-
-  const recentProjects = useMemo(() => (projectsData?.items ?? []).slice(0, 5), [projectsData])
+  const {
+    team,
+    isLoading,
+    isError,
+    refetch,
+    isEditing,
+    draft,
+    setDraft,
+    startEditing,
+    cancelEdit,
+    save,
+    isSaving,
+    members,
+    addMemberOpen,
+    setAddMemberOpen,
+    availableOpts,
+    picked,
+    setPicked,
+    addMember,
+    removeMember,
+    recentProjects,
+    statusOptions,
+  } = useTeamDetail(Number.isFinite(id) ? id : undefined)
 
   useEffect(() => {
-    if (team) {
-      setDraft({
-        name: team.name,
-        description: team.description ?? '',
-        department: team.department ?? '',
-        headName: team.headName ?? '',
-        headRole: team.headRole ?? '',
-        status: team.status,
-      })
-      setEditing(search.edit === '1')
-      void listEmployments({}).then((res) => {
-        const opts = res.items.map((e) => ({
-          value: String(e.id),
-          label: `${e.fullName} (${e.employee_code})`,
-          meta: e.departmentName,
-        }))
-        setEmpOptions(opts)
-        const seed: TeamMember[] = []
-        if (team.headName) {
-          const head = res.items.find((e) => e.fullName === team.headName)
-          seed.push({
-            employmentId: head?.id ?? 0,
-            name: team.headName,
-            code: head?.employee_code ?? '—',
-            role: team.headRole ?? 'Team Lead',
-            isHead: true,
-          })
-        }
-        const others = res.items
-          .filter((e) => e.fullName !== team.headName)
-          .slice(0, Math.max(0, Math.min(team.memberCount - seed.length, 5)))
-          .map((e) => ({
-            employmentId: e.id,
-            name: e.fullName,
-            code: e.employee_code,
-            role: e.positionName,
-          }))
-        setMembers([...seed, ...others])
-      })
-    }
-  }, [team, search.edit])
-
-  const memberIds = useMemo(() => new Set(members.map((m) => String(m.employmentId))), [members])
-  const availableOpts = empOptions.filter((o) => !memberIds.has(o.value))
-
-  const addMember = () => {
-    if (!picked) return
-    const opt = empOptions.find((o) => o.value === picked)
-    if (!opt) return
-    setMembers((prev) => [
-      ...prev,
-      {
-        employmentId: Number(picked),
-        name: opt.label.replace(/ \(.*\)$/, ''),
-        code: opt.label.match(/\(([^)]+)\)/)?.[1] ?? '—',
-        role: opt.meta ?? 'Member',
-      },
-    ])
-    setPicked('')
-    setPickerOpen(false)
-  }
+    if (search.edit === '1' && team && !isEditing) startEditing()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search.edit, team?.id])
 
   if (isLoading) {
     return (
@@ -131,39 +69,10 @@ export function TeamDetailPage() {
     )
   }
 
-  const startEdit = () => setEditing(true)
-  const cancelEdit = () => {
-    setDraft({
-      name: team.name,
-      description: team.description ?? '',
-      department: team.department ?? '',
-      headName: team.headName ?? '',
-      headRole: team.headRole ?? '',
-      status: team.status,
-    })
-    setEditing(false)
-  }
-
-  const saveEdit = async () => {
-    await updateMutation.mutateAsync({
-      id: team.id,
-      patch: {
-        name: draft.name,
-        description: draft.description,
-        department: draft.department,
-        headName: draft.headName || undefined,
-        headRole: draft.headRole || undefined,
-        status: draft.status,
-      },
-    })
-    setEditing(false)
-    void refetch()
-  }
-
   return (
     <div className="space-y-6 animate-fade-in">
       <PageHeader
-        title={editing ? draft.name || team.name : team.name}
+        title={isEditing ? draft.name || team.name : team.name}
         description={team.department ?? 'Team'}
         showBack
         backTo={teamsListTo}
@@ -178,32 +87,29 @@ export function TeamDetailPage() {
           </nav>
         }
         actions={
-          editing ? (
+          isEditing ? (
             <div className="flex gap-2 flex-wrap">
-              <Button variant="outline" size="sm" onClick={() => setPickerOpen(true)}>
+              {/* Single Add member control — header only while editing */}
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<span className="material-symbols-outlined text-lg">person_add</span>}
+                onClick={() => setAddMemberOpen(true)}
+              >
                 Add member
               </Button>
               <Button variant="ghost" size="sm" onClick={cancelEdit}>
                 Cancel
               </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => void saveEdit()}
-                isLoading={updateMutation.isPending}
-              >
+              <Button variant="primary" size="sm" onClick={() => void save()} isLoading={isSaving}>
                 Save
               </Button>
             </div>
           ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
-              onClick={startEdit}
-            >
-              Edit Team
-            </Button>
+            <div className="flex gap-2 flex-wrap">
+              <RefreshButton iconOnly onClick={() => refetch()} />
+              <EditButton onClick={startEditing} label="Edit Team" />
+            </div>
           )
         }
       />
@@ -227,7 +133,7 @@ export function TeamDetailPage() {
               <span className="material-symbols-outlined text-secondary">flag</span>
               Team Mission / Details
             </h3>
-            {editing ? (
+            {isEditing ? (
               <div className="space-y-4">
                 <FieldInput label="Name" id="team-name" value={draft.name} onChange={(v) => setDraft((d) => ({ ...d, name: v }))} />
                 <div>
@@ -246,20 +152,12 @@ export function TeamDetailPage() {
                 <FieldInput label="Department" id="team-dept" value={draft.department} onChange={(v) => setDraft((d) => ({ ...d, department: v }))} />
                 <FieldInput label="Head name" id="team-head" value={draft.headName} onChange={(v) => setDraft((d) => ({ ...d, headName: v }))} />
                 <FieldInput label="Head role" id="team-role" value={draft.headRole} onChange={(v) => setDraft((d) => ({ ...d, headRole: v }))} />
-                <div>
-                  <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="team-status">
-                    Status
-                  </label>
-                  <select
-                    id="team-status"
-                    value={draft.status}
-                    onChange={(e) => setDraft((d) => ({ ...d, status: e.target.value as TeamStatus }))}
-                    className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background"
-                  >
-                    <option value="ACTIVE">Active</option>
-                    <option value="INACTIVE">Inactive</option>
-                  </select>
-                </div>
+                <Select
+                  label="Status"
+                  value={draft.status}
+                  onChange={(v) => setDraft((d) => ({ ...d, status: v as TeamStatus }))}
+                  options={statusOptions}
+                />
               </div>
             ) : (
               <p className="text-body-md text-on-surface-variant leading-relaxed">
@@ -269,17 +167,11 @@ export function TeamDetailPage() {
           </section>
 
           <section className="bv-surface p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-title-md font-semibold flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary">groups</span>
-                Team members ({members.length})
-              </h3>
-              {editing && (
-                <Button variant="outline" size="sm" onClick={() => setPickerOpen(true)}>
-                  Add member
-                </Button>
-              )}
-            </div>
+            <h3 className="text-title-md font-semibold mb-4 flex items-center gap-2">
+              <span className="material-symbols-outlined text-secondary">groups</span>
+              Team members ({members.length})
+            </h3>
+            {/* No second Add member button here — only header control */}
             {members.length === 0 ? (
               <p className="text-body-sm text-on-surface-variant">No members listed yet.</p>
             ) : (
@@ -309,13 +201,12 @@ export function TeamDetailPage() {
                         </p>
                       </div>
                     </div>
-                    {editing && !m.isHead && (
+                    {isEditing && !m.isHead && (
                       <button
                         type="button"
                         className="p-2 text-on-surface-variant hover:text-error rounded-lg"
-                        onClick={() =>
-                          setMembers((prev) => prev.filter((x) => x.employmentId !== m.employmentId))
-                        }
+                        onClick={() => removeMember(m.employmentId)}
+                        aria-label={`Remove ${m.name}`}
                       >
                         <span className="material-symbols-outlined text-lg">delete</span>
                       </button>
@@ -354,15 +245,7 @@ export function TeamDetailPage() {
                         {p.code} · {p.clientName ?? '—'}
                       </p>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="w-16 h-1.5 rounded-full bg-surface-container overflow-hidden">
-                        <div
-                          className="h-full bg-secondary rounded-full"
-                          style={{ width: `${p.progress ?? 0}%` }}
-                        />
-                      </div>
-                      <span className="text-xs text-on-surface-variant w-8 text-right">{p.progress ?? 0}%</span>
-                    </div>
+                    <span className="text-xs text-on-surface-variant">{p.progress ?? 0}%</span>
                   </li>
                 ))}
               </ul>
@@ -382,13 +265,13 @@ export function TeamDetailPage() {
         </aside>
       </div>
 
-      {pickerOpen && (
+      {addMemberOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <button
             type="button"
             className="absolute inset-0 bg-on-surface/30 backdrop-blur-sm"
             aria-label="Close"
-            onClick={() => setPickerOpen(false)}
+            onClick={() => setAddMemberOpen(false)}
           />
           <div className="relative z-10 bg-surface-container-lowest rounded-xl border border-outline-variant shadow-2xl w-full max-w-md p-6 space-y-4">
             <h3 className="text-title-lg font-semibold">Add team member</h3>
@@ -400,7 +283,7 @@ export function TeamDetailPage() {
               placeholder="Search employees…"
             />
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => setPickerOpen(false)}>
+              <Button variant="ghost" onClick={() => setAddMemberOpen(false)}>
                 Cancel
               </Button>
               <Button variant="primary" disabled={!picked} onClick={addMember}>

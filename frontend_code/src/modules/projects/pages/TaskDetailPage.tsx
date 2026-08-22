@@ -1,46 +1,42 @@
-import { useEffect, useState } from 'react'
 import { Link, useParams, useSearch } from '@tanstack/react-router'
+import { useEffect } from 'react'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { EditButton } from '@/shared/components/ui/EditButton'
+import { Select } from '@/shared/components/ui/Select'
+import { RefreshButton } from '@/shared/components/ui/RefreshButton'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
-import { useTask, useUpdateTask } from '../hooks/use-tasks'
-import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
+import { NotesPanel } from '@/shared/components/notes/NotesPanel'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
-import type { TaskPriority, TaskStatus } from '../api/tasks'
+import { useTaskDetail } from '../hooks/use-task-detail'
+import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
+import type { TaskPriority, TaskStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 
 export function TaskDetailPage() {
   const params = useParams({ strict: false }) as { taskId?: string }
   const search = useSearch({ strict: false }) as { edit?: string }
   const id = Number(params.taskId)
-  const { data: task, isLoading, isError, refetch } = useTask(
-    Number.isFinite(id) ? id : undefined
-  )
-  const updateMutation = useUpdateTask()
-
-  const [editing, setEditing] = useState(search.edit === '1')
-  const [draft, setDraft] = useState({
-    title: '',
-    description: '',
-    priority: 'MEDIUM' as TaskPriority,
-    status: 'TODO' as TaskStatus,
-    assigneeName: '',
-    dueDate: '',
-  })
+  const {
+    task,
+    isLoading,
+    isError,
+    refetch,
+    isEditing,
+    draft,
+    setDraft,
+    startEditing,
+    cancelEdit,
+    save,
+    isSaving,
+    priorityOptions,
+    statusOptions,
+  } = useTaskDetail(Number.isFinite(id) ? id : undefined)
 
   useEffect(() => {
-    if (task) {
-      setDraft({
-        title: task.title,
-        description: task.description ?? '',
-        priority: task.priority,
-        status: task.status,
-        assigneeName: task.assigneeName ?? '',
-        dueDate: task.dueDate ?? '',
-      })
-      setEditing(search.edit === '1')
-    }
-  }, [task, search.edit])
+    if (search.edit === '1' && task && !isEditing) startEditing()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search.edit, task?.id])
 
   if (isLoading) {
     return (
@@ -62,35 +58,6 @@ export function TaskDetailPage() {
     )
   }
 
-  const startEdit = () => setEditing(true)
-  const cancelEdit = () => {
-    setDraft({
-      title: task.title,
-      description: task.description ?? '',
-      priority: task.priority,
-      status: task.status,
-      assigneeName: task.assigneeName ?? '',
-      dueDate: task.dueDate ?? '',
-    })
-    setEditing(false)
-  }
-
-  const saveEdit = async () => {
-    await updateMutation.mutateAsync({
-      id: task.id,
-      patch: {
-        title: draft.title,
-        description: draft.description,
-        priority: draft.priority,
-        status: draft.status,
-        assigneeName: draft.assigneeName || undefined,
-        dueDate: draft.dueDate || null,
-      },
-    })
-    setEditing(false)
-    void refetch()
-  }
-
   const initials = (task.assigneeName ?? '?')
     .split(' ')
     .map((n) => n[0])
@@ -101,7 +68,7 @@ export function TaskDetailPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <PageHeader
-        title={editing ? draft.title || task.title : task.title}
+        title={isEditing ? draft.title || task.title : task.title}
         description={task.projectName ?? 'Task'}
         showBack
         backTo="/projects/tasks"
@@ -116,35 +83,21 @@ export function TaskDetailPage() {
           </nav>
         }
         actions={
-          editing ? (
+          isEditing ? (
             <div className="flex gap-2">
               <Button variant="ghost" size="sm" onClick={cancelEdit}>
                 Cancel
               </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => void saveEdit()}
-                isLoading={updateMutation.isPending}
-              >
+              <Button variant="primary" size="sm" onClick={() => void save()} isLoading={isSaving}>
                 Save
               </Button>
             </div>
           ) : (
             <div className="flex items-center gap-2 flex-wrap">
+              <RefreshButton iconOnly onClick={() => refetch()} />
               <TaskPriorityLabel priority={task.priority} />
               <TaskStatusBadge status={task.status} />
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
-                onClick={startEdit}
-              >
-                Edit
-              </Button>
-              <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-lg">archive</span>}>
-                Archive
-              </Button>
+              <EditButton onClick={startEditing} />
             </div>
           )
         }
@@ -156,10 +109,6 @@ export function TaskDetailPage() {
         </span>
       </div>
 
-      {!editing && task.description && (
-        <p className="text-body-md text-on-surface-variant max-w-3xl">{task.description}</p>
-      )}
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         <div className="lg:col-span-2 space-y-6">
           <section className="bv-surface p-6">
@@ -167,7 +116,7 @@ export function TaskDetailPage() {
               <span className="material-symbols-outlined text-secondary">description</span>
               Description
             </h2>
-            {editing ? (
+            {isEditing ? (
               <div className="space-y-4">
                 <div>
                   <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="task-title">
@@ -195,38 +144,18 @@ export function TaskDetailPage() {
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-label-sm text-on-surface-variant block mb-1">Priority</label>
-                    <select
-                      value={draft.priority}
-                      onChange={(e) =>
-                        setDraft((d) => ({ ...d, priority: e.target.value as TaskPriority }))
-                      }
-                      className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface"
-                    >
-                      <option value="LOW">Low</option>
-                      <option value="MEDIUM">Medium</option>
-                      <option value="HIGH">High</option>
-                      <option value="URGENT">Urgent</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-label-sm text-on-surface-variant block mb-1">Status</label>
-                    <select
-                      value={draft.status}
-                      onChange={(e) =>
-                        setDraft((d) => ({ ...d, status: e.target.value as TaskStatus }))
-                      }
-                      className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface"
-                    >
-                      <option value="TODO">To do</option>
-                      <option value="IN_PROGRESS">In progress</option>
-                      <option value="IN_REVIEW">In review</option>
-                      <option value="DONE">Done</option>
-                      <option value="BLOCKED">Blocked</option>
-                      <option value="ON_HOLD">On hold</option>
-                    </select>
-                  </div>
+                  <Select
+                    label="Priority"
+                    value={draft.priority}
+                    onChange={(v) => setDraft((d) => ({ ...d, priority: v as TaskPriority }))}
+                    options={priorityOptions}
+                  />
+                  <Select
+                    label="Status"
+                    value={draft.status}
+                    onChange={(v) => setDraft((d) => ({ ...d, status: v as TaskStatus }))}
+                    options={statusOptions}
+                  />
                   <div>
                     <label className="text-label-sm text-on-surface-variant block mb-1">Assignee</label>
                     <input
@@ -248,11 +177,13 @@ export function TaskDetailPage() {
                 </div>
               </div>
             ) : (
-              <div className="prose prose-sm max-w-none text-on-surface-variant leading-relaxed space-y-3">
-                <p>{task.description || 'No description provided.'}</p>
-              </div>
+              <p className="text-body-md text-on-surface-variant leading-relaxed">
+                {task.description || 'No description provided.'}
+              </p>
             )}
           </section>
+
+          <NotesPanel title="Task notes" referenceType="TASK" referenceId={task.id} />
         </div>
 
         <aside className="space-y-4">
@@ -271,7 +202,7 @@ export function TaskDetailPage() {
                 <div
                   className={cn(
                     'flex items-center justify-between p-2 rounded-lg border border-outline-variant',
-                    'bg-surface-container-low/50 hover:border-secondary/40 transition-colors'
+                    'bg-surface-container-low/50',
                   )}
                 >
                   <div className="flex items-center gap-3">
@@ -282,10 +213,8 @@ export function TaskDetailPage() {
                       <p className="text-sm font-semibold text-on-surface">
                         {task.assigneeName ?? 'Unassigned'}
                       </p>
-                      <p className="text-[11px] text-on-surface-variant">Assignee</p>
                     </div>
                   </div>
-                  <span className="material-symbols-outlined text-on-surface-variant text-lg">person_add</span>
                 </div>
               </div>
               <MetaRow label="Project" value={task.projectName ?? '—'} />
@@ -296,6 +225,15 @@ export function TaskDetailPage() {
                 label="Created"
                 value={task.createdAt ? new Date(task.createdAt).toLocaleDateString() : '—'}
               />
+              {task.projectId ? (
+                <Link
+                  to="/projects/$projectId"
+                  params={{ projectId: String(task.projectId) }}
+                  className="block text-sm font-semibold text-secondary hover:underline"
+                >
+                  Open project →
+                </Link>
+              ) : null}
             </div>
           </section>
         </aside>
