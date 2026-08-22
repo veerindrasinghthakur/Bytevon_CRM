@@ -3,6 +3,10 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { ExportButton } from '@/shared/components/export/ExportButton'
+import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
+import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { useListSelection } from '@/shared/hooks/useListSelection'
 import { ResourceName } from '@/shared/schema'
 import { listAdminUsers, type AdminUserListItem } from '../api/users'
 import { cn } from '@/shared/lib/cn'
@@ -20,21 +24,25 @@ export function UsersListPage() {
   const [locked, setLocked] = useState(0)
   const [active, setActive] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      setLoading(true)
+  const load = async () => {
+    setLoading(true)
+    setError(false)
+    try {
       const res = await listAdminUsers()
-      if (cancelled) return
       setItems(res.items)
       setLocked(res.locked)
       setActive(res.active)
+    } catch {
+      setError(true)
+    } finally {
       setLoading(false)
-    })()
-    return () => {
-      cancelled = true
     }
+  }
+
+  useEffect(() => {
+    void load()
   }, [])
 
   const visible = useMemo(() => {
@@ -49,6 +57,26 @@ export function UsersListPage() {
     )
   }, [q, items])
 
+  const selection = useListSelection({
+    items: visible,
+    getId: (u) => String(u.id),
+  })
+
+  const goDetail = (u: AdminUserListItem) => {
+    navigate({ to: '/admin/users/$userId', params: { userId: String(u.id) } })
+  }
+
+  if (loading) return <PageLoadingSkeleton />
+  if (error) {
+    return (
+      <ErrorState
+        title="Could not load users"
+        description="User list failed to load. Retry or go back."
+        onRetry={() => void load()}
+      />
+    )
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       <PageHeader
@@ -59,6 +87,7 @@ export function UsersListPage() {
             <ExportButton
               resource={ResourceName.USER}
               query={q.trim() || undefined}
+              selectedIds={selection.selectionMode ? Array.from(selection.selectedIds) : undefined}
               filenameStem="users"
             />
             <Button
@@ -80,6 +109,21 @@ export function UsersListPage() {
         <Metric icon="person_off" label="Shown" value={String(visible.length)} hint="After filter" />
       </section>
 
+      {selection.selectionMode && (
+        <BulkSelectionBar
+          selectedCount={selection.selectedCount}
+          filteredCount={visible.length}
+          onCancel={selection.exitSelectionMode}
+        >
+          <ExportButton
+            resource={ResourceName.USER}
+            selectedIds={Array.from(selection.selectedIds)}
+            filenameStem="users-selected"
+            label="Export selected"
+          />
+        </BulkSelectionBar>
+      )}
+
       <section className="bv-surface overflow-hidden">
         <div className="p-4 border-b border-outline-variant flex flex-wrap gap-3 items-center">
           <div className="relative flex-1 min-w-[200px]">
@@ -95,40 +139,71 @@ export function UsersListPage() {
           </div>
         </div>
 
-        {loading ? (
-          <div className="p-12 text-center text-on-surface-variant">Loading users…</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[880px]">
-              <thead>
-                <tr className="bg-surface-container-low">
-                  <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">
-                    User Identity
-                  </th>
-                  <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">Role</th>
-                  <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">
-                    Department
-                  </th>
-                  <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">
-                    Last Login
-                  </th>
-                  <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider text-right">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant">
-                {visible.map((u) => (
-                  <tr key={u.id} className="zebra-row">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[880px]">
+            <thead>
+              <tr className="bg-surface-container-low">
+                <th className="px-3 py-3 w-12 text-center">
+                  {selection.selectionMode ? (
+                    <input
+                      type="checkbox"
+                      className="rounded border-outline-variant text-secondary"
+                      checked={selection.allFilteredSelected}
+                      onChange={selection.toggleSelectAllFiltered}
+                      aria-label="Select all filtered users"
+                    />
+                  ) : (
+                    <span className="sr-only">Select</span>
+                  )}
+                </th>
+                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">User Identity</th>
+                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">Role</th>
+                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">Department</th>
+                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">Last Login</th>
+                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-outline-variant">
+              {visible.map((u) => {
+                const id = String(u.id)
+                const isSelected = selection.isSelected(id)
+                return (
+                  <tr
+                    key={u.id}
+                    className={cn(
+                      'select-none cursor-pointer',
+                      isSelected ? 'bg-secondary/10' : 'zebra-row',
+                    )}
+                    onMouseDown={() => selection.onRowPressStart(id)}
+                    onMouseUp={() => selection.onRowPressEnd(id, () => goDetail(u))}
+                    onMouseLeave={selection.onRowPressCancel}
+                    onTouchStart={() => selection.onRowPressStart(id)}
+                    onTouchEnd={() => selection.onRowPressEnd(id, () => goDetail(u))}
+                    onTouchCancel={selection.onRowPressCancel}
+                    onContextMenu={(e) => e.preventDefault()}
+                  >
                     <td
-                      className="px-6 py-4 cursor-pointer"
-                      onClick={() =>
-                        navigate({ to: '/admin/users/$userId', params: { userId: String(u.id) } })
-                      }
+                      className="px-3 py-4 text-center"
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (selection.selectionMode) selection.toggleOne(id)
+                      }}
                     >
+                      {selection.selectionMode ? (
+                        <input
+                          type="checkbox"
+                          className="rounded border-outline-variant text-secondary"
+                          checked={isSelected}
+                          onChange={() => selection.toggleOne(id)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <span className="inline-block w-2 h-2 rounded-full bg-outline-variant" aria-hidden />
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-label-sm font-bold">
                           {u.initials}
@@ -154,23 +229,31 @@ export function UsersListPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-body-sm text-on-surface-variant">{u.lastLogin}</td>
-                    <td className="px-6 py-4 text-right">
+                    <td
+                      className="px-6 py-4 text-right"
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <button
                         type="button"
                         className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant hover:text-secondary transition-colors"
-                        onClick={() =>
-                          navigate({ to: '/admin/users/$userId', params: { userId: String(u.id) } })
-                        }
+                        onClick={() => goDetail(u)}
                       >
                         <span className="material-symbols-outlined text-xl">visibility</span>
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+        <div className="px-6 py-3 border-t border-outline-variant text-label-sm text-on-surface-variant">
+          Showing {visible.length} of {items.length} users
+          {!selection.selectionMode && (
+            <span className="ml-2 opacity-80">· Hold a row 3s to multi-select</span>
+          )}
+        </div>
       </section>
     </div>
   )

@@ -4,8 +4,10 @@ import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { ExportButton } from '@/shared/components/export/ExportButton'
+import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { useListSelection } from '@/shared/hooks/useListSelection'
 import { Can } from '@/shared/rbac'
 import { Action, ResourceName } from '@/shared/schema'
 import { useDepartmentsList } from '../hooks/use-departments-list'
@@ -34,10 +36,19 @@ export function DepartmentsListPage() {
     reload,
   } = useDepartmentsList()
 
-  if (loading) {
-    return <PageLoadingSkeleton />
+  const selection = useListSelection({
+    items: filtered,
+    getId: (d) => String(d.id),
+  })
+
+  const goDetail = (id: number) => {
+    navigate({
+      to: '/workforce/departments/$departmentId',
+      params: { departmentId: String(id) },
+    })
   }
 
+  if (loading) return <PageLoadingSkeleton />
   if (error) {
     return (
       <ErrorState
@@ -59,6 +70,7 @@ export function DepartmentsListPage() {
               resource={ResourceName.DEPARTMENT}
               query={search}
               filters={{ status }}
+              selectedIds={selection.selectionMode ? Array.from(selection.selectedIds) : undefined}
               filenameStem="departments"
             />
             <Can action={Action.CREATE} resource={ResourceName.DEPARTMENT}>
@@ -80,6 +92,21 @@ export function DepartmentsListPage() {
         <MetricCard label="Active" value={String(metrics.active)} icon="check_circle" valueClassName="text-secondary" />
         <MetricCard label="Inactive / Archived" value={String(metrics.inactive)} icon="archive" />
       </section>
+
+      {selection.selectionMode && (
+        <BulkSelectionBar
+          selectedCount={selection.selectedCount}
+          filteredCount={filtered.length}
+          onCancel={selection.exitSelectionMode}
+        >
+          <ExportButton
+            resource={ResourceName.DEPARTMENT}
+            selectedIds={Array.from(selection.selectedIds)}
+            filenameStem="departments-selected"
+            label="Export selected"
+          />
+        </BulkSelectionBar>
+      )}
 
       <div className="bv-surface p-4 flex flex-wrap gap-4 items-center">
         <div className="relative flex-1 min-w-[200px]">
@@ -112,11 +139,6 @@ export function DepartmentsListPage() {
               ? 'Try clearing filters or search.'
               : 'Create your first department to organize staff and reporting lines.'}
           </p>
-          <Can action={Action.CREATE} resource={ResourceName.DEPARTMENT}>
-            <Button variant="primary" onClick={() => navigate({ to: '/workforce/departments/new' })}>
-              Add Department
-            </Button>
-          </Can>
         </div>
       )}
 
@@ -126,6 +148,19 @@ export function DepartmentsListPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-surface-container-low border-b border-outline-variant">
+                  <th className="px-3 py-4 w-12 text-center">
+                    {selection.selectionMode ? (
+                      <input
+                        type="checkbox"
+                        className="rounded border-outline-variant text-secondary"
+                        checked={selection.allFilteredSelected}
+                        onChange={selection.toggleSelectAllFiltered}
+                        aria-label="Select all filtered departments"
+                      />
+                    ) : (
+                      <span className="sr-only">Select</span>
+                    )}
+                  </th>
                   <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest">Department Name</th>
                   <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest">Code</th>
                   <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest">Department Head</th>
@@ -135,70 +170,100 @@ export function DepartmentsListPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
-                {filtered.map((d) => (
-                  <tr
-                    key={d.id}
-                    className="zebra-row cursor-pointer group"
-                    onClick={() =>
-                      navigate({
-                        to: '/workforce/departments/$departmentId',
-                        params: { departmentId: String(d.id) },
-                      })
-                    }
-                  >
-                    <td className="px-6 py-5">
-                      <div className="flex items-center gap-3">
-                        <div
+                {filtered.map((d) => {
+                  const sid = String(d.id)
+                  const isSelected = selection.isSelected(sid)
+                  return (
+                    <tr
+                      key={d.id}
+                      className={cn(
+                        'cursor-pointer group select-none',
+                        isSelected ? 'bg-secondary/10' : 'zebra-row',
+                      )}
+                      onMouseDown={() => selection.onRowPressStart(sid)}
+                      onMouseUp={() => selection.onRowPressEnd(sid, () => goDetail(d.id))}
+                      onMouseLeave={selection.onRowPressCancel}
+                      onTouchStart={() => selection.onRowPressStart(sid)}
+                      onTouchEnd={() => selection.onRowPressEnd(sid, () => goDetail(d.id))}
+                      onTouchCancel={selection.onRowPressCancel}
+                      onContextMenu={(e) => e.preventDefault()}
+                    >
+                      <td
+                        className="px-3 py-5 text-center"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (selection.selectionMode) selection.toggleOne(sid)
+                        }}
+                      >
+                        {selection.selectionMode ? (
+                          <input
+                            type="checkbox"
+                            className="rounded border-outline-variant text-secondary"
+                            checked={isSelected}
+                            onChange={() => selection.toggleOne(sid)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <span className="inline-block w-2 h-2 rounded-full bg-outline-variant" aria-hidden />
+                        )}
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={cn(
+                              'w-10 h-10 rounded-lg flex items-center justify-center',
+                              d.status === 'Active'
+                                ? 'bg-secondary/15 text-secondary'
+                                : 'bg-surface-container-highest text-outline',
+                            )}
+                          >
+                            <Icon name="domain" className="text-xl" />
+                          </div>
+                          <span className="font-semibold text-on-surface text-title-lg">{d.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5 text-on-surface-variant">{d.code}</td>
+                      <td className="px-6 py-5">
+                        <span className="text-label-md">{d.headName}</span>
+                      </td>
+                      <td className="px-6 py-5 text-center">{d.staffCount}</td>
+                      <td className="px-6 py-5">
+                        <span
                           className={cn(
-                            'w-10 h-10 rounded-lg flex items-center justify-center transition-transform group-hover:scale-105',
+                            'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-label-sm font-medium',
                             d.status === 'Active'
-                              ? 'bg-secondary/15 text-secondary'
-                              : 'bg-surface-container-highest text-outline',
+                              ? 'bg-secondary/10 text-secondary'
+                              : 'bg-surface-container-high text-outline',
                           )}
                         >
-                          <Icon name="domain" className="text-xl" />
-                        </div>
-                        <span className="font-semibold text-on-surface text-title-lg">{d.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-5 text-on-surface-variant">{d.code}</td>
-                    <td className="px-6 py-5">
-                      <span className="text-label-md">{d.headName}</span>
-                    </td>
-                    <td className="px-6 py-5 text-center">{d.staffCount}</td>
-                    <td className="px-6 py-5">
-                      <span
-                        className={cn(
-                          'inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-label-sm font-medium',
-                          d.status === 'Active'
-                            ? 'bg-secondary/10 text-secondary'
-                            : 'bg-surface-container-high text-outline',
-                        )}
+                          {d.status}
+                        </span>
+                      </td>
+                      <td
+                        className="px-6 py-5 text-right"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
                       >
-                        {d.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-5 text-right" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        className="p-2 hover:bg-secondary/10 rounded-lg text-on-surface-variant transition-colors"
-                        onClick={() =>
-                          navigate({
-                            to: '/workforce/departments/$departmentId',
-                            params: { departmentId: String(d.id) },
-                          })
-                        }
-                      >
-                        <Icon name="visibility" className="text-lg" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                        <button
+                          type="button"
+                          className="p-2 hover:bg-secondary/10 rounded-lg text-on-surface-variant transition-colors"
+                          onClick={() => goDetail(d.id)}
+                        >
+                          <Icon name="visibility" className="text-lg" />
+                        </button>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
           <div className="px-6 py-4 border-t border-outline-variant text-body-sm text-on-surface-variant">
             Showing {filtered.length} of {items.length} departments
+            {!selection.selectionMode && (
+              <span className="ml-2 opacity-80">· Hold a row 3s to multi-select</span>
+            )}
           </div>
         </div>
       )}
