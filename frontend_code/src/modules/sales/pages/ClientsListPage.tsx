@@ -3,23 +3,11 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { ExportButton } from '@/shared/components/export/ExportButton'
+import { StatusDot } from '@/shared/components/ui/StatusDot'
 import { ResourceName } from '@/shared/schema'
 import { useClientsList } from '../hooks/use-clients-list'
-import type { ClientType, RecordStatus } from '../types'
+import type { ClientType } from '../types'
 import { cn } from '@/shared/lib/cn'
-
-function StatusDotOnly({ status }: { status: RecordStatus }) {
-  return (
-    <span
-      className={cn(
-        'inline-block w-2.5 h-2.5 rounded-full shrink-0',
-        status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'
-      )}
-      title={status}
-      aria-label={status}
-    />
-  )
-}
 
 const typeStyles: Record<ClientType, string> = {
   Enterprise: 'bg-violet-100 text-violet-800',
@@ -62,6 +50,11 @@ export function ClientsListPage() {
     clearLongPress,
   } = useClientsList()
 
+  const openFull = (clientId: string) => {
+    setQuickView(null)
+    navigate({ to: '/sales/clients/$clientId', params: { clientId } })
+  }
+
   return (
     <div className="space-y-6 relative animate-fade-in">
       <PageHeader
@@ -102,7 +95,7 @@ export function ClientsListPage() {
                       ? 'text-emerald-700 bg-emerald-50'
                       : m.changeType === 'negative'
                         ? 'text-red-700 bg-red-50'
-                        : 'text-on-surface-variant bg-surface-container'
+                        : 'text-on-surface-variant bg-surface-container',
                   )}
                 >
                   {m.change}
@@ -218,7 +211,7 @@ export function ClientsListPage() {
                     key={client.id}
                     className={cn(
                       'cursor-pointer group select-none',
-                      isSelected ? 'bg-secondary/10' : 'zebra-row'
+                      isSelected ? 'bg-secondary/10' : 'zebra-row',
                     )}
                     onMouseDown={() => startLongPress(client.id)}
                     onMouseUp={() => endLongPress(client)}
@@ -245,7 +238,7 @@ export function ClientsListPage() {
                           onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
-                        <StatusDotOnly status={client.status} />
+                        <StatusDot status={client.status} />
                       )}
                     </td>
                     <td className="px-4 py-4">
@@ -280,8 +273,17 @@ export function ClientsListPage() {
                           type="button"
                           className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant transition-colors"
                           onClick={() => setQuickView(client)}
+                          aria-label="Quick view"
                         >
                           <span className="material-symbols-outlined text-sm">visibility</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant transition-colors"
+                          onClick={() => openFull(client.id)}
+                          aria-label="Open full record"
+                        >
+                          <span className="material-symbols-outlined text-sm">open_in_new</span>
                         </button>
                         {client.chatLink && (
                           <a
@@ -341,7 +343,7 @@ export function ClientsListPage() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <StatusDotOnly status={quickView.status} />
+                    <StatusDot status={quickView.status} />
                     <h5 className="text-xl font-bold text-on-surface">{quickView.name}</h5>
                   </div>
                   <p className="text-on-surface-variant text-sm">{quickView.industry}</p>
@@ -388,8 +390,11 @@ export function ClientsListPage() {
                 </div>
               )}
             </div>
-            <div className="p-6 border-t border-outline-variant bg-surface-container-low">
-              <Button variant="primary" className="w-full" onClick={() => setQuickView(null)}>
+            <div className="p-6 border-t border-outline-variant bg-surface-container-low flex gap-3">
+              <Button variant="primary" className="flex-1" onClick={() => openFull(quickView.id)}>
+                Open full record
+              </Button>
+              <Button variant="outline" onClick={() => setQuickView(null)}>
                 Close
               </Button>
             </div>
