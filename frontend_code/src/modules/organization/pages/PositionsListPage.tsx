@@ -1,28 +1,20 @@
-import { useEffect, useState } from 'react'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
-import { getPositions } from '../api/organization'
-import type { PositionRow } from '@/shared/schema'
+import { usePositionsList } from '../hooks/use-organization'
 import { cn } from '@/shared/lib/cn'
 
 export function PositionsListPage() {
-  const [items, setItems] = useState<PositionRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data, isLoading, isError, error, refetch } = usePositionsList(true)
+  const items = data?.items ?? []
 
-  useEffect(() => {
-    getPositions({ includeArchived: true })
-      .then((r) => setItems(r.items))
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false))
-  }, [])
-
-  if (loading) return <PageLoadingSkeleton />
-  if (error) return <ErrorState description={error} />
+  if (isLoading) return <PageLoadingSkeleton />
+  if (isError) {
+    return <ErrorState description={(error as Error).message} onRetry={() => void refetch()} />
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <PageHeader title="Positions" description="Job positions assigned via employment_assignments" />
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
         <table className="w-full text-left">

@@ -1,28 +1,20 @@
-import { useEffect, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
-import { getHolidayCalendars } from '../api/organization'
-import type { HolidayCalendarRow } from '@/shared/schema'
+import { useHolidayCalendarsList } from '../hooks/use-organization'
 import { cn } from '@/shared/lib/cn'
 
 export function HolidayCalendarsPage() {
-  const [items, setItems] = useState<HolidayCalendarRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data, isLoading, isError, error, refetch } = useHolidayCalendarsList()
+  const items = data?.items ?? []
 
-  useEffect(() => {
-    getHolidayCalendars()
-      .then((r) => setItems(r.items))
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false))
-  }, [])
-
-  if (loading) return <PageLoadingSkeleton />
-  if (error) return <ErrorState description={error} />
+  if (isLoading) return <PageLoadingSkeleton />
+  if (isError) {
+    return <ErrorState description={(error as Error).message} onRetry={() => void refetch()} />
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div>
         <h2 className="text-title-lg font-semibold text-on-background">Calendars</h2>
         <p className="text-body-sm text-on-surface-variant mt-0.5">

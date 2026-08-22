@@ -1,31 +1,30 @@
-import { useEffect, useState } from 'react'
-import { useParams } from '@tanstack/react-router'
+import { useNavigate, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
-import { getHolidays } from '../api/organization'
-import type { HolidayRow } from '@/shared/schema'
+import { useHolidaysList } from '../hooks/use-organization'
 
 export function HolidaysListPage() {
   const { calendarId } = useParams({ strict: false }) as { calendarId: string }
   const id = Number(calendarId)
-  const [items, setItems] = useState<HolidayRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const navigate = useNavigate()
+  const { data, isLoading, isError, error, refetch } = useHolidaysList(id)
+  const items = data?.items ?? []
 
-  useEffect(() => {
-    getHolidays(id)
-      .then((r) => setItems(r.items))
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false))
-  }, [id])
-
-  if (loading) return <PageLoadingSkeleton />
-  if (error) return <ErrorState description={error} />
+  if (isLoading) return <PageLoadingSkeleton />
+  if (isError) {
+    return (
+      <ErrorState
+        description={(error as Error).message}
+        onRetry={() => void refetch()}
+        onBack={() => navigate({ to: '/admin/settings/holidays' })}
+      />
+    )
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <BackButton to="/admin/settings/holidays" label="Back to calendars" />
       <div>
         <h2 className="text-title-lg font-semibold text-on-background">Holiday schedule</h2>
