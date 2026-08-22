@@ -1,70 +1,113 @@
-import { useNavigate, useParams } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
-import { payrollEmployees } from '../data/mock'
+import { BackButton } from '@/shared/components/layout/BackButton'
+import { ExportButton } from '@/shared/components/export/ExportButton'
+import { ResourceName } from '@/shared/schema'
+import { exportAndDownload } from '@/shared/api/export'
+import { usePayslip } from '../hooks/use-payroll'
+import { cn } from '@/shared/lib/cn'
 
 export function PayslipViewPage() {
   const navigate = useNavigate()
-  const { employeeId } = useParams({ strict: false }) as { employeeId?: string }
-  const emp = payrollEmployees.find((e) => e.id === employeeId) ?? payrollEmployees[0]
+  const { payslip, emp, formatMoney, isLoading, isError } = usePayslip()
+
+  if (isLoading) {
+    return <div className="p-8 text-body-md text-on-surface-variant">Loading payslip…</div>
+  }
+  if (isError || !payslip || !emp) {
+    return (
+      <div className="p-8 space-y-4">
+        <p className="text-body-md text-error">Payslip not found.</p>
+        <BackButton to="/payroll/monthly" />
+      </div>
+    )
+  }
+
+  const handleDownload = () => {
+    void exportAndDownload({
+      resource: ResourceName.PAYROLL,
+      format: 'pdf',
+      filenameStem: `payslip-${emp.code}-${payslip.periodLabel.replace(/\s+/g, '-')}`,
+      filters: { employeeId: emp.id },
+    })
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <button
-              type="button"
-              className="text-on-surface-variant hover:text-secondary p-1 rounded-full hover:bg-surface-container transition-colors"
-              onClick={() => navigate({ to: '/payroll/monthly' })}
-            >
-              <span className="material-symbols-outlined">arrow_back</span>
-            </button>
+            <BackButton to="/payroll/monthly" label="" className="!px-1" />
             <h1 className="text-headline-lg font-bold text-deep-navy">Payslip</h1>
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-emerald/10 text-success-emerald">
-              PAID
+            <span
+              className={cn(
+                'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
+                emp.status === 'Paid'
+                  ? 'bg-success-emerald/10 text-success-emerald'
+                  : 'bg-secondary-container text-on-secondary-container',
+              )}
+            >
+              {emp.status.toUpperCase()}
             </span>
           </div>
           <p className="text-body-md text-on-surface-variant ml-10">
             {emp.name} <span className="mx-2 text-outline-variant">•</span> {emp.code}{' '}
-            <span className="mx-2 text-outline-variant">•</span> August 2026
+            <span className="mx-2 text-outline-variant">•</span> {payslip.periodLabel}
           </p>
         </div>
         <div className="flex gap-3 w-full md:w-auto">
-          <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-sm">visibility</span>}>
+          <Button
+            variant="outline"
+            size="sm"
+            leftIcon={<span className="material-symbols-outlined text-sm">visibility</span>}
+            onClick={() => {
+              /* PDF viewer stub — later */
+            }}
+          >
             View PDF
           </Button>
-          <Button variant="primary" size="sm" leftIcon={<span className="material-symbols-outlined text-sm">download</span>}>
+          <Button
+            variant="primary"
+            size="sm"
+            leftIcon={<span className="material-symbols-outlined text-sm">download</span>}
+            onClick={handleDownload}
+          >
             Download
           </Button>
+          <ExportButton resource={ResourceName.PAYROLL} filters={{ employeeId: emp.id }} filenameStem={`payslip-${emp.code}`} />
         </div>
       </div>
 
       <div className="bv-surface p-6 flex flex-col sm:flex-row gap-6 sm:gap-12">
         <div>
           <p className="text-[10px] text-on-surface-variant uppercase tracking-wider mb-1">Payment Date</p>
-          <p className="text-label-md font-semibold text-deep-navy">Aug 31, 2026</p>
+          <p className="text-label-md font-semibold text-deep-navy">{payslip.paymentDate}</p>
         </div>
         <div>
           <p className="text-[10px] text-on-surface-variant uppercase tracking-wider mb-1">Payment Method</p>
           <p className="text-label-md font-semibold text-deep-navy flex items-center">
             <span className="material-symbols-outlined text-sm mr-1 text-secondary">account_balance</span>
-            Bank Transfer
+            {payslip.paymentMethod}
           </p>
         </div>
         <div>
           <p className="text-[10px] text-on-surface-variant uppercase tracking-wider mb-1">Reference Number</p>
-          <p className="text-label-md font-semibold text-deep-navy font-mono text-sm">TXN-98234105</p>
+          <p className="text-label-md font-semibold text-deep-navy font-mono text-sm">{payslip.referenceNumber}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <SumCard label="Gross Salary" value="₹75,000" />
-        <SumCard label="Total Earnings" value="₹75,000" accent="border-l-4 border-l-secondary" />
-        <SumCard label="Total Deductions" value="₹6,500" accent="border-l-4 border-l-error" />
-        <SumCard label="Adjustments" value="+₹1,500" accent="border-l-4 border-l-primary" />
+        <SumCard label="Gross Salary" value={formatMoney(payslip.gross)} />
+        <SumCard label="Total Earnings" value={formatMoney(payslip.totalEarnings)} accent="border-l-4 border-l-secondary" />
+        <SumCard label="Total Deductions" value={formatMoney(payslip.totalDeductions)} accent="border-l-4 border-l-error" />
+        <SumCard
+          label="Adjustments"
+          value={`${payslip.netAdjustments >= 0 ? '+' : ''}${formatMoney(payslip.netAdjustments)}`}
+          accent="border-l-4 border-l-primary"
+        />
         <div className="bg-deep-navy text-on-primary rounded-xl p-5 executive-shadow flex flex-col justify-center">
           <p className="text-label-sm text-inverse-primary mb-1 opacity-80">Net Salary</p>
-          <p className="text-headline-md font-bold text-on-primary">₹70,000</p>
+          <p className="text-headline-md font-bold text-on-primary">{formatMoney(payslip.net)}</p>
         </div>
       </div>
 
@@ -75,7 +118,7 @@ export function PayslipViewPage() {
               <span className="material-symbols-outlined mr-2 text-secondary">add_circle</span>
               Earnings
             </h3>
-            <span className="text-label-md text-on-surface-variant font-semibold">₹75,000</span>
+            <span className="text-label-md text-on-surface-variant font-semibold">{formatMoney(payslip.totalEarnings)}</span>
           </div>
           <table className="w-full text-left border-collapse">
             <thead>
@@ -85,15 +128,10 @@ export function PayslipViewPage() {
               </tr>
             </thead>
             <tbody className="text-body-md text-deep-navy">
-              {[
-                ['Basic Salary', '₹45,000'],
-                ['House Rent Allowance (HRA)', '₹15,000'],
-                ['Conveyance', '₹5,000'],
-                ['Special Allowance', '₹10,000'],
-              ].map(([c, a]) => (
-                <tr key={c} className="border-b border-outline-variant zebra-row">
-                  <td className="py-4 px-6">{c}</td>
-                  <td className="py-4 px-6 text-right font-medium">{a}</td>
+              {payslip.earnings.map((e) => (
+                <tr key={e.name} className="border-b border-outline-variant zebra-row">
+                  <td className="py-4 px-6">{e.name}</td>
+                  <td className="py-4 px-6 text-right font-medium">{formatMoney(e.amount)}</td>
                 </tr>
               ))}
             </tbody>
@@ -107,7 +145,7 @@ export function PayslipViewPage() {
                 <span className="material-symbols-outlined mr-2 text-error">remove_circle</span>
                 Deductions
               </h3>
-              <span className="text-label-md text-on-surface-variant font-semibold">₹6,500</span>
+              <span className="text-label-md text-on-surface-variant font-semibold">{formatMoney(payslip.totalDeductions)}</span>
             </div>
             <table className="w-full text-left border-collapse">
               <thead>
@@ -117,14 +155,10 @@ export function PayslipViewPage() {
                 </tr>
               </thead>
               <tbody className="text-body-md text-deep-navy">
-                {[
-                  ['Provident Fund (PF)', '-₹3,600'],
-                  ['Tax Deducted at Source (TDS)', '-₹2,400'],
-                  ['Professional Tax', '-₹500'],
-                ].map(([c, a]) => (
-                  <tr key={c} className="border-b border-outline-variant zebra-row">
-                    <td className="py-4 px-6">{c}</td>
-                    <td className="py-4 px-6 text-right font-medium text-error">{a}</td>
+                {payslip.deductions.map((d) => (
+                  <tr key={d.name} className="border-b border-outline-variant zebra-row">
+                    <td className="py-4 px-6">{d.name}</td>
+                    <td className="py-4 px-6 text-right font-medium text-error">-{formatMoney(d.amount)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -137,7 +171,10 @@ export function PayslipViewPage() {
                 <span className="material-symbols-outlined mr-2 text-secondary">tune</span>
                 Adjustments
               </h3>
-              <span className="text-label-md text-on-surface-variant font-semibold">+₹1,500</span>
+              <span className="text-label-md text-on-surface-variant font-semibold">
+                {payslip.netAdjustments >= 0 ? '+' : ''}
+                {formatMoney(payslip.netAdjustments)}
+              </span>
             </div>
             <table className="w-full text-left border-collapse">
               <thead>
@@ -147,13 +184,31 @@ export function PayslipViewPage() {
                 </tr>
               </thead>
               <tbody className="text-body-md text-deep-navy">
-                <tr className="zebra-row">
-                  <td className="py-4 px-6">
-                    <div>Performance Bonus</div>
-                    <div className="text-xs text-on-surface-variant mt-1">Q3 Target Achievement</div>
-                  </td>
-                  <td className="py-4 px-6 text-right font-medium text-success-emerald">+₹1,500</td>
-                </tr>
+                {payslip.adjustments.length === 0 ? (
+                  <tr>
+                    <td className="py-4 px-6 text-on-surface-variant" colSpan={2}>
+                      No adjustments
+                    </td>
+                  </tr>
+                ) : (
+                  payslip.adjustments.map((adj) => (
+                    <tr key={adj.id} className="zebra-row">
+                      <td className="py-4 px-6">
+                        <div>{adj.title}</div>
+                        <div className="text-xs text-on-surface-variant mt-1">{adj.detail}</div>
+                      </td>
+                      <td
+                        className={cn(
+                          'py-4 px-6 text-right font-medium',
+                          adj.amount >= 0 ? 'text-success-emerald' : 'text-error',
+                        )}
+                      >
+                        {adj.amount >= 0 ? '+' : ''}
+                        {formatMoney(adj.amount)}
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
