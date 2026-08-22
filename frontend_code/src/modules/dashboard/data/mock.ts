@@ -130,7 +130,7 @@ export const employeeLeaveSummary = [
   },
 ]
 
-/** weekBars: Mon–Sun heights; last two are weekends (muted in UI) */
+/** weekBars: Mon–Sun; breakMarkers = red segments (multiple per day if multiple breaks) */
 export const employeeMeta = {
   name: 'Alex',
   employeeId: 'EMP-102',
@@ -142,12 +142,35 @@ export const employeeMeta = {
   totalHours: '4.5h',
   totalHoursNote: '45% of shift',
   weekBars: [
-    { pct: 60, isWeekend: false },
-    { pct: 85, isWeekend: false },
-    { pct: 70, isWeekend: false },
-    { pct: 90, isWeekend: false },
-    { pct: 45, isWeekend: false },
-    { pct: 10, isWeekend: true },
-    { pct: 10, isWeekend: true },
+    {
+      pct: 60,
+      isWeekend: false,
+      breakMarkers: [
+        { id: 'd-mon-1', startPct: 35, endPct: 42 },
+        { id: 'd-mon-2', startPct: 68, endPct: 72 },
+      ],
+    },
+    {
+      pct: 85,
+      isWeekend: false,
+      breakMarkers: [{ id: 'd-tue-1', startPct: 40, endPct: 48 }],
+    },
+    {
+      pct: 70,
+      isWeekend: false,
+      breakMarkers: [
+        { id: 'd-wed-1', startPct: 28, endPct: 33 },
+        { id: 'd-wed-2', startPct: 55, endPct: 60 },
+        { id: 'd-wed-3', startPct: 78, endPct: 82 },
+      ],
+    },
+    {
+      pct: 90,
+      isWeekend: false,
+      breakMarkers: [{ id: 'd-thu-1', startPct: 45, endPct: 55 }],
+    },
+    { pct: 45, isWeekend: false, breakMarkers: [] },
+    { pct: 10, isWeekend: true, breakMarkers: [] },
+    { pct: 10, isWeekend: true, breakMarkers: [] },
   ],
 }
