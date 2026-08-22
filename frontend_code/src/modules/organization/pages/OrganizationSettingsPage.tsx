@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
@@ -17,14 +17,11 @@ export function OrganizationSettingsPage() {
   const locationsQ = useOrgLocationsForSelect()
   const updateMut = useUpdateOrganizationSettings()
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
+  // Client form draft only — set on beginEdit, cleared on cancel/save. Server data stays in Query.
   const [draft, setDraft] = useState<Partial<OrganizationSettings>>({})
 
   const settings = settingsQ.data
   const locations = locationsQ.data?.items ?? []
-
-  useEffect(() => {
-    if (settings) setDraft(settings)
-  }, [settings])
 
   if (settingsQ.isLoading || locationsQ.isLoading) return <PageLoadingSkeleton />
   if (settingsQ.isError || !settings) {
@@ -34,6 +31,16 @@ export function OrganizationSettingsPage() {
         onRetry={() => void settingsQ.refetch()}
       />
     )
+  }
+
+  const beginEdit = () => {
+    setDraft({ ...settings })
+    startEditing()
+  }
+
+  const onCancel = () => {
+    setDraft({})
+    cancelEditing()
   }
 
   const head =
@@ -48,7 +55,12 @@ export function OrganizationSettingsPage() {
         default_timezone: draft.default_timezone,
         default_currency: draft.default_currency,
       },
-      { onSuccess: () => finishEditing() },
+      {
+        onSuccess: () => {
+          setDraft({})
+          finishEditing()
+        },
+      },
     )
   }
 
@@ -60,13 +72,7 @@ export function OrganizationSettingsPage() {
         actions={
           isEditing ? (
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setDraft(settings)
-                  cancelEditing()
-                }}
-              >
+              <Button variant="outline" onClick={onCancel}>
                 Cancel
               </Button>
               <Button variant="primary" onClick={save} isLoading={updateMut.isPending}>
@@ -74,7 +80,7 @@ export function OrganizationSettingsPage() {
               </Button>
             </div>
           ) : (
-            <EditButton variant="primary" onClick={startEditing} />
+            <EditButton variant="primary" onClick={beginEdit} />
           )
         }
       />
@@ -87,7 +93,7 @@ export function OrganizationSettingsPage() {
         <Field
           label="Company name"
           editing={isEditing}
-          value={String(draft.company_name ?? '')}
+          value={String(draft.company_name ?? settings.company_name ?? '')}
           display={settings.company_name}
           onChange={(v) => setDraft((d) => ({ ...d, company_name: v }))}
         />
@@ -96,7 +102,7 @@ export function OrganizationSettingsPage() {
           {isEditing ? (
             <select
               className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm"
-              value={draft.head_office_location_id ?? ''}
+              value={draft.head_office_location_id ?? settings.head_office_location_id ?? ''}
               onChange={(e) =>
                 setDraft((d) => ({ ...d, head_office_location_id: Number(e.target.value) }))
               }
@@ -114,14 +120,14 @@ export function OrganizationSettingsPage() {
         <Field
           label="Default timezone"
           editing={isEditing}
-          value={String(draft.default_timezone ?? '')}
+          value={String(draft.default_timezone ?? settings.default_timezone ?? '')}
           display={settings.default_timezone}
           onChange={(v) => setDraft((d) => ({ ...d, default_timezone: v }))}
         />
         <Field
           label="Default currency"
           editing={isEditing}
-          value={String(draft.default_currency ?? '')}
+          value={String(draft.default_currency ?? settings.default_currency ?? '')}
           display={settings.default_currency}
           onChange={(v) => setDraft((d) => ({ ...d, default_currency: v }))}
         />

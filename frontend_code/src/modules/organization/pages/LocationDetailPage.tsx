@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
@@ -16,11 +16,19 @@ export function LocationDetailPage() {
   const { data: loc, isLoading, isError, error, refetch } = useLocationDetail(id)
   const updateMut = useUpdateLocation(id)
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
+  // Client form state only — seeded when user starts editing, never synced via useEffect
   const [draft, setDraft] = useState<Partial<LocationRow>>({})
 
-  useEffect(() => {
-    if (loc) setDraft(loc)
-  }, [loc])
+  const beginEdit = () => {
+    if (!loc) return
+    setDraft({ ...loc })
+    startEditing()
+  }
+
+  const onCancel = () => {
+    setDraft({})
+    cancelEditing()
+  }
 
   const save = () => {
     if (!loc) return
@@ -36,7 +44,10 @@ export function LocationDetailPage() {
         attendance_radius_meters: draft.attendance_radius_meters,
       },
       {
-        onSuccess: () => finishEditing(),
+        onSuccess: () => {
+          setDraft({})
+          finishEditing()
+        },
       },
     )
   }
@@ -52,17 +63,19 @@ export function LocationDetailPage() {
     )
   }
 
+  const display = isEditing ? { ...loc, ...draft } : loc
+
   const field = (label: string, key: keyof LocationRow, readOnly = false) => (
     <div>
       <p className="text-label-sm text-on-surface-variant mb-1">{label}</p>
       {isEditing && !readOnly ? (
         <input
           className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm outline-none focus:border-secondary"
-          value={String(draft[key] ?? '')}
+          value={String(draft[key] ?? loc[key] ?? '')}
           onChange={(e) => setDraft((d) => ({ ...d, [key]: e.target.value }))}
         />
       ) : (
-        <p className="text-body-md font-medium text-on-background">{String(loc[key] ?? '—')}</p>
+        <p className="text-body-md font-medium text-on-background">{String(display[key] ?? '—')}</p>
       )}
     </div>
   )
@@ -79,13 +92,7 @@ export function LocationDetailPage() {
         </div>
         {isEditing ? (
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setDraft(loc)
-                cancelEditing()
-              }}
-            >
+            <Button variant="outline" onClick={onCancel}>
               Cancel
             </Button>
             <Button variant="primary" onClick={save} isLoading={updateMut.isPending}>
@@ -93,7 +100,7 @@ export function LocationDetailPage() {
             </Button>
           </div>
         ) : (
-          <EditButton variant="primary" onClick={startEditing} />
+          <EditButton variant="primary" onClick={beginEdit} />
         )}
       </div>
 

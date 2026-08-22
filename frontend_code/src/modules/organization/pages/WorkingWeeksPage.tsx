@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
@@ -8,15 +9,15 @@ import type { WorkingWeekRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 
 const DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+const WEEKS_QK = ['organization', 'working-weeks'] as const
 
 export function WorkingWeeksPage() {
+  const qc = useQueryClient()
   const { data, isLoading, isError, error, refetch } = useWorkingWeeksList()
   const items = data?.items ?? []
+  // Client form state only while editing one row — never a local copy of the list
   const [editingId, setEditingId] = useState<number | null>(null)
   const [draftDays, setDraftDays] = useState<number[]>([])
-  const [localItems, setLocalItems] = useState<WorkingWeekRow[] | null>(null)
-
-  const rows = localItems ?? items
 
   if (isLoading) return <PageLoadingSkeleton />
   if (isError) {
@@ -28,17 +29,30 @@ export function WorkingWeeksPage() {
     setDraftDays([...w.working_days_of_week])
   }
 
+  const cancelEdit = () => {
+    setEditingId(null)
+    setDraftDays([])
+  }
+
   const toggleDay = (i: number) => {
     setDraftDays((days) =>
       days.includes(i) ? days.filter((d) => d !== i) : [...days, i].sort((a, b) => a - b),
     )
   }
 
+  // Optimistic update via Query cache (server state) — no localItems mirror
   const save = (id: number) => {
-    setLocalItems((prev) =>
-      (prev ?? items).map((w) => (w.id === id ? { ...w, working_days_of_week: draftDays } : w)),
-    )
+    qc.setQueryData(WEEKS_QK, (prev: { items: WorkingWeekRow[]; total: number } | undefined) => {
+      if (!prev) return prev
+      return {
+        ...prev,
+        items: prev.items.map((w) =>
+          w.id === id ? { ...w, working_days_of_week: draftDays } : w,
+        ),
+      }
+    })
     setEditingId(null)
+    setDraftDays([])
   }
 
   return (
@@ -50,7 +64,7 @@ export function WorkingWeeksPage() {
         </p>
       </div>
       <div className="space-y-4">
-        {rows.map((w) => {
+        {items.map((w) => {
           const editing = editingId === w.id
           const days = editing ? draftDays : w.working_days_of_week
           return (
@@ -67,7 +81,7 @@ export function WorkingWeeksPage() {
                 </div>
                 {editing ? (
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm" onClick={() => setEditingId(null)}>
+                    <Button variant="outline" size="sm" onClick={cancelEdit}>
                       Cancel
                     </Button>
                     <Button variant="primary" size="sm" onClick={() => save(w.id)}>

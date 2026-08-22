@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams, useRouterState } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
@@ -43,7 +43,6 @@ export function ShiftDetailPage() {
   const navigate = useNavigate()
   const id = Number(shiftId)
 
-  // can() takes a single params object — NOT (action, resource)
   const canCreate = can({ action: Action.CREATE, resource: ResourceName.SHIFT })
   const canUpdate = can({ action: Action.UPDATE, resource: ResourceName.SHIFT })
 
@@ -51,19 +50,12 @@ export function ShiftDetailPage() {
   const staffQuery = useShiftStaff(id, !isNew)
   const createMut = useCreateShift()
   const updateMut = useUpdateShift(id)
-  const { isEditing, startEditing, cancelEditing, finishEditing, setEditing } = useEditMode(isNew)
+  // isNew starts in edit mode; no useEffect to seed draft from server
+  const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(isNew)
 
   const shift = isNew ? emptyShift : detailQuery.data ?? null
-  const [draft, setDraft] = useState<Partial<ShiftRow>>(isNew ? emptyShift : {})
-
-  useEffect(() => {
-    if (isNew) {
-      setDraft(emptyShift)
-      setEditing(true)
-      return
-    }
-    if (detailQuery.data) setDraft(detailQuery.data)
-  }, [isNew, detailQuery.data, setEditing])
+  // Client form state only — seed on beginEdit / create flow
+  const [draft, setDraft] = useState<Partial<ShiftRow>>(isNew ? { ...emptyShift } : {})
 
   if (!isNew && detailQuery.isLoading) return <PageLoadingSkeleton />
 
@@ -88,6 +80,17 @@ export function ShiftDetailPage() {
 
   const staff = staffQuery.data ?? []
 
+  const beginEdit = () => {
+    if (!shift) return
+    setDraft({ ...shift })
+    startEditing()
+  }
+
+  const onCancel = () => {
+    setDraft({})
+    cancelEditing()
+  }
+
   const field = (label: string, key: keyof ShiftRow, type: 'text' | 'time' | 'number' = 'text') => (
     <div>
       <p className="text-label-sm text-on-surface-variant mb-1">{label}</p>
@@ -95,7 +98,7 @@ export function ShiftDetailPage() {
         <input
           type={type}
           className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm focus:ring-2 focus:ring-secondary/30 outline-none"
-          value={String(draft[key] ?? '')}
+          value={String(draft[key] ?? shift?.[key] ?? '')}
           onChange={(e) =>
             setDraft((d) => ({
               ...d,
@@ -137,7 +140,12 @@ export function ShiftDetailPage() {
         is_overnight: draft.is_overnight,
         flexible_end: draft.flexible_end,
       },
-      { onSuccess: () => finishEditing() },
+      {
+        onSuccess: () => {
+          setDraft({})
+          finishEditing()
+        },
+      },
     )
   }
 
@@ -162,13 +170,7 @@ export function ShiftDetailPage() {
         {isEditing ? (
           <div className="flex gap-2">
             {!isNew && (
-              <Button
-                variant="outline"
-                onClick={() => {
-                  if (shift) setDraft(shift)
-                  cancelEditing()
-                }}
-              >
+              <Button variant="outline" onClick={onCancel}>
                 Cancel
               </Button>
             )}
@@ -177,7 +179,7 @@ export function ShiftDetailPage() {
             </Button>
           </div>
         ) : (
-          canUpdate && <EditButton variant="primary" onClick={startEditing} />
+          canUpdate && <EditButton variant="primary" onClick={beginEdit} />
         )}
       </div>
 
@@ -199,7 +201,7 @@ export function ShiftDetailPage() {
               <label className="inline-flex items-center gap-2 text-body-sm">
                 <input
                   type="checkbox"
-                  checked={Boolean(draft.is_overnight)}
+                  checked={Boolean(draft.is_overnight ?? shift?.is_overnight)}
                   onChange={(e) => setDraft((d) => ({ ...d, is_overnight: e.target.checked }))}
                 />
                 Crosses midnight
@@ -219,7 +221,7 @@ export function ShiftDetailPage() {
               <label className="inline-flex items-center gap-2 text-body-sm">
                 <input
                   type="checkbox"
-                  checked={Boolean(draft.flexible_end)}
+                  checked={Boolean(draft.flexible_end ?? shift?.flexible_end)}
                   onChange={(e) => setDraft((d) => ({ ...d, flexible_end: e.target.checked }))}
                 />
                 Allow flexible end
