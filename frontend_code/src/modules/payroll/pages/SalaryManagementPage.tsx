@@ -1,26 +1,27 @@
-import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
-import { payrollEmployees, formatMoney } from '../data/mock'
+import { ExportButton } from '@/shared/components/export/ExportButton'
+import { ResourceName } from '@/shared/schema'
+import { useSalaryList } from '../hooks/use-payroll'
 
 /** List of all employees with gross salary only. Row → employee salary detail. */
 export function SalaryManagementPage() {
   const navigate = useNavigate()
-  const [search, setSearch] = useState('')
-
-  const rows = payrollEmployees.filter(
-    (r) =>
-      !search ||
-      r.name.toLowerCase().includes(search.toLowerCase()) ||
-      r.code.toLowerCase().includes(search.toLowerCase()) ||
-      r.department.toLowerCase().includes(search.toLowerCase())
-  )
+  const { rows, search, setSearch, formatMoney, isLoading } = useSalaryList()
 
   return (
     <div className="space-y-8 animate-fade-in">
       <PageHeader
         title="Salary Management"
         description="View and manage employee gross salary configurations."
+        actions={
+          <ExportButton
+            resource={ResourceName.SALARY}
+            filenameStem="salary-management"
+            query={search}
+            label="Export"
+          />
+        }
       />
 
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -36,7 +37,9 @@ export function SalaryManagementPage() {
             type="text"
           />
         </div>
-        <p className="text-caption text-on-surface-variant">{rows.length} employees</p>
+        <p className="text-caption text-on-surface-variant">
+          {isLoading ? 'Loading…' : `${rows.length} employees`}
+        </p>
       </div>
 
       <section className="bv-surface overflow-hidden">
@@ -78,10 +81,10 @@ export function SalaryManagementPage() {
                     {formatMoney(r.gross)}
                     <span className="text-caption text-on-surface-variant font-normal">/mo</span>
                   </td>
-                  <td className="p-4 text-body-sm text-on-surface-variant">Jan 01, 2024</td>
+                  <td className="p-4 text-body-sm text-on-surface-variant">{r.effectiveFrom ?? '—'}</td>
                   <td className="p-4 text-center">
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-success-emerald/10 text-success-emerald border border-success-emerald/20">
-                      ACTIVE
+                      {r.salaryStatus ?? 'ACTIVE'}
                     </span>
                   </td>
                   <td className="p-4 pr-6 text-right">
