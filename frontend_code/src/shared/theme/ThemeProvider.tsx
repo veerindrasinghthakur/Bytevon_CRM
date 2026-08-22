@@ -10,12 +10,16 @@ import {
 import {
   applyTheme,
   resolveTheme,
-  setTheme as commitTheme,
+  setThemePreference,
+  readStoredPreference,
   type ThemeMode,
+  type ThemePreference,
 } from '@/shared/lib/theme'
 
 type ThemeContextValue = {
   theme: ThemeMode
+  preference: ThemePreference
+  setPreference: (pref: ThemePreference) => void
   setTheme: (mode: ThemeMode) => void
   toggleTheme: () => void
   isDark: boolean
@@ -24,44 +28,45 @@ type ThemeContextValue = {
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<ThemeMode>(() => {
-    if (typeof document !== 'undefined') {
-      const attr = document.documentElement.getAttribute('data-theme')
-      if (attr === 'light' || attr === 'dark') return attr
-    }
-    return resolveTheme()
-  })
+  const [preference, setPreferenceState] = useState<ThemePreference>(
+    () => readStoredPreference() ?? 'system',
+  )
+  const [theme, setThemeState] = useState<ThemeMode>(() => resolveTheme(readStoredPreference()))
 
   useEffect(() => {
     applyTheme(theme)
   }, [theme])
 
-  // Follow system only when user has no explicit preference
   useEffect(() => {
+    if (preference !== 'system') return
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     const onChange = () => {
-      try {
-        if (localStorage.getItem('bytevon-theme')) return
-      } catch {
-        return
-      }
       const next = mq.matches ? 'dark' : 'light'
       setThemeState(next)
       applyTheme(next)
     }
     mq.addEventListener('change', onChange)
     return () => mq.removeEventListener('change', onChange)
+  }, [preference])
+
+  const setPreference = useCallback((pref: ThemePreference) => {
+    const effective = setThemePreference(pref)
+    setPreferenceState(pref)
+    setThemeState(effective)
   }, [])
 
-  const setTheme = useCallback((mode: ThemeMode) => {
-    commitTheme(mode)
-    setThemeState(mode)
-  }, [])
+  const setTheme = useCallback(
+    (mode: ThemeMode) => {
+      setPreference(mode)
+    },
+    [setPreference],
+  )
 
   const toggleTheme = useCallback(() => {
     setThemeState((prev) => {
       const next: ThemeMode = prev === 'dark' ? 'light' : 'dark'
-      commitTheme(next)
+      setThemePreference(next)
+      setPreferenceState(next)
       return next
     })
   }, [])
@@ -69,11 +74,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const value = useMemo(
     () => ({
       theme,
+      preference,
+      setPreference,
       setTheme,
       toggleTheme,
       isDark: theme === 'dark',
     }),
-    [theme, setTheme, toggleTheme],
+    [theme, preference, setPreference, setTheme, toggleTheme],
   )
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
