@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { paginate, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { useListSelection } from '@/shared/hooks/useListSelection'
+import { computeProjectListMetrics } from '@/shared/compute/project-metrics'
 import { useProjects } from './use-projects'
 
 export function useProjectsList() {
@@ -30,8 +31,7 @@ export function useProjectsList() {
     getId: (p) => String(p.id),
   })
 
-  const active = items.filter((p) => p.status === 'IN_PROGRESS').length
-  const atRisk = items.filter((p) => p.status === 'ON_HOLD').length
+  const metrics = useMemo(() => computeProjectListMetrics(items), [items])
 
   const setSearchAndResetPage = (v: string) => {
     setSearch(v)
@@ -54,9 +54,10 @@ export function useProjectsList() {
     resetFilters,
     items,
     pageItems,
-    total,
-    active,
-    atRisk,
+    total: metrics.total,
+    active: metrics.active,
+    atRisk: metrics.atRisk,
+    avgProgress: metrics.avgProgress,
     isLoading,
     isError,
     refetch,

@@ -5,6 +5,10 @@ import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
 import { Select } from '@/shared/components/ui/Select'
 import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
+import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { Can } from '@/shared/rbac'
+import { Action, ResourceName } from '@/shared/schema'
 import {
   assignEmployeeToDepartment,
   getDepartment,
@@ -34,20 +38,18 @@ export function DepartmentDetailPage() {
   const [d, setD] = useState<DepartmentListItem | null>(null)
   const [staff, setStaff] = useState<DepartmentEmployee[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
   const [mode, setMode] = useState<'choose' | 'existing'>('choose')
   const [candidates, setCandidates] = useState<{ value: string; label: string; meta?: string }[]>([])
   const [selectedEmp, setSelectedEmp] = useState('')
   const [saving, setSaving] = useState(false)
 
-  // Edit mode
   const [isEditing, setIsEditing] = useState(false)
   const [draftName, setDraftName] = useState('')
   const [draftHeadId, setDraftHeadId] = useState<string>('')
   const [headPickerOpen, setHeadPickerOpen] = useState(false)
   const [headOptions, setHeadOptions] = useState<{ value: string; label: string }[]>([])
-
-  // Remove confirmation
   const [removeTarget, setRemoveTarget] = useState<DepartmentEmployee | null>(null)
 
   const openPositions = Math.max(0, (d as DepartmentListItem & { openPositions?: number })?.openPositions ?? 0)
@@ -66,8 +68,14 @@ export function DepartmentDetailPage() {
     let cancelled = false
     ;(async () => {
       setLoading(true)
-      await reload()
-      if (!cancelled) setLoading(false)
+      setLoadError(false)
+      try {
+        await reload()
+      } catch {
+        if (!cancelled) setLoadError(true)
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
     })()
     return () => {
       cancelled = true
@@ -80,7 +88,6 @@ export function DepartmentDetailPage() {
     setDraftName(d.name)
     setDraftHeadId(d.headEmploymentId != null ? String(d.headEmploymentId) : '')
     setIsEditing(true)
-    // Prefer current staff as head candidates; fall back to full directory
     const fromStaff = staff.map((e) => ({
       value: String(e.employmentId),
       label: `${e.name} (${e.employeeCode})`,
@@ -155,14 +162,35 @@ export function DepartmentDetailPage() {
   }
 
   if (loading) {
-    return <div className="p-12 text-center text-on-surface-variant animate-fade-in">Loading department…</div>
+    return <PageLoadingSkeleton />
+  }
+
+  if (loadError) {
+    return (
+      <ErrorState
+        title="Could not load department"
+        description="Department data failed to load. Retry or go back."
+        onRetry={() => {
+          setLoading(true)
+          void reload()
+            .then(() => setLoadError(false))
+            .catch(() => setLoadError(true))
+            .finally(() => setLoading(false))
+        }}
+      />
+    )
   }
 
   if (!d) {
     return (
       <div className="space-y-4 animate-fade-in">
         <BackButton to="/workforce/departments" label="Back to departments" />
-        <p className="text-title-lg">Department not found</p>
+        <ErrorState
+          title="Department not found"
+          description="This department may have been archived or the link is invalid."
+          showBack={false}
+          onBack={() => navigate({ to: '/workforce/departments' })}
+        />
       </div>
     )
   }
@@ -218,17 +246,20 @@ export function DepartmentDetailPage() {
               </>
             ) : (
               <>
-                <EditButton onClick={() => void startEdit()} label="Edit Department" />
-                <Button variant="primary" leftIcon={<Icon name="person_add" />} onClick={() => void openAdd()}>
-                  Add Member
-                </Button>
+                <Can action={Action.UPDATE} resource={ResourceName.DEPARTMENT}>
+                  <EditButton onClick={() => void startEdit()} label="Edit Department" />
+                </Can>
+                <Can action={Action.UPDATE} resource={ResourceName.DEPARTMENT}>
+                  <Button variant="primary" leftIcon={<Icon name="person_add" />} onClick={() => void openAdd()}>
+                    Add Member
+                  </Button>
+                </Can>
               </>
             )}
           </div>
         </div>
       </div>
 
-      {/* Highlight metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bv-surface card-hover p-6 transition-all hover:-translate-y-0.5">
           <p className="text-on-surface-variant text-label-md mb-2">Total Staff</p>
@@ -252,7 +283,6 @@ export function DepartmentDetailPage() {
         </div>
       </div>
 
-      {/* Head section */}
       <section className="bv-surface p-6 card-hover">
         <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
           <h3 className="text-title-md font-semibold flex items-center gap-2">
@@ -276,16 +306,10 @@ export function DepartmentDetailPage() {
               label="Select department head"
               value={draftHeadId}
               onChange={setDraftHeadId}
-              options={[
-                { value: '', label: 'Unassigned' },
-                ...headOptions,
-              ]}
+              options={[{ value: '', label: 'Unassigned' }, ...headOptions]}
               placeholder="Choose employee…"
               minWidthClass="min-w-full"
             />
-            <p className="text-xs text-on-surface-variant">
-              Head is stored on the department record. Prefer someone currently in this department.
-            </p>
           </div>
         )}
 
@@ -324,7 +348,6 @@ export function DepartmentDetailPage() {
         </div>
       </section>
 
-      {/* Employee cards */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-title-lg font-semibold">Team members</h3>
@@ -336,9 +359,11 @@ export function DepartmentDetailPage() {
             <Icon name="group_off" className="text-5xl" />
             <p>No employees assigned yet.</p>
             {!isEditing && (
-              <Button variant="primary" size="sm" onClick={() => void openAdd()}>
-                Add Member
-              </Button>
+              <Can action={Action.UPDATE} resource={ResourceName.DEPARTMENT}>
+                <Button variant="primary" size="sm" onClick={() => void openAdd()}>
+                  Add Member
+                </Button>
+              </Can>
             )}
           </div>
         ) : (
@@ -384,7 +409,7 @@ export function DepartmentDetailPage() {
                     }}
                   >
                     <div className="flex items-start gap-3 pr-8">
-                      <div className="w-12 h-12 rounded-full bg-secondary/15 text-secondary flex items-center justify-center font-bold group-hover:scale-105 transition-transform">
+                      <div className="w-12 h-12 rounded-full bg-secondary/15 text-secondary flex items-center justify-center font-bold">
                         {initials}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -416,35 +441,24 @@ export function DepartmentDetailPage() {
         )}
       </div>
 
-      {/* Add member modal */}
       {addOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <button
-            type="button"
-            className="absolute inset-0 bg-on-surface/30 backdrop-blur-sm"
-            aria-label="Close"
-            onClick={() => setAddOpen(false)}
-          />
-          <div className="relative bv-surface executive-shadow w-full sm:max-w-md p-6 space-y-4 z-10 rounded-t-2xl sm:rounded-xl animate-slide-up">
+          <button type="button" className="absolute inset-0 bg-on-surface/30 backdrop-blur-sm" aria-label="Close" onClick={() => setAddOpen(false)} />
+          <div className="relative bv-surface executive-shadow w-full sm:max-w-md p-6 space-y-4 z-10 rounded-t-2xl sm:rounded-xl">
             <div className="flex justify-between items-start">
               <div>
-                <h3 className="text-title-lg font-semibold text-on-background">Add Member</h3>
+                <h3 className="text-title-lg font-semibold">Add Member</h3>
                 <p className="text-body-sm text-on-surface-variant mt-1">Add to {d.name}</p>
               </div>
-              <button
-                type="button"
-                className="p-1 rounded-lg hover:bg-surface-container transition-colors"
-                onClick={() => setAddOpen(false)}
-              >
+              <button type="button" className="p-1 rounded-lg hover:bg-surface-container" onClick={() => setAddOpen(false)}>
                 <Icon name="close" />
               </button>
             </div>
-
             {mode === 'choose' && (
               <div className="grid gap-3">
                 <button
                   type="button"
-                  className="text-left p-4 rounded-xl border border-outline-variant hover:border-secondary hover:bg-surface-container-low transition-all card-hover"
+                  className="text-left p-4 rounded-xl border border-outline-variant hover:border-secondary"
                   onClick={() =>
                     navigate({
                       to: '/workforce/employees/new',
@@ -452,34 +466,17 @@ export function DepartmentDetailPage() {
                     })
                   }
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
-                      <Icon name="person_add" />
-                    </span>
-                    <div>
-                      <p className="font-semibold text-on-background">Create new employee</p>
-                      <p className="text-body-sm text-on-surface-variant">Full onboarding form</p>
-                    </div>
-                  </div>
+                  <p className="font-semibold">Create new employee</p>
                 </button>
                 <button
                   type="button"
-                  className="text-left p-4 rounded-xl border border-outline-variant hover:border-secondary hover:bg-surface-container-low transition-all card-hover"
+                  className="text-left p-4 rounded-xl border border-outline-variant hover:border-secondary"
                   onClick={() => void loadCandidates()}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                      <Icon name="person_search" />
-                    </span>
-                    <div>
-                      <p className="font-semibold text-on-background">Add existing employee</p>
-                      <p className="text-body-sm text-on-surface-variant">Search directory</p>
-                    </div>
-                  </div>
+                  <p className="font-semibold">Add existing employee</p>
                 </button>
               </div>
             )}
-
             {mode === 'existing' && (
               <div className="space-y-4">
                 <SearchableSelect
@@ -491,14 +488,8 @@ export function DepartmentDetailPage() {
                   emptyLabel="Everyone is already in this department"
                 />
                 <div className="flex justify-end gap-2">
-                  <Button variant="ghost" onClick={() => setMode('choose')}>
-                    Back
-                  </Button>
-                  <Button
-                    variant="primary"
-                    disabled={!selectedEmp || saving}
-                    onClick={() => void assignExisting()}
-                  >
+                  <Button variant="ghost" onClick={() => setMode('choose')}>Back</Button>
+                  <Button variant="primary" disabled={!selectedEmp || saving} onClick={() => void assignExisting()}>
                     {saving ? 'Assigning…' : 'Assign to department'}
                   </Button>
                 </div>
@@ -508,43 +499,17 @@ export function DepartmentDetailPage() {
         </div>
       )}
 
-      {/* Remove confirmation */}
       {removeTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <button
-            type="button"
-            className="absolute inset-0 bg-on-surface/40 backdrop-blur-sm"
-            aria-label="Close"
-            onClick={() => setRemoveTarget(null)}
-          />
-          <div className="relative bv-surface executive-shadow w-full max-w-md p-6 space-y-4 z-10 rounded-xl animate-slide-up">
-            <div className="flex items-start gap-3">
-              <span className="w-10 h-10 rounded-full bg-error/10 text-error flex items-center justify-center shrink-0">
-                <Icon name="warning" />
-              </span>
-              <div>
-                <h3 className="text-title-lg font-semibold text-on-background">Remove from department?</h3>
-                <p className="text-body-sm text-on-surface-variant mt-2">
-                  <strong>{removeTarget.name}</strong> will no longer be assigned to{' '}
-                  <strong>{d.name}</strong>. Their assignment history is closed (not deleted).
-                  {removeTarget.employmentId === d.headEmploymentId && (
-                    <span className="block mt-1 text-amber-700">
-                      This person is the department head — head will be cleared.
-                    </span>
-                  )}
-                </p>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-2">
-              <Button variant="ghost" onClick={() => setRemoveTarget(null)} disabled={saving}>
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                className="!bg-error !text-white hover:!bg-error/90"
-                isLoading={saving}
-                onClick={() => void confirmRemove()}
-              >
+          <button type="button" className="absolute inset-0 bg-on-surface/40 backdrop-blur-sm" aria-label="Close" onClick={() => setRemoveTarget(null)} />
+          <div className="relative bv-surface executive-shadow w-full max-w-md p-6 space-y-4 z-10 rounded-xl">
+            <h3 className="text-title-lg font-semibold">Remove from department?</h3>
+            <p className="text-body-sm text-on-surface-variant">
+              <strong>{removeTarget.name}</strong> will no longer be assigned to <strong>{d.name}</strong>.
+            </p>
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" onClick={() => setRemoveTarget(null)} disabled={saving}>Cancel</Button>
+              <Button variant="primary" className="!bg-error !text-white" isLoading={saving} onClick={() => void confirmRemove()}>
                 Remove
               </Button>
             </div>
