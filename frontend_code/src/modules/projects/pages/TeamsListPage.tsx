@@ -10,6 +10,7 @@ import { RowActions } from '@/shared/components/ui/RowActions'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import { useTeams } from '../hooks/use-teams'
+import { CreateTeamModal } from '../components/CreateTeamModal'
 
 export function TeamsListPage() {
   const navigate = useNavigate()
@@ -18,6 +19,7 @@ export function TeamsListPage() {
   const [status, setStatus] = useState('')
   const [department, setDepartment] = useState('')
   const [page, setPage] = useState(1)
+  const [createOpen, setCreateOpen] = useState(false)
 
   const { data, isLoading, isError, refetch } = useTeams({
     search: search || undefined,
@@ -73,7 +75,7 @@ export function TeamsListPage() {
             variant="primary"
             size="sm"
             leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-            onClick={() => navigate({ to: '/projects/teams/new' })}
+            onClick={() => setCreateOpen(true)}
           >
             New Team
           </Button>
@@ -128,8 +130,10 @@ export function TeamsListPage() {
       {isLoading && <TableSkeleton rows={4} />}
       {isError && (
         <div className="rounded-lg border border-error/30 bg-error/5 p-6 text-center">
-          <p className="text-body-md text-error mb-3">Failed to load teams.</p>
-          <Button variant="outline" onClick={() => refetch()}>Retry</Button>
+          <p className="text-body-md text-error mb-3">Failed to load tasks.</p>
+          <Button variant="outline" onClick={() => refetch()}>
+            Retry
+          </Button>
         </div>
       )}
       {!isLoading && !isError && filtered.length === 0 && (
@@ -138,7 +142,7 @@ export function TeamsListPage() {
           title="No teams found"
           description="Adjust filters or create a new team."
           actionLabel="New Team"
-          onAction={() => navigate({ to: '/projects/teams/new' })}
+          onAction={() => setCreateOpen(true)}
         />
       )}
 
@@ -195,7 +199,11 @@ export function TeamsListPage() {
                       {team.headName ? (
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-xs font-bold text-on-background">
-                            {team.headName.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+                            {team.headName
+                              .split(' ')
+                              .map((n) => n[0])
+                              .join('')
+                              .slice(0, 2)}
                           </div>
                           <div>
                             <p className="text-body-md font-medium text-on-background">{team.headName}</p>
@@ -248,6 +256,8 @@ export function TeamsListPage() {
           )}
         </section>
       )}
+
+      <CreateTeamModal open={createOpen} onClose={() => setCreateOpen(false)} onCreated={() => void refetch()} />
     </div>
   )
 }
