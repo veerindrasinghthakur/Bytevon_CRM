@@ -9,9 +9,13 @@ import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { RowActions } from '@/shared/components/ui/RowActions'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
+import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useTasks } from '../hooks/use-tasks'
 import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
+import { CreateTaskModal } from '../components/CreateTaskModal'
+import { cn } from '@/shared/lib/cn'
 
 export function TasksListPage() {
   const navigate = useNavigate()
@@ -20,6 +24,7 @@ export function TasksListPage() {
   const [status, setStatus] = useState('')
   const [priority, setPriority] = useState('')
   const [page, setPage] = useState(1)
+  const [createOpen, setCreateOpen] = useState(false)
 
   const { data, isLoading, isError, refetch } = useTasks({
     search: search || undefined,
@@ -43,6 +48,11 @@ export function TasksListPage() {
 
   const total = filtered.length
   const pageItems = useMemo(() => paginate(filtered, page, DEFAULT_PAGE_SIZE), [filtered, page])
+
+  const selection = useListSelection({
+    items: pageItems,
+    getId: (t) => String(t.id),
+  })
 
   const pending = filtered.filter((t) => t.status === 'TODO' || t.status === 'IN_PROGRESS').length
   const done = filtered.filter((t) => t.status === 'DONE').length
@@ -75,7 +85,7 @@ export function TasksListPage() {
             variant="primary"
             size="sm"
             leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-            onClick={() => navigate({ to: '/projects/tasks/new' })}
+            onClick={() => setCreateOpen(true)}
           >
             New Task
           </Button>
@@ -132,11 +142,28 @@ export function TasksListPage() {
         <Stat label="Completed" value={String(done)} icon="check_circle" tone="bg-emerald-100 text-emerald-700" />
       </section>
 
+      {selection.selectionMode && (
+        <BulkSelectionBar
+          selectedCount={selection.selectedCount}
+          filteredCount={pageItems.length}
+          onCancel={selection.exitSelectionMode}
+        >
+          <ExportButton
+            resource={ResourceName.TASK}
+            selectedIds={Array.from(selection.selectedIds)}
+            filenameStem="tasks-selected"
+            label="Export selected"
+          />
+        </BulkSelectionBar>
+      )}
+
       {isLoading && <TableSkeleton rows={5} />}
       {isError && (
         <div className="rounded-lg border border-error/30 bg-error/5 p-6 text-center">
           <p className="text-body-md text-error mb-3">Failed to load tasks.</p>
-          <Button variant="outline" onClick={() => refetch()}>Retry</Button>
+          <Button variant="outline" onClick={() => refetch()}>
+            Retry
+          </Button>
         </div>
       )}
       {!isLoading && !isError && filtered.length === 0 && (
@@ -145,7 +172,7 @@ export function TasksListPage() {
           title="No tasks found"
           description="Adjust filters or create a task."
           actionLabel="New Task"
-          onAction={() => navigate({ to: '/projects/tasks/new' })}
+          onAction={() => setCreateOpen(true)}
         />
       )}
 
@@ -156,7 +183,18 @@ export function TasksListPage() {
               <thead>
                 <tr className="border-b border-outline-variant/30 bg-surface/50">
                   <th className="py-4 px-6 w-12">
-                    <input type="checkbox" className="rounded border-outline-variant w-4 h-4" />
+                    {selection.selectionMode ? (
+                      <input
+                        type="checkbox"
+                        className="rounded border-outline-variant w-4 h-4"
+                        checked={selection.allFilteredSelected}
+                        onChange={selection.toggleSelectAllFiltered}
+                        title="Select all on this page"
+                        aria-label="Select all on this page"
+                      />
+                    ) : (
+                      <span className="sr-only">Select</span>
+                    )}
                   </th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Task Name</th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Project</th>
@@ -168,64 +206,98 @@ export function TasksListPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/20">
-                {pageItems.map((task) => (
-                  <tr
-                    key={task.id}
-                    className="h-[72px] cursor-pointer zebra-row"
-                    onClick={() =>
-                      openOverview({
-                        id: task.id,
-                        title: task.title,
-                        subtitle: task.projectName,
-                        badge: task.status.replace('_', ' '),
-                        fields: [
-                          { label: 'Assignee', value: task.assigneeName ?? 'Unassigned' },
-                          { label: 'Priority', value: task.priority },
-                          { label: 'Status', value: task.status.replace('_', ' ') },
-                          { label: 'Due', value: task.dueDate ?? '—' },
-                          { label: 'Project', value: task.projectName ?? '—' },
-                        ],
-                        detailTo: '/projects/tasks/$taskId',
-                        detailParams: { taskId: String(task.id) },
-                        editTo: '/projects/tasks/$taskId',
-                        editParams: { taskId: String(task.id) },
-                      })
-                    }
-                  >
-                    <td className="py-2 px-6" onClick={(e) => e.stopPropagation()}>
-                      <input type="checkbox" className="rounded border-outline-variant w-4 h-4" />
-                    </td>
-                    <td className="py-2 px-4">
-                      <p
-                        className={`text-body-md font-semibold ${
-                          task.status === 'DONE' ? 'text-on-surface-variant line-through' : 'text-on-background'
-                        }`}
+                {pageItems.map((task) => {
+                  const id = String(task.id)
+                  const isSelected = selection.isSelected(id)
+                  const openOverviewFor = () =>
+                    openOverview({
+                      id: task.id,
+                      title: task.title,
+                      subtitle: task.projectName,
+                      badge: task.status.replace('_', ' '),
+                      fields: [
+                        { label: 'Assignee', value: task.assigneeName ?? 'Unassigned' },
+                        { label: 'Priority', value: task.priority },
+                        { label: 'Status', value: task.status.replace('_', ' ') },
+                        { label: 'Due', value: task.dueDate ?? '—' },
+                        { label: 'Project', value: task.projectName ?? '—' },
+                      ],
+                      detailTo: '/projects/tasks/$taskId',
+                      detailParams: { taskId: String(task.id) },
+                      editTo: '/projects/tasks/$taskId',
+                      editParams: { taskId: String(task.id) },
+                    })
+
+                  return (
+                    <tr
+                      key={task.id}
+                      className={cn(
+                        'h-[72px] cursor-pointer select-none',
+                        isSelected ? 'bg-secondary/10' : 'zebra-row',
+                      )}
+                      onMouseDown={() => selection.onRowPressStart(id)}
+                      onMouseUp={() => selection.onRowPressEnd(id, openOverviewFor)}
+                      onMouseLeave={selection.onRowPressCancel}
+                      onTouchStart={() => selection.onRowPressStart(id)}
+                      onTouchEnd={() => selection.onRowPressEnd(id, openOverviewFor)}
+                      onTouchCancel={selection.onRowPressCancel}
+                      onContextMenu={(e) => e.preventDefault()}
+                    >
+                      <td
+                        className="py-2 px-6"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (selection.selectionMode) selection.toggleOne(id)
+                        }}
                       >
-                        {task.title}
-                      </p>
-                    </td>
-                    <td className="py-2 px-4 text-body-md text-on-background">{task.projectName ?? '—'}</td>
-                    <td className="py-2 px-4 text-body-md text-on-background">{task.assigneeName ?? '—'}</td>
-                    <td className="py-2 px-4">
-                      <TaskPriorityLabel priority={task.priority} />
-                    </td>
-                    <td className="py-2 px-4">
-                      <TaskStatusBadge status={task.status} />
-                    </td>
-                    <td className="py-2 px-4 text-body-md text-on-background">{task.dueDate ?? '—'}</td>
-                    <td className="py-2 px-6 text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex justify-end">
-                        <RowActions
-                          label={`Actions for ${task.title}`}
-                          actions={[
-                            { id: 'view', label: 'View', icon: 'description', onClick: () => goTask(task.id) },
-                            { id: 'edit', label: 'Edit', icon: 'edit', onClick: () => goTask(task.id, true) },
-                          ]}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                        {selection.selectionMode ? (
+                          <input
+                            type="checkbox"
+                            className="rounded border-outline-variant w-4 h-4"
+                            checked={isSelected}
+                            onChange={() => selection.toggleOne(id)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <span className="inline-block w-2.5 h-2.5 rounded-full bg-outline-variant" aria-hidden />
+                        )}
+                      </td>
+                      <td className="py-2 px-4">
+                        <p
+                          className={cn(
+                            'text-body-md font-semibold',
+                            task.status === 'DONE'
+                              ? 'text-on-surface-variant line-through'
+                              : 'text-on-background',
+                          )}
+                        >
+                          {task.title}
+                        </p>
+                      </td>
+                      <td className="py-2 px-4 text-body-md text-on-background">{task.projectName ?? '—'}</td>
+                      <td className="py-2 px-4 text-body-md text-on-background">{task.assigneeName ?? '—'}</td>
+                      <td className="py-2 px-4">
+                        <TaskPriorityLabel priority={task.priority} />
+                      </td>
+                      <td className="py-2 px-4">
+                        <TaskStatusBadge status={task.status} />
+                      </td>
+                      <td className="py-2 px-4 text-body-md text-on-background">{task.dueDate ?? '—'}</td>
+                      <td className="py-2 px-6 text-right" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+                        <div className="flex justify-end">
+                          <RowActions
+                            label={`Actions for ${task.title}`}
+                            actions={[
+                              { id: 'view', label: 'View', icon: 'description', onClick: () => goTask(task.id) },
+                              { id: 'edit', label: 'Edit', icon: 'edit', onClick: () => goTask(task.id, true) },
+                            ]}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -235,11 +307,16 @@ export function TasksListPage() {
               <p className="text-[11px] text-on-surface-variant">
                 Showing <span className="font-semibold text-on-background">1-{total}</span> of{' '}
                 <span className="font-semibold text-on-background">{total}</span> Tasks
+                {!selection.selectionMode && (
+                  <span className="ml-2 opacity-80">· Hold a row 3s to multi-select</span>
+                )}
               </p>
             </div>
           )}
         </section>
       )}
+
+      <CreateTaskModal open={createOpen} onClose={() => setCreateOpen(false)} onCreated={() => void refetch()} />
     </div>
   )
 }
