@@ -1,6 +1,10 @@
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
+import { MetricCard } from '@/shared/components/ui/MetricCard'
+import { ExportButton } from '@/shared/components/export/ExportButton'
+import { ResourceName } from '@/shared/schema'
 import { useEmployeesList } from '../hooks/use-employees-list'
 import { cn } from '@/shared/lib/cn'
 
@@ -50,29 +54,28 @@ export function EmployeesListPage() {
         title="Employee Management"
         description="Manage and organize all human capital records within the organization."
         actions={
-          <Button
-            variant="primary"
-            leftIcon={<Icon name="add" />}
-            onClick={() => navigate({ to: '/workforce/employees/new' })}
-          >
-            Add Employee
-          </Button>
+          <div className="flex gap-2 flex-wrap">
+            <ExportButton
+              resource={ResourceName.EMPLOYMENT}
+              query={search}
+              filters={{ department: deptFilter, state: stateFilter, type: typeFilter }}
+              filenameStem="employees"
+            />
+            <Button
+              variant="primary"
+              leftIcon={<Icon name="add" />}
+              onClick={() => navigate({ to: '/workforce/employees/new' })}
+            >
+              Add Employee
+            </Button>
+          </div>
         }
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-xl ml-auto">
-        <div className="bv-surface card-hover p-4">
-          <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Total</p>
-          <p className="text-title-lg font-bold text-on-background">{metrics.total}</p>
-        </div>
-        <div className="bv-surface card-hover p-4">
-          <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Active</p>
-          <p className="text-title-lg font-bold text-secondary">{metrics.active}</p>
-        </div>
-        <div className="bv-surface card-hover p-4">
-          <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Archived</p>
-          <p className="text-title-lg font-bold text-on-surface-variant">{metrics.archived}</p>
-        </div>
+        <MetricCard label="Total" value={metrics.total} icon="groups" />
+        <MetricCard label="Active" value={metrics.active} icon="check_circle" valueClassName="text-secondary" />
+        <MetricCard label="Archived" value={metrics.archived} icon="archive" />
       </div>
 
       <div className="bv-surface p-4 flex flex-wrap items-center gap-3">
@@ -88,42 +91,33 @@ export function EmployeesListPage() {
             placeholder="Search by Name, Code, Email, or Department..."
           />
         </div>
-        <select
+        <Select
           value={deptFilter}
-          onChange={(e) => setDeptFilter(e.target.value)}
-          className="rounded-lg border border-outline-variant bg-surface px-3 py-2.5 text-body-sm min-w-[140px] focus:ring-2 focus:ring-secondary/20 transition-colors"
-        >
-          <option value="all">All Departments</option>
-          {departments.map((d) => (
-            <option key={d.id} value={d.name}>
-              {d.name}
-            </option>
-          ))}
-        </select>
-        <select
+          onChange={setDeptFilter}
+          placeholder="All Departments"
+          options={[
+            { value: 'all', label: 'All Departments' },
+            ...departments.map((d) => ({ value: d.name, label: d.name })),
+          ]}
+        />
+        <Select
           value={stateFilter}
-          onChange={(e) => setStateFilter(e.target.value)}
-          className="rounded-lg border border-outline-variant bg-surface px-3 py-2.5 text-body-sm min-w-[140px] focus:ring-2 focus:ring-secondary/20 transition-colors"
-        >
-          <option value="all">All Statuses</option>
-          {states.map((s) => (
-            <option key={s} value={s}>
-              {s.replace(/_/g, ' ')}
-            </option>
-          ))}
-        </select>
-        <select
+          onChange={setStateFilter}
+          placeholder="All Statuses"
+          options={[
+            { value: 'all', label: 'All Statuses' },
+            ...states.map((s) => ({ value: s, label: s.replace(/_/g, ' ') })),
+          ]}
+        />
+        <Select
           value={typeFilter}
-          onChange={(e) => setTypeFilter(e.target.value)}
-          className="rounded-lg border border-outline-variant bg-surface px-3 py-2.5 text-body-sm min-w-[140px] focus:ring-2 focus:ring-secondary/20 transition-colors"
-        >
-          <option value="all">All Types</option>
-          {types.map((t) => (
-            <option key={t} value={t}>
-              {t.replace(/_/g, ' ')}
-            </option>
-          ))}
-        </select>
+          onChange={setTypeFilter}
+          placeholder="All Types"
+          options={[
+            { value: 'all', label: 'All Types' },
+            ...types.map((t) => ({ value: t, label: t.replace(/_/g, ' ') })),
+          ]}
+        />
         {filtersActive && (
           <Button variant="ghost" size="sm" onClick={resetFilters}>
             Clear
