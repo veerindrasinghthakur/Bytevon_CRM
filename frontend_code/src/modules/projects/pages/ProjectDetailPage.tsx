@@ -11,7 +11,6 @@ import { NotesPanel } from '@/shared/components/notes/NotesPanel'
 import { UploadButton } from '@/shared/components/forms/UploadButton'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { useProjectDetail, type ProjectDetailTab } from '../hooks/use-project-detail'
-import { useTeams } from '../hooks/use-teams'
 import { useDocuments, useUploadDocument } from '../hooks/use-documents'
 import { ProjectStatusBadge } from '../components/ProjectStatusBadge'
 import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
@@ -72,10 +71,10 @@ export function ProjectDetailPage() {
     createTaskOpen,
     setCreateTaskOpen,
     taskStatusOptions,
+    linkedTeam,
+    activityItems,
   } = detail
 
-  const { data: teamsData } = useTeams({})
-  const linkedTeam = teamsData?.items?.[0] ?? null
   const { data: docsData, refetch: refetchDocs } = useDocuments({
     referenceType: 'PROJECT',
     referenceId: project?.id,
@@ -124,30 +123,6 @@ export function ProjectDetailPage() {
       replace: true,
     })
   }
-
-  const activityItems = [
-    {
-      id: '1',
-      title: 'Architecture Review Completed',
-      description: 'Lead approved the final draft.',
-      timestamp: '2 hours ago',
-      icon: 'check_circle',
-    },
-    {
-      id: '2',
-      title: 'Task Fixed',
-      description: 'Authentication bug in staging resolved.',
-      timestamp: 'Yesterday',
-      icon: 'bug_report',
-    },
-    {
-      id: '3',
-      title: 'Code Merged to Main',
-      description: 'PR — Caching layer implementation.',
-      timestamp: 'Oct 24',
-      icon: 'commit',
-    },
-  ]
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -237,7 +212,7 @@ export function ProjectDetailPage() {
                 icon="calendar_today"
               />
               <MetricCard label="Progress" value={`${progress}%`} icon="speed" />
-              <MetricCard label="Teams" value={String(project.teamCount ?? 0)} icon="groups" />
+              <MetricCard label="Teams" value={String(project.teamCount ?? (linkedTeam ? 1 : 0))} icon="groups" />
             </div>
 
             <section className="bv-surface p-6">
@@ -321,12 +296,7 @@ export function ProjectDetailPage() {
                 <span className="font-semibold">{project.endDate ?? '—'}</span>
               </div>
             </section>
-            <ActivityFeed
-              title="Recent Activity"
-              items={activityItems}
-              variant="compact"
-              framed
-            />
+            <ActivityFeed title="Recent Activity" items={activityItems} variant="compact" framed />
           </div>
         </div>
       )}
