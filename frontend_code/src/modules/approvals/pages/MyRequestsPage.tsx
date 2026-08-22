@@ -1,6 +1,9 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { MetricCard } from '@/shared/components/ui/MetricCard'
+import { ExportButton } from '@/shared/components/export/ExportButton'
+import { ResourceName } from '@/shared/schema'
 import { myRequests } from '../data/mock'
 import { cn } from '@/shared/lib/cn'
 
@@ -16,10 +19,23 @@ const filters = ['All Requests', 'In-Progress', 'Approved', 'Rejected'] as const
 export function MyRequestsPage() {
   const [filter, setFilter] = useState<(typeof filters)[number]>('All Requests')
 
-  const visible =
-    filter === 'All Requests'
-      ? myRequests
-      : myRequests.filter((r) => r.status === filter || (filter === 'In-Progress' && r.status === 'Pending'))
+  const visible = useMemo(
+    () =>
+      filter === 'All Requests'
+        ? myRequests
+        : myRequests.filter(
+            (r) => r.status === filter || (filter === 'In-Progress' && r.status === 'Pending'),
+          ),
+    [filter],
+  )
+
+  const stats = useMemo(() => {
+    const total = myRequests.length
+    const inProgress = myRequests.filter((r) => r.status === 'In-Progress' || r.status === 'Pending').length
+    const approved = myRequests.filter((r) => r.status === 'Approved').length
+    const rejected = myRequests.filter((r) => r.status === 'Rejected').length
+    return { total, inProgress, approved, rejected }
+  }, [])
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -28,29 +44,20 @@ export function MyRequestsPage() {
         description="Track and manage your submitted organizational requests and their real-time statuses."
         actions={
           <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-[18px]">filter_list</span>}
-            >
-              Filter
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}
-            >
-              Export
-            </Button>
+            <ExportButton
+              resource={ResourceName.APPROVAL}
+              filters={{ status: filter }}
+              filenameStem="my-requests"
+            />
           </div>
         }
       />
 
       <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard icon="assignment" iconClass="bg-secondary/10 text-secondary" label="Total Requests" value={24} badge="+2 this week" />
-        <StatCard icon="pending_actions" iconClass="bg-amber-100 text-amber-700" label="In Progress" value={8} />
-        <StatCard icon="verified" iconClass="bg-blue-100 text-blue-700" label="Approved" value={12} />
-        <StatCard icon="cancel" iconClass="bg-red-100 text-red-700" label="Rejected" value={4} />
+        <MetricCard label="Total Requests" value={stats.total} icon="assignment" hint="+2 this week" />
+        <MetricCard label="In Progress" value={stats.inProgress} icon="pending_actions" />
+        <MetricCard label="Approved" value={stats.approved} icon="verified" valueClassName="text-secondary" />
+        <MetricCard label="Rejected" value={stats.rejected} icon="cancel" valueClassName="text-error" />
       </section>
 
       <section className="bv-surface overflow-hidden">
@@ -149,7 +156,7 @@ export function MyRequestsPage() {
 
         <div className="px-6 py-4 border-t border-outline-variant flex items-center justify-between">
           <p className="text-body-sm text-on-surface-variant">
-            Showing 1 to {visible.length} of 24 entries
+            Showing 1 to {visible.length} of {stats.total} entries
           </p>
           <div className="flex gap-2">
             <button type="button" className="p-2 border border-outline-variant rounded-lg opacity-50" disabled>
@@ -167,33 +174,6 @@ export function MyRequestsPage() {
           </div>
         </div>
       </section>
-    </div>
-  )
-}
-
-function StatCard({
-  icon,
-  iconClass,
-  label,
-  value,
-  badge,
-}: {
-  icon: string
-  iconClass: string
-  label: string
-  value: number
-  badge?: string
-}) {
-  return (
-    <div className="p-6 bv-surface card-hover">
-      <div className="flex justify-between items-start mb-4">
-        <span className={cn('material-symbols-outlined p-2 rounded-lg', iconClass)}>{icon}</span>
-        {badge && (
-          <span className="text-label-sm text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">{badge}</span>
-        )}
-      </div>
-      <p className="text-label-md text-on-surface-variant uppercase tracking-wider mb-1">{label}</p>
-      <h3 className="text-3xl font-bold text-on-background">{value}</h3>
     </div>
   )
 }
