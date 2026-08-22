@@ -15,6 +15,9 @@ import { ChangeAssignmentPage } from './pages/ChangeAssignmentPage'
 import { TeamsListPage } from './pages/TeamsListPage'
 import { TeamCreatePage } from '@/modules/projects/pages/TeamCreatePage'
 import { TeamDetailPage } from './pages/TeamDetailPage'
+import { TeamMembersPage } from './pages/TeamMembersPage'
+import { TeamProjectsPage } from './pages/TeamProjectsPage'
+import { AddMemberPage } from './pages/AddMemberPage'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createWorkforceRoutes(appLayoutRoute: any) {
@@ -75,6 +78,21 @@ export function createWorkforceRoutes(appLayoutRoute: any) {
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/teams/$teamId',
       component: TeamDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/teams/$teamId/members',
+      component: TeamMembersPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/teams/$teamId/projects',
+      component: TeamProjectsPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/teams/$teamId/add-member',
+      component: AddMemberPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,

@@ -158,6 +158,32 @@ export async function assignEmployeeToDepartment(
   return { ok: true as const }
 }
 
+/** Close active assignment for employee in this department (remove from dept). */
+export async function removeEmployeeFromDepartment(
+  employmentId: number,
+  departmentId: number,
+) {
+  await delay(300)
+  const db = getDb()
+  const today = new Date().toISOString().slice(0, 10)
+  const current = db.employment_assignments.find(
+    (a) =>
+      a.employment_id === employmentId &&
+      a.department_id === departmentId &&
+      a.effective_to == null,
+  )
+  if (!current) return { ok: true as const }
+  current.effective_to = today
+  current.change_reason = 'Removed from department'
+
+  // Clear head if this employee was head
+  const dept = db.schema_departments.find((d) => d.id === departmentId)
+  if (dept && dept.department_head_employment_id === employmentId) {
+    dept.department_head_employment_id = null
+  }
+  return { ok: true as const }
+}
+
 export async function createDepartment(input: {
   name: string
   headEmploymentId?: number | null
