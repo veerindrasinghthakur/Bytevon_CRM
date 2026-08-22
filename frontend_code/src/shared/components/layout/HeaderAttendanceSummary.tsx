@@ -20,20 +20,24 @@ export function HeaderAttendanceSummary() {
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue'
       )}
     >
-      <Stat label="In" value={formatClockTime(summary.checkInAt)} tone="text-secondary" />
+      <Stat
+        label="In"
+        value={summary ? formatClockTime(summary.checkInAt) : '—'}
+        tone="text-secondary"
+      />
       <Divider />
       <Stat
         label="Out"
-        value={checkedOut ? formatClockTime(summary.checkOutAt!) : '—'}
+        value={summary && checkedOut && summary.checkOutAt ? formatClockTime(summary.checkOutAt) : '—'}
         tone={checkedOut ? 'text-on-background' : 'text-on-surface-variant'}
       />
       <Divider />
       <div className="flex flex-col items-end leading-none min-w-[4.5rem]">
         <span className="text-[9px] font-bold uppercase tracking-wider text-on-surface-variant">Work</span>
         <span className="text-label-md font-bold tabular-nums text-on-background">
-          {formatHoursCompact(summary.netMs)}
+          {summary ? formatHoursCompact(summary.netMs) : '—'}
         </span>
-        {summary.breakMs > 0 && (
+        {summary && summary.breakMs > 0 && (
           <span className="text-[9px] text-on-surface-variant mt-0.5 tabular-nums">
             −{formatHoursCompact(summary.breakMs)} break
           </span>
