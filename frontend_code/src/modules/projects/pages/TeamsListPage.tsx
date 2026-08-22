@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
+import { ExportButton } from '@/shared/components/export/ExportButton'
 import { Pagination, paginate, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
@@ -61,10 +62,13 @@ export function TeamsListPage() {
             Manage and organize your cross-functional teams.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}>
-            Export
-          </Button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <ExportButton
+            resource="team"
+            query={search}
+            filters={{ status, department }}
+            filenameStem="project-teams"
+          />
           <Button
             variant="primary"
             size="sm"

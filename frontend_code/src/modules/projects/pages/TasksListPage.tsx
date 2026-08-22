@@ -2,6 +2,8 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
+import { ExportButton } from '@/shared/components/export/ExportButton'
+import { ResourceName } from '@/shared/schema'
 import { Pagination, paginate, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
@@ -62,10 +64,13 @@ export function TasksListPage() {
             Tasks are work items under projects across the organization.
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}>
-            Export
-          </Button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <ExportButton
+            resource={ResourceName.TASK}
+            query={search}
+            filters={{ status, priority }}
+            filenameStem="tasks"
+          />
           <Button
             variant="primary"
             size="sm"
