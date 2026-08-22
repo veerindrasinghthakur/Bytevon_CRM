@@ -87,6 +87,8 @@ export interface ComposeNotificationInput {
   roles: string[]
   channels: { inApp: boolean; email: boolean; sms: boolean; push: boolean }
   scheduleMode: 'now' | 'later'
+  /** ISO local datetime when scheduleMode is later */
+  scheduleAt?: string
   attachmentNames?: string[]
 }
 
