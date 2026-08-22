@@ -41,6 +41,16 @@ export async function getTeam(id: number): Promise<Team | null> {
   return row ? asTeam(row) : null
 }
 
+/** Teams linked to a project (via project.teamId primary association). */
+export async function getTeamsForProject(projectId: number): Promise<Team[]> {
+  await delay()
+  const db = getDb()
+  const project = db.projects.find((p) => p.id === projectId) as { teamId?: number | null } | undefined
+  if (!project?.teamId) return []
+  const team = db.teams.find((t) => t.id === project.teamId)
+  return team ? [asTeam(team)] : []
+}
+
 export async function updateTeam(
   id: number,
   patch: Partial<Pick<Team, 'name' | 'description' | 'department' | 'headName' | 'headRole' | 'status'>>,
@@ -86,7 +96,8 @@ export async function createTeam(input: {
     if (pIdx !== -1) {
       db.projects[pIdx] = {
         ...db.projects[pIdx],
-        teamCount: (db.projects[pIdx].teamCount ?? 0) + 1,
+        teamId: row.id,
+        teamCount: 1,
         updatedAt: new Date().toISOString(),
       }
       if (!row.projectName) {

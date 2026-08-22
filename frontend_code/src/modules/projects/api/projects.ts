@@ -4,6 +4,7 @@ import { delay, getDb, nextId } from '@/shared/mock/db'
 export async function getProjects(params?: {
   search?: string
   status?: string
+  teamId?: number
 }): Promise<{ items: ProjectListItem[]; total: number }> {
   await delay()
   let items = [...getDb().projects] as ProjectDetail[]
@@ -13,11 +14,14 @@ export async function getProjects(params?: {
       (p) =>
         p.name.toLowerCase().includes(q) ||
         p.code?.toLowerCase().includes(q) ||
-        p.clientName?.toLowerCase().includes(q)
+        p.clientName?.toLowerCase().includes(q),
     )
   }
   if (params?.status) {
     items = items.filter((p) => p.status === params.status)
+  }
+  if (params?.teamId != null) {
+    items = items.filter((p) => p.teamId === params.teamId)
   }
   return { items, total: items.length }
 }
@@ -26,6 +30,12 @@ export async function getProjectById(id: number): Promise<ProjectDetail | null> 
   await delay()
   const row = getDb().projects.find((p) => p.id === id)
   return (row as ProjectDetail | undefined) ?? null
+}
+
+/** Projects linked to a team via teamId. */
+export async function getProjectsForTeam(teamId: number): Promise<ProjectListItem[]> {
+  const { items } = await getProjects({ teamId })
+  return items
 }
 
 export async function createProject(input: CreateProjectInput): Promise<ProjectDetail> {
@@ -42,8 +52,9 @@ export async function createProject(input: CreateProjectInput): Promise<ProjectD
     startDate: input.startDate ?? null,
     endDate: input.endDate ?? null,
     progress: 0,
-    teamCount: 0,
+    teamCount: input.teamId ? 1 : 0,
     taskCount: 0,
+    teamId: input.teamId ?? null,
     description: input.description ?? null,
     repositoryUrl: input.repositoryUrl ?? null,
     createdAt: new Date().toISOString(),
@@ -67,17 +78,23 @@ export async function updateProject(
       | 'progress'
       | 'description'
       | 'repositoryUrl'
+      | 'teamId'
+      | 'teamCount'
     >
-  >
+  >,
 ): Promise<ProjectDetail> {
   await delay(400)
   const projects = getDb().projects
   const idx = projects.findIndex((p) => p.id === id)
   if (idx === -1) throw new Error('Project not found')
-  projects[idx] = {
+  const next = {
     ...projects[idx],
     ...patch,
     updatedAt: new Date().toISOString(),
   }
+  if (patch.teamId !== undefined) {
+    next.teamCount = patch.teamId != null ? Math.max(1, next.teamCount ?? 1) : 0
+  }
+  projects[idx] = next
   return projects[idx] as ProjectDetail
 }

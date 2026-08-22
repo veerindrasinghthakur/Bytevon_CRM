@@ -21,6 +21,8 @@ export const projectListItemSchema = z.object({
   progress: z.number().min(0).max(100).optional(),
   teamCount: z.number().optional(),
   taskCount: z.number().optional(),
+  /** Primary assigned team (mock association). */
+  teamId: z.number().nullable().optional(),
 })
 
 export type ProjectListItem = z.infer<typeof projectListItemSchema>
@@ -42,6 +44,7 @@ export const createProjectSchema = z.object({
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   repositoryUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  teamId: z.number().nullable().optional(),
 })
 
 export type CreateProjectInput = z.infer<typeof createProjectSchema>
