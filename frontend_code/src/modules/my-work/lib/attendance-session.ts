@@ -5,7 +5,6 @@ import {
   getBreakHistory,
   getElapsedMs,
   isBreakRunning,
-  syncCountdownExpiry,
 } from './break-session'
 import type { TodayAttendanceSession, WorkHoursSummary } from '../types'
 
@@ -17,26 +16,20 @@ function todayKey(d = new Date()) {
   return d.toISOString().slice(0, 10)
 }
 
-/** Default seed: checked in ~4.5h ago (matches previous mock UX) if nothing stored */
-function seedDefault(): TodayAttendanceSession {
-  const now = Date.now()
-  const checkInAt = new Date(now - 4.5 * 60 * 60 * 1000).toISOString()
-  return { date: todayKey(), checkInAt }
-}
-
-export function getTodayAttendance(): TodayAttendanceSession {
+/**
+ * Read today's session. No fake seed — check-in is the exact time the user punched.
+ * Returns null when the user has not checked in today.
+ */
+export function getTodayAttendance(): TodayAttendanceSession | null {
   try {
     const raw = localStorage.getItem(KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw) as TodayAttendanceSession
-      if (parsed.date === todayKey() && parsed.checkInAt) return parsed
-    }
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as TodayAttendanceSession
+    if (parsed.date === todayKey() && parsed.checkInAt) return parsed
   } catch {
     /* ignore */
   }
-  const seeded = seedDefault()
-  localStorage.setItem(KEY, JSON.stringify(seeded))
-  return seeded
+  return null
 }
 
 export function setTodayAttendance(session: TodayAttendanceSession) {
@@ -44,6 +37,7 @@ export function setTodayAttendance(session: TodayAttendanceSession) {
   window.dispatchEvent(new Event('bytevon:attendance-change'))
 }
 
+/** Exact wall-clock check-in time (ISO). */
 export function checkInNow() {
   const session: TodayAttendanceSession = {
     date: todayKey(),
@@ -55,6 +49,7 @@ export function checkInNow() {
 
 export function checkOutNow() {
   const cur = getTodayAttendance()
+  if (!cur) return null
   if (cur.checkOutAt) return cur
   const session = { ...cur, checkOutAt: new Date().toISOString() }
   setTodayAttendance(session)
@@ -79,9 +74,10 @@ export function formatClockTime(iso: string) {
   })
 }
 
-/** Total break ms that overlap today's session window */
+/** Total break ms that overlap today's session window (from history + active until user ends break). */
 export function getTodayBreakMs(now = Date.now()): number {
   const attendance = getTodayAttendance()
+  if (!attendance) return 0
   const windowStart = new Date(attendance.checkInAt).getTime()
   const windowEnd = attendance.checkOutAt
     ? new Date(attendance.checkOutAt).getTime()
@@ -89,7 +85,7 @@ export function getTodayBreakMs(now = Date.now()): number {
 
   let total = 0
 
-  const active = syncCountdownExpiry(getActiveBreak())
+  const active = getActiveBreak()
   if (active && isBreakRunning(active)) {
     const start = Math.max(new Date(active.startedAt).getTime(), windowStart)
     const end = Math.min(now, windowEnd)
@@ -109,9 +105,10 @@ export function getTodayBreakMs(now = Date.now()): number {
   return total
 }
 
-/** Net work = (out|now − in) − breaks in that window */
-export function getWorkHoursSummary(now = Date.now()): WorkHoursSummary {
+/** Net work = (out|now − in) − breaks in that window. Null when not checked in. */
+export function getWorkHoursSummary(now = Date.now()): WorkHoursSummary | null {
   const att = getTodayAttendance()
+  if (!att) return null
   const start = new Date(att.checkInAt).getTime()
   const end = att.checkOutAt ? new Date(att.checkOutAt).getTime() : now
   const grossMs = Math.max(0, end - start)

@@ -1,4 +1,10 @@
-/** Local break session — client-only until backend exists */
+/**
+ * Local break session — client-only until backend persists breaks.
+ *
+ * Countdown timer: when planned duration elapses, fire a notification event
+ * but do NOT auto-end the break. Actual break time is measured until the user
+ * explicitly stops (checkout) the break.
+ */
 
 import type { BreakSession } from '../types'
 
@@ -7,6 +13,7 @@ export type { BreakMode, BreakSession } from '../types'
 const ACTIVE_KEY = 'bytevon.activeBreak'
 const HISTORY_KEY = 'bytevon.breakHistory'
 const MAX_HISTORY = 20
+const NOTIFIED_KEY = 'bytevon.breakNotified'
 
 function uid() {
   return `brk_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`
@@ -62,10 +69,19 @@ export function startBreak(opts: {
     durationMinutes: duration,
     note: opts.note?.trim() || undefined,
   }
+  // clear prior notify flag for this id
+  try {
+    const map = JSON.parse(localStorage.getItem(NOTIFIED_KEY) ?? '{}') as Record<string, boolean>
+    delete map[session.id]
+    localStorage.setItem(NOTIFIED_KEY, JSON.stringify(map))
+  } catch {
+    /* ignore */
+  }
   setActiveBreak(session)
   return session
 }
 
+/** User explicitly ends the break — this is the real end time used for payroll/net hours. */
 export function stopBreak(): BreakSession | null {
   const active = getActiveBreak()
   if (!active || active.endedAt) {
@@ -81,38 +97,51 @@ export function stopBreak(): BreakSession | null {
   return ended
 }
 
-/** Elapsed ms since start (capped at duration for countdown if finished) */
+/** Elapsed ms since start until end or now (never auto-capped — real duration until user stops). */
 export function getElapsedMs(session: BreakSession, now = Date.now()): number {
   const start = new Date(session.startedAt).getTime()
   const end = session.endedAt ? new Date(session.endedAt).getTime() : now
   return Math.max(0, end - start)
 }
 
+/** Remaining of planned countdown (UI only). Null for stopwatch. */
 export function getRemainingMs(session: BreakSession, now = Date.now()): number | null {
   if (session.mode !== 'countdown' || !session.durationMinutes) return null
   const total = session.durationMinutes * 60 * 1000
   return Math.max(0, total - getElapsedMs(session, now))
 }
 
-export function isBreakRunning(session: BreakSession | null, now = Date.now()): boolean {
-  if (!session || session.endedAt) return false
-  if (session.mode === 'countdown') {
-    const rem = getRemainingMs(session, now)
-    return rem != null && rem > 0
+export function isBreakRunning(session: BreakSession | null): boolean {
+  return Boolean(session && !session.endedAt)
+}
+
+/**
+ * When countdown hits zero, notify once — but keep the break running until stopBreak().
+ * Returns whether a notification was just fired.
+ */
+export function maybeNotifyCountdownComplete(session: BreakSession | null, now = Date.now()): boolean {
+  if (!session || session.endedAt || session.mode !== 'countdown') return false
+  const rem = getRemainingMs(session, now)
+  if (rem !== 0) return false
+  try {
+    const map = JSON.parse(localStorage.getItem(NOTIFIED_KEY) ?? '{}') as Record<string, boolean>
+    if (map[session.id]) return false
+    map[session.id] = true
+    localStorage.setItem(NOTIFIED_KEY, JSON.stringify(map))
+  } catch {
+    /* ignore */
   }
+  window.dispatchEvent(
+    new CustomEvent('bytevon:break-timer-complete', {
+      detail: { breakId: session.id, plannedMinutes: session.durationMinutes },
+    }),
+  )
   return true
 }
 
-/** Auto-complete countdown when time hits zero */
+/** @deprecated Prefer maybeNotifyCountdownComplete — does not auto-end. */
 export function syncCountdownExpiry(session: BreakSession | null): BreakSession | null {
-  if (!session || session.endedAt || session.mode !== 'countdown') return session
-  const rem = getRemainingMs(session)
-  if (rem === 0) {
-    const ended: BreakSession = { ...session, endedAt: new Date().toISOString() }
-    pushHistory(ended)
-    setActiveBreak(null)
-    return null
-  }
+  maybeNotifyCountdownComplete(session)
   return session
 }
 
