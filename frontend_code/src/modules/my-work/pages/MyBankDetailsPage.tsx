@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
+import { EditButton } from '@/shared/components/ui/EditButton'
+import { Select } from '@/shared/components/ui/Select'
 import { currentUser } from '../data/mock'
 import { cn } from '@/shared/lib/cn'
 
@@ -28,7 +30,6 @@ const EMPTY_FORM: BankDetailsForm = {
   currency: 'INR',
 }
 
-/** Seeded as existing employee bank details (mock). Set null to demo empty/create. */
 const INITIAL_SAVED: BankDetailsForm | null = {
   accountHolderName: 'Alex Rivera',
   bankName: 'HDFC Bank',
@@ -61,7 +62,7 @@ export function MyBankDetailsPage() {
       'w-full rounded-lg border px-3 py-2.5 text-body-md outline-none transition-colors',
       disabled
         ? 'bg-surface-container-low border-outline-variant text-deep-navy cursor-default'
-        : 'bg-surface-container-lowest border-outline-variant focus:border-secondary focus:ring-2 focus:ring-secondary/30 text-deep-navy'
+        : 'bg-surface-container-lowest border-outline-variant focus:border-secondary focus:ring-2 focus:ring-secondary/30 text-deep-navy',
     )
 
   const validate = (data: BankDetailsForm) => {
@@ -78,7 +79,7 @@ export function MyBankDetailsPage() {
   }
 
   const startEdit = () => {
-    setDraft(saved ?? { ...EMPTY_FORM, accountHolderName: `${currentUser.name}` })
+    setDraft(saved ?? { ...EMPTY_FORM, accountHolderName: currentUser.name })
     setErrors({})
     setIsEditing(true)
   }
@@ -99,10 +100,7 @@ export function MyBankDetailsPage() {
     window.setTimeout(() => setToast(null), 2800)
   }
 
-  const statusLabel = useMemo(() => {
-    if (!saved) return 'Not set'
-    return 'On file'
-  }, [saved])
+  const statusLabel = useMemo(() => (saved ? 'On file' : 'Not set'), [saved])
 
   return (
     <div className="space-y-8 max-w-[960px] animate-fade-in">
@@ -137,16 +135,6 @@ export function MyBankDetailsPage() {
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
-          {!isEditing && saved && (
-            <Button
-              variant="primary"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>}
-              onClick={startEdit}
-            >
-              Edit
-            </Button>
-          )}
           {!isEditing && !saved && (
             <Button
               variant="primary"
@@ -204,7 +192,7 @@ export function MyBankDetailsPage() {
             'inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold border',
             saved
               ? 'bg-success-emerald/10 text-success-emerald border-success-emerald/20'
-              : 'bg-surface-container text-on-surface-variant border-outline-variant'
+              : 'bg-surface-container text-on-surface-variant border-outline-variant',
           )}
         >
           {statusLabel}
@@ -218,7 +206,7 @@ export function MyBankDetailsPage() {
           </div>
           <h2 className="text-title-lg font-semibold text-deep-navy mb-2">No bank details yet</h2>
           <p className="text-body-md text-on-surface-variant max-w-md mx-auto mb-6">
-            Add your salary account so payroll can transfer payments securely. Only you can create or change this information.
+            Add your salary account so payroll can transfer payments securely.
           </p>
           <Button
             variant="primary"
@@ -238,25 +226,11 @@ export function MyBankDetailsPage() {
               <span className="material-symbols-outlined text-secondary">account_balance</span>
               {isEditing ? (isCreate ? 'Add bank account' : 'Edit bank account') : 'Salary account'}
             </h2>
-            {!isEditing && (
-              <button
-                type="button"
-                className="p-2 rounded-lg text-on-surface-variant hover:text-secondary hover:bg-surface-container transition-colors"
-                onClick={startEdit}
-                title="Edit"
-                aria-label="Edit bank details"
-              >
-                <span className="material-symbols-outlined">edit</span>
-              </button>
-            )}
+            {!isEditing && <EditButton iconOnly onClick={startEdit} title="Edit bank details" />}
           </div>
 
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-            <Field
-              label="Account holder name"
-              required
-              error={errors.accountHolderName}
-            >
+            <Field label="Account holder name" required error={errors.accountHolderName}>
               {isEditing ? (
                 <input
                   className={fieldClass(false)}
@@ -317,9 +291,7 @@ export function MyBankDetailsPage() {
                 <input
                   className={fieldClass(false)}
                   value={draft.ifscOrRouting}
-                  onChange={(e) =>
-                    setDraft((d) => ({ ...d, ifscOrRouting: e.target.value.toUpperCase() }))
-                  }
+                  onChange={(e) => setDraft((d) => ({ ...d, ifscOrRouting: e.target.value.toUpperCase() }))}
                   placeholder="e.g. HDFC0001234"
                 />
               ) : (
@@ -342,20 +314,18 @@ export function MyBankDetailsPage() {
 
             <Field label="Account type">
               {isEditing ? (
-                <select
-                  className={fieldClass(false)}
+                <Select
                   value={draft.accountType}
-                  onChange={(e) =>
-                    setDraft((d) => ({
-                      ...d,
-                      accountType: e.target.value as BankDetailsForm['accountType'],
-                    }))
+                  onChange={(v) =>
+                    setDraft((d) => ({ ...d, accountType: v as BankDetailsForm['accountType'] }))
                   }
-                >
-                  <option value="Salary">Salary</option>
-                  <option value="Savings">Savings</option>
-                  <option value="Current">Current</option>
-                </select>
+                  options={[
+                    { value: 'Salary', label: 'Salary' },
+                    { value: 'Savings', label: 'Savings' },
+                    { value: 'Current', label: 'Current' },
+                  ]}
+                  minWidthClass="w-full"
+                />
               ) : (
                 <p className="text-body-md font-medium text-deep-navy">{saved?.accountType}</p>
               )}
@@ -375,16 +345,17 @@ export function MyBankDetailsPage() {
 
             <Field label="Currency">
               {isEditing ? (
-                <select
-                  className={fieldClass(false)}
+                <Select
                   value={draft.currency}
-                  onChange={(e) => setDraft((d) => ({ ...d, currency: e.target.value }))}
-                >
-                  <option value="INR">INR</option>
-                  <option value="USD">USD</option>
-                  <option value="EUR">EUR</option>
-                  <option value="GBP">GBP</option>
-                </select>
+                  onChange={(v) => setDraft((d) => ({ ...d, currency: v }))}
+                  options={[
+                    { value: 'INR', label: 'INR' },
+                    { value: 'USD', label: 'USD' },
+                    { value: 'EUR', label: 'EUR' },
+                    { value: 'GBP', label: 'GBP' },
+                  ]}
+                  minWidthClass="w-full"
+                />
               ) : (
                 <p className="text-body-md font-medium text-deep-navy">{saved?.currency}</p>
               )}
@@ -396,8 +367,8 @@ export function MyBankDetailsPage() {
               <div className="rounded-lg bg-surface-container-low border border-outline-variant px-4 py-3 text-label-md text-on-surface-variant flex items-start gap-2">
                 <span className="material-symbols-outlined text-[18px] text-secondary shrink-0 mt-0.5">info</span>
                 <span>
-                  Account number is masked for security. Use <strong className="text-deep-navy">Edit</strong> to update
-                  any field. Changes apply to future payroll runs only.
+                  Account number is masked for security. Use the pencil to update any field. Changes apply to future
+                  payroll runs only.
                 </span>
               </div>
             </div>
