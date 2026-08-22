@@ -17,3 +17,4 @@ export { WorkforceAttendanceDetailPage } from './pages/WorkforceAttendanceDetail
 export { WorkforceRosterPage } from './pages/WorkforceRosterPage'
 export { AttendanceDayDetailPage } from './pages/AttendanceDayDetailPage'
 export { ChangeAssignmentPage } from './pages/ChangeAssignmentPage'
+export { createWorkforceRoutes } from './routes'

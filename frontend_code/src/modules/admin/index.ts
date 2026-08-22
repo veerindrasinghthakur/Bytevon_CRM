@@ -20,3 +20,8 @@ export { LeaveSettingsPage } from './pages/LeaveSettingsPage'
 export { SecurityCenterPage } from './pages/SecurityCenterPage'
 export { LeavePoliciesPage } from './pages/LeavePoliciesPage'
 export { LeaveLedgerPage } from './pages/LeaveLedgerPage'
+export {
+  createAdminRoutes,
+  createAdminSettingsLayoutRoute,
+  createAdminSettingsCoreRoutes,
+} from './routes'
