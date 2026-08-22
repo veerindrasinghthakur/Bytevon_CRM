@@ -1,14 +1,8 @@
+import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import {
-  payrollEmployees,
-  payrollKpis,
-  periodMeta,
-  recentActivity,
-  formatMoney,
-  formatMoneyShort,
-} from '../data/mock'
+import { usePayrollDashboard } from '../hooks/use-payroll'
 import { cn } from '@/shared/lib/cn'
 
 const statusStyles: Record<string, string> = {
@@ -19,6 +13,20 @@ const statusStyles: Record<string, string> = {
 
 export function PayrollDashboardPage() {
   const navigate = useNavigate()
+  const { kpis, period, activity, employees, formatMoney, formatMoneyShort, isLoading } =
+    usePayrollDashboard()
+  const [search, setSearch] = useState('')
+
+  const filtered = employees.filter(
+    (r) =>
+      !search ||
+      r.name.toLowerCase().includes(search.toLowerCase()) ||
+      r.code.toLowerCase().includes(search.toLowerCase()),
+  )
+
+  if (isLoading || !kpis || !period) {
+    return <div className="p-8 text-body-md text-on-surface-variant">Loading payroll dashboard…</div>
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -27,11 +35,7 @@ export function PayrollDashboardPage() {
         description="Manage monthly salary processing, approvals and payments."
         actions={
           <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate({ to: '/payroll/salary' })}
-            >
+            <Button variant="outline" size="sm" onClick={() => navigate({ to: '/payroll/salary' })}>
               Salary Management
             </Button>
             <Button
@@ -51,12 +55,12 @@ export function PayrollDashboardPage() {
           <section className="bv-surface p-5">
             <div className="flex justify-between items-start mb-6 border-b border-outline-variant pb-4">
               <div>
-                <h2 className="text-headline-md font-semibold text-deep-navy">{periodMeta.label}</h2>
+                <h2 className="text-headline-md font-semibold text-deep-navy">{period.label}</h2>
                 <p className="text-caption text-on-surface-variant mt-1">Processing cycle currently active</p>
               </div>
               <div className="bg-surface-container px-3 py-1 rounded-full flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-electric-blue animate-pulse" />
-                <span className="text-caption text-primary">In Progress</span>
+                <span className="text-caption text-primary">{period.status}</span>
               </div>
             </div>
 
@@ -65,21 +69,21 @@ export function PayrollDashboardPage() {
               {[
                 {
                   label: 'CALCULATED',
-                  count: periodMeta.calculated,
+                  count: period.calculated,
                   icon: 'check',
                   tone: 'bg-success-emerald text-on-success',
                   text: 'text-success-emerald',
                 },
                 {
                   label: 'APPROVED',
-                  count: periodMeta.approved,
+                  count: period.approved,
                   icon: 'more_horiz',
                   tone: 'bg-warning-amber text-on-warning',
                   text: 'text-warning-amber',
                 },
                 {
                   label: 'PAID',
-                  count: periodMeta.paid,
+                  count: period.paid,
                   icon: 'hourglass_empty',
                   tone: 'bg-surface-container-highest text-on-surface-variant border border-outline-variant',
                   text: 'text-on-surface-variant opacity-60',
@@ -89,7 +93,7 @@ export function PayrollDashboardPage() {
                   <div
                     className={cn(
                       'w-8 h-8 rounded-full flex items-center justify-center ring-4 ring-surface-container-lowest',
-                      s.tone
+                      s.tone,
                     )}
                   >
                     <span className="material-symbols-outlined text-[16px]">{s.icon}</span>
@@ -105,26 +109,26 @@ export function PayrollDashboardPage() {
             <KpiCard
               icon="account_balance_wallet"
               label="Total Payroll"
-              value={formatMoneyShort(payrollKpis.totalPayroll)}
+              value={formatMoneyShort(kpis.totalPayroll)}
               hint={
                 <span className="text-success-emerald flex items-center gap-0.5">
-                  <span className="material-symbols-outlined text-[12px]">trending_up</span>
-                  +{payrollKpis.trendPct}% vs last month
+                  <span className="material-symbols-outlined text-[12px]">trending_up</span>+{kpis.trendPct}% vs
+                  last month
                 </span>
               }
             />
-            <KpiCard icon="group" label="Total Employees" value={String(payrollKpis.totalEmployees)} />
+            <KpiCard icon="group" label="Total Employees" value={String(kpis.totalEmployees)} />
             <KpiCard
               icon="pending_actions"
               label="Pending Approval"
-              value={String(payrollKpis.pendingApproval)}
+              value={String(kpis.pendingApproval)}
               valueClass="text-warning-amber"
               accent="border-l-4 border-l-warning-amber"
             />
             <KpiCard
               icon="payments"
               label="Pending Payment"
-              value={String(payrollKpis.pendingPayment)}
+              value={String(kpis.pendingPayment)}
               valueClass="text-primary"
               accent="border-l-4 border-l-primary"
             />
@@ -159,12 +163,12 @@ export function PayrollDashboardPage() {
           <section className="bv-surface p-5 flex-1">
             <h3 className="text-headline-md font-semibold text-deep-navy mb-4">Recent Activity</h3>
             <div className="relative pl-4 border-l border-outline-variant space-y-6">
-              {recentActivity.map((a) => (
+              {activity.map((a) => (
                 <div key={a.id} className="relative">
                   <div
                     className={cn(
                       'absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full ring-4 ring-surface-container-lowest',
-                      a.primary ? 'bg-primary' : 'bg-outline-variant'
+                      a.primary ? 'bg-primary' : 'bg-outline-variant',
                     )}
                   />
                   <p className="text-body-md text-deep-navy">{a.text}</p>
@@ -184,6 +188,8 @@ export function PayrollDashboardPage() {
               search
             </span>
             <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-9 pr-4 py-1.5 bg-surface-container-lowest border border-outline-variant rounded focus:ring-2 focus:ring-secondary/30 focus:border-secondary text-body-md outline-none transition-colors"
               placeholder="Search employee..."
               type="text"
@@ -206,7 +212,7 @@ export function PayrollDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
-              {payrollEmployees.slice(0, 3).map((r) => (
+              {filtered.slice(0, 5).map((r) => (
                 <tr key={r.id} className="h-[72px] zebra-row">
                   <td className="p-4 pl-6">
                     <div className="flex items-center gap-3">
@@ -222,16 +228,14 @@ export function PayrollDashboardPage() {
                   <td className="p-4 text-caption text-on-surface-variant">{r.code}</td>
                   <td className="p-4 text-body-md text-deep-navy">{r.department}</td>
                   <td className="p-4 text-body-md text-deep-navy text-right">{formatMoney(r.gross)}</td>
-                  <td className="p-4 text-body-md text-success-emerald text-right">
-                    +{formatMoney(r.earnings)}
-                  </td>
+                  <td className="p-4 text-body-md text-success-emerald text-right">+{formatMoney(r.earnings)}</td>
                   <td className="p-4 text-body-md text-error text-right">-{formatMoney(r.deductions)}</td>
                   <td className="p-4 text-body-md font-bold text-deep-navy text-right">{formatMoney(r.net)}</td>
                   <td className="p-4 text-center">
                     <span
                       className={cn(
                         'inline-flex items-center px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wide',
-                        statusStyles[r.status]
+                        statusStyles[r.status],
                       )}
                     >
                       {r.status}
@@ -252,9 +256,15 @@ export function PayrollDashboardPage() {
           </table>
         </div>
         <div className="p-4 border-t border-outline-variant flex justify-between items-center bg-surface-bright">
-          <span className="text-caption text-on-surface-variant">Showing 3 of {payrollKpis.totalEmployees} employees</span>
+          <span className="text-caption text-on-surface-variant">
+            Showing {Math.min(5, filtered.length)} of {kpis.totalEmployees} employees
+          </span>
           <div className="flex items-center gap-2">
-            <button type="button" className="p-1 rounded hover:bg-surface-container border border-outline-variant disabled:opacity-50" disabled>
+            <button
+              type="button"
+              className="p-1 rounded hover:bg-surface-container border border-outline-variant disabled:opacity-50"
+              disabled
+            >
               <span className="material-symbols-outlined text-[18px]">chevron_left</span>
             </button>
             <button
@@ -287,12 +297,7 @@ function KpiCard({
   accent?: string
 }) {
   return (
-    <div
-      className={cn(
-        'bv-surface card-hover p-4 h-[120px] flex flex-col justify-between',
-        accent
-      )}
-    >
+    <div className={cn('bv-surface card-hover p-4 h-[120px] flex flex-col justify-between', accent)}>
       <div className="flex items-center gap-2 text-on-surface-variant">
         <span className="material-symbols-outlined text-[18px]">{icon}</span>
         <span className="text-label-sm">{label}</span>
