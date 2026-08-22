@@ -1,52 +1,42 @@
 import { useQuery } from '@tanstack/react-query'
-import { listPayrollEmployees } from '../api/payroll'
+import { getRunPayrollChecks, getRunPayrollPreview } from '../api/payroll'
 import { formatMoney } from '../data/mock'
 
-const checks = [
-  {
-    ok: true,
-    title: 'Employee salary configuration available',
-    detail: 'All active employees have a base salary set.',
-  },
-  {
-    ok: true,
-    title: 'Monthly attendance summary available',
-    detail: 'Timesheets are available for processing.',
-  },
-  {
-    ok: true,
-    title: 'No existing payroll for this month',
-    detail: 'Selected period is clear to generate.',
-  },
-  {
-    ok: true,
-    title: 'Period ready',
-    detail: 'You can generate payroll for the selected month.',
-  },
-]
-
-const previewMetrics = [
-  { label: 'Total Employees', value: '42' },
-  { label: 'Gross Salary', value: '$245,600' },
-  { label: 'Total Additions', value: '+$12,400', valueClass: 'text-success-emerald' },
-  { label: 'Total Deductions', value: '-$45,200', valueClass: 'text-error' },
-]
-
 export function useRunPayroll() {
-  const query = useQuery({
-    queryKey: ['payroll', 'employees', 'run-preview'],
-    queryFn: () => listPayrollEmployees(),
+  const checksQuery = useQuery({
+    queryKey: ['payroll', 'run-checks'],
+    queryFn: getRunPayrollChecks,
+  })
+  const previewQuery = useQuery({
+    queryKey: ['payroll', 'run-preview'],
+    queryFn: getRunPayrollPreview,
   })
 
-  const previewRows = (query.data ?? []).slice(0, 4)
+  const preview = previewQuery.data
+  const previewMetrics = preview
+    ? [
+        { label: 'Total Employees', value: String(preview.employees.length) },
+        { label: 'Gross Salary', value: formatMoney(preview.totalGross) },
+        {
+          label: 'Total Additions',
+          value: `+${formatMoney(preview.totalEarnings)}`,
+          valueClass: 'text-success-emerald',
+        },
+        {
+          label: 'Total Deductions',
+          value: `-${formatMoney(preview.totalDeductions)}`,
+          valueClass: 'text-error',
+        },
+      ]
+    : []
 
   return {
-    checks,
+    checks: checksQuery.data ?? [],
     previewMetrics,
-    previewRows,
-    estimatedNet: '$212,800.00',
-    employeeCount: query.data?.length ?? 42,
+    previewRows: (preview?.employees ?? []).slice(0, 4),
+    estimatedNet: preview ? formatMoney(preview.estimatedNet) : formatMoney(0),
+    employeeCount: preview?.employees.length ?? 0,
     formatMoney,
-    isLoading: query.isLoading,
+    isLoading: checksQuery.isLoading || previewQuery.isLoading,
   }
 }

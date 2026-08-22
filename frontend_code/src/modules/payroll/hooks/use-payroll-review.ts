@@ -1,76 +1,69 @@
 import { useState } from 'react'
 import { useParams } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
-import { getPayrollEmployee } from '../api/payroll'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  approvePayrollEmployee,
+  getPayrollReview,
+  payPayrollEmployee,
+} from '../api/payroll'
 import { formatMoney } from '../data/mock'
 
+/** Review detail — all amounts from API/computeReview (structure + attendance + adjustments). */
 export function usePayrollReview() {
   const { employeeId } = useParams({ strict: false }) as { employeeId?: string }
+  const id = employeeId ?? ''
+  const qc = useQueryClient()
   const [showPayModal, setShowPayModal] = useState(false)
 
   const query = useQuery({
-    queryKey: ['payroll', 'employee', employeeId],
-    queryFn: () => getPayrollEmployee(employeeId ?? ''),
-    enabled: Boolean(employeeId),
+    queryKey: ['payroll', 'review', id],
+    queryFn: () => getPayrollReview(id),
+    enabled: Boolean(id),
   })
 
-  const emp = query.data
+  const review = query.data
+  const emp = review?.employee
 
-  const gross = emp?.gross ?? 8500
-  const totalEarnings = emp ? emp.gross + emp.earnings : 9250
-  const totalDeductions = emp?.deductions ?? 1845
-  const netAdj = 125
-  const netPayable = emp?.net ?? 7530
+  const approveMut = useMutation({
+    mutationFn: () => approvePayrollEmployee(id),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['payroll'] }),
+  })
+  const payMut = useMutation({
+    mutationFn: (ref?: string) => payPayrollEmployee(id, ref),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: ['payroll'] }),
+  })
 
-  const attendanceSummary: [string, string][] = [
-    ['Working Days', '22'],
-    ['Present Days', '20'],
-    ['Paid Leave', '2'],
-    ['LOP Days', '0'],
-    ['Working Hours', '176h'],
-    ['Overtime Hours', '12h'],
-  ]
-
-  const earnings: [string, number][] = [
-    ['Basic Salary', Math.round(gross * 0.59)],
-    ['House Rent Allowance (HRA)', Math.round(gross * 0.24)],
-    ['Conveyance Allowance', 800],
-    ['Special Allowance', 700],
-    ['Overtime Pay', emp?.earnings ?? 750],
-  ]
-
-  const deductions: [string, number][] = [
-    ['Provident Fund (PF)', 450],
-    ['Tax Deducted at Source (TDS)', Math.max(0, totalDeductions - 495)],
-    ['Professional Tax', 45],
-  ]
+  const attendanceSummary: [string, string][] = review
+    ? [
+        ['Working Days', String(review.attendance.workingDays)],
+        ['Present Days', String(review.attendance.presentDays)],
+        ['Paid Leave', String(review.attendance.paidLeave)],
+        ['LOP Days', String(review.attendance.lopDays)],
+        ['Working Hours', `${review.attendance.workingHours}h`],
+        ['Overtime Hours', `${review.attendance.overtimeHours}h`],
+      ]
+    : []
 
   return {
-    emp: emp ?? {
-      id: employeeId ?? 'e1',
-      name: '—',
-      code: '—',
-      role: '—',
-      department: '—',
-      initials: '—',
-      gross,
-      earnings: 0,
-      deductions: totalDeductions,
-      net: netPayable,
-      status: 'Calculated' as const,
-    },
+    emp: emp ?? null,
+    review,
     showPayModal,
     setShowPayModal,
-    gross,
-    totalEarnings,
-    totalDeductions,
-    netAdj,
-    netPayable,
+    gross: review?.gross ?? 0,
+    totalEarnings: review?.totalEarnings ?? 0,
+    totalDeductions: review?.totalDeductions ?? 0,
+    netAdj: review?.netAdjustments ?? 0,
+    netPayable: review?.netPayable ?? 0,
     attendanceSummary,
-    earnings,
-    deductions,
+    earnings: review?.earnings ?? [],
+    deductions: review?.deductions ?? [],
+    adjustments: review?.adjustments ?? [],
     formatMoney,
-    periodLabel: 'August 2026',
+    periodLabel: review?.periodLabel ?? '',
     isLoading: query.isLoading,
+    isError: query.isError || (!query.isLoading && !review),
+    refetch: query.refetch,
+    approveMut,
+    payMut,
   }
 }
