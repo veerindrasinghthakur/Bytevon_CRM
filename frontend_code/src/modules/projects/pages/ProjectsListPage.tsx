@@ -1,6 +1,8 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
+import { ExportButton } from '@/shared/components/export/ExportButton'
+import { ResourceName } from '@/shared/schema'
 import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
@@ -99,13 +101,21 @@ export function ProjectsListPage() {
             Manage projects, assign teams, track milestones and monitor budget burn rates.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">upload</span>}>
             Import
           </Button>
-          <Button variant="outline" size="sm" leftIcon={<span className="material-symbols-outlined text-[18px]">download</span>}>
-            Export
-          </Button>
+          <ExportButton
+            resource={ResourceName.PROJECT}
+            query={search}
+            filters={{ status }}
+            selectedIds={
+              selection.selectionMode
+                ? Array.from(selection.selectedIds ?? [])
+                : undefined
+            }
+            filenameStem="projects"
+          />
           <Button
             variant="primary"
             size="sm"
@@ -149,9 +159,12 @@ export function ProjectsListPage() {
           filteredCount={pageItems.length}
           onCancel={selection.exitSelectionMode}
         >
-          <Button variant="outline" size="sm">
-            Export selected
-          </Button>
+          <ExportButton
+            resource={ResourceName.PROJECT}
+            selectedIds={Array.from(selection.selectedIds ?? [])}
+            filenameStem="projects-selected"
+            label="Export selected"
+          />
           <Button variant="primary" size="sm">
             Archive
           </Button>

@@ -2,6 +2,9 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { HEADER_HEIGHT_PX } from '@/shared/components/layout/Header'
 import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
+import { MetricCard } from '@/shared/components/ui/MetricCard'
+import { ExportButton } from '@/shared/components/export/ExportButton'
 import { useTeamsList } from '../hooks/use-teams-list'
 import { cn } from '@/shared/lib/cn'
 
@@ -28,8 +31,12 @@ export function TeamsListPage() {
         title="Teams"
         description="Manage and organize your cross-functional teams."
         actions={
-          <div className="flex gap-2">
-            <Button variant="outline" leftIcon={<Icon name="download" />}>Export</Button>
+          <div className="flex gap-2 flex-wrap">
+            <ExportButton
+              resource="team"
+              query={search}
+              filenameStem="teams"
+            />
             <Button variant="primary" leftIcon={<Icon name="add" />} onClick={() => setCreateOpen(true)}>New Team</Button>
           </div>
         }
@@ -37,19 +44,13 @@ export function TeamsListPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {metrics.map((m) => (
-          <div key={m.id} className="bv-surface card-hover p-5">
-            <div className="flex justify-between mb-2">
-              <span className="text-label-sm text-on-surface-variant uppercase tracking-wider">{m.label}</span>
-              <div className="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
-                <Icon name={m.icon} className="text-lg" />
-              </div>
-            </div>
-            <div className="flex items-end gap-2">
-              <span className="text-headline-xl font-bold">{m.value}</span>
-              {m.change && <span className="text-label-sm text-emerald-600 mb-1">↑ {m.change}</span>}
-              {m.subtitle && <span className="text-label-sm text-on-surface-variant mb-1">{m.subtitle}</span>}
-            </div>
-          </div>
+          <MetricCard
+            key={m.id}
+            label={m.label}
+            value={m.value}
+            icon={m.icon}
+            valueClassName={m.change ? 'text-secondary' : undefined}
+          />
         ))}
       </div>
 
@@ -59,8 +60,29 @@ export function TeamsListPage() {
             <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
             <input value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-secondary/30 outline-none transition-colors" placeholder="Search teams..." />
           </div>
-          <select className="border border-outline-variant rounded-lg px-3 py-2 text-body-sm transition-colors"><option>All Statuses</option></select>
-          <select className="border border-outline-variant rounded-lg px-3 py-2 text-body-sm transition-colors"><option>All Departments</option></select>
+          <Select
+            value="All"
+            onChange={() => {}}
+            placeholder="All Statuses"
+            options={[
+              { value: 'All', label: 'All Statuses' },
+              { value: 'Active', label: 'Active' },
+              { value: 'Inactive', label: 'Inactive' },
+            ]}
+            minWidthClass="min-w-[140px]"
+          />
+          <Select
+            value="All"
+            onChange={() => {}}
+            placeholder="All Departments"
+            options={[
+              { value: 'All', label: 'All Departments' },
+              { value: 'Engineering', label: 'Engineering' },
+              { value: 'Design', label: 'Design' },
+              { value: 'Sales', label: 'Sales' },
+            ]}
+            minWidthClass="min-w-[160px]"
+          />
         </div>
         <table className="w-full text-left">
           <thead>
