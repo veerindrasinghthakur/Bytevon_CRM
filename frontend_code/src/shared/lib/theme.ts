@@ -3,7 +3,11 @@
  * Tokens live in styles/tokens.css (:root) and styles/tokens-dark.css ([data-theme="dark"]).
  */
 
+/** Effective applied theme on the document */
 export type ThemeMode = 'light' | 'dark'
+
+/** User preference including follow-system */
+export type ThemePreference = 'light' | 'dark' | 'system'
 
 export const THEME_STORAGE_KEY = 'bytevon-theme'
 
@@ -12,45 +16,60 @@ export function getSystemTheme(): ThemeMode {
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
-export function readStoredTheme(): ThemeMode | null {
+export function readStoredPreference(): ThemePreference | null {
   try {
     const v = localStorage.getItem(THEME_STORAGE_KEY)
-    if (v === 'light' || v === 'dark') return v
+    if (v === 'light' || v === 'dark' || v === 'system') return v
   } catch {
     /* private mode / blocked storage */
   }
   return null
 }
 
-/** Resolve effective theme: stored preference > system > light */
-export function resolveTheme(): ThemeMode {
-  return readStoredTheme() ?? getSystemTheme()
+/** @deprecated use readStoredPreference */
+export function readStoredTheme(): ThemeMode | null {
+  const p = readStoredPreference()
+  if (p === 'light' || p === 'dark') return p
+  return null
+}
+
+/** Resolve effective theme from preference */
+export function resolveTheme(preference?: ThemePreference | null): ThemeMode {
+  const pref = preference ?? readStoredPreference() ?? 'system'
+  if (pref === 'system') return getSystemTheme()
+  return pref
 }
 
 export function applyTheme(mode: ThemeMode): void {
   if (typeof document === 'undefined') return
   const root = document.documentElement
   root.setAttribute('data-theme', mode)
-  // Keep Tailwind darkMode: 'class' in sync for any rare dark: utilities
   root.classList.toggle('dark', mode === 'dark')
   root.classList.toggle('light', mode === 'light')
 }
 
-export function persistTheme(mode: ThemeMode): void {
+export function persistPreference(pref: ThemePreference): void {
   try {
-    localStorage.setItem(THEME_STORAGE_KEY, mode)
+    localStorage.setItem(THEME_STORAGE_KEY, pref)
   } catch {
     /* ignore */
   }
 }
 
+export function setThemePreference(pref: ThemePreference): ThemeMode {
+  persistPreference(pref)
+  const effective = resolveTheme(pref)
+  applyTheme(effective)
+  return effective
+}
+
+/** @deprecated prefer setThemePreference */
 export function setTheme(mode: ThemeMode): void {
-  applyTheme(mode)
-  persistTheme(mode)
+  setThemePreference(mode)
 }
 
 export function toggleTheme(current: ThemeMode): ThemeMode {
   const next: ThemeMode = current === 'dark' ? 'light' : 'dark'
-  setTheme(next)
+  setThemePreference(next)
   return next
 }
