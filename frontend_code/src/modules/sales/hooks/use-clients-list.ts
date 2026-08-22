@@ -1,120 +1,50 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { clients, clientMetrics } from '../data/mock'
+import { useMemo, useState } from 'react'
+import { useListSelection } from '@/shared/hooks/useListSelection'
+import { useClientsQuery } from './use-sales'
 import type { Client } from '../types'
-
-const LONG_PRESS_MS = 3000
 
 export function useClientsList() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('All')
   const [typeFilter, setTypeFilter] = useState('All')
   const [quickView, setQuickView] = useState<Client | null>(null)
-  const [selectionMode, setSelectionMode] = useState(false)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const longPressTriggered = useRef(false)
+  const { data, isLoading, isError, refetch, isFetching } = useClientsQuery({
+    search: search || undefined,
+    status: statusFilter,
+    type: typeFilter,
+  })
 
-  const filtered = useMemo(() => {
-    return clients.filter((c) => {
-      const q = search.toLowerCase()
-      const matchSearch =
-        !q ||
-        c.name.toLowerCase().includes(q) ||
-        c.industry.toLowerCase().includes(q) ||
-        (c.primaryContact?.toLowerCase().includes(q) ?? false) ||
-        c.id.toLowerCase().includes(q)
-      const matchStatus = statusFilter === 'All' || c.status === statusFilter
-      const matchType = typeFilter === 'All' || c.type === typeFilter
-      return matchSearch && matchStatus && matchType
-    })
-  }, [search, statusFilter, typeFilter])
+  const filtered = data?.items ?? []
+  const metrics = data?.metrics ?? []
+  const totalCount = data?.total ?? 0
 
-  useEffect(() => {
-    const visible = new Set(filtered.map((c) => c.id))
-    setSelectedIds((prev) => {
-      const next = new Set([...prev].filter((id) => visible.has(id)))
-      if (next.size === 0 && selectionMode) setSelectionMode(false)
-      return next
-    })
-  }, [filtered, selectionMode])
+  const selection = useListSelection({
+    items: filtered,
+    getId: (c) => c.id,
+  })
 
-  const clearLongPress = useCallback(() => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current)
-      longPressTimer.current = null
-    }
-  }, [])
-
-  const enterSelectionWith = useCallback((id: string) => {
-    setSelectionMode(true)
-    setSelectedIds(new Set([id]))
-  }, [])
-
-  const toggleOne = useCallback((id: string) => {
-    setSelectedIds((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      if (next.size === 0) setSelectionMode(false)
-      else setSelectionMode(true)
-      return next
-    })
-  }, [])
-
-  const allFilteredSelected =
-    filtered.length > 0 && filtered.every((c) => selectedIds.has(c.id))
-
-  const toggleSelectAllFiltered = useCallback(() => {
-    if (allFilteredSelected) {
-      setSelectedIds(new Set())
-      setSelectionMode(false)
-    } else {
-      setSelectedIds(new Set(filtered.map((c) => c.id)))
-      setSelectionMode(true)
-    }
-  }, [allFilteredSelected, filtered])
-
-  const exitSelectionMode = useCallback(() => {
-    setSelectedIds(new Set())
-    setSelectionMode(false)
-  }, [])
-
-  const startLongPress = useCallback(
-    (id: string) => {
-      longPressTriggered.current = false
-      clearLongPress()
-      longPressTimer.current = setTimeout(() => {
-        longPressTriggered.current = true
-        enterSelectionWith(id)
-      }, LONG_PRESS_MS)
-    },
-    [clearLongPress, enterSelectionWith],
-  )
-
-  const endLongPress = useCallback(
-    (client: Client) => {
-      clearLongPress()
-      if (longPressTriggered.current) {
-        longPressTriggered.current = false
-        return
-      }
-      if (selectionMode) toggleOne(client.id)
-      else setQuickView(client)
-    },
-    [clearLongPress, selectionMode, toggleOne],
-  )
-
-  const resetFilters = useCallback(() => {
+  const resetFilters = () => {
     setSearch('')
     setStatusFilter('All')
     setTypeFilter('All')
-  }, [])
+  }
+
+  /** Bridge long-press / short-press to selection + quick view (same UX as before). */
+  const startLongPress = (id: string) => selection.onRowPressStart(id)
+  const endLongPress = (client: Client) => {
+    selection.onRowPressEnd(client.id, () => setQuickView(client))
+  }
+  const clearLongPress = selection.onRowPressCancel
 
   return {
-    metrics: clientMetrics,
-    totalCount: clients.length,
+    metrics,
+    totalCount,
     filtered,
+    isLoading,
+    isError,
+    refetch,
+    isFetching,
     search,
     setSearch,
     statusFilter,
@@ -124,14 +54,15 @@ export function useClientsList() {
     resetFilters,
     quickView,
     setQuickView,
-    selectionMode,
-    selectedIds,
-    allFilteredSelected,
-    toggleOne,
-    toggleSelectAllFiltered,
-    exitSelectionMode,
+    selectionMode: selection.selectionMode,
+    selectedIds: selection.selectedIds,
+    allFilteredSelected: selection.allFilteredSelected,
+    toggleOne: selection.toggleOne,
+    toggleSelectAllFiltered: selection.toggleSelectAllFiltered,
+    exitSelectionMode: selection.exitSelectionMode,
     startLongPress,
     endLongPress,
     clearLongPress,
+    selection,
   }
 }
