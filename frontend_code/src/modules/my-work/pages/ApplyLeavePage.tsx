@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -7,6 +7,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { SaveDraftButton } from '@/shared/components/ui/SaveDraftButton'
+import { DocumentUpload } from '@/shared/components/forms/DocumentUpload'
 import { leaveBalances, leaveTypeOptions } from '../data/mock'
 import { cn } from '@/shared/lib/cn'
 
@@ -69,7 +70,6 @@ function countLeaveDays(from: string, to: string, halfDay: boolean) {
 
 export function ApplyLeavePage() {
   const navigate = useNavigate()
-  const fileRef = useRef<HTMLInputElement>(null)
   const [files, setFiles] = useState<File[]>([])
   const [showToast, setShowToast] = useState(false)
   const today = useMemo(() => todayISO(), [])
@@ -97,6 +97,7 @@ export function ApplyLeavePage() {
   const balanceForType = leaveBalances.find((b) => b.type === leaveType)
 
   const onSubmit = async (_data: FormValues) => {
+    void files
     await new Promise((r) => setTimeout(r, 600))
     navigate({ to: '/my-work/leave' })
   }
@@ -142,12 +143,20 @@ export function ApplyLeavePage() {
           <div className="bg-secondary text-white p-4 rounded-xl executive-shadow flex items-center gap-3">
             <span className="material-symbols-outlined">check_circle</span>
             <p className="text-sm font-medium flex-1">Draft saved successfully!</p>
-            <button type="button" onClick={() => setShowToast(false)}><span className="material-symbols-outlined text-sm">close</span></button>
+            <button type="button" onClick={() => setShowToast(false)}>
+              <span className="material-symbols-outlined text-sm">close</span>
+            </button>
           </div>
         </div>
       )}
 
-      <PageHeader title="Apply for Leave" description="Submit a leave request for manager approval." showBack backTo="/my-work/leave" backLabel="Back to My Leave" />
+      <PageHeader
+        title="Apply for Leave"
+        description="Submit a leave request for manager approval."
+        showBack
+        backTo="/my-work/leave"
+        backLabel="Back to My Leave"
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {leaveBalances.map((lb) => (
@@ -156,10 +165,15 @@ export function ApplyLeavePage() {
               <div className="p-2 rounded-lg bg-surface-container-high text-secondary">
                 <span className="material-symbols-outlined text-xl">{leaveTypeIcons[lb.type] ?? 'event'}</span>
               </div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">{lb.remaining > 3 ? 'Healthy' : 'Low'}</span>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">
+                {lb.remaining > 3 ? 'Healthy' : 'Low'}
+              </span>
             </div>
             <h3 className="text-label-md font-semibold text-on-surface">{lb.type} Leave</h3>
-            <p className="text-2xl font-bold text-on-background mt-1">{lb.remaining}{' '}<span className="text-sm font-normal text-on-surface-variant">/ {lb.total} days remaining</span></p>
+            <p className="text-2xl font-bold text-on-background mt-1">
+              {lb.remaining}{' '}
+              <span className="text-sm font-normal text-on-surface-variant">/ {lb.total} days remaining</span>
+            </p>
           </div>
         ))}
       </div>
@@ -174,7 +188,9 @@ export function ApplyLeavePage() {
             </div>
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-label-md font-medium text-on-surface-variant mb-1.5">Leave Type <span className="text-error">*</span></label>
+                <label className="block text-label-md font-medium text-on-surface-variant mb-1.5">
+                  Leave Type <span className="text-error">*</span>
+                </label>
                 <Select
                   value={leaveType}
                   onChange={(v) => setValue('type', v as FormValues['type'], { shouldValidate: true })}
@@ -185,8 +201,18 @@ export function ApplyLeavePage() {
                 <label className="block text-label-md font-medium text-on-surface-variant mb-2">Duration Modifier</label>
                 <label className="inline-flex items-center cursor-pointer gap-3">
                   <input type="checkbox" className="sr-only" {...register('halfDay')} />
-                  <div className={cn('relative w-11 h-6 rounded-full transition-colors', halfDay ? 'bg-secondary' : 'bg-outline-variant')}>
-                    <div className={cn('absolute top-[2px] left-[2px] size-5 bg-white rounded-full transition-transform', halfDay && 'translate-x-5')} />
+                  <div
+                    className={cn(
+                      'relative w-11 h-6 rounded-full transition-colors',
+                      halfDay ? 'bg-secondary' : 'bg-outline-variant',
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        'absolute top-[2px] left-[2px] size-5 bg-white rounded-full transition-transform',
+                        halfDay && 'translate-x-5',
+                      )}
+                    />
                   </div>
                   <span className="text-sm font-medium text-on-surface">Half Day Leave</span>
                 </label>
@@ -203,34 +229,88 @@ export function ApplyLeavePage() {
             <div className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label className="block text-label-md font-medium text-on-surface-variant mb-1.5" htmlFor="from">Start Date *</label>
-                  <input id="from" type="date" min={today} {...fromReg} onChange={(e) => { fromReg.onChange(e); if (to && e.target.value && to < e.target.value) setValue('to', '', { shouldValidate: true }) }} className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md outline-none focus:border-secondary" />
+                  <label className="block text-label-md font-medium text-on-surface-variant mb-1.5" htmlFor="from">
+                    Start Date *
+                  </label>
+                  <input
+                    id="from"
+                    type="date"
+                    min={today}
+                    {...fromReg}
+                    onChange={(e) => {
+                      fromReg.onChange(e)
+                      if (to && e.target.value && to < e.target.value) setValue('to', '', { shouldValidate: true })
+                    }}
+                    className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md outline-none focus:border-secondary"
+                  />
                   {errors.from && <p className="mt-1 text-body-sm text-error">{errors.from.message}</p>}
                 </div>
                 <div>
-                  <label className="block text-label-md font-medium text-on-surface-variant mb-1.5" htmlFor="to">End Date *</label>
-                  <input id="to" type="date" min={from && from > today ? from : today} {...register('to')} className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md outline-none focus:border-secondary" />
+                  <label className="block text-label-md font-medium text-on-surface-variant mb-1.5" htmlFor="to">
+                    End Date *
+                  </label>
+                  <input
+                    id="to"
+                    type="date"
+                    min={from && from > today ? from : today}
+                    {...register('to')}
+                    className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md outline-none focus:border-secondary"
+                  />
                   {errors.to && <p className="mt-1 text-body-sm text-error">{errors.to.message}</p>}
                 </div>
               </div>
-              <p className="text-label-sm text-on-surface-variant">Working days (excl. weekends/holidays): <strong className="text-on-surface">{dayCost}</strong></p>
+              <p className="text-label-sm text-on-surface-variant">
+                Working days (excl. weekends/holidays): <strong className="text-on-surface">{dayCost}</strong>
+              </p>
               <div className="border border-outline-variant rounded-xl p-4">
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-label-md font-semibold">{monthLabel}</p>
                   <div className="flex gap-1">
-                    <button type="button" className="p-1.5 rounded hover:bg-surface-container" onClick={() => setCalendarMonth(new Date(year, month - 1, 1))}><span className="material-symbols-outlined text-sm">arrow_back_ios</span></button>
-                    <button type="button" className="p-1.5 rounded hover:bg-surface-container" onClick={() => setCalendarMonth(new Date(year, month + 1, 1))}><span className="material-symbols-outlined text-sm">arrow_forward_ios</span></button>
+                    <button
+                      type="button"
+                      className="p-1.5 rounded hover:bg-surface-container"
+                      onClick={() => setCalendarMonth(new Date(year, month - 1, 1))}
+                    >
+                      <span className="material-symbols-outlined text-sm">arrow_back_ios</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="p-1.5 rounded hover:bg-surface-container"
+                      onClick={() => setCalendarMonth(new Date(year, month + 1, 1))}
+                    >
+                      <span className="material-symbols-outlined text-sm">arrow_forward_ios</span>
+                    </button>
                   </div>
                 </div>
-                <div className="grid grid-cols-7 text-center text-[10px] font-bold text-on-surface-variant mb-1">{['S','M','T','W','T','F','S'].map((d,i)=><div key={`${d}-${i}`}>{d}</div>)}</div>
+                <div className="grid grid-cols-7 text-center text-[10px] font-bold text-on-surface-variant mb-1">
+                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                    <div key={`${d}-${i}`}>{d}</div>
+                  ))}
+                </div>
                 <div className="grid grid-cols-7 text-center text-sm">
-                  {Array.from({ length: firstDay }).map((_, i) => <div key={`e-${i}`} className="py-2" />)}
+                  {Array.from({ length: firstDay }).map((_, i) => (
+                    <div key={`e-${i}`} className="py-2" />
+                  ))}
                   {cells.map(({ day, iso, dow }) => {
                     const isPast = iso < today
                     const inRange = from && to && iso >= from && iso <= to
                     const start = from === iso
                     return (
-                      <button key={iso} type="button" disabled={isPast} onClick={() => selectDay(iso)} className={cn('py-2 rounded-lg', isPast && 'opacity-35', inRange || start ? 'bg-sky-100 font-semibold' : dow === 0 || dow === 6 ? 'bg-slate-50' : 'hover:bg-surface-container')}>
+                      <button
+                        key={iso}
+                        type="button"
+                        disabled={isPast}
+                        onClick={() => selectDay(iso)}
+                        className={cn(
+                          'py-2 rounded-lg',
+                          isPast && 'opacity-35',
+                          inRange || start
+                            ? 'bg-sky-100 font-semibold'
+                            : dow === 0 || dow === 6
+                              ? 'bg-slate-50'
+                              : 'hover:bg-surface-container',
+                        )}
+                      >
                         {day}
                       </button>
                     )
@@ -241,8 +321,16 @@ export function ApplyLeavePage() {
           </section>
 
           <section className="bv-surface p-6">
-            <label className="block text-label-md font-medium text-on-surface-variant mb-1.5" htmlFor="reason">Reason *</label>
-            <textarea id="reason" rows={4} {...register('reason')} className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md outline-none focus:border-secondary resize-y" placeholder="Describe the purpose of your leave request..." />
+            <label className="block text-label-md font-medium text-on-surface-variant mb-1.5" htmlFor="reason">
+              Reason *
+            </label>
+            <textarea
+              id="reason"
+              rows={4}
+              {...register('reason')}
+              className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md outline-none focus:border-secondary resize-y"
+              placeholder="Describe the purpose of your leave request..."
+            />
             {errors.reason && <p className="mt-1 text-body-sm text-error">{errors.reason.message}</p>}
           </section>
         </div>
@@ -250,16 +338,18 @@ export function ApplyLeavePage() {
         <div className="space-y-6">
           <section className="bv-surface overflow-hidden">
             <div className="px-6 py-4 border-b border-outline-variant bg-surface-container-low">
-              <h2 className="text-title-md font-semibold flex items-center gap-2"><span className="material-symbols-outlined text-secondary text-xl">attach_file</span> Supporting Docs</h2>
+              <h2 className="text-title-md font-semibold flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary text-xl">attach_file</span> Supporting Docs
+              </h2>
             </div>
             <div className="p-6">
-              <input ref={fileRef} type="file" className="hidden" accept=".pdf,.jpg,.jpeg,.png" multiple onChange={(e) => setFiles(Array.from(e.target.files ?? []))} />
-              <button type="button" onClick={() => fileRef.current?.click()} className="w-full border-2 border-dashed border-outline-variant rounded-xl p-8 flex flex-col items-center hover:border-secondary transition-colors">
-                <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-3">cloud_upload</span>
-                <p className="text-sm font-semibold">Upload supporting documents</p>
-                <p className="text-xs text-on-surface-variant mt-1">PDF, JPG up to 10MB</p>
-                {files.length > 0 && <p className="text-label-sm text-secondary mt-2">{files.map((f) => f.name).join(', ')}</p>}
-              </button>
+              <DocumentUpload
+                files={files}
+                onChange={setFiles}
+                accept=".pdf,.jpg,.jpeg,.png"
+                title="Upload supporting documents"
+                hint="PDF, JPG, PNG"
+              />
             </div>
           </section>
         </div>
@@ -267,12 +357,26 @@ export function ApplyLeavePage() {
         <div className="lg:col-span-3 sticky bottom-0 z-40">
           <div className="bg-surface-container-lowest/95 backdrop-blur-md border border-outline-variant rounded-xl px-6 py-4 flex flex-wrap items-center justify-between gap-4 executive-shadow">
             <span className="text-xs text-on-surface-variant">
-              Est. balance after: <strong className="text-on-surface">{Math.max(0, (balanceForType?.remaining ?? 0) - dayCost)} days</strong> · request {dayCost} day(s)
+              Est. balance after:{' '}
+              <strong className="text-on-surface">
+                {Math.max(0, (balanceForType?.remaining ?? 0) - dayCost)} days
+              </strong>{' '}
+              · request {dayCost} day(s)
+              {files.length > 0 && <> · {files.length} file(s)</>}
             </span>
             <div className="flex items-center gap-3">
-              <Button type="button" variant="ghost" onClick={() => navigate({ to: '/my-work/leave' })}>Cancel</Button>
+              <Button type="button" variant="ghost" onClick={() => navigate({ to: '/my-work/leave' })}>
+                Cancel
+              </Button>
               <SaveDraftButton onClick={handleSaveDraft} />
-              <Button type="submit" variant="primary" isLoading={isSubmitting} rightIcon={<span className="material-symbols-outlined text-sm">send</span>}>Submit Request</Button>
+              <Button
+                type="submit"
+                variant="primary"
+                isLoading={isSubmitting}
+                rightIcon={<span className="material-symbols-outlined text-sm">send</span>}
+              >
+                Submit Request
+              </Button>
             </div>
           </div>
         </div>
