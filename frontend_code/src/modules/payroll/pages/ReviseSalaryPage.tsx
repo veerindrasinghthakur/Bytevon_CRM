@@ -1,42 +1,46 @@
-import { useState } from 'react'
-import { useNavigate, useParams } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
-import { payrollEmployees } from '../data/mock'
-
-interface SalaryRow {
-  id: string
-  name: string
-  type: 'EARNING' | 'DEDUCTION'
-  amount: number
-}
-
-const initialRows: SalaryRow[] = [
-  { id: '1', name: 'Basic', type: 'EARNING', amount: 30000 },
-  { id: '2', name: 'HRA', type: 'EARNING', amount: 15000 },
-  { id: '3', name: 'PF', type: 'DEDUCTION', amount: 3600 },
-]
+import { BackButton } from '@/shared/components/layout/BackButton'
+import { Select } from '@/shared/components/ui/Select'
+import { useReviseSalary } from '../hooks/use-payroll'
 
 export function ReviseSalaryPage() {
   const navigate = useNavigate()
-  const { employeeId } = useParams({ strict: false }) as { employeeId?: string }
-  const emp = payrollEmployees.find((e) => e.id === employeeId) ?? payrollEmployees[0]
-  const [rows, setRows] = useState(initialRows)
+  const {
+    emp,
+    rows,
+    effectiveFrom,
+    setEffectiveFrom,
+    totalEarnings,
+    totalDeductions,
+    net,
+    formatMoney,
+    addRow,
+    removeRow,
+    updateRow,
+    saveMut,
+    isLoading,
+  } = useReviseSalary()
 
-  const totalEarnings = rows.filter((r) => r.type === 'EARNING').reduce((s, r) => s + r.amount, 0)
-  const totalDeductions = rows.filter((r) => r.type === 'DEDUCTION').reduce((s, r) => s + r.amount, 0)
-  const net = totalEarnings - totalDeductions
+  if (isLoading) {
+    return <div className="p-8 text-body-md text-on-surface-variant">Loading salary structure…</div>
+  }
+  if (!emp) {
+    return (
+      <div className="p-8 space-y-4">
+        <p className="text-body-md text-error">Employee not found.</p>
+        <BackButton to="/payroll/salary" />
+      </div>
+    )
+  }
 
   const backToDetail = () =>
     navigate({ to: '/payroll/salary/$employeeId', params: { employeeId: emp.id } })
 
-  const addRow = () => {
-    setRows((prev) => [...prev, { id: String(Date.now()), name: '', type: 'EARNING', amount: 0 }])
-  }
-
-  const removeRow = (id: string) => setRows((prev) => prev.filter((r) => r.id !== id))
-
-  const updateRow = (id: string, patch: Partial<SalaryRow>) => {
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)))
+  const handleSave = () => {
+    saveMut.mutate(undefined, {
+      onSuccess: () => backToDetail(),
+    })
   }
 
   return (
@@ -59,28 +63,23 @@ export function ReviseSalaryPage() {
         </div>
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              className="text-on-surface-variant hover:text-secondary p-1 rounded-full hover:bg-surface-container transition-colors"
-              onClick={backToDetail}
-              aria-label="Back"
-            >
-              <span className="material-symbols-outlined">arrow_back</span>
-            </button>
+            <BackButton to={`/payroll/salary/${emp.id}`} label="" className="!px-1" />
             <div>
               <h1 className="text-headline-lg font-semibold text-deep-navy flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">payments</span>
                 Revise Salary
               </h1>
-              <p className="text-body-md text-on-surface-variant mt-1">Create a new salary version for {emp.name}.</p>
+              <p className="text-body-md text-on-surface-variant mt-1">
+                Update the existing salary structure for {emp.name}.
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" onClick={backToDetail}>
+            <Button variant="outline" size="sm" onClick={backToDetail} disabled={saveMut.isPending}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm" onClick={backToDetail}>
-              Save Salary
+            <Button variant="primary" size="sm" onClick={handleSave} disabled={saveMut.isPending}>
+              {saveMut.isPending ? 'Saving…' : 'Save Salary'}
             </Button>
           </div>
         </div>
@@ -119,9 +118,15 @@ export function ReviseSalaryPage() {
             </div>
             <div className="p-6">
               <div className="grid grid-cols-12 gap-4 mb-3 text-label-sm text-on-surface-variant uppercase tracking-wide px-2">
-                <div className="col-span-5">Item Name <span className="text-error">*</span></div>
-                <div className="col-span-3">Type <span className="text-error">*</span></div>
-                <div className="col-span-3">Amount <span className="text-error">*</span></div>
+                <div className="col-span-5">
+                  Item Name <span className="text-error">*</span>
+                </div>
+                <div className="col-span-3">
+                  Type <span className="text-error">*</span>
+                </div>
+                <div className="col-span-3">
+                  Amount <span className="text-error">*</span>
+                </div>
                 <div className="col-span-1 text-center">Act</div>
               </div>
               <div className="flex flex-col gap-3">
@@ -138,17 +143,21 @@ export function ReviseSalaryPage() {
                       />
                     </div>
                     <div className="col-span-3">
-                      <select
-                        className="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-3 py-2 text-body-sm focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
+                      <Select
                         value={row.type}
-                        onChange={(e) => updateRow(row.id, { type: e.target.value as 'EARNING' | 'DEDUCTION' })}
-                      >
-                        <option value="EARNING">EARNING</option>
-                        <option value="DEDUCTION">DEDUCTION</option>
-                      </select>
+                        onChange={(v) => updateRow(row.id, { type: v as 'EARNING' | 'DEDUCTION' })}
+                        options={[
+                          { value: 'EARNING', label: 'EARNING' },
+                          { value: 'DEDUCTION', label: 'DEDUCTION' },
+                        ]}
+                        minWidthClass="min-w-0"
+                        className="w-full"
+                      />
                     </div>
                     <div className="col-span-3 relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-body-sm text-on-surface-variant">₹</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-body-sm text-on-surface-variant">
+                        $
+                      </span>
                       <input
                         type="number"
                         className={`w-full bg-surface-container-lowest border border-outline-variant rounded-md pl-7 pr-3 py-2 text-body-sm focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none text-right font-medium transition-colors ${
@@ -196,7 +205,8 @@ export function ReviseSalaryPage() {
                 </label>
                 <input
                   type="date"
-                  defaultValue="2023-11-01"
+                  value={effectiveFrom}
+                  onChange={(e) => setEffectiveFrom(e.target.value)}
                   className="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-3 py-2 text-body-sm focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
                 />
               </div>
@@ -228,20 +238,19 @@ export function ReviseSalaryPage() {
             <div className="space-y-4 relative z-10">
               <div className="flex justify-between items-center pb-3 border-b border-white/10">
                 <span className="text-body-md text-inverse-primary">Total Earnings</span>
-                <span className="text-label-md text-on-primary tracking-wider">₹{totalEarnings.toLocaleString()}</span>
+                <span className="text-label-md text-on-primary tracking-wider">{formatMoney(totalEarnings)}</span>
               </div>
               <div className="flex justify-between items-center pb-3 border-b border-white/10">
                 <span className="text-body-md text-inverse-primary">Total Deductions</span>
-                <span className="text-label-md text-error-container tracking-wider">-₹{totalDeductions.toLocaleString()}</span>
+                <span className="text-label-md text-error-container tracking-wider">
+                  -{formatMoney(totalDeductions)}
+                </span>
               </div>
               <div className="pt-2">
                 <span className="text-label-sm text-inverse-primary uppercase tracking-widest block mb-1">
                   Net Gross Salary
                 </span>
-                <div className="text-headline-lg font-bold text-on-primary tracking-tight">
-                  <span className="text-2xl align-super mr-1 text-inverse-primary">₹</span>
-                  {net.toLocaleString()}
-                </div>
+                <div className="text-headline-lg font-bold text-on-primary tracking-tight">{formatMoney(net)}</div>
               </div>
             </div>
           </section>
