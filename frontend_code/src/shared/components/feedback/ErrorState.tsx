@@ -11,9 +11,20 @@ export function ErrorState({
   title?: string
   description?: string
   onRetry?: () => void
+  /** Prefer explicit handler; when omitted and showBack is true, uses history.back() */
   onBack?: () => void
+  /** When true and onBack is omitted, renders Go back via window.history */
+  showBack?: boolean
   className?: string
 }) {
+  const handleBack =
+    onBack ??
+    (() => {
+      if (window.history.length > 1) window.history.back()
+    })
+
+  const canBack = Boolean(onBack) || (arguments[0] as { showBack?: boolean })?.showBack !== false
+
   return (
     <div
       className={cn(
@@ -32,8 +43,8 @@ export function ErrorState({
             Retry
           </Button>
         )}
-        {onBack && (
-          <Button variant="outline" onClick={onBack}>
+        {(onBack || canBack) && (
+          <Button variant="outline" onClick={handleBack}>
             Go back
           </Button>
         )}
