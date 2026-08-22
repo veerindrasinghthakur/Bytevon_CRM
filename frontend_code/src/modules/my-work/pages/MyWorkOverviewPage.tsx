@@ -36,7 +36,7 @@ export function MyWorkOverviewPage() {
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <h2 className="text-headline-md md:text-headline-lg font-bold tracking-tight mb-3">
-              Good Morning, {currentUser.firstName}
+              Good Morning, {currentUser.name}
             </h2>
             <div className="flex flex-wrap gap-3 text-sm text-inverse-primary">
               <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full">

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button, type ButtonSize, type ButtonVariant } from '@/shared/components/ui/Button'
-import { Can } from '@/shared/rbac/Can'
+import { Can } from '@/shared/rbac/Can.tsx'
 import { Action, type ResourceName } from '@/shared/schema'
 import { useExport, type ExportFormat, type ExportRequest } from '@/shared/hooks/useExport'
 import { ExportDialog } from './ExportDialog'

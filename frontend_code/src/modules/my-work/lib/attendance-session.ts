@@ -20,7 +20,7 @@ function todayKey(d = new Date()) {
 /** Default seed: checked in ~4.5h ago (matches previous mock UX) if nothing stored */
 function seedDefault(): TodayAttendanceSession {
   const now = Date.now()
-  const checkInAt = new Date(now - 4.5 * 60 * 60 * 1000).toISOString()
+  const checkInAt = new Date(now - 1 * 60 * 60 * 1000).toISOString()
   return { date: todayKey(), checkInAt }
 }
 

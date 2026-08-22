@@ -10,7 +10,7 @@ import type {
 } from '../types'
 
 export const currentUser = {
-  firstName: 'Alex',
+  name: 'Alex',
   employeeId: 'EMP-102',
   department: 'Design Dept',
   todayLabel: 'Oct 24, 2024',

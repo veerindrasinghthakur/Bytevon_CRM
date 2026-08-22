@@ -78,7 +78,7 @@ export function MyBankDetailsPage() {
   }
 
   const startEdit = () => {
-    setDraft(saved ?? { ...EMPTY_FORM, accountHolderName: `${currentUser.firstName}` })
+    setDraft(saved ?? { ...EMPTY_FORM, accountHolderName: `${currentUser.name}` })
     setErrors({})
     setIsEditing(true)
   }
@@ -185,10 +185,10 @@ export function MyBankDetailsPage() {
       <section className="bv-surface p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center font-bold text-primary">
-            {currentUser.firstName.slice(0, 1)}
+            {currentUser.name.slice(0, 1)}
           </div>
           <div>
-            <p className="text-title-lg font-semibold text-deep-navy">{currentUser.firstName}</p>
+            <p className="text-title-lg font-semibold text-deep-navy">{currentUser.name}</p>
             <div className="flex flex-wrap items-center gap-2 text-body-sm text-on-surface-variant mt-0.5">
               <span className="flex items-center gap-1">
                 <span className="material-symbols-outlined text-[16px]">badge</span>
