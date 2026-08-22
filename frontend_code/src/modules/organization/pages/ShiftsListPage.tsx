@@ -1,11 +1,9 @@
-import { useEffect, useState } from 'react'
 import { useNavigate, useRouterState } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
-import { getShifts } from '../api/organization'
-import type { ShiftRow } from '@/shared/schema'
+import { useShiftsList } from '../hooks/use-shifts'
 import { can } from '@/shared/rbac/can'
 import { Action, ResourceName } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
@@ -14,29 +12,19 @@ export function ShiftsListPage() {
   const navigate = useNavigate()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const base = pathname.startsWith('/workforce') ? '/workforce/shifts' : '/admin/settings/shifts'
-  const canCreate = can(Action.CREATE, ResourceName.SHIFT)
+  // can() takes a single params object — NOT (action, resource)
+  const canCreate = can({ action: Action.CREATE, resource: ResourceName.SHIFT })
 
-  const [items, setItems] = useState<ShiftRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { data, isLoading, isError, error, refetch } = useShiftsList(true)
+  const items = data?.items ?? []
 
-  const load = () => {
-    setLoading(true)
-    getShifts({ includeArchived: true })
-      .then((r) => setItems(r.items))
-      .catch((e: Error) => setError(e.message))
-      .finally(() => setLoading(false))
+  if (isLoading) return <PageLoadingSkeleton />
+  if (isError) {
+    return <ErrorState description={(error as Error).message} onRetry={() => void refetch()} />
   }
 
-  useEffect(() => {
-    load()
-  }, [])
-
-  if (loading) return <PageLoadingSkeleton />
-  if (error) return <ErrorState description={error} onRetry={load} />
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-title-lg font-semibold text-on-background">Shifts</h2>
@@ -56,10 +44,7 @@ export function ShiftsListPage() {
         )}
       </div>
       {items.length === 0 ? (
-        <EmptyState
-          title="No shifts"
-          description="Create a shift to assign employees."
-        >
+        <EmptyState title="No shifts" description="Create a shift to assign employees.">
           {canCreate ? (
             <Button variant="primary" onClick={() => navigate({ to: `${base}/new` as never })}>
               Add shift
@@ -84,7 +69,7 @@ export function ShiftsListPage() {
                 <div>
                   <h3 className="text-title-md font-semibold text-on-background">{s.name}</h3>
                   <p className="text-body-sm text-on-surface-variant mt-1">
-                    {s.start_time.slice(0, 5)} – {s.end_time.slice(0, 5)}
+                    {String(s.start_time).slice(0, 5)} – {String(s.end_time).slice(0, 5)}
                     {s.is_overnight ? ' · Overnight' : ''}
                   </p>
                 </div>
