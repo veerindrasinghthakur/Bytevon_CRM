@@ -1,7 +1,17 @@
+import { useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { currentUser, todayAttendance, attendanceHistory, weekHours } from '../data/mock'
+import { cn } from '@/shared/lib/cn'
+import {
+  formatClockTime,
+  formatHoursCompact,
+  getTodayAttendance,
+  getWorkHoursSummary,
+  subscribeAttendanceChange,
+} from '../lib/attendance-session'
+import { subscribeBreakChange } from '../lib/break-session'
+import { currentUser, attendanceHistory, weekHours } from '../data/mock'
 import type { AttendanceStatus } from '../types'
 
 const statusStyles: Record<AttendanceStatus, string> = {
@@ -15,6 +25,26 @@ const statusStyles: Record<AttendanceStatus, string> = {
 
 export function MyAttendancePage() {
   const navigate = useNavigate()
+  const [tick, setTick] = useState(0)
+
+  useEffect(() => {
+    const refresh = () => setTick((t) => t + 1)
+    const id = window.setInterval(refresh, 1000)
+    const u1 = subscribeAttendanceChange(refresh)
+    const u2 = subscribeBreakChange(refresh)
+    return () => {
+      window.clearInterval(id)
+      u1()
+      u2()
+    }
+  }, [])
+
+  void tick
+  const session = getTodayAttendance()
+  const summary = getWorkHoursSummary()
+  const checkInLabel = session ? formatClockTime(session.checkInAt) : '—'
+  const hoursLabel = summary ? formatHoursCompact(summary.netMs) : '—'
+  const statusLabel = session ? (session.checkOutAt ? 'Checked out' : 'Present') : 'Not checked in'
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -49,18 +79,31 @@ export function MyAttendancePage() {
         </div>
         <div className="bv-surface card-hover p-5">
           <p className="text-label-sm text-on-surface-variant mb-1">Check-in</p>
-          <p className="text-headline-md font-bold text-secondary">{todayAttendance.checkIn}</p>
-          <p className="text-[11px] text-emerald-600 mt-1.5 font-medium">{todayAttendance.checkInNote}</p>
+          <p className="text-headline-md font-bold text-secondary">{checkInLabel}</p>
+          <p className="text-[11px] text-on-surface-variant mt-1.5">
+            {session ? 'Exact punch time' : 'Not checked in yet'}
+          </p>
         </div>
         <div className="bv-surface card-hover p-5">
-          <p className="text-label-sm text-on-surface-variant mb-1">Hours today</p>
-          <p className="text-headline-md font-bold text-on-background">{todayAttendance.totalHours}</p>
-          <p className="text-[11px] text-on-surface-variant mt-1.5">{todayAttendance.totalHoursNote}</p>
+          <p className="text-label-sm text-on-surface-variant mb-1">Hours today (net)</p>
+          <p className="text-headline-md font-bold text-on-background">{hoursLabel}</p>
+          <p className="text-[11px] text-on-surface-variant mt-1.5">
+            {summary ? `Break ${formatHoursCompact(summary.breakMs)} excluded` : '—'}
+          </p>
         </div>
         <div className="bv-surface card-hover p-5">
           <p className="text-label-sm text-on-surface-variant mb-1">Status</p>
-          <p className="text-headline-md font-bold text-emerald-600">Present</p>
-          <p className="text-[11px] text-on-surface-variant mt-1.5">Live session open</p>
+          <p
+            className={cn(
+              'text-headline-md font-bold',
+              session && !session.checkOutAt ? 'text-emerald-600' : 'text-on-background',
+            )}
+          >
+            {statusLabel}
+          </p>
+          <p className="text-[11px] text-on-surface-variant mt-1.5">
+            {session && !session.checkOutAt ? 'Live session open' : '—'}
+          </p>
         </div>
       </section>
 
@@ -70,16 +113,33 @@ export function MyAttendancePage() {
           {weekHours.map((d) => (
             <div key={d.day} className="flex-1 flex flex-col items-center gap-2">
               <div
-                className={`w-full rounded-t-md ${
-                  d.isToday ? 'bg-secondary' : d.pct > 0 ? 'bg-secondary/25' : 'bg-outline-variant/40'
-                }`}
+                className={cn(
+                  'w-full rounded-t-md transition-colors',
+                  d.isWeekend
+                    ? 'bg-outline-variant/50'
+                    : d.isToday
+                      ? 'bg-secondary'
+                      : d.pct > 0
+                        ? 'bg-secondary/25'
+                        : 'bg-outline-variant/30',
+                )}
                 style={{ height: d.pct > 0 ? `${d.pct}%` : '4px' }}
-                title={`${d.hours}h`}
+                title={`${d.day}: ${d.hours}h${d.isWeekend ? ' (weekend)' : ''}`}
               />
-              <span className="text-label-sm font-medium text-on-surface-variant">{d.day}</span>
+              <span
+                className={cn(
+                  'text-label-sm font-medium',
+                  d.isWeekend ? 'text-on-surface-variant/70' : 'text-on-surface-variant',
+                )}
+              >
+                {d.day}
+              </span>
             </div>
           ))}
         </div>
+        <p className="text-label-sm text-on-surface-variant mt-3">
+          Weekends use a muted bar color. Data from weekly summary (mock → API).
+        </p>
       </section>
 
       <section className="bv-surface overflow-hidden">
@@ -115,7 +175,9 @@ export function MyAttendancePage() {
                   <td className="px-6 py-4 text-label-md text-on-surface-variant">{row.checkOut ?? '—'}</td>
                   <td className="px-6 py-4 text-label-md text-on-surface-variant">{row.totalHours ?? '—'}</td>
                   <td className="px-6 py-4">
-                    <span className={`px-2.5 py-0.5 rounded-full text-label-sm font-semibold ${statusStyles[row.status]}`}>
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-label-sm font-semibold ${statusStyles[row.status]}`}
+                    >
                       {row.status}
                     </span>
                   </td>

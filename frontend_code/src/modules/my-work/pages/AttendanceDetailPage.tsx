@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
+import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { attendanceHistory, currentUser } from '../data/mock'
 import type { AttendanceStatus } from '../types'
@@ -20,8 +21,9 @@ export function AttendanceDetailPage() {
 
   if (!record) {
     return (
-      <div className="animate-fade-in">
-        <PageHeader title="Attendance details" showBack />
+      <div className="animate-fade-in space-y-4">
+        <BackButton to="/my-work/attendance" label="Back to attendance" />
+        <PageHeader title="Attendance details" />
         <p className="text-body-md text-on-surface-variant">Record not found.</p>
       </div>
     )
@@ -29,10 +31,10 @@ export function AttendanceDetailPage() {
 
   return (
     <div className="space-y-8 animate-fade-in">
+      <BackButton to="/my-work/attendance" label="Back to attendance" />
       <PageHeader
         title={`Attendance · ${record.date}`}
         description={`${currentUser.name} · ${currentUser.employeeId}`}
-        showBack
         actions={
           <Button
             variant="outline"
@@ -83,7 +85,9 @@ export function AttendanceDetailPage() {
                 <span className="material-symbols-outlined text-on-surface-variant text-xl">logout</span>
                 <div>
                   <p className="font-medium text-on-background">Checked out</p>
-                  <p className="text-label-sm text-on-surface-variant">{record.checkOut ?? 'Still open / not recorded'}</p>
+                  <p className="text-label-sm text-on-surface-variant">
+                    {record.checkOut ?? 'Still open / not recorded'}
+                  </p>
                 </div>
               </li>
             </ul>
@@ -93,7 +97,9 @@ export function AttendanceDetailPage() {
         <div className="space-y-4">
           <section className="bv-surface p-6">
             <h3 className="text-label-md text-on-surface-variant uppercase tracking-wider mb-3">Status</h3>
-            <span className={`inline-flex px-2.5 py-1 rounded-full text-label-sm font-semibold ${statusStyles[record.status]}`}>
+            <span
+              className={`inline-flex px-2.5 py-1 rounded-full text-label-sm font-semibold ${statusStyles[record.status]}`}
+            >
               {record.status}
             </span>
           </section>
@@ -118,11 +124,7 @@ export function AttendanceDetailPage() {
           </section>
 
           <section className="bv-surface p-4">
-            <Button
-              variant="outline"
-              className="w-full"
-              onClick={() => navigate({ to: '/my-work/attendance' })}
-            >
+            <Button variant="outline" className="w-full" onClick={() => navigate({ to: '/my-work/attendance' })}>
               View all attendance
             </Button>
           </section>
