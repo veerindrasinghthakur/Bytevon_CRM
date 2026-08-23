@@ -2,6 +2,10 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { ListToolbar } from '@/shared/components/layout/ListToolbar'
+import { Select } from '@/shared/components/ui/Select'
+import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import {
   QuickSection,
@@ -10,15 +14,15 @@ import {
   QuickMetaTile,
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
-import { myTasks } from '../data/mock'
+import { useMyTasks } from '../hooks/use-my-tasks'
 import type { MyTask } from '../types'
 import { cn } from '@/shared/lib/cn'
 
 const priorityClass: Record<string, string> = {
-  Critical: 'bg-red-100 text-red-800',
-  High: 'bg-red-50 text-red-700',
-  Medium: 'bg-surface-container-high text-on-surface-variant',
-  Low: 'bg-surface-container text-on-surface-variant',
+  Critical: 'status-badge status-error',
+  High: 'status-badge status-warning',
+  Medium: 'status-badge status-neutral',
+  Low: 'status-badge status-neutral',
 }
 
 const statusDot: Record<string, string> = {
@@ -58,19 +62,33 @@ function TaskQuickContent({ task }: { task: MyTask }) {
 export function MyTasksPage() {
   const navigate = useNavigate()
   const { openPanel } = useQuickOverview()
-  const [filter, setFilter] = useState<TaskFilter>(null)
+  const [cardFilter, setCardFilter] = useState<TaskFilter>(null)
+  const {
+    tasks,
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    filtersActive,
+    resetFilters,
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+  } = useMyTasks()
 
-  const open = myTasks.filter((t) => t.status !== 'Completed').length
-  const inProgress = myTasks.filter((t) => t.status === 'In Progress').length
-  const high = myTasks.filter((t) => t.priority === 'High' || t.priority === 'Critical').length
+  const open = tasks.filter((t) => t.status !== 'Completed').length
+  const inProgress = tasks.filter((t) => t.status === 'In Progress').length
+  const high = tasks.filter((t) => t.priority === 'High' || t.priority === 'Critical').length
 
   const filtered = useMemo(() => {
-    if (filter === 'open') return myTasks.filter((t) => t.status !== 'Completed')
-    if (filter === 'inProgress') return myTasks.filter((t) => t.status === 'In Progress')
-    if (filter === 'high')
-      return myTasks.filter((t) => t.priority === 'High' || t.priority === 'Critical')
-    return myTasks
-  }, [filter])
+    let list = tasks
+    if (cardFilter === 'open') list = list.filter((t) => t.status !== 'Completed')
+    if (cardFilter === 'inProgress') list = list.filter((t) => t.status === 'In Progress')
+    if (cardFilter === 'high')
+      list = list.filter((t) => t.priority === 'High' || t.priority === 'Critical')
+    return list
+  }, [tasks, cardFilter])
 
   const openTaskOverview = (task: MyTask) => {
     openPanel({
@@ -84,6 +102,16 @@ export function MyTasksPage() {
       onOpenFull: () => navigate({ to: '/my-work/tasks/$taskId', params: { taskId: task.id } }),
       widthClass: 'max-w-[520px]',
     })
+  }
+
+  if (isError) {
+    return (
+      <ErrorState
+        title="Could not load tasks"
+        description="My tasks failed to load. Retry or go back."
+        onRetry={() => void refetch()}
+      />
+    )
   }
 
   return (
@@ -103,10 +131,10 @@ export function MyTasksPage() {
       />
 
       <div className="flex items-center justify-end min-h-[32px]">
-        {filter ? (
+        {cardFilter ? (
           <button
             type="button"
-            onClick={() => setFilter(null)}
+            onClick={() => setCardFilter(null)}
             className="inline-flex items-center gap-1.5 text-label-md text-on-surface-variant hover:text-on-surface rounded-md px-2 py-1 transition-colors"
             aria-label="Clear filter"
             title="Clear filter"
@@ -126,9 +154,9 @@ export function MyTasksPage() {
           type="button"
           className={cn(
             'bv-surface card-hover p-5 cursor-pointer text-left w-full',
-            filter === 'open' && 'ring-1 ring-secondary/30 border-secondary'
+            cardFilter === 'open' && 'ring-1 ring-secondary/30 border-secondary',
           )}
-          onClick={() => setFilter((f) => (f === 'open' ? null : 'open'))}
+          onClick={() => setCardFilter((f) => (f === 'open' ? null : 'open'))}
         >
           <p className="text-label-sm text-on-surface-variant mb-1">Open tasks</p>
           <p className="text-headline-md font-bold text-on-background">{open}</p>
@@ -137,9 +165,9 @@ export function MyTasksPage() {
           type="button"
           className={cn(
             'bv-surface card-hover p-5 cursor-pointer text-left w-full',
-            filter === 'inProgress' && 'ring-1 ring-secondary/30 border-secondary'
+            cardFilter === 'inProgress' && 'ring-1 ring-secondary/30 border-secondary',
           )}
-          onClick={() => setFilter((f) => (f === 'inProgress' ? null : 'inProgress'))}
+          onClick={() => setCardFilter((f) => (f === 'inProgress' ? null : 'inProgress'))}
         >
           <p className="text-label-sm text-on-surface-variant mb-1">In progress</p>
           <p className="text-headline-md font-bold text-secondary">{inProgress}</p>
@@ -148,16 +176,45 @@ export function MyTasksPage() {
           type="button"
           className={cn(
             'bv-surface card-hover p-5 cursor-pointer text-left w-full',
-            filter === 'high' && 'ring-1 ring-secondary/30 border-secondary'
+            cardFilter === 'high' && 'ring-1 ring-secondary/30 border-secondary',
           )}
-          onClick={() => setFilter((f) => (f === 'high' ? null : 'high'))}
+          onClick={() => setCardFilter((f) => (f === 'high' ? null : 'high'))}
         >
           <p className="text-label-sm text-on-surface-variant mb-1">High / Critical</p>
           <p className="text-headline-md font-bold text-error">{high}</p>
         </button>
       </section>
 
-      <section className="bv-surface overflow-hidden">
+      <ListToolbar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search tasks or projects…"
+        filtersActive={filtersActive}
+        onResetFilters={resetFilters}
+        onRefresh={() => void refetch()}
+      >
+        <Select
+          value={statusFilter}
+          onChange={setStatusFilter}
+          placeholder="All status"
+          options={[
+            { value: 'All', label: 'All status' },
+            { value: 'In Progress', label: 'In Progress' },
+            { value: 'Pending', label: 'Pending' },
+            { value: 'Not Started', label: 'Not Started' },
+            { value: 'Completed', label: 'Completed' },
+            { value: 'Blocked', label: 'Blocked' },
+          ]}
+          minWidthClass="min-w-[140px]"
+        />
+      </ListToolbar>
+
+      <section className="bv-surface overflow-hidden relative">
+        {(isLoading || isFetching) && (
+          <div className="absolute inset-0 z-10 bg-surface-container-lowest/70 backdrop-blur-[1px]">
+            <TableSkeleton rows={5} />
+          </div>
+        )}
         <div className="px-6 py-4 border-b border-outline-variant">
           <h3 className="text-title-lg font-semibold text-on-background">All assigned tasks</h3>
         </div>
@@ -174,7 +231,7 @@ export function MyTasksPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
-              {filtered.length === 0 && (
+              {filtered.length === 0 && !isLoading && (
                 <tr>
                   <td colSpan={6} className="px-6 py-10 text-center text-body-md text-on-surface-variant">
                     No tasks match this filter.
@@ -190,9 +247,7 @@ export function MyTasksPage() {
                   <td className="px-6 py-4 text-label-md font-semibold text-secondary">{task.name}</td>
                   <td className="px-6 py-4 text-label-md text-on-surface-variant">{task.project ?? '—'}</td>
                   <td className="px-6 py-4">
-                    <span
-                      className={`px-2.5 py-0.5 rounded-full text-label-sm font-bold ${priorityClass[task.priority]}`}
-                    >
+                    <span className={priorityClass[task.priority] ?? 'status-badge status-neutral'}>
                       {task.priority}
                     </span>
                   </td>

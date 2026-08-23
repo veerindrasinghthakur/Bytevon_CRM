@@ -1,7 +1,10 @@
-import { useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { ListToolbar } from '@/shared/components/layout/ListToolbar'
+import { Select } from '@/shared/components/ui/Select'
+import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import {
   QuickSection,
@@ -10,14 +13,14 @@ import {
   QuickMetaTile,
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
-import { caseStudies, caseStudyMetrics } from '../data/mock'
+import { useCaseStudiesList } from '../hooks/use-case-studies-list'
 import type { CaseStudy, CaseStudyStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 
 const statusStyles: Record<CaseStudyStatus, string> = {
-  Published: 'bg-emerald-100 text-emerald-800',
-  Draft: 'bg-amber-100 text-amber-800',
-  Archived: 'bg-slate-100 text-slate-600',
+  Published: 'status-badge status-success',
+  Draft: 'status-badge status-warning',
+  Archived: 'status-badge status-neutral',
 }
 
 const statusDot: Record<CaseStudyStatus, string> = {
@@ -43,9 +46,7 @@ function CaseStudyQuickContent({ cs }: { cs: CaseStudy }) {
             icon="flag"
             label="Status"
             value={
-              <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold uppercase', statusStyles[cs.status])}>
-                {cs.status}
-              </span>
+              <span className={statusStyles[cs.status]}>{cs.status}</span>
             }
           />
         </div>
@@ -65,22 +66,21 @@ function CaseStudyQuickContent({ cs }: { cs: CaseStudy }) {
 }
 
 export function CaseStudiesListPage() {
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('All')
   const { openPanel } = useQuickOverview()
-
-  const filtered = useMemo(() => {
-    return caseStudies.filter((cs) => {
-      const q = search.toLowerCase()
-      const matchSearch =
-        !q ||
-        cs.title.toLowerCase().includes(q) ||
-        cs.customer.toLowerCase().includes(q) ||
-        cs.industry.toLowerCase().includes(q)
-      const matchStatus = statusFilter === 'All' || cs.status === statusFilter
-      return matchSearch && matchStatus
-    })
-  }, [search, statusFilter])
+  const {
+    filtered,
+    metrics,
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    filtersActive,
+    resetFilters,
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+  } = useCaseStudiesList()
 
   const openCaseStudyOverview = (cs: CaseStudy) => {
     openPanel({
@@ -92,6 +92,16 @@ export function CaseStudiesListPage() {
       content: <CaseStudyQuickContent cs={cs} />,
       widthClass: 'max-w-[520px]',
     })
+  }
+
+  if (isError) {
+    return (
+      <ErrorState
+        title="Could not load case studies"
+        description="Case studies failed to load. Retry or go back."
+        onRetry={() => void refetch()}
+      />
+    )
   }
 
   return (
@@ -116,7 +126,7 @@ export function CaseStudiesListPage() {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {caseStudyMetrics.map((m) => (
+        {metrics.map((m) => (
           <div key={m.id} className="bv-surface card-hover p-5">
             <div className="flex justify-between items-start mb-2">
               <span className="p-2 rounded-lg bg-secondary/10 text-secondary">
@@ -126,7 +136,9 @@ export function CaseStudiesListPage() {
                 <span
                   className={cn(
                     'text-[10px] font-bold px-2 py-0.5 rounded',
-                    m.changeType === 'positive' ? 'text-emerald-700 bg-emerald-50' : 'text-on-surface-variant bg-surface-container'
+                    m.changeType === 'positive'
+                      ? 'status-badge status-success'
+                      : 'status-badge status-neutral',
                   )}
                 >
                   {m.change}
@@ -140,91 +152,97 @@ export function CaseStudiesListPage() {
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 bg-surface-container-low p-4 rounded-xl border border-outline-variant">
-        <div className="relative flex-1 min-w-[200px]">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
-            search
-          </span>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
-            placeholder="Search case studies..."
-          />
-        </div>
-        <select
+      <ListToolbar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search case studies..."
+        filtersActive={filtersActive}
+        onResetFilters={resetFilters}
+        onRefresh={() => void refetch()}
+      >
+        <Select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm outline-none focus:border-secondary transition-colors"
-        >
-          <option value="All">All status</option>
-          <option value="Published">Published</option>
-          <option value="Draft">Draft</option>
-          <option value="Archived">Archived</option>
-        </select>
-      </div>
+          onChange={setStatusFilter}
+          placeholder="All status"
+          options={[
+            { value: 'All', label: 'All status' },
+            { value: 'Published', label: 'Published' },
+            { value: 'Draft', label: 'Draft' },
+            { value: 'Archived', label: 'Archived' },
+          ]}
+          minWidthClass="min-w-[140px]"
+        />
+      </ListToolbar>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {filtered.map((cs) => (
-          <article
-            key={cs.id}
-            className="bv-surface card-hover p-5 flex flex-col cursor-pointer"
-            onClick={() => openCaseStudyOverview(cs)}
-          >
-            <div className="flex items-start justify-between gap-2 mb-3">
-              <h3 className="font-semibold text-on-surface text-title-md leading-snug">{cs.title}</h3>
-              <span className={cn('shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase', statusStyles[cs.status])}>
-                {cs.status}
-              </span>
-            </div>
-            <p className="text-body-sm text-on-surface-variant mb-3">
-              {cs.customer} · {cs.industry}
-            </p>
-            {cs.summary && <p className="text-body-sm text-on-surface line-clamp-3 mb-3">{cs.summary}</p>}
-            <div className="flex items-center justify-between text-sm mb-3">
-              <span className="font-semibold text-secondary">{cs.impact}</span>
-              <span className="font-bold text-on-background">{cs.revenue}</span>
-            </div>
-            <div className="flex flex-wrap gap-1.5 mb-4">
-              {cs.tags.map((t) => (
-                <span key={t} className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">
-                  {t}
-                </span>
-              ))}
-            </div>
-
-            <div
-              className="mt-auto pt-3 border-t border-outline-variant/40 flex items-center gap-1"
-              onClick={(e) => e.stopPropagation()}
+      <div className="relative min-h-[120px]">
+        {(isLoading || isFetching) && (
+          <div className="absolute inset-0 z-10 bg-surface/70 backdrop-blur-[1px] rounded-xl">
+            <TableSkeleton rows={3} />
+          </div>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filtered.map((cs) => (
+            <article
+              key={cs.id}
+              className="bv-surface card-hover p-5 flex flex-col cursor-pointer"
+              onClick={() => openCaseStudyOverview(cs)}
             >
-              <button
-                type="button"
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-label-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors"
-                title="Quick view"
-                onClick={() => openCaseStudyOverview(cs)}
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <h3 className="font-semibold text-on-surface text-title-md leading-snug">{cs.title}</h3>
+                <span className={cn('shrink-0', statusStyles[cs.status])}>{cs.status}</span>
+              </div>
+              <p className="text-body-sm text-on-surface-variant mb-3">
+                {cs.customer} · {cs.industry}
+              </p>
+              {cs.summary && <p className="text-body-sm text-on-surface line-clamp-3 mb-3">{cs.summary}</p>}
+              <div className="flex items-center justify-between text-sm mb-3">
+                <span className="font-semibold text-secondary">{cs.impact}</span>
+                <span className="font-bold text-on-background">{cs.revenue}</span>
+              </div>
+              <div className="flex flex-wrap gap-1.5 mb-4">
+                {cs.tags.map((t) => (
+                  <span
+                    key={t}
+                    className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-surface-container text-on-surface-variant"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+
+              <div
+                className="mt-auto pt-3 border-t border-outline-variant/40 flex items-center gap-1"
+                onClick={(e) => e.stopPropagation()}
               >
-                <span className="material-symbols-outlined text-[18px]">visibility</span>
-                View
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-label-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors"
-                title="Edit case study"
-              >
-                <span className="material-symbols-outlined text-[18px]">edit</span>
-                Edit
-              </button>
-              <button
-                type="button"
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-label-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors ml-auto"
-                title="Share case study"
-              >
-                <span className="material-symbols-outlined text-[18px]">share</span>
-                Share
-              </button>
-            </div>
-          </article>
-        ))}
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-label-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors"
+                  title="Quick view"
+                  onClick={() => openCaseStudyOverview(cs)}
+                >
+                  <span className="material-symbols-outlined text-[18px]">visibility</span>
+                  View
+                </button>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-label-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors"
+                  title="Edit case study"
+                >
+                  <span className="material-symbols-outlined text-[18px]">edit</span>
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-label-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors ml-auto"
+                  title="Share case study"
+                >
+                  <span className="material-symbols-outlined text-[18px]">share</span>
+                  Share
+                </button>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
     </div>
   )
