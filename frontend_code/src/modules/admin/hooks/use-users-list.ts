@@ -2,9 +2,8 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
+import { queryKeys } from '@/shared/lib/query-keys'
 import { listAdminUsers, type AdminUserListItem } from '../api/users'
-
-export const USERS_LIST_KEY = ['admin', 'users', 'list'] as const
 
 const FILTER_DEFAULTS = {
   status: 'All' as 'All' | 'Active' | 'Inactive' | 'Locked',
@@ -16,7 +15,7 @@ export function useUsersList() {
   })
 
   const usersQuery = useQuery({
-    queryKey: [...USERS_LIST_KEY],
+    queryKey: queryKeys.admin.users.list(),
     queryFn: () => listAdminUsers(),
   })
 

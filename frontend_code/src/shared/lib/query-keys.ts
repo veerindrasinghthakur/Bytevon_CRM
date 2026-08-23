@@ -14,6 +14,15 @@ export const queryKeys = {
       list: () => [...queryKeys.admin.roles.all, 'list'] as const,
       metrics: () => ['admin', 'metrics', 'roles'] as const,
     },
+    audit: {
+      all: ['admin', 'audit'] as const,
+      list: (filters?: unknown) => [...queryKeys.admin.audit.all, 'list', filters ?? {}] as const,
+    },
+    leave: {
+      all: ['admin', 'leave'] as const,
+      policies: () => [...queryKeys.admin.leave.all, 'policies'] as const,
+      ledger: (filters?: unknown) => [...queryKeys.admin.leave.all, 'ledger', filters ?? {}] as const,
+    },
   },
   workforce: {
     departments: {
@@ -79,14 +88,21 @@ export const queryKeys = {
   },
 } as const
 
+type Qc = { invalidateQueries: (opts: { queryKey: readonly unknown[] }) => unknown }
+
 /** Prefix invalidation helpers for common mutation settle handlers */
 export const invalidate = {
-  teams: (qc: { invalidateQueries: (opts: { queryKey: readonly unknown[] }) => unknown }) =>
-    void qc.invalidateQueries({ queryKey: queryKeys.teams.all }),
-  projects: (qc: { invalidateQueries: (opts: { queryKey: readonly unknown[] }) => unknown }) =>
-    void qc.invalidateQueries({ queryKey: queryKeys.projects.all }),
-  departments: (qc: { invalidateQueries: (opts: { queryKey: readonly unknown[] }) => unknown }) =>
+  teams: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.teams.all }),
+  projects: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.projects.all }),
+  tasks: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.tasks.all }),
+  departments: (qc: Qc) =>
     void qc.invalidateQueries({ queryKey: queryKeys.workforce.departments.all }),
-  employees: (qc: { invalidateQueries: (opts: { queryKey: readonly unknown[] }) => unknown }) =>
-    void qc.invalidateQueries({ queryKey: queryKeys.workforce.employees.all }),
+  employees: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.workforce.employees.all }),
+  users: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.admin.users.all }),
+  roles: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.admin.roles.all }),
+  audit: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.admin.audit.all }),
+  salesLeads: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.sales.leads.all }),
+  salesClients: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.sales.clients.all }),
+  notifications: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.notifications.all }),
+  approvals: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.approvals.all }),
 }

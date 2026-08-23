@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getTasks, getTask, createTask, updateTask } from '../api/tasks'
 import type { Task, TaskPriority, TaskListCache } from '../types'
+import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 
 export function useTasks(filters?: {
   search?: string
@@ -8,14 +9,14 @@ export function useTasks(filters?: {
   projectId?: number
 }) {
   return useQuery({
-    queryKey: ['projects', 'tasks', 'list', filters ?? {}],
+    queryKey: queryKeys.tasks.list(filters ?? {}),
     queryFn: () => getTasks(filters),
   })
 }
 
 export function useTask(id: number | undefined) {
   return useQuery({
-    queryKey: ['projects', 'tasks', 'detail', id],
+    queryKey: queryKeys.tasks.detail(id as number),
     queryFn: () => getTask(id as number),
     enabled: id != null && Number.isFinite(id),
   })
@@ -33,9 +34,9 @@ export function useCreateTask() {
       assigneeName?: string
     }) => createTask(input),
     onMutate: async (input) => {
-      await queryClient.cancelQueries({ queryKey: ['projects', 'tasks', 'list'] })
+      await queryClient.cancelQueries({ queryKey: queryKeys.tasks.all })
       const previous = queryClient.getQueriesData<TaskListCache>({
-        queryKey: ['projects', 'tasks', 'list'],
+        queryKey: queryKeys.tasks.all,
       })
 
       const optimistic: Task = {
@@ -51,7 +52,7 @@ export function useCreateTask() {
         createdAt: new Date().toISOString(),
       }
 
-      queryClient.setQueriesData<TaskListCache>({ queryKey: ['projects', 'tasks', 'list'] }, (old) => {
+      queryClient.setQueriesData<TaskListCache>({ queryKey: queryKeys.tasks.all }, (old) => {
         if (!old) return { items: [optimistic], total: 1 }
         return { items: [optimistic, ...old.items], total: old.total + 1 }
       })
@@ -62,19 +63,18 @@ export function useCreateTask() {
       ctx?.previous.forEach(([key, data]) => queryClient.setQueryData(key, data))
     },
     onSuccess: (created, _input, ctx) => {
-      queryClient.setQueriesData<TaskListCache>({ queryKey: ['projects', 'tasks', 'list'] }, (old) => {
+      queryClient.setQueriesData<TaskListCache>({ queryKey: queryKeys.tasks.all }, (old) => {
         if (!old) return { items: [created], total: 1 }
         return {
           items: old.items.map((t) => (t.id === ctx?.optimisticId ? created : t)),
           total: old.total,
         }
       })
-      queryClient.setQueryData(['projects', 'tasks', 'detail', created.id], created)
+      queryClient.setQueryData(queryKeys.tasks.detail(created.id), created)
     },
     onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ['projects', 'tasks'] })
-      void queryClient.invalidateQueries({ queryKey: ['projects', 'list'] })
-      void queryClient.invalidateQueries({ queryKey: ['projects', 'detail'] })
+      invalidate.tasks(queryClient)
+      invalidate.projects(queryClient)
     },
   })
 }
@@ -92,14 +92,14 @@ export function useUpdateTask() {
       >
     }) => updateTask(id, patch),
     onMutate: async ({ id, patch }) => {
-      await queryClient.cancelQueries({ queryKey: ['projects', 'tasks'] })
+      await queryClient.cancelQueries({ queryKey: queryKeys.tasks.all })
 
       const previousLists = queryClient.getQueriesData<TaskListCache>({
-        queryKey: ['projects', 'tasks', 'list'],
+        queryKey: queryKeys.tasks.all,
       })
-      const previousDetail = queryClient.getQueryData<Task>(['projects', 'tasks', 'detail', id])
+      const previousDetail = queryClient.getQueryData<Task>(queryKeys.tasks.detail(id))
 
-      queryClient.setQueriesData<TaskListCache>({ queryKey: ['projects', 'tasks', 'list'] }, (old) => {
+      queryClient.setQueriesData<TaskListCache>({ queryKey: queryKeys.tasks.all }, (old) => {
         if (!old) return old
         return {
           ...old,
@@ -108,7 +108,7 @@ export function useUpdateTask() {
       })
 
       if (previousDetail) {
-        queryClient.setQueryData(['projects', 'tasks', 'detail', id], {
+        queryClient.setQueryData(queryKeys.tasks.detail(id), {
           ...previousDetail,
           ...patch,
         })
@@ -119,12 +119,12 @@ export function useUpdateTask() {
     onError: (_err, _vars, ctx) => {
       ctx?.previousLists.forEach(([key, data]) => queryClient.setQueryData(key, data))
       if (ctx?.previousDetail) {
-        queryClient.setQueryData(['projects', 'tasks', 'detail', ctx.id], ctx.previousDetail)
+        queryClient.setQueryData(queryKeys.tasks.detail(ctx.id), ctx.previousDetail)
       }
     },
     onSuccess: (task) => {
-      queryClient.setQueryData(['projects', 'tasks', 'detail', task.id], task)
-      queryClient.setQueriesData<TaskListCache>({ queryKey: ['projects', 'tasks', 'list'] }, (old) => {
+      queryClient.setQueryData(queryKeys.tasks.detail(task.id), task)
+      queryClient.setQueriesData<TaskListCache>({ queryKey: queryKeys.tasks.all }, (old) => {
         if (!old) return old
         return {
           ...old,
@@ -133,7 +133,7 @@ export function useUpdateTask() {
       })
     },
     onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ['projects', 'tasks'] })
+      invalidate.tasks(queryClient)
     },
   })
 }

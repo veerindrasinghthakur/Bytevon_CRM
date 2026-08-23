@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
+import { queryKeys } from '@/shared/lib/query-keys'
 import { listAdminRoles } from '../api/roles'
 import { getRoleListMetrics } from '../api/metrics'
 import type { AdminRole } from '../types'
@@ -23,12 +24,12 @@ export function useRolesList() {
   })
 
   const rolesQuery = useQuery({
-    queryKey: ['admin', 'roles', 'list'],
+    queryKey: queryKeys.admin.roles.list(),
     queryFn: listAdminRoles,
   })
 
   const metricsQuery = useQuery({
-    queryKey: ['admin', 'metrics', 'roles'],
+    queryKey: queryKeys.admin.roles.metrics(),
     queryFn: getRoleListMetrics,
   })
 
@@ -59,7 +60,6 @@ export function useRolesList() {
     isError: rolesQuery.isError,
     refetch: rolesQuery.refetch,
     metrics: metricsQuery.data,
-    // same public API as before
     search: controls.search,
     setSearch: controls.setSearch,
     statusFilter: controls.filters.status as RoleStatusFilter,
@@ -70,7 +70,6 @@ export function useRolesList() {
     categoryOptions: CATEGORY_OPTIONS,
     resetFilters: controls.resetAll,
     filtersActive: controls.anyActive,
-    // pagination (ready for pages that want it)
     page: controls.page,
     setPage: controls.setPage,
     pageSize: controls.pageSize,
