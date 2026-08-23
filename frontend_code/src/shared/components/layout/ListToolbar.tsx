@@ -1,5 +1,6 @@
 import { cn } from '@/shared/lib/cn'
 import type { ReactNode } from 'react'
+import { useState } from 'react'
 import { Button } from '@/shared/components/ui/Button'
 
 interface ListToolbarProps {
@@ -11,12 +12,12 @@ interface ListToolbarProps {
   actionsSlot?: ReactNode
   children?: ReactNode
   filtersActive?: boolean
-  onResetFilters?: () => void
-  onRefresh?: () => void
+  onResetFilters?: () => void | Promise<void>
+  onRefresh?: () => void | Promise<void>
   className?: string
 }
 
-/** Search left · filters right — HTML-aligned focus ring + hover */
+/** Search left · filters right — shared list filter bar */
 export function ListToolbar({
   searchValue,
   search,
@@ -32,9 +33,38 @@ export function ListToolbar({
 }: ListToolbarProps) {
   const value = searchValue ?? search ?? ''
   const filters = filterSlot ?? children
+  const [resetting, setResetting] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
+
+  const handleReset = async () => {
+    if (!onResetFilters || resetting) return
+    setResetting(true)
+    try {
+      await Promise.resolve(onResetFilters())
+      // brief visual feedback even for sync resets
+      await new Promise((r) => setTimeout(r, 350))
+    } finally {
+      setResetting(false)
+    }
+  }
+
+  const handleRefresh = async () => {
+    if (!onRefresh || refreshing) return
+    setRefreshing(true)
+    try {
+      await Promise.resolve(onRefresh())
+    } finally {
+      setRefreshing(false)
+    }
+  }
 
   return (
-    <div className={cn('flex flex-wrap items-center gap-3', className)}>
+    <div
+      className={cn(
+        'flex flex-wrap items-center gap-3 bg-surface-container-low p-4 rounded-xl border border-outline-variant',
+        className,
+      )}
+    >
       <div className="relative min-w-[200px] flex-1 max-w-md">
         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
           search
@@ -55,19 +85,42 @@ export function ListToolbar({
       <div className="flex flex-wrap items-center gap-2 ml-auto">
         {filters}
         {actionsSlot}
-        {filtersActive && onResetFilters && (
-          <Button variant="ghost" size="sm" onClick={onResetFilters}>
-            Reset
+        {(filtersActive || onResetFilters) && onResetFilters && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => void handleReset()}
+            disabled={resetting}
+            leftIcon={
+              <span
+                className={cn(
+                  'material-symbols-outlined text-[18px]',
+                  resetting && 'animate-spin',
+                )}
+              >
+                restart_alt
+              </span>
+            }
+          >
+            {resetting ? 'Resetting…' : 'Reset'}
           </Button>
         )}
         {onRefresh && (
           <button
             type="button"
-            onClick={onRefresh}
-            className="p-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface-variant hover:text-secondary hover:bg-surface-container transition-colors duration-200"
+            onClick={() => void handleRefresh()}
+            disabled={refreshing}
+            className="p-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface-variant hover:text-secondary hover:bg-surface-container transition-colors duration-200 disabled:opacity-60"
             aria-label="Refresh"
           >
-            <span className="material-symbols-outlined text-[20px]">refresh</span>
+            <span
+              className={cn(
+                'material-symbols-outlined text-[20px]',
+                refreshing && 'animate-spin',
+              )}
+            >
+              refresh
+            </span>
           </button>
         )}
       </div>

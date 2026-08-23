@@ -63,7 +63,10 @@ export function QuickOverviewProvider({ children }: { children: ReactNode }) {
   const openPanel = useCallback((opts: OpenQuickOverviewOptions) => {
     setOptions(opts)
     setVisible(true)
-    requestAnimationFrame(() => setIsOpen(true))
+    // Double rAF so enter class always applies after paint
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setIsOpen(true))
+    })
   }, [])
 
   const closePanel = useCallback(() => {
@@ -113,10 +116,10 @@ export function QuickOverviewProvider({ children }: { children: ReactNode }) {
 }
 
 /**
- * Contextual Detail Drawer — stitch right_side_overview_panel
- * Header: icon + title + status + subtitle + close
- * Body: scrollable sections
- * Footer: Edit / secondary + Open full record
+ * Contextual Detail Drawer
+ * - Starts BELOW the app header (backdrop + panel never cover header)
+ * - z-50 so it stacks above page content but header stays interactive
+ * - Smooth enter / exit slide
  */
 function QuickOverviewPanelShell({
   isOpen,
@@ -138,19 +141,19 @@ function QuickOverviewPanelShell({
   return (
     <div
       className={cn(
-        'fixed inset-0 z-40',
+        'fixed inset-x-0 bottom-0 z-50',
         isOpen ? 'pointer-events-auto' : 'pointer-events-none',
       )}
+      style={{ top: HEADER_HEIGHT_PX }}
       aria-hidden={!isOpen}
     >
       <button
         type="button"
         className={cn(
-          'absolute left-0 right-0 bottom-0 border-0 cursor-default',
+          'absolute inset-0 border-0 cursor-default',
           'bg-black/40 backdrop-blur-sm transition-opacity duration-300 ease-out',
           isOpen ? 'opacity-100' : 'opacity-0',
         )}
-        style={{ top: HEADER_HEIGHT_PX }}
         aria-label="Close overview"
         onClick={onClose}
       />
@@ -167,12 +170,11 @@ function QuickOverviewPanelShell({
           isOpen ? 'animate-slide-in-right' : 'animate-slide-out-right',
         )}
         style={{
-          top: HEADER_HEIGHT_PX + PANEL_EDGE_GAP_PX,
+          top: PANEL_EDGE_GAP_PX,
           bottom: PANEL_EDGE_GAP_PX,
-          height: `calc(100vh - ${HEADER_HEIGHT_PX + PANEL_EDGE_GAP_PX * 2}px)`,
+          height: `calc(100% - ${PANEL_EDGE_GAP_PX * 2}px)`,
         }}
       >
-        {/* Header — entity identity */}
         <header className="flex items-start justify-between gap-3 p-6 border-b border-outline-variant shrink-0 bg-surface-container-lowest rounded-tl-xl">
           <div className="flex items-start gap-4 min-w-0">
             <div className="w-12 h-12 rounded-lg bg-primary-container text-on-primary flex items-center justify-center shrink-0">
@@ -203,10 +205,8 @@ function QuickOverviewPanelShell({
           </IconButton>
         </header>
 
-        {/* Scrollable body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-5 min-h-0 bg-background">{options.content}</div>
 
-        {/* Sticky footer actions */}
         <footer className="p-6 border-t border-outline-variant bg-surface-container-lowest shrink-0 flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap gap-2">
             {options.onEdit && (
