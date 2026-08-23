@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useListSelection } from '@/shared/hooks/useListSelection'
+import { useListControls } from '@/shared/hooks/useListControls'
 import { listAdminRoles } from '../api/roles'
 import { getRoleListMetrics } from '../api/metrics'
 import type { AdminRole } from '../types'
@@ -11,10 +12,15 @@ const CATEGORY_OPTIONS = ['All', 'Core Role', 'Operational', 'Financial', 'Stand
 export type RoleStatusFilter = (typeof STATUS_OPTIONS)[number]
 export type RoleCategoryFilter = (typeof CATEGORY_OPTIONS)[number]
 
+const FILTER_DEFAULTS = {
+  status: 'All' as RoleStatusFilter,
+  category: 'All' as RoleCategoryFilter,
+}
+
 export function useRolesList() {
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<RoleStatusFilter>('All')
-  const [categoryFilter, setCategoryFilter] = useState<RoleCategoryFilter>('All')
+  const controls = useListControls({
+    filterDefaults: FILTER_DEFAULTS,
+  })
 
   const rolesQuery = useQuery({
     queryKey: ['admin', 'roles', 'list'],
@@ -30,26 +36,20 @@ export function useRolesList() {
 
   const filtered = useMemo(() => {
     return roles.filter((r) => {
-      if (search) {
-        const q = search.toLowerCase()
+      if (controls.search) {
+        const q = controls.search.toLowerCase()
         if (!r.name.toLowerCase().includes(q) && !r.description.toLowerCase().includes(q)) return false
       }
-      if (statusFilter !== 'All' && r.status !== statusFilter) return false
-      if (categoryFilter !== 'All' && r.category !== categoryFilter) return false
+      if (controls.filters.status !== 'All' && r.status !== controls.filters.status) return false
+      if (controls.filters.category !== 'All' && r.category !== controls.filters.category) return false
       return true
     })
-  }, [roles, search, statusFilter, categoryFilter])
+  }, [roles, controls.search, controls.filters.status, controls.filters.category])
 
   const selection = useListSelection<AdminRole>({
     items: filtered,
     getId: (r) => r.id,
   })
-
-  const resetFilters = () => {
-    setSearch('')
-    setStatusFilter('All')
-    setCategoryFilter('All')
-  }
 
   return {
     roles,
@@ -59,15 +59,22 @@ export function useRolesList() {
     isError: rolesQuery.isError,
     refetch: rolesQuery.refetch,
     metrics: metricsQuery.data,
-    search,
-    setSearch,
-    statusFilter,
-    setStatusFilter,
-    categoryFilter,
-    setCategoryFilter,
+    // same public API as before
+    search: controls.search,
+    setSearch: controls.setSearch,
+    statusFilter: controls.filters.status as RoleStatusFilter,
+    setStatusFilter: (v: RoleStatusFilter) => controls.setFilter('status', v),
+    categoryFilter: controls.filters.category as RoleCategoryFilter,
+    setCategoryFilter: (v: RoleCategoryFilter) => controls.setFilter('category', v),
     statusOptions: STATUS_OPTIONS,
     categoryOptions: CATEGORY_OPTIONS,
-    resetFilters,
+    resetFilters: controls.resetAll,
+    filtersActive: controls.anyActive,
+    // pagination (ready for pages that want it)
+    page: controls.page,
+    setPage: controls.setPage,
+    pageSize: controls.pageSize,
+    pageItems: controls.pageItems(filtered),
     selectionMode: selection.selectionMode,
     selectedIds: selection.selectedIds,
     selectedCount: selection.selectedCount,
