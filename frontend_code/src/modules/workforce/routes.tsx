@@ -1,23 +1,29 @@
 /**
  * Workforce module routes (employees, departments, teams, attendance).
  * Shifts are registered via organization.createWorkforceShiftRoutes.
+ * Heavy pages lazy-loaded via shared lazyPage helper.
  */
 import { createRoute, redirect } from '@tanstack/react-router'
-import { EmployeesListPage } from './pages/EmployeesListPage'
-import { EmployeeCreatePage } from './pages/EmployeeCreatePage'
-import { EmployeeDetailPage } from './pages/EmployeeDetailPage'
-import { DepartmentsListPage } from './pages/DepartmentsListPage'
-import { DepartmentCreatePage } from './pages/DepartmentCreatePage'
-import { DepartmentDetailPage } from './pages/DepartmentDetailPage'
-import { WorkforceRosterPage } from './pages/WorkforceRosterPage'
-import { AttendanceDayDetailPage } from './pages/AttendanceDayDetailPage'
-import { ChangeAssignmentPage } from './pages/ChangeAssignmentPage'
-import { TeamsListPage } from './pages/TeamsListPage'
-import { TeamCreatePage } from '@/modules/projects/pages/TeamCreatePage'
-import { TeamDetailPage } from './pages/TeamDetailPage'
-import { TeamMembersPage } from './pages/TeamMembersPage'
-import { TeamProjectsPage } from './pages/TeamProjectsPage'
-import { AddMemberPage } from './pages/AddMemberPage'
+import { lazyPage } from '@/shared/lib/lazyPage'
+
+const EmployeesListPage = lazyPage(() => import('./pages/EmployeesListPage'), 'EmployeesListPage')
+const EmployeeCreatePage = lazyPage(() => import('./pages/EmployeeCreatePage'), 'EmployeeCreatePage')
+const EmployeeDetailPage = lazyPage(() => import('./pages/EmployeeDetailPage'), 'EmployeeDetailPage')
+const DepartmentsListPage = lazyPage(() => import('./pages/DepartmentsListPage'), 'DepartmentsListPage')
+const DepartmentCreatePage = lazyPage(() => import('./pages/DepartmentCreatePage'), 'DepartmentCreatePage')
+const DepartmentDetailPage = lazyPage(() => import('./pages/DepartmentDetailPage'), 'DepartmentDetailPage')
+const WorkforceRosterPage = lazyPage(() => import('./pages/WorkforceRosterPage'), 'WorkforceRosterPage')
+const AttendanceDayDetailPage = lazyPage(
+  () => import('./pages/AttendanceDayDetailPage'),
+  'AttendanceDayDetailPage',
+)
+const ChangeAssignmentPage = lazyPage(() => import('./pages/ChangeAssignmentPage'), 'ChangeAssignmentPage')
+const TeamsListPage = lazyPage(() => import('./pages/TeamsListPage'), 'TeamsListPage')
+const TeamCreatePage = lazyPage(() => import('@/modules/projects/pages/TeamCreatePage'), 'TeamCreatePage')
+const TeamDetailPage = lazyPage(() => import('./pages/TeamDetailPage'), 'TeamDetailPage')
+const TeamMembersPage = lazyPage(() => import('./pages/TeamMembersPage'), 'TeamMembersPage')
+const TeamProjectsPage = lazyPage(() => import('./pages/TeamProjectsPage'), 'TeamProjectsPage')
+const AddMemberPage = lazyPage(() => import('./pages/AddMemberPage'), 'AddMemberPage')
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createWorkforceRoutes(appLayoutRoute: any) {
