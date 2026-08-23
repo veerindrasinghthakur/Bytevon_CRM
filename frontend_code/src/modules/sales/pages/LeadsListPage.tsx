@@ -2,12 +2,13 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { HEADER_HEIGHT_PX } from '@/shared/components/layout/Header'
 import { Button } from '@/shared/components/ui/Button'
-import { Select } from '@/shared/components/ui/Select'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { ResourceName } from '@/shared/schema'
 import { useLeadsList } from '../hooks/use-leads-list'
+import { LeadMetricsRow } from '../components/LeadMetricsRow'
+import { LeadFiltersBar } from '../components/LeadFiltersBar'
 import type { PipelineStage, LeadPriority, RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 
@@ -31,7 +32,11 @@ const priorityStyles: Record<LeadPriority, string> = {
 }
 
 function formatBudget(n: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n)
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(n)
 }
 
 function formatDate(iso?: string) {
@@ -49,7 +54,7 @@ function StatusDotOnly({ status }: { status: RecordStatus }) {
     <span
       className={cn(
         'inline-block w-2.5 h-2.5 rounded-full shrink-0',
-        status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400'
+        status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400',
       )}
       title={status}
       aria-label={status}
@@ -133,121 +138,23 @@ export function LeadsListPage() {
         }
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        {metrics.map((m) => (
-          <div
-            key={m.id}
-            className={cn(
-              'p-5 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow',
-              m.id === 'pipeline'
-                ? 'bg-primary-container text-white border-primary-container'
-                : 'bg-surface-container-lowest'
-            )}
-          >
-            <div className="flex justify-between items-start mb-2">
-              <span
-                className={cn(
-                  'p-2 rounded-lg',
-                  m.id === 'pipeline' ? 'bg-white/10 text-white' : 'bg-secondary/10 text-secondary'
-                )}
-              >
-                <Icon name={m.icon} className="text-xl" />
-              </span>
-              {m.change && (
-                <span
-                  className={cn(
-                    'text-[10px] font-bold px-2 py-0.5 rounded',
-                    m.id === 'pipeline'
-                      ? 'bg-white/10 text-white/80'
-                      : m.changeType === 'positive'
-                        ? 'text-emerald-700 bg-emerald-50'
-                        : m.changeType === 'negative'
-                          ? 'text-red-700 bg-red-50'
-                          : 'text-on-surface-variant bg-surface-container'
-                  )}
-                >
-                  {m.change}
-                </span>
-              )}
-            </div>
-            <p className={cn('text-label-md', m.id === 'pipeline' ? 'text-white/70' : 'text-on-surface-variant')}>
-              {m.label}
-            </p>
-            <h3 className={cn('text-headline-md font-bold mt-0.5', m.id === 'pipeline' ? 'text-white' : 'text-on-background')}>
-              {m.value}
-            </h3>
-            {m.subtitle && (
-              <p className={cn('text-[11px] mt-1', m.id === 'pipeline' ? 'text-white/50' : 'text-on-surface-variant')}>
-                {m.subtitle}
-              </p>
-            )}
-          </div>
-        ))}
-      </div>
+      <LeadMetricsRow metrics={metrics} />
 
-      <div className="flex flex-wrap items-center gap-3 bg-surface-container-low p-4 rounded-xl border border-outline-variant">
-        <div className="relative flex-1 min-w-[200px]">
-          <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary"
-            placeholder="Search by name or ID..."
-          />
-        </div>
-        <Select
-          value={statusFilter}
-          onChange={setStatusFilter}
-          placeholder="All Status"
-          options={[
-            { value: 'All', label: 'All Status' },
-            { value: 'Active', label: 'Active' },
-            { value: 'Inactive', label: 'Inactive' },
-          ]}
-          minWidthClass="min-w-[130px]"
-        />
-        <Select
-          value={stageFilter}
-          onChange={setStageFilter}
-          placeholder="All Stages"
-          options={[
-            { value: 'All', label: 'All Stages' },
-            ...stages.map((s) => ({ value: s, label: s })),
-          ]}
-          minWidthClass="min-w-[140px]"
-        />
-        <Select
-          value={priorityFilter}
-          onChange={setPriorityFilter}
-          placeholder="All Priority"
-          options={[
-            { value: 'All', label: 'All Priority' },
-            ...priorities.map((p) => ({ value: p, label: p })),
-          ]}
-          minWidthClass="min-w-[130px]"
-        />
-        <Select
-          value={sourceFilter}
-          onChange={setSourceFilter}
-          placeholder="All Sources"
-          options={[
-            { value: 'All', label: 'All Sources' },
-            { value: 'LinkedIn', label: 'LinkedIn' },
-            { value: 'Referral', label: 'Referral' },
-            { value: 'Website', label: 'Website' },
-            { value: 'Direct Referral', label: 'Direct Referral' },
-          ]}
-          minWidthClass="min-w-[140px]"
-        />
-        <button
-          type="button"
-          className="p-2 text-secondary border border-outline-variant rounded-lg hover:bg-secondary/5"
-          onClick={resetFilters}
-          aria-label="Reset filters"
-        >
-          <Icon name="restart_alt" className="text-lg" />
-        </button>
-      </div>
+      <LeadFiltersBar
+        search={search}
+        onSearchChange={setSearch}
+        statusFilter={statusFilter}
+        onStatusChange={setStatusFilter}
+        stageFilter={stageFilter}
+        onStageChange={setStageFilter}
+        priorityFilter={priorityFilter}
+        onPriorityChange={setPriorityFilter}
+        sourceFilter={sourceFilter}
+        onSourceChange={setSourceFilter}
+        stages={stages}
+        priorities={priorities}
+        onReset={resetFilters}
+      />
 
       {selectionMode && (
         <div className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl border border-secondary/30 bg-secondary/5">
@@ -302,14 +209,30 @@ export function LeadsListPage() {
                       <span className="sr-only">Status</span>
                     )}
                   </th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">ID</th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Lead Name</th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Assigned</th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Stage</th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Priority</th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Quotation</th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Date</th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">Actions</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                    ID
+                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                    Lead Name
+                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                    Assigned
+                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                    Stage
+                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                    Priority
+                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                    Quotation
+                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                    Date
+                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
@@ -321,7 +244,7 @@ export function LeadsListPage() {
                       key={lead.id}
                       className={cn(
                         'transition-colors cursor-pointer group select-none',
-                        isSelected ? 'bg-secondary/10' : 'hover:bg-surface-container-low/50'
+                        isSelected ? 'bg-secondary/10' : 'hover:bg-surface-container-low/50',
                       )}
                       onMouseDown={() => startLongPress(lead.id)}
                       onMouseUp={() => endLongPress(lead)}
@@ -386,12 +309,22 @@ export function LeadsListPage() {
                         )}
                       </td>
                       <td className="px-4 py-4">
-                        <span className={cn('px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase', stageStyles[lead.stage])}>
+                        <span
+                          className={cn(
+                            'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase',
+                            stageStyles[lead.stage],
+                          )}
+                        >
                           {lead.stage}
                         </span>
                       </td>
                       <td className="px-4 py-4">
-                        <span className={cn('text-[11px] font-bold uppercase', priorityStyles[lead.priority])}>
+                        <span
+                          className={cn(
+                            'text-[11px] font-bold uppercase',
+                            priorityStyles[lead.priority],
+                          )}
+                        >
                           {lead.priority}
                         </span>
                       </td>
@@ -400,7 +333,10 @@ export function LeadsListPage() {
                         {lead.tags && lead.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1">
                             {lead.tags.map((t) => (
-                              <span key={t} className="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded text-[9px] font-bold">
+                              <span
+                                key={t}
+                                className="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded text-[9px] font-bold"
+                              >
                                 {t}
                               </span>
                             ))}
@@ -410,15 +346,23 @@ export function LeadsListPage() {
                       <td className="px-4 py-4">
                         {dateParts ? (
                           <div className="flex flex-col items-center justify-center w-12 h-14 bg-surface-container rounded-lg border border-outline-variant/30">
-                            <span className="text-lg font-black text-on-surface leading-none">{dateParts.day}</span>
-                            <span className="text-[10px] font-bold text-secondary uppercase">{dateParts.month}</span>
+                            <span className="text-lg font-black text-on-surface leading-none">
+                              {dateParts.day}
+                            </span>
+                            <span className="text-[10px] font-bold text-secondary uppercase">
+                              {dateParts.month}
+                            </span>
                             <span className="text-[9px] text-on-surface-variant">{dateParts.year}</span>
                           </div>
                         ) : (
                           '—'
                         )}
                       </td>
-                      <td className="px-4 py-4 text-center" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+                      <td
+                        className="px-4 py-4 text-center"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div className="flex items-center justify-center gap-1">
                           <button
                             type="button"
@@ -432,7 +376,10 @@ export function LeadsListPage() {
                             type="button"
                             className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant"
                             onClick={() =>
-                              navigate({ to: '/sales/leads/$leadId/edit', params: { leadId: lead.id } })
+                              navigate({
+                                to: '/sales/leads/$leadId/edit',
+                                params: { leadId: lead.id },
+                              })
                             }
                             aria-label="Edit lead"
                           >
@@ -519,7 +466,12 @@ export function LeadsListPage() {
                     <p className="text-on-surface-variant text-sm">{quickView.contactTitle}</p>
                   )}
                   <div className="flex flex-wrap gap-2 mt-2">
-                    <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold uppercase', stageStyles[quickView.stage])}>
+                    <span
+                      className={cn(
+                        'px-2 py-0.5 rounded text-[10px] font-bold uppercase',
+                        stageStyles[quickView.stage],
+                      )}
+                    >
                       {quickView.stage}
                     </span>
                   </div>
@@ -528,7 +480,9 @@ export function LeadsListPage() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-4 bg-surface-container-low rounded-xl">
-                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Estimated Value</p>
+                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">
+                    Estimated Value
+                  </p>
                   <p className="text-lg font-bold">{formatBudget(quickView.budget)}</p>
                 </div>
                 <div className="p-4 bg-surface-container-low rounded-xl">
