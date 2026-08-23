@@ -1,23 +1,29 @@
 /**
  * My Work module routes — import createMyWorkRoutes into the app router tree.
+ * Heavy pages lazy-loaded via shared lazyPage helper.
  */
 import { createRoute } from '@tanstack/react-router'
-import { MyWorkOverviewPage } from './pages/MyWorkOverviewPage'
-import { MyAttendancePage } from './pages/MyAttendancePage'
-import { MarkAttendancePage } from './pages/MarkAttendancePage'
-import { AttendanceCorrectionsPage } from './pages/AttendanceCorrectionsPage'
-import { AttendanceDetailPage } from './pages/AttendanceDetailPage'
-import { TakeABreakPage } from './pages/TakeABreakPage'
-import { MyLeavePage } from './pages/MyLeavePage'
-import { ApplyLeavePage } from './pages/ApplyLeavePage'
-import { LeaveDetailPage } from './pages/LeaveDetailPage'
-import { MyTasksPage } from './pages/MyTasksPage'
-import { MyTaskCreatePage } from './pages/MyTaskCreatePage'
-import { MyTaskDetailPage } from './pages/MyTaskDetailPage'
-import { MyApprovalsPage } from './pages/MyApprovalsPage'
-import { MyApprovalDetailPage } from './pages/MyApprovalDetailPage'
-import { MyRequestsPage } from './pages/MyRequestsPage'
-import { MyBankDetailsPage } from './pages/MyBankDetailsPage'
+import { lazyPage } from '@/shared/lib/lazyPage'
+
+const MyWorkOverviewPage = lazyPage(() => import('./pages/MyWorkOverviewPage'), 'MyWorkOverviewPage')
+const MyAttendancePage = lazyPage(() => import('./pages/MyAttendancePage'), 'MyAttendancePage')
+const MarkAttendancePage = lazyPage(() => import('./pages/MarkAttendancePage'), 'MarkAttendancePage')
+const AttendanceCorrectionsPage = lazyPage(
+  () => import('./pages/AttendanceCorrectionsPage'),
+  'AttendanceCorrectionsPage',
+)
+const AttendanceDetailPage = lazyPage(() => import('./pages/AttendanceDetailPage'), 'AttendanceDetailPage')
+const TakeABreakPage = lazyPage(() => import('./pages/TakeABreakPage'), 'TakeABreakPage')
+const MyLeavePage = lazyPage(() => import('./pages/MyLeavePage'), 'MyLeavePage')
+const ApplyLeavePage = lazyPage(() => import('./pages/ApplyLeavePage'), 'ApplyLeavePage')
+const LeaveDetailPage = lazyPage(() => import('./pages/LeaveDetailPage'), 'LeaveDetailPage')
+const MyTasksPage = lazyPage(() => import('./pages/MyTasksPage'), 'MyTasksPage')
+const MyTaskCreatePage = lazyPage(() => import('./pages/MyTaskCreatePage'), 'MyTaskCreatePage')
+const MyTaskDetailPage = lazyPage(() => import('./pages/MyTaskDetailPage'), 'MyTaskDetailPage')
+const MyApprovalsPage = lazyPage(() => import('./pages/MyApprovalsPage'), 'MyApprovalsPage')
+const MyApprovalDetailPage = lazyPage(() => import('./pages/MyApprovalDetailPage'), 'MyApprovalDetailPage')
+const MyRequestsPage = lazyPage(() => import('./pages/MyRequestsPage'), 'MyRequestsPage')
+const MyBankDetailsPage = lazyPage(() => import('./pages/MyBankDetailsPage'), 'MyBankDetailsPage')
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createMyWorkRoutes(appLayoutRoute: any) {
