@@ -2,23 +2,61 @@ import { useMemo, useState } from 'react'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { ExportButton } from '@/shared/components/export/ExportButton'
+import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
+import { IconButton } from '@/shared/components/ui/IconButton'
+import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import { useListSelection } from '@/shared/hooks/useListSelection'
 import { ResourceName } from '@/shared/schema'
 import { auditLogs } from '../data/mock'
 import { cn } from '@/shared/lib/cn'
 
-const actionStyles: Record<string, string> = {
-  Create: 'bg-green-100 text-green-800',
-  Update: 'bg-blue-100 text-blue-800',
-  Delete: 'bg-red-100 text-red-800',
-  Login: 'bg-purple-100 text-purple-800',
-  Lock: 'bg-amber-100 text-amber-800',
+const actionBadge: Record<string, string> = {
+  Create: 'status-badge status-success',
+  Update: 'status-badge status-info',
+  Delete: 'status-badge status-error',
+  Login: 'status-badge status-info',
+  Lock: 'status-badge status-warning',
+}
+
+type AuditLog = (typeof auditLogs)[number]
+
+function AuditQuickContent({ log }: { log: AuditLog }) {
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <div className="w-12 h-12 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-label-md font-bold">
+          {log.actorInitials}
+        </div>
+        <div>
+          <p className="text-title-lg font-semibold text-on-surface">{log.actor}</p>
+          <p className="text-body-sm text-on-surface-variant">{log.timestamp}</p>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 gap-3">
+        {(
+          [
+            ['Event ID', log.id],
+            ['Action', log.action],
+            ['Target', log.target],
+            ['Module', log.module],
+            ['IP Address', log.ip],
+          ] as const
+        ).map(([label, value]) => (
+          <div key={label} className="p-4 bg-surface-container-low rounded-xl">
+            <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">{label}</p>
+            <p className="text-body-md font-semibold text-on-surface break-all">{value}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 export function AuditLogsPage() {
+  const { openPanel } = useQuickOverview()
   const [search, setSearch] = useState('')
   const [actionFilter, setActionFilter] = useState('All Actions')
   const [moduleFilter, setModuleFilter] = useState('All Modules')
-  const [drawerLog, setDrawerLog] = useState<(typeof auditLogs)[0] | null>(null)
 
   const filtered = useMemo(() => {
     return auditLogs.filter((log) => {
@@ -39,6 +77,19 @@ export function AuditLogsPage() {
     })
   }, [search, actionFilter, moduleFilter])
 
+  const selection = useListSelection({
+    items: filtered,
+    getId: (log) => log.id,
+  })
+
+  const openAuditOverview = (log: AuditLog) => {
+    openPanel({
+      title: 'Event Details',
+      content: <AuditQuickContent log={log} />,
+      widthClass: 'max-w-md',
+    })
+  }
+
   return (
     <div className="space-y-6 relative animate-fade-in">
       <PageHeader
@@ -53,6 +104,7 @@ export function AuditLogsPage() {
                 action: actionFilter !== 'All Actions' ? actionFilter : undefined,
                 module: moduleFilter !== 'All Modules' ? moduleFilter : undefined,
               }}
+              selectedIds={selection.selectionMode ? Array.from(selection.selectedIds) : undefined}
               filenameStem="audit-logs"
             />
           </div>
@@ -69,12 +121,15 @@ export function AuditLogsPage() {
       <section className="bv-surface p-5">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-label-md text-on-surface">Global Search</label>
+            <label className="text-label-md text-on-surface" htmlFor="audit-search">
+              Global Search
+            </label>
             <div className="relative">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
                 search
               </span>
               <input
+                id="audit-search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none text-body-sm bg-transparent transition-colors"
@@ -83,8 +138,11 @@ export function AuditLogsPage() {
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-label-md text-on-surface">Action</label>
+            <label className="text-label-md text-on-surface" htmlFor="audit-action">
+              Action
+            </label>
             <select
+              id="audit-action"
               value={actionFilter}
               onChange={(e) => setActionFilter(e.target.value)}
               className="w-full px-4 py-2 border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 bg-transparent transition-colors"
@@ -95,8 +153,11 @@ export function AuditLogsPage() {
             </select>
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-label-md text-on-surface">Module</label>
+            <label className="text-label-md text-on-surface" htmlFor="audit-module">
+              Module
+            </label>
             <select
+              id="audit-module"
               value={moduleFilter}
               onChange={(e) => setModuleFilter(e.target.value)}
               className="w-full px-4 py-2 border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 bg-transparent transition-colors"
@@ -122,11 +183,39 @@ export function AuditLogsPage() {
         </div>
       </section>
 
+      {selection.selectionMode && (
+        <BulkSelectionBar
+          selectedCount={selection.selectedCount}
+          filteredCount={filtered.length}
+          onCancel={selection.exitSelectionMode}
+        >
+          <ExportButton
+            resource={ResourceName.AUDIT}
+            selectedIds={Array.from(selection.selectedIds)}
+            filenameStem="audit-selected"
+            label="Export selected"
+          />
+        </BulkSelectionBar>
+      )}
+
       <section className="bv-surface overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[960px]">
             <thead>
               <tr className="bg-surface-container-low">
+                <th className="px-3 py-3 w-12 text-center">
+                  {selection.selectionMode ? (
+                    <input
+                      type="checkbox"
+                      className="rounded border-outline-variant text-secondary"
+                      checked={selection.allFilteredSelected}
+                      onChange={selection.toggleSelectAllFiltered}
+                      aria-label="Select all filtered audit rows"
+                    />
+                  ) : (
+                    <span className="sr-only">Select</span>
+                  )}
+                </th>
                 <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">Time</th>
                 <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">Actor</th>
                 <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">Action</th>
@@ -139,14 +228,45 @@ export function AuditLogsPage() {
             <tbody className="divide-y divide-outline-variant">
               {filtered.map((log) => {
                 const actionKey =
-                  Object.keys(actionStyles).find((k) => log.action.toLowerCase().includes(k.toLowerCase())) ??
+                  Object.keys(actionBadge).find((k) => log.action.toLowerCase().includes(k.toLowerCase())) ??
                   'Update'
+                const id = log.id
+                const selected = selection.isSelected(id)
                 return (
                   <tr
                     key={log.id}
-                    className="zebra-row cursor-pointer"
-                    onClick={() => setDrawerLog(log)}
+                    className={cn(
+                      'cursor-pointer select-none',
+                      selected ? 'bg-secondary/10' : 'zebra-row',
+                    )}
+                    onMouseDown={() => selection.onRowPressStart(id)}
+                    onMouseUp={() => selection.onRowPressEnd(id, () => openAuditOverview(log))}
+                    onMouseLeave={selection.onRowPressCancel}
+                    onTouchStart={() => selection.onRowPressStart(id)}
+                    onTouchEnd={() => selection.onRowPressEnd(id, () => openAuditOverview(log))}
+                    onTouchCancel={selection.onRowPressCancel}
+                    onContextMenu={(e) => e.preventDefault()}
                   >
+                    <td
+                      className="px-3 py-4 text-center"
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        if (selection.selectionMode) selection.toggleOne(id)
+                      }}
+                    >
+                      {selection.selectionMode ? (
+                        <input
+                          type="checkbox"
+                          className="rounded border-outline-variant text-secondary"
+                          checked={selected}
+                          onChange={() => selection.toggleOne(id)}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      ) : (
+                        <span className="inline-block w-2 h-2 rounded-full bg-outline-variant" aria-hidden />
+                      )}
+                    </td>
                     <td className="px-6 py-4 text-body-sm text-on-surface-variant whitespace-nowrap">
                       {log.timestamp}
                     </td>
@@ -159,31 +279,21 @@ export function AuditLogsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span
-                        className={cn(
-                          'px-2 py-1 rounded-full text-xs font-semibold',
-                          actionStyles[actionKey] ?? 'bg-surface-container text-on-surface-variant'
-                        )}
-                      >
-                        {log.action}
-                      </span>
+                      <span className={actionBadge[actionKey] ?? 'status-badge status-neutral'}>{log.action}</span>
                     </td>
                     <td className="px-6 py-4 text-body-sm text-on-surface max-w-[280px] truncate">
                       {log.target}
                     </td>
                     <td className="px-6 py-4 text-body-sm text-on-surface-variant">{log.module}</td>
                     <td className="px-6 py-4 text-body-sm font-mono text-on-surface-variant">{log.ip}</td>
-                    <td className="px-6 py-4 text-right">
-                      <button
-                        type="button"
-                        className="material-symbols-outlined text-on-surface-variant hover:text-secondary text-[20px]"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          setDrawerLog(log)
-                        }}
-                      >
-                        visibility
-                      </button>
+                    <td
+                      className="px-6 py-4 text-right"
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <IconButton label={`View event ${log.id}`} size="sm" onClick={() => openAuditOverview(log)}>
+                        <span className="material-symbols-outlined text-[20px]">visibility</span>
+                      </IconButton>
                     </td>
                   </tr>
                 )
@@ -194,37 +304,12 @@ export function AuditLogsPage() {
         {filtered.length === 0 && (
           <div className="p-12 text-center text-on-surface-variant text-body-md">No audit events match your filters.</div>
         )}
+        {filtered.length > 0 && !selection.selectionMode && (
+          <div className="px-6 py-3 border-t border-outline-variant text-label-sm text-on-surface-variant">
+            Showing {filtered.length} events · Hold a row 3s to multi-select
+          </div>
+        )}
       </section>
-
-      {drawerLog && (
-        <>
-          <div
-            className="fixed inset-0 bg-primary/20 backdrop-blur-sm z-40 transition-opacity"
-            onClick={() => setDrawerLog(null)}
-          />
-          <aside className="fixed top-0 right-0 h-full w-full max-w-md bv-surface executive-shadow border-l border-outline-variant z-50 flex flex-col">
-            <div className="flex items-center justify-between p-5 border-b border-outline-variant">
-              <h3 className="text-title-lg font-semibold text-on-background">Event Details</h3>
-              <button
-                type="button"
-                className="p-2 rounded-lg hover:bg-surface-container transition-colors"
-                onClick={() => setDrawerLog(null)}
-              >
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-5 space-y-5">
-              <DetailRow label="Event ID" value={drawerLog.id} />
-              <DetailRow label="Timestamp" value={drawerLog.timestamp} />
-              <DetailRow label="Actor" value={drawerLog.actor} />
-              <DetailRow label="Action" value={drawerLog.action} />
-              <DetailRow label="Target" value={drawerLog.target} />
-              <DetailRow label="Module" value={drawerLog.module} />
-              <DetailRow label="IP Address" value={drawerLog.ip} />
-            </div>
-          </aside>
-        </>
-      )}
     </div>
   )
 }
@@ -250,15 +335,6 @@ function KpiCard({
       </div>
       <p className="text-title-lg font-semibold text-on-surface mb-1">{title}</p>
       <p className="text-label-sm text-on-surface-variant">{subtitle}</p>
-    </div>
-  )
-}
-
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-0.5">{label}</p>
-      <p className="text-body-md text-on-background">{value}</p>
     </div>
   )
 }

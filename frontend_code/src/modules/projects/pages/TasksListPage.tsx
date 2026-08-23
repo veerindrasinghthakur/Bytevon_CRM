@@ -15,11 +15,46 @@ import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useTasks } from '../hooks/use-tasks'
 import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
 import { CreateTaskModal } from '../components/CreateTaskModal'
+import type { Task } from '../types'
 import { cn } from '@/shared/lib/cn'
+
+function TaskQuickContent({ task }: { task: Task }) {
+  return (
+    <>
+      <div className="flex items-start gap-4">
+        <div className="w-14 h-14 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
+          <span className="material-symbols-outlined text-3xl">assignment</span>
+        </div>
+        <div className="min-w-0">
+          <h5 className="text-xl font-bold text-on-surface">{task.title}</h5>
+          <p className="text-on-surface-variant text-sm">{task.projectName ?? 'No project'}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <TaskStatusBadge status={task.status} />
+            <TaskPriorityLabel priority={task.priority} />
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Assignee</p>
+          <p className="text-lg font-semibold">{task.assigneeName ?? 'Unassigned'}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Due</p>
+          <p className="text-lg font-semibold">{task.dueDate ?? '—'}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl col-span-2">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Project</p>
+          <p className="text-body-md font-semibold">{task.projectName ?? '—'}</p>
+        </div>
+      </div>
+    </>
+  )
+}
 
 export function TasksListPage() {
   const navigate = useNavigate()
-  const { open: openOverview } = useQuickOverview()
+  const { openPanel } = useQuickOverview()
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
   const [priority, setPriority] = useState('')
@@ -64,6 +99,16 @@ export function TasksListPage() {
       params: { taskId: String(taskId) },
       search: edit ? { edit: '1' } : undefined,
     })
+
+  const openTaskOverview = (task: Task) => {
+    openPanel({
+      title: 'Task Quick View',
+      content: <TaskQuickContent task={task} />,
+      fullRecordLabel: 'Open full record',
+      onOpenFull: () => goTask(task.id),
+      widthClass: 'max-w-md',
+    })
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -137,9 +182,9 @@ export function TasksListPage() {
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Stat label="Total Tasks" value={String(total || '—')} icon="assignment" tone="bg-electric-blue/10 text-electric-blue" />
-        <Stat label="Pending" value={String(pending)} icon="pending_actions" tone="bg-amber-100 text-amber-700" />
-        <Stat label="Blocked / Overdue" value={String(blocked)} icon="block" tone="bg-red-100 text-red-600" danger={blocked > 0} />
-        <Stat label="Completed" value={String(done)} icon="check_circle" tone="bg-emerald-100 text-emerald-700" />
+        <Stat label="Pending" value={String(pending)} icon="pending_actions" tone="status-warning" />
+        <Stat label="Blocked / Overdue" value={String(blocked)} icon="block" tone="status-error" danger={blocked > 0} />
+        <Stat label="Completed" value={String(done)} icon="check_circle" tone="status-success" />
       </section>
 
       {selection.selectionMode && (
@@ -209,24 +254,6 @@ export function TasksListPage() {
                 {pageItems.map((task) => {
                   const id = String(task.id)
                   const isSelected = selection.isSelected(id)
-                  const openOverviewFor = () =>
-                    openOverview({
-                      id: task.id,
-                      title: task.title,
-                      subtitle: task.projectName,
-                      badge: task.status.replace('_', ' '),
-                      fields: [
-                        { label: 'Assignee', value: task.assigneeName ?? 'Unassigned' },
-                        { label: 'Priority', value: task.priority },
-                        { label: 'Status', value: task.status.replace('_', ' ') },
-                        { label: 'Due', value: task.dueDate ?? '—' },
-                        { label: 'Project', value: task.projectName ?? '—' },
-                      ],
-                      detailTo: '/projects/tasks/$taskId',
-                      detailParams: { taskId: String(task.id) },
-                      editTo: '/projects/tasks/$taskId',
-                      editParams: { taskId: String(task.id) },
-                    })
 
                   return (
                     <tr
@@ -236,10 +263,10 @@ export function TasksListPage() {
                         isSelected ? 'bg-secondary/10' : 'zebra-row',
                       )}
                       onMouseDown={() => selection.onRowPressStart(id)}
-                      onMouseUp={() => selection.onRowPressEnd(id, openOverviewFor)}
+                      onMouseUp={() => selection.onRowPressEnd(id, () => openTaskOverview(task))}
                       onMouseLeave={selection.onRowPressCancel}
                       onTouchStart={() => selection.onRowPressStart(id)}
-                      onTouchEnd={() => selection.onRowPressEnd(id, openOverviewFor)}
+                      onTouchEnd={() => selection.onRowPressEnd(id, () => openTaskOverview(task))}
                       onTouchCancel={selection.onRowPressCancel}
                       onContextMenu={(e) => e.preventDefault()}
                     >
@@ -289,6 +316,12 @@ export function TasksListPage() {
                           <RowActions
                             label={`Actions for ${task.title}`}
                             actions={[
+                              {
+                                id: 'overview',
+                                label: 'Quick view',
+                                icon: 'visibility',
+                                onClick: () => openTaskOverview(task),
+                              },
                               { id: 'view', label: 'View', icon: 'description', onClick: () => goTask(task.id) },
                               { id: 'edit', label: 'Edit', icon: 'edit', onClick: () => goTask(task.id, true) },
                             ]}
@@ -337,14 +370,12 @@ function Stat({
   return (
     <div className="bv-surface card-hover p-5 flex flex-col justify-between h-[160px]">
       <div className="flex justify-between items-start">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${tone}`}>
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${tone.includes('status-') ? tone : tone}`}>
           <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
             {icon}
           </span>
         </div>
-        {danger && (
-          <div className="bg-red-100 text-red-800 text-xs font-bold px-2 py-1 rounded">At risk</div>
-        )}
+        {danger && <span className="status-badge status-error text-xs font-bold">At risk</span>}
       </div>
       <div>
         <p className="text-label-sm text-on-surface-variant mb-1">{label}</p>
