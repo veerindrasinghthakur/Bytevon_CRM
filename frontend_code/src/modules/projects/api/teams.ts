@@ -3,6 +3,26 @@ import type { Team } from '../types'
 
 export type { Team, TeamStatus } from '../types'
 
+export interface TeamMemberRow {
+  id: string
+  name: string
+  title: string
+  role: string
+  email: string
+  status: 'Active' | 'On Leave'
+  joined: string
+}
+
+export interface TeamProjectRow {
+  id: number
+  name: string
+  client: string
+  status: 'Active' | 'Completed' | 'On Hold'
+  due: string
+  pct: number
+  role: string
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function asTeam(row: any): Team {
   return {
@@ -28,7 +48,6 @@ export function resolveProjectTeamId(projectId: number): number | null {
     | undefined
   if (!project) return null
   if (project.teamId != null) return project.teamId
-  // Fallback: team whose projectName matches this project
   const byName = db.teams.find(
     (t) => t.projectName && project.name && t.projectName === project.name,
   )
@@ -63,6 +82,89 @@ export async function getTeamsForProject(projectId: number): Promise<Team[]> {
   if (teamId == null) return []
   const team = getDb().teams.find((t) => t.id === teamId)
   return team ? [asTeam(team)] : []
+}
+
+/**
+ * Members for a team — derived from employees in the same department as the team
+ * (mock has no team_members table yet). Head is sorted first when present.
+ */
+export async function getTeamMembers(teamId: number): Promise<TeamMemberRow[]> {
+  await delay()
+  const db = getDb()
+  const team = db.teams.find((t) => t.id === teamId)
+  if (!team) return []
+
+  const dept = (team.department ?? '').toLowerCase()
+  let emps = db.employees.filter((e) => (e.department ?? '').toLowerCase() === dept)
+  if (emps.length === 0) {
+    emps = db.employees.slice(0, Math.max(team.memberCount, 3))
+  } else if (emps.length > team.memberCount && team.memberCount > 0) {
+    emps = emps.slice(0, team.memberCount)
+  }
+
+  const head = (team.headName ?? '').toLowerCase()
+  const rows: TeamMemberRow[] = emps.map((e) => {
+    const isHead = head && e.fullName.toLowerCase() === head
+    return {
+      id: String(e.id),
+      name: e.fullName,
+      title: e.role ?? 'Member',
+      role: isHead ? 'Lead' : 'Member',
+      email: e.email ?? '',
+      status: e.status === 'ON_LEAVE' ? 'On Leave' : 'Active',
+      joined: e.joiningDate ?? '—',
+    }
+  })
+
+  rows.sort((a, b) => {
+    if (a.role === 'Lead' && b.role !== 'Lead') return -1
+    if (b.role === 'Lead' && a.role !== 'Lead') return 1
+    return a.name.localeCompare(b.name)
+  })
+
+  return rows
+}
+
+function projectUiStatus(status: string): TeamProjectRow['status'] {
+  if (status === 'COMPLETED') return 'Completed'
+  if (status === 'ON_HOLD' || status === 'CANCELLED') return 'On Hold'
+  return 'Active'
+}
+
+/** Projects linked to this team via teamId or matching projectName. */
+export async function getTeamProjects(teamId: number): Promise<TeamProjectRow[]> {
+  await delay()
+  const db = getDb()
+  const team = db.teams.find((t) => t.id === teamId)
+  if (!team) return []
+
+  const linked = db.projects.filter((p) => {
+    const row = p as { teamId?: number | null; name?: string }
+    if (row.teamId === teamId) return true
+    if (team.projectName && row.name === team.projectName) return true
+    return false
+  })
+
+  const list = linked.length > 0 ? linked : db.projects.slice(0, Math.max(team.projectCount, 1))
+
+  return list.map((p) => {
+    const end = p.endDate
+      ? new Date(p.endDate).toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })
+      : '—'
+    return {
+      id: p.id,
+      name: p.name,
+      client: p.clientName ?? '—',
+      status: projectUiStatus(p.status),
+      due: end,
+      pct: p.progress ?? 0,
+      role: team.projectName === p.name ? 'Primary' : 'Support',
+    }
+  })
 }
 
 export async function updateTeam(
