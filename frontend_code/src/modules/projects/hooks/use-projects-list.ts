@@ -11,7 +11,7 @@ export function useProjectsList() {
     filterDefaults: FILTER_DEFAULTS,
   })
 
-  const { data, isLoading, isError, refetch } = useProjects({
+  const { data, isLoading, isFetching, isError, refetch } = useProjects({
     search: controls.search || undefined,
     status: controls.filters.status || undefined,
   })
@@ -43,6 +43,7 @@ export function useProjectsList() {
     atRisk: metrics.atRisk,
     avgProgress: metrics.avgProgress,
     isLoading,
+    isFetching,
     isError,
     refetch,
     selection,

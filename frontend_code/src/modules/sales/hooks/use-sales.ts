@@ -141,10 +141,11 @@ export function usePrefetchClient() {
   return (id: string) => prefetchClient(qc, id)
 }
 
-export function useCaseStudies(filters?: { search?: string; status?: string }) {
+/** Case studies — server returns full list; client filters via useListControls on the page/hook. */
+export function useCaseStudies() {
   return useQuery({
-    queryKey: queryKeys.sales.caseStudies.list(filters ?? {}),
-    queryFn: () => listCaseStudies(filters),
+    queryKey: queryKeys.sales.caseStudies.list(),
+    queryFn: listCaseStudies,
   })
 }
 
