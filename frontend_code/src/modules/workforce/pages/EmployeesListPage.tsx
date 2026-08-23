@@ -7,6 +7,7 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { Can } from '@/shared/rbac'
 import { Action, ResourceName } from '@/shared/schema'
@@ -36,6 +37,7 @@ export function EmployeesListPage() {
   const {
     items,
     filtered,
+    pageItems,
     metrics,
     departments,
     states,
@@ -52,11 +54,13 @@ export function EmployeesListPage() {
     setTypeFilter,
     filtersActive,
     resetFilters,
+    page,
+    setPage,
     reload,
   } = useEmployeesList()
 
   const selection = useListSelection({
-    items: filtered,
+    items: pageItems,
     getId: (e) => String(e.id),
   })
 
@@ -114,7 +118,7 @@ export function EmployeesListPage() {
       {selection.selectionMode && (
         <BulkSelectionBar
           selectedCount={selection.selectedCount}
-          filteredCount={filtered.length}
+          filteredCount={pageItems.length}
           onCancel={selection.exitSelectionMode}
         >
           <ExportButton
@@ -189,7 +193,7 @@ export function EmployeesListPage() {
                         className="rounded border-outline-variant text-secondary"
                         checked={selection.allFilteredSelected}
                         onChange={selection.toggleSelectAllFiltered}
-                        aria-label="Select all filtered employees"
+                        aria-label="Select all filtered employees on this page"
                       />
                     ) : (
                       <span className="sr-only">Select</span>
@@ -205,7 +209,7 @@ export function EmployeesListPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/30">
-                {filtered.map((emp) => {
+                {pageItems.map((emp) => {
                   const sid = String(emp.id)
                   const isSelected = selection.isSelected(sid)
                   return (
@@ -286,6 +290,7 @@ export function EmployeesListPage() {
                           type="button"
                           className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors"
                           onClick={() => goDetail(emp.id)}
+                          aria-label={`View ${emp.fullName}`}
                         >
                           <Icon name="visibility" className="text-lg" />
                         </button>
@@ -297,12 +302,21 @@ export function EmployeesListPage() {
             </table>
           </div>
         )}
-        <div className="px-6 py-4 border-t border-outline-variant text-label-sm text-on-surface-variant">
-          Showing {filtered.length} of {items.length} employees
-          {!selection.selectionMode && (
-            <span className="ml-2 opacity-80">· Hold a row 3s to multi-select</span>
-          )}
-        </div>
+        <Pagination
+          page={page}
+          pageSize={DEFAULT_PAGE_SIZE}
+          total={filtered.length}
+          onPageChange={setPage}
+          itemLabel="employees"
+        />
+        {filtered.length <= DEFAULT_PAGE_SIZE && filtered.length > 0 && (
+          <div className="px-6 py-4 border-t border-outline-variant text-label-sm text-on-surface-variant">
+            Showing {filtered.length} of {items.length} employees
+            {!selection.selectionMode && (
+              <span className="ml-2 opacity-80">· Hold a row 3s to multi-select</span>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
