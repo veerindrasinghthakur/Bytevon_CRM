@@ -1,9 +1,12 @@
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { ListToolbar } from '@/shared/components/layout/ListToolbar'
+import { RowActions } from '@/shared/components/ui/RowActions'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import {
   QuickSection,
@@ -16,7 +19,6 @@ import {
 import { ResourceName } from '@/shared/schema'
 import { useLeadsList } from '../hooks/use-leads-list'
 import { LeadMetricsRow } from '../components/LeadMetricsRow'
-import { LeadFiltersBar } from '../components/LeadFiltersBar'
 import type { PipelineStage, LeadPriority, RecordStatus, Lead } from '../types'
 import { cn } from '@/shared/lib/cn'
 
@@ -75,14 +77,6 @@ function StatusDotOnly({ status }: { status: RecordStatus }) {
       title={status}
       aria-label={status}
     />
-  )
-}
-
-function Icon({ name, className }: { name: string; className?: string }) {
-  return (
-    <span className={cn('material-symbols-outlined', className)} aria-hidden="true">
-      {name}
-    </span>
   )
 }
 
@@ -174,6 +168,7 @@ export function LeadsListPage() {
     filtered,
     isLoading,
     isError,
+    isFetching,
     refetch,
     search,
     setSearch,
@@ -199,6 +194,13 @@ export function LeadsListPage() {
     clearLongPress,
   } = useLeadsList()
 
+  const filtersActive =
+    Boolean(search.trim()) ||
+    statusFilter !== 'All' ||
+    stageFilter !== 'All' ||
+    priorityFilter !== 'All' ||
+    sourceFilter !== 'All'
+
   const openLeadOverview = (lead: Lead) => {
     openPanel({
       title: lead.contactName,
@@ -209,8 +211,9 @@ export function LeadsListPage() {
       content: <LeadQuickContent lead={lead} />,
       fullRecordLabel: 'Open full record',
       onOpenFull: () => navigate({ to: '/sales/leads/$leadId', params: { leadId: lead.id } }),
-      secondaryLabel: 'Log Task',
-      onSecondary: () => {},
+      onEdit: () =>
+        navigate({ to: '/sales/leads/$leadId/edit', params: { leadId: lead.id } }),
+      editLabel: 'Edit lead',
       widthClass: 'max-w-[520px]',
     })
   }
@@ -221,8 +224,12 @@ export function LeadsListPage() {
         title="Lead Management"
         description="Manage leads, assign ownership, qualify prospects and track progress through the sales pipeline."
         actions={
-          <div className="flex items-center gap-3 flex-wrap">
-            <Button variant="outline" leftIcon={<Icon name="upload" className="text-lg" />}>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">upload</span>}
+            >
               Import
             </Button>
             <ExportButton
@@ -239,7 +246,8 @@ export function LeadsListPage() {
             />
             <Button
               variant="primary"
-              leftIcon={<Icon name="add" className="text-lg" />}
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
               onClick={() => navigate({ to: '/sales/leads/new' })}
             >
               New Lead
@@ -250,21 +258,56 @@ export function LeadsListPage() {
 
       <LeadMetricsRow metrics={metrics} />
 
-      <LeadFiltersBar
+      <ListToolbar
         search={search}
         onSearchChange={setSearch}
-        statusFilter={statusFilter}
-        onStatusChange={setStatusFilter}
-        stageFilter={stageFilter}
-        onStageChange={setStageFilter}
-        priorityFilter={priorityFilter}
-        onPriorityChange={setPriorityFilter}
-        sourceFilter={sourceFilter}
-        onSourceChange={setSourceFilter}
-        stages={stages}
-        priorities={priorities}
-        onReset={resetFilters}
-      />
+        searchPlaceholder="Search by name or ID..."
+        filtersActive={filtersActive}
+        onResetFilters={resetFilters}
+        onRefresh={() => void refetch()}
+      >
+        <Select
+          value={statusFilter}
+          onChange={setStatusFilter}
+          placeholder="All Status"
+          options={[
+            { value: 'All', label: 'All Status' },
+            { value: 'Active', label: 'Active' },
+            { value: 'Inactive', label: 'Inactive' },
+          ]}
+          minWidthClass="min-w-[130px]"
+        />
+        <Select
+          value={stageFilter}
+          onChange={setStageFilter}
+          placeholder="All Stages"
+          options={[{ value: 'All', label: 'All Stages' }, ...stages.map((s) => ({ value: s, label: s }))]}
+          minWidthClass="min-w-[140px]"
+        />
+        <Select
+          value={priorityFilter}
+          onChange={setPriorityFilter}
+          placeholder="All Priority"
+          options={[
+            { value: 'All', label: 'All Priority' },
+            ...priorities.map((p) => ({ value: p, label: p })),
+          ]}
+          minWidthClass="min-w-[130px]"
+        />
+        <Select
+          value={sourceFilter}
+          onChange={setSourceFilter}
+          placeholder="All Sources"
+          options={[
+            { value: 'All', label: 'All Sources' },
+            { value: 'LinkedIn', label: 'LinkedIn' },
+            { value: 'Referral', label: 'Referral' },
+            { value: 'Website', label: 'Website' },
+            { value: 'Direct Referral', label: 'Direct Referral' },
+          ]}
+          minWidthClass="min-w-[140px]"
+        />
+      </ListToolbar>
 
       {selectionMode && (
         <div className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl border border-secondary/30 bg-secondary/5">
@@ -288,8 +331,6 @@ export function LeadsListPage() {
         </div>
       )}
 
-      {isLoading && <TableSkeleton rows={6} />}
-
       {isError && (
         <ErrorState
           title="Failed to load leads"
@@ -299,8 +340,13 @@ export function LeadsListPage() {
         />
       )}
 
-      {!isLoading && !isError && (
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+      {!isError && (
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden relative">
+          {(isLoading || isFetching) && (
+            <div className="absolute inset-0 z-10 bg-surface-container-lowest/70 backdrop-blur-[1px]">
+              <TableSkeleton rows={6} />
+            </div>
+          )}
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -414,15 +460,6 @@ export function LeadsListPage() {
                       </td>
                       <td className="px-4 py-4">
                         <p className="font-bold text-on-surface">{formatBudget(lead.budget)}</p>
-                        {lead.tags && lead.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-1">
-                            {lead.tags.map((t) => (
-                              <span key={t} className="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded text-[9px] font-bold">
-                                {t}
-                              </span>
-                            ))}
-                          </div>
-                        )}
                       </td>
                       <td className="px-4 py-4">
                         {dateParts ? (
@@ -440,37 +477,48 @@ export function LeadsListPage() {
                         onMouseDown={(e) => e.stopPropagation()}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            type="button"
-                            className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant"
-                            onClick={() => openLeadOverview(lead)}
-                            aria-label="Quick view"
-                          >
-                            <Icon name="visibility" className="text-sm" />
-                          </button>
-                          <button
-                            type="button"
-                            className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant"
-                            onClick={() =>
-                              navigate({ to: '/sales/leads/$leadId/edit', params: { leadId: lead.id } })
-                            }
-                            aria-label="Edit lead"
-                          >
-                            <Icon name="edit" className="text-sm" />
-                          </button>
-                          {lead.chatLink && (
-                            <a
-                              href={lead.chatLink}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="p-1.5 hover:bg-surface-container rounded-md text-secondary"
-                              title="Open chat"
-                              aria-label="Open chat"
-                            >
-                              <Icon name="chat" className="text-sm" />
-                            </a>
-                          )}
+                        <div className="flex justify-center">
+                          <RowActions
+                            label={`Actions for ${lead.contactName}`}
+                            actions={[
+                              {
+                                id: 'overview',
+                                label: 'Quick view',
+                                icon: 'visibility',
+                                onClick: () => openLeadOverview(lead),
+                              },
+                              {
+                                id: 'details',
+                                label: 'View details',
+                                icon: 'description',
+                                onClick: () =>
+                                  navigate({
+                                    to: '/sales/leads/$leadId',
+                                    params: { leadId: lead.id },
+                                  }),
+                              },
+                              {
+                                id: 'edit',
+                                label: 'Edit',
+                                icon: 'edit',
+                                onClick: () =>
+                                  navigate({
+                                    to: '/sales/leads/$leadId/edit',
+                                    params: { leadId: lead.id },
+                                  }),
+                              },
+                              ...(lead.chatLink
+                                ? [
+                                    {
+                                      id: 'chat',
+                                      label: 'Open chat',
+                                      icon: 'chat',
+                                      onClick: () => window.open(lead.chatLink!, '_blank'),
+                                    },
+                                  ]
+                                : []),
+                            ]}
+                          />
                         </div>
                       </td>
                     </tr>
