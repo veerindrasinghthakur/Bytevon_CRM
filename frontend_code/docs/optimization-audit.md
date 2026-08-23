@@ -6,6 +6,7 @@
 | **Updated** | 2026-08-23 |
 | **Phase A** | ✅ Complete |
 | **Phase B** | ✅ Complete |
+| **Phase C** | ✅ Complete |
 
 ---
 
@@ -43,12 +44,35 @@ No UI or logic changes — composition only.
 
 ---
 
-## Phase C — Polish (optional next)
+## Phase C — Shared Quick View + polish ✅
 
-- Semantic status tokens (dark mode)  
-- a11y pass on icon-only controls  
-- Gradual `queryKeys.*` adoption in older hooks  
-- Selection on Audit / leave admin if product wants  
+### Shared Quick Overview (`shared/components/layout/QuickOverview.tsx`)
+
+- **Base service**: `openPanel` / `closePanel` / `open` alias via `useQuickOverview()`
+- **Chrome**: title, close icon, footer **Open full record** + **Close** (same pattern as Clients/Leads reference)
+- **Animation**: `animate-slide-in-right` in; translate-out + delayed unmount on close
+- **Layout**: panel between header and bottom (`HEADER_HEIGHT_PX` + edge gap); does **not** cover header / icon rail
+- **Backdrop**: `bg-black/40 backdrop-blur-sm` over main content only
+- **Page-owned**: `content` ReactNode + optional `widthClass`, secondary action
+
+### Inheriting list pages
+
+| Page | Opens via |
+|------|-----------|
+| Clients | visibility action + short row press |
+| Leads | visibility action + short row press |
+| Projects | short row press → `openPanel` with field grid |
+| Teams | short row press → team cards content |
+| Departments | short row press → department cards content |
+
+Local per-page drawers removed in favor of the shared panel.
+
+### Remaining optional polish
+
+- Semantic status tokens (dark mode)
+- a11y pass on icon-only controls
+- Gradual `queryKeys.*` adoption in older hooks
+- Selection on Audit / leave admin if product wants
 
 ---
 

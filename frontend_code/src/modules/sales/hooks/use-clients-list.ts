@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { useClientsQuery } from './use-sales'
@@ -10,8 +9,6 @@ const FILTER_DEFAULTS = {
 }
 
 export function useClientsList() {
-  const [quickView, setQuickView] = useState<Client | null>(null)
-
   const controls = useListControls({
     filterDefaults: FILTER_DEFAULTS,
   })
@@ -32,8 +29,9 @@ export function useClientsList() {
   })
 
   const startLongPress = (id: string) => selection.onRowPressStart(id)
-  const endLongPress = (client: Client) => {
-    selection.onRowPressEnd(client.id, () => setQuickView(client))
+  /** Short press runs onShortPress (e.g. open shared QuickOverview) */
+  const endLongPress = (client: Client, onShortPress?: (c: Client) => void) => {
+    selection.onRowPressEnd(client.id, () => onShortPress?.(client))
   }
   const clearLongPress = selection.onRowPressCancel
 
@@ -57,8 +55,6 @@ export function useClientsList() {
     setPage: controls.setPage,
     pageSize: controls.pageSize,
     pageItems: controls.pageItems(filtered),
-    quickView,
-    setQuickView,
     selectionMode: selection.selectionMode,
     selectedIds: selection.selectedIds,
     allFilteredSelected: selection.allFilteredSelected,

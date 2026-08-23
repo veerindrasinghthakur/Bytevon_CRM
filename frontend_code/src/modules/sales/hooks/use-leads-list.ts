@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { useLeadsQuery } from './use-sales'
@@ -12,8 +11,6 @@ const FILTER_DEFAULTS = {
 }
 
 export function useLeadsList() {
-  const [quickView, setQuickView] = useState<Lead | null>(null)
-
   const controls = useListControls({
     filterDefaults: FILTER_DEFAULTS,
   })
@@ -36,8 +33,8 @@ export function useLeadsList() {
   })
 
   const startLongPress = (id: string) => selection.onRowPressStart(id)
-  const endLongPress = (lead: Lead) => {
-    selection.onRowPressEnd(lead.id, () => setQuickView(lead))
+  const endLongPress = (lead: Lead, onShortPress?: (l: Lead) => void) => {
+    selection.onRowPressEnd(lead.id, () => onShortPress?.(lead))
   }
 
   const stages: PipelineStage[] = [
@@ -77,8 +74,6 @@ export function useLeadsList() {
     setPage: controls.setPage,
     pageSize: controls.pageSize,
     pageItems: controls.pageItems(filtered),
-    quickView,
-    setQuickView,
     selectionMode: selection.selectionMode,
     selectedIds: selection.selectedIds,
     allFilteredSelected: selection.allFilteredSelected,
