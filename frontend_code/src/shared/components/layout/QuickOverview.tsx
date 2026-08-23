@@ -10,19 +10,33 @@ import {
 } from 'react'
 import { HEADER_HEIGHT_PX } from './Header'
 import { Button } from '@/shared/components/ui/Button'
+import { IconButton } from '@/shared/components/ui/IconButton'
 
 /** Gap between panel and viewport edges (below header / above bottom) */
 const PANEL_EDGE_GAP_PX = 12
-/** Must match CSS --duration-slide-in (~280ms) */
+/** Must match CSS --duration-slide-in */
 const EXIT_MS = 280
 
 export type OpenQuickOverviewOptions = {
+  /** Primary entity name shown in header */
   title: string
+  /** Secondary line under title (e.g. ID, email) */
+  subtitle?: string
+  /** Material symbol name for header icon well */
+  icon?: string
+  /** Status label next to title */
+  status?: string
+  /** Dot color class for status (e.g. bg-emerald-500) */
+  statusDotClass?: string
+  /** Body content — use QuickSection / QuickStat / etc. */
   content: ReactNode
   onOpenFull?: () => void
   fullRecordLabel?: string
+  onEdit?: () => void
+  editLabel?: string
   secondaryLabel?: string
   onSecondary?: () => void
+  /** Default max-w matches stitch ~md panel */
   widthClass?: string
 }
 
@@ -49,7 +63,6 @@ export function QuickOverviewProvider({ children }: { children: ReactNode }) {
   const openPanel = useCallback((opts: OpenQuickOverviewOptions) => {
     setOptions(opts)
     setVisible(true)
-    // Next frame so enter animation always runs even when swapping content
     requestAnimationFrame(() => setIsOpen(true))
   }, [])
 
@@ -100,11 +113,10 @@ export function QuickOverviewProvider({ children }: { children: ReactNode }) {
 }
 
 /**
- * Shared Contextual Detail Drawer
- * - Row click / visibility → open (page content)
- * - Slide in + slide out animations
- * - Backdrop blur below header only
- * - Footer: Open full record + Close
+ * Contextual Detail Drawer — stitch right_side_overview_panel
+ * Header: icon + title + status + subtitle + close
+ * Body: scrollable sections
+ * Footer: Edit / secondary + Open full record
  */
 function QuickOverviewPanelShell({
   isOpen,
@@ -119,8 +131,9 @@ function QuickOverviewPanelShell({
 }) {
   if (!visible || !options) return null
 
-  const widthClass = options.widthClass ?? 'max-w-md'
+  const widthClass = options.widthClass ?? 'max-w-[520px]'
   const fullLabel = options.fullRecordLabel ?? 'Open full record'
+  const iconName = options.icon ?? 'info'
 
   return (
     <div
@@ -159,48 +172,81 @@ function QuickOverviewPanelShell({
           height: `calc(100vh - ${HEADER_HEIGHT_PX + PANEL_EDGE_GAP_PX * 2}px)`,
         }}
       >
-        <div className="p-6 border-b border-outline-variant flex items-center justify-between bg-surface-container-low shrink-0">
-          <h3 className="text-title-lg font-bold text-on-surface flex items-center gap-2 min-w-0">
-            <span className="material-symbols-outlined text-secondary shrink-0" aria-hidden>
-              info
-            </span>
-            <span className="truncate">{options.title}</span>
-          </h3>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 hover:bg-surface-container rounded-full transition-colors shrink-0"
-            aria-label="Close"
-          >
-            <span className="material-symbols-outlined">close</span>
-          </button>
-        </div>
+        {/* Header — entity identity */}
+        <header className="flex items-start justify-between gap-3 p-6 border-b border-outline-variant shrink-0 bg-surface-container-lowest rounded-tl-xl">
+          <div className="flex items-start gap-4 min-w-0">
+            <div className="w-12 h-12 rounded-lg bg-primary-container text-on-primary flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[28px]" aria-hidden>
+                {iconName}
+              </span>
+            </div>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2 mb-1">
+                <h2 className="text-headline-md font-semibold text-on-surface truncate">{options.title}</h2>
+                {options.status && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-highest text-on-surface-variant text-label-sm font-medium border border-outline-variant shrink-0">
+                    <span
+                      className={cn('w-2 h-2 rounded-full', options.statusDotClass ?? 'bg-secondary')}
+                      aria-hidden
+                    />
+                    {options.status}
+                  </span>
+                )}
+              </div>
+              {options.subtitle && (
+                <p className="text-body-sm text-on-surface-variant truncate">{options.subtitle}</p>
+              )}
+            </div>
+          </div>
+          <IconButton label="Close panel" size="sm" onClick={onClose}>
+            <span className="material-symbols-outlined text-[20px]">close</span>
+          </IconButton>
+        </header>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0">{options.content}</div>
+        {/* Scrollable body */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-5 min-h-0 bg-background">{options.content}</div>
 
-        <div className="p-6 border-t border-outline-variant bg-surface-container-low flex gap-3 shrink-0">
-          {options.onOpenFull && (
-            <Button
-              variant="primary"
-              className="flex-1"
-              onClick={() => {
-                onClose()
-                // Let exit animation start before navigate
-                window.setTimeout(() => options.onOpenFull?.(), 80)
-              }}
-            >
-              {fullLabel}
+        {/* Sticky footer actions */}
+        <footer className="p-6 border-t border-outline-variant bg-surface-container-lowest shrink-0 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap gap-2">
+            {options.onEdit && (
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>}
+                onClick={() => {
+                  onClose()
+                  window.setTimeout(() => options.onEdit?.(), 80)
+                }}
+              >
+                {options.editLabel ?? 'Edit'}
+              </Button>
+            )}
+            {options.secondaryLabel && options.onSecondary && (
+              <Button variant="outline" size="sm" onClick={options.onSecondary}>
+                {options.secondaryLabel}
+              </Button>
+            )}
+          </div>
+          <div className="flex gap-2 ml-auto">
+            <Button variant="outline" size="sm" onClick={onClose}>
+              Close
             </Button>
-          )}
-          {options.secondaryLabel && options.onSecondary && (
-            <Button variant="outline" onClick={options.onSecondary}>
-              {options.secondaryLabel}
-            </Button>
-          )}
-          <Button variant="outline" onClick={onClose}>
-            Close
-          </Button>
-        </div>
+            {options.onOpenFull && (
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<span className="material-symbols-outlined text-[18px]">open_in_new</span>}
+                onClick={() => {
+                  onClose()
+                  window.setTimeout(() => options.onOpenFull?.(), 80)
+                }}
+              >
+                {fullLabel}
+              </Button>
+            )}
+          </div>
+        </footer>
       </aside>
     </div>
   )
