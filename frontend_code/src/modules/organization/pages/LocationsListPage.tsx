@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
-import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { ListToolbar } from '@/shared/components/layout/ListToolbar'
+import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { RowActions } from '@/shared/components/ui/RowActions'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import {
   QuickSection,
@@ -12,6 +14,7 @@ import {
   QuickMetaTile,
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
+import { useListControls } from '@/shared/hooks/useListControls'
 import { useLocationsList } from '../hooks/use-locations'
 import type { LocationRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
@@ -47,12 +50,12 @@ function LocationQuickContent({ loc }: { loc: LocationRow }) {
 export function LocationsListPage() {
   const navigate = useNavigate()
   const { openPanel } = useQuickOverview()
-  const { data, isLoading, isError, error, refetch } = useLocationsList(true)
-  const [q, setQ] = useState('')
+  const { data, isLoading, isFetching, isError, error, refetch } = useLocationsList(true)
+  const controls = useListControls({ filterDefaults: {} })
   const items = data?.items ?? []
 
   const filtered = useMemo(() => {
-    const s = q.trim().toLowerCase()
+    const s = controls.debouncedSearch.trim().toLowerCase()
     if (!s) return items
     return items.filter(
       (l) =>
@@ -60,7 +63,7 @@ export function LocationsListPage() {
         l.city.toLowerCase().includes(s) ||
         l.country.toLowerCase().includes(s),
     )
-  }, [items, q])
+  }, [items, controls.debouncedSearch])
 
   const active = items.filter((l) => !l.is_archived).length
   const archived = items.filter((l) => l.is_archived).length
@@ -83,7 +86,6 @@ export function LocationsListPage() {
     })
   }
 
-  if (isLoading) return <PageLoadingSkeleton />
   if (isError) {
     return <ErrorState description={(error as Error).message} onRetry={() => void refetch()} />
   }
@@ -97,26 +99,13 @@ export function LocationsListPage() {
             Manage office locations for the organization
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="relative">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
-              search
-            </span>
-            <input
-              className="w-[220px] pl-9 pr-4 py-2.5 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm focus:outline-none focus:border-secondary shadow-sm"
-              placeholder="Filter by name or city..."
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-            />
-          </div>
-          <Button
-            variant="primary"
-            leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
-            onClick={() => navigate({ to: '/admin/settings/offices/new' })}
-          >
-            Add Location
-          </Button>
-        </div>
+        <Button
+          variant="primary"
+          leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
+          onClick={() => navigate({ to: '/admin/settings/offices/new' })}
+        >
+          Add Location
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -133,7 +122,16 @@ export function LocationsListPage() {
         ))}
       </div>
 
-      {filtered.length === 0 ? (
+      <ListToolbar
+        search={controls.search}
+        onSearchChange={controls.setSearch}
+        searchPlaceholder="Filter by name or city..."
+        filtersActive={controls.anyActive}
+        onResetFilters={controls.resetAll}
+        onRefresh={() => void refetch()}
+      />
+
+      {filtered.length === 0 && !isLoading ? (
         <EmptyState
           title="No locations"
           description="Add an office location to configure attendance radius, timezone, and payroll region."
@@ -141,7 +139,12 @@ export function LocationsListPage() {
           onAction={() => navigate({ to: '/admin/settings/offices/new' })}
         />
       ) : (
-        <div className="bv-surface overflow-hidden">
+        <div className="bv-surface overflow-hidden relative">
+          {(isLoading || isFetching) && (
+            <div className="absolute inset-0 z-10 bg-surface-container-lowest/70 backdrop-blur-[1px]">
+              <TableSkeleton rows={5} />
+            </div>
+          )}
           <table className="w-full text-left">
             <thead>
               <tr className="bg-surface-container-low border-b border-outline-variant">
@@ -171,23 +174,37 @@ export function LocationsListPage() {
                   <td className="px-5 py-4">
                     <span
                       className={cn(
-                        'px-2.5 py-0.5 rounded-full text-[10px] font-bold',
-                        loc.is_archived
-                          ? 'bg-surface-container text-on-surface-variant'
-                          : 'bg-secondary/15 text-secondary',
+                        'status-badge',
+                        loc.is_archived ? 'status-neutral' : 'status-success',
                       )}
                     >
                       {loc.is_archived ? 'ARCHIVED' : 'ACTIVE'}
                     </span>
                   </td>
                   <td className="px-5 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                    <Link
-                      to="/admin/settings/locations/$locationId"
-                      params={{ locationId: String(loc.id) }}
-                      className="text-secondary text-sm font-medium hover:underline"
-                    >
-                      View
-                    </Link>
+                    <div className="flex justify-end">
+                      <RowActions
+                        label={`Actions for ${loc.name}`}
+                        actions={[
+                          {
+                            id: 'overview',
+                            label: 'Quick view',
+                            icon: 'visibility',
+                            onClick: () => openLocationOverview(loc),
+                          },
+                          {
+                            id: 'details',
+                            label: 'View details',
+                            icon: 'description',
+                            onClick: () =>
+                              navigate({
+                                to: '/admin/settings/locations/$locationId',
+                                params: { locationId: String(loc.id) },
+                              }),
+                          },
+                        ]}
+                      />
+                    </div>
                   </td>
                 </tr>
               ))}
