@@ -4,11 +4,49 @@ import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import {
+  QuickSection,
+  QuickStat,
+  QuickStatGrid,
+  QuickMetaTile,
+  QuickRelatedRow,
+} from '@/shared/components/layout/QuickOverviewParts'
 import { useLocationsList } from '../hooks/use-locations'
+import type { LocationRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
+
+function LocationQuickContent({ loc }: { loc: LocationRow }) {
+  return (
+    <>
+      <QuickSection title="Overview">
+        <QuickStatGrid>
+          <QuickStat icon="public" value={loc.country} label="Country" />
+          <QuickStat icon="location_city" value={loc.city} label="City" />
+          <QuickStat icon="schedule" value={loc.timezone} label="Timezone" />
+        </QuickStatGrid>
+      </QuickSection>
+      <QuickSection title="Details">
+        <div className="grid grid-cols-2 gap-3">
+          <QuickMetaTile icon="payments" label="Currency" value={loc.currency} />
+          <QuickMetaTile
+            icon="flag"
+            label="Status"
+            value={loc.is_archived ? 'Archived' : 'Active'}
+          />
+        </div>
+      </QuickSection>
+      <QuickSection title="Identity">
+        <QuickRelatedRow icon="apartment" label="Name" value={loc.name} />
+        <QuickRelatedRow icon="tag" label="ID" value={String(loc.id)} />
+      </QuickSection>
+    </>
+  )
+}
 
 export function LocationsListPage() {
   const navigate = useNavigate()
+  const { openPanel } = useQuickOverview()
   const { data, isLoading, isError, error, refetch } = useLocationsList(true)
   const [q, setQ] = useState('')
   const items = data?.items ?? []
@@ -26,6 +64,24 @@ export function LocationsListPage() {
 
   const active = items.filter((l) => !l.is_archived).length
   const archived = items.filter((l) => l.is_archived).length
+
+  const openLocationOverview = (loc: LocationRow) => {
+    openPanel({
+      title: loc.name,
+      subtitle: `${loc.city}, ${loc.country}`,
+      icon: 'location_on',
+      status: loc.is_archived ? 'Archived' : 'Active',
+      statusDotClass: loc.is_archived ? 'bg-slate-400' : 'bg-emerald-500',
+      content: <LocationQuickContent loc={loc} />,
+      fullRecordLabel: 'Open full record',
+      onOpenFull: () =>
+        navigate({
+          to: '/admin/settings/locations/$locationId',
+          params: { locationId: String(loc.id) },
+        }),
+      widthClass: 'max-w-[520px]',
+    })
+  }
 
   if (isLoading) return <PageLoadingSkeleton />
   if (isError) {
@@ -104,12 +160,7 @@ export function LocationsListPage() {
                 <tr
                   key={loc.id}
                   className="border-b border-outline-variant last:border-0 bv-row-hover cursor-pointer"
-                  onClick={() =>
-                    navigate({
-                      to: '/admin/settings/locations/$locationId',
-                      params: { locationId: String(loc.id) },
-                    })
-                  }
+                  onClick={() => openLocationOverview(loc)}
                 >
                   <td className="px-5 py-4 font-medium text-on-background">{loc.name}</td>
                   <td className="px-5 py-4 text-body-sm text-on-surface-variant">
@@ -129,12 +180,11 @@ export function LocationsListPage() {
                       {loc.is_archived ? 'ARCHIVED' : 'ACTIVE'}
                     </span>
                   </td>
-                  <td className="px-5 py-4 text-right">
+                  <td className="px-5 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                     <Link
                       to="/admin/settings/locations/$locationId"
                       params={{ locationId: String(loc.id) }}
                       className="text-secondary text-sm font-medium hover:underline"
-                      onClick={(e) => e.stopPropagation()}
                     >
                       View
                     </Link>

@@ -3,20 +3,81 @@ import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import {
+  QuickSection,
+  QuickStat,
+  QuickStatGrid,
+  QuickMetaTile,
+  QuickRelatedRow,
+} from '@/shared/components/layout/QuickOverviewParts'
 import { useShiftsList } from '../hooks/use-shifts'
 import { can } from '@/shared/rbac/can'
 import { Action, ResourceName } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ShiftRow = any
+
+function ShiftQuickContent({ s }: { s: ShiftRow }) {
+  return (
+    <>
+      <QuickSection title="Schedule">
+        <QuickStatGrid>
+          <QuickStat
+            icon="schedule"
+            value={`${String(s.start_time).slice(0, 5)}–${String(s.end_time).slice(0, 5)}`}
+            label="Hours"
+          />
+          <QuickStat icon="timer" value={`${s.grace_late_minutes ?? 0}m`} label="Grace" />
+          <QuickStat
+            icon="coffee"
+            value={s.break_duration_minutes != null ? `${s.break_duration_minutes}m` : '—'}
+            label="Break"
+          />
+        </QuickStatGrid>
+      </QuickSection>
+      <QuickSection title="Flags">
+        <div className="grid grid-cols-2 gap-3">
+          <QuickMetaTile icon="nights_stay" label="Overnight" value={s.is_overnight ? 'Yes' : 'No'} />
+          <QuickMetaTile icon="more_time" label="Flexible end" value={s.flexible_end ? 'Yes' : 'No'} />
+        </div>
+      </QuickSection>
+      <QuickSection title="Identity">
+        <QuickRelatedRow icon="badge" label="Name" value={s.name} />
+        <QuickRelatedRow icon="tag" label="ID" value={String(s.id)} />
+      </QuickSection>
+    </>
+  )
+}
+
 export function ShiftsListPage() {
   const navigate = useNavigate()
+  const { openPanel } = useQuickOverview()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const base = pathname.startsWith('/workforce') ? '/workforce/shifts' : '/admin/settings/shifts'
-  // can() takes a single params object — NOT (action, resource)
   const canCreate = can({ action: Action.CREATE, resource: ResourceName.SHIFT })
 
   const { data, isLoading, isError, error, refetch } = useShiftsList(true)
   const items = data?.items ?? []
+
+  const openShiftOverview = (s: ShiftRow) => {
+    openPanel({
+      title: s.name,
+      subtitle: `${String(s.start_time).slice(0, 5)} – ${String(s.end_time).slice(0, 5)}`,
+      icon: 'schedule',
+      status: s.is_archived ? 'Archived' : 'Active',
+      statusDotClass: s.is_archived ? 'bg-slate-400' : 'bg-emerald-500',
+      content: <ShiftQuickContent s={s} />,
+      fullRecordLabel: 'Open full record',
+      onOpenFull: () =>
+        navigate({
+          to: `${base}/$shiftId` as never,
+          params: { shiftId: String(s.id) } as never,
+        }),
+      widthClass: 'max-w-[520px]',
+    })
+  }
 
   if (isLoading) return <PageLoadingSkeleton />
   if (isError) {
@@ -57,12 +118,7 @@ export function ShiftsListPage() {
             <button
               key={s.id}
               type="button"
-              onClick={() =>
-                navigate({
-                  to: `${base}/$shiftId` as never,
-                  params: { shiftId: String(s.id) } as never,
-                })
-              }
+              onClick={() => openShiftOverview(s)}
               className="text-left bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm card-hover cursor-pointer"
             >
               <div className="flex items-start justify-between gap-2">

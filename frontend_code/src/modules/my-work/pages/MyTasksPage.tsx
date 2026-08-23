@@ -2,6 +2,14 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import {
+  QuickSection,
+  QuickStat,
+  QuickStatGrid,
+  QuickMetaTile,
+  QuickRelatedRow,
+} from '@/shared/components/layout/QuickOverviewParts'
 import { myTasks } from '../data/mock'
 import type { MyTask } from '../types'
 import { cn } from '@/shared/lib/cn'
@@ -23,8 +31,33 @@ const statusDot: Record<string, string> = {
 
 type TaskFilter = 'open' | 'inProgress' | 'high' | null
 
+function TaskQuickContent({ task }: { task: MyTask }) {
+  return (
+    <>
+      <QuickSection title="Status">
+        <QuickStatGrid>
+          <QuickStat icon="flag" value={task.status} label="Status" />
+          <QuickStat icon="priority_high" value={task.priority} label="Priority" />
+          <QuickStat icon="event" value={task.dueDate} label="Due" />
+        </QuickStatGrid>
+      </QuickSection>
+      <QuickSection title="Details">
+        <div className="grid grid-cols-2 gap-3">
+          <QuickMetaTile icon="folder" label="Project" value={task.project ?? '—'} />
+          <QuickMetaTile icon="timer" label="Estimate" value={task.estimatedHours ?? '—'} />
+        </div>
+      </QuickSection>
+      <QuickSection title="Task">
+        <QuickRelatedRow icon="task_alt" label="Name" value={task.name} />
+        <QuickRelatedRow icon="tag" label="ID" value={task.id} />
+      </QuickSection>
+    </>
+  )
+}
+
 export function MyTasksPage() {
   const navigate = useNavigate()
+  const { openPanel } = useQuickOverview()
   const [filter, setFilter] = useState<TaskFilter>(null)
 
   const open = myTasks.filter((t) => t.status !== 'Completed').length
@@ -38,6 +71,20 @@ export function MyTasksPage() {
       return myTasks.filter((t) => t.priority === 'High' || t.priority === 'Critical')
     return myTasks
   }, [filter])
+
+  const openTaskOverview = (task: MyTask) => {
+    openPanel({
+      title: task.name,
+      subtitle: [task.project, task.id].filter(Boolean).join(' · '),
+      icon: 'task_alt',
+      status: task.status,
+      statusDotClass: statusDot[task.status] ?? 'bg-outline',
+      content: <TaskQuickContent task={task} />,
+      fullRecordLabel: 'Open full record',
+      onOpenFull: () => navigate({ to: '/my-work/tasks/$taskId', params: { taskId: task.id } }),
+      widthClass: 'max-w-[520px]',
+    })
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -138,9 +185,7 @@ export function MyTasksPage() {
                 <tr
                   key={task.id}
                   className="zebra-row cursor-pointer"
-                  onClick={() =>
-                    navigate({ to: '/my-work/tasks/$taskId', params: { taskId: task.id } })
-                  }
+                  onClick={() => openTaskOverview(task)}
                 >
                   <td className="px-6 py-4 text-label-md font-semibold text-secondary">{task.name}</td>
                   <td className="px-6 py-4 text-label-md text-on-surface-variant">{task.project ?? '—'}</td>
