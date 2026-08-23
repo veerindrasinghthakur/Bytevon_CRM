@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { useClientsQuery } from './use-sales'
@@ -14,19 +15,21 @@ export function useClientsList() {
   })
 
   const { data, isLoading, isError, refetch, isFetching } = useClientsQuery({
-    search: controls.search || undefined,
+    search: controls.debouncedSearch || undefined,
     status: controls.filters.status,
     type: controls.filters.type,
   })
 
-  const filtered = data?.items ?? []
-  const metrics = data?.metrics ?? []
+  const filtered = useMemo(() => data?.items ?? [], [data?.items])
+  const metrics = useMemo(() => data?.metrics ?? [], [data?.metrics])
   const totalCount = data?.total ?? 0
 
   const selection = useListSelection({
     items: filtered,
     getId: (c) => c.id,
   })
+
+  const pageItems = useMemo(() => controls.pageItems(filtered), [controls, filtered])
 
   const startLongPress = (id: string) => selection.onRowPressStart(id)
   /** Short press runs onShortPress (e.g. open shared QuickOverview) */
@@ -54,7 +57,7 @@ export function useClientsList() {
     page: controls.page,
     setPage: controls.setPage,
     pageSize: controls.pageSize,
-    pageItems: controls.pageItems(filtered),
+    pageItems,
     selectionMode: selection.selectionMode,
     selectedIds: selection.selectedIds,
     allFilteredSelected: selection.allFilteredSelected,

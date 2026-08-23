@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useRef } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { ExportButton } from '@/shared/components/export/ExportButton'
@@ -95,6 +96,21 @@ export function AuditLogsPage() {
       return true
     })
   }, [search, actionFilter, moduleFilter])
+
+  const parentRef = useRef<HTMLDivElement>(null)
+
+  const rowVirtualizer = useVirtualizer({
+    count: filtered.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 64,
+    overscan: 5,
+  })
+
+  const virtualRows = rowVirtualizer.getVirtualItems()
+  const totalSize = rowVirtualizer.getTotalSize()
+  const paddingTop = virtualRows.length > 0 ? virtualRows[0].start : 0
+  const paddingBottom =
+    virtualRows.length > 0 ? totalSize - virtualRows[virtualRows.length - 1].end : 0
 
   const selection = useListSelection({
     items: filtered,
@@ -224,10 +240,10 @@ export function AuditLogsPage() {
       )}
 
       <section className="bv-surface overflow-hidden">
-        <div className="overflow-x-auto">
+        <div ref={parentRef} className="overflow-x-auto max-h-[640px] overflow-y-auto">
           <table className="w-full text-left border-collapse min-w-[960px]">
-            <thead>
-              <tr className="bg-surface-container-low">
+            <thead className="sticky top-0 z-10 bg-surface-container-low shadow-sm">
+              <tr>
                 <th className="px-3 py-3 w-12 text-center">
                   {selection.selectionMode ? (
                     <input
@@ -251,7 +267,13 @@ export function AuditLogsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
-              {filtered.map((log) => {
+              {paddingTop > 0 && (
+                <tr>
+                  <td colSpan={8} style={{ height: `${paddingTop}px` }} />
+                </tr>
+              )}
+              {virtualRows.map((virtualRow) => {
+                const log = filtered[virtualRow.index]
                 const actionKey =
                   Object.keys(actionBadge).find((k) => log.action.toLowerCase().includes(k.toLowerCase())) ??
                   'Update'
@@ -323,6 +345,11 @@ export function AuditLogsPage() {
                   </tr>
                 )
               })}
+              {paddingBottom > 0 && (
+                <tr>
+                  <td colSpan={8} style={{ height: `${paddingBottom}px` }} />
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

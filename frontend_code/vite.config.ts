@@ -13,4 +13,21 @@ export default defineConfig({
     port: 5173,
     host: true,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'tanstack-vendor': [
+            '@tanstack/react-query',
+            '@tanstack/react-router',
+            '@tanstack/react-table',
+            '@tanstack/react-virtual',
+          ],
+          'form-vendor': ['react-hook-form', '@hookform/resolvers', 'zod'],
+          'ui-vendor': ['clsx', 'tailwind-merge'],
+          'http-vendor': ['axios'],
+        },
+      },
+    },
+  },
 })

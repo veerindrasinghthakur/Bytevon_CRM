@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 import {
   getProjects,
   getProjectById,
@@ -11,14 +12,14 @@ type ProjectListCache = { items: ProjectListItem[]; total: number }
 
 export function useProjects(filters?: { search?: string; status?: string }) {
   return useQuery({
-    queryKey: ['projects', 'list', filters ?? {}],
+    queryKey: queryKeys.projects.list(filters),
     queryFn: () => getProjects(filters),
   })
 }
 
 export function useProject(id: number | undefined) {
   return useQuery({
-    queryKey: ['projects', 'detail', id],
+    queryKey: queryKeys.projects.detail(id!),
     queryFn: () => getProjectById(id!),
     enabled: id != null && !Number.isNaN(id),
   })
@@ -29,9 +30,9 @@ export function useCreateProject() {
   return useMutation({
     mutationFn: (input: CreateProjectInput) => createProject(input),
     onMutate: async (input) => {
-      await queryClient.cancelQueries({ queryKey: ['projects', 'list'] })
+      await queryClient.cancelQueries({ queryKey: queryKeys.projects.all })
       const previous = queryClient.getQueriesData<ProjectListCache>({
-        queryKey: ['projects', 'list'],
+        queryKey: queryKeys.projects.all,
       })
 
       const optimistic: ProjectDetail = {
@@ -51,7 +52,7 @@ export function useCreateProject() {
         updatedAt: new Date().toISOString(),
       }
 
-      queryClient.setQueriesData<ProjectListCache>({ queryKey: ['projects', 'list'] }, (old) => {
+      queryClient.setQueriesData<ProjectListCache>({ queryKey: queryKeys.projects.all }, (old) => {
         if (!old) return { items: [optimistic], total: 1 }
         return { items: [optimistic, ...old.items], total: old.total + 1 }
       })
@@ -64,17 +65,17 @@ export function useCreateProject() {
       })
     },
     onSuccess: (created, _input, ctx) => {
-      queryClient.setQueriesData<ProjectListCache>({ queryKey: ['projects', 'list'] }, (old) => {
+      queryClient.setQueriesData<ProjectListCache>({ queryKey: queryKeys.projects.all }, (old) => {
         if (!old) return { items: [created], total: 1 }
         return {
           items: old.items.map((p) => (p.id === ctx?.optimisticId ? created : p)),
           total: old.total,
         }
       })
-      queryClient.setQueryData(['projects', 'detail', created.id], created)
+      queryClient.setQueryData(queryKeys.projects.detail(created.id), created)
     },
     onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ['projects'] })
+      invalidate.projects(queryClient)
     },
   })
 }
@@ -90,14 +91,14 @@ export function useUpdateProject() {
       patch: Parameters<typeof updateProject>[1]
     }) => updateProject(id, patch),
     onMutate: async ({ id, patch }) => {
-      await queryClient.cancelQueries({ queryKey: ['projects'] })
+      await queryClient.cancelQueries({ queryKey: queryKeys.projects.all })
 
       const previousLists = queryClient.getQueriesData<ProjectListCache>({
-        queryKey: ['projects', 'list'],
+        queryKey: queryKeys.projects.all,
       })
-      const previousDetail = queryClient.getQueryData<ProjectDetail>(['projects', 'detail', id])
+      const previousDetail = queryClient.getQueryData<ProjectDetail>(queryKeys.projects.detail(id))
 
-      queryClient.setQueriesData<ProjectListCache>({ queryKey: ['projects', 'list'] }, (old) => {
+      queryClient.setQueriesData<ProjectListCache>({ queryKey: queryKeys.projects.all }, (old) => {
         if (!old) return old
         return {
           ...old,
@@ -106,7 +107,7 @@ export function useUpdateProject() {
       })
 
       if (previousDetail) {
-        queryClient.setQueryData(['projects', 'detail', id], {
+        queryClient.setQueryData(queryKeys.projects.detail(id), {
           ...previousDetail,
           ...patch,
           updatedAt: new Date().toISOString(),
@@ -118,12 +119,12 @@ export function useUpdateProject() {
     onError: (_err, _vars, ctx) => {
       ctx?.previousLists.forEach(([key, data]) => queryClient.setQueryData(key, data))
       if (ctx?.previousDetail) {
-        queryClient.setQueryData(['projects', 'detail', ctx.id], ctx.previousDetail)
+        queryClient.setQueryData(queryKeys.projects.detail(ctx.id), ctx.previousDetail)
       }
     },
     onSuccess: (updated) => {
-      queryClient.setQueryData(['projects', 'detail', updated.id], updated)
-      queryClient.setQueriesData<ProjectListCache>({ queryKey: ['projects', 'list'] }, (old) => {
+      queryClient.setQueryData(queryKeys.projects.detail(updated.id), updated)
+      queryClient.setQueriesData<ProjectListCache>({ queryKey: queryKeys.projects.all }, (old) => {
         if (!old) return old
         return {
           ...old,
@@ -132,7 +133,7 @@ export function useUpdateProject() {
       })
     },
     onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ['projects'] })
+      invalidate.projects(queryClient)
     },
   })
 }

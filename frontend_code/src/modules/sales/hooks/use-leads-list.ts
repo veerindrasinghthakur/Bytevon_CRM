@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { useLeadsQuery } from './use-sales'
@@ -16,21 +17,23 @@ export function useLeadsList() {
   })
 
   const { data, isLoading, isError, refetch, isFetching } = useLeadsQuery({
-    search: controls.search || undefined,
+    search: controls.debouncedSearch || undefined,
     status: controls.filters.status,
     stage: controls.filters.stage,
     priority: controls.filters.priority,
     source: controls.filters.source,
   })
 
-  const filtered = data?.items ?? []
-  const metrics = data?.metrics ?? []
+  const filtered = useMemo(() => data?.items ?? [], [data?.items])
+  const metrics = useMemo(() => data?.metrics ?? [], [data?.metrics])
   const totalCount = data?.total ?? 0
 
   const selection = useListSelection({
     items: filtered,
     getId: (l) => l.id,
   })
+
+  const pageItems = useMemo(() => controls.pageItems(filtered), [controls, filtered])
 
   const startLongPress = (id: string) => selection.onRowPressStart(id)
   const endLongPress = (lead: Lead, onShortPress?: (l: Lead) => void) => {
@@ -73,7 +76,7 @@ export function useLeadsList() {
     page: controls.page,
     setPage: controls.setPage,
     pageSize: controls.pageSize,
-    pageItems: controls.pageItems(filtered),
+    pageItems,
     selectionMode: selection.selectionMode,
     selectedIds: selection.selectedIds,
     allFilteredSelected: selection.allFilteredSelected,

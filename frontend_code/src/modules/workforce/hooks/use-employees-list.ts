@@ -3,11 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { listEmployments } from '../api/employment'
 import { listDepartments } from '../api/departments'
-import { computeEmploymentListMetrics } from '@/shared/compute/workforce-metrics'
-import { DEPARTMENTS_LIST_KEY } from './use-departments-list'
-
-/** Shared query key — also invalidated by department mutations */
-export const EMPLOYEES_LIST_KEY = ['workforce', 'employees', 'list'] as const
+import { queryKeys } from '@/shared/lib/query-keys'
 
 const FILTER_DEFAULTS = {
   dept: 'all',
@@ -21,12 +17,12 @@ export function useEmployeesList() {
   })
 
   const employeesQuery = useQuery({
-    queryKey: [...EMPLOYEES_LIST_KEY],
+    queryKey: queryKeys.workforce.employees.list({}),
     queryFn: () => listEmployments({}),
   })
 
   const departmentsQuery = useQuery({
-    queryKey: [...DEPARTMENTS_LIST_KEY, { includeArchived: false }],
+    queryKey: queryKeys.workforce.departments.list({ includeArchived: false }),
     queryFn: () => listDepartments({}),
   })
 
@@ -39,7 +35,7 @@ export function useEmployeesList() {
   const metrics = useMemo(() => computeEmploymentListMetrics(items), [items])
 
   const filtered = useMemo(() => {
-    const q = controls.search.toLowerCase().trim()
+    const q = controls.debouncedSearch.toLowerCase().trim()
     return items.filter((e) => {
       if (q) {
         const match =
@@ -55,7 +51,7 @@ export function useEmployeesList() {
       if (controls.filters.type !== 'all' && e.employment_type !== controls.filters.type) return false
       return true
     })
-  }, [items, controls.search, controls.filters.dept, controls.filters.state, controls.filters.type])
+  }, [items, controls.debouncedSearch, controls.filters.dept, controls.filters.state, controls.filters.type])
 
   const states = useMemo(
     () => Array.from(new Set(items.map((e) => e.current_state))).sort(),
@@ -65,6 +61,8 @@ export function useEmployeesList() {
     () => Array.from(new Set(items.map((e) => e.employment_type))).sort(),
     [items],
   )
+
+  const pageItems = useMemo(() => controls.pageItems(filtered), [controls, filtered])
 
   return {
     items,
@@ -89,7 +87,7 @@ export function useEmployeesList() {
     page: controls.page,
     setPage: controls.setPage,
     pageSize: controls.pageSize,
-    pageItems: controls.pageItems(filtered),
+    pageItems,
     reload: () => void employeesQuery.refetch(),
     refetch: employeesQuery.refetch,
   }

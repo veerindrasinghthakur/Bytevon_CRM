@@ -11,7 +11,7 @@ export function HeaderAttendanceSummary() {
 
   return (
     <Link
-      to="/my-work/attendance/mark"
+      to={"/my-work/attendance/mark" as any}
       title="Open attendance — work hours exclude breaks"
       className={cn(
         'hidden sm:flex items-center gap-2 lg:gap-3 select-none',

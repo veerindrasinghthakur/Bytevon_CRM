@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { listDepartments } from '../api/departments'
 import { computeDepartmentListMetrics } from '@/shared/compute/workforce-metrics'
+import { queryKeys } from '@/shared/lib/query-keys'
 
 export const DEPARTMENTS_LIST_KEY = ['workforce', 'departments', 'list'] as const
 
@@ -14,7 +15,7 @@ export function useDepartmentsList() {
   })
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
-    queryKey: [...DEPARTMENTS_LIST_KEY, { includeArchived: true }],
+    queryKey: queryKeys.workforce.departments.list({ includeArchived: true }),
     queryFn: () => listDepartments({ includeArchived: true }),
   })
 
@@ -24,7 +25,7 @@ export function useDepartmentsList() {
 
   const filtered = useMemo(() => {
     return items.filter((d) => {
-      const q = controls.search.toLowerCase()
+      const q = controls.debouncedSearch.toLowerCase().trim()
       const matchQ =
         !q ||
         d.name.toLowerCase().includes(q) ||
@@ -33,9 +34,9 @@ export function useDepartmentsList() {
       const matchS = controls.filters.status === 'All' || d.status === controls.filters.status
       return matchQ && matchS
     })
-  }, [items, controls.search, controls.filters.status])
+  }, [items, controls.debouncedSearch, controls.filters.status])
 
-  const pageItems = controls.pageItems(filtered)
+  const pageItems = useMemo(() => controls.pageItems(filtered), [controls, filtered])
 
   return {
     items,

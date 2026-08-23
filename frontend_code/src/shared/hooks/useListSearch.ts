@@ -1,14 +1,18 @@
 import { useCallback, useState } from 'react'
+import { useDebounce } from './useDebounce'
 
 export interface UseListSearchOptions {
   /** Initial search string */
   initial?: string
+  /** Debounce delay in ms (default 300) */
+  debounceMs?: number
   /** Called when search changes (e.g. reset page to 1) */
   onChange?: (value: string) => void
 }
 
 export interface UseListSearchResult {
   search: string
+  debouncedSearch: string
   setSearch: (value: string) => void
   clearSearch: () => void
   hasSearch: boolean
@@ -19,8 +23,9 @@ export interface UseListSearchResult {
  * Pair with ListToolbar (`search` + `onSearchChange`).
  */
 export function useListSearch(options: UseListSearchOptions = {}): UseListSearchResult {
-  const { initial = '', onChange } = options
+  const { initial = '', debounceMs = 300, onChange } = options
   const [search, setSearchState] = useState(initial)
+  const debouncedSearch = useDebounce(search, debounceMs)
 
   const setSearch = useCallback(
     (value: string) => {
@@ -37,6 +42,7 @@ export function useListSearch(options: UseListSearchOptions = {}): UseListSearch
 
   return {
     search,
+    debouncedSearch,
     setSearch,
     clearSearch,
     hasSearch: Boolean(search.trim()),

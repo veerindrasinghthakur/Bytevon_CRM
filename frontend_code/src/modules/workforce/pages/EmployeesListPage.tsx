@@ -1,3 +1,5 @@
+import { useRef } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
@@ -120,6 +122,21 @@ export function EmployeesListPage() {
     setPage,
     reload,
   } = useEmployeesList()
+
+  const parentRef = useRef<HTMLDivElement>(null)
+
+  const rowVirtualizer = useVirtualizer({
+    count: pageItems.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 72,
+    overscan: 5,
+  })
+
+  const virtualRows = rowVirtualizer.getVirtualItems()
+  const totalSize = rowVirtualizer.getTotalSize()
+  const paddingTop = virtualRows.length > 0 ? virtualRows[0].start : 0
+  const paddingBottom =
+    virtualRows.length > 0 ? totalSize - virtualRows[virtualRows.length - 1].end : 0
 
   const selection = useListSelection({
     items: pageItems,
@@ -266,10 +283,10 @@ export function EmployeesListPage() {
             <p className="text-body-sm text-on-surface-variant">Try adjusting filters or add a new team member.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div ref={parentRef} className="overflow-x-auto max-h-[640px] overflow-y-auto">
             <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-surface-container-low border-b border-outline-variant">
+              <thead className="sticky top-0 z-10 bg-surface-container-low border-b border-outline-variant shadow-sm">
+                <tr>
                   <th className="px-3 py-3 w-12 text-center">
                     {selection.selectionMode ? (
                       <input
@@ -293,7 +310,13 @@ export function EmployeesListPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/30">
-                {pageItems.map((emp) => {
+                {paddingTop > 0 && (
+                  <tr>
+                    <td colSpan={8} style={{ height: `${paddingTop}px` }} />
+                  </tr>
+                )}
+                {virtualRows.map((virtualRow) => {
+                  const emp = pageItems[virtualRow.index]
                   const sid = String(emp.id)
                   const isSelected = selection.isSelected(sid)
                   return (
@@ -382,6 +405,11 @@ export function EmployeesListPage() {
                     </tr>
                   )
                 })}
+                {paddingBottom > 0 && (
+                  <tr>
+                    <td colSpan={8} style={{ height: `${paddingBottom}px` }} />
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

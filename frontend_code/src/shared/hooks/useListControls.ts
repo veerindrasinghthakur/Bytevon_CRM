@@ -49,6 +49,7 @@ export function useListControls<T extends FilterValues>(options: UseListControls
   return {
     // search
     search: search.search,
+    debouncedSearch: search.debouncedSearch,
     setSearch: search.setSearch,
     clearSearch: search.clearSearch,
     hasSearch: search.hasSearch,

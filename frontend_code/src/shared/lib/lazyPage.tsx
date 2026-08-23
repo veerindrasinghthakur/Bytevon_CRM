@@ -9,16 +9,17 @@ export function lazyPage<
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   M extends Record<string, ComponentType<any>>,
   K extends keyof M & string,
->(factory: () => Promise<M>, exportName: K): ComponentType {
+>(factory: () => Promise<M>, exportName: K) {
   const Lazy = lazy(async () => {
     const mod = await factory()
-    return { default: mod[exportName] }
+    return { default: mod[exportName] as ComponentType<any> }
   })
 
-  function LazyPageRoute() {
+  function LazyPageRoute(props: Record<string, unknown>) {
     return (
       <Suspense fallback={<PageLoadingSkeleton />}>
-        <Lazy />
+        {/* @ts-expect-error - dynamic router component prop forwarding */}
+        <Lazy {...props} />
       </Suspense>
     )
   }

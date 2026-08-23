@@ -12,7 +12,7 @@ export function HeaderBreakChip({ active }: HeaderBreakChipProps) {
 
   return (
     <Link
-      to="/my-work/break"
+      to={"/my-work/break" as any}
       title={isOnBreak ? `On break · ${runningLabel}` : 'Break'}
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-label-sm font-semibold',

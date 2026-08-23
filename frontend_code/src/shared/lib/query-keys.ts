@@ -48,6 +48,7 @@ export const queryKeys = {
   },
   projects: {
     all: ['projects'] as const,
+    listPrefix: () => ['projects', 'list'] as const,
     list: (filters?: unknown) => ['projects', 'list', filters ?? {}] as const,
     detail: (id: number) => ['projects', 'detail', id] as const,
   },
@@ -65,6 +66,9 @@ export const queryKeys = {
       all: ['sales', 'clients'] as const,
       list: (filters?: unknown) => [...queryKeys.sales.clients.all, 'list', filters ?? {}] as const,
     },
+    caseStudies: () => ['sales', 'case-studies'] as const,
+    activities: () => ['sales', 'activities'] as const,
+    dashboardMetrics: () => ['sales', 'dashboard-metrics'] as const,
   },
   payroll: {
     all: ['payroll'] as const,

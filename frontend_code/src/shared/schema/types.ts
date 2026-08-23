@@ -16,6 +16,19 @@ import type {
   WorkMode,
 } from './enums'
 
+export type {
+  Action,
+  AttendanceStatus,
+  EmploymentState,
+  EmploymentType,
+  LeaveType,
+  PayrollStatus,
+  PunchType,
+  SalaryItemType,
+  ScopeName,
+  WorkMode,
+}
+
 export interface OrganizationSettings {
   id: number
   company_name: string

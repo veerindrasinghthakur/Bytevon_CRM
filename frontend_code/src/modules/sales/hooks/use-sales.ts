@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 import {
   listLeads,
   getLeadById,
@@ -22,14 +23,14 @@ export function useLeadsQuery(filters?: {
   source?: string
 }) {
   return useQuery({
-    queryKey: ['sales', 'leads', filters ?? {}],
+    queryKey: queryKeys.sales.leads.list(filters),
     queryFn: () => listLeads(filters),
   })
 }
 
 export function useLead(id: string | undefined) {
   return useQuery({
-    queryKey: ['sales', 'leads', 'detail', id],
+    queryKey: [...queryKeys.sales.leads.all, 'detail', id],
     queryFn: () => getLeadById(id!),
     enabled: Boolean(id),
   })
@@ -39,7 +40,7 @@ export function useCreateLead() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: createLead,
-    onSettled: () => void qc.invalidateQueries({ queryKey: ['sales', 'leads'] }),
+    onSettled: () => invalidate.salesLeads(qc),
   })
 }
 
@@ -47,23 +48,49 @@ export function useUpdateLead() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: Partial<Lead> }) => updateLead(id, patch),
-    onSuccess: (row) => {
-      qc.setQueryData(['sales', 'leads', 'detail', row.id], row)
+    onMutate: async ({ id, patch }) => {
+      await qc.cancelQueries({ queryKey: queryKeys.sales.leads.all })
+      const previousLead = qc.getQueryData<Lead>([...queryKeys.sales.leads.all, 'detail', id])
+      if (previousLead) {
+        qc.setQueryData([...queryKeys.sales.leads.all, 'detail', id], {
+          ...previousLead,
+          ...patch,
+        })
+      }
+      return { previousLead }
     },
-    onSettled: () => void qc.invalidateQueries({ queryKey: ['sales', 'leads'] }),
+    onError: (_err, { id }, context) => {
+      if (context?.previousLead) {
+        qc.setQueryData([...queryKeys.sales.leads.all, 'detail', id], context.previousLead)
+      }
+    },
+    onSettled: () => invalidate.salesLeads(qc),
   })
+}
+
+export function prefetchLead(qc: ReturnType<typeof useQueryClient>, id: string) {
+  if (!id) return
+  return qc.prefetchQuery({
+    queryKey: [...queryKeys.sales.leads.all, 'detail', id],
+    queryFn: () => getLeadById(id),
+  })
+}
+
+export function usePrefetchLead() {
+  const qc = useQueryClient()
+  return (id: string) => prefetchLead(qc, id)
 }
 
 export function useClientsQuery(filters?: { search?: string; status?: string; type?: string }) {
   return useQuery({
-    queryKey: ['sales', 'clients', filters ?? {}],
+    queryKey: queryKeys.sales.clients.list(filters),
     queryFn: () => listClients(filters),
   })
 }
 
 export function useClient(id: string | undefined) {
   return useQuery({
-    queryKey: ['sales', 'clients', 'detail', id],
+    queryKey: [...queryKeys.sales.clients.all, 'detail', id],
     queryFn: () => getClientById(id!),
     enabled: Boolean(id),
   })
@@ -73,7 +100,7 @@ export function useCreateClient() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: createClient,
-    onSettled: () => void qc.invalidateQueries({ queryKey: ['sales', 'clients'] }),
+    onSettled: () => invalidate.salesClients(qc),
   })
 }
 
@@ -81,30 +108,56 @@ export function useUpdateClient() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ id, patch }: { id: string; patch: Partial<Client> }) => updateClient(id, patch),
-    onSuccess: (row) => {
-      qc.setQueryData(['sales', 'clients', 'detail', row.id], row)
+    onMutate: async ({ id, patch }) => {
+      await qc.cancelQueries({ queryKey: queryKeys.sales.clients.all })
+      const previousClient = qc.getQueryData<Client>([...queryKeys.sales.clients.all, 'detail', id])
+      if (previousClient) {
+        qc.setQueryData([...queryKeys.sales.clients.all, 'detail', id], {
+          ...previousClient,
+          ...patch,
+        })
+      }
+      return { previousClient }
     },
-    onSettled: () => void qc.invalidateQueries({ queryKey: ['sales', 'clients'] }),
+    onError: (_err, { id }, context) => {
+      if (context?.previousClient) {
+        qc.setQueryData([...queryKeys.sales.clients.all, 'detail', id], context.previousClient)
+      }
+    },
+    onSettled: () => invalidate.salesClients(qc),
   })
+}
+
+export function prefetchClient(qc: ReturnType<typeof useQueryClient>, id: string) {
+  if (!id) return
+  return qc.prefetchQuery({
+    queryKey: [...queryKeys.sales.clients.all, 'detail', id],
+    queryFn: () => getClientById(id),
+  })
+}
+
+export function usePrefetchClient() {
+  const qc = useQueryClient()
+  return (id: string) => prefetchClient(qc, id)
 }
 
 export function useCaseStudies() {
   return useQuery({
-    queryKey: ['sales', 'case-studies'],
+    queryKey: queryKeys.sales.caseStudies(),
     queryFn: listCaseStudies,
   })
 }
 
 export function useSalesActivities() {
   return useQuery({
-    queryKey: ['sales', 'activities'],
+    queryKey: queryKeys.sales.activities(),
     queryFn: listSalesActivities,
   })
 }
 
 export function useSalesDashboardMetrics() {
   return useQuery({
-    queryKey: ['sales', 'dashboard-metrics'],
+    queryKey: queryKeys.sales.dashboardMetrics(),
     queryFn: getDashboardMetrics,
   })
 }

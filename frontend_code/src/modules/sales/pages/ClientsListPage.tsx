@@ -18,6 +18,7 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { ResourceName } from '@/shared/schema'
 import { useClientsList } from '../hooks/use-clients-list'
+import { usePrefetchClient } from '../hooks/use-sales'
 import type { ClientType, Client } from '../types'
 import { cn } from '@/shared/lib/cn'
 
@@ -118,6 +119,8 @@ export function ClientsListPage() {
     clearLongPress,
   } = useClientsList()
 
+  const prefetchClient = usePrefetchClient()
+
   const openFull = (clientId: string) => {
     navigate({ to: '/sales/clients/$clientId', params: { clientId } })
   }
@@ -164,7 +167,7 @@ export function ClientsListPage() {
               variant="primary"
               size="sm"
               leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-              onClick={() => navigate({ to: '/sales/clients/new' })}
+              onClick={() => navigate({ to: '/sales/clients/new', search: {} })}
             >
               New Client
             </Button>
@@ -308,6 +311,7 @@ export function ClientsListPage() {
                         'cursor-pointer group select-none',
                         isSelected ? 'bg-secondary/10' : 'zebra-row',
                       )}
+                      onMouseEnter={() => prefetchClient(client.id)}
                       onMouseDown={() => startLongPress(client.id)}
                       onMouseUp={() => endLongPress(client, openClientOverview)}
                       onMouseLeave={clearLongPress}

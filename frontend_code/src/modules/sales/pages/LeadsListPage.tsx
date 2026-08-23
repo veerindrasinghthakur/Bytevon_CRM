@@ -1,3 +1,5 @@
+import { useRef } from 'react'
+import { useVirtualizer } from '@tanstack/react-virtual'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
@@ -18,6 +20,7 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { ResourceName } from '@/shared/schema'
 import { useLeadsList } from '../hooks/use-leads-list'
+import { usePrefetchLead } from '../hooks/use-sales'
 import { LeadMetricsRow } from '../components/LeadMetricsRow'
 import type { PipelineStage, LeadPriority, RecordStatus, Lead } from '../types'
 import { cn } from '@/shared/lib/cn'
@@ -201,6 +204,22 @@ export function LeadsListPage() {
     priorityFilter !== 'All' ||
     sourceFilter !== 'All'
 
+  const prefetchLead = usePrefetchLead()
+  const parentRef = useRef<HTMLDivElement>(null)
+
+  const rowVirtualizer = useVirtualizer({
+    count: filtered.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 72,
+    overscan: 5,
+  })
+
+  const virtualRows = rowVirtualizer.getVirtualItems()
+  const totalSize = rowVirtualizer.getTotalSize()
+  const paddingTop = virtualRows.length > 0 ? virtualRows[0].start : 0
+  const paddingBottom =
+    virtualRows.length > 0 ? totalSize - virtualRows[virtualRows.length - 1].end : 0
+
   const openLeadOverview = (lead: Lead) => {
     openPanel({
       title: lead.contactName,
@@ -347,10 +366,10 @@ export function LeadsListPage() {
               <TableSkeleton rows={6} />
             </div>
           )}
-          <div className="overflow-x-auto">
+          <div ref={parentRef} className="overflow-x-auto max-h-[640px] overflow-y-auto">
             <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-outline-variant bg-surface-container-low/50">
+              <thead className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container-low/90 backdrop-blur-[2px] shadow-sm">
+                <tr>
                   <th className="px-3 py-3 w-12 text-center">
                     {selectionMode ? (
                       <input
@@ -376,7 +395,13 @@ export function LeadsListPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
-                {filtered.map((lead) => {
+                {paddingTop > 0 && (
+                  <tr>
+                    <td colSpan={9} style={{ height: `${paddingTop}px` }} />
+                  </tr>
+                )}
+                {virtualRows.map((virtualRow) => {
+                  const lead = filtered[virtualRow.index]
                   const dateParts = formatDate(lead.date)
                   const isSelected = selectedIds.has(lead.id)
                   return (
@@ -386,6 +411,7 @@ export function LeadsListPage() {
                         'transition-colors cursor-pointer group select-none',
                         isSelected ? 'bg-secondary/10' : 'hover:bg-surface-container-low/50',
                       )}
+                      onMouseEnter={() => prefetchLead(lead.id)}
                       onMouseDown={() => startLongPress(lead.id)}
                       onMouseUp={() => endLongPress(lead, openLeadOverview)}
                       onMouseLeave={clearLongPress}
@@ -524,6 +550,11 @@ export function LeadsListPage() {
                     </tr>
                   )
                 })}
+                {paddingBottom > 0 && (
+                  <tr>
+                    <td colSpan={9} style={{ height: `${paddingBottom}px` }} />
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
