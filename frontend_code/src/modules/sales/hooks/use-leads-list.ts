@@ -1,22 +1,29 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useListSelection } from '@/shared/hooks/useListSelection'
+import { useListControls } from '@/shared/hooks/useListControls'
 import { useLeadsQuery } from './use-sales'
 import type { Lead, PipelineStage, LeadPriority } from '../types'
 
+const FILTER_DEFAULTS = {
+  status: 'All',
+  stage: 'All',
+  priority: 'All',
+  source: 'All',
+}
+
 export function useLeadsList() {
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('All')
-  const [stageFilter, setStageFilter] = useState('All')
-  const [priorityFilter, setPriorityFilter] = useState('All')
-  const [sourceFilter, setSourceFilter] = useState('All')
   const [quickView, setQuickView] = useState<Lead | null>(null)
 
+  const controls = useListControls({
+    filterDefaults: FILTER_DEFAULTS,
+  })
+
   const { data, isLoading, isError, refetch, isFetching } = useLeadsQuery({
-    search: search || undefined,
-    status: statusFilter,
-    stage: stageFilter,
-    priority: priorityFilter,
-    source: sourceFilter,
+    search: controls.search || undefined,
+    status: controls.filters.status,
+    stage: controls.filters.stage,
+    priority: controls.filters.priority,
+    source: controls.filters.source,
   })
 
   const filtered = data?.items ?? []
@@ -27,14 +34,6 @@ export function useLeadsList() {
     items: filtered,
     getId: (l) => l.id,
   })
-
-  const resetFilters = () => {
-    setSearch('')
-    setStatusFilter('All')
-    setStageFilter('All')
-    setPriorityFilter('All')
-    setSourceFilter('All')
-  }
 
   const startLongPress = (id: string) => selection.onRowPressStart(id)
   const endLongPress = (lead: Lead) => {
@@ -60,19 +59,24 @@ export function useLeadsList() {
     isError,
     refetch,
     isFetching,
-    search,
-    setSearch,
-    statusFilter,
-    setStatusFilter,
-    stageFilter,
-    setStageFilter,
-    priorityFilter,
-    setPriorityFilter,
-    sourceFilter,
-    setSourceFilter,
+    search: controls.search,
+    setSearch: controls.setSearch,
+    statusFilter: controls.filters.status,
+    setStatusFilter: (v: string) => controls.setFilter('status', v),
+    stageFilter: controls.filters.stage,
+    setStageFilter: (v: string) => controls.setFilter('stage', v),
+    priorityFilter: controls.filters.priority,
+    setPriorityFilter: (v: string) => controls.setFilter('priority', v),
+    sourceFilter: controls.filters.source,
+    setSourceFilter: (v: string) => controls.setFilter('source', v),
     stages,
     priorities,
-    resetFilters,
+    resetFilters: controls.resetAll,
+    filtersActive: controls.anyActive,
+    page: controls.page,
+    setPage: controls.setPage,
+    pageSize: controls.pageSize,
+    pageItems: controls.pageItems(filtered),
     quickView,
     setQuickView,
     selectionMode: selection.selectionMode,
