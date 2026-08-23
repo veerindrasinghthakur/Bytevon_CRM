@@ -1,36 +1,35 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { listEmployments, type EmploymentListItem } from '../api/employment'
+import { useCallback, useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { listEmployments } from '../api/employment'
 import { listDepartments } from '../api/departments'
 import { computeEmploymentListMetrics } from '@/shared/compute/workforce-metrics'
+import { DEPARTMENTS_LIST_KEY } from './use-departments-list'
+
+/** Shared query key — also invalidated by department mutations */
+export const EMPLOYEES_LIST_KEY = ['workforce', 'employees', 'list'] as const
 
 export function useEmployeesList() {
   const [search, setSearch] = useState('')
   const [deptFilter, setDeptFilter] = useState('all')
   const [stateFilter, setStateFilter] = useState('all')
   const [typeFilter, setTypeFilter] = useState('all')
-  const [items, setItems] = useState<EmploymentListItem[]>([])
-  const [departments, setDepartments] = useState<{ id: number; name: string }[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    setError(false)
-    try {
-      const [res, depts] = await Promise.all([listEmployments({}), listDepartments({})])
-      setItems(res.items)
-      setDepartments(depts.items.map((d) => ({ id: d.id, name: d.name })))
-    } catch {
-      setError(true)
-      setItems([])
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const employeesQuery = useQuery({
+    queryKey: [...EMPLOYEES_LIST_KEY],
+    queryFn: () => listEmployments({}),
+  })
 
-  useEffect(() => {
-    void load()
-  }, [load])
+  // Reuse the same departments list cache as Departments pages
+  const departmentsQuery = useQuery({
+    queryKey: [...DEPARTMENTS_LIST_KEY, { includeArchived: false }],
+    queryFn: () => listDepartments({}),
+  })
+
+  const items = employeesQuery.data?.items ?? []
+  const departments = useMemo(
+    () => (departmentsQuery.data?.items ?? []).map((d) => ({ id: d.id, name: d.name })),
+    [departmentsQuery.data],
+  )
 
   const metrics = useMemo(() => computeEmploymentListMetrics(items), [items])
 
@@ -79,8 +78,9 @@ export function useEmployeesList() {
     departments,
     states,
     types,
-    loading,
-    error,
+    loading: employeesQuery.isLoading,
+    error: employeesQuery.isError,
+    isFetching: employeesQuery.isFetching,
     search,
     setSearch,
     deptFilter,
@@ -91,6 +91,7 @@ export function useEmployeesList() {
     setTypeFilter,
     filtersActive,
     resetFilters,
-    reload: load,
+    reload: () => void employeesQuery.refetch(),
+    refetch: employeesQuery.refetch,
   }
 }
