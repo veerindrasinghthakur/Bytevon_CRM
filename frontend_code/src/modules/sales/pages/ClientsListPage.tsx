@@ -7,6 +7,13 @@ import { StatusDot } from '@/shared/components/ui/StatusDot'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import {
+  QuickSection,
+  QuickStat,
+  QuickStatGrid,
+  QuickMetaTile,
+  QuickRelatedRow,
+} from '@/shared/components/layout/QuickOverviewParts'
 import { ResourceName } from '@/shared/schema'
 import { useClientsList } from '../hooks/use-clients-list'
 import type { ClientType, Client } from '../types'
@@ -30,58 +37,51 @@ function formatMoney(n?: number) {
 function ClientQuickContent({ client }: { client: Client }) {
   return (
     <>
-      <div className="flex items-start gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center text-xl font-bold shrink-0">
-          {client.logoInitials ?? client.name.slice(0, 2).toUpperCase()}
-        </div>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <StatusDot status={client.status} />
-            <h5 className="text-xl font-bold text-on-surface truncate">{client.name}</h5>
-          </div>
-          <p className="text-on-surface-variant text-sm">{client.industry}</p>
-          <div className="flex flex-wrap gap-2 mt-2">
-            <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold uppercase', typeStyles[client.type])}>
-              {client.type}
-            </span>
-          </div>
-        </div>
-      </div>
+      <QuickSection title="Quick Statistics">
+        <QuickStatGrid>
+          <QuickStat icon="folder_open" value={client.projects} label="Projects" />
+          <QuickStat icon="person_search" value={client.leads} label="Leads" />
+          <QuickStat icon="payments" value={formatMoney(client.arr ?? client.revenue)} label="ARR" />
+        </QuickStatGrid>
+      </QuickSection>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Projects</p>
-          <p className="text-lg font-bold">{client.projects}</p>
+      <QuickSection title="General Info">
+        <div className="grid grid-cols-2 gap-3">
+          <QuickMetaTile
+            icon="category"
+            label="Type"
+            value={
+              <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold uppercase', typeStyles[client.type])}>
+                {client.type}
+              </span>
+            }
+          />
+          <QuickMetaTile icon="factory" label="Industry" value={client.industry} />
+          <QuickMetaTile icon="public" label="Country" value={client.country} />
+          <QuickMetaTile icon="payments" label="Revenue" value={formatMoney(client.arr ?? client.revenue)} />
         </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Leads</p>
-          <p className="text-lg font-bold">{client.leads}</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">ARR / Revenue</p>
-          <p className="text-lg font-bold">{formatMoney(client.arr ?? client.revenue)}</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Country</p>
-          <p className="text-lg font-semibold">{client.country}</p>
-        </div>
-      </div>
+      </QuickSection>
 
-      {client.chatLink && (
-        <div className="p-4 bg-secondary/5 border border-secondary/20 rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-2">Client Chat</p>
-          <a
-            href={client.chatLink}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 text-secondary font-semibold text-sm hover:underline"
-          >
-            <span className="material-symbols-outlined text-lg">chat</span>
-            Open conversation
-            <span className="material-symbols-outlined text-sm">open_in_new</span>
-          </a>
-        </div>
-      )}
+      <QuickSection title="Related Information">
+        <QuickRelatedRow icon="business" label="Client" value={client.name} />
+        <QuickRelatedRow icon="sell" label="Type" value={client.type} />
+        {client.chatLink && (
+          <QuickRelatedRow
+            icon="chat"
+            label="Chat"
+            value={
+              <a
+                href={client.chatLink}
+                target="_blank"
+                rel="noreferrer"
+                className="text-secondary font-semibold hover:underline"
+              >
+                Open conversation
+              </a>
+            }
+          />
+        )}
+      </QuickSection>
     </>
   )
 }
@@ -120,11 +120,15 @@ export function ClientsListPage() {
 
   const openClientOverview = (client: Client) => {
     openPanel({
-      title: 'Client Quick View',
+      title: client.name,
+      subtitle: [client.industry, client.country].filter(Boolean).join(' · '),
+      icon: 'apartment',
+      status: client.status,
+      statusDotClass: client.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400',
       content: <ClientQuickContent client={client} />,
       fullRecordLabel: 'Open full record',
       onOpenFull: () => openFull(client.id),
-      widthClass: 'max-w-md',
+      widthClass: 'max-w-[520px]',
     })
   }
 
