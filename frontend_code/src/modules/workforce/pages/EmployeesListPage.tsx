@@ -7,9 +7,10 @@ import { Select } from '@/shared/components/ui/Select'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
-import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
+import { RowActions } from '@/shared/components/ui/RowActions'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import {
@@ -24,13 +25,13 @@ import { useEmployeesList } from '../hooks/use-employees-list'
 import { cn } from '@/shared/lib/cn'
 
 const stateStyles: Record<string, string> = {
-  CONFIRMED: 'bg-green-100 text-green-800 border-green-200',
-  ONBOARDING: 'bg-blue-100 text-blue-800 border-blue-200',
-  PROBATION: 'bg-amber-100 text-amber-800 border-amber-200',
-  SERVING_NOTICE: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-  RESIGNED: 'bg-slate-100 text-slate-600 border-slate-200',
-  TERMINATED: 'bg-red-100 text-red-800 border-red-200',
-  ALUMNI: 'bg-slate-100 text-slate-600 border-slate-200',
+  CONFIRMED: 'status-badge status-success',
+  ONBOARDING: 'status-badge status-info',
+  PROBATION: 'status-badge status-warning',
+  SERVING_NOTICE: 'status-badge status-warning',
+  RESIGNED: 'status-badge status-neutral',
+  TERMINATED: 'status-badge status-error',
+  ALUMNI: 'status-badge status-neutral',
 }
 
 const stateDot: Record<string, string> = {
@@ -107,6 +108,7 @@ export function EmployeesListPage() {
     states,
     types,
     loading,
+    isFetching,
     error,
     search,
     setSearch,
@@ -172,7 +174,6 @@ export function EmployeesListPage() {
     })
   }
 
-  if (loading) return <PageLoadingSkeleton />
   if (error) {
     return (
       <ErrorState
@@ -275,8 +276,13 @@ export function EmployeesListPage() {
         )}
       </div>
 
-      <div className="bv-surface overflow-hidden">
-        {filtered.length === 0 ? (
+      <div className="bv-surface overflow-hidden relative">
+        {(loading || isFetching) && (
+          <div className="absolute inset-0 z-10 bg-surface-container-lowest/70 backdrop-blur-[1px]">
+            <TableSkeleton rows={6} />
+          </div>
+        )}
+        {filtered.length === 0 && !loading ? (
           <div className="p-12 text-center space-y-3">
             <Icon name="person_search" className="text-4xl text-on-surface-variant" />
             <p className="text-title-lg font-semibold">No employees found</p>
@@ -372,12 +378,7 @@ export function EmployeesListPage() {
                       <td className="px-4 py-4 text-body-md">{emp.positionName}</td>
                       <td className="px-4 py-4 text-body-md">{emp.employment_type.replace(/_/g, ' ')}</td>
                       <td className="px-4 py-4">
-                        <span
-                          className={cn(
-                            'inline-flex px-2.5 py-0.5 rounded-full text-label-sm font-bold border',
-                            stateStyles[emp.current_state] ?? 'bg-surface-container',
-                          )}
-                        >
+                        <span className={stateStyles[emp.current_state] ?? 'status-badge status-neutral'}>
                           {emp.current_state.replace(/_/g, ' ')}
                         </span>
                       </td>
@@ -393,14 +394,25 @@ export function EmployeesListPage() {
                         onMouseDown={(e) => e.stopPropagation()}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <button
-                          type="button"
-                          className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors"
-                          onClick={() => openEmployeeOverview(emp)}
-                          aria-label={`Quick view ${emp.fullName}`}
-                        >
-                          <Icon name="visibility" className="text-lg" />
-                        </button>
+                        <div className="flex justify-end">
+                          <RowActions
+                            label={`Actions for ${emp.fullName}`}
+                            actions={[
+                              {
+                                id: 'overview',
+                                label: 'Quick view',
+                                icon: 'visibility',
+                                onClick: () => openEmployeeOverview(emp),
+                              },
+                              {
+                                id: 'details',
+                                label: 'View details',
+                                icon: 'description',
+                                onClick: () => goDetail(emp.id),
+                              },
+                            ]}
+                          />
+                        </div>
                       </td>
                     </tr>
                   )
