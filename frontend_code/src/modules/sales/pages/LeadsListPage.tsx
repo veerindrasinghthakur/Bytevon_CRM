@@ -5,6 +5,14 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import {
+  QuickSection,
+  QuickStat,
+  QuickStatGrid,
+  QuickMetaTile,
+  QuickRelatedRow,
+  QuickPersonRow,
+} from '@/shared/components/layout/QuickOverviewParts'
 import { ResourceName } from '@/shared/schema'
 import { useLeadsList } from '../hooks/use-leads-list'
 import { LeadMetricsRow } from '../components/LeadMetricsRow'
@@ -27,6 +35,16 @@ const priorityStyles: Record<LeadPriority, string> = {
   High: 'text-orange-600',
   Medium: 'text-amber-600',
   Low: 'text-slate-500',
+}
+
+const stageDot: Record<PipelineStage, string> = {
+  New: 'bg-slate-400',
+  Contacted: 'bg-blue-500',
+  Qualified: 'bg-blue-600',
+  Proposal: 'bg-orange-500',
+  Negotiation: 'bg-amber-500',
+  Won: 'bg-emerald-500',
+  Lost: 'bg-red-500',
 }
 
 function formatBudget(n: number) {
@@ -71,69 +89,78 @@ function Icon({ name, className }: { name: string; className?: string }) {
 function LeadQuickContent({ lead }: { lead: Lead }) {
   return (
     <>
-      <div className="flex items-start gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center text-xl font-bold shrink-0">
-          {lead.contactName
-            .split(' ')
-            .map((p) => p[0])
-            .join('')
-            .slice(0, 2)}
-        </div>
-        <div className="min-w-0">
-          <div className="flex items-center gap-2">
-            <StatusDotOnly status={lead.status} />
-            <h5 className="text-xl font-bold text-on-surface truncate">{lead.contactName}</h5>
-          </div>
-          {lead.contactTitle && <p className="text-on-surface-variant text-sm">{lead.contactTitle}</p>}
-          <div className="flex flex-wrap gap-2 mt-2">
-            <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold uppercase', stageStyles[lead.stage])}>
-              {lead.stage}
-            </span>
-          </div>
-        </div>
-      </div>
+      <QuickSection title="Pipeline">
+        <QuickStatGrid>
+          <QuickStat icon="payments" value={formatBudget(lead.budget)} label="Value" />
+          <QuickStat icon="flag" value={lead.stage} label="Stage" />
+          <QuickStat icon="priority_high" value={lead.priority} label="Priority" />
+        </QuickStatGrid>
+      </QuickSection>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Estimated Value</p>
-          <p className="text-lg font-bold">{formatBudget(lead.budget)}</p>
+      <QuickSection title="General Info">
+        <div className="grid grid-cols-2 gap-3">
+          <QuickMetaTile icon="source" label="Source" value={lead.source} />
+          <QuickMetaTile icon="event" label="Date" value={lead.date ?? '—'} />
+          <QuickMetaTile
+            icon="sell"
+            label="Stage"
+            value={
+              <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold uppercase', stageStyles[lead.stage])}>
+                {lead.stage}
+              </span>
+            }
+          />
+          <QuickMetaTile
+            icon="priority_high"
+            label="Priority"
+            value={<span className={cn('font-bold uppercase text-sm', priorityStyles[lead.priority])}>{lead.priority}</span>}
+          />
         </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Stage</p>
-          <p className="text-lg font-bold text-secondary">{lead.stage}</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Source</p>
-          <p className="text-lg font-semibold">{lead.source}</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Date</p>
-          <p className="text-lg font-semibold">{lead.date ?? '—'}</p>
-        </div>
-      </div>
+      </QuickSection>
 
-      {lead.chatLink && (
-        <div className="p-4 bg-secondary/5 border border-secondary/20 rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-2">Client Chat</p>
-          <a
-            href={lead.chatLink}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center gap-2 text-secondary font-semibold text-sm hover:underline"
-          >
-            <Icon name="chat" className="text-lg" />
-            Open conversation with {lead.contactName}
-            <Icon name="open_in_new" className="text-sm" />
-          </a>
+      <QuickSection title="Assignment">
+        <div className="space-y-3">
+          {lead.assignedTo ? (
+            <QuickPersonRow
+              initials={lead.assignedTo
+                .split(' ')
+                .map((p) => p[0])
+                .join('')
+                .slice(0, 2)}
+              roleLabel="Owner"
+              name={lead.assignedTo}
+            />
+          ) : (
+            <QuickRelatedRow icon="person_off" label="Owner" value="Unassigned" />
+          )}
+          {lead.contactTitle && (
+            <QuickRelatedRow icon="badge" label="Title" value={lead.contactTitle} />
+          )}
         </div>
-      )}
+      </QuickSection>
 
-      {lead.notes && (
-        <div className="p-4 bg-surface-container rounded-xl">
-          <h6 className="text-xs font-bold uppercase text-on-surface-variant mb-2">Internal Notes</h6>
-          <p className="text-body-sm text-on-surface italic">"{lead.notes}"</p>
-        </div>
-      )}
+      <QuickSection title="Related">
+        {lead.chatLink && (
+          <QuickRelatedRow
+            icon="chat"
+            label="Chat"
+            value={
+              <a
+                href={lead.chatLink}
+                target="_blank"
+                rel="noreferrer"
+                className="text-secondary font-semibold hover:underline"
+              >
+                Open conversation
+              </a>
+            }
+          />
+        )}
+        {lead.notes && <QuickRelatedRow icon="notes" label="Notes" value={lead.notes} />}
+        {lead.tags && lead.tags.length > 0 && (
+          <QuickRelatedRow icon="label" label="Tags" value={lead.tags.join(', ')} />
+        )}
+      </QuickSection>
     </>
   )
 }
@@ -174,13 +201,17 @@ export function LeadsListPage() {
 
   const openLeadOverview = (lead: Lead) => {
     openPanel({
-      title: 'Lead Quick View',
+      title: lead.contactName,
+      subtitle: [lead.contactTitle, lead.id].filter(Boolean).join(' · '),
+      icon: 'person_search',
+      status: lead.stage,
+      statusDotClass: stageDot[lead.stage] ?? 'bg-outline',
       content: <LeadQuickContent lead={lead} />,
-      fullRecordLabel: 'Open Full Record',
+      fullRecordLabel: 'Open full record',
       onOpenFull: () => navigate({ to: '/sales/leads/$leadId', params: { leadId: lead.id } }),
       secondaryLabel: 'Log Task',
       onSecondary: () => {},
-      widthClass: 'max-w-md',
+      widthClass: 'max-w-[520px]',
     })
   }
 
