@@ -2,6 +2,14 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import {
+  QuickSection,
+  QuickStat,
+  QuickStatGrid,
+  QuickMetaTile,
+  QuickRelatedRow,
+} from '@/shared/components/layout/QuickOverviewParts'
 import { canCreateShift, shifts } from '../data/shiftsMock'
 import { cn } from '@/shared/lib/cn'
 
@@ -13,8 +21,36 @@ function Icon({ name, className }: { name: string; className?: string }) {
   )
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ShiftCard = (typeof shifts)[number]
+
+function ShiftQuickContent({ s }: { s: ShiftCard }) {
+  return (
+    <>
+      <QuickSection title="Schedule">
+        <QuickStatGrid>
+          <QuickStat icon="schedule" value={`${s.startTime}–${s.endTime}`} label="Hours" />
+          <QuickStat icon="calendar_month" value={s.days} label="Days" />
+          <QuickStat icon="group" value={String(s.employeeCount)} label="Employees" />
+        </QuickStatGrid>
+      </QuickSection>
+      <QuickSection title="Details">
+        <div className="grid grid-cols-2 gap-3">
+          <QuickMetaTile icon="qr_code" label="Code" value={s.code} />
+          <QuickMetaTile icon="flag" label="Status" value={s.status} />
+        </div>
+      </QuickSection>
+      <QuickSection title="Identity">
+        <QuickRelatedRow icon="badge" label="Name" value={s.name} />
+        <QuickRelatedRow icon="tag" label="ID" value={s.id} />
+      </QuickSection>
+    </>
+  )
+}
+
 export function ShiftsListPage() {
   const navigate = useNavigate()
+  const { openPanel } = useQuickOverview()
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState<'All' | 'Active' | 'Inactive'>('All')
 
@@ -30,6 +66,20 @@ export function ShiftsListPage() {
       return matchQ && matchStatus
     })
   }, [search, status])
+
+  const openShiftOverview = (s: ShiftCard) => {
+    openPanel({
+      title: s.name,
+      subtitle: `${s.code} · ${s.startTime} – ${s.endTime}`,
+      icon: 'schedule',
+      status: s.status,
+      statusDotClass: s.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400',
+      content: <ShiftQuickContent s={s} />,
+      fullRecordLabel: 'Open full record',
+      onOpenFull: () => navigate({ to: '/workforce/shifts/$shiftId', params: { shiftId: s.id } }),
+      widthClass: 'max-w-[520px]',
+    })
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -75,7 +125,7 @@ export function ShiftsListPage() {
           <button
             key={s.id}
             type="button"
-            onClick={() => navigate({ to: '/workforce/shifts/$shiftId', params: { shiftId: s.id } })}
+            onClick={() => openShiftOverview(s)}
             className="text-left bv-surface card-hover p-5"
           >
             <div className="flex items-start justify-between gap-2 mb-3">
