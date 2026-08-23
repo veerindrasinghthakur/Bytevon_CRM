@@ -1,31 +1,20 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { listDepartments, type DepartmentListItem } from '../api/departments'
+import { useCallback, useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { listDepartments } from '../api/departments'
 import { computeDepartmentListMetrics } from '@/shared/compute/workforce-metrics'
+
+export const DEPARTMENTS_LIST_KEY = ['workforce', 'departments', 'list'] as const
 
 export function useDepartmentsList() {
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('All')
-  const [items, setItems] = useState<DepartmentListItem[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
 
-  const load = useCallback(async () => {
-    setLoading(true)
-    setError(false)
-    try {
-      const res = await listDepartments({ includeArchived: true })
-      setItems(res.items)
-    } catch {
-      setError(true)
-      setItems([])
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
+    queryKey: [...DEPARTMENTS_LIST_KEY, { includeArchived: true }],
+    queryFn: () => listDepartments({ includeArchived: true }),
+  })
 
-  useEffect(() => {
-    void load()
-  }, [load])
+  const items = data?.items ?? []
 
   const metrics = useMemo(() => computeDepartmentListMetrics(items), [items])
 
@@ -53,14 +42,16 @@ export function useDepartmentsList() {
     items,
     filtered,
     metrics,
-    loading,
-    error,
+    loading: isLoading,
+    error: isError,
+    isFetching,
     search,
     setSearch,
     status,
     setStatus,
     filtersActive,
     resetFilters,
-    reload: load,
+    reload: () => void refetch(),
+    refetch,
   }
 }
