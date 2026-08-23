@@ -16,7 +16,6 @@ import {
   QuickStatGrid,
   QuickMetaTile,
   QuickRelatedRow,
-  QuickPersonRow,
 } from '@/shared/components/layout/QuickOverviewParts'
 import { useProjectsList } from '../hooks/use-projects-list'
 import type { ProjectStatus } from '../schemas/project'
@@ -24,24 +23,12 @@ import { cn } from '@/shared/lib/cn'
 
 function PriorityBadge({ status }: { status: ProjectStatus }) {
   if (status === 'IN_PROGRESS') {
-    return (
-      <span className="bg-red-100 text-red-800 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
-        Critical
-      </span>
-    )
+    return <span className="status-badge status-error">Critical</span>
   }
   if (status === 'ON_HOLD') {
-    return (
-      <span className="bg-orange-100 text-orange-800 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
-        High
-      </span>
-    )
+    return <span className="status-badge status-warning">High</span>
   }
-  return (
-    <span className="bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
-      Medium
-    </span>
-  )
+  return <span className="status-badge status-warning">Medium</span>
 }
 
 function statusTrackLabel(status: ProjectStatus) {
@@ -125,6 +112,7 @@ export function ProjectsListPage() {
     active,
     atRisk,
     isLoading,
+    isFetching,
     isError,
     refetch,
     selection,
@@ -240,14 +228,14 @@ export function ProjectsListPage() {
         </BulkSelectionBar>
       )}
 
-      {isLoading && <TableSkeleton rows={5} />}
       {isError && (
         <div className="rounded-lg border border-error/30 bg-error/5 p-6 text-center">
           <p className="text-body-md text-error mb-3">Failed to load projects.</p>
           <Button variant="outline" onClick={() => refetch()}>Retry</Button>
         </div>
       )}
-      {!isLoading && !isError && items.length === 0 && (
+
+      {!isError && items.length === 0 && !isLoading && (
         <EmptyState
           icon="folder_off"
           title="No projects yet"
@@ -257,8 +245,13 @@ export function ProjectsListPage() {
         />
       )}
 
-      {!isLoading && !isError && items.length > 0 && (
-        <section className="bv-surface overflow-hidden flex flex-col">
+      {!isError && (items.length > 0 || isLoading) && (
+        <section className="bv-surface overflow-hidden flex flex-col relative">
+          {(isLoading || isFetching) && (
+            <div className="absolute inset-0 z-10 bg-surface-container-lowest/70 backdrop-blur-[1px]">
+              <TableSkeleton rows={5} />
+            </div>
+          )}
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[1000px]">
               <thead>
@@ -448,7 +441,7 @@ function Metric({
           <div
             className={cn(
               'text-xs font-bold px-2 py-1 rounded',
-              trendDanger ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800',
+              trendDanger ? 'status-badge status-error' : 'status-badge status-success',
             )}
           >
             {trend}
