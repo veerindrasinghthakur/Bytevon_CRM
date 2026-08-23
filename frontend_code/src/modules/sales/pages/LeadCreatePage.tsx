@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
 import { leads } from '../data/mock'
 import type { LeadPriority, PipelineStage, RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
@@ -17,6 +18,16 @@ const stages: PipelineStage[] = [
 ]
 const priorities: LeadPriority[] = ['Critical', 'High', 'Medium', 'Low']
 const sources = ['LinkedIn', 'Website', 'Referral', 'Direct Referral', 'Event', 'Other']
+
+/** Mock employment options — replace with workforce employees query later */
+const SALES_REPS = [
+  { value: '', label: 'Unassigned' },
+  { value: 'Alex Rivera', label: 'Alex Rivera' },
+  { value: 'Jordan Lee', label: 'Jordan Lee' },
+  { value: 'Sam Patel', label: 'Sam Patel' },
+  { value: 'Morgan Chen', label: 'Morgan Chen' },
+  { value: 'Casey Brooks', label: 'Casey Brooks' },
+]
 
 export function LeadCreatePage() {
   const navigate = useNavigate()
@@ -58,7 +69,11 @@ export function LeadCreatePage() {
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         title={isEdit ? 'Edit Lead' : 'Create Lead'}
-        description={isEdit ? `Update ${existing?.title ?? 'lead'}` : 'Capture a new opportunity and link chat with the client.'}
+        description={
+          isEdit
+            ? `Update ${existing?.title ?? 'lead'}`
+            : 'Capture a new opportunity. Client is optional until the lead is won.'
+        }
         showBack
         backTo="/sales/leads"
         backLabel="Back to leads"
@@ -88,43 +103,91 @@ export function LeadCreatePage() {
               <label className={labelClass} htmlFor="title">
                 Lead title <span className="text-error">*</span>
               </label>
-              <input id="title" required value={title} onChange={(e) => setTitle(e.target.value)} className={fieldClass} placeholder="e.g. TechNexus ERP Migration" />
+              <input
+                id="title"
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className={fieldClass}
+                placeholder="e.g. TechNexus ERP Migration"
+              />
             </div>
             <div>
               <label className={labelClass} htmlFor="contactName">
                 Contact name <span className="text-error">*</span>
               </label>
-              <input id="contactName" required value={contactName} onChange={(e) => setContactName(e.target.value)} className={fieldClass} placeholder="Sarah Miller" />
+              <input
+                id="contactName"
+                required
+                value={contactName}
+                onChange={(e) => setContactName(e.target.value)}
+                className={fieldClass}
+                placeholder="Sarah Miller"
+              />
             </div>
             <div>
               <label className={labelClass} htmlFor="contactTitle">
                 Contact title
               </label>
-              <input id="contactTitle" value={contactTitle} onChange={(e) => setContactTitle(e.target.value)} className={fieldClass} placeholder="VP of Growth" />
+              <input
+                id="contactTitle"
+                value={contactTitle}
+                onChange={(e) => setContactTitle(e.target.value)}
+                className={fieldClass}
+                placeholder="VP of Growth"
+              />
             </div>
             <div>
               <label className={labelClass} htmlFor="company">
-                Company <span className="text-error">*</span>
+                Company
               </label>
-              <input id="company" required value={company} onChange={(e) => setCompany(e.target.value)} className={fieldClass} placeholder="TechNexus Corp." />
+              <input
+                id="company"
+                value={company}
+                onChange={(e) => setCompany(e.target.value)}
+                className={fieldClass}
+                placeholder="TechNexus Corp. (optional — client created on WON)"
+              />
+              <p className="text-[11px] text-on-surface-variant mt-1">
+                Client is optional. On WON, an existing client is reused or a new one is created.
+              </p>
             </div>
             <div>
               <label className={labelClass} htmlFor="industry">
                 Industry
               </label>
-              <input id="industry" value={industry} onChange={(e) => setIndustry(e.target.value)} className={fieldClass} placeholder="SaaS / Technology" />
+              <input
+                id="industry"
+                value={industry}
+                onChange={(e) => setIndustry(e.target.value)}
+                className={fieldClass}
+                placeholder="SaaS / Technology"
+              />
             </div>
             <div>
               <label className={labelClass} htmlFor="email">
                 Email
               </label>
-              <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={fieldClass} placeholder="s.miller@technexus.com" />
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={fieldClass}
+                placeholder="s.miller@technexus.com"
+              />
             </div>
             <div>
               <label className={labelClass} htmlFor="phone">
                 Phone
               </label>
-              <input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} className={fieldClass} placeholder="+1 (555) 012-3456" />
+              <input
+                id="phone"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className={fieldClass}
+                placeholder="+1 (555) 012-3456"
+              />
             </div>
           </div>
         </section>
@@ -135,51 +198,37 @@ export function LeadCreatePage() {
             Pipeline & status
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label className={labelClass} htmlFor="stage">
-                Stage
-              </label>
-              <select id="stage" value={stage} onChange={(e) => setStage(e.target.value as PipelineStage)} className={fieldClass}>
-                {stages.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className={labelClass} htmlFor="priority">
-                Priority
-              </label>
-              <select id="priority" value={priority} onChange={(e) => setPriority(e.target.value as LeadPriority)} className={fieldClass}>
-                {priorities.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className={labelClass} htmlFor="status">
-                Status
-              </label>
-              <select id="status" value={status} onChange={(e) => setStatus(e.target.value as RecordStatus)} className={fieldClass}>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
-              </select>
-            </div>
-            <div>
-              <label className={labelClass} htmlFor="source">
-                Source
-              </label>
-              <select id="source" value={source} onChange={(e) => setSource(e.target.value)} className={fieldClass}>
-                {sources.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
-                  </option>
-                ))}
-              </select>
-            </div>
+            <Select
+              label="Stage"
+              value={stage}
+              onChange={(v) => setStage(v as PipelineStage)}
+              options={stages.map((s) => ({ value: s, label: s }))}
+              minWidthClass="w-full"
+            />
+            <Select
+              label="Priority"
+              value={priority}
+              onChange={(v) => setPriority(v as LeadPriority)}
+              options={priorities.map((p) => ({ value: p, label: p }))}
+              minWidthClass="w-full"
+            />
+            <Select
+              label="Status"
+              value={status}
+              onChange={(v) => setStatus(v as RecordStatus)}
+              options={[
+                { value: 'Active', label: 'Active' },
+                { value: 'Inactive', label: 'Inactive' },
+              ]}
+              minWidthClass="w-full"
+            />
+            <Select
+              label="Source"
+              value={source}
+              onChange={setSource}
+              options={sources.map((s) => ({ value: s, label: s }))}
+              minWidthClass="w-full"
+            />
           </div>
         </section>
 
@@ -193,19 +242,37 @@ export function LeadCreatePage() {
               <label className={labelClass} htmlFor="budget">
                 Estimated budget (USD)
               </label>
-              <input id="budget" type="number" min={0} value={budget} onChange={(e) => setBudget(e.target.value)} className={fieldClass} placeholder="120000" />
+              <input
+                id="budget"
+                type="number"
+                min={0}
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                className={fieldClass}
+                placeholder="120000"
+              />
             </div>
             <div>
               <label className={labelClass} htmlFor="date">
-                Date
+                Expected close date
               </label>
-              <input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} className={fieldClass} />
+              <input
+                id="date"
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className={fieldClass}
+              />
             </div>
             <div>
-              <label className={labelClass} htmlFor="assignedTo">
-                Assigned sales rep
-              </label>
-              <input id="assignedTo" value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)} className={fieldClass} placeholder="Alex Rivera" />
+              <Select
+                label="Assigned sales representative"
+                value={assignedTo}
+                onChange={setAssignedTo}
+                placeholder="Select employee"
+                options={SALES_REPS}
+                minWidthClass="w-full"
+              />
             </div>
           </div>
         </section>
