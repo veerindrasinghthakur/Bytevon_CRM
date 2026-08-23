@@ -2,8 +2,16 @@ import { useMemo, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import {
+  QuickSection,
+  QuickStat,
+  QuickStatGrid,
+  QuickMetaTile,
+  QuickRelatedRow,
+} from '@/shared/components/layout/QuickOverviewParts'
 import { caseStudies, caseStudyMetrics } from '../data/mock'
-import type { CaseStudyStatus } from '../types'
+import type { CaseStudy, CaseStudyStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 
 const statusStyles: Record<CaseStudyStatus, string> = {
@@ -12,9 +20,54 @@ const statusStyles: Record<CaseStudyStatus, string> = {
   Archived: 'bg-slate-100 text-slate-600',
 }
 
+const statusDot: Record<CaseStudyStatus, string> = {
+  Published: 'bg-emerald-500',
+  Draft: 'bg-amber-500',
+  Archived: 'bg-slate-400',
+}
+
+function CaseStudyQuickContent({ cs }: { cs: CaseStudy }) {
+  return (
+    <>
+      <QuickSection title="Impact">
+        <QuickStatGrid>
+          <QuickStat icon="trending_up" value={cs.impact} label="Impact" />
+          <QuickStat icon="payments" value={cs.revenue} label="Revenue" />
+          <QuickStat icon="factory" value={cs.industry} label="Industry" />
+        </QuickStatGrid>
+      </QuickSection>
+      <QuickSection title="Customer">
+        <div className="grid grid-cols-2 gap-3">
+          <QuickMetaTile icon="apartment" label="Customer" value={cs.customer} />
+          <QuickMetaTile
+            icon="flag"
+            label="Status"
+            value={
+              <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold uppercase', statusStyles[cs.status])}>
+                {cs.status}
+              </span>
+            }
+          />
+        </div>
+      </QuickSection>
+      {cs.summary && (
+        <QuickSection title="Summary">
+          <p className="text-body-sm text-on-surface-variant leading-relaxed">{cs.summary}</p>
+        </QuickSection>
+      )}
+      {cs.tags?.length > 0 && (
+        <QuickSection title="Tags">
+          <QuickRelatedRow icon="label" label="Tags" value={cs.tags.join(', ')} />
+        </QuickSection>
+      )}
+    </>
+  )
+}
+
 export function CaseStudiesListPage() {
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<string>('All')
+  const { openPanel } = useQuickOverview()
 
   const filtered = useMemo(() => {
     return caseStudies.filter((cs) => {
@@ -28,6 +81,18 @@ export function CaseStudiesListPage() {
       return matchSearch && matchStatus
     })
   }, [search, statusFilter])
+
+  const openCaseStudyOverview = (cs: CaseStudy) => {
+    openPanel({
+      title: cs.title,
+      subtitle: `${cs.customer} · ${cs.industry}`,
+      icon: 'menu_book',
+      status: cs.status,
+      statusDotClass: statusDot[cs.status],
+      content: <CaseStudyQuickContent cs={cs} />,
+      widthClass: 'max-w-[520px]',
+    })
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -101,7 +166,11 @@ export function CaseStudiesListPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {filtered.map((cs) => (
-          <article key={cs.id} className="bv-surface card-hover p-5 flex flex-col">
+          <article
+            key={cs.id}
+            className="bv-surface card-hover p-5 flex flex-col cursor-pointer"
+            onClick={() => openCaseStudyOverview(cs)}
+          >
             <div className="flex items-start justify-between gap-2 mb-3">
               <h3 className="font-semibold text-on-surface text-title-md leading-snug">{cs.title}</h3>
               <span className={cn('shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase', statusStyles[cs.status])}>
@@ -124,13 +193,15 @@ export function CaseStudiesListPage() {
               ))}
             </div>
 
-            {/* View / Edit / Share — synced with case study management UI */}
-            <div className="mt-auto pt-3 border-t border-outline-variant/40 flex items-center gap-1">
+            <div
+              className="mt-auto pt-3 border-t border-outline-variant/40 flex items-center gap-1"
+              onClick={(e) => e.stopPropagation()}
+            >
               <button
                 type="button"
                 className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-label-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors"
-                title="View case study"
-                onClick={(e) => e.stopPropagation()}
+                title="Quick view"
+                onClick={() => openCaseStudyOverview(cs)}
               >
                 <span className="material-symbols-outlined text-[18px]">visibility</span>
                 View
@@ -139,7 +210,6 @@ export function CaseStudiesListPage() {
                 type="button"
                 className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-label-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors"
                 title="Edit case study"
-                onClick={(e) => e.stopPropagation()}
               >
                 <span className="material-symbols-outlined text-[18px]">edit</span>
                 Edit
@@ -148,7 +218,6 @@ export function CaseStudiesListPage() {
                 type="button"
                 className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-label-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors ml-auto"
                 title="Share case study"
-                onClick={(e) => e.stopPropagation()}
               >
                 <span className="material-symbols-outlined text-[18px]">share</span>
                 Share

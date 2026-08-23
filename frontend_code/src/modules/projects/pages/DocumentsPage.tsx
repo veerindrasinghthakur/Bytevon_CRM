@@ -6,10 +6,18 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { UploadButton } from '@/shared/components/forms/UploadButton'
 import { RefreshButton } from '@/shared/components/ui/RefreshButton'
 import { FilePreviewModal, type FilePreviewItem } from '@/shared/components/documents/FilePreviewModal'
+import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import {
+  QuickSection,
+  QuickStat,
+  QuickStatGrid,
+  QuickMetaTile,
+  QuickRelatedRow,
+  QuickPersonRow,
+} from '@/shared/components/layout/QuickOverviewParts'
 import { downloadFile } from '@/shared/lib/download-file'
 import { ResourceName } from '@/shared/schema'
 import { useDocuments, useUploadDocument } from '../hooks/use-documents'
-import { cn } from '@/shared/lib/cn'
 
 function iconForMime(type: string, name: string) {
   const t = type.toLowerCase()
@@ -20,6 +28,38 @@ function iconForMime(type: string, name: string) {
   return 'attach_file'
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DocRow = any
+
+function DocumentQuickContent({ d }: { d: DocRow }) {
+  return (
+    <>
+      <QuickSection title="File">
+        <QuickStatGrid>
+          <QuickStat icon={iconForMime(d.type, d.name)} value={d.sizeLabel} label="Size" />
+          <QuickStat icon="category" value={d.type} label="Type" />
+          <QuickStat icon="event" value={d.uploadedAt} label="Uploaded" />
+        </QuickStatGrid>
+      </QuickSection>
+      <QuickSection title="Uploader">
+        <QuickPersonRow
+          initials={(d.uploadedBy ?? '?')
+            .split(' ')
+            .map((p: string) => p[0])
+            .join('')
+            .slice(0, 2)}
+          roleLabel="Uploaded by"
+          name={d.uploadedBy ?? '—'}
+        />
+      </QuickSection>
+      <QuickSection title="Identity">
+        <QuickRelatedRow icon="description" label="Name" value={d.name} />
+        <QuickRelatedRow icon="tag" label="ID" value={d.id} />
+      </QuickSection>
+    </>
+  )
+}
+
 export function DocumentsPage() {
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
@@ -28,6 +68,7 @@ export function DocumentsPage() {
   })
   const uploadMutation = useUploadDocument()
   const [preview, setPreview] = useState<FilePreviewItem | null>(null)
+  const { openPanel } = useQuickOverview()
 
   const items = useMemo(() => {
     let list = data?.items ?? []
@@ -52,6 +93,29 @@ export function DocumentsPage() {
     downloadFile({
       blob: new Blob([`Placeholder content for ${name}`], { type: 'text/plain' }),
       filename: name,
+    })
+  }
+
+  const openDocOverview = (d: DocRow) => {
+    openPanel({
+      title: d.name,
+      subtitle: `${d.sizeLabel} · ${d.type}`,
+      icon: iconForMime(d.type, d.name),
+      status: 'Document',
+      statusDotClass: 'bg-secondary',
+      content: <DocumentQuickContent d={d} />,
+      secondaryLabel: 'Preview',
+      onSecondary: () =>
+        setPreview({
+          id: d.id,
+          name: d.name,
+          mimeType: d.type,
+          sizeLabel: d.sizeLabel,
+          uploadedBy: d.uploadedBy,
+          uploadedAt: d.uploadedAt,
+          url: d.url,
+        }),
+      widthClass: 'max-w-[520px]',
     })
   }
 
@@ -131,7 +195,11 @@ export function DocumentsPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {items.map((d) => (
-                <tr key={d.id} className="zebra-row">
+                <tr
+                  key={d.id}
+                  className="zebra-row cursor-pointer"
+                  onClick={() => openDocOverview(d)}
+                >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <span className="material-symbols-outlined text-secondary">
@@ -146,7 +214,7 @@ export function DocumentsPage() {
                   <td className="px-4 py-3 text-body-sm">{d.sizeLabel}</td>
                   <td className="px-4 py-3 text-body-sm">{d.uploadedBy}</td>
                   <td className="px-4 py-3 text-body-sm">{d.uploadedAt}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end gap-1">
                       <button
                         type="button"
