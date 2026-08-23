@@ -59,9 +59,81 @@ const STATUS_OPTIONS = [
   { value: 'CANCELLED', label: 'Cancelled' },
 ]
 
+function ProjectQuickContent({
+  name,
+  code,
+  status,
+  clientName,
+  progress,
+  taskCount,
+  teamCount,
+  startDate,
+  endDate,
+}: {
+  name: string
+  code?: string
+  status: string
+  clientName?: string
+  progress?: number
+  taskCount?: number
+  teamCount?: number
+  startDate?: string
+  endDate?: string
+}) {
+  const initials = name
+    .split(' ')
+    .slice(0, 2)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+
+  return (
+    <>
+      <div className="flex items-start gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center text-xl font-bold shrink-0">
+          {initials}
+        </div>
+        <div className="min-w-0">
+          <h5 className="text-xl font-bold text-on-surface truncate">{name}</h5>
+          {code && <p className="text-on-surface-variant text-sm">#{code}</p>}
+          <span className="inline-block mt-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-surface-container text-on-surface">
+            {status.replace(/_/g, ' ')}
+          </span>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Client</p>
+          <p className="text-lg font-semibold">{clientName ?? '—'}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Progress</p>
+          <p className="text-lg font-bold">{progress ?? 0}%</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Tasks</p>
+          <p className="text-lg font-bold">{taskCount ?? 0}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Teams</p>
+          <p className="text-lg font-bold">{teamCount ?? 0}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Start</p>
+          <p className="text-body-md font-semibold">{startDate ?? '—'}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">End</p>
+          <p className="text-body-md font-semibold">{endDate ?? '—'}</p>
+        </div>
+      </div>
+    </>
+  )
+}
+
 export function ProjectsListPage() {
   const navigate = useNavigate()
-  const { open: openOverview } = useQuickOverview()
+  const { openPanel } = useQuickOverview()
   const {
     search,
     setSearch,
@@ -90,6 +162,28 @@ export function ProjectsListPage() {
     })
   }
 
+  const openProjectOverview = (project: (typeof pageItems)[number]) => {
+    openPanel({
+      title: 'Project Quick View',
+      content: (
+        <ProjectQuickContent
+          name={project.name}
+          code={project.code}
+          status={project.status}
+          clientName={project.clientName}
+          progress={project.progress}
+          taskCount={project.taskCount}
+          teamCount={project.teamCount}
+          startDate={project.startDate}
+          endDate={project.endDate}
+        />
+      ),
+      fullRecordLabel: 'Open full record',
+      onOpenFull: () => goDetail(project.id),
+      widthClass: 'max-w-md',
+    })
+  }
+
   return (
     <div className="space-y-8 animate-fade-in">
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -110,9 +204,7 @@ export function ProjectsListPage() {
             query={search}
             filters={{ status }}
             selectedIds={
-              selection.selectionMode
-                ? Array.from(selection.selectedIds ?? [])
-                : undefined
+              selection.selectionMode ? Array.from(selection.selectedIds ?? []) : undefined
             }
             filenameStem="projects"
           />
@@ -165,9 +257,7 @@ export function ProjectsListPage() {
             filenameStem="projects-selected"
             label="Export selected"
           />
-          <Button variant="primary" size="sm">
-            Archive
-          </Button>
+          <Button variant="primary" size="sm">Archive</Button>
         </BulkSelectionBar>
       )}
 
@@ -201,7 +291,6 @@ export function ProjectsListPage() {
                         className="rounded border-outline-variant w-4 h-4"
                         checked={selection.allFilteredSelected}
                         onChange={selection.toggleSelectAllFiltered}
-                        title="Select all filtered rows on this page"
                         aria-label="Select all filtered rows on this page"
                       />
                     ) : (
@@ -228,38 +317,18 @@ export function ProjectsListPage() {
                     .join('')
                     .toUpperCase()
 
-                  const openOverviewFor = () =>
-                    openOverview({
-                      id: project.id,
-                      title: project.name,
-                      subtitle: project.code,
-                      badge: project.status.replace('_', ' '),
-                      fields: [
-                        { label: 'Client', value: project.clientName ?? '—' },
-                        { label: 'Progress', value: `${project.progress ?? 0}%` },
-                        { label: 'Tasks', value: String(project.taskCount ?? 0) },
-                        { label: 'Teams', value: String(project.teamCount ?? 0) },
-                        { label: 'Start', value: project.startDate ?? '—' },
-                        { label: 'End', value: project.endDate ?? '—' },
-                      ],
-                      detailTo: '/projects/$projectId',
-                      detailParams: { projectId: String(project.id) },
-                      editTo: '/projects/$projectId',
-                      editParams: { projectId: String(project.id) },
-                    })
-
                   return (
                     <tr
                       key={project.id}
                       className={cn(
                         'h-[72px] cursor-pointer select-none',
-                        isSelected ? 'bg-secondary/10' : 'zebra-row'
+                        isSelected ? 'bg-secondary/10' : 'zebra-row',
                       )}
                       onMouseDown={() => selection.onRowPressStart(id)}
-                      onMouseUp={() => selection.onRowPressEnd(id, openOverviewFor)}
+                      onMouseUp={() => selection.onRowPressEnd(id, () => openProjectOverview(project))}
                       onMouseLeave={selection.onRowPressCancel}
                       onTouchStart={() => selection.onRowPressStart(id)}
-                      onTouchEnd={() => selection.onRowPressEnd(id, openOverviewFor)}
+                      onTouchEnd={() => selection.onRowPressEnd(id, () => openProjectOverview(project))}
                       onTouchCancel={selection.onRowPressCancel}
                       onContextMenu={(e) => e.preventDefault()}
                     >
@@ -318,11 +387,21 @@ export function ProjectsListPage() {
                           <span className="text-body-sm text-on-surface-variant">{project.progress ?? 0}%</span>
                         </div>
                       </td>
-                      <td className="py-2 px-6 text-right" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+                      <td
+                        className="py-2 px-6 text-right"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div className="flex justify-end">
                           <RowActions
                             label={`Actions for ${project.name}`}
                             actions={[
+                              {
+                                id: 'overview',
+                                label: 'Quick view',
+                                icon: 'visibility',
+                                onClick: () => openProjectOverview(project),
+                              },
                               {
                                 id: 'details',
                                 label: 'View details',
@@ -390,7 +469,7 @@ function Metric({
           <div
             className={cn(
               'text-xs font-bold px-2 py-1 rounded',
-              trendDanger ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'
+              trendDanger ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800',
             )}
           >
             {trend}

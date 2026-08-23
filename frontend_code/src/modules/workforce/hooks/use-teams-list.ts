@@ -43,7 +43,6 @@ const FILTER_DEFAULTS = {
 }
 
 export function useTeamsList() {
-  const [drawer, setDrawer] = useState<Team | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
 
   const controls = useListControls({
@@ -98,8 +97,6 @@ export function useTeamsList() {
     page: controls.page,
     setPage: controls.setPage,
     pageSize: controls.pageSize,
-    drawer,
-    setDrawer,
     createOpen,
     setCreateOpen,
     selectionMode: selection.selectionMode,
