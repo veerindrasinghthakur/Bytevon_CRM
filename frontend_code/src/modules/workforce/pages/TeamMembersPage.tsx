@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import { Link, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
-import { teams } from '../data/mock'
-import { membersFor } from '../data/teamExtraMock'
+import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { TeamTopView } from '../components/TeamTopView'
+import { useTeamDetail } from '../hooks/use-team-detail'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -17,9 +18,9 @@ function Icon({ name, className }: { name: string; className?: string }) {
 
 export function TeamMembersPage() {
   const { teamId } = useParams({ strict: false }) as { teamId: string }
-  const t = teams.find((x) => x.id === teamId) ?? teams[0]
+  const { team, members, isLoading, isError, refetch } = useTeamDetail(teamId)
   const [query, setQuery] = useState('')
-  const members = membersFor(t.id)
+
   const filtered = useMemo(() => {
     const q = query.toLowerCase()
     return members.filter(
@@ -27,22 +28,36 @@ export function TeamMembersPage() {
     )
   }, [members, query])
 
+  if (isLoading) return <PageLoadingSkeleton />
+  if (isError || !team) {
+    return (
+      <ErrorState
+        title="Could not load team members"
+        description="Retry or go back to the team overview."
+        onRetry={() => void refetch()}
+      />
+    )
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <BackButton to={`/workforce/teams/${t.id}`} label="Back to team" />
+        <BackButton to={`/workforce/teams/${team.id}`} label="Back to team" />
         <DynamicRouteCrumbs
           className="mt-2 mb-2"
           lastLabel="Members"
-          labelOverrides={{ [t.id]: t.name }}
+          labelOverrides={{ [team.id]: team.name }}
         />
-        <TeamTopView team={t} activeTab="members" />
+        <TeamTopView team={team} activeTab="members" />
       </div>
 
       <div className="bv-surface overflow-hidden">
         <div className="p-4 border-b border-outline-variant">
           <div className="relative max-w-sm">
-            <Icon name="search" className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant" />
+            <Icon
+              name="search"
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant"
+            />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -54,10 +69,18 @@ export function TeamMembersPage() {
         <table className="w-full text-left">
           <thead>
             <tr className="bg-surface-container-low/50 border-b border-outline-variant">
-              <th className="px-6 py-3 text-label-sm font-medium text-on-surface-variant uppercase">Member</th>
-              <th className="px-6 py-3 text-label-sm font-medium text-on-surface-variant uppercase hidden md:table-cell">Role</th>
-              <th className="px-6 py-3 text-label-sm font-medium text-on-surface-variant uppercase hidden sm:table-cell">Joined</th>
-              <th className="px-6 py-3 text-label-sm font-medium text-on-surface-variant uppercase">Status</th>
+              <th className="px-6 py-3 text-label-sm font-medium text-on-surface-variant uppercase">
+                Member
+              </th>
+              <th className="px-6 py-3 text-label-sm font-medium text-on-surface-variant uppercase hidden md:table-cell">
+                Role
+              </th>
+              <th className="px-6 py-3 text-label-sm font-medium text-on-surface-variant uppercase hidden sm:table-cell">
+                Joined
+              </th>
+              <th className="px-6 py-3 text-label-sm font-medium text-on-surface-variant uppercase">
+                Status
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/30">
@@ -83,12 +106,16 @@ export function TeamMembersPage() {
                   </Link>
                 </td>
                 <td className="px-6 py-4 text-body-sm hidden md:table-cell">{m.role}</td>
-                <td className="px-6 py-4 text-body-sm text-on-surface-variant hidden sm:table-cell">{m.joined}</td>
+                <td className="px-6 py-4 text-body-sm text-on-surface-variant hidden sm:table-cell">
+                  {m.joined}
+                </td>
                 <td className="px-6 py-4">
                   <span
                     className={cn(
                       'px-2 py-0.5 rounded-full text-[10px] font-bold',
-                      m.status === 'Active' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800',
+                      m.status === 'Active'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-amber-100 text-amber-800',
                     )}
                   >
                     {m.status}
@@ -98,6 +125,9 @@ export function TeamMembersPage() {
             ))}
           </tbody>
         </table>
+        {filtered.length === 0 && (
+          <div className="p-8 text-center text-body-sm text-on-surface-variant">No members match.</div>
+        )}
       </div>
     </div>
   )
