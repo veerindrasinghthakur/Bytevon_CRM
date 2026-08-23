@@ -2,19 +2,18 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { createShift, getShift, getShifts, updateShift } from '../api/organization'
 import { listEmployeesOnShift } from '@/modules/workforce/api/departments'
 import type { ShiftRow } from '@/shared/schema'
-
-const QK = ['organization', 'shifts'] as const
+import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 
 export function useShiftsList(includeArchived = true) {
   return useQuery({
-    queryKey: [...QK, 'list', { includeArchived }],
+    queryKey: queryKeys.organization.shifts.list({ includeArchived }),
     queryFn: () => getShifts({ includeArchived }),
   })
 }
 
 export function useShiftDetail(id: number, enabled = true) {
   return useQuery({
-    queryKey: [...QK, 'detail', id],
+    queryKey: queryKeys.organization.shifts.detail(id),
     queryFn: () => getShift(id),
     enabled: enabled && Number.isFinite(id) && id > 0,
   })
@@ -22,7 +21,7 @@ export function useShiftDetail(id: number, enabled = true) {
 
 export function useShiftStaff(id: number, enabled = true) {
   return useQuery({
-    queryKey: [...QK, 'staff', id],
+    queryKey: queryKeys.organization.shifts.staff(id),
     queryFn: () => listEmployeesOnShift(id),
     enabled: enabled && Number.isFinite(id) && id > 0,
   })
@@ -33,7 +32,7 @@ export function useCreateShift() {
   return useMutation({
     mutationFn: (input: Omit<ShiftRow, 'id' | 'created_at' | 'updated_at' | 'is_archived' | 'changed_by'>) =>
       createShift(input),
-    onSuccess: () => qc.invalidateQueries({ queryKey: QK }),
+    onSuccess: () => invalidate.orgShifts(qc),
   })
 }
 
@@ -42,8 +41,8 @@ export function useUpdateShift(id: number) {
   return useMutation({
     mutationFn: (patch: Partial<ShiftRow>) => updateShift(id, patch),
     onSuccess: (row) => {
-      qc.invalidateQueries({ queryKey: QK })
-      qc.setQueryData([...QK, 'detail', id], row)
+      invalidate.orgShifts(qc)
+      qc.setQueryData(queryKeys.organization.shifts.detail(id), row)
     },
   })
 }
