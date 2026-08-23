@@ -52,7 +52,6 @@
     cursor: pointer;
   }
 
-  /* Thin scrollbars — hidden-looking when idle via transparent track */
   ::-webkit-scrollbar {
     width: var(--scrollbar-size);
     height: var(--scrollbar-size);
@@ -67,7 +66,6 @@
 }
 
 @layer components {
-  /* Executive elevation — deep-navy tinted soft shadow */
   .executive-shadow {
     box-shadow:
       0 var(--elevation-executive-near-y) var(--elevation-executive-near-blur) var(--elevation-executive-near-spread)
@@ -227,6 +225,10 @@
     animation: slideInRight var(--duration-slide-in) var(--easing-emphasized) forwards;
   }
 
+  .animate-slide-out-right {
+    animation: slideOutRight var(--duration-slide-in) var(--easing-emphasized) forwards;
+  }
+
   .transition-sidebar {
     transition: width var(--duration-sidebar) var(--easing-standard);
   }
@@ -242,6 +244,15 @@
   }
   to {
     transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
   }
 }
 

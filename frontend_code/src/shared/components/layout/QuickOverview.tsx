@@ -13,28 +13,22 @@ import { Button } from '@/shared/components/ui/Button'
 
 /** Gap between panel and viewport edges (below header / above bottom) */
 const PANEL_EDGE_GAP_PX = 12
+/** Must match CSS --duration-slide-in (~280ms) */
+const EXIT_MS = 280
 
 export type OpenQuickOverviewOptions = {
-  /** Header title in the panel chrome */
   title: string
-  /** Page-specific body (cards, fields, etc.) */
   content: ReactNode
-  /** Primary footer CTA — typically navigate to full detail */
   onOpenFull?: () => void
   fullRecordLabel?: string
-  /** Optional secondary footer action */
   secondaryLabel?: string
   onSecondary?: () => void
-  /** Tailwind max-width class for the drawer (page can override) */
   widthClass?: string
 }
 
 interface QuickOverviewContextValue {
-  /** Whether the panel is currently open */
   isOpen: boolean
-  /** Open the shared panel with page-specific content */
   openPanel: (options: OpenQuickOverviewOptions) => void
-  /** Alias for openPanel (list pages may destructure as `open`) */
   open: (options: OpenQuickOverviewOptions) => void
   closePanel: () => void
 }
@@ -50,13 +44,13 @@ export function useQuickOverview() {
 export function QuickOverviewProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
   const [options, setOptions] = useState<OpenQuickOverviewOptions | null>(null)
-  /** Keep content mounted during exit animation */
   const [visible, setVisible] = useState(false)
 
   const openPanel = useCallback((opts: OpenQuickOverviewOptions) => {
     setOptions(opts)
-    setIsOpen(true)
     setVisible(true)
+    // Next frame so enter animation always runs even when swapping content
+    requestAnimationFrame(() => setIsOpen(true))
   }, [])
 
   const closePanel = useCallback(() => {
@@ -68,7 +62,7 @@ export function QuickOverviewProvider({ children }: { children: ReactNode }) {
       const t = window.setTimeout(() => {
         setVisible(false)
         setOptions(null)
-      }, 280)
+      }, EXIT_MS)
       return () => window.clearTimeout(t)
     }
   }, [isOpen, visible])
@@ -106,15 +100,11 @@ export function QuickOverviewProvider({ children }: { children: ReactNode }) {
 }
 
 /**
- * Contextual Detail Drawer (Overview Panel) — shared base.
- *
- * - Not permanent — appears when a list row / visibility action opens it
- * - Slides in from the right (animate-slide-in-right)
- * - Height between App Header and bottom of viewport (with edge gap)
- * - Backdrop blurs main content; does not cover header / icon rail
- * - One drawer at a time; selecting another item replaces content
- * - Footer: Open full record + Close (same as Clients/Leads reference)
- * - Body content and width are provided by the inheriting page
+ * Shared Contextual Detail Drawer
+ * - Row click / visibility → open (page content)
+ * - Slide in + slide out animations
+ * - Backdrop blur below header only
+ * - Footer: Open full record + Close
  */
 function QuickOverviewPanelShell({
   isOpen,
@@ -140,12 +130,11 @@ function QuickOverviewPanelShell({
       )}
       aria-hidden={!isOpen}
     >
-      {/* Backdrop — blurs page table/content; starts below header */}
       <button
         type="button"
         className={cn(
           'absolute left-0 right-0 bottom-0 border-0 cursor-default',
-          'bg-black/40 backdrop-blur-sm transition-opacity duration-300',
+          'bg-black/40 backdrop-blur-sm transition-opacity duration-300 ease-out',
           isOpen ? 'opacity-100' : 'opacity-0',
         )}
         style={{ top: HEADER_HEIGHT_PX }}
@@ -162,7 +151,7 @@ function QuickOverviewPanelShell({
           'bg-surface-container-lowest border-l border-outline-variant shadow-2xl',
           'rounded-l-xl',
           widthClass,
-          isOpen ? 'animate-slide-in-right' : 'translate-x-full transition-transform duration-300',
+          isOpen ? 'animate-slide-in-right' : 'animate-slide-out-right',
         )}
         style={{
           top: HEADER_HEIGHT_PX + PANEL_EDGE_GAP_PX,
@@ -196,7 +185,8 @@ function QuickOverviewPanelShell({
               className="flex-1"
               onClick={() => {
                 onClose()
-                options.onOpenFull?.()
+                // Let exit animation start before navigate
+                window.setTimeout(() => options.onOpenFull?.(), 80)
               }}
             >
               {fullLabel}
@@ -216,7 +206,7 @@ function QuickOverviewPanelShell({
   )
 }
 
-/** @deprecated Panel is rendered by the provider — kept so AppShell import still resolves */
+/** @deprecated Panel is rendered by the provider */
 export function QuickOverviewPanel() {
   return null
 }
