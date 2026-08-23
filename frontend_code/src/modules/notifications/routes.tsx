@@ -8,11 +8,28 @@
  *   /notifications/$notificationId
  */
 import { createRoute } from '@tanstack/react-router'
-import { NotificationCenterPage } from './pages/NotificationCenterPage'
-import { ComposeNotificationPage } from './pages/ComposeNotificationPage'
-import { SentNotificationsPage } from './pages/SentNotificationsPage'
-import { NotificationSettingsPage } from './pages/NotificationSettingsPage'
-import { NotificationDetailPage } from './pages/NotificationDetailPage'
+import { lazyPage } from '@/shared/lib/lazyPage'
+
+const NotificationCenterPage = lazyPage(
+  () => import('./pages/NotificationCenterPage'),
+  'NotificationCenterPage',
+)
+const ComposeNotificationPage = lazyPage(
+  () => import('./pages/ComposeNotificationPage'),
+  'ComposeNotificationPage',
+)
+const SentNotificationsPage = lazyPage(
+  () => import('./pages/SentNotificationsPage'),
+  'SentNotificationsPage',
+)
+const NotificationSettingsPage = lazyPage(
+  () => import('./pages/NotificationSettingsPage'),
+  'NotificationSettingsPage',
+)
+const NotificationDetailPage = lazyPage(
+  () => import('./pages/NotificationDetailPage'),
+  'NotificationDetailPage',
+)
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createNotificationRoutes(appLayoutRoute: any) {
