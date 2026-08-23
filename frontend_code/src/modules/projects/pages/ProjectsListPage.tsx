@@ -10,6 +10,14 @@ import { RowActions } from '@/shared/components/ui/RowActions'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import {
+  QuickSection,
+  QuickStat,
+  QuickStatGrid,
+  QuickMetaTile,
+  QuickRelatedRow,
+  QuickPersonRow,
+} from '@/shared/components/layout/QuickOverviewParts'
 import { useProjectsList } from '../hooks/use-projects-list'
 import type { ProjectStatus } from '../schemas/project'
 import { cn } from '@/shared/lib/cn'
@@ -60,9 +68,6 @@ const STATUS_OPTIONS = [
 ]
 
 function ProjectQuickContent({
-  name,
-  code,
-  status,
   clientName,
   progress,
   taskCount,
@@ -70,9 +75,6 @@ function ProjectQuickContent({
   startDate,
   endDate,
 }: {
-  name: string
-  code?: string
-  status: string
   clientName?: string
   progress?: number
   taskCount?: number
@@ -80,53 +82,27 @@ function ProjectQuickContent({
   startDate?: string
   endDate?: string
 }) {
-  const initials = name
-    .split(' ')
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join('')
-    .toUpperCase()
-
   return (
     <>
-      <div className="flex items-start gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center text-xl font-bold shrink-0">
-          {initials}
+      <QuickSection title="General Info">
+        <div className="grid grid-cols-2 gap-3">
+          <QuickMetaTile icon="calendar_today" label="Start Date" value={startDate ?? '—'} />
+          <QuickMetaTile icon="event_available" label="End Date" value={endDate ?? '—'} />
         </div>
-        <div className="min-w-0">
-          <h5 className="text-xl font-bold text-on-surface truncate">{name}</h5>
-          {code && <p className="text-on-surface-variant text-sm">#{code}</p>}
-          <span className="inline-block mt-2 px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-surface-container text-on-surface">
-            {status.replace(/_/g, ' ')}
-          </span>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Client</p>
-          <p className="text-lg font-semibold">{clientName ?? '—'}</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Progress</p>
-          <p className="text-lg font-bold">{progress ?? 0}%</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Tasks</p>
-          <p className="text-lg font-bold">{taskCount ?? 0}</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Teams</p>
-          <p className="text-lg font-bold">{teamCount ?? 0}</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Start</p>
-          <p className="text-body-md font-semibold">{startDate ?? '—'}</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">End</p>
-          <p className="text-body-md font-semibold">{endDate ?? '—'}</p>
-        </div>
-      </div>
+      </QuickSection>
+
+      <QuickSection title="Quick Statistics">
+        <QuickStatGrid>
+          <QuickStat icon="check_circle" value={taskCount ?? 0} label="Tasks" />
+          <QuickStat icon="groups" value={teamCount ?? 0} label="Teams" />
+          <QuickStat icon="trending_up" value={`${progress ?? 0}%`} label="Progress" />
+        </QuickStatGrid>
+      </QuickSection>
+
+      <QuickSection title="Related Information">
+        <QuickRelatedRow icon="business" label="Client" value={clientName ?? '—'} />
+        <QuickRelatedRow icon="percent" label="Progress" value={`${progress ?? 0}%`} />
+      </QuickSection>
     </>
   )
 }
@@ -163,13 +139,15 @@ export function ProjectsListPage() {
   }
 
   const openProjectOverview = (project: (typeof pageItems)[number]) => {
+    const track = statusTrackLabel(project.status)
     openPanel({
-      title: 'Project Quick View',
+      title: project.name,
+      subtitle: project.code ? `ID: ${project.code}` : undefined,
+      icon: 'folder_open',
+      status: track.label,
+      statusDotClass: track.dot,
       content: (
         <ProjectQuickContent
-          name={project.name}
-          code={project.code}
-          status={project.status}
           clientName={project.clientName}
           progress={project.progress}
           taskCount={project.taskCount}
@@ -178,9 +156,10 @@ export function ProjectsListPage() {
           endDate={project.endDate}
         />
       ),
-      fullRecordLabel: 'Open full record',
+      fullRecordLabel: 'Open Workspace',
       onOpenFull: () => goDetail(project.id),
-      widthClass: 'max-w-md',
+      onEdit: () => goDetail(project.id, true),
+      widthClass: 'max-w-[520px]',
     })
   }
 
