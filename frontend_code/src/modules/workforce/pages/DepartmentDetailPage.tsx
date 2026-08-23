@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
@@ -9,17 +9,8 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Can } from '@/shared/rbac'
 import { Action, ResourceName } from '@/shared/schema'
-import {
-  assignEmployeeToDepartment,
-  getDepartment,
-  listDepartmentEmployees,
-  listEmployeesNotInDepartment,
-  listEmploymentOptionsForPicker,
-  removeEmployeeFromDepartment,
-  updateDepartment,
-  type DepartmentEmployee,
-  type DepartmentListItem,
-} from '../api/departments'
+import type { DepartmentEmployee } from '../api/departments'
+import { useDepartmentDetail } from '../hooks/use-department-detail'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { cn } from '@/shared/lib/cn'
 
@@ -35,15 +26,25 @@ export function DepartmentDetailPage() {
   const { departmentId } = useParams({ strict: false }) as { departmentId: string }
   const navigate = useNavigate()
   const id = Number(departmentId)
-  const [d, setD] = useState<DepartmentListItem | null>(null)
-  const [staff, setStaff] = useState<DepartmentEmployee[]>([])
-  const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState(false)
+
+  const {
+    department: d,
+    staff,
+    isLoading,
+    isError,
+    refetch,
+    updateDepartment,
+    assignEmployee,
+    removeEmployee,
+    isMutating,
+    listCandidates,
+    listHeadOptions,
+  } = useDepartmentDetail(id)
+
   const [addOpen, setAddOpen] = useState(false)
   const [mode, setMode] = useState<'choose' | 'existing'>('choose')
   const [candidates, setCandidates] = useState<{ value: string; label: string; meta?: string }[]>([])
   const [selectedEmp, setSelectedEmp] = useState('')
-  const [saving, setSaving] = useState(false)
 
   const [isEditing, setIsEditing] = useState(false)
   const [draftName, setDraftName] = useState('')
@@ -52,36 +53,10 @@ export function DepartmentDetailPage() {
   const [headOptions, setHeadOptions] = useState<{ value: string; label: string }[]>([])
   const [removeTarget, setRemoveTarget] = useState<DepartmentEmployee | null>(null)
 
-  const openPositions = Math.max(0, (d as DepartmentListItem & { openPositions?: number })?.openPositions ?? 0)
-
-  const reload = async () => {
-    const [dept, employees] = await Promise.all([getDepartment(id), listDepartmentEmployees(id)])
-    setD(dept)
-    setStaff(employees)
-    if (dept) {
-      setDraftName(dept.name)
-      setDraftHeadId(dept.headEmploymentId != null ? String(dept.headEmploymentId) : '')
-    }
-  }
-
-  useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      setLoading(true)
-      setLoadError(false)
-      try {
-        await reload()
-      } catch {
-        if (!cancelled) setLoadError(true)
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    })()
-    return () => {
-      cancelled = true
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id])
+  const openPositions = Math.max(
+    0,
+    (d as (typeof d & { openPositions?: number }) | null)?.openPositions ?? 0,
+  )
 
   const startEdit = async () => {
     if (!d) return
@@ -95,7 +70,7 @@ export function DepartmentDetailPage() {
     if (fromStaff.length > 0) {
       setHeadOptions(fromStaff)
     } else {
-      const all = await listEmploymentOptionsForPicker()
+      const all = await listHeadOptions()
       setHeadOptions(all.map((o) => ({ value: o.value, label: o.label })))
     }
   }
@@ -111,17 +86,15 @@ export function DepartmentDetailPage() {
 
   const saveEdit = async () => {
     if (!d) return
-    setSaving(true)
     try {
-      await updateDepartment(id, {
+      await updateDepartment({
         name: draftName.trim() || d.name,
         headEmploymentId: draftHeadId ? Number(draftHeadId) : null,
       })
-      await reload()
       setIsEditing(false)
       setHeadPickerOpen(false)
-    } finally {
-      setSaving(false)
+    } catch {
+      /* mutation error surface later if needed */
     }
   }
 
@@ -132,51 +105,41 @@ export function DepartmentDetailPage() {
   }
 
   const loadCandidates = async () => {
-    const rows = await listEmployeesNotInDepartment(id)
+    const rows = await listCandidates()
     setCandidates(rows)
     setMode('existing')
   }
 
   const assignExisting = async () => {
     if (!selectedEmp) return
-    setSaving(true)
     try {
-      await assignEmployeeToDepartment(Number(selectedEmp), id)
-      await reload()
+      await assignEmployee(Number(selectedEmp))
       setAddOpen(false)
-    } finally {
-      setSaving(false)
+    } catch {
+      /* ignore */
     }
   }
 
   const confirmRemove = async () => {
     if (!removeTarget) return
-    setSaving(true)
     try {
-      await removeEmployeeFromDepartment(removeTarget.employmentId, id)
-      await reload()
+      await removeEmployee(removeTarget.employmentId)
       setRemoveTarget(null)
-    } finally {
-      setSaving(false)
+    } catch {
+      /* ignore */
     }
   }
 
-  if (loading) {
+  if (isLoading) {
     return <PageLoadingSkeleton />
   }
 
-  if (loadError) {
+  if (isError) {
     return (
       <ErrorState
         title="Could not load department"
         description="Department data failed to load. Retry or go back."
-        onRetry={() => {
-          setLoading(true)
-          void reload()
-            .then(() => setLoadError(false))
-            .catch(() => setLoadError(true))
-            .finally(() => setLoading(false))
-        }}
+        onRetry={() => void refetch()}
       />
     )
   }
@@ -237,10 +200,10 @@ export function DepartmentDetailPage() {
           <div className="flex gap-2 flex-wrap">
             {isEditing ? (
               <>
-                <Button variant="ghost" onClick={cancelEdit} disabled={saving}>
+                <Button variant="ghost" onClick={cancelEdit} disabled={isMutating}>
                   Cancel
                 </Button>
-                <Button variant="primary" onClick={() => void saveEdit()} isLoading={saving}>
+                <Button variant="primary" onClick={() => void saveEdit()} isLoading={isMutating}>
                   Save
                 </Button>
               </>
@@ -443,14 +406,23 @@ export function DepartmentDetailPage() {
 
       {addOpen && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
-          <button type="button" className="absolute inset-0 bg-on-surface/30 backdrop-blur-sm" aria-label="Close" onClick={() => setAddOpen(false)} />
+          <button
+            type="button"
+            className="absolute inset-0 bg-on-surface/30 backdrop-blur-sm"
+            aria-label="Close"
+            onClick={() => setAddOpen(false)}
+          />
           <div className="relative bv-surface executive-shadow w-full sm:max-w-md p-6 space-y-4 z-10 rounded-t-2xl sm:rounded-xl">
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-title-lg font-semibold">Add Member</h3>
                 <p className="text-body-sm text-on-surface-variant mt-1">Add to {d.name}</p>
               </div>
-              <button type="button" className="p-1 rounded-lg hover:bg-surface-container" onClick={() => setAddOpen(false)}>
+              <button
+                type="button"
+                className="p-1 rounded-lg hover:bg-surface-container"
+                onClick={() => setAddOpen(false)}
+              >
                 <Icon name="close" />
               </button>
             </div>
@@ -488,9 +460,15 @@ export function DepartmentDetailPage() {
                   emptyLabel="Everyone is already in this department"
                 />
                 <div className="flex justify-end gap-2">
-                  <Button variant="ghost" onClick={() => setMode('choose')}>Back</Button>
-                  <Button variant="primary" disabled={!selectedEmp || saving} onClick={() => void assignExisting()}>
-                    {saving ? 'Assigning…' : 'Assign to department'}
+                  <Button variant="ghost" onClick={() => setMode('choose')}>
+                    Back
+                  </Button>
+                  <Button
+                    variant="primary"
+                    disabled={!selectedEmp || isMutating}
+                    onClick={() => void assignExisting()}
+                  >
+                    {isMutating ? 'Assigning…' : 'Assign to department'}
                   </Button>
                 </div>
               </div>
@@ -501,15 +479,27 @@ export function DepartmentDetailPage() {
 
       {removeTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <button type="button" className="absolute inset-0 bg-on-surface/40 backdrop-blur-sm" aria-label="Close" onClick={() => setRemoveTarget(null)} />
+          <button
+            type="button"
+            className="absolute inset-0 bg-on-surface/40 backdrop-blur-sm"
+            aria-label="Close"
+            onClick={() => setRemoveTarget(null)}
+          />
           <div className="relative bv-surface executive-shadow w-full max-w-md p-6 space-y-4 z-10 rounded-xl">
             <h3 className="text-title-lg font-semibold">Remove from department?</h3>
             <p className="text-body-sm text-on-surface-variant">
               <strong>{removeTarget.name}</strong> will no longer be assigned to <strong>{d.name}</strong>.
             </p>
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => setRemoveTarget(null)} disabled={saving}>Cancel</Button>
-              <Button variant="primary" className="!bg-error !text-white" isLoading={saving} onClick={() => void confirmRemove()}>
+              <Button variant="ghost" onClick={() => setRemoveTarget(null)} disabled={isMutating}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                className="!bg-error !text-white"
+                isLoading={isMutating}
+                onClick={() => void confirmRemove()}
+              >
                 Remove
               </Button>
             </div>
