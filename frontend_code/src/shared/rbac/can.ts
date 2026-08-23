@@ -1,6 +1,9 @@
 /**
  * Permission check — resolves role_permissions for current employment.
  * Until backend ships, reads from schema seed via getDb().
+ *
+ * Effective grants are memoized per employmentId so render-heavy UIs
+ * do not re-walk seed tables on every can() call.
  */
 
 import { getDb } from '@/shared/mock/db'
@@ -23,50 +26,6 @@ const SCOPE_RANK: Record<string, number> = {
   CUSTOM: 0,
 }
 
-export function can(params: CanParams): boolean {
-  const db = getDb() as ReturnType<typeof getDb> & {
-    resources?: { id: number; name: string }[]
-    permissions?: { id: number; resource_id: number; action: string }[]
-    scopes?: { id: number; name: string }[]
-    role_permissions?: { role_id: number; permission_id: number; scope_id: number }[]
-    employee_roles?: { employment_id: number; role_id: number }[]
-  }
-
-  const employmentId = params.employmentId ?? getCurrentEmploymentId()
-  if (employmentId == null) return false
-
-  const roleIds = (db.employee_roles ?? [])
-    .filter((er) => er.employment_id === employmentId)
-    .map((er) => er.role_id)
-
-  if (roleIds.length === 0) return false
-
-  // Super Admin (role id 1) — full access
-  if (roleIds.includes(1)) return true
-
-  const resource = (db.resources ?? []).find((r) => r.name === params.resource)
-  if (!resource) return false
-
-  const permission = (db.permissions ?? []).find(
-    (p) => p.resource_id === resource.id && p.action === params.action,
-  )
-  if (!permission) return false
-
-  const grants = (db.role_permissions ?? []).filter(
-    (rp) => roleIds.includes(rp.role_id) && rp.permission_id === permission.id,
-  )
-  if (grants.length === 0) return false
-
-  if (!params.minScope) return true
-
-  const required = SCOPE_RANK[params.minScope] ?? 0
-  return grants.some((g) => {
-    const scope = (db.scopes ?? []).find((s) => s.id === g.scope_id)
-    if (!scope) return false
-    return (SCOPE_RANK[scope.name] ?? 0) >= required
-  })
-}
-
 /** Session employment id — set by auth after login (localStorage). */
 const EMPLOYMENT_KEY = 'bytevon_current_employment_id'
 
@@ -84,9 +43,99 @@ export function getCurrentEmploymentId(): number | null {
 export function setCurrentEmploymentId(id: number | null) {
   if (id == null) {
     localStorage.removeItem(EMPLOYMENT_KEY)
-    return
+  } else {
+    localStorage.setItem(EMPLOYMENT_KEY, String(id))
   }
-  localStorage.setItem(EMPLOYMENT_KEY, String(id))
+  // Drop cached grants when session employment changes
+  clearPermissionCache()
+}
+
+type GrantKey = string // `${resource}|${action}`
+
+interface EffectiveGrants {
+  /** Super Admin short-circuit */
+  isSuperAdmin: boolean
+  /** Max scope rank per resource|action */
+  maxScopeByGrant: Map<GrantKey, number>
+}
+
+const grantsCache = new Map<number, EffectiveGrants>()
+
+export function clearPermissionCache() {
+  grantsCache.clear()
+}
+
+function buildEffectiveGrants(employmentId: number): EffectiveGrants {
+  const db = getDb() as ReturnType<typeof getDb> & {
+    resources?: { id: number; name: string }[]
+    permissions?: { id: number; resource_id: number; action: string }[]
+    scopes?: { id: number; name: string }[]
+    role_permissions?: { role_id: number; permission_id: number; scope_id: number }[]
+    employee_roles?: { employment_id: number; role_id: number }[]
+  }
+
+  const roleIds = (db.employee_roles ?? [])
+    .filter((er) => er.employment_id === employmentId)
+    .map((er) => er.role_id)
+
+  if (roleIds.length === 0) {
+    return { isSuperAdmin: false, maxScopeByGrant: new Map() }
+  }
+
+  // Super Admin (role id 1) — full access
+  if (roleIds.includes(1)) {
+    return { isSuperAdmin: true, maxScopeByGrant: new Map() }
+  }
+
+  const resourceById = new Map((db.resources ?? []).map((r) => [r.id, r.name]))
+  const permissionById = new Map(
+    (db.permissions ?? []).map((p) => [p.id, { resourceId: p.resource_id, action: p.action }]),
+  )
+  const scopeRankById = new Map(
+    (db.scopes ?? []).map((s) => [s.id, SCOPE_RANK[s.name] ?? 0]),
+  )
+
+  const maxScopeByGrant = new Map<GrantKey, number>()
+
+  for (const rp of db.role_permissions ?? []) {
+    if (!roleIds.includes(rp.role_id)) continue
+    const perm = permissionById.get(rp.permission_id)
+    if (!perm) continue
+    const resourceName = resourceById.get(perm.resourceId)
+    if (!resourceName) continue
+    const key: GrantKey = `${resourceName}|${perm.action}`
+    const rank = scopeRankById.get(rp.scope_id) ?? 0
+    const prev = maxScopeByGrant.get(key) ?? 0
+    if (rank > prev) maxScopeByGrant.set(key, rank)
+  }
+
+  return { isSuperAdmin: false, maxScopeByGrant }
+}
+
+function getEffectiveGrants(employmentId: number): EffectiveGrants {
+  let cached = grantsCache.get(employmentId)
+  if (!cached) {
+    cached = buildEffectiveGrants(employmentId)
+    grantsCache.set(employmentId, cached)
+  }
+  return cached
+}
+
+export function can(params: CanParams): boolean {
+  const employmentId = params.employmentId ?? getCurrentEmploymentId()
+  if (employmentId == null) return false
+
+  const grants = getEffectiveGrants(employmentId)
+  if (grants.isSuperAdmin) return true
+
+  const key: GrantKey = `${params.resource}|${params.action}`
+  const maxRank = grants.maxScopeByGrant.get(key)
+  if (maxRank == null) return false
+
+  if (!params.minScope) return true
+
+  const required = SCOPE_RANK[params.minScope] ?? 0
+  return maxRank >= required
 }
 
 export function useCan() {
