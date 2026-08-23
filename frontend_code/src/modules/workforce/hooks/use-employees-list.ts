@@ -4,6 +4,7 @@ import { useListControls } from '@/shared/hooks/useListControls'
 import { listEmployments } from '../api/employment'
 import { listDepartments } from '../api/departments'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { computeEmploymentListMetrics } from '@/shared/compute/workforce-metrics'
 
 const FILTER_DEFAULTS = {
   dept: 'all',
@@ -72,7 +73,9 @@ export function useEmployeesList() {
     states,
     types,
     loading: employeesQuery.isLoading,
+    isLoading: employeesQuery.isLoading,
     error: employeesQuery.isError,
+    isError: employeesQuery.isError,
     isFetching: employeesQuery.isFetching,
     search: controls.search,
     setSearch: controls.setSearch,

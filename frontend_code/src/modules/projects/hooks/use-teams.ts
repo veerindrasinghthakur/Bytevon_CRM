@@ -1,17 +1,18 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getTeams, getTeam, createTeam, updateTeam } from '../api/teams'
 import type { Team, TeamListCache } from '../types'
+import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 
 export function useTeams(filters?: { search?: string }) {
   return useQuery({
-    queryKey: ['projects', 'teams', 'list', filters ?? {}],
+    queryKey: queryKeys.teams.list(filters ?? {}),
     queryFn: () => getTeams(filters),
   })
 }
 
 export function useTeam(id: number | undefined) {
   return useQuery({
-    queryKey: ['projects', 'teams', 'detail', id],
+    queryKey: queryKeys.teams.detail(id as number),
     queryFn: () => getTeam(id as number),
     enabled: id != null && Number.isFinite(id),
   })
@@ -30,9 +31,9 @@ export function useCreateTeam() {
       projectName?: string
     }) => createTeam(input),
     onMutate: async (input) => {
-      await queryClient.cancelQueries({ queryKey: ['projects', 'teams', 'list'] })
+      await queryClient.cancelQueries({ queryKey: queryKeys.teams.all })
       const previous = queryClient.getQueriesData<TeamListCache>({
-        queryKey: ['projects', 'teams', 'list'],
+        queryKey: queryKeys.teams.all,
       })
 
       const memberCount = (input.memberNames?.length ?? 0) + (input.headName ? 1 : 0)
@@ -50,7 +51,7 @@ export function useCreateTeam() {
         createdAt: new Date().toISOString(),
       }
 
-      queryClient.setQueriesData<TeamListCache>({ queryKey: ['projects', 'teams', 'list'] }, (old) => {
+      queryClient.setQueriesData<TeamListCache>({ queryKey: queryKeys.teams.all }, (old) => {
         if (!old) return { items: [optimistic], total: 1 }
         return { items: [optimistic, ...old.items], total: old.total + 1 }
       })
@@ -61,19 +62,18 @@ export function useCreateTeam() {
       ctx?.previous.forEach(([key, data]) => queryClient.setQueryData(key, data))
     },
     onSuccess: (created, _input, ctx) => {
-      queryClient.setQueriesData<TeamListCache>({ queryKey: ['projects', 'teams', 'list'] }, (old) => {
+      queryClient.setQueriesData<TeamListCache>({ queryKey: queryKeys.teams.all }, (old) => {
         if (!old) return { items: [created], total: 1 }
         return {
           items: old.items.map((t) => (t.id === ctx?.optimisticId ? created : t)),
           total: old.total,
         }
       })
-      queryClient.setQueryData(['projects', 'teams', 'detail', created.id], created)
+      queryClient.setQueryData(queryKeys.teams.detail(created.id), created)
     },
     onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ['projects', 'teams'] })
-      void queryClient.invalidateQueries({ queryKey: ['projects', 'list'] })
-      void queryClient.invalidateQueries({ queryKey: ['projects', 'detail'] })
+      invalidate.teams(queryClient)
+      invalidate.projects(queryClient)
     },
   })
 }
@@ -89,14 +89,14 @@ export function useUpdateTeam() {
       patch: Partial<Pick<Team, 'name' | 'description' | 'department' | 'headName' | 'headRole' | 'status'>>
     }) => updateTeam(id, patch),
     onMutate: async ({ id, patch }) => {
-      await queryClient.cancelQueries({ queryKey: ['projects', 'teams'] })
+      await queryClient.cancelQueries({ queryKey: queryKeys.teams.all })
 
       const previousLists = queryClient.getQueriesData<TeamListCache>({
-        queryKey: ['projects', 'teams', 'list'],
+        queryKey: queryKeys.teams.all,
       })
-      const previousDetail = queryClient.getQueryData<Team>(['projects', 'teams', 'detail', id])
+      const previousDetail = queryClient.getQueryData<Team>(queryKeys.teams.detail(id))
 
-      queryClient.setQueriesData<TeamListCache>({ queryKey: ['projects', 'teams', 'list'] }, (old) => {
+      queryClient.setQueriesData<TeamListCache>({ queryKey: queryKeys.teams.all }, (old) => {
         if (!old) return old
         return {
           ...old,
@@ -105,7 +105,7 @@ export function useUpdateTeam() {
       })
 
       if (previousDetail) {
-        queryClient.setQueryData(['projects', 'teams', 'detail', id], {
+        queryClient.setQueryData(queryKeys.teams.detail(id), {
           ...previousDetail,
           ...patch,
         })
@@ -116,12 +116,12 @@ export function useUpdateTeam() {
     onError: (_err, _vars, ctx) => {
       ctx?.previousLists.forEach(([key, data]) => queryClient.setQueryData(key, data))
       if (ctx?.previousDetail) {
-        queryClient.setQueryData(['projects', 'teams', 'detail', ctx.id], ctx.previousDetail)
+        queryClient.setQueryData(queryKeys.teams.detail(ctx.id), ctx.previousDetail)
       }
     },
     onSuccess: (team) => {
-      queryClient.setQueryData(['projects', 'teams', 'detail', team.id], team)
-      queryClient.setQueriesData<TeamListCache>({ queryKey: ['projects', 'teams', 'list'] }, (old) => {
+      queryClient.setQueryData(queryKeys.teams.detail(team.id), team)
+      queryClient.setQueriesData<TeamListCache>({ queryKey: queryKeys.teams.all }, (old) => {
         if (!old) return old
         return {
           ...old,
@@ -130,7 +130,7 @@ export function useUpdateTeam() {
       })
     },
     onSettled: () => {
-      void queryClient.invalidateQueries({ queryKey: ['projects', 'teams'] })
+      invalidate.teams(queryClient)
     },
   })
 }

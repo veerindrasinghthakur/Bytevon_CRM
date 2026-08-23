@@ -79,6 +79,7 @@ export const queryKeys = {
   documents: {
     all: ['documents'] as const,
     list: (filters?: unknown) => [...queryKeys.documents.all, 'list', filters ?? {}] as const,
+    detail: (id: string) => [...queryKeys.documents.all, 'detail', id] as const,
   },
   sales: {
     leads: {
@@ -121,29 +122,9 @@ export const queryKeys = {
     leave: ['my-work', 'leave'] as const,
     tasks: {
       all: ['my-work', 'tasks'] as const,
-      list: (filters?: unknown) => ['my-work', 'tasks', 'list', filters ?? {}] as const,
+      list: (filters?: unknown) => [...queryKeys.myWork.tasks.all, 'list', filters ?? {}] as const,
     },
     overview: ['my-work', 'overview'] as const,
-  },
-  documents: {
-    all: ['documents'] as const,
-    list: (filters?: unknown) => ['documents', 'list', filters ?? {}] as const,
-    detail: (id: string) => ['documents', 'detail', id] as const,
-  },
-  organization: {
-    locations: {
-      all: ['organization', 'locations'] as const,
-      list: (filters?: unknown) =>
-        [...queryKeys.organization.locations.all, 'list', filters ?? {}] as const,
-      detail: (id: number) => [...queryKeys.organization.locations.all, 'detail', id] as const,
-    },
-    shifts: {
-      all: ['organization', 'shifts'] as const,
-      list: (filters?: unknown) =>
-        [...queryKeys.organization.shifts.all, 'list', filters ?? {}] as const,
-      detail: (id: number) => [...queryKeys.organization.shifts.all, 'detail', id] as const,
-      staff: (id: number) => [...queryKeys.organization.shifts.all, 'staff', id] as const,
-    },
   },
 } as const
 
@@ -165,13 +146,19 @@ export const invalidate = {
   salesClients: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.sales.clients.all }),
   salesCaseStudies: (qc: Qc) =>
     void qc.invalidateQueries({ queryKey: queryKeys.sales.caseStudies.all }),
+  caseStudies: (qc: Qc) =>
+    void qc.invalidateQueries({ queryKey: queryKeys.sales.caseStudies.all }),
   notifications: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.notifications.all }),
   approvals: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.approvals.all }),
-  documents: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.documents.all }),
+  /** Canonical names */
   organizationLocations: (qc: Qc) =>
     void qc.invalidateQueries({ queryKey: queryKeys.organization.locations.all }),
   organizationShifts: (qc: Qc) =>
     void qc.invalidateQueries({ queryKey: queryKeys.organization.shifts.all }),
-  myWorkTasks: (qc: Qc) =>
-    void qc.invalidateQueries({ queryKey: queryKeys.myWork.tasks.all }),
+  /** Aliases used by org hooks */
+  locations: (qc: Qc) =>
+    void qc.invalidateQueries({ queryKey: queryKeys.organization.locations.all }),
+  orgShifts: (qc: Qc) =>
+    void qc.invalidateQueries({ queryKey: queryKeys.organization.shifts.all }),
+  myWorkTasks: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.tasks.all }),
 }
