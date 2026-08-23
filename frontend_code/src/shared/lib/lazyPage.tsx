@@ -12,7 +12,14 @@ export function lazyPage<
 >(factory: () => Promise<M>, exportName: K) {
   const Lazy = lazy(async () => {
     const mod = await factory()
-    return { default: mod[exportName] as ComponentType<any> }
+    const Comp = mod[exportName]
+    if (!Comp) {
+      const keys = Object.keys(mod).join(', ') || '(none)'
+      throw new Error(
+        `[lazyPage] Export "${exportName}" not found in module. Available: ${keys}`,
+      )
+    }
+    return { default: Comp as ComponentType<Record<string, unknown>> }
   })
 
   function LazyPageRoute(props: Record<string, unknown>) {

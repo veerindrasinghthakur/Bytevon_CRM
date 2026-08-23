@@ -2,16 +2,19 @@
  * Organization module routes.
  * - Settings tree: parent = admin settings layout route (paths relative: locations, shifts, …)
  * - Workforce shift aliases: parent = app layout
+ * All pages lazy-loaded so a single page failure does not block the router tree.
  */
 import { createRoute } from '@tanstack/react-router'
-import { LocationsListPage } from './pages/LocationsListPage'
-import { LocationDetailPage } from './pages/LocationDetailPage'
-import { ShiftsListPage } from './pages/ShiftsListPage'
-import { ShiftDetailPage } from './pages/ShiftDetailPage'
-import { WorkingWeeksPage } from './pages/WorkingWeeksPage'
-import { HolidayCalendarsPage } from './pages/HolidayCalendarsPage'
-import { HolidaysListPage } from './pages/HolidaysListPage'
-import { PositionsListPage } from './pages/PositionsListPage'
+import { lazyPage } from '@/shared/lib/lazyPage'
+
+const LocationsListPage = lazyPage(() => import('./pages/LocationsListPage'), 'LocationsListPage')
+const LocationDetailPage = lazyPage(() => import('./pages/LocationDetailPage'), 'LocationDetailPage')
+const ShiftsListPage = lazyPage(() => import('./pages/ShiftsListPage'), 'ShiftsListPage')
+const ShiftDetailPage = lazyPage(() => import('./pages/ShiftDetailPage'), 'ShiftDetailPage')
+const WorkingWeeksPage = lazyPage(() => import('./pages/WorkingWeeksPage'), 'WorkingWeeksPage')
+const HolidayCalendarsPage = lazyPage(() => import('./pages/HolidayCalendarsPage'), 'HolidayCalendarsPage')
+const HolidaysListPage = lazyPage(() => import('./pages/HolidaysListPage'), 'HolidaysListPage')
+const PositionsListPage = lazyPage(() => import('./pages/PositionsListPage'), 'PositionsListPage')
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createOrganizationSettingsRoutes(settingsLayoutRoute: any) {

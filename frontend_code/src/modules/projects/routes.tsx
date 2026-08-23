@@ -50,6 +50,9 @@ export function createProjectsRoutes(appLayoutRoute: any) {
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/teams/$teamId',
+      validateSearch: (search: Record<string, unknown>) => ({
+        edit: typeof search.edit === 'string' ? search.edit : undefined,
+      }),
       component: TeamDetailPage,
     }),
     createRoute({

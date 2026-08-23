@@ -1,7 +1,9 @@
 import { createRoute } from '@tanstack/react-router'
-import { ProfilePage } from './pages/ProfilePage'
-import { ActiveSessionsPage } from './pages/ActiveSessionsPage'
-import { ChangePasswordPage } from './pages/ChangePasswordPage'
+import { lazyPage } from '@/shared/lib/lazyPage'
+
+const ProfilePage = lazyPage(() => import('./pages/ProfilePage'), 'ProfilePage')
+const ActiveSessionsPage = lazyPage(() => import('./pages/ActiveSessionsPage'), 'ActiveSessionsPage')
+const ChangePasswordPage = lazyPage(() => import('./pages/ChangePasswordPage'), 'ChangePasswordPage')
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createProfileRoutes(appLayoutRoute: any) {
