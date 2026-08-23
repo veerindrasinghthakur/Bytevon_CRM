@@ -1,5 +1,6 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useListControls } from '@/shared/hooks/useListControls'
 import { listEmployments } from '../api/employment'
 import { listDepartments } from '../api/departments'
 import { computeEmploymentListMetrics } from '@/shared/compute/workforce-metrics'
@@ -8,18 +9,22 @@ import { DEPARTMENTS_LIST_KEY } from './use-departments-list'
 /** Shared query key — also invalidated by department mutations */
 export const EMPLOYEES_LIST_KEY = ['workforce', 'employees', 'list'] as const
 
+const FILTER_DEFAULTS = {
+  dept: 'all',
+  state: 'all',
+  type: 'all',
+}
+
 export function useEmployeesList() {
-  const [search, setSearch] = useState('')
-  const [deptFilter, setDeptFilter] = useState('all')
-  const [stateFilter, setStateFilter] = useState('all')
-  const [typeFilter, setTypeFilter] = useState('all')
+  const controls = useListControls({
+    filterDefaults: FILTER_DEFAULTS,
+  })
 
   const employeesQuery = useQuery({
     queryKey: [...EMPLOYEES_LIST_KEY],
     queryFn: () => listEmployments({}),
   })
 
-  // Reuse the same departments list cache as Departments pages
   const departmentsQuery = useQuery({
     queryKey: [...DEPARTMENTS_LIST_KEY, { includeArchived: false }],
     queryFn: () => listDepartments({}),
@@ -34,7 +39,7 @@ export function useEmployeesList() {
   const metrics = useMemo(() => computeEmploymentListMetrics(items), [items])
 
   const filtered = useMemo(() => {
-    const q = search.toLowerCase().trim()
+    const q = controls.search.toLowerCase().trim()
     return items.filter((e) => {
       if (q) {
         const match =
@@ -45,12 +50,12 @@ export function useEmployeesList() {
           e.positionName.toLowerCase().includes(q)
         if (!match) return false
       }
-      if (deptFilter !== 'all' && e.departmentName !== deptFilter) return false
-      if (stateFilter !== 'all' && e.current_state !== stateFilter) return false
-      if (typeFilter !== 'all' && e.employment_type !== typeFilter) return false
+      if (controls.filters.dept !== 'all' && e.departmentName !== controls.filters.dept) return false
+      if (controls.filters.state !== 'all' && e.current_state !== controls.filters.state) return false
+      if (controls.filters.type !== 'all' && e.employment_type !== controls.filters.type) return false
       return true
     })
-  }, [items, search, deptFilter, stateFilter, typeFilter])
+  }, [items, controls.search, controls.filters.dept, controls.filters.state, controls.filters.type])
 
   const states = useMemo(
     () => Array.from(new Set(items.map((e) => e.current_state))).sort(),
@@ -60,16 +65,6 @@ export function useEmployeesList() {
     () => Array.from(new Set(items.map((e) => e.employment_type))).sort(),
     [items],
   )
-
-  const filtersActive =
-    Boolean(search) || deptFilter !== 'all' || stateFilter !== 'all' || typeFilter !== 'all'
-
-  const resetFilters = useCallback(() => {
-    setSearch('')
-    setDeptFilter('all')
-    setStateFilter('all')
-    setTypeFilter('all')
-  }, [])
 
   return {
     items,
@@ -81,16 +76,20 @@ export function useEmployeesList() {
     loading: employeesQuery.isLoading,
     error: employeesQuery.isError,
     isFetching: employeesQuery.isFetching,
-    search,
-    setSearch,
-    deptFilter,
-    setDeptFilter,
-    stateFilter,
-    setStateFilter,
-    typeFilter,
-    setTypeFilter,
-    filtersActive,
-    resetFilters,
+    search: controls.search,
+    setSearch: controls.setSearch,
+    deptFilter: controls.filters.dept,
+    setDeptFilter: (v: string) => controls.setFilter('dept', v),
+    stateFilter: controls.filters.state,
+    setStateFilter: (v: string) => controls.setFilter('state', v),
+    typeFilter: controls.filters.type,
+    setTypeFilter: (v: string) => controls.setFilter('type', v),
+    filtersActive: controls.anyActive,
+    resetFilters: controls.resetAll,
+    page: controls.page,
+    setPage: controls.setPage,
+    pageSize: controls.pageSize,
+    pageItems: controls.pageItems(filtered),
     reload: () => void employeesQuery.refetch(),
     refetch: employeesQuery.refetch,
   }
