@@ -3,7 +3,12 @@
  * Path: /dashboard (executive)
  */
 import { createRoute } from '@tanstack/react-router'
-import { ExecutiveDashboardPage } from './pages/ExecutiveDashboardPage'
+import { lazyPage } from '@/shared/lib/lazyPage'
+
+const ExecutiveDashboardPage = lazyPage(
+  () => import('./pages/ExecutiveDashboardPage'),
+  'ExecutiveDashboardPage',
+)
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createDashboardRoutes(appLayoutRoute: any) {
