@@ -299,10 +299,10 @@ export function ClientsListPage() {
                         isSelected ? 'bg-secondary/10' : 'zebra-row',
                       )}
                       onMouseDown={() => startLongPress(client.id)}
-                      onMouseUp={() => endLongPress(client)}
+                      onMouseUp={() => endLongPress(client, openClientOverview)}
                       onMouseLeave={clearLongPress}
                       onTouchStart={() => startLongPress(client.id)}
-                      onTouchEnd={() => endLongPress(client)}
+                      onTouchEnd={() => endLongPress(client, openClientOverview)}
                       onTouchCancel={clearLongPress}
                       onContextMenu={(e) => e.preventDefault()}
                     >
