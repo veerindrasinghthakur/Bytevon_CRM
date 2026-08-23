@@ -454,5 +454,3 @@ function NotificationCard({
     </div>
   )
 }
-
-export { NotificationCenterPage as NotificationsPage }

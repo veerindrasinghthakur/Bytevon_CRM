@@ -1,4 +1,4 @@
-export { NotificationCenterPage, NotificationsPage } from './pages/NotificationCenterPage'
+export { NotificationCenterPage } from './pages/NotificationCenterPage'
 export { NotificationDetailPage } from './pages/NotificationDetailPage'
 export { ComposeNotificationPage } from './pages/ComposeNotificationPage'
 export { SentNotificationsPage } from './pages/SentNotificationsPage'
