@@ -6,6 +6,8 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { StatusDot } from '@/shared/components/ui/StatusDot'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { ListToolbar } from '@/shared/components/layout/ListToolbar'
+import { RowActions } from '@/shared/components/ui/RowActions'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import {
   QuickSection,
@@ -95,6 +97,7 @@ export function ClientsListPage() {
     filtered,
     isLoading,
     isError,
+    isFetching,
     refetch,
     search,
     setSearch,
@@ -103,6 +106,7 @@ export function ClientsListPage() {
     typeFilter,
     setTypeFilter,
     resetFilters,
+    filtersActive,
     selectionMode,
     selectedIds,
     allFilteredSelected,
@@ -128,6 +132,9 @@ export function ClientsListPage() {
       content: <ClientQuickContent client={client} />,
       fullRecordLabel: 'Open full record',
       onOpenFull: () => openFull(client.id),
+      onEdit: () =>
+        navigate({ to: '/sales/clients/$clientId/edit', params: { clientId: client.id } }),
+      editLabel: 'Edit client',
       widthClass: 'max-w-[520px]',
     })
   }
@@ -138,7 +145,14 @@ export function ClientsListPage() {
         title="Client Management"
         description="Manage client accounts, contacts, and commercial relationships."
         actions={
-          <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">upload</span>}
+            >
+              Import
+            </Button>
             <ExportButton
               resource={ResourceName.CLIENT}
               query={search}
@@ -148,7 +162,8 @@ export function ClientsListPage() {
             />
             <Button
               variant="primary"
-              leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
               onClick={() => navigate({ to: '/sales/clients/new' })}
             >
               New Client
@@ -185,18 +200,14 @@ export function ClientsListPage() {
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 bg-surface-container-low p-4 rounded-xl border border-outline-variant">
-        <div className="relative flex-1 min-w-[200px]">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
-            search
-          </span>
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary transition-colors"
-            placeholder="Search by name, industry, or contact..."
-          />
-        </div>
+      <ListToolbar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search by name, industry, or contact..."
+        filtersActive={filtersActive}
+        onResetFilters={resetFilters}
+        onRefresh={() => void refetch()}
+      >
         <Select
           value={statusFilter}
           onChange={setStatusFilter}
@@ -220,15 +231,7 @@ export function ClientsListPage() {
           ]}
           minWidthClass="min-w-[140px]"
         />
-        <button
-          type="button"
-          className="p-2 text-secondary border border-outline-variant rounded-lg hover:bg-secondary/5 transition-colors"
-          onClick={resetFilters}
-          aria-label="Reset filters"
-        >
-          <span className="material-symbols-outlined text-lg">restart_alt</span>
-        </button>
-      </div>
+      </ListToolbar>
 
       {selectionMode && (
         <div className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl border border-secondary/30 bg-secondary/5">
@@ -252,8 +255,6 @@ export function ClientsListPage() {
         </div>
       )}
 
-      {isLoading && <TableSkeleton rows={6} />}
-
       {isError && (
         <ErrorState
           title="Failed to load clients"
@@ -263,8 +264,13 @@ export function ClientsListPage() {
         />
       )}
 
-      {!isLoading && !isError && (
-        <div className="bv-surface overflow-hidden">
+      {!isError && (
+        <div className="bv-surface overflow-hidden relative">
+          {(isLoading || isFetching) && (
+            <div className="absolute inset-0 z-10 bg-surface-container-lowest/70 backdrop-blur-[1px]">
+              <TableSkeleton rows={6} />
+            </div>
+          )}
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -357,34 +363,34 @@ export function ClientsListPage() {
                         onMouseDown={(e) => e.stopPropagation()}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            type="button"
-                            className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant transition-colors"
-                            onClick={() => openClientOverview(client)}
-                            aria-label="Quick view"
-                          >
-                            <span className="material-symbols-outlined text-sm">visibility</span>
-                          </button>
-                          <button
-                            type="button"
-                            className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant transition-colors"
-                            onClick={() => openFull(client.id)}
-                            aria-label="Open full record"
-                          >
-                            <span className="material-symbols-outlined text-sm">open_in_new</span>
-                          </button>
-                          {client.chatLink && (
-                            <a
-                              href={client.chatLink}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="p-1.5 hover:bg-surface-container rounded-md text-secondary transition-colors"
-                              title="Open chat"
-                            >
-                              <span className="material-symbols-outlined text-sm">chat</span>
-                            </a>
-                          )}
+                        <div className="flex justify-center">
+                          <RowActions
+                            label={`Actions for ${client.name}`}
+                            actions={[
+                              {
+                                id: 'overview',
+                                label: 'Quick view',
+                                icon: 'visibility',
+                                onClick: () => openClientOverview(client),
+                              },
+                              {
+                                id: 'details',
+                                label: 'View details',
+                                icon: 'description',
+                                onClick: () => openFull(client.id),
+                              },
+                              {
+                                id: 'edit',
+                                label: 'Edit',
+                                icon: 'edit',
+                                onClick: () =>
+                                  navigate({
+                                    to: '/sales/clients/$clientId/edit',
+                                    params: { clientId: client.id },
+                                  }),
+                              },
+                            ]}
+                          />
                         </div>
                       </td>
                     </tr>
