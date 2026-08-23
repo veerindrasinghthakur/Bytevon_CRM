@@ -9,6 +9,7 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { useListSelection } from '@/shared/hooks/useListSelection'
+import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import { Can } from '@/shared/rbac'
 import { Action, ResourceName } from '@/shared/schema'
 import { useEmployeesList } from '../hooks/use-employees-list'
@@ -32,8 +33,74 @@ function Icon({ name, className }: { name: string; className?: string }) {
   )
 }
 
+function EmployeeQuickContent({
+  fullName,
+  avatarInitials,
+  employee_code,
+  email,
+  departmentName,
+  positionName,
+  employment_type,
+  current_state,
+  hasLogin,
+}: {
+  fullName: string
+  avatarInitials?: string
+  employee_code?: string
+  email?: string
+  departmentName?: string
+  positionName?: string
+  employment_type: string
+  current_state: string
+  hasLogin?: boolean
+}) {
+  return (
+    <>
+      <div className="flex items-start gap-4">
+        <div className="w-16 h-16 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xl font-bold shrink-0">
+          {avatarInitials ?? fullName.slice(0, 2).toUpperCase()}
+        </div>
+        <div className="min-w-0">
+          <h5 className="text-xl font-bold text-on-surface truncate">{fullName}</h5>
+          <p className="text-on-surface-variant text-sm">
+            {employee_code}
+            {email ? ` · ${email}` : ''}
+          </p>
+          <span
+            className={cn(
+              'inline-flex mt-2 px-2.5 py-0.5 rounded-full text-label-sm font-bold border',
+              stateStyles[current_state] ?? 'bg-surface-container',
+            )}
+          >
+            {current_state.replace(/_/g, ' ')}
+          </span>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Department</p>
+          <p className="text-lg font-semibold">{departmentName ?? '—'}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Position</p>
+          <p className="text-lg font-semibold">{positionName ?? '—'}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Type</p>
+          <p className="text-body-md font-semibold">{employment_type.replace(/_/g, ' ')}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Login</p>
+          <p className="text-body-md font-semibold">{hasLogin ? 'Yes' : 'No login'}</p>
+        </div>
+      </div>
+    </>
+  )
+}
+
 export function EmployeesListPage() {
   const navigate = useNavigate()
+  const { openPanel } = useQuickOverview()
   const {
     items,
     filtered,
@@ -68,6 +135,28 @@ export function EmployeesListPage() {
     navigate({
       to: '/workforce/employees/$employeeId',
       params: { employeeId: String(id) },
+    })
+  }
+
+  const openEmployeeOverview = (emp: (typeof pageItems)[number]) => {
+    openPanel({
+      title: 'Employee Quick View',
+      content: (
+        <EmployeeQuickContent
+          fullName={emp.fullName}
+          avatarInitials={emp.avatarInitials}
+          employee_code={emp.employee_code}
+          email={emp.email}
+          departmentName={emp.departmentName}
+          positionName={emp.positionName}
+          employment_type={emp.employment_type}
+          current_state={emp.current_state}
+          hasLogin={emp.hasLogin}
+        />
+      ),
+      fullRecordLabel: 'Open full record',
+      onOpenFull: () => goDetail(emp.id),
+      widthClass: 'max-w-md',
     })
   }
 
@@ -220,10 +309,10 @@ export function EmployeesListPage() {
                         isSelected ? 'bg-secondary/10' : 'zebra-row',
                       )}
                       onMouseDown={() => selection.onRowPressStart(sid)}
-                      onMouseUp={() => selection.onRowPressEnd(sid, () => goDetail(emp.id))}
+                      onMouseUp={() => selection.onRowPressEnd(sid, () => openEmployeeOverview(emp))}
                       onMouseLeave={selection.onRowPressCancel}
                       onTouchStart={() => selection.onRowPressStart(sid)}
-                      onTouchEnd={() => selection.onRowPressEnd(sid, () => goDetail(emp.id))}
+                      onTouchEnd={() => selection.onRowPressEnd(sid, () => openEmployeeOverview(emp))}
                       onTouchCancel={selection.onRowPressCancel}
                       onContextMenu={(e) => e.preventDefault()}
                     >
@@ -289,8 +378,8 @@ export function EmployeesListPage() {
                         <button
                           type="button"
                           className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors"
-                          onClick={() => goDetail(emp.id)}
-                          aria-label={`View ${emp.fullName}`}
+                          onClick={() => openEmployeeOverview(emp)}
+                          aria-label={`Quick view ${emp.fullName}`}
                         >
                           <Icon name="visibility" className="text-lg" />
                         </button>

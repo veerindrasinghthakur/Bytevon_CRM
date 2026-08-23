@@ -1,13 +1,14 @@
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
-import { HEADER_HEIGHT_PX } from '@/shared/components/layout/Header'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import { useTeamsList } from '../hooks/use-teams-list'
+import type { Team } from '../types'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -18,8 +19,55 @@ function Icon({ name, className }: { name: string; className?: string }) {
   )
 }
 
+function TeamQuickContent({ team }: { team: Team }) {
+  return (
+    <>
+      <div className="flex items-start gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
+          <Icon name={team.icon ?? 'groups'} className="text-3xl" />
+        </div>
+        <div className="min-w-0">
+          <h5 className="text-xl font-bold text-on-surface truncate">{team.name}</h5>
+          <p className="text-on-surface-variant text-sm">{team.department}</p>
+          <span
+            className={cn(
+              'inline-block mt-2 px-2 py-0.5 rounded-full text-[11px] font-bold uppercase',
+              team.status === 'Active'
+                ? 'bg-emerald-100 text-emerald-800'
+                : 'bg-surface-container text-on-surface-variant',
+            )}
+          >
+            {team.status}
+          </span>
+        </div>
+      </div>
+      {team.description && (
+        <p className="text-body-md text-on-surface-variant">{team.description}</p>
+      )}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="p-4 bg-surface-container-low rounded-xl text-center">
+          <p className="text-headline-lg font-bold text-secondary">{team.memberCount}</p>
+          <p className="text-caption text-on-surface-variant">Members</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl text-center">
+          <p className="text-headline-lg font-bold text-secondary">{team.projectCount}</p>
+          <p className="text-caption text-on-surface-variant">Projects</p>
+        </div>
+      </div>
+      <div>
+        <p className="text-label-sm font-bold text-on-surface-variant uppercase mb-2">Team Head</p>
+        <p className="font-semibold">{team.headName}</p>
+        {team.headTitle && (
+          <p className="text-caption text-on-surface-variant">{team.headTitle}</p>
+        )}
+      </div>
+    </>
+  )
+}
+
 export function TeamsListPage() {
   const navigate = useNavigate()
+  const { openPanel } = useQuickOverview()
   const {
     metrics,
     filtered,
@@ -33,8 +81,6 @@ export function TeamsListPage() {
     departmentFilter,
     setDepartmentFilter,
     resetFilters,
-    drawer,
-    setDrawer,
     createOpen,
     setCreateOpen,
     selectionMode,
@@ -49,6 +95,17 @@ export function TeamsListPage() {
     onRowPressEnd,
     onRowPressCancel,
   } = useTeamsList()
+
+  const openTeamOverview = (t: Team) => {
+    openPanel({
+      title: 'Team Quick View',
+      content: <TeamQuickContent team={t} />,
+      fullRecordLabel: 'View Full Team',
+      onOpenFull: () =>
+        navigate({ to: '/workforce/teams/$teamId', params: { teamId: t.id } }),
+      widthClass: 'max-w-md',
+    })
+  }
 
   return (
     <div className="space-y-6 relative animate-fade-in">
@@ -185,26 +242,17 @@ export function TeamsListPage() {
                         className="rounded border-outline-variant text-secondary"
                         checked={allFilteredSelected}
                         onChange={toggleSelectAllFiltered}
-                        title="Select all filtered rows"
                         aria-label="Select all filtered rows"
                       />
                     ) : (
                       <span className="sr-only">Select</span>
                     )}
                   </th>
-                  <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase">
-                    Team Name
-                  </th>
+                  <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase">Team Name</th>
                   <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase">Head</th>
-                  <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase">
-                    Members
-                  </th>
-                  <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase">
-                    Projects
-                  </th>
-                  <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase text-right">
-                    Actions
-                  </th>
+                  <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase">Members</th>
+                  <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase">Projects</th>
+                  <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/20">
@@ -218,10 +266,10 @@ export function TeamsListPage() {
                         selected && 'bg-secondary/10',
                       )}
                       onMouseDown={() => onRowPressStart(t.id)}
-                      onMouseUp={() => onRowPressEnd(t.id, () => setDrawer(t))}
+                      onMouseUp={() => onRowPressEnd(t.id, () => openTeamOverview(t))}
                       onMouseLeave={onRowPressCancel}
                       onTouchStart={() => onRowPressStart(t.id)}
-                      onTouchEnd={() => onRowPressEnd(t.id, () => setDrawer(t))}
+                      onTouchEnd={() => onRowPressEnd(t.id, () => openTeamOverview(t))}
                       onTouchCancel={onRowPressCancel}
                       onContextMenu={(e) => e.preventDefault()}
                     >
@@ -291,12 +339,10 @@ export function TeamsListPage() {
                         <button
                           type="button"
                           className="p-2 hover:bg-secondary/10 rounded-full transition-colors"
-                          onClick={() =>
-                            navigate({ to: '/workforce/teams/$teamId', params: { teamId: t.id } })
-                          }
-                          aria-label={`Open ${t.name}`}
+                          onClick={() => openTeamOverview(t)}
+                          aria-label={`Quick view ${t.name}`}
                         >
-                          <Icon name="more_vert" className="text-lg" />
+                          <Icon name="visibility" className="text-lg" />
                         </button>
                       </td>
                     </tr>
@@ -313,68 +359,6 @@ export function TeamsListPage() {
           </>
         )}
       </div>
-
-      {drawer && (
-        <>
-          <div className="fixed inset-0 bg-black/40 z-40" onClick={() => setDrawer(null)} aria-hidden />
-          <div
-            className="fixed right-0 z-50 w-full max-w-md bv-surface executive-shadow border-l border-outline-variant flex flex-col"
-            style={{ top: HEADER_HEIGHT_PX, height: `calc(100vh - ${HEADER_HEIGHT_PX}px)` }}
-          >
-            <div className="p-6 border-b flex justify-between items-start">
-              <div className="flex gap-3">
-                <div className="w-12 h-12 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center">
-                  <Icon name={drawer.icon ?? 'groups'} />
-                </div>
-                <div>
-                  <h3 className="text-title-lg font-bold">{drawer.name}</h3>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-bold uppercase">
-                    {drawer.status}
-                  </span>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="p-2 hover:bg-surface-container rounded-full transition-colors"
-                onClick={() => setDrawer(null)}
-              >
-                <Icon name="close" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              <p className="text-body-md text-on-surface-variant">{drawer.description}</p>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-4 bg-surface-container-low rounded-xl text-center">
-                  <p className="text-headline-lg font-bold text-secondary">{drawer.velocity ?? 90}%</p>
-                  <p className="text-caption text-on-surface-variant">Sprint Velocity</p>
-                </div>
-                <div className="p-4 bg-surface-container-low rounded-xl text-center">
-                  <p className="text-headline-lg font-bold text-secondary">{drawer.memberCount}</p>
-                  <p className="text-caption text-on-surface-variant">Active Members</p>
-                </div>
-              </div>
-              <div>
-                <p className="text-label-sm font-bold text-on-surface-variant uppercase mb-2">Team Head</p>
-                <p className="font-semibold">{drawer.headName}</p>
-                <p className="text-caption text-on-surface-variant">{drawer.headTitle}</p>
-              </div>
-            </div>
-            <div className="p-6 border-t flex gap-3">
-              <Button
-                variant="primary"
-                className="flex-1"
-                onClick={() => {
-                  setDrawer(null)
-                  navigate({ to: '/workforce/teams/$teamId', params: { teamId: drawer.id } })
-                }}
-              >
-                View Full Team
-              </Button>
-              <Button variant="outline">Edit Team</Button>
-            </div>
-          </div>
-        </>
-      )}
 
       {createOpen && (
         <>
@@ -424,32 +408,6 @@ export function TeamsListPage() {
                         placeholder="e.g., Responsible for infrastructure and CI/CD pipelines"
                       />
                     </div>
-                  </div>
-                </section>
-                <section>
-                  <h3 className="text-headline-md font-semibold mb-3 flex items-center gap-2">
-                    <Icon name="star" className="text-secondary" /> Leadership
-                  </h3>
-                  <div className="bg-surface p-4 rounded-lg border border-outline-variant">
-                    <label className="text-label-sm block mb-1">
-                      Assign Team Head <span className="text-error">*</span>
-                    </label>
-                    <input
-                      className="w-full border border-outline-variant rounded-md px-3 py-2 text-body-md focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
-                      placeholder="Search employees by name..."
-                    />
-                  </div>
-                </section>
-                <section>
-                  <h3 className="text-headline-md font-semibold mb-3 flex items-center gap-2">
-                    <Icon name="group_add" className="text-secondary" /> Team Composition
-                  </h3>
-                  <div className="bg-surface p-4 rounded-lg border border-outline-variant">
-                    <label className="text-label-sm block mb-1">Add Members</label>
-                    <input
-                      className="w-full border border-outline-variant rounded-md px-3 py-2 text-body-md focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
-                      placeholder="Search employees by name, role, or department..."
-                    />
                   </div>
                 </section>
               </div>

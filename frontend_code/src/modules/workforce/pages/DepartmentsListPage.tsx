@@ -8,6 +8,7 @@ import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useListSelection } from '@/shared/hooks/useListSelection'
+import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import { Can } from '@/shared/rbac'
 import { Action, ResourceName } from '@/shared/schema'
 import { useDepartmentsList } from '../hooks/use-departments-list'
@@ -21,8 +22,62 @@ function Icon({ name, className }: { name: string; className?: string }) {
   )
 }
 
+function DepartmentQuickContent({
+  name,
+  code,
+  headName,
+  staffCount,
+  status,
+}: {
+  name: string
+  code?: string
+  headName?: string
+  staffCount?: number
+  status: string
+}) {
+  return (
+    <>
+      <div className="flex items-start gap-4">
+        <div
+          className={cn(
+            'w-16 h-16 rounded-2xl flex items-center justify-center shrink-0',
+            status === 'Active' ? 'bg-secondary/15 text-secondary' : 'bg-surface-container-highest text-outline',
+          )}
+        >
+          <Icon name="domain" className="text-3xl" />
+        </div>
+        <div className="min-w-0">
+          <h5 className="text-xl font-bold text-on-surface truncate">{name}</h5>
+          {code && <p className="text-on-surface-variant text-sm">{code}</p>}
+          <span
+            className={cn(
+              'inline-flex mt-2 px-3 py-1 rounded-full text-label-sm font-medium',
+              status === 'Active'
+                ? 'bg-secondary/10 text-secondary'
+                : 'bg-surface-container-high text-outline',
+            )}
+          >
+            {status}
+          </span>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Head</p>
+          <p className="text-lg font-semibold">{headName ?? '—'}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Staff</p>
+          <p className="text-lg font-bold">{staffCount ?? 0}</p>
+        </div>
+      </div>
+    </>
+  )
+}
+
 export function DepartmentsListPage() {
   const navigate = useNavigate()
+  const { openPanel } = useQuickOverview()
   const {
     items,
     filtered,
@@ -45,6 +100,24 @@ export function DepartmentsListPage() {
     navigate({
       to: '/workforce/departments/$departmentId',
       params: { departmentId: String(id) },
+    })
+  }
+
+  const openDeptOverview = (d: (typeof filtered)[number]) => {
+    openPanel({
+      title: 'Department Quick View',
+      content: (
+        <DepartmentQuickContent
+          name={d.name}
+          code={d.code}
+          headName={d.headName}
+          staffCount={d.staffCount}
+          status={d.status}
+        />
+      ),
+      fullRecordLabel: 'Open full record',
+      onOpenFull: () => goDetail(d.id),
+      widthClass: 'max-w-md',
     })
   }
 
@@ -181,10 +254,10 @@ export function DepartmentsListPage() {
                         isSelected ? 'bg-secondary/10' : 'zebra-row',
                       )}
                       onMouseDown={() => selection.onRowPressStart(sid)}
-                      onMouseUp={() => selection.onRowPressEnd(sid, () => goDetail(d.id))}
+                      onMouseUp={() => selection.onRowPressEnd(sid, () => openDeptOverview(d))}
                       onMouseLeave={selection.onRowPressCancel}
                       onTouchStart={() => selection.onRowPressStart(sid)}
-                      onTouchEnd={() => selection.onRowPressEnd(sid, () => goDetail(d.id))}
+                      onTouchEnd={() => selection.onRowPressEnd(sid, () => openDeptOverview(d))}
                       onTouchCancel={selection.onRowPressCancel}
                       onContextMenu={(e) => e.preventDefault()}
                     >
@@ -248,7 +321,8 @@ export function DepartmentsListPage() {
                         <button
                           type="button"
                           className="p-2 hover:bg-secondary/10 rounded-lg text-on-surface-variant transition-colors"
-                          onClick={() => goDetail(d.id)}
+                          onClick={() => openDeptOverview(d)}
+                          aria-label={`Quick view ${d.name}`}
                         >
                           <Icon name="visibility" className="text-lg" />
                         </button>
