@@ -30,11 +30,13 @@ export type OpenQuickOverviewOptions = {
 }
 
 interface QuickOverviewContextValue {
-  open: boolean
+  /** Whether the panel is currently open */
+  isOpen: boolean
+  /** Open the shared panel with page-specific content */
   openPanel: (options: OpenQuickOverviewOptions) => void
-  closePanel: () => void
-  /** @deprecated prefer openPanel — alias for ProjectsListPage compatibility */
+  /** Alias for openPanel (list pages may destructure as `open`) */
   open: (options: OpenQuickOverviewOptions) => void
+  closePanel: () => void
 }
 
 const QuickOverviewContext = createContext<QuickOverviewContextValue | null>(null)
@@ -61,7 +63,6 @@ export function QuickOverviewProvider({ children }: { children: ReactNode }) {
     setIsOpen(false)
   }, [])
 
-  // After close transition, unmount content
   useEffect(() => {
     if (!isOpen && visible) {
       const t = window.setTimeout(() => {
@@ -72,7 +73,6 @@ export function QuickOverviewProvider({ children }: { children: ReactNode }) {
     }
   }, [isOpen, visible])
 
-  // Escape key
   useEffect(() => {
     if (!isOpen) return
     const onKey = (e: KeyboardEvent) => {
@@ -82,33 +82,20 @@ export function QuickOverviewProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('keydown', onKey)
   }, [isOpen, closePanel])
 
-  const value = useMemo(
+  const value = useMemo<QuickOverviewContextValue>(
     () => ({
-      open: isOpen,
+      isOpen,
       openPanel,
+      open: openPanel,
       closePanel,
-      // alias used by ProjectsListPage
-      open: openPanel as unknown as boolean & ((o: OpenQuickOverviewOptions) => void),
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional dual open API
-    [isOpen, openPanel, closePanel],
-  )
-
-  // Fix dual `open` key properly
-  const ctxValue = useMemo<QuickOverviewContextValue>(
-    () => ({
-      open: isOpen,
-      openPanel,
-      closePanel,
-      open: ((opts: OpenQuickOverviewOptions) => openPanel(opts)) as QuickOverviewContextValue['open'],
     }),
     [isOpen, openPanel, closePanel],
   )
 
   return (
-    <QuickOverviewContext.Provider value={ctxValue}>
+    <QuickOverviewContext.Provider value={value}>
       {children}
-      <QuickOverviewPanel
+      <QuickOverviewPanelShell
         isOpen={isOpen}
         visible={visible}
         options={options}
@@ -118,7 +105,18 @@ export function QuickOverviewProvider({ children }: { children: ReactNode }) {
   )
 }
 
-function QuickOverviewPanel({
+/**
+ * Contextual Detail Drawer (Overview Panel) — shared base.
+ *
+ * - Not permanent — appears when a list row / visibility action opens it
+ * - Slides in from the right (animate-slide-in-right)
+ * - Height between App Header and bottom of viewport (with edge gap)
+ * - Backdrop blurs main content; does not cover header / icon rail
+ * - One drawer at a time; selecting another item replaces content
+ * - Footer: Open full record + Close (same as Clients/Leads reference)
+ * - Body content and width are provided by the inheriting page
+ */
+function QuickOverviewPanelShell({
   isOpen,
   visible,
   options,
@@ -142,7 +140,7 @@ function QuickOverviewPanel({
       )}
       aria-hidden={!isOpen}
     >
-      {/* Backdrop — blurs page content; does not cover header (starts below it) */}
+      {/* Backdrop — blurs page table/content; starts below header */}
       <button
         type="button"
         className={cn(
@@ -155,7 +153,6 @@ function QuickOverviewPanel({
         onClick={onClose}
       />
 
-      {/* Drawer — between header and bottom, page-controlled width */}
       <aside
         role="dialog"
         aria-modal="true"
@@ -173,7 +170,6 @@ function QuickOverviewPanel({
           height: `calc(100vh - ${HEADER_HEIGHT_PX + PANEL_EDGE_GAP_PX * 2}px)`,
         }}
       >
-        {/* Chrome header */}
         <div className="p-6 border-b border-outline-variant flex items-center justify-between bg-surface-container-low shrink-0">
           <h3 className="text-title-lg font-bold text-on-surface flex items-center gap-2 min-w-0">
             <span className="material-symbols-outlined text-secondary shrink-0" aria-hidden>
@@ -191,10 +187,8 @@ function QuickOverviewPanel({
           </button>
         </div>
 
-        {/* Page-specific body */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0">{options.content}</div>
 
-        {/* Shared footer actions — same pattern as Clients / Leads quick view */}
         <div className="p-6 border-t border-outline-variant bg-surface-container-low flex gap-3 shrink-0">
           {options.onOpenFull && (
             <Button
@@ -220,4 +214,9 @@ function QuickOverviewPanel({
       </aside>
     </div>
   )
+}
+
+/** @deprecated Panel is rendered by the provider — kept so AppShell import still resolves */
+export function QuickOverviewPanel() {
+  return null
 }
