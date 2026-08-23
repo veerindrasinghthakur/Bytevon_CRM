@@ -196,6 +196,36 @@
     transform: scale(var(--scale-nav-press));
   }
 
+  /* Semantic status badges — theme-aware (light + dark tokens) */
+  .status-badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-label-sm font-medium border;
+  }
+  .status-success {
+    background-color: var(--color-success-container);
+    color: var(--color-on-success);
+    border-color: color-mix(in srgb, var(--color-success-emerald) 35%, transparent);
+  }
+  .status-warning {
+    background-color: var(--color-warning-container);
+    color: var(--color-on-warning);
+    border-color: color-mix(in srgb, var(--color-warning-amber) 40%, transparent);
+  }
+  .status-error {
+    background-color: var(--color-error-container);
+    color: var(--color-error);
+    border-color: color-mix(in srgb, var(--color-error) 35%, transparent);
+  }
+  .status-info {
+    background-color: var(--color-primary-fixed);
+    color: var(--color-on-secondary-container);
+    border-color: color-mix(in srgb, var(--color-electric-blue) 30%, transparent);
+  }
+  .status-neutral {
+    background-color: var(--color-surface-container);
+    color: var(--color-on-surface-variant);
+    border-color: var(--color-outline-variant);
+  }
+
   .skeleton {
     background: linear-gradient(
       90deg,

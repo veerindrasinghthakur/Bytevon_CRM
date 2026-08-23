@@ -6,7 +6,10 @@
 | **Updated** | 2026-08-23 |
 | **Phase A** | ✅ Complete |
 | **Phase B** | ✅ Complete |
-| **Phase C Quick View** | ✅ Core lists done |
+| **Phase C Quick View** | ✅ All primary lists |
+| **queryKeys adoption** | ✅ Admin users/roles + tasks + expanded factory |
+| **Selection** | ✅ Audit + Roles (Users/Tasks already) |
+| **Status tokens + a11y** | ✅ Semantic badges + IconButton pattern |
 
 ---
 
@@ -27,28 +30,55 @@
 | Clients | ✅ |
 | Leads | ✅ |
 | Projects | ✅ |
-| Teams | ✅ (local drawer removed) |
+| Teams | ✅ |
 | Departments | ✅ |
 | Employees | ✅ |
+| Users | ✅ |
+| Tasks | ✅ (openPanel API) |
+| Roles | ✅ |
+| Audit Logs | ✅ (replaces local drawer) |
 
-### Optional later
+---
 
-| List | Notes |
+## queryKeys / invalidate
+
+- Central factory: `shared/lib/query-keys.ts`
+- Admin: users, roles (+ metrics), audit, leave
+- Tasks / projects / teams / workforce / sales / payroll / notifications / approvals
+- `invalidate.*` helpers for mutation `onSettled`
+
+Hooks on `queryKeys.*`: `use-users-list`, `use-roles-list`, `use-tasks`
+
+---
+
+## Selection mode
+
+| List | Status |
 |------|--------|
-| Users | Optional quick view |
-| Tasks | Optional quick view |
-| Roles | Optional |
+| Projects / Leads / Clients / Employees / Departments / Teams / Users / Tasks | ✅ |
+| Roles | ✅ |
+| Audit Logs | ✅ |
+| Leave admin policies | N/A (small static list; no bulk ops) |
 
 ---
 
-## Remaining optimization
+## Dark-mode status tokens
 
-1. Optional Quick View on Users / Tasks / Roles
-2. Older hooks → full `queryKeys.*` + shared invalidate helpers
-3. Selection mode on Audit / Roles / Leave admin (if product wants)
-4. Semantic status tokens for dark mode
-5. a11y pass on icon-only controls
+Semantic badge classes in `globals.css`:
+
+- `.status-badge` + `.status-success` | `.status-warning` | `.status-error` | `.status-info` | `.status-neutral`
+- Colors from `--color-success-*`, `--color-warning-*`, `--color-error-*`, containers (light + `tokens-dark.css`)
+
+Prefer these over hardcoded `bg-emerald-50` / `bg-red-100` in new UI.
 
 ---
 
-*End of status.*
+## a11y
+
+- `IconButton` requires `label` → `aria-label` + `title` + focus ring
+- List action cells stop propagation; visibility controls use `aria-label`
+- Quick Overview dialog: `role="dialog"` `aria-modal` Escape close
+
+---
+
+*Phase C closed. Further work is product polish only.*
