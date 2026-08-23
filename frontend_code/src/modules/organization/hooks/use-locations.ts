@@ -23,6 +23,7 @@ export function useUpdateLocation(id: number) {
   return useMutation({
     mutationFn: (patch: Partial<LocationRow>) => updateLocation(id, patch),
     onSuccess: (row) => {
+      // Prefer alias that always exists on invalidate map
       invalidate.locations(qc)
       qc.setQueryData(queryKeys.organization.locations.detail(id), row)
     },

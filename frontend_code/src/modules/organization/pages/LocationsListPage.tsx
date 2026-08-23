@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { Link, useNavigate } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'

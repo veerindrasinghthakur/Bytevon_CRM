@@ -3,6 +3,15 @@ import { getTeams, getTeam, createTeam, updateTeam } from '../api/teams'
 import type { Team, TeamListCache } from '../types'
 import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 
+function isTeamListCache(value: unknown): value is TeamListCache {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    Array.isArray((value as TeamListCache).items) &&
+    typeof (value as TeamListCache).total === 'number'
+  )
+}
+
 export function useTeams(filters?: { search?: string }) {
   return useQuery({
     queryKey: queryKeys.teams.list(filters ?? {}),
@@ -32,7 +41,7 @@ export function useCreateTeam() {
     }) => createTeam(input),
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.teams.all })
-      const previous = queryClient.getQueriesData<TeamListCache>({
+      const previous = queryClient.getQueriesData({
         queryKey: queryKeys.teams.all,
       })
 
@@ -51,8 +60,9 @@ export function useCreateTeam() {
         createdAt: new Date().toISOString(),
       }
 
-      queryClient.setQueriesData<TeamListCache>({ queryKey: queryKeys.teams.all }, (old) => {
-        if (!old) return { items: [optimistic], total: 1 }
+      // Only mutate list-shaped caches — never overwrite detail/member queries
+      queryClient.setQueriesData({ queryKey: queryKeys.teams.all }, (old) => {
+        if (!isTeamListCache(old)) return old
         return { items: [optimistic, ...old.items], total: old.total + 1 }
       })
 
@@ -62,8 +72,8 @@ export function useCreateTeam() {
       ctx?.previous.forEach(([key, data]) => queryClient.setQueryData(key, data))
     },
     onSuccess: (created, _input, ctx) => {
-      queryClient.setQueriesData<TeamListCache>({ queryKey: queryKeys.teams.all }, (old) => {
-        if (!old) return { items: [created], total: 1 }
+      queryClient.setQueriesData({ queryKey: queryKeys.teams.all }, (old) => {
+        if (!isTeamListCache(old)) return old
         return {
           items: old.items.map((t) => (t.id === ctx?.optimisticId ? created : t)),
           total: old.total,
@@ -91,13 +101,13 @@ export function useUpdateTeam() {
     onMutate: async ({ id, patch }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.teams.all })
 
-      const previousLists = queryClient.getQueriesData<TeamListCache>({
+      const previousAll = queryClient.getQueriesData({
         queryKey: queryKeys.teams.all,
       })
       const previousDetail = queryClient.getQueryData<Team>(queryKeys.teams.detail(id))
 
-      queryClient.setQueriesData<TeamListCache>({ queryKey: queryKeys.teams.all }, (old) => {
-        if (!old) return old
+      queryClient.setQueriesData({ queryKey: queryKeys.teams.all }, (old) => {
+        if (!isTeamListCache(old)) return old
         return {
           ...old,
           items: old.items.map((t) => (t.id === id ? { ...t, ...patch } : t)),
@@ -111,18 +121,18 @@ export function useUpdateTeam() {
         })
       }
 
-      return { previousLists, previousDetail, id }
+      return { previousAll, previousDetail, id }
     },
     onError: (_err, _vars, ctx) => {
-      ctx?.previousLists.forEach(([key, data]) => queryClient.setQueryData(key, data))
+      ctx?.previousAll.forEach(([key, data]) => queryClient.setQueryData(key, data))
       if (ctx?.previousDetail) {
         queryClient.setQueryData(queryKeys.teams.detail(ctx.id), ctx.previousDetail)
       }
     },
     onSuccess: (team) => {
       queryClient.setQueryData(queryKeys.teams.detail(team.id), team)
-      queryClient.setQueriesData<TeamListCache>({ queryKey: queryKeys.teams.all }, (old) => {
-        if (!old) return old
+      queryClient.setQueriesData({ queryKey: queryKeys.teams.all }, (old) => {
+        if (!isTeamListCache(old)) return old
         return {
           ...old,
           items: old.items.map((t) => (t.id === team.id ? team : t)),

@@ -5,6 +5,7 @@ import { useListControls } from '@/shared/hooks/useListControls'
 import { getTeams } from '@/modules/projects/api/teams'
 import type { Team as ProjectsTeam } from '@/modules/projects/types'
 import type { Team, WorkforceMetric } from '../types'
+import { queryKeys } from '@/shared/lib/query-keys'
 
 /** Map projects Team (canonical) → workforce Team shape used by list UI */
 function toWorkforceTeam(t: ProjectsTeam): Team {
@@ -50,7 +51,7 @@ export function useTeamsList() {
   })
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
-    queryKey: ['projects', 'teams', 'list', { search: controls.search || undefined }],
+    queryKey: queryKeys.teams.list({ search: controls.search || undefined }),
     queryFn: () => getTeams({ search: controls.search || undefined }),
   })
 
