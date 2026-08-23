@@ -7,6 +7,14 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import {
+  QuickSection,
+  QuickStat,
+  QuickStatGrid,
+  QuickMetaTile,
+  QuickRelatedRow,
+  QuickPersonRow,
+} from '@/shared/components/layout/QuickOverviewParts'
 import { useTeamsList } from '../hooks/use-teams-list'
 import type { Team } from '../types'
 import { cn } from '@/shared/lib/cn'
@@ -22,45 +30,60 @@ function Icon({ name, className }: { name: string; className?: string }) {
 function TeamQuickContent({ team }: { team: Team }) {
   return (
     <>
-      <div className="flex items-start gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
-          <Icon name={team.icon ?? 'groups'} className="text-3xl" />
+      <QuickSection title="Quick Statistics">
+        <QuickStatGrid>
+          <QuickStat icon="group" value={team.memberCount} label="Members" />
+          <QuickStat icon="folder_open" value={team.projectCount} label="Projects" />
+          <QuickStat
+            icon="check_circle"
+            value={team.status}
+            label="Status"
+          />
+        </QuickStatGrid>
+      </QuickSection>
+
+      <QuickSection title="General Info">
+        <div className="grid grid-cols-2 gap-3">
+          <QuickMetaTile icon="domain" label="Department" value={team.department} />
+          <QuickMetaTile
+            icon="toggle_on"
+            label="Status"
+            value={
+              <span
+                className={cn(
+                  'px-2 py-0.5 rounded-full text-[11px] font-bold uppercase',
+                  team.status === 'Active'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-surface-container text-on-surface-variant',
+                )}
+              >
+                {team.status}
+              </span>
+            }
+          />
         </div>
-        <div className="min-w-0">
-          <h5 className="text-xl font-bold text-on-surface truncate">{team.name}</h5>
-          <p className="text-on-surface-variant text-sm">{team.department}</p>
-          <span
-            className={cn(
-              'inline-block mt-2 px-2 py-0.5 rounded-full text-[11px] font-bold uppercase',
-              team.status === 'Active'
-                ? 'bg-emerald-100 text-emerald-800'
-                : 'bg-surface-container text-on-surface-variant',
-            )}
-          >
-            {team.status}
-          </span>
-        </div>
-      </div>
-      {team.description && (
-        <p className="text-body-md text-on-surface-variant">{team.description}</p>
-      )}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="p-4 bg-surface-container-low rounded-xl text-center">
-          <p className="text-headline-lg font-bold text-secondary">{team.memberCount}</p>
-          <p className="text-caption text-on-surface-variant">Members</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl text-center">
-          <p className="text-headline-lg font-bold text-secondary">{team.projectCount}</p>
-          <p className="text-caption text-on-surface-variant">Projects</p>
-        </div>
-      </div>
-      <div>
-        <p className="text-label-sm font-bold text-on-surface-variant uppercase mb-2">Team Head</p>
-        <p className="font-semibold">{team.headName}</p>
-        {team.headTitle && (
-          <p className="text-caption text-on-surface-variant">{team.headTitle}</p>
+        {team.description && (
+          <p className="mt-3 text-body-sm text-on-surface-variant">{team.description}</p>
         )}
-      </div>
+      </QuickSection>
+
+      <QuickSection title="Leadership">
+        <QuickPersonRow
+          initials={team.headName
+            .split(' ')
+            .map((p) => p[0])
+            .join('')
+            .slice(0, 2)}
+          roleLabel={team.headTitle ?? 'Team Head'}
+          name={team.headName}
+        />
+      </QuickSection>
+
+      <QuickSection title="Related">
+        <QuickRelatedRow icon="domain" label="Department" value={team.department} />
+        <QuickRelatedRow icon="group" label="Members" value={String(team.memberCount)} />
+        <QuickRelatedRow icon="folder_open" label="Projects" value={String(team.projectCount)} />
+      </QuickSection>
     </>
   )
 }
@@ -98,12 +121,16 @@ export function TeamsListPage() {
 
   const openTeamOverview = (t: Team) => {
     openPanel({
-      title: 'Team Quick View',
+      title: t.name,
+      subtitle: t.department,
+      icon: t.icon ?? 'groups',
+      status: t.status,
+      statusDotClass: t.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400',
       content: <TeamQuickContent team={t} />,
-      fullRecordLabel: 'View Full Team',
+      fullRecordLabel: 'View full team',
       onOpenFull: () =>
         navigate({ to: '/workforce/teams/$teamId', params: { teamId: t.id } }),
-      widthClass: 'max-w-md',
+      widthClass: 'max-w-[520px]',
     })
   }
 

@@ -9,6 +9,14 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import {
+  QuickSection,
+  QuickStat,
+  QuickStatGrid,
+  QuickMetaTile,
+  QuickRelatedRow,
+  QuickPersonRow,
+} from '@/shared/components/layout/QuickOverviewParts'
 import { Can } from '@/shared/rbac'
 import { Action, ResourceName } from '@/shared/schema'
 import { useDepartmentsList } from '../hooks/use-departments-list'
@@ -37,40 +45,57 @@ function DepartmentQuickContent({
 }) {
   return (
     <>
-      <div className="flex items-start gap-4">
-        <div
-          className={cn(
-            'w-16 h-16 rounded-2xl flex items-center justify-center shrink-0',
-            status === 'Active' ? 'bg-secondary/15 text-secondary' : 'bg-surface-container-highest text-outline',
-          )}
-        >
-          <Icon name="domain" className="text-3xl" />
+      <QuickSection title="Quick Statistics">
+        <QuickStatGrid>
+          <QuickStat icon="groups" value={staffCount ?? 0} label="Staff" />
+          <QuickStat icon="badge" value={code ?? '—'} label="Code" />
+          <QuickStat icon="toggle_on" value={status} label="Status" />
+        </QuickStatGrid>
+      </QuickSection>
+
+      <QuickSection title="General Info">
+        <div className="grid grid-cols-2 gap-3">
+          <QuickMetaTile icon="domain" label="Department" value={name} />
+          <QuickMetaTile icon="tag" label="Code" value={code ?? '—'} />
+          <QuickMetaTile
+            icon="toggle_on"
+            label="Status"
+            value={
+              <span
+                className={cn(
+                  'inline-flex px-3 py-1 rounded-full text-label-sm font-medium',
+                  status === 'Active'
+                    ? 'bg-secondary/10 text-secondary'
+                    : 'bg-surface-container-high text-outline',
+                )}
+              >
+                {status}
+              </span>
+            }
+          />
         </div>
-        <div className="min-w-0">
-          <h5 className="text-xl font-bold text-on-surface truncate">{name}</h5>
-          {code && <p className="text-on-surface-variant text-sm">{code}</p>}
-          <span
-            className={cn(
-              'inline-flex mt-2 px-3 py-1 rounded-full text-label-sm font-medium',
-              status === 'Active'
-                ? 'bg-secondary/10 text-secondary'
-                : 'bg-surface-container-high text-outline',
-            )}
-          >
-            {status}
-          </span>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Head</p>
-          <p className="text-lg font-semibold">{headName ?? '—'}</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Staff</p>
-          <p className="text-lg font-bold">{staffCount ?? 0}</p>
-        </div>
-      </div>
+      </QuickSection>
+
+      <QuickSection title="Leadership">
+        {headName ? (
+          <QuickPersonRow
+            initials={headName
+              .split(' ')
+              .map((p) => p[0])
+              .join('')
+              .slice(0, 2)}
+            roleLabel="Department Head"
+            name={headName}
+          />
+        ) : (
+          <QuickRelatedRow icon="person_off" label="Head" value="Unassigned" />
+        )}
+      </QuickSection>
+
+      <QuickSection title="Related">
+        <QuickRelatedRow icon="groups" label="Staff" value={String(staffCount ?? 0)} />
+        <QuickRelatedRow icon="domain" label="Department" value={name} />
+      </QuickSection>
     </>
   )
 }
@@ -105,7 +130,11 @@ export function DepartmentsListPage() {
 
   const openDeptOverview = (d: (typeof filtered)[number]) => {
     openPanel({
-      title: 'Department Quick View',
+      title: d.name,
+      subtitle: d.code,
+      icon: 'domain',
+      status: d.status,
+      statusDotClass: d.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400',
       content: (
         <DepartmentQuickContent
           name={d.name}
@@ -117,7 +146,7 @@ export function DepartmentsListPage() {
       ),
       fullRecordLabel: 'Open full record',
       onOpenFull: () => goDetail(d.id),
-      widthClass: 'max-w-md',
+      widthClass: 'max-w-[520px]',
     })
   }
 
