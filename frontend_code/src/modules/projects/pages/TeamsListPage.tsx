@@ -11,21 +11,65 @@ import { RowActions } from '@/shared/components/ui/RowActions'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import {
+  QuickSection,
+  QuickStat,
+  QuickStatGrid,
+  QuickMetaTile,
+  QuickPersonRow,
+  QuickRelatedRow,
+} from '@/shared/components/layout/QuickOverviewParts'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useTeams } from '../hooks/use-teams'
 import { CreateTeamModal } from '../components/CreateTeamModal'
+import type { Team } from '../types'
 import { cn } from '@/shared/lib/cn'
+
+function TeamQuickContent({ team }: { team: Team }) {
+  return (
+    <>
+      <QuickSection title="Capacity">
+        <QuickStatGrid>
+          <QuickStat icon="group" value={String(team.memberCount)} label="Members" />
+          <QuickStat icon="folder" value={String(team.projectCount)} label="Projects" />
+          <QuickStat icon="flag" value={team.status} label="Status" />
+        </QuickStatGrid>
+      </QuickSection>
+      <QuickSection title="Leadership">
+        {team.headName ? (
+          <QuickPersonRow
+            initials={team.headName
+              .split(' ')
+              .map((n) => n[0])
+              .join('')
+              .slice(0, 2)}
+            roleLabel={team.headRole ?? 'Head'}
+            name={team.headName}
+          />
+        ) : (
+          <QuickRelatedRow icon="person_off" label="Head" value="Unassigned" />
+        )}
+      </QuickSection>
+      <QuickSection title="Details">
+        <div className="grid grid-cols-2 gap-3">
+          <QuickMetaTile icon="domain" label="Department" value={team.department ?? '—'} />
+          <QuickMetaTile icon="link" label="Linked project" value={team.projectName ?? '—'} />
+        </div>
+      </QuickSection>
+    </>
+  )
+}
 
 export function TeamsListPage() {
   const navigate = useNavigate()
-  const { open: openOverview } = useQuickOverview()
+  const { openPanel } = useQuickOverview()
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
   const [department, setDepartment] = useState('')
   const [page, setPage] = useState(1)
   const [createOpen, setCreateOpen] = useState(false)
 
-  const { data, isLoading, isError, refetch } = useTeams({
+  const { data, isLoading, isFetching, isError, refetch } = useTeams({
     search: search || undefined,
   })
 
@@ -63,6 +107,21 @@ export function TeamsListPage() {
       params: { teamId: String(teamId) },
       search: edit ? { edit: '1' } : undefined,
     })
+
+  const openTeamOverview = (team: Team) => {
+    openPanel({
+      title: team.name,
+      subtitle: team.department ?? undefined,
+      icon: 'groups',
+      status: team.status,
+      statusDotClass: team.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-slate-400',
+      content: <TeamQuickContent team={team} />,
+      fullRecordLabel: 'Open full record',
+      onOpenFull: () => goTeam(team.id),
+      onEdit: () => goTeam(team.id, true),
+      widthClass: 'max-w-[520px]',
+    })
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -152,7 +211,6 @@ export function TeamsListPage() {
         </BulkSelectionBar>
       )}
 
-      {isLoading && <TableSkeleton rows={4} />}
       {isError && (
         <ErrorState
           title="Failed to load teams"
@@ -161,7 +219,8 @@ export function TeamsListPage() {
           showBack={false}
         />
       )}
-      {!isLoading && !isError && filtered.length === 0 && (
+
+      {!isError && filtered.length === 0 && !isLoading && (
         <EmptyState
           icon="groups"
           title="No teams found"
@@ -171,8 +230,13 @@ export function TeamsListPage() {
         />
       )}
 
-      {!isLoading && !isError && filtered.length > 0 && (
-        <section className="bv-surface overflow-hidden flex flex-col">
+      {!isError && (filtered.length > 0 || isLoading) && (
+        <section className="bv-surface overflow-hidden flex flex-col relative">
+          {(isLoading || isFetching) && (
+            <div className="absolute inset-0 z-10 bg-surface-container-lowest/70 backdrop-blur-[1px]">
+              <TableSkeleton rows={4} />
+            </div>
+          )}
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
@@ -202,24 +266,6 @@ export function TeamsListPage() {
                 {pageItems.map((team) => {
                   const id = String(team.id)
                   const isSelected = selection.isSelected(id)
-                  const openOverviewFor = () =>
-                    openOverview({
-                      id: team.id,
-                      title: team.name,
-                      subtitle: team.department,
-                      badge: team.status,
-                      fields: [
-                        { label: 'Head', value: team.headName ?? 'Unassigned' },
-                        { label: 'Role', value: team.headRole ?? '—' },
-                        { label: 'Members', value: String(team.memberCount) },
-                        { label: 'Projects', value: String(team.projectCount) },
-                        { label: 'Linked project', value: team.projectName ?? '—' },
-                      ],
-                      detailTo: '/projects/teams/$teamId',
-                      detailParams: { teamId: String(team.id) },
-                      editTo: '/projects/teams/$teamId',
-                      editParams: { teamId: String(team.id) },
-                    })
 
                   return (
                     <tr
@@ -229,10 +275,10 @@ export function TeamsListPage() {
                         isSelected ? 'bg-secondary/10' : 'zebra-row',
                       )}
                       onMouseDown={() => selection.onRowPressStart(id)}
-                      onMouseUp={() => selection.onRowPressEnd(id, openOverviewFor)}
+                      onMouseUp={() => selection.onRowPressEnd(id, () => openTeamOverview(team))}
                       onMouseLeave={selection.onRowPressCancel}
                       onTouchStart={() => selection.onRowPressStart(id)}
-                      onTouchEnd={() => selection.onRowPressEnd(id, openOverviewFor)}
+                      onTouchEnd={() => selection.onRowPressEnd(id, () => openTeamOverview(team))}
                       onTouchCancel={selection.onRowPressCancel}
                       onContextMenu={(e) => e.preventDefault()}
                     >
@@ -295,9 +341,7 @@ export function TeamsListPage() {
                         <div className="flex items-center gap-2">
                           <span className="text-body-md font-medium text-on-background">{team.projectCount}</span>
                           {team.status === 'ACTIVE' && (
-                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase">
-                              Active
-                            </span>
+                            <span className="status-badge status-success">Active</span>
                           )}
                         </div>
                       </td>
@@ -310,6 +354,12 @@ export function TeamsListPage() {
                           <RowActions
                             label={`Actions for ${team.name}`}
                             actions={[
+                              {
+                                id: 'overview',
+                                label: 'Quick view',
+                                icon: 'visibility',
+                                onClick: () => openTeamOverview(team),
+                              },
                               { id: 'view', label: 'View', icon: 'description', onClick: () => goTeam(team.id) },
                               { id: 'edit', label: 'Edit', icon: 'edit', onClick: () => goTeam(team.id, true) },
                             ]}
@@ -366,7 +416,7 @@ function MetricCard({
           </span>
         </div>
         {trend && (
-          <div className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2 py-1 rounded">{trend}</div>
+          <div className="status-badge status-success text-xs font-bold px-2 py-1">{trend}</div>
         )}
       </div>
       <div>
