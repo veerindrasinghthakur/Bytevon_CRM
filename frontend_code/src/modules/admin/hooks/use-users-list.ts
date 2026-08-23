@@ -54,6 +54,7 @@ export function useUsersList() {
     locked,
     active,
     isLoading: usersQuery.isLoading,
+    isFetching: usersQuery.isFetching,
     isError: usersQuery.isError,
     refetch: usersQuery.refetch,
     search: controls.search,

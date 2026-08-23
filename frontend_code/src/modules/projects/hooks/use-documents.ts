@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { listDocuments, uploadDocument, formatFileSize } from '../api/documents'
+import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 
 export function useDocuments(filters?: {
   search?: string
@@ -7,7 +8,7 @@ export function useDocuments(filters?: {
   referenceId?: number
 }) {
   return useQuery({
-    queryKey: ['documents', 'list', filters ?? {}],
+    queryKey: queryKeys.documents.list(filters ?? {}),
     queryFn: () => listDocuments(filters),
   })
 }
@@ -30,7 +31,7 @@ export function useUploadDocument() {
       return results
     },
     onSettled: () => {
-      void qc.invalidateQueries({ queryKey: ['documents'] })
+      invalidate.documents(qc)
     },
   })
 }
