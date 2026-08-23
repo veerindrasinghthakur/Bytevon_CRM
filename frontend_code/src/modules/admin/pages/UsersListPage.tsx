@@ -5,10 +5,10 @@ import { Select } from '@/shared/components/ui/Select'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
-import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
-import { IconButton } from '@/shared/components/ui/IconButton'
+import { RowActions } from '@/shared/components/ui/RowActions'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import {
   QuickSection,
@@ -88,6 +88,7 @@ export function UsersListPage() {
     locked,
     active,
     isLoading,
+    isFetching,
     isError,
     refetch,
     search,
@@ -129,7 +130,6 @@ export function UsersListPage() {
     })
   }
 
-  if (isLoading) return <PageLoadingSkeleton />
   if (isError) {
     return (
       <ErrorState
@@ -211,7 +211,12 @@ export function UsersListPage() {
         </BulkSelectionBar>
       )}
 
-      <section className="bv-surface overflow-hidden">
+      <section className="bv-surface overflow-hidden relative">
+        {(isLoading || isFetching) && (
+          <div className="absolute inset-0 z-10 bg-surface-container-lowest/70 backdrop-blur-[1px]">
+            <TableSkeleton rows={6} />
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[880px]">
             <thead>
@@ -317,9 +322,25 @@ export function UsersListPage() {
                       onMouseDown={(e) => e.stopPropagation()}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <IconButton label={`Quick view ${u.name}`} size="sm" onClick={() => openUserOverview(u)}>
-                        <span className="material-symbols-outlined text-xl">visibility</span>
-                      </IconButton>
+                      <div className="flex justify-end">
+                        <RowActions
+                          label={`Actions for ${u.name}`}
+                          actions={[
+                            {
+                              id: 'overview',
+                              label: 'Quick view',
+                              icon: 'visibility',
+                              onClick: () => openUserOverview(u),
+                            },
+                            {
+                              id: 'details',
+                              label: 'View details',
+                              icon: 'description',
+                              onClick: () => goDetail(u),
+                            },
+                          ]}
+                        />
+                      </div>
                     </td>
                   </tr>
                 )
