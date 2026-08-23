@@ -11,6 +11,12 @@ import { RowActions } from '@/shared/components/ui/RowActions'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import {
+  QuickSection,
+  QuickMetaTile,
+  QuickRelatedRow,
+  QuickPersonRow,
+} from '@/shared/components/layout/QuickOverviewParts'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useTasks } from '../hooks/use-tasks'
 import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
@@ -18,36 +24,56 @@ import { CreateTaskModal } from '../components/CreateTaskModal'
 import type { Task } from '../types'
 import { cn } from '@/shared/lib/cn'
 
+const statusDot: Record<string, string> = {
+  TODO: 'bg-slate-400',
+  IN_PROGRESS: 'bg-blue-500',
+  IN_REVIEW: 'bg-violet-500',
+  DONE: 'bg-emerald-500',
+  BLOCKED: 'bg-red-500',
+  ON_HOLD: 'bg-amber-500',
+}
+
 function TaskQuickContent({ task }: { task: Task }) {
   return (
     <>
-      <div className="flex items-start gap-4">
-        <div className="w-14 h-14 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
-          <span className="material-symbols-outlined text-3xl">assignment</span>
+      <QuickSection title="General Info">
+        <div className="grid grid-cols-2 gap-3">
+          <QuickMetaTile
+            icon="flag"
+            label="Status"
+            value={<TaskStatusBadge status={task.status} />}
+          />
+          <QuickMetaTile
+            icon="priority_high"
+            label="Priority"
+            value={<TaskPriorityLabel priority={task.priority} />}
+          />
+          <QuickMetaTile icon="event" label="Due date" value={task.dueDate ?? '—'} />
+          <QuickMetaTile icon="folder_open" label="Project" value={task.projectName ?? '—'} />
         </div>
-        <div className="min-w-0">
-          <h5 className="text-xl font-bold text-on-surface">{task.title}</h5>
-          <p className="text-on-surface-variant text-sm">{task.projectName ?? 'No project'}</p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <TaskStatusBadge status={task.status} />
-            <TaskPriorityLabel priority={task.priority} />
-          </div>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Assignee</p>
-          <p className="text-lg font-semibold">{task.assigneeName ?? 'Unassigned'}</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Due</p>
-          <p className="text-lg font-semibold">{task.dueDate ?? '—'}</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl col-span-2">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Project</p>
-          <p className="text-body-md font-semibold">{task.projectName ?? '—'}</p>
-        </div>
-      </div>
+      </QuickSection>
+
+      <QuickSection title="Assignment">
+        {task.assigneeName ? (
+          <QuickPersonRow
+            initials={task.assigneeName
+              .split(' ')
+              .map((p) => p[0])
+              .join('')
+              .slice(0, 2)}
+            roleLabel="Assignee"
+            name={task.assigneeName}
+          />
+        ) : (
+          <QuickRelatedRow icon="person_off" label="Assignee" value="Unassigned" />
+        )}
+      </QuickSection>
+
+      <QuickSection title="Related">
+        <QuickRelatedRow icon="folder_open" label="Project" value={task.projectName ?? '—'} />
+        <QuickRelatedRow icon="event" label="Due" value={task.dueDate ?? '—'} />
+        <QuickRelatedRow icon="title" label="Task" value={task.title} />
+      </QuickSection>
     </>
   )
 }
@@ -102,11 +128,15 @@ export function TasksListPage() {
 
   const openTaskOverview = (task: Task) => {
     openPanel({
-      title: 'Task Quick View',
+      title: task.title,
+      subtitle: task.projectName ?? 'No project',
+      icon: 'assignment',
+      status: task.status.replace(/_/g, ' '),
+      statusDotClass: statusDot[task.status] ?? 'bg-outline',
       content: <TaskQuickContent task={task} />,
       fullRecordLabel: 'Open full record',
       onOpenFull: () => goTask(task.id),
-      widthClass: 'max-w-md',
+      widthClass: 'max-w-[520px]',
     })
   }
 

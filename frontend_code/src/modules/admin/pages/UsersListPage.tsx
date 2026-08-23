@@ -10,6 +10,12 @@ import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { IconButton } from '@/shared/components/ui/IconButton'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import {
+  QuickSection,
+  QuickMetaTile,
+  QuickRelatedRow,
+  QuickPersonRow,
+} from '@/shared/components/layout/QuickOverviewParts'
 import { ResourceName } from '@/shared/schema'
 import { useUsersList } from '../hooks/use-users-list'
 import type { AdminUserListItem } from '../api/users'
@@ -19,6 +25,12 @@ const statusBadgeClass: Record<string, string> = {
   Active: 'status-badge status-success',
   Inactive: 'status-badge status-neutral',
   Locked: 'status-badge status-error',
+}
+
+const statusDot: Record<string, string> = {
+  Active: 'bg-emerald-500',
+  Inactive: 'bg-slate-400',
+  Locked: 'bg-red-500',
 }
 
 const STATUS_OPTIONS = [
@@ -31,36 +43,37 @@ const STATUS_OPTIONS = [
 function UserQuickContent({ user }: { user: AdminUserListItem }) {
   return (
     <>
-      <div className="flex items-start gap-4">
-        <div className="w-16 h-16 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center text-xl font-bold shrink-0">
-          {user.initials}
+      <QuickSection title="Identity">
+        <div className="grid grid-cols-2 gap-3">
+          <QuickMetaTile icon="badge" label="Role" value={user.role} />
+          <QuickMetaTile icon="domain" label="Department" value={user.department} />
+          <QuickMetaTile icon="tag" label="Employee code" value={user.employeeCode} />
+          <QuickMetaTile icon="schedule" label="Last login" value={user.lastLogin} />
         </div>
-        <div className="min-w-0">
-          <h5 className="text-xl font-bold text-on-surface truncate">{user.name}</h5>
-          <p className="text-on-surface-variant text-sm">{user.email}</p>
-          <span className={cn('inline-block mt-2', statusBadgeClass[user.status] ?? 'status-badge status-neutral')}>
-            {user.status}
-          </span>
-        </div>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Role</p>
-          <p className="text-lg font-semibold">{user.role}</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Department</p>
-          <p className="text-lg font-semibold">{user.department}</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Employee code</p>
-          <p className="text-body-md font-semibold">{user.employeeCode}</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Last login</p>
-          <p className="text-body-md font-semibold">{user.lastLogin}</p>
-        </div>
-      </div>
+      </QuickSection>
+
+      <QuickSection title="Assignment">
+        <QuickPersonRow
+          initials={user.initials}
+          roleLabel={user.role}
+          name={user.name}
+        />
+      </QuickSection>
+
+      <QuickSection title="Related">
+        <QuickRelatedRow icon="mail" label="Email" value={user.email} />
+        <QuickRelatedRow icon="badge" label="Role" value={user.role} />
+        <QuickRelatedRow icon="domain" label="Department" value={user.department} />
+        <QuickRelatedRow
+          icon="circle"
+          label="Status"
+          value={
+            <span className={statusBadgeClass[user.status] ?? 'status-badge status-neutral'}>
+              {user.status}
+            </span>
+          }
+        />
+      </QuickSection>
     </>
   )
 }
@@ -104,11 +117,15 @@ export function UsersListPage() {
 
   const openUserOverview = (u: AdminUserListItem) => {
     openPanel({
-      title: 'User Quick View',
+      title: u.name,
+      subtitle: [u.email, u.employeeCode].filter(Boolean).join(' · '),
+      icon: 'person',
+      status: u.status,
+      statusDotClass: statusDot[u.status] ?? 'bg-outline',
       content: <UserQuickContent user={u} />,
       fullRecordLabel: 'Open full record',
       onOpenFull: () => goDetail(u),
-      widthClass: 'max-w-md',
+      widthClass: 'max-w-[520px]',
     })
   }
 
