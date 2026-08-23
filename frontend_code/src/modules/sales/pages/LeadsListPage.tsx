@@ -84,16 +84,9 @@ function LeadQuickContent({ lead }: { lead: Lead }) {
             <StatusDotOnly status={lead.status} />
             <h5 className="text-xl font-bold text-on-surface truncate">{lead.contactName}</h5>
           </div>
-          {lead.contactTitle && (
-            <p className="text-on-surface-variant text-sm">{lead.contactTitle}</p>
-          )}
+          {lead.contactTitle && <p className="text-on-surface-variant text-sm">{lead.contactTitle}</p>}
           <div className="flex flex-wrap gap-2 mt-2">
-            <span
-              className={cn(
-                'px-2 py-0.5 rounded text-[10px] font-bold uppercase',
-                stageStyles[lead.stage],
-              )}
-            >
+            <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold uppercase', stageStyles[lead.stage])}>
               {lead.stage}
             </span>
           </div>
@@ -184,8 +177,7 @@ export function LeadsListPage() {
       title: 'Lead Quick View',
       content: <LeadQuickContent lead={lead} />,
       fullRecordLabel: 'Open Full Record',
-      onOpenFull: () =>
-        navigate({ to: '/sales/leads/$leadId', params: { leadId: lead.id } }),
+      onOpenFull: () => navigate({ to: '/sales/leads/$leadId', params: { leadId: lead.id } }),
       secondaryLabel: 'Log Task',
       onSecondary: () => {},
       widthClass: 'max-w-md',
@@ -318,10 +310,10 @@ export function LeadsListPage() {
                         isSelected ? 'bg-secondary/10' : 'hover:bg-surface-container-low/50',
                       )}
                       onMouseDown={() => startLongPress(lead.id)}
-                      onMouseUp={() => endLongPress(lead)}
+                      onMouseUp={() => endLongPress(lead, openLeadOverview)}
                       onMouseLeave={clearLongPress}
                       onTouchStart={() => startLongPress(lead.id)}
-                      onTouchEnd={() => endLongPress(lead)}
+                      onTouchEnd={() => endLongPress(lead, openLeadOverview)}
                       onTouchCancel={clearLongPress}
                       onContextMenu={(e) => e.preventDefault()}
                     >
@@ -380,12 +372,7 @@ export function LeadsListPage() {
                         )}
                       </td>
                       <td className="px-4 py-4">
-                        <span
-                          className={cn(
-                            'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase',
-                            stageStyles[lead.stage],
-                          )}
-                        >
+                        <span className={cn('px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase', stageStyles[lead.stage])}>
                           {lead.stage}
                         </span>
                       </td>
@@ -399,10 +386,7 @@ export function LeadsListPage() {
                         {lead.tags && lead.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-1">
                             {lead.tags.map((t) => (
-                              <span
-                                key={t}
-                                className="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded text-[9px] font-bold"
-                              >
+                              <span key={t} className="bg-amber-50 text-amber-700 px-1.5 py-0.5 rounded text-[9px] font-bold">
                                 {t}
                               </span>
                             ))}
@@ -438,10 +422,7 @@ export function LeadsListPage() {
                             type="button"
                             className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant"
                             onClick={() =>
-                              navigate({
-                                to: '/sales/leads/$leadId/edit',
-                                params: { leadId: lead.id },
-                              })
+                              navigate({ to: '/sales/leads/$leadId/edit', params: { leadId: lead.id } })
                             }
                             aria-label="Edit lead"
                           >
