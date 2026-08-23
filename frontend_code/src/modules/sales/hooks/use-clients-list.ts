@@ -1,18 +1,25 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useListSelection } from '@/shared/hooks/useListSelection'
+import { useListControls } from '@/shared/hooks/useListControls'
 import { useClientsQuery } from './use-sales'
 import type { Client } from '../types'
 
+const FILTER_DEFAULTS = {
+  status: 'All',
+  type: 'All',
+}
+
 export function useClientsList() {
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('All')
-  const [typeFilter, setTypeFilter] = useState('All')
   const [quickView, setQuickView] = useState<Client | null>(null)
 
+  const controls = useListControls({
+    filterDefaults: FILTER_DEFAULTS,
+  })
+
   const { data, isLoading, isError, refetch, isFetching } = useClientsQuery({
-    search: search || undefined,
-    status: statusFilter,
-    type: typeFilter,
+    search: controls.search || undefined,
+    status: controls.filters.status,
+    type: controls.filters.type,
   })
 
   const filtered = data?.items ?? []
@@ -24,13 +31,6 @@ export function useClientsList() {
     getId: (c) => c.id,
   })
 
-  const resetFilters = () => {
-    setSearch('')
-    setStatusFilter('All')
-    setTypeFilter('All')
-  }
-
-  /** Bridge long-press / short-press to selection + quick view (same UX as before). */
   const startLongPress = (id: string) => selection.onRowPressStart(id)
   const endLongPress = (client: Client) => {
     selection.onRowPressEnd(client.id, () => setQuickView(client))
@@ -45,13 +45,18 @@ export function useClientsList() {
     isError,
     refetch,
     isFetching,
-    search,
-    setSearch,
-    statusFilter,
-    setStatusFilter,
-    typeFilter,
-    setTypeFilter,
-    resetFilters,
+    search: controls.search,
+    setSearch: controls.setSearch,
+    statusFilter: controls.filters.status,
+    setStatusFilter: (v: string) => controls.setFilter('status', v),
+    typeFilter: controls.filters.type,
+    setTypeFilter: (v: string) => controls.setFilter('type', v),
+    resetFilters: controls.resetAll,
+    filtersActive: controls.anyActive,
+    page: controls.page,
+    setPage: controls.setPage,
+    pageSize: controls.pageSize,
+    pageItems: controls.pageItems(filtered),
     quickView,
     setQuickView,
     selectionMode: selection.selectionMode,
