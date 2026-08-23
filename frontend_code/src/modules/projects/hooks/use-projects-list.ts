@@ -1,30 +1,23 @@
-import { useMemo, useState } from 'react'
-import { paginate, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
+import { useMemo } from 'react'
 import { useListSelection } from '@/shared/hooks/useListSelection'
+import { useListControls } from '@/shared/hooks/useListControls'
 import { computeProjectListMetrics } from '@/shared/compute/project-metrics'
 import { useProjects } from './use-projects'
 
-export function useProjectsList() {
-  const [search, setSearch] = useState('')
-  const [status, setStatus] = useState('')
-  const [page, setPage] = useState(1)
+const FILTER_DEFAULTS = { status: '' }
 
-  const { data, isLoading, isError, refetch } = useProjects({
-    search: search || undefined,
-    status: status || undefined,
+export function useProjectsList() {
+  const controls = useListControls({
+    filterDefaults: FILTER_DEFAULTS,
   })
 
-  const filtersActive = Boolean(search || status)
-
-  const resetFilters = () => {
-    setSearch('')
-    setStatus('')
-    setPage(1)
-  }
+  const { data, isLoading, isError, refetch } = useProjects({
+    search: controls.search || undefined,
+    status: controls.filters.status || undefined,
+  })
 
   const items = data?.items ?? []
-  const total = items.length
-  const pageItems = useMemo(() => paginate(items, page, DEFAULT_PAGE_SIZE), [items, page])
+  const pageItems = controls.pageItems(items)
 
   const selection = useListSelection({
     items: pageItems,
@@ -33,25 +26,16 @@ export function useProjectsList() {
 
   const metrics = useMemo(() => computeProjectListMetrics(items), [items])
 
-  const setSearchAndResetPage = (v: string) => {
-    setSearch(v)
-    setPage(1)
-  }
-
-  const setStatusAndResetPage = (v: string) => {
-    setStatus(v)
-    setPage(1)
-  }
-
   return {
-    search,
-    setSearch: setSearchAndResetPage,
-    status,
-    setStatus: setStatusAndResetPage,
-    page,
-    setPage,
-    filtersActive,
-    resetFilters,
+    search: controls.search,
+    setSearch: controls.setSearch,
+    status: controls.filters.status,
+    setStatus: (v: string) => controls.setFilter('status', v),
+    page: controls.page,
+    setPage: controls.setPage,
+    pageSize: controls.pageSize,
+    filtersActive: controls.anyActive,
+    resetFilters: controls.resetAll,
     items,
     pageItems,
     total: metrics.total,
