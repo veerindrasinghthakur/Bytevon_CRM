@@ -8,15 +8,17 @@ import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
+import { IconButton } from '@/shared/components/ui/IconButton'
+import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import { ResourceName } from '@/shared/schema'
 import { useUsersList } from '../hooks/use-users-list'
 import type { AdminUserListItem } from '../api/users'
 import { cn } from '@/shared/lib/cn'
 
-const statusStyles: Record<string, string> = {
-  Active: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  Inactive: 'bg-surface-container text-on-surface-variant border-outline-variant',
-  Locked: 'bg-red-50 text-red-700 border-red-200',
+const statusBadgeClass: Record<string, string> = {
+  Active: 'status-badge status-success',
+  Inactive: 'status-badge status-neutral',
+  Locked: 'status-badge status-error',
 }
 
 const STATUS_OPTIONS = [
@@ -26,8 +28,46 @@ const STATUS_OPTIONS = [
   { value: 'Locked', label: 'Locked' },
 ]
 
+function UserQuickContent({ user }: { user: AdminUserListItem }) {
+  return (
+    <>
+      <div className="flex items-start gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center text-xl font-bold shrink-0">
+          {user.initials}
+        </div>
+        <div className="min-w-0">
+          <h5 className="text-xl font-bold text-on-surface truncate">{user.name}</h5>
+          <p className="text-on-surface-variant text-sm">{user.email}</p>
+          <span className={cn('inline-block mt-2', statusBadgeClass[user.status] ?? 'status-badge status-neutral')}>
+            {user.status}
+          </span>
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Role</p>
+          <p className="text-lg font-semibold">{user.role}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Department</p>
+          <p className="text-lg font-semibold">{user.department}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Employee code</p>
+          <p className="text-body-md font-semibold">{user.employeeCode}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Last login</p>
+          <p className="text-body-md font-semibold">{user.lastLogin}</p>
+        </div>
+      </div>
+    </>
+  )
+}
+
 export function UsersListPage() {
   const navigate = useNavigate()
+  const { openPanel } = useQuickOverview()
   const {
     items,
     filtered,
@@ -60,6 +100,16 @@ export function UsersListPage() {
 
   const goDetail = (u: AdminUserListItem) => {
     navigate({ to: '/admin/users/$userId', params: { userId: String(u.id) } })
+  }
+
+  const openUserOverview = (u: AdminUserListItem) => {
+    openPanel({
+      title: 'User Quick View',
+      content: <UserQuickContent user={u} />,
+      fullRecordLabel: 'Open full record',
+      onOpenFull: () => goDetail(u),
+      widthClass: 'max-w-md',
+    })
   }
 
   if (isLoading) return <PageLoadingSkeleton />
@@ -194,10 +244,10 @@ export function UsersListPage() {
                       selected ? 'bg-secondary/10' : 'zebra-row',
                     )}
                     onMouseDown={() => onRowPressStart(id)}
-                    onMouseUp={() => onRowPressEnd(id, () => goDetail(u))}
+                    onMouseUp={() => onRowPressEnd(id, () => openUserOverview(u))}
                     onMouseLeave={onRowPressCancel}
                     onTouchStart={() => onRowPressStart(id)}
-                    onTouchEnd={() => onRowPressEnd(id, () => goDetail(u))}
+                    onTouchEnd={() => onRowPressEnd(id, () => openUserOverview(u))}
                     onTouchCancel={onRowPressCancel}
                     onContextMenu={(e) => e.preventDefault()}
                   >
@@ -240,12 +290,7 @@ export function UsersListPage() {
                     <td className="px-6 py-4 text-body-sm">{u.role}</td>
                     <td className="px-6 py-4 text-body-sm text-on-surface-variant">{u.department}</td>
                     <td className="px-6 py-4">
-                      <span
-                        className={cn(
-                          'px-3 py-1 rounded-full text-label-sm font-medium border',
-                          statusStyles[u.status],
-                        )}
-                      >
+                      <span className={statusBadgeClass[u.status] ?? 'status-badge status-neutral'}>
                         {u.status}
                       </span>
                     </td>
@@ -255,14 +300,9 @@ export function UsersListPage() {
                       onMouseDown={(e) => e.stopPropagation()}
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <button
-                        type="button"
-                        className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant hover:text-secondary transition-colors"
-                        onClick={() => goDetail(u)}
-                        aria-label={`View ${u.name}`}
-                      >
+                      <IconButton label={`Quick view ${u.name}`} size="sm" onClick={() => openUserOverview(u)}>
                         <span className="material-symbols-outlined text-xl">visibility</span>
-                      </button>
+                      </IconButton>
                     </td>
                   </tr>
                 )
