@@ -7,19 +7,86 @@ import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { IconButton } from '@/shared/components/ui/IconButton'
+import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import { ResourceName } from '@/shared/schema'
 import { useRolesList } from '../hooks/use-roles-list'
+import type { AdminRole } from '../types'
 import { cn } from '@/shared/lib/cn'
 
 const categoryStyles: Record<string, string> = {
   'Core Role': 'bg-secondary/10 text-secondary',
   Operational: 'bg-primary/10 text-primary',
-  Financial: 'bg-amber-100 text-amber-800',
-  Standard: 'bg-surface-container text-on-surface-variant',
+  Financial: 'status-badge status-warning',
+  Standard: 'status-badge status-neutral',
+}
+
+function RoleQuickContent({ role }: { role: AdminRole }) {
+  return (
+    <>
+      <div className="space-y-2">
+        <span
+          className={cn(
+            'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
+            categoryStyles[role.category] ?? categoryStyles.Standard,
+          )}
+        >
+          {role.category}
+        </span>
+        <h5 className="text-xl font-bold text-on-surface">{role.name}</h5>
+        <p className="text-body-sm text-on-surface-variant">{role.description}</p>
+        <span
+          className={cn(
+            'inline-flex items-center gap-1.5',
+            role.status === 'Active' ? 'status-badge status-success' : 'status-badge status-neutral',
+          )}
+        >
+          <span
+            className={cn(
+              'w-1.5 h-1.5 rounded-full',
+              role.status === 'Active' ? 'bg-[var(--color-success-emerald)]' : 'bg-on-surface-variant',
+            )}
+          />
+          {role.status}
+        </span>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Users</p>
+          <p className="text-lg font-bold">{String(role.usersCount).padStart(2, '0')}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Coverage</p>
+          <p className="text-lg font-bold text-secondary">{role.coverageLabel}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Created</p>
+          <p className="text-body-md font-semibold">{role.created}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Updated</p>
+          <p className="text-body-md font-semibold">{role.updated}</p>
+        </div>
+      </div>
+      <div className="space-y-2">
+        <div className="flex justify-between text-label-sm">
+          <span className="text-on-surface-variant">Access coverage</span>
+          <span className="text-on-surface">{role.coveragePct}%</span>
+        </div>
+        <div className="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+          <div
+            className="bg-secondary h-full rounded-full transition-all duration-500 ease-out"
+            style={{ width: `${role.coveragePct}%` }}
+          />
+        </div>
+      </div>
+    </>
+  )
 }
 
 export function RolesListPage() {
   const navigate = useNavigate()
+  const { openPanel } = useQuickOverview()
   const [openMenu, setOpenMenu] = useState<string | null>(null)
 
   const {
@@ -51,6 +118,19 @@ export function RolesListPage() {
     onRowPressCancel,
   } = useRolesList()
 
+  const goDetail = (roleId: string) =>
+    navigate({ to: '/admin/roles/$roleId', params: { roleId } })
+
+  const openRoleOverview = (role: AdminRole) => {
+    openPanel({
+      title: 'Role Quick View',
+      content: <RoleQuickContent role={role} />,
+      fullRecordLabel: 'Open full record',
+      onOpenFull: () => goDetail(role.id),
+      widthClass: 'max-w-md',
+    })
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       <PageHeader
@@ -80,7 +160,6 @@ export function RolesListPage() {
         }
       />
 
-      {/* Top metric cards — total roles, active users, etc. */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MetricCard
           icon="badge"
@@ -108,15 +187,17 @@ export function RolesListPage() {
         />
       </section>
 
-      {/* Filter bar */}
       <section className="bv-surface p-4">
         <div className="flex flex-wrap items-end gap-3">
           <div className="relative flex-1 min-w-[200px]">
-            <label className="block text-label-sm text-on-surface-variant mb-1.5">Search</label>
+            <label className="block text-label-sm text-on-surface-variant mb-1.5" htmlFor="roles-search">
+              Search
+            </label>
             <span className="material-symbols-outlined absolute left-3 bottom-2.5 text-on-surface-variant text-[18px]">
               search
             </span>
             <input
+              id="roles-search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none text-body-sm transition-all duration-200"
@@ -204,18 +285,10 @@ export function RolesListPage() {
                     selected && 'ring-2 ring-secondary bg-secondary/5',
                   )}
                   onMouseDown={() => onRowPressStart(role.id)}
-                  onMouseUp={() =>
-                    onRowPressEnd(role.id, () =>
-                      navigate({ to: '/admin/roles/$roleId', params: { roleId: role.id } }),
-                    )
-                  }
+                  onMouseUp={() => onRowPressEnd(role.id, () => openRoleOverview(role))}
                   onMouseLeave={onRowPressCancel}
                   onTouchStart={() => onRowPressStart(role.id)}
-                  onTouchEnd={() =>
-                    onRowPressEnd(role.id, () =>
-                      navigate({ to: '/admin/roles/$roleId', params: { roleId: role.id } }),
-                    )
-                  }
+                  onTouchEnd={() => onRowPressEnd(role.id, () => openRoleOverview(role))}
                   onTouchCancel={onRowPressCancel}
                   onContextMenu={(e) => e.preventDefault()}
                 >
@@ -239,30 +312,38 @@ export function RolesListPage() {
                     </div>
                   )}
 
-                  <div className="absolute top-4 right-4 z-10">
-                    <button
-                      type="button"
-                      className="p-1.5 hover:bg-surface-container rounded-full transition-colors duration-200 cursor-pointer"
+                  <div className="absolute top-4 right-4 z-10" onMouseDown={(e) => e.stopPropagation()}>
+                    <IconButton
+                      label={`Actions for ${role.name}`}
+                      size="sm"
                       onClick={(e) => {
                         e.stopPropagation()
                         setOpenMenu(openMenu === role.id ? null : role.id)
                       }}
-                      onMouseDown={(e) => e.stopPropagation()}
-                      aria-label="Role actions"
                     >
                       <span className="material-symbols-outlined text-on-surface-variant">more_vert</span>
-                    </button>
+                    </IconButton>
                     {openMenu === role.id && (
-                      <div className="absolute right-0 top-10 w-48 bg-white border border-outline-variant rounded-lg executive-shadow z-20 py-2">
+                      <div className="absolute right-0 top-10 w-48 bg-surface-container-lowest border border-outline-variant rounded-lg executive-shadow z-20 py-2">
                         <button
                           type="button"
                           className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container transition-colors duration-200 flex items-center gap-2 cursor-pointer"
                           onClick={() => {
                             setOpenMenu(null)
-                            navigate({ to: '/admin/roles/$roleId', params: { roleId: role.id } })
+                            openRoleOverview(role)
                           }}
                         >
-                          <span className="material-symbols-outlined text-[18px]">visibility</span> View Details
+                          <span className="material-symbols-outlined text-[18px]">visibility</span> Quick view
+                        </button>
+                        <button
+                          type="button"
+                          className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container transition-colors duration-200 flex items-center gap-2 cursor-pointer"
+                          onClick={() => {
+                            setOpenMenu(null)
+                            goDetail(role.id)
+                          }}
+                        >
+                          <span className="material-symbols-outlined text-[18px]">description</span> View Details
                         </button>
                         <button
                           type="button"
@@ -279,12 +360,6 @@ export function RolesListPage() {
                           className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container transition-colors duration-200 flex items-center gap-2 cursor-pointer"
                         >
                           <span className="material-symbols-outlined text-[18px]">content_copy</span> Duplicate
-                        </button>
-                        <button
-                          type="button"
-                          className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container transition-colors duration-200 flex items-center gap-2 cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">block</span> Disable
                         </button>
                         <div className="h-px bg-outline-variant my-1" />
                         <button
@@ -305,7 +380,7 @@ export function RolesListPage() {
                         toggleOne(role.id)
                         return
                       }
-                      navigate({ to: '/admin/roles/$roleId', params: { roleId: role.id } })
+                      openRoleOverview(role)
                     }}
                   >
                     <div>
@@ -359,16 +434,14 @@ export function RolesListPage() {
                     </div>
                     <div
                       className={cn(
-                        'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold',
-                        role.status === 'Active'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-surface-container text-on-surface-variant',
+                        'flex items-center gap-1.5',
+                        role.status === 'Active' ? 'status-badge status-success' : 'status-badge status-neutral',
                       )}
                     >
                       <span
                         className={cn(
                           'w-1.5 h-1.5 rounded-full',
-                          role.status === 'Active' ? 'bg-green-600' : 'bg-on-surface-variant',
+                          role.status === 'Active' ? 'bg-[var(--color-success-emerald)]' : 'bg-on-surface-variant',
                         )}
                       />
                       {role.status.toUpperCase()}
