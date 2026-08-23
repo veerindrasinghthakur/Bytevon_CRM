@@ -9,6 +9,13 @@ import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { IconButton } from '@/shared/components/ui/IconButton'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import {
+  QuickSection,
+  QuickStat,
+  QuickStatGrid,
+  QuickMetaTile,
+  QuickRelatedRow,
+} from '@/shared/components/layout/QuickOverviewParts'
 import { ResourceName } from '@/shared/schema'
 import { useRolesList } from '../hooks/use-roles-list'
 import type { AdminRole } from '../types'
@@ -24,62 +31,72 @@ const categoryStyles: Record<string, string> = {
 function RoleQuickContent({ role }: { role: AdminRole }) {
   return (
     <>
-      <div className="space-y-2">
-        <span
-          className={cn(
-            'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
-            categoryStyles[role.category] ?? categoryStyles.Standard,
-          )}
-        >
-          {role.category}
-        </span>
-        <h5 className="text-xl font-bold text-on-surface">{role.name}</h5>
-        <p className="text-body-sm text-on-surface-variant">{role.description}</p>
-        <span
-          className={cn(
-            'inline-flex items-center gap-1.5',
-            role.status === 'Active' ? 'status-badge status-success' : 'status-badge status-neutral',
-          )}
-        >
-          <span
-            className={cn(
-              'w-1.5 h-1.5 rounded-full',
-              role.status === 'Active' ? 'bg-[var(--color-success-emerald)]' : 'bg-on-surface-variant',
-            )}
+      <QuickSection title="Quick Statistics">
+        <QuickStatGrid>
+          <QuickStat icon="group" value={String(role.usersCount).padStart(2, '0')} label="Users" />
+          <QuickStat icon="shield" value={`${role.coveragePct}%`} label="Coverage" />
+          <QuickStat icon="category" value={role.category} label="Category" />
+        </QuickStatGrid>
+      </QuickSection>
+
+      <QuickSection title="General Info">
+        <div className="grid grid-cols-2 gap-3">
+          <QuickMetaTile
+            icon="category"
+            label="Category"
+            value={
+              <span
+                className={cn(
+                  'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
+                  categoryStyles[role.category] ?? categoryStyles.Standard,
+                )}
+              >
+                {role.category}
+              </span>
+            }
           />
-          {role.status}
-        </span>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Users</p>
-          <p className="text-lg font-bold">{String(role.usersCount).padStart(2, '0')}</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Coverage</p>
-          <p className="text-lg font-bold text-secondary">{role.coverageLabel}</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Created</p>
-          <p className="text-body-md font-semibold">{role.created}</p>
-        </div>
-        <div className="p-4 bg-surface-container-low rounded-xl">
-          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Updated</p>
-          <p className="text-body-md font-semibold">{role.updated}</p>
-        </div>
-      </div>
-      <div className="space-y-2">
-        <div className="flex justify-between text-label-sm">
-          <span className="text-on-surface-variant">Access coverage</span>
-          <span className="text-on-surface">{role.coveragePct}%</span>
-        </div>
-        <div className="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
-          <div
-            className="bg-secondary h-full rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${role.coveragePct}%` }}
+          <QuickMetaTile
+            icon="toggle_on"
+            label="Status"
+            value={
+              <span
+                className={cn(
+                  'inline-flex items-center gap-1.5',
+                  role.status === 'Active' ? 'status-badge status-success' : 'status-badge status-neutral',
+                )}
+              >
+                {role.status}
+              </span>
+            }
           />
+          <QuickMetaTile icon="event" label="Created" value={role.created} />
+          <QuickMetaTile icon="update" label="Updated" value={role.updated} />
         </div>
-      </div>
+        {role.description && (
+          <p className="mt-3 text-body-sm text-on-surface-variant">{role.description}</p>
+        )}
+      </QuickSection>
+
+      <QuickSection title="Access coverage">
+        <div className="space-y-2">
+          <div className="flex justify-between text-label-sm">
+            <span className="text-on-surface-variant">{role.coverageLabel}</span>
+            <span className="text-on-surface">{role.coveragePct}%</span>
+          </div>
+          <div className="w-full bg-surface-container-high h-1.5 rounded-full overflow-hidden">
+            <div
+              className="bg-secondary h-full rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${role.coveragePct}%` }}
+            />
+          </div>
+        </div>
+      </QuickSection>
+
+      <QuickSection title="Related">
+        <QuickRelatedRow icon="group" label="Users" value={String(role.usersCount)} />
+        <QuickRelatedRow icon="shield" label="Coverage" value={role.coverageLabel} />
+        <QuickRelatedRow icon="badge" label="Role" value={role.name} />
+      </QuickSection>
     </>
   )
 }
@@ -123,11 +140,15 @@ export function RolesListPage() {
 
   const openRoleOverview = (role: AdminRole) => {
     openPanel({
-      title: 'Role Quick View',
+      title: role.name,
+      subtitle: role.category,
+      icon: 'badge',
+      status: role.status,
+      statusDotClass: role.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400',
       content: <RoleQuickContent role={role} />,
       fullRecordLabel: 'Open full record',
       onOpenFull: () => goDetail(role.id),
-      widthClass: 'max-w-md',
+      widthClass: 'max-w-[520px]',
     })
   }
 

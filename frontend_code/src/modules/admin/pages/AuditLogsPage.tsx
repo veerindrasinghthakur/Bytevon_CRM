@@ -5,6 +5,12 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { IconButton } from '@/shared/components/ui/IconButton'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import {
+  QuickSection,
+  QuickMetaTile,
+  QuickRelatedRow,
+  QuickPersonRow,
+} from '@/shared/components/layout/QuickOverviewParts'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { ResourceName } from '@/shared/schema'
 import { auditLogs } from '../data/mock'
@@ -18,37 +24,50 @@ const actionBadge: Record<string, string> = {
   Lock: 'status-badge status-warning',
 }
 
+const actionDot: Record<string, string> = {
+  Create: 'bg-emerald-500',
+  Update: 'bg-blue-500',
+  Delete: 'bg-red-500',
+  Login: 'bg-sky-500',
+  Lock: 'bg-amber-500',
+}
+
 type AuditLog = (typeof auditLogs)[number]
 
 function AuditQuickContent({ log }: { log: AuditLog }) {
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-label-md font-bold">
-          {log.actorInitials}
+    <>
+      <QuickSection title="Actor">
+        <QuickPersonRow
+          initials={log.actorInitials}
+          roleLabel="Actor"
+          name={log.actor}
+        />
+      </QuickSection>
+
+      <QuickSection title="Event details">
+        <div className="grid grid-cols-2 gap-3">
+          <QuickMetaTile icon="tag" label="Event ID" value={log.id} />
+          <QuickMetaTile
+            icon="bolt"
+            label="Action"
+            value={
+              <span className={actionBadge[Object.keys(actionBadge).find((k) => log.action.toLowerCase().includes(k.toLowerCase())) ?? 'Update'] ?? 'status-badge status-neutral'}>
+                {log.action}
+              </span>
+            }
+          />
+          <QuickMetaTile icon="category" label="Module" value={log.module} />
+          <QuickMetaTile icon="schedule" label="Timestamp" value={log.timestamp} />
         </div>
-        <div>
-          <p className="text-title-lg font-semibold text-on-surface">{log.actor}</p>
-          <p className="text-body-sm text-on-surface-variant">{log.timestamp}</p>
-        </div>
-      </div>
-      <div className="grid grid-cols-1 gap-3">
-        {(
-          [
-            ['Event ID', log.id],
-            ['Action', log.action],
-            ['Target', log.target],
-            ['Module', log.module],
-            ['IP Address', log.ip],
-          ] as const
-        ).map(([label, value]) => (
-          <div key={label} className="p-4 bg-surface-container-low rounded-xl">
-            <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">{label}</p>
-            <p className="text-body-md font-semibold text-on-surface break-all">{value}</p>
-          </div>
-        ))}
-      </div>
-    </div>
+      </QuickSection>
+
+      <QuickSection title="Related">
+        <QuickRelatedRow icon="description" label="Target" value={log.target} />
+        <QuickRelatedRow icon="lan" label="IP Address" value={log.ip} />
+        <QuickRelatedRow icon="category" label="Module" value={log.module} />
+      </QuickSection>
+    </>
   )
 }
 
@@ -83,10 +102,16 @@ export function AuditLogsPage() {
   })
 
   const openAuditOverview = (log: AuditLog) => {
+    const actionKey =
+      Object.keys(actionBadge).find((k) => log.action.toLowerCase().includes(k.toLowerCase())) ?? 'Update'
     openPanel({
-      title: 'Event Details',
+      title: log.action,
+      subtitle: log.timestamp,
+      icon: 'history',
+      status: log.module,
+      statusDotClass: actionDot[actionKey] ?? 'bg-outline',
       content: <AuditQuickContent log={log} />,
-      widthClass: 'max-w-md',
+      widthClass: 'max-w-[520px]',
     })
   }
 
