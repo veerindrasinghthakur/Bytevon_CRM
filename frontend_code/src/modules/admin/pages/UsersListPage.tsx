@@ -1,14 +1,16 @@
-import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
+import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
-import { useListSelection } from '@/shared/hooks/useListSelection'
+import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { ResourceName } from '@/shared/schema'
-import { listAdminUsers, type AdminUserListItem } from '../api/users'
+import { useUsersList } from '../hooks/use-users-list'
+import type { AdminUserListItem } from '../api/users'
 import { cn } from '@/shared/lib/cn'
 
 const statusStyles: Record<string, string> = {
@@ -17,62 +19,56 @@ const statusStyles: Record<string, string> = {
   Locked: 'bg-red-50 text-red-700 border-red-200',
 }
 
+const STATUS_OPTIONS = [
+  { value: 'All', label: 'All Status' },
+  { value: 'Active', label: 'Active' },
+  { value: 'Inactive', label: 'Inactive' },
+  { value: 'Locked', label: 'Locked' },
+]
+
 export function UsersListPage() {
   const navigate = useNavigate()
-  const [q, setQ] = useState('')
-  const [items, setItems] = useState<AdminUserListItem[]>([])
-  const [locked, setLocked] = useState(0)
-  const [active, setActive] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
-
-  const load = async () => {
-    setLoading(true)
-    setError(false)
-    try {
-      const res = await listAdminUsers()
-      setItems(res.items)
-      setLocked(res.locked)
-      setActive(res.active)
-    } catch {
-      setError(true)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    void load()
-  }, [])
-
-  const visible = useMemo(() => {
-    const term = q.trim().toLowerCase()
-    if (!term) return items
-    return items.filter(
-      (u) =>
-        u.name.toLowerCase().includes(term) ||
-        u.email.toLowerCase().includes(term) ||
-        u.role.toLowerCase().includes(term) ||
-        u.employeeCode.toLowerCase().includes(term),
-    )
-  }, [q, items])
-
-  const selection = useListSelection({
-    items: visible,
-    getId: (u) => String(u.id),
-  })
+  const {
+    items,
+    filtered,
+    pageItems,
+    locked,
+    active,
+    isLoading,
+    isError,
+    refetch,
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    filtersActive,
+    resetFilters,
+    page,
+    setPage,
+    selectionMode,
+    selectedIds,
+    selectedCount,
+    allFilteredSelected,
+    isSelected,
+    toggleOne,
+    toggleSelectAllFiltered,
+    exitSelectionMode,
+    onRowPressStart,
+    onRowPressEnd,
+    onRowPressCancel,
+  } = useUsersList()
 
   const goDetail = (u: AdminUserListItem) => {
     navigate({ to: '/admin/users/$userId', params: { userId: String(u.id) } })
   }
 
-  if (loading) return <PageLoadingSkeleton />
-  if (error) {
+  if (isLoading) return <PageLoadingSkeleton />
+  if (isError) {
     return (
       <ErrorState
         title="Could not load users"
         description="User list failed to load. Retry or go back."
-        onRetry={() => void load()}
+        onRetry={() => void refetch()}
       />
     )
   }
@@ -86,8 +82,9 @@ export function UsersListPage() {
           <div className="flex gap-2">
             <ExportButton
               resource={ResourceName.USER}
-              query={q.trim() || undefined}
-              selectedIds={selection.selectionMode ? Array.from(selection.selectedIds) : undefined}
+              query={search.trim() || undefined}
+              filters={{ status: statusFilter !== 'All' ? statusFilter : undefined }}
+              selectedIds={selectionMode ? Array.from(selectedIds) : undefined}
               filenameStem="users"
             />
             <Button
@@ -105,19 +102,42 @@ export function UsersListPage() {
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Metric icon="group" label="Total Users" value={String(items.length)} hint="From mock DB" />
         <Metric icon="bolt" label="Active" value={String(active)} hint="ACTIVE status" />
-        <Metric icon="lock_person" label="Locked" value={String(locked)} hint="Action required" valueClass="text-error" />
-        <Metric icon="person_off" label="Shown" value={String(visible.length)} hint="After filter" />
+        <Metric
+          icon="lock_person"
+          label="Locked"
+          value={String(locked)}
+          hint="Action required"
+          valueClass="text-error"
+        />
+        <Metric icon="person_off" label="Shown" value={String(filtered.length)} hint="After filter" />
       </section>
 
-      {selection.selectionMode && (
+      <ListToolbar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Filter by name, email, role, or code..."
+        filtersActive={filtersActive}
+        onResetFilters={resetFilters}
+        onRefresh={() => void refetch()}
+      >
+        <Select
+          value={statusFilter}
+          onChange={(v) => setStatusFilter(v as typeof statusFilter)}
+          placeholder="All Status"
+          options={STATUS_OPTIONS}
+          minWidthClass="min-w-[130px]"
+        />
+      </ListToolbar>
+
+      {selectionMode && (
         <BulkSelectionBar
-          selectedCount={selection.selectedCount}
-          filteredCount={visible.length}
-          onCancel={selection.exitSelectionMode}
+          selectedCount={selectedCount}
+          filteredCount={pageItems.length}
+          onCancel={exitSelectionMode}
         >
           <ExportButton
             resource={ResourceName.USER}
-            selectedIds={Array.from(selection.selectedIds)}
+            selectedIds={Array.from(selectedIds)}
             filenameStem="users-selected"
             label="Export selected"
           />
@@ -125,62 +145,60 @@ export function UsersListPage() {
       )}
 
       <section className="bv-surface overflow-hidden">
-        <div className="p-4 border-b border-outline-variant flex flex-wrap gap-3 items-center">
-          <div className="relative flex-1 min-w-[200px]">
-            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
-              search
-            </span>
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Filter by name, email, role, or code..."
-              className="w-full pl-10 pr-3 py-2 border border-outline-variant rounded-lg text-body-sm bg-transparent outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
-            />
-          </div>
-        </div>
-
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[880px]">
             <thead>
               <tr className="bg-surface-container-low">
                 <th className="px-3 py-3 w-12 text-center">
-                  {selection.selectionMode ? (
+                  {selectionMode ? (
                     <input
                       type="checkbox"
                       className="rounded border-outline-variant text-secondary"
-                      checked={selection.allFilteredSelected}
-                      onChange={selection.toggleSelectAllFiltered}
-                      aria-label="Select all filtered users"
+                      checked={allFilteredSelected}
+                      onChange={toggleSelectAllFiltered}
+                      aria-label="Select all filtered users on this page"
                     />
                   ) : (
                     <span className="sr-only">Select</span>
                   )}
                 </th>
-                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">User Identity</th>
-                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">Role</th>
-                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">Department</th>
-                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">Last Login</th>
-                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider text-right">Actions</th>
+                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">
+                  User Identity
+                </th>
+                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">
+                  Department
+                </th>
+                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">
+                  Status
+                </th>
+                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">
+                  Last Login
+                </th>
+                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider text-right">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
-              {visible.map((u) => {
+              {pageItems.map((u) => {
                 const id = String(u.id)
-                const isSelected = selection.isSelected(id)
+                const selected = isSelected(id)
                 return (
                   <tr
                     key={u.id}
                     className={cn(
                       'select-none cursor-pointer',
-                      isSelected ? 'bg-secondary/10' : 'zebra-row',
+                      selected ? 'bg-secondary/10' : 'zebra-row',
                     )}
-                    onMouseDown={() => selection.onRowPressStart(id)}
-                    onMouseUp={() => selection.onRowPressEnd(id, () => goDetail(u))}
-                    onMouseLeave={selection.onRowPressCancel}
-                    onTouchStart={() => selection.onRowPressStart(id)}
-                    onTouchEnd={() => selection.onRowPressEnd(id, () => goDetail(u))}
-                    onTouchCancel={selection.onRowPressCancel}
+                    onMouseDown={() => onRowPressStart(id)}
+                    onMouseUp={() => onRowPressEnd(id, () => goDetail(u))}
+                    onMouseLeave={onRowPressCancel}
+                    onTouchStart={() => onRowPressStart(id)}
+                    onTouchEnd={() => onRowPressEnd(id, () => goDetail(u))}
+                    onTouchCancel={onRowPressCancel}
                     onContextMenu={(e) => e.preventDefault()}
                   >
                     <td
@@ -188,19 +206,22 @@ export function UsersListPage() {
                       onMouseDown={(e) => e.stopPropagation()}
                       onClick={(e) => {
                         e.stopPropagation()
-                        if (selection.selectionMode) selection.toggleOne(id)
+                        if (selectionMode) toggleOne(id)
                       }}
                     >
-                      {selection.selectionMode ? (
+                      {selectionMode ? (
                         <input
                           type="checkbox"
                           className="rounded border-outline-variant text-secondary"
-                          checked={isSelected}
-                          onChange={() => selection.toggleOne(id)}
+                          checked={selected}
+                          onChange={() => toggleOne(id)}
                           onClick={(e) => e.stopPropagation()}
                         />
                       ) : (
-                        <span className="inline-block w-2 h-2 rounded-full bg-outline-variant" aria-hidden />
+                        <span
+                          className="inline-block w-2 h-2 rounded-full bg-outline-variant"
+                          aria-hidden
+                        />
                       )}
                     </td>
                     <td className="px-6 py-4">
@@ -238,6 +259,7 @@ export function UsersListPage() {
                         type="button"
                         className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant hover:text-secondary transition-colors"
                         onClick={() => goDetail(u)}
+                        aria-label={`View ${u.name}`}
                       >
                         <span className="material-symbols-outlined text-xl">visibility</span>
                       </button>
@@ -248,12 +270,21 @@ export function UsersListPage() {
             </tbody>
           </table>
         </div>
-        <div className="px-6 py-3 border-t border-outline-variant text-label-sm text-on-surface-variant">
-          Showing {visible.length} of {items.length} users
-          {!selection.selectionMode && (
-            <span className="ml-2 opacity-80">· Hold a row 3s to multi-select</span>
-          )}
-        </div>
+        <Pagination
+          page={page}
+          pageSize={DEFAULT_PAGE_SIZE}
+          total={filtered.length}
+          onPageChange={setPage}
+          itemLabel="users"
+        />
+        {filtered.length <= DEFAULT_PAGE_SIZE && (
+          <div className="px-6 py-3 border-t border-outline-variant text-label-sm text-on-surface-variant">
+            Showing {filtered.length} of {items.length} users
+            {!selectionMode && (
+              <span className="ml-2 opacity-80">· Hold a row 3s to multi-select</span>
+            )}
+          </div>
+        )}
       </section>
     </div>
   )
