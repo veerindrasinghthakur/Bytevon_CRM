@@ -63,6 +63,11 @@ export function createSalesRoutes(appLayoutRoute: any) {
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
+      path: '/sales/clients/$clientId/edit',
+      component: ClientCreatePage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
       path: '/sales/analytics',
       component: SalesAnalyticsPage,
     }),

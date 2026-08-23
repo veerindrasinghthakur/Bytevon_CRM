@@ -1,4 +1,4 @@
-import { Link, useParams } from '@tanstack/react-router'
+import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
@@ -26,6 +26,7 @@ function formatMoney(n?: number) {
 }
 
 export function ClientDetailPage() {
+  const navigate = useNavigate()
   const { clientId } = useParams({ strict: false }) as { clientId: string }
   const { data: client, isLoading, isError, refetch, isFetching } = useClient(clientId)
   const { data: activities = [] } = useSalesActivities()
@@ -50,7 +51,7 @@ export function ClientDetailPage() {
     )
   }
 
-  const timelineItems = activities.slice(0, 6).map((a) => ({
+  const timelineItems = activities.slice(0, 8).map((a) => ({
     id: a.id,
     title: a.title,
     description: a.body,
@@ -102,7 +103,15 @@ export function ClientDetailPage() {
                 Open chat
               </a>
             )}
-            <EditButton label="Edit Client" />
+            <EditButton
+              label="Edit Client"
+              onClick={() =>
+                navigate({
+                  to: '/sales/clients/$clientId/edit',
+                  params: { clientId: client.id },
+                })
+              }
+            />
             <Button variant="primary" leftIcon={<span className="material-symbols-outlined text-lg">add</span>}>
               Add Project
             </Button>
@@ -149,19 +158,8 @@ export function ClientDetailPage() {
         <Kpi label="Client Since" value={client.clientSince ?? '—'} hint={client.clientSince ? 'Tenure' : undefined} />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <ActivityFeed
-          className="lg:col-span-1"
-          title="Latest Activity"
-          items={timelineItems}
-          variant="standard"
-          headerAction={
-            <Link to="/sales/activity" className="text-secondary text-sm font-semibold hover:underline">
-              View All
-            </Link>
-          }
-        />
-
+      {/* Company + HQ side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bv-surface p-6">
           <h3 className="text-title-md font-semibold text-on-surface mb-6 flex items-center gap-2">
             <span className="material-symbols-outlined text-secondary">info</span> Company Information
@@ -222,6 +220,18 @@ export function ClientDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Shared vertical timeline BELOW company + HQ */}
+      <ActivityFeed
+        title="Activity timeline"
+        items={timelineItems}
+        variant="standard"
+        headerAction={
+          <Link to="/sales/activity" className="text-secondary text-sm font-semibold hover:underline">
+            View All
+          </Link>
+        }
+      />
     </div>
   )
 }
