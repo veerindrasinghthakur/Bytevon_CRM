@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useListSelection } from '@/shared/hooks/useListSelection'
+import { useListControls } from '@/shared/hooks/useListControls'
 import { getTeams } from '@/modules/projects/api/teams'
 import type { Team as ProjectsTeam } from '@/modules/projects/types'
 import type { Team, WorkforceMetric } from '../types'
@@ -36,64 +37,67 @@ function buildMetrics(items: Team[]): WorkforceMetric[] {
   ]
 }
 
+const FILTER_DEFAULTS = {
+  status: 'All',
+  department: 'All',
+}
+
 export function useTeamsList() {
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('All')
-  const [departmentFilter, setDepartmentFilter] = useState('All')
   const [drawer, setDrawer] = useState<Team | null>(null)
   const [createOpen, setCreateOpen] = useState(false)
 
-  const { data, isLoading, isError, refetch, isFetching } = useQuery({
-    queryKey: ['projects', 'teams', 'list', { search: search || undefined }],
-    queryFn: () => getTeams({ search: search || undefined }),
+  const controls = useListControls({
+    filterDefaults: FILTER_DEFAULTS,
   })
 
-  const mapped = useMemo(
-    () => (data?.items ?? []).map(toWorkforceTeam),
-    [data],
-  )
+  const { data, isLoading, isError, refetch, isFetching } = useQuery({
+    queryKey: ['projects', 'teams', 'list', { search: controls.search || undefined }],
+    queryFn: () => getTeams({ search: controls.search || undefined }),
+  })
+
+  const mapped = useMemo(() => (data?.items ?? []).map(toWorkforceTeam), [data])
 
   const filtered = useMemo(() => {
     return mapped.filter((t) => {
-      if (statusFilter !== 'All' && t.status !== statusFilter) return false
+      if (controls.filters.status !== 'All' && t.status !== controls.filters.status) return false
       if (
-        departmentFilter !== 'All' &&
-        t.department.toLowerCase() !== departmentFilter.toLowerCase()
+        controls.filters.department !== 'All' &&
+        t.department.toLowerCase() !== controls.filters.department.toLowerCase()
       ) {
         return false
       }
       return true
     })
-  }, [mapped, statusFilter, departmentFilter])
+  }, [mapped, controls.filters.status, controls.filters.department])
 
   const metrics = useMemo(() => buildMetrics(filtered), [filtered])
+  const pageItems = controls.pageItems(filtered)
 
   const selection = useListSelection<Team>({
-    items: filtered,
+    items: pageItems,
     getId: (t) => t.id,
   })
-
-  const resetFilters = () => {
-    setSearch('')
-    setStatusFilter('All')
-    setDepartmentFilter('All')
-  }
 
   return {
     metrics,
     totalCount: data?.total ?? mapped.length,
     filtered,
+    pageItems,
     isLoading,
     isError,
     refetch,
     isFetching,
-    search,
-    setSearch,
-    statusFilter,
-    setStatusFilter,
-    departmentFilter,
-    setDepartmentFilter,
-    resetFilters,
+    search: controls.search,
+    setSearch: controls.setSearch,
+    statusFilter: controls.filters.status,
+    setStatusFilter: (v: string) => controls.setFilter('status', v),
+    departmentFilter: controls.filters.department,
+    setDepartmentFilter: (v: string) => controls.setFilter('department', v),
+    resetFilters: controls.resetAll,
+    filtersActive: controls.anyActive,
+    page: controls.page,
+    setPage: controls.setPage,
+    pageSize: controls.pageSize,
     drawer,
     setDrawer,
     createOpen,
