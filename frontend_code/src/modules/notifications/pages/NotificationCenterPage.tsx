@@ -1,13 +1,90 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
+import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import {
+  QuickSection,
+  QuickStat,
+  QuickStatGrid,
+  QuickMetaTile,
+  QuickRelatedRow,
+  QuickPersonRow,
+} from '@/shared/components/layout/QuickOverviewParts'
 import { useNotificationCenter } from '../hooks/use-notification-center'
 import type { AppNotification } from '../types'
 import { cn } from '@/shared/lib/cn'
 
+function NotificationQuickContent({ n }: { n: AppNotification }) {
+  return (
+    <>
+      <QuickSection title="Summary">
+        <QuickStatGrid>
+          <QuickStat icon="category" value={n.module} label="Module" />
+          <QuickStat icon="priority_high" value={n.priority} label="Priority" />
+          <QuickStat icon="schedule" value={n.timeAgo} label="When" />
+        </QuickStatGrid>
+      </QuickSection>
+      <QuickSection title="Message">
+        <p className="text-body-sm text-on-surface-variant leading-relaxed">{n.body}</p>
+      </QuickSection>
+      {n.actor && (
+        <QuickSection title="Actor">
+          <QuickPersonRow
+            initials={n.actor
+              .split(' ')
+              .map((p) => p[0])
+              .join('')
+              .slice(0, 2)}
+            roleLabel="From"
+            name={n.actor}
+          />
+        </QuickSection>
+      )}
+      {n.meta && n.meta.length > 0 && (
+        <QuickSection title="Meta">
+          <div className="grid grid-cols-2 gap-3">
+            {n.meta.map((m) => (
+              <QuickMetaTile key={m.label} icon="info" label={m.label} value={m.value} />
+            ))}
+          </div>
+        </QuickSection>
+      )}
+      {n.note && (
+        <QuickSection title="Note">
+          <QuickRelatedRow icon="sticky_note_2" label="Note" value={n.note} />
+        </QuickSection>
+      )}
+    </>
+  )
+}
+
 export function NotificationCenterPage() {
   const navigate = useNavigate()
+  const { openPanel } = useQuickOverview()
   const c = useNotificationCenter()
+
+  const openNotificationOverview = (n: AppNotification) => {
+    c.selectNotification(n.id)
+    openPanel({
+      title: n.title,
+      subtitle: [n.module, n.timeAgo].filter(Boolean).join(' · '),
+      icon: n.icon || 'notifications',
+      status: n.status,
+      statusDotClass:
+        n.priority === 'Critical' || n.priority === 'High'
+          ? 'bg-red-500'
+          : n.status === 'Unread'
+            ? 'bg-secondary'
+            : 'bg-slate-400',
+      content: <NotificationQuickContent n={n} />,
+      fullRecordLabel: 'Open full detail',
+      onOpenFull: () =>
+        navigate({ to: '/notifications/$notificationId', params: { notificationId: n.id } }),
+      secondaryLabel: n.status === 'Unread' ? 'Mark as read' : undefined,
+      onSecondary: n.status === 'Unread' ? () => c.markRead(n.id) : undefined,
+      widthClass: 'max-w-[520px]',
+    })
+  }
 
   if (c.isLoading) {
     return <div className="py-16 text-center text-on-surface-variant">Loading notifications…</div>
@@ -154,7 +231,6 @@ export function NotificationCenterPage() {
         </div>
       </section>
 
-      {/* Stretch both columns to the taller content height — no fixed viewport box */}
       <section className="flex flex-col lg:flex-row gap-4 items-stretch min-h-[420px]">
         <div className="lg:w-2/5 flex flex-col gap-3 pr-1">
           {c.filtered.map((n) => (
@@ -162,7 +238,7 @@ export function NotificationCenterPage() {
               key={n.id}
               n={n}
               active={c.selected?.id === n.id}
-              onSelect={() => c.selectNotification(n.id)}
+              onSelect={() => openNotificationOverview(n)}
               onArchive={() => c.archiveOne(n.id)}
               onMarkRead={() => c.markRead(n.id)}
               onFullDetail={() =>
@@ -203,53 +279,6 @@ export function NotificationCenterPage() {
                       {c.selected.module}
                     </p>
                   </div>
-                </div>
-                <div className="relative shrink-0">
-                  <button
-                    type="button"
-                    className="p-2 text-on-surface-variant hover:text-deep-navy"
-                    aria-label="More"
-                    onClick={() => c.setMenuOpenId(c.menuOpenId === 'detail' ? null : 'detail')}
-                  >
-                    <span className="material-symbols-outlined">more_vert</span>
-                  </button>
-                  {c.menuOpenId === 'detail' && (
-                    <div className="absolute right-0 top-10 z-20 bv-surface border border-outline-variant rounded-lg executive-shadow py-1 min-w-[160px]">
-                      <button
-                        type="button"
-                        className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container"
-                        onClick={() => {
-                          c.markRead(c.selected!.id)
-                          c.setMenuOpenId(null)
-                        }}
-                      >
-                        Mark as read
-                      </button>
-                      <button
-                        type="button"
-                        className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container"
-                        onClick={() => {
-                          c.archiveOne(c.selected!.id)
-                          c.setMenuOpenId(null)
-                        }}
-                      >
-                        Archive
-                      </button>
-                      <button
-                        type="button"
-                        className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container"
-                        onClick={() => {
-                          navigate({
-                            to: '/notifications/$notificationId',
-                            params: { notificationId: c.selected!.id },
-                          })
-                          c.setMenuOpenId(null)
-                        }}
-                      >
-                        Full detail
-                      </button>
-                    </div>
-                  )}
                 </div>
               </div>
               <div className="flex-1 p-6 space-y-6">
