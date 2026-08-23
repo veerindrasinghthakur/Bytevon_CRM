@@ -6,9 +6,10 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { StatusDot } from '@/shared/components/ui/StatusDot'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import { ResourceName } from '@/shared/schema'
 import { useClientsList } from '../hooks/use-clients-list'
-import type { ClientType } from '../types'
+import type { ClientType, Client } from '../types'
 import { cn } from '@/shared/lib/cn'
 
 const typeStyles: Record<ClientType, string> = {
@@ -26,8 +27,68 @@ function formatMoney(n?: number) {
   }).format(n)
 }
 
+function ClientQuickContent({ client }: { client: Client }) {
+  return (
+    <>
+      <div className="flex items-start gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center text-xl font-bold shrink-0">
+          {client.logoInitials ?? client.name.slice(0, 2).toUpperCase()}
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <StatusDot status={client.status} />
+            <h5 className="text-xl font-bold text-on-surface truncate">{client.name}</h5>
+          </div>
+          <p className="text-on-surface-variant text-sm">{client.industry}</p>
+          <div className="flex flex-wrap gap-2 mt-2">
+            <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold uppercase', typeStyles[client.type])}>
+              {client.type}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Projects</p>
+          <p className="text-lg font-bold">{client.projects}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Leads</p>
+          <p className="text-lg font-bold">{client.leads}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">ARR / Revenue</p>
+          <p className="text-lg font-bold">{formatMoney(client.arr ?? client.revenue)}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Country</p>
+          <p className="text-lg font-semibold">{client.country}</p>
+        </div>
+      </div>
+
+      {client.chatLink && (
+        <div className="p-4 bg-secondary/5 border border-secondary/20 rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-2">Client Chat</p>
+          <a
+            href={client.chatLink}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 text-secondary font-semibold text-sm hover:underline"
+          >
+            <span className="material-symbols-outlined text-lg">chat</span>
+            Open conversation
+            <span className="material-symbols-outlined text-sm">open_in_new</span>
+          </a>
+        </div>
+      )}
+    </>
+  )
+}
+
 export function ClientsListPage() {
   const navigate = useNavigate()
+  const { openPanel } = useQuickOverview()
   const {
     metrics,
     totalCount,
@@ -42,8 +103,6 @@ export function ClientsListPage() {
     typeFilter,
     setTypeFilter,
     resetFilters,
-    quickView,
-    setQuickView,
     selectionMode,
     selectedIds,
     allFilteredSelected,
@@ -56,8 +115,17 @@ export function ClientsListPage() {
   } = useClientsList()
 
   const openFull = (clientId: string) => {
-    setQuickView(null)
     navigate({ to: '/sales/clients/$clientId', params: { clientId } })
+  }
+
+  const openClientOverview = (client: Client) => {
+    openPanel({
+      title: 'Client Quick View',
+      content: <ClientQuickContent client={client} />,
+      fullRecordLabel: 'Open full record',
+      onOpenFull: () => openFull(client.id),
+      widthClass: 'max-w-md',
+    })
   }
 
   return (
@@ -289,7 +357,7 @@ export function ClientsListPage() {
                           <button
                             type="button"
                             className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant transition-colors"
-                            onClick={() => setQuickView(client)}
+                            onClick={() => openClientOverview(client)}
                             aria-label="Quick view"
                           >
                             <span className="material-symbols-outlined text-sm">visibility</span>
@@ -331,93 +399,6 @@ export function ClientsListPage() {
             </p>
           </div>
         </div>
-      )}
-
-      {quickView && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm"
-            onClick={() => setQuickView(null)}
-            aria-hidden
-          />
-          <div className="fixed top-0 right-0 h-full w-full max-w-md bg-surface-container-lowest shadow-drawer border-l border-outline-variant z-50 flex flex-col animate-slide-in-right">
-            <div className="p-6 border-b border-outline-variant flex items-center justify-between bg-surface-container-low">
-              <h4 className="text-title-lg font-bold flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary">handshake</span>
-                Client Quick View
-              </h4>
-              <button
-                type="button"
-                className="p-2 hover:bg-surface-container rounded-full transition-colors"
-                onClick={() => setQuickView(null)}
-              >
-                <span className="material-symbols-outlined">close</span>
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-6 space-y-6">
-              <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center text-xl font-bold">
-                  {quickView.logoInitials ?? quickView.name.slice(0, 2).toUpperCase()}
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <StatusDot status={quickView.status} />
-                    <h5 className="text-xl font-bold text-on-surface">{quickView.name}</h5>
-                  </div>
-                  <p className="text-on-surface-variant text-sm">{quickView.industry}</p>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold uppercase', typeStyles[quickView.type])}>
-                      {quickView.type}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-4 bg-surface-container-low rounded-xl">
-                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Projects</p>
-                  <p className="text-lg font-bold">{quickView.projects}</p>
-                </div>
-                <div className="p-4 bg-surface-container-low rounded-xl">
-                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Leads</p>
-                  <p className="text-lg font-bold">{quickView.leads}</p>
-                </div>
-                <div className="p-4 bg-surface-container-low rounded-xl">
-                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">ARR / Revenue</p>
-                  <p className="text-lg font-bold">{formatMoney(quickView.arr ?? quickView.revenue)}</p>
-                </div>
-                <div className="p-4 bg-surface-container-low rounded-xl">
-                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Country</p>
-                  <p className="text-lg font-semibold">{quickView.country}</p>
-                </div>
-              </div>
-
-              {quickView.chatLink && (
-                <div className="p-4 bg-secondary/5 border border-secondary/20 rounded-xl">
-                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-2">Client Chat</p>
-                  <a
-                    href={quickView.chatLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 text-secondary font-semibold text-sm hover:underline"
-                  >
-                    <span className="material-symbols-outlined text-lg">chat</span>
-                    Open conversation
-                    <span className="material-symbols-outlined text-sm">open_in_new</span>
-                  </a>
-                </div>
-              )}
-            </div>
-            <div className="p-6 border-t border-outline-variant bg-surface-container-low flex gap-3">
-              <Button variant="primary" className="flex-1" onClick={() => openFull(quickView.id)}>
-                Open full record
-              </Button>
-              <Button variant="outline" onClick={() => setQuickView(null)}>
-                Close
-              </Button>
-            </div>
-          </div>
-        </>
       )}
     </div>
   )

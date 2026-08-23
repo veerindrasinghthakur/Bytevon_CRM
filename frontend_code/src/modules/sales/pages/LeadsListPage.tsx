@@ -1,18 +1,16 @@
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
-import { HEADER_HEIGHT_PX } from '@/shared/components/layout/Header'
 import { Button } from '@/shared/components/ui/Button'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import { ResourceName } from '@/shared/schema'
 import { useLeadsList } from '../hooks/use-leads-list'
 import { LeadMetricsRow } from '../components/LeadMetricsRow'
 import { LeadFiltersBar } from '../components/LeadFiltersBar'
-import type { PipelineStage, LeadPriority, RecordStatus } from '../types'
+import type { PipelineStage, LeadPriority, RecordStatus, Lead } from '../types'
 import { cn } from '@/shared/lib/cn'
-
-const QUICK_VIEW_BOTTOM_GAP_PX = 12
 
 const stageStyles: Record<PipelineStage, string> = {
   New: 'bg-slate-100 text-slate-700',
@@ -70,8 +68,86 @@ function Icon({ name, className }: { name: string; className?: string }) {
   )
 }
 
+function LeadQuickContent({ lead }: { lead: Lead }) {
+  return (
+    <>
+      <div className="flex items-start gap-4">
+        <div className="w-16 h-16 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center text-xl font-bold shrink-0">
+          {lead.contactName
+            .split(' ')
+            .map((p) => p[0])
+            .join('')
+            .slice(0, 2)}
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <StatusDotOnly status={lead.status} />
+            <h5 className="text-xl font-bold text-on-surface truncate">{lead.contactName}</h5>
+          </div>
+          {lead.contactTitle && (
+            <p className="text-on-surface-variant text-sm">{lead.contactTitle}</p>
+          )}
+          <div className="flex flex-wrap gap-2 mt-2">
+            <span
+              className={cn(
+                'px-2 py-0.5 rounded text-[10px] font-bold uppercase',
+                stageStyles[lead.stage],
+              )}
+            >
+              {lead.stage}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Estimated Value</p>
+          <p className="text-lg font-bold">{formatBudget(lead.budget)}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Stage</p>
+          <p className="text-lg font-bold text-secondary">{lead.stage}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Source</p>
+          <p className="text-lg font-semibold">{lead.source}</p>
+        </div>
+        <div className="p-4 bg-surface-container-low rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Date</p>
+          <p className="text-lg font-semibold">{lead.date ?? '—'}</p>
+        </div>
+      </div>
+
+      {lead.chatLink && (
+        <div className="p-4 bg-secondary/5 border border-secondary/20 rounded-xl">
+          <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-2">Client Chat</p>
+          <a
+            href={lead.chatLink}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 text-secondary font-semibold text-sm hover:underline"
+          >
+            <Icon name="chat" className="text-lg" />
+            Open conversation with {lead.contactName}
+            <Icon name="open_in_new" className="text-sm" />
+          </a>
+        </div>
+      )}
+
+      {lead.notes && (
+        <div className="p-4 bg-surface-container rounded-xl">
+          <h6 className="text-xs font-bold uppercase text-on-surface-variant mb-2">Internal Notes</h6>
+          <p className="text-body-sm text-on-surface italic">"{lead.notes}"</p>
+        </div>
+      )}
+    </>
+  )
+}
+
 export function LeadsListPage() {
   const navigate = useNavigate()
+  const { openPanel } = useQuickOverview()
   const {
     metrics,
     totalCount,
@@ -92,8 +168,6 @@ export function LeadsListPage() {
     stages,
     priorities,
     resetFilters,
-    quickView,
-    setQuickView,
     selectionMode,
     selectedIds,
     allFilteredSelected,
@@ -104,6 +178,19 @@ export function LeadsListPage() {
     endLongPress,
     clearLongPress,
   } = useLeadsList()
+
+  const openLeadOverview = (lead: Lead) => {
+    openPanel({
+      title: 'Lead Quick View',
+      content: <LeadQuickContent lead={lead} />,
+      fullRecordLabel: 'Open Full Record',
+      onOpenFull: () =>
+        navigate({ to: '/sales/leads/$leadId', params: { leadId: lead.id } }),
+      secondaryLabel: 'Log Task',
+      onSecondary: () => {},
+      widthClass: 'max-w-md',
+    })
+  }
 
   return (
     <div className="space-y-6 relative">
@@ -209,30 +296,14 @@ export function LeadsListPage() {
                       <span className="sr-only">Status</span>
                     )}
                   </th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                    ID
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                    Lead Name
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                    Assigned
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                    Stage
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                    Priority
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                    Quotation
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">
-                    Actions
-                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">ID</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Lead Name</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Assigned</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Stage</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Priority</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Quotation</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Date</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
@@ -319,12 +390,7 @@ export function LeadsListPage() {
                         </span>
                       </td>
                       <td className="px-4 py-4">
-                        <span
-                          className={cn(
-                            'text-[11px] font-bold uppercase',
-                            priorityStyles[lead.priority],
-                          )}
-                        >
+                        <span className={cn('text-[11px] font-bold uppercase', priorityStyles[lead.priority])}>
                           {lead.priority}
                         </span>
                       </td>
@@ -346,12 +412,8 @@ export function LeadsListPage() {
                       <td className="px-4 py-4">
                         {dateParts ? (
                           <div className="flex flex-col items-center justify-center w-12 h-14 bg-surface-container rounded-lg border border-outline-variant/30">
-                            <span className="text-lg font-black text-on-surface leading-none">
-                              {dateParts.day}
-                            </span>
-                            <span className="text-[10px] font-bold text-secondary uppercase">
-                              {dateParts.month}
-                            </span>
+                            <span className="text-lg font-black text-on-surface leading-none">{dateParts.day}</span>
+                            <span className="text-[10px] font-bold text-secondary uppercase">{dateParts.month}</span>
                             <span className="text-[9px] text-on-surface-variant">{dateParts.year}</span>
                           </div>
                         ) : (
@@ -367,7 +429,7 @@ export function LeadsListPage() {
                           <button
                             type="button"
                             className="p-1.5 hover:bg-surface-container rounded-md text-on-surface-variant"
-                            onClick={() => setQuickView(lead)}
+                            onClick={() => openLeadOverview(lead)}
                             aria-label="Quick view"
                           >
                             <Icon name="visibility" className="text-sm" />
@@ -415,128 +477,6 @@ export function LeadsListPage() {
             </p>
           </div>
         </div>
-      )}
-
-      {quickView && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/40 z-40 backdrop-blur-sm"
-            onClick={() => setQuickView(null)}
-            aria-hidden
-          />
-          <div
-            className="fixed right-0 z-50 w-full max-w-md bg-surface-container-lowest shadow-2xl border border-outline-variant rounded-l-xl flex flex-col overflow-hidden"
-            style={{
-              top: HEADER_HEIGHT_PX + QUICK_VIEW_BOTTOM_GAP_PX,
-              bottom: QUICK_VIEW_BOTTOM_GAP_PX,
-              height: `calc(100vh - ${HEADER_HEIGHT_PX + QUICK_VIEW_BOTTOM_GAP_PX * 2}px)`,
-            }}
-            role="dialog"
-            aria-label="Lead quick view"
-          >
-            <div className="p-6 border-b border-outline-variant flex items-center justify-between bg-surface-container-low shrink-0">
-              <h4 className="text-title-lg font-bold flex items-center gap-2">
-                <Icon name="info" className="text-secondary" />
-                Lead Quick View
-              </h4>
-              <button
-                type="button"
-                className="p-2 hover:bg-surface-container rounded-full"
-                onClick={() => setQuickView(null)}
-                aria-label="Close"
-              >
-                <Icon name="close" />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 min-h-0">
-              <div className="flex items-start gap-4">
-                <div className="w-16 h-16 rounded-2xl bg-secondary/10 text-secondary flex items-center justify-center text-xl font-bold shrink-0">
-                  {quickView.contactName
-                    .split(' ')
-                    .map((p) => p[0])
-                    .join('')
-                    .slice(0, 2)}
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <StatusDotOnly status={quickView.status} />
-                    <h5 className="text-xl font-bold text-on-surface truncate">{quickView.contactName}</h5>
-                  </div>
-                  {quickView.contactTitle && (
-                    <p className="text-on-surface-variant text-sm">{quickView.contactTitle}</p>
-                  )}
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    <span
-                      className={cn(
-                        'px-2 py-0.5 rounded text-[10px] font-bold uppercase',
-                        stageStyles[quickView.stage],
-                      )}
-                    >
-                      {quickView.stage}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-4 bg-surface-container-low rounded-xl">
-                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">
-                    Estimated Value
-                  </p>
-                  <p className="text-lg font-bold">{formatBudget(quickView.budget)}</p>
-                </div>
-                <div className="p-4 bg-surface-container-low rounded-xl">
-                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Stage</p>
-                  <p className="text-lg font-bold text-secondary">{quickView.stage}</p>
-                </div>
-                <div className="p-4 bg-surface-container-low rounded-xl">
-                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Source</p>
-                  <p className="text-lg font-semibold">{quickView.source}</p>
-                </div>
-                <div className="p-4 bg-surface-container-low rounded-xl">
-                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-1">Date</p>
-                  <p className="text-lg font-semibold">{quickView.date ?? '—'}</p>
-                </div>
-              </div>
-
-              {quickView.chatLink && (
-                <div className="p-4 bg-secondary/5 border border-secondary/20 rounded-xl">
-                  <p className="text-[10px] font-bold text-on-surface-variant uppercase mb-2">Client Chat</p>
-                  <a
-                    href={quickView.chatLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-2 text-secondary font-semibold text-sm hover:underline"
-                  >
-                    <Icon name="chat" className="text-lg" />
-                    Open conversation with {quickView.contactName}
-                    <Icon name="open_in_new" className="text-sm" />
-                  </a>
-                </div>
-              )}
-
-              {quickView.notes && (
-                <div className="p-4 bg-surface-container rounded-xl">
-                  <h6 className="text-xs font-bold uppercase text-on-surface-variant mb-2">Internal Notes</h6>
-                  <p className="text-body-sm text-on-surface italic">"{quickView.notes}"</p>
-                </div>
-              )}
-            </div>
-            <div className="p-6 border-t border-outline-variant bg-surface-container-low flex gap-3 shrink-0">
-              <Button
-                variant="primary"
-                className="flex-1"
-                onClick={() => {
-                  setQuickView(null)
-                  navigate({ to: '/sales/leads/$leadId', params: { leadId: quickView.id } })
-                }}
-              >
-                Open Full Record
-              </Button>
-              <Button variant="outline">Log Task</Button>
-            </div>
-          </div>
-        </>
       )}
     </div>
   )
