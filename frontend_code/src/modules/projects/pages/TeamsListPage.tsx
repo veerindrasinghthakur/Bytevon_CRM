@@ -6,11 +6,15 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { Pagination, paginate, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { RowActions } from '@/shared/components/ui/RowActions'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
+import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useTeams } from '../hooks/use-teams'
 import { CreateTeamModal } from '../components/CreateTeamModal'
+import { cn } from '@/shared/lib/cn'
 
 export function TeamsListPage() {
   const navigate = useNavigate()
@@ -44,6 +48,11 @@ export function TeamsListPage() {
   const total = filtered.length
   const pageItems = useMemo(() => paginate(filtered, page, DEFAULT_PAGE_SIZE), [filtered, page])
 
+  const selection = useListSelection({
+    items: pageItems,
+    getId: (t) => String(t.id),
+  })
+
   const activeMembers = filtered.reduce((s, t) => s + t.memberCount, 0)
   const totalProjects = filtered.reduce((s, t) => s + t.projectCount, 0)
   const avgSize = total > 0 ? (activeMembers / total).toFixed(1) : '0'
@@ -69,6 +78,7 @@ export function TeamsListPage() {
             resource="team"
             query={search}
             filters={{ status, department }}
+            selectedIds={selection.selectionMode ? Array.from(selection.selectedIds) : undefined}
             filenameStem="project-teams"
           />
           <Button
@@ -127,14 +137,29 @@ export function TeamsListPage() {
         <MetricCard label="Avg. Team Size" value={avgSize} sub="Members" icon="group_work" iconClass="bg-amber-100 text-amber-700" />
       </section>
 
+      {selection.selectionMode && (
+        <BulkSelectionBar
+          selectedCount={selection.selectedCount}
+          filteredCount={pageItems.length}
+          onCancel={selection.exitSelectionMode}
+        >
+          <ExportButton
+            resource="team"
+            selectedIds={Array.from(selection.selectedIds)}
+            filenameStem="project-teams-selected"
+            label="Export selected"
+          />
+        </BulkSelectionBar>
+      )}
+
       {isLoading && <TableSkeleton rows={4} />}
       {isError && (
-        <div className="rounded-lg border border-error/30 bg-error/5 p-6 text-center">
-          <p className="text-body-md text-error mb-3">Failed to load tasks.</p>
-          <Button variant="outline" onClick={() => refetch()}>
-            Retry
-          </Button>
-        </div>
+        <ErrorState
+          title="Failed to load teams"
+          description="We could not load the teams list. Check your connection and try again."
+          onRetry={() => void refetch()}
+          showBack={false}
+        />
       )}
       {!isLoading && !isError && filtered.length === 0 && (
         <EmptyState
@@ -152,7 +177,21 @@ export function TeamsListPage() {
             <table className="w-full text-left border-collapse min-w-[800px]">
               <thead>
                 <tr className="border-b border-outline-variant/30 bg-surface/50">
-                  <th className="py-4 px-6 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Team Name</th>
+                  <th className="py-4 px-6 w-12">
+                    {selection.selectionMode ? (
+                      <input
+                        type="checkbox"
+                        className="rounded border-outline-variant w-4 h-4"
+                        checked={selection.allFilteredSelected}
+                        onChange={selection.toggleSelectAllFiltered}
+                        title="Select all on this page"
+                        aria-label="Select all on this page"
+                      />
+                    ) : (
+                      <span className="sr-only">Select</span>
+                    )}
+                  </th>
+                  <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Team Name</th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Head</th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Members</th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Projects</th>
@@ -160,88 +199,126 @@ export function TeamsListPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/20">
-                {pageItems.map((team) => (
-                  <tr
-                    key={team.id}
-                    className="h-[72px] cursor-pointer zebra-row"
-                    onClick={() =>
-                      openOverview({
-                        id: team.id,
-                        title: team.name,
-                        subtitle: team.department,
-                        badge: team.status,
-                        fields: [
-                          { label: 'Head', value: team.headName ?? 'Unassigned' },
-                          { label: 'Role', value: team.headRole ?? '—' },
-                          { label: 'Members', value: String(team.memberCount) },
-                          { label: 'Projects', value: String(team.projectCount) },
-                          { label: 'Linked project', value: team.projectName ?? '—' },
-                        ],
-                        detailTo: '/projects/teams/$teamId',
-                        detailParams: { teamId: String(team.id) },
-                        editTo: '/projects/teams/$teamId',
-                        editParams: { teamId: String(team.id) },
-                      })
-                    }
-                  >
-                    <td className="py-2 px-6">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
-                          <span className="material-symbols-outlined">groups</span>
-                        </div>
-                        <div>
-                          <p className="text-body-md font-semibold text-on-background">{team.name}</p>
-                          <p className="text-[11px] text-on-surface-variant">{team.department ?? '—'}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-2 px-4">
-                      {team.headName ? (
+                {pageItems.map((team) => {
+                  const id = String(team.id)
+                  const isSelected = selection.isSelected(id)
+                  const openOverviewFor = () =>
+                    openOverview({
+                      id: team.id,
+                      title: team.name,
+                      subtitle: team.department,
+                      badge: team.status,
+                      fields: [
+                        { label: 'Head', value: team.headName ?? 'Unassigned' },
+                        { label: 'Role', value: team.headRole ?? '—' },
+                        { label: 'Members', value: String(team.memberCount) },
+                        { label: 'Projects', value: String(team.projectCount) },
+                        { label: 'Linked project', value: team.projectName ?? '—' },
+                      ],
+                      detailTo: '/projects/teams/$teamId',
+                      detailParams: { teamId: String(team.id) },
+                      editTo: '/projects/teams/$teamId',
+                      editParams: { teamId: String(team.id) },
+                    })
+
+                  return (
+                    <tr
+                      key={team.id}
+                      className={cn(
+                        'h-[72px] cursor-pointer select-none',
+                        isSelected ? 'bg-secondary/10' : 'zebra-row',
+                      )}
+                      onMouseDown={() => selection.onRowPressStart(id)}
+                      onMouseUp={() => selection.onRowPressEnd(id, openOverviewFor)}
+                      onMouseLeave={selection.onRowPressCancel}
+                      onTouchStart={() => selection.onRowPressStart(id)}
+                      onTouchEnd={() => selection.onRowPressEnd(id, openOverviewFor)}
+                      onTouchCancel={selection.onRowPressCancel}
+                      onContextMenu={(e) => e.preventDefault()}
+                    >
+                      <td
+                        className="py-2 px-6"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (selection.selectionMode) selection.toggleOne(id)
+                        }}
+                      >
+                        {selection.selectionMode ? (
+                          <input
+                            type="checkbox"
+                            className="rounded border-outline-variant w-4 h-4"
+                            checked={isSelected}
+                            onChange={() => selection.toggleOne(id)}
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <span className="inline-block w-2.5 h-2.5 rounded-full bg-outline-variant" aria-hidden />
+                        )}
+                      </td>
+                      <td className="py-2 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-xs font-bold text-on-background">
-                            {team.headName
-                              .split(' ')
-                              .map((n) => n[0])
-                              .join('')
-                              .slice(0, 2)}
+                          <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+                            <span className="material-symbols-outlined">groups</span>
                           </div>
                           <div>
-                            <p className="text-body-md font-medium text-on-background">{team.headName}</p>
-                            <p className="text-[11px] text-on-surface-variant">{team.headRole}</p>
+                            <p className="text-body-md font-semibold text-on-background">{team.name}</p>
+                            <p className="text-[11px] text-on-surface-variant">{team.department ?? '—'}</p>
                           </div>
                         </div>
-                      ) : (
-                        <span className="text-body-md text-on-surface-variant italic">Unassigned</span>
-                      )}
-                    </td>
-                    <td className="py-2 px-4">
-                      <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-xs font-medium text-on-background">
-                        {team.memberCount}
-                      </div>
-                    </td>
-                    <td className="py-2 px-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-body-md font-medium text-on-background">{team.projectCount}</span>
-                        {team.status === 'ACTIVE' && (
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase">
-                            Active
-                          </span>
+                      </td>
+                      <td className="py-2 px-4">
+                        {team.headName ? (
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-xs font-bold text-on-background">
+                              {team.headName
+                                .split(' ')
+                                .map((n) => n[0])
+                                .join('')
+                                .slice(0, 2)}
+                            </div>
+                            <div>
+                              <p className="text-body-md font-medium text-on-background">{team.headName}</p>
+                              <p className="text-[11px] text-on-surface-variant">{team.headRole}</p>
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-body-md text-on-surface-variant italic">Unassigned</span>
                         )}
-                      </div>
-                    </td>
-                    <td className="py-2 px-6 text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex justify-end">
-                        <RowActions
-                          label={`Actions for ${team.name}`}
-                          actions={[
-                            { id: 'view', label: 'View', icon: 'description', onClick: () => goTeam(team.id) },
-                            { id: 'edit', label: 'Edit', icon: 'edit', onClick: () => goTeam(team.id, true) },
-                          ]}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="py-2 px-4">
+                        <div className="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-xs font-medium text-on-background">
+                          {team.memberCount}
+                        </div>
+                      </td>
+                      <td className="py-2 px-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-body-md font-medium text-on-background">{team.projectCount}</span>
+                          {team.status === 'ACTIVE' && (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold uppercase">
+                              Active
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td
+                        className="py-2 px-6 text-right"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <div className="flex justify-end">
+                          <RowActions
+                            label={`Actions for ${team.name}`}
+                            actions={[
+                              { id: 'view', label: 'View', icon: 'description', onClick: () => goTeam(team.id) },
+                              { id: 'edit', label: 'Edit', icon: 'edit', onClick: () => goTeam(team.id, true) },
+                            ]}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
@@ -251,6 +328,9 @@ export function TeamsListPage() {
               <p className="text-[11px] text-on-surface-variant">
                 Showing <span className="font-semibold text-on-background">1-{total}</span> of{' '}
                 <span className="font-semibold text-on-background">{total}</span> Teams
+                {!selection.selectionMode && (
+                  <span className="ml-2 opacity-80">· Hold a row 3s to multi-select</span>
+                )}
               </p>
             </div>
           )}
