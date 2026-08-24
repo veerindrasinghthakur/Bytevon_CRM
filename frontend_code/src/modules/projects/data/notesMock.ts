@@ -1,13 +1,9 @@
-export type NoteItem = {
-  id: number
-  body: string
-  author_name: string
-  author_initials: string
-  created_at: string
-  reference_type: 'PROJECT' | 'LEAD' | 'TASK' | 'CLIENT'
-  reference_id: number
-}
+import type { NoteItem } from '@/shared/types'
+import { NoteReferenceType } from '@/shared/schema'
 
+export type { NoteItem }
+
+/** Project-workspace notes are modeled as TASK notes under the project (schema: no PROJECT ref). */
 export const projectNotes: NoteItem[] = [
   {
     id: 1,
@@ -15,7 +11,7 @@ export const projectNotes: NoteItem[] = [
     author_name: 'Marcus Sterling',
     author_initials: 'MS',
     created_at: '2026-08-12T10:24:00Z',
-    reference_type: 'PROJECT',
+    reference_type: NoteReferenceType.TASK,
     reference_id: 1042,
   },
   {
@@ -24,7 +20,7 @@ export const projectNotes: NoteItem[] = [
     author_name: 'Sarah Jenkins',
     author_initials: 'SJ',
     created_at: '2026-08-15T14:02:00Z',
-    reference_type: 'PROJECT',
+    reference_type: NoteReferenceType.TASK,
     reference_id: 1042,
   },
   {
@@ -33,7 +29,7 @@ export const projectNotes: NoteItem[] = [
     author_name: 'Marcus Sterling',
     author_initials: 'MS',
     created_at: '2026-08-17T09:11:00Z',
-    reference_type: 'PROJECT',
+    reference_type: NoteReferenceType.TASK,
     reference_id: 1042,
   },
 ]
