@@ -140,6 +140,12 @@ export function RolesListPage() {
   const goEdit = (roleId: string) =>
     navigate({ to: '/admin/roles/$roleId/edit', params: { roleId } })
 
+  const goDuplicate = (roleId: string) =>
+    navigate({
+      to: '/admin/roles/new',
+      search: { duplicateFrom: roleId },
+    } as any)
+
   const openRoleOverview = (role: AdminRole) => {
     openPanel({
       title: role.name,
@@ -153,7 +159,7 @@ export function RolesListPage() {
       onEdit: () => goEdit(role.id),
       editLabel: 'Edit',
       actions: [
-        { id: 'duplicate', label: 'Duplicate', icon: 'content_copy', onClick: () => goDetail(role.id) },
+        { id: 'duplicate', label: 'Duplicate', icon: 'content_copy', onClick: () => goDuplicate(role.id) },
         { id: 'delete', label: 'Delete', icon: 'delete', danger: true, onClick: () => goDetail(role.id) },
       ],
       widthClass: 'max-w-[520px]',
