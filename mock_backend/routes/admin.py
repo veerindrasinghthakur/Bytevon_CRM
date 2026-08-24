@@ -1,1 +1,197 @@
-"""Admin + RBAC + audit + settings — pure JSON CRUD, no validation.\nExtras for leave/metrics/org path aliases live in routes.extras.\n"""\n\nfrom __future__ import annotations\n\nfrom datetime import datetime\nfrom typing import Any, Optional\n\nfrom fastapi import APIRouter, Body, Query\n\nfrom store import get_collection, get_obj, load, set_collection, set_obj\n\nrouter = APIRouter(tags=[\"admin\"])\n\n\ndef _now_disp() -> str:\n    return datetime.utcnow().strftime(\"%b %d, %Y %H:%M\")\n\n\ndef _now_iso() -> str:\n    return datetime.utcnow().strftime(\"%Y-%m-%dT%H:%M:%SZ\")\n\n\ndef _append_audit(action: str, target: str, module: str) -> None:\n    audits = get_collection(\"audit_logs\")\n    audits.insert(0, {\n        \"id\": f\"AUD-{int(datetime.utcnow().timestamp())}\",\n        \"action\": action,\n        \"actor\": \"Current User\",\n        \"actorInitials\": \"CU\",\n        \"target\": target,\n        \"module\": module,\n        \"timestamp\": _now_disp(),\n        \"timestamp_iso\": _now_iso(),\n        \"ip\": \"127.0.0.1\",\n    })\n    set_collection(\"audit_logs\", audits)\n\n\n@router.get(\"/admin/metrics\")\n@router.get(\"/admin/hub-metrics\")\ndef hub_metrics_legacy():\n    m = get_obj(\"metrics\") or {}\n    users = get_collection(\"admin_users\")\n    roles = get_collection(\"roles\")\n    return {\n        **m,\n        \"users\": len(users),\n        \"roles\": len(roles),\n        \"activeRoles\": sum(1 for r in roles if r.get(\"status\") == \"Active\"),\n        \"archivedRoles\": sum(1 for r in roles if r.get(\"status\") == \"Archived\"),\n        \"activeUsers\": sum(1 for u in users if u.get(\"status\") == \"Active\"),\n        \"offices\": len(get_collection(\"offices\")),\n        \"departments\": len(get_collection(\"departments\")),\n        \"employees\": len(get_collection(\"employments\")),\n    }\n\n\n@router.get(\"/admin/users\")\n@router.get(\"/rbac/users\")\ndef list_users(search: Optional[str] = None, status: Optional[str] = None):\n    items = list(get_collection(\"admin_users\"))\n    if search:\n        q = search.lower()\n        items = [u for u in items if q in (u.get(\"name\") or \"\").lower() or q in (u.get(\"email\") or \"\").lower() or q in (u.get(\"role\") or \"\").lower() or q in (u.get(\"employeeCode\") or \"\").lower()]\n    if status:\n        items = [u for u in items if (u.get(\"status\") or \"\").lower() == status.lower()]\n    return {\"items\": items, \"total\": len(items), \"locked\": sum(1 for u in items if u.get(\"status\") == \"Locked\"), \"active\": sum(1 for u in items if u.get(\"status\") == \"Active\")}\n\n\n@router.get(\"/admin/users/{user_id}\")\ndef get_user(user_id: int):\n    users = get_collection(\"admin_users\")\n    u = next((x for x in users if x.get(\"id\") == user_id), None)\n    if not u:\n        return {\"detail\": \"not found\"}\n    login = next((l for l in get_collection(\"login_users\") if l.get(\"id\") == user_id), None)\n    return {\"user\": u, \"login\": login}\n\n\n@router.post(\"/admin/users\")\ndef create_user(body: dict[str, Any] = Body(default={})):\n    users = get_collection(\"admin_users\")\n    logins = get_collection(\"login_users\")\n    counters = get_obj(\"counters\") or {}\n    new_id = counters.get(\"next_login\") or (len(logins) + 1)\n    counters[\"next_login\"] = new_id + 1\n    set_obj(\"counters\", counters)\n    employment_id = body.get(\"employmentId\") or body.get(\"employment_id\") or new_id\n    email = body.get(\"email\") or f\"user{new_id}@bytevon.com\"\n    name = body.get(\"name\") or email.split(\"@\")[0]\n    role = body.get(\"role\") or \"Employee\"\n    department = body.get(\"department\") or \"—\"\n    status = body.get(\"status\") or \"Active\"\n    initials = \"\".join(p[0] for p in name.split()[:2]).upper() or \"U\"\n    row = {\"id\": new_id, \"employmentId\": employment_id, \"name\": name, \"email\": email, \"role\": role, \"department\": department, \"status\": status, \"lastLogin\": \"Never\", \"lastLoginAt\": None, \"initials\": initials, \"employeeCode\": body.get(\"employeeCode\") or f\"EMP-{1000 + new_id}\"}\n    users.append(row)\n    set_collection(\"admin_users\", users)\n    logins.append({\"id\": new_id, \"employment_id\": employment_id, \"email\": email, \"temporary_password\": body.get(\"temporaryPassword\") or body.get(\"password\") or \"Pass@123\", \"status\": \"ACTIVE\" if status == \"Active\" else status.upper(), \"failed_attempt_count\": 0, \"locked_until\": None, \"last_login_at\": None, \"created_at\": _now_iso(), \"updated_at\": _now_iso()})\n    set_collection(\"login_users\", logins)\n    _append_audit(\"User created\", name, \"Users\")\n    return row\n\n\n@router.patch(\"/admin/users/{user_id}\")\ndef update_user(user_id: int, body: dict[str, Any] = Body(default={})):\n    users = get_collection(\"admin_users\")\n    u = next((x for x in users if x.get(\"id\") == user_id), None)\n    if not u:\n        return {\"detail\": \"not found\"}\n    for k, v in body.items():\n        if k in u or k in (\"name\", \"email\", \"role\", \"department\", \"status\", \"lastLogin\"):\n            u[k] = v\n    set_collection(\"admin_users\", users)\n    _append_audit(\"User updated\", u.get(\"name\", str(user_id)), \"Users\")\n    return u\n\n\n@router.post(\"/admin/users/{user_id}/lock\")\ndef lock_user(user_id: int):\n    return update_user(user_id, {\"status\": \"Locked\"})\n\n\n@router.post(\"/admin/users/{user_id}/unlock\")\ndef unlock_user(user_id: int):\n    return update_user(user_id, {\"status\": \"Active\"})\n\n\n@router.delete(\"/admin/users/{user_id}\")\ndef delete_user(user_id: int):\n    users = get_collection(\"admin_users\")\n    name = next((x.get(\"name\") for x in users if x.get(\"id\") == user_id), str(user_id))\n    set_collection(\"admin_users\", [x for x in users if x.get(\"id\") != user_id])\n    set_collection(\"login_users\", [l for l in get_collection(\"login_users\") if l.get(\"id\") != user_id])\n    _append_audit(\"User deleted\", name, \"Users\")\n    return {\"ok\": True}\n\n\n@router.get(\"/admin/employments-without-login\")\ndef employments_without_login():\n    linked = {l.get(\"employment_id\") for l in get_collection(\"login_users\")}\n    out = []\n    for e in get_collection(\"employments\"):\n        if e[\"id\"] in linked:\n            continue\n        person = next((p for p in get_collection(\"persons\") if p[\"id\"] == e[\"person_id\"]), None)\n        out.append({\"employmentId\": e[\"id\"], \"employeeCode\": e.get(\"employee_code\"), \"name\": f\"{person['first_name']} {person['last_name']}\" if person else e.get(\"employee_code\"), \"department\": \"—\", \"position\": \"—\", \"joiningDate\": e.get(\"joining_date\")})\n    return out\n\n\n@router.get(\"/rbac/resources\")\ndef list_resources():\n    return get_collection(\"resources\")\n\n\n@router.get(\"/rbac/permissions\")\ndef list_permissions():\n    return get_collection(\"permissions\")\n\n\n@router.get(\"/rbac/scopes\")\ndef list_scopes():\n    return [{\"id\": 1, \"name\": \"ORGANIZATION\"}, {\"id\": 2, \"name\": \"DEPARTMENT\"}, {\"id\": 3, \"name\": \"TEAM\"}, {\"id\": 4, \"name\": \"SELF\"}]\n\n\n@router.get(\"/rbac/sensitive-fields\")\ndef list_sensitive_fields():\n    return []\n\n\n@router.get(\"/rbac/roles\")\n@router.get(\"/admin/roles\")\ndef list_roles():\n    return get_collection(\"roles\")\n\n\n@router.get(\"/rbac/roles/{role_id}\")\n@router.get(\"/admin/roles/{role_id}\")\ndef get_role(role_id: str):\n    return next((x for x in get_collection(\"roles\") if str(x.get(\"id\")) == str(role_id)), {\"detail\": \"not found\"})\n\n\n@router.post(\"/rbac/roles\")\n@router.post(\"/admin/roles\")\ndef create_role(body: dict[str, Any] = Body(default={})):\n    roles = get_collection(\"roles\")\n    counters = get_obj(\"counters\") or {}\n    n = counters.get(\"next_role\") or (len(roles) + 1)\n    counters[\"next_role\"] = n + 1\n    set_obj(\"counters\", counters)\n    rid = body.get(\"id\") or f\"R-{n:02d}\"\n    row = {\"id\": rid, \"name\": body.get(\"name\") or f\"Role {n}\", \"description\": body.get(\"description\") or \"\", \"usersCount\": 0, \"permissions\": body.get(\"permissions\") or [], \"status\": body.get(\"status\") or \"Active\", \"category\": body.get(\"category\") or \"Standard\", \"coveragePct\": body.get(\"coveragePct\") or 0, \"coverageLabel\": body.get(\"coverageLabel\") or \"0 modules\", \"created\": datetime.utcnow().strftime(\"%b %d, %Y\"), \"updated\": \"just now\"}\n    roles.append(row)\n    set_collection(\"roles\", roles)\n    _append_audit(\"Role created\", row[\"name\"], \"Roles\")\n    return row\n\n\n@router.patch(\"/rbac/roles/{role_id}\")\n@router.patch(\"/admin/roles/{role_id}\")\ndef update_role(role_id: str, body: dict[str, Any] = Body(default={})):\n    roles = get_collection(\"roles\")\n    r = next((x for x in roles if str(x.get(\"id\")) == str(role_id)), None)\n    if not r:\n        return {\"detail\": \"not found\"}\n    for k, v in body.items():\n        if k != \"id\":\n            r[k] = v\n    r[\"updated\"] = \"just now\"\n    set_collection(\"roles\", roles)\n    _append_audit(\"Role updated\", r.get(\"name\", role_id), \"Roles\")\n    return r\n\n\n@router.delete(\"/rbac/roles/{role_id}\")\n@router.delete(\"/admin/roles/{role_id}\")\ndef delete_role(role_id: str):\n    roles = get_collection(\"roles\")\n    name = next((x.get(\"name\") for x in roles if str(x.get(\"id\")) == str(role_id)), role_id)\n    set_collection(\"roles\", [x for x in roles if str(x.get(\"id\")) != str(role_id)])\n    _append_audit(\"Role deleted\", name, \"Roles\")\n    return {\"ok\": True}\n\n\n@router.post(\"/rbac/roles/{role_id}/permissions\")\ndef set_role_permissions(role_id: str, body: dict[str, Any] = Body(default={})):\n    roles = get_collection(\"roles\")\n    r = next((x for x in roles if str(x.get(\"id\")) == str(role_id)), None)\n    if not r:\n        return {\"detail\": \"not found\"}\n    if \"permissions\" in body:\n        r[\"permissions\"] = body[\"permissions\"]\n    r[\"updated\"] = \"just now\"\n    set_collection(\"roles\", roles)\n    return r\n\n\n@router.post(\"/rbac/employments/{employment_id}/roles\")\ndef assign_role(employment_id: int, body: dict[str, Any] = Body(default={})):\n    role_id = body.get(\"roleId\") or body.get(\"role_id\")\n    ers = get_collection(\"employee_roles\")\n    ers.append({\"employment_id\": employment_id, \"role_id\": role_id, \"assigned_at\": _now_iso(), \"changed_by\": 1})\n    set_collection(\"employee_roles\", ers)\n    return {\"ok\": True}\n\n\n@router.delete(\"/rbac/employments/{employment_id}/roles/{role_id}\")\ndef unassign_role(employment_id: int, role_id: str):\n    set_collection(\"employee_roles\", [e for e in get_collection(\"employee_roles\") if not (e.get(\"employment_id\") == employment_id and str(e.get(\"role_id\")) == str(role_id))])\n    return {\"ok\": True}\n\n\n@router.get(\"/rbac/employments/{employment_id}/roles\")\ndef employment_roles(employment_id: int):\n    return [e for e in get_collection(\"employee_roles\") if e.get(\"employment_id\") == employment_id]\n\n\n@router.get(\"/rbac/employments/{employment_id}/effective-permissions\")\ndef effective_permissions(employment_id: int):\n    ers = [e for e in get_collection(\"employee_roles\") if e.get(\"employment_id\") == employment_id]\n    role_ids = {str(e.get(\"role_id\")) for e in ers}\n    roles = [r for r in get_collection(\"roles\") if str(r.get(\"id\")) in role_ids]\n    perms = sorted({p for r in roles for p in (r.get(\"permissions\") or [])})\n    return {\"employmentId\": employment_id, \"permissions\": perms, \"roles\": [r.get(\"name\") for r in roles]}\n\n\n@router.get(\"/audit/logs\")\n@router.get(\"/admin/audit/logs\")\n@router.get(\"/admin/audit\")\ndef list_audit(search: Optional[str] = None, module: Optional[str] = None, limit: int = Query(default=200, ge=1, le=1000)):\n    items = list(get_collection(\"audit_logs\"))\n    if search:\n        q = search.lower()\n        items = [a for a in items if q in (a.get(\"action\") or \"\").lower() or q in (a.get(\"actor\") or \"\").lower() or q in (a.get(\"target\") or \"\").lower()]\n    if module:\n        items = [a for a in items if (a.get(\"module\") or \"\").lower() == module.lower()]\n    return items[:limit]\n\n\n@router.get(\"/audit/logs/{log_id}\")\ndef get_audit(log_id: str):\n    return next((a for a in get_collection(\"audit_logs\") if str(a.get(\"id\")) == str(log_id)), None)\n\n\n@router.post(\"/audit/logs\")\n@router.post(\"/admin/audit/events\")\n@router.post(\"/admin/audit/logs\")\ndef create_audit(body: dict[str, Any] = Body(default={})):\n    row = {\"id\": f\"AUD-{int(datetime.utcnow().timestamp())}\", \"action\": body.get(\"action\") or \"Action\", \"actor\": body.get(\"actor\") or \"Current User\", \"actorInitials\": body.get(\"actorInitials\") or \"CU\", \"target\": body.get(\"target\") or \"—\", \"module\": body.get(\"module\") or \"Admin\", \"timestamp\": _now_disp(), \"timestamp_iso\": _now_iso(), \"ip\": body.get(\"ip\") or \"—\"}\n    audits = get_collection(\"audit_logs\")\n    audits.insert(0, row)\n    set_collection(\"audit_logs\", audits)\n    return row\n\n\n@router.get(\"/admin/security/events\")\ndef security_events():\n    return get_collection(\"security_events\")\n\n\n@router.get(\"/organization/settings\")\n@router.get(\"/admin/settings/organization\")\ndef get_org_settings():\n    return get_obj(\"organization_profile\") or {}\n\n\n@router.put(\"/organization/settings\")\n@router.put(\"/admin/settings/organization\")\n@router.patch(\"/admin/settings/organization\")\ndef put_org_settings(body: dict[str, Any] = Body(default={})):\n    cur = get_obj(\"organization_profile\") or {}\n    cur.update(body)\n    set_obj(\"organization_profile\", cur)\n    return cur\n\n\n@router.get(\"/admin/settings/attendance\")\ndef get_attendance_settings():\n    return get_obj(\"attendance_settings\") or {}\n\n\n@router.put(\"/admin/settings/attendance\")\n@router.patch(\"/admin/settings/attendance\")\ndef put_attendance_settings(body: dict[str, Any] = Body(default={})):\n    cur = get_obj(\"attendance_settings\") or {}\n    cur.update(body)\n    set_obj(\"attendance_settings\", cur)\n    return cur\n\n\n@router.get(\"/admin/settings/leave-accrual\")\ndef get_leave_accrual():\n    return get_obj(\"leave_accrual_policy\") or {}\n\n\n@router.put(\"/admin/settings/leave-accrual\")\n@router.patch(\"/admin/settings/leave-accrual\")\ndef put_leave_accrual(body: dict[str, Any] = Body(default={})):\n    cur = get_obj(\"leave_accrual_policy\") or {}\n    cur.update(body)\n    set_obj(\"leave_accrual_policy\", cur)\n    return cur\n\n\n@router.get(\"/admin/offices\")\ndef list_offices():\n    return get_collection(\"offices\")\n\n\n@router.get(\"/admin/offices/{office_id}\")\ndef get_office(office_id: str):\n    return next((o for o in get_collection(\"offices\") if str(o.get(\"id\")) == str(office_id)), None)\n\n\n@router.post(\"/admin/offices\")\ndef create_office(body: dict[str, Any] = Body(default={})):\n    offices = get_collection(\"offices\")\n    oid = body.get(\"id\") or f\"off-{len(offices) + 1}\"\n    row = {**body, \"id\": oid}\n    offices.append(row)\n    set_collection(\"offices\", offices)\n    return row\n\n\n@router.patch(\"/admin/offices/{office_id}\")\ndef update_office(office_id: str, body: dict[str, Any] = Body(default={})):\n    offices = get_collection(\"offices\")\n    o = next((x for x in offices if str(x.get(\"id\")) == str(office_id)), None)\n    if not o:\n        return {\"detail\": \"not found\"}\n    o.update(body)\n    set_collection(\"offices\", offices)\n    return o\n\n\n@router.get(\"/admin/departments\")\ndef list_departments():\n    return get_collection(\"departments\")\n\n\n@router.get(\"/employment/positions\")\n@router.get(\"/admin/positions\")\ndef list_positions_legacy():\n    return get_collection(\"positions\")\n\n\n@router.get(\"/admin/_store/{collection}\")\ndef dump_collection(collection: str):\n    return load().get(collection)\n\n\n@router.post(\"/admin/_reset\")\ndef reset_store():\n    from seed import main as seed_main\n    seed_main()\n    return {\"ok\": True, \"message\": \"store re-seeded\"}\n
+from __future__ import annotations
+
+from datetime import datetime
+from typing import Any, Optional
+
+from fastapi import APIRouter, Body, Query
+
+from store import get_collection, get_obj, set_collection, set_obj
+
+router = APIRouter(tags=["admin"])
+
+
+def _now_disp() -> str:
+    return datetime.utcnow().strftime("%b %d, %Y %H:%M")
+
+
+def _now_iso() -> str:
+    return datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _append_audit(action: str, target: str, module: str) -> None:
+    audits = get_collection("audit_logs")
+    audits.insert(0, {
+        "id": f"AUD-{int(datetime.utcnow().timestamp())}",
+        "action": action,
+        "actor": "Current User",
+        "actorInitials": "CU",
+        "target": target,
+        "module": module,
+        "timestamp": _now_disp(),
+        "timestamp_iso": _now_iso(),
+        "ip": "127.0.0.1",
+    })
+    set_collection("audit_logs", audits)
+
+
+@router.get("/rbac/roles")
+@router.get("/admin/roles")
+def list_roles():
+    return get_collection("roles")
+
+
+@router.get("/rbac/roles/{role_id}")
+@router.get("/admin/roles/{role_id}")
+def get_role(role_id: str):
+    return next((x for x in get_collection("roles") if str(x.get("id")) == str(role_id)), {"detail": "not found"})
+
+
+@router.post("/rbac/roles")
+@router.post("/admin/roles")
+def create_role(body: dict[str, Any] = Body(default={})):
+    roles = get_collection("roles")
+    counters = get_obj("counters") or {}
+    n = counters.get("next_role") or (len(roles) + 1)
+    counters["next_role"] = n + 1
+    set_obj("counters", counters)
+    rid = body.get("id") or f"R-{n:02d}"
+    row = {
+        "id": rid,
+        "name": body.get("name") or f"Role {n}",
+        "description": body.get("description") or "",
+        "usersCount": 0,
+        "permissions": body.get("permissions") or [],
+        "status": body.get("status") or "Active",
+        "category": body.get("category") or "Standard",
+        "coveragePct": body.get("coveragePct") or 0,
+        "coverageLabel": body.get("coverageLabel") or "0 modules",
+        "created": datetime.utcnow().strftime("%b %d, %Y"),
+        "updated": "just now",
+    }
+    roles.append(row)
+    set_collection("roles", roles)
+    _append_audit("Role created", row["name"], "Roles")
+    return row
+
+
+@router.patch("/rbac/roles/{role_id}")
+@router.patch("/admin/roles/{role_id}")
+def update_role(role_id: str, body: dict[str, Any] = Body(default={})):
+    roles = get_collection("roles")
+    r = next((x for x in roles if str(x.get("id")) == str(role_id)), None)
+    if not r:
+        return {"detail": "not found"}
+    for k, v in body.items():
+        if k != "id":
+            r[k] = v
+    r["updated"] = "just now"
+    set_collection("roles", roles)
+    return r
+
+
+@router.delete("/rbac/roles/{role_id}")
+@router.delete("/admin/roles/{role_id}")
+def delete_role(role_id: str):
+    roles = get_collection("roles")
+    set_collection("roles", [x for x in roles if str(x.get("id")) != str(role_id)])
+    return {"ok": True}
+
+
+@router.get("/admin/users")
+def list_users(search: Optional[str] = None, status: Optional[str] = None):
+    items = list(get_collection("admin_users"))
+    if search:
+        q = search.lower()
+        items = [u for u in items if q in (u.get("name") or "").lower() or q in (u.get("email") or "").lower()]
+    if status:
+        items = [u for u in items if (u.get("status") or "").lower() == status.lower()]
+    return {
+        "items": items,
+        "total": len(items),
+        "locked": sum(1 for u in items if u.get("status") == "Locked"),
+        "active": sum(1 for u in items if u.get("status") == "Active"),
+    }
+
+
+@router.get("/rbac/resources")
+def list_resources():
+    return get_collection("resources")
+
+
+@router.get("/rbac/permissions")
+def list_permissions():
+    return get_collection("permissions")
+
+
+@router.get("/rbac/scopes")
+def list_scopes():
+    return [
+        {"id": 1, "name": "ORGANIZATION"},
+        {"id": 2, "name": "DEPARTMENT"},
+        {"id": 3, "name": "TEAM"},
+        {"id": 4, "name": "SELF"},
+    ]
+
+
+@router.get("/admin/settings/leave-accrual")
+def get_leave_accrual():
+    return get_obj("leave_accrual_policy") or {}
+
+
+@router.patch("/admin/settings/leave-accrual")
+@router.put("/admin/settings/leave-accrual")
+def put_leave_accrual(body: dict[str, Any] = Body(default={})):
+    cur = get_obj("leave_accrual_policy") or {}
+    cur.update(body)
+    set_obj("leave_accrual_policy", cur)
+    return cur
+
+
+@router.get("/admin/settings/attendance")
+def get_attendance_settings():
+    return get_obj("attendance_settings") or {}
+
+
+@router.patch("/admin/settings/attendance")
+@router.put("/admin/settings/attendance")
+def put_attendance_settings(body: dict[str, Any] = Body(default={})):
+    cur = get_obj("attendance_settings") or {}
+    cur.update(body)
+    set_obj("attendance_settings", cur)
+    return cur
+
+
+@router.get("/admin/offices")
+def list_offices():
+    return get_collection("offices")
+
+
+@router.get("/audit/logs")
+@router.get("/admin/audit/logs")
+def list_audit(limit: int = Query(default=200)):
+    return get_collection("audit_logs")[:limit]
+
+
+@router.post("/admin/audit/events")
+def create_audit(body: dict[str, Any] = Body(default={})):
+    row = {
+        "id": f"AUD-{int(datetime.utcnow().timestamp())}",
+        "action": body.get("action") or "Action",
+        "actor": body.get("actor") or "Current User",
+        "actorInitials": body.get("actorInitials") or "CU",
+        "target": body.get("target") or "—",
+        "module": body.get("module") or "Admin",
+        "timestamp": _now_disp(),
+        "ip": body.get("ip") or "—",
+    }
+    audits = get_collection("audit_logs")
+    audits.insert(0, row)
+    set_collection("audit_logs", audits)
+    return row
+
+
+@router.post("/admin/_reset")
+def reset_store():
+    from seed import main as seed_main
+    seed_main()
+    return {"ok": True}
