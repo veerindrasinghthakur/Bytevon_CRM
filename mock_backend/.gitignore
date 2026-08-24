@@ -1,5 +1,5 @@
-.venv/
 __pycache__/
+.venv/
 *.pyc
-data/store/
-.pytest_cache/
+data/store.json
+data/store.tmp
