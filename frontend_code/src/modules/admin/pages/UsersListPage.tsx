@@ -5,10 +5,10 @@ import { Select } from '@/shared/components/ui/Select'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
+import { DateRangeFilter } from '@/shared/components/forms/DateRangeFilter'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
-import { RowActions } from '@/shared/components/ui/RowActions'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import {
   QuickSection,
@@ -53,11 +53,7 @@ function UserQuickContent({ user }: { user: AdminUserListItem }) {
       </QuickSection>
 
       <QuickSection title="Assignment">
-        <QuickPersonRow
-          initials={user.initials}
-          roleLabel={user.role}
-          name={user.name}
-        />
+        <QuickPersonRow initials={user.initials} roleLabel={user.role} name={user.name} />
       </QuickSection>
 
       <QuickSection title="Related">
@@ -87,6 +83,8 @@ export function UsersListPage() {
     pageItems,
     locked,
     active,
+    departments,
+    roles,
     isLoading,
     isFetching,
     isError,
@@ -95,6 +93,13 @@ export function UsersListPage() {
     setSearch,
     statusFilter,
     setStatusFilter,
+    departmentFilter,
+    setDepartmentFilter,
+    roleFilter,
+    setRoleFilter,
+    dateFrom,
+    dateTo,
+    setDateRange,
     filtersActive,
     resetFilters,
     page,
@@ -113,7 +118,7 @@ export function UsersListPage() {
   } = useUsersList()
 
   const goDetail = (u: AdminUserListItem) => {
-    navigate({ to: '/admin/users/$userId', params: { userId: String(u.id) } } as any)
+    navigate({ to: '/admin/users/$userId', params: { userId: String(u.id) } } as never)
   }
 
   const openUserOverview = (u: AdminUserListItem) => {
@@ -126,6 +131,12 @@ export function UsersListPage() {
       content: <UserQuickContent user={u} />,
       fullRecordLabel: 'Open full record',
       onOpenFull: () => goDetail(u),
+      onEdit: () => goDetail(u),
+      editLabel: 'Edit user',
+      actions:
+        u.status === 'Locked'
+          ? [{ id: 'unlock', label: 'Unlock', icon: 'lock_open', onClick: () => goDetail(u) }]
+          : undefined,
       widthClass: 'max-w-[520px]',
     })
   }
@@ -150,7 +161,13 @@ export function UsersListPage() {
             <ExportButton
               resource={ResourceName.USER}
               query={search.trim() || undefined}
-              filters={{ status: statusFilter !== 'All' ? statusFilter : undefined }}
+              filters={{
+                status: statusFilter !== 'All' ? statusFilter : undefined,
+                department: departmentFilter !== 'All' ? departmentFilter : undefined,
+                role: roleFilter !== 'All' ? roleFilter : undefined,
+                dateFrom: dateFrom || undefined,
+                dateTo: dateTo || undefined,
+              }}
               selectedIds={selectionMode ? Array.from(selectedIds) : undefined}
               filenameStem="users"
             />
@@ -158,7 +175,7 @@ export function UsersListPage() {
               variant="primary"
               size="sm"
               leftIcon={<span className="material-symbols-outlined text-[18px]">person_add</span>}
-              onClick={() => navigate({ to: '/admin/users/new' } as any)}
+              onClick={() => navigate({ to: '/admin/users/new' } as never)}
             >
               Add New User
             </Button>
@@ -169,13 +186,7 @@ export function UsersListPage() {
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Metric icon="group" label="Total Users" value={String(items.length)} hint="From mock DB" />
         <Metric icon="bolt" label="Active" value={String(active)} hint="ACTIVE status" />
-        <Metric
-          icon="lock_person"
-          label="Locked"
-          value={String(locked)}
-          hint="Action required"
-          valueClass="text-error"
-        />
+        <Metric icon="lock_person" label="Locked" value={String(locked)} hint="Action required" valueClass="text-error" />
         <Metric icon="person_off" label="Shown" value={String(filtered.length)} hint="After filter" />
       </section>
 
@@ -190,9 +201,34 @@ export function UsersListPage() {
         <Select
           value={statusFilter}
           onChange={(v) => setStatusFilter(v as typeof statusFilter)}
-          placeholder="All Status"
+          placeholder="Status"
           options={STATUS_OPTIONS}
           minWidthClass="min-w-[130px]"
+        />
+        <Select
+          value={departmentFilter}
+          onChange={setDepartmentFilter}
+          placeholder="Department"
+          options={[
+            { value: 'All', label: 'All Departments' },
+            ...departments.map((d) => ({ value: d, label: d })),
+          ]}
+          minWidthClass="min-w-[150px]"
+        />
+        <Select
+          value={roleFilter}
+          onChange={setRoleFilter}
+          placeholder="Role"
+          options={[
+            { value: 'All', label: 'All Roles' },
+            ...roles.map((r) => ({ value: r, label: r })),
+          ]}
+          minWidthClass="min-w-[140px]"
+        />
+        <DateRangeFilter
+          value={{ from: dateFrom, to: dateTo }}
+          onChange={({ from, to }) => setDateRange(from, to)}
+          label="Last login"
         />
       </ListToolbar>
 
@@ -237,20 +273,13 @@ export function UsersListPage() {
                 <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">
                   User Identity
                 </th>
-                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">
-                  Role
-                </th>
+                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">Role</th>
                 <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">
                   Department
                 </th>
-                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">
-                  Status
-                </th>
+                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider">
                   Last Login
-                </th>
-                <th className="px-6 py-3 text-label-md text-on-surface-variant uppercase tracking-wider text-right">
-                  Actions
                 </th>
               </tr>
             </thead>
@@ -317,31 +346,6 @@ export function UsersListPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-body-sm text-on-surface-variant">{u.lastLogin}</td>
-                    <td
-                      className="px-6 py-4 text-right"
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div className="flex justify-end">
-                        <RowActions
-                          label={`Actions for ${u.name}`}
-                          actions={[
-                            {
-                              id: 'overview',
-                              label: 'Quick view',
-                              icon: 'visibility',
-                              onClick: () => openUserOverview(u),
-                            },
-                            {
-                              id: 'details',
-                              label: 'View details',
-                              icon: 'description',
-                              onClick: () => goDetail(u),
-                            },
-                          ]}
-                        />
-                      </div>
-                    </td>
                   </tr>
                 )
               })}
@@ -359,7 +363,7 @@ export function UsersListPage() {
           <div className="px-6 py-3 border-t border-outline-variant text-label-sm text-on-surface-variant">
             Showing {filtered.length} of {items.length} users
             {!selectionMode && (
-              <span className="ml-2 opacity-80">· Hold a row 3s to multi-select</span>
+              <span className="ml-2 opacity-80">· Hold a row 3s to multi-select · open overview for actions</span>
             )}
           </div>
         )}
