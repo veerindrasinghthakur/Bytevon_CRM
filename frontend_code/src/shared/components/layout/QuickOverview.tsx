@@ -11,9 +11,8 @@ import {
 import { HEADER_HEIGHT_PX } from './Header'
 import { Button } from '@/shared/components/ui/Button'
 import { IconButton } from '@/shared/components/ui/IconButton'
-import { OpenQuickOverviewOptions, QuickOverviewContextValue } from '@/shared/types'
+import type { OpenQuickOverviewOptions, QuickOverviewContextValue } from '@/shared/types'
 
-/** Gap between panel and viewport edges (below header / above bottom) */
 const PANEL_EDGE_GAP_PX = 4
 const EXIT_MS = 280
 
@@ -100,6 +99,12 @@ function QuickOverviewPanelShell({
   const widthClass = options.widthClass ?? 'max-w-[520px]'
   const fullLabel = options.fullRecordLabel ?? 'Open full record'
   const iconName = options.icon ?? 'info'
+  const extraActions = options.actions ?? []
+
+  const runThenClose = (fn?: () => void) => {
+    onClose()
+    if (fn) window.setTimeout(fn, 80)
+  }
 
   return (
     <div
@@ -170,28 +175,44 @@ function QuickOverviewPanelShell({
 
         <div className="flex-1 overflow-y-auto p-6 space-y-5 min-h-0 bg-background">{options.content}</div>
 
-        <footer className="p-6 border-t border-outline-variant bg-surface-container-lowest shrink-0 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap gap-2">
-            {options.onEdit && (
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>}
-                onClick={() => {
-                  onClose()
-                  window.setTimeout(() => options.onEdit?.(), 80)
-                }}
-              >
-                {options.editLabel ?? 'Edit'}
-              </Button>
-            )}
-            {options.secondaryLabel && options.onSecondary && (
-              <Button variant="outline" size="sm" onClick={options.onSecondary}>
-                {options.secondaryLabel}
-              </Button>
-            )}
-          </div>
-          <div className="flex gap-2 ml-auto">
+        <footer className="p-6 border-t border-outline-variant bg-surface-container-lowest shrink-0 flex flex-col gap-3">
+          {/* Primary row actions — replaces table ⋮ menus */}
+          {(extraActions.length > 0 || options.onEdit || options.secondaryLabel) && (
+            <div className="flex flex-wrap gap-2">
+              {options.onEdit && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>}
+                  onClick={() => runThenClose(options.onEdit)}
+                >
+                  {options.editLabel ?? 'Edit'}
+                </Button>
+              )}
+              {options.secondaryLabel && options.onSecondary && (
+                <Button variant="outline" size="sm" onClick={() => runThenClose(options.onSecondary)}>
+                  {options.secondaryLabel}
+                </Button>
+              )}
+              {extraActions.map((a) => (
+                <Button
+                  key={a.id}
+                  variant={a.danger ? 'danger' : a.variant ?? 'outline'}
+                  size="sm"
+                  leftIcon={
+                    a.icon ? (
+                      <span className="material-symbols-outlined text-[18px]">{a.icon}</span>
+                    ) : undefined
+                  }
+                  onClick={() => runThenClose(a.onClick)}
+                >
+                  {a.label}
+                </Button>
+              ))}
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-2 justify-end">
             <Button variant="outline" size="sm" onClick={onClose}>
               Close
             </Button>
@@ -200,10 +221,7 @@ function QuickOverviewPanelShell({
                 variant="primary"
                 size="sm"
                 leftIcon={<span className="material-symbols-outlined text-[18px]">open_in_new</span>}
-                onClick={() => {
-                  onClose()
-                  window.setTimeout(() => options.onOpenFull?.(), 80)
-                }}
+                onClick={() => runThenClose(options.onOpenFull)}
               >
                 {fullLabel}
               </Button>
