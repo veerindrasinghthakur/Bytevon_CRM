@@ -72,7 +72,13 @@ def login(body: dict[str, Any] = Body(default={})):
         }
 
     if matched is None:
-        matched = auth_users[0]
+        matched = auth_users[0] if auth_users else {
+            "email": "admin@bytevon.local",
+            "login_id": 1,
+            "name": "Admin User",
+            "employment_id": 1,
+            "roles": ["Senior Administrator"],
+        }
 
     login_users = get_collection("login_users")
     login_row = next((l for l in login_users if l["id"] == matched.get("login_id")), None)
