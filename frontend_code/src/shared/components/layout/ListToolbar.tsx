@@ -1,11 +1,18 @@
 import { cn } from '@/shared/lib/cn'
 import { useState } from 'react'
 import { Button } from '@/shared/components/ui/Button'
-import { ListToolbarProps } from '@/shared/types'
+import type { ListToolbarProps } from '@/shared/types'
 
-
-
-/** Search left · filters right — shared list filter bar */
+/**
+ * Shared list filter bar.
+ *
+ * Layout: [Search] · [filter controls as children] · [Refresh] · [Clear]
+ *
+ * - **Clear** — resets filters only (does not reload data).
+ * - **Refresh** — reloads rows (refetch / reload).
+ * Both sit at the right of the filter controls when handlers are provided.
+ * Do not put result counts ("Showing n of m") inside this bar — put them under the table/list.
+ */
 export function ListToolbar({
   searchValue,
   search,
@@ -21,21 +28,22 @@ export function ListToolbar({
 }: ListToolbarProps) {
   const value = searchValue ?? search ?? ''
   const filters = filterSlot ?? children
-  const [resetting, setResetting] = useState(false)
+  const [clearing, setClearing] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
 
-  const handleReset = async () => {
-    if (!onResetFilters || resetting) return
-    setResetting(true)
+  /** Clear filters only — never reloads rows. */
+  const handleClear = async () => {
+    if (!onResetFilters || clearing) return
+    setClearing(true)
     try {
       await Promise.resolve(onResetFilters())
-      // brief visual feedback even for sync resets
-      await new Promise((r) => setTimeout(r, 350))
+      await new Promise((r) => setTimeout(r, 200))
     } finally {
-      setResetting(false)
+      setClearing(false)
     }
   }
 
+  /** Reload rows only — does not reset filters. */
   const handleRefresh = async () => {
     if (!onRefresh || refreshing) return
     setRefreshing(true)
@@ -45,6 +53,9 @@ export function ListToolbar({
       setRefreshing(false)
     }
   }
+
+  const showClear = Boolean(onResetFilters)
+  const showRefresh = Boolean(onRefresh)
 
   return (
     <div
@@ -70,36 +81,24 @@ export function ListToolbar({
           )}
         />
       </div>
+
       <div className="flex flex-wrap items-center gap-2 ml-auto">
         {filters}
         {actionsSlot}
-        {(filtersActive || onResetFilters) && onResetFilters && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => void handleReset()}
-            disabled={resetting}
-            leftIcon={
-              <span
-                className={cn(
-                  'material-symbols-outlined text-[18px]',
-                  resetting && 'animate-spin',
-                )}
-              >
-                restart_alt
-              </span>
-            }
-          >
-            {resetting ? 'Resetting…' : 'Reset'}
-          </Button>
-        )}
-        {onRefresh && (
+
+        {/* Refresh first, Clear to its right (product standard) */}
+        {showRefresh && (
           <button
             type="button"
             onClick={() => void handleRefresh()}
             disabled={refreshing}
-            className="p-2 bg-surface-container-lowest border border-outline-variant rounded-lg text-on-surface-variant hover:text-secondary hover:bg-surface-container transition-colors duration-200 disabled:opacity-60"
-            aria-label="Refresh"
+            className={cn(
+              'p-2 bg-surface-container-lowest border border-outline-variant rounded-lg',
+              'text-on-surface-variant hover:text-secondary hover:bg-surface-container',
+              'transition-colors duration-200 disabled:opacity-60',
+            )}
+            aria-label="Refresh list"
+            title="Reload rows"
           >
             <span
               className={cn(
@@ -110,6 +109,28 @@ export function ListToolbar({
               refresh
             </span>
           </button>
+        )}
+
+        {showClear && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => void handleClear()}
+            disabled={clearing || (filtersActive === false && !clearing)}
+            title="Clear filters"
+            leftIcon={
+              <span
+                className={cn(
+                  'material-symbols-outlined text-[18px]',
+                  clearing && 'animate-spin',
+                )}
+              >
+                filter_alt_off
+              </span>
+            }
+          >
+            {clearing ? 'Clearing…' : 'Clear'}
+          </Button>
         )}
       </div>
     </div>
