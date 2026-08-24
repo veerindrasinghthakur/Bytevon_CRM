@@ -1,6 +1,6 @@
 /**
- * Client-side audit event recorder (mock append + real POST).
- * Best-effort: failures must not break the primary action.
+ * Audit API — list + best-effort record.
+ * Mock uses admin/data/mock auditLogs; real hits /admin/audit/logs.
  */
 
 import { env } from '@/config/env'
@@ -10,6 +10,18 @@ import type { AuditLog, RecordAuditInput } from '../types'
 
 function delay(ms = 80) {
   return new Promise((r) => setTimeout(r, ms))
+}
+
+export async function listAuditLogs(params?: { limit?: number }): Promise<AuditLog[]> {
+  if (env.useMockApi) {
+    await delay()
+    const limit = params?.limit ?? 500
+    return auditLogs.slice(0, limit).map((r) => ({ ...r }))
+  }
+  const { data } = await apiClient.get<AuditLog[]>('/admin/audit/logs', {
+    params: { limit: params?.limit ?? 500 },
+  })
+  return Array.isArray(data) ? data : []
 }
 
 /** Append an audit row after a successful admin action. */
