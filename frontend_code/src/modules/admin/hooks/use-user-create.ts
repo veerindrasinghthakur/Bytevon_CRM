@@ -105,14 +105,12 @@ export function useUserCreate() {
       setError('Select a role.')
       return
     }
-    // Prefer original backend id when present (R-01); else numeric id
-    const selectedRole = roles.find((r) => String(r.id) === roleId)
-    const sourceId = (selectedRole as { _sourceId?: string | number } | undefined)?._sourceId
+    // Pass role id as-is (supports R-01 string ids from backend)
     createMutation.mutate({
       employmentId: Number(employmentId),
       email,
       temporaryPassword: tempPassword,
-      roleId: sourceId ?? (Number.isNaN(Number(roleId)) ? roleId : Number(roleId)),
+      roleId,
     })
   }
 
