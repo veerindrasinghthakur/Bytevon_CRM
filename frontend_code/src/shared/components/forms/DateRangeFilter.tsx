@@ -26,9 +26,7 @@ function formatDisplay(value: DateRangeValue): string {
 
 /**
  * Compact filter-bar date control.
- * - Idle: single box with calendar icon
- * - Click: choose "Select date" (one calendar) or "Select range" (two calendars)
- * - Selected value shows inside the same box next to the icon
+ * Shrinks in tight filter bars (min-w-0, max-w ~11rem).
  */
 export function DateRangeFilter({
   value,
@@ -51,7 +49,7 @@ export function DateRangeFilter({
     if (value.from && value.to && value.from !== value.to) setStep('range')
     else if (value.from || value.to) setStep('single')
     else setStep('menu')
-  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps -- sync on open only
+  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!open) return
@@ -97,7 +95,7 @@ export function DateRangeFilter({
   }
 
   return (
-    <div ref={rootRef} className={cn('relative inline-flex', className)}>
+    <div ref={rootRef} className={cn('relative inline-flex min-w-0 max-w-[11rem] shrink', className)}>
       <button
         type="button"
         disabled={disabled}
@@ -105,7 +103,7 @@ export function DateRangeFilter({
         aria-expanded={open}
         onClick={() => !disabled && setOpen((o) => !o)}
         className={cn(
-          'inline-flex items-center gap-2 min-w-[7.5rem] max-w-[16rem] px-3 py-2 rounded-lg border',
+          'inline-flex items-center gap-1.5 min-w-0 w-full max-w-full px-2.5 py-1.5 rounded-lg border',
           'border-outline-variant bg-surface-container-lowest text-body-sm text-on-surface',
           'outline-none focus:border-secondary focus:ring-1 focus:ring-secondary',
           'disabled:opacity-50 disabled:pointer-events-none',
@@ -117,7 +115,7 @@ export function DateRangeFilter({
         </span>
         <span
           className={cn(
-            'truncate flex-1 text-left',
+            'truncate flex-1 text-left min-w-0',
             hasValue ? 'text-on-surface font-medium' : 'text-on-surface-variant',
           )}
         >
