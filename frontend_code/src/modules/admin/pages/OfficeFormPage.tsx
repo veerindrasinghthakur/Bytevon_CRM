@@ -3,18 +3,23 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { createOffice, getOffice, updateOffice } from '../api/offices'
+import { createLocation, getLocation, updateLocation } from '../api/organization'
 
+/**
+ * Create / edit office location — persists via organization locations API
+ * (same store as Locations list).
+ */
 export function OfficeFormPage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const { officeId } = useParams({ strict: false }) as { officeId?: string }
   const isEdit = Boolean(officeId && officeId !== 'new')
+  const numericId = isEdit ? Number(officeId) : NaN
 
   const officeQuery = useQuery({
-    queryKey: ['admin', 'offices', officeId],
-    queryFn: () => getOffice(officeId as string),
-    enabled: isEdit && Boolean(officeId),
+    queryKey: ['organization', 'locations', numericId],
+    queryFn: () => getLocation(numericId),
+    enabled: isEdit && Number.isFinite(numericId),
   })
 
   const existing = officeQuery.data
@@ -23,9 +28,10 @@ export function OfficeFormPage() {
     name: '',
     country: '',
     city: '',
-    timezone: 'UTC-05:00 Eastern Time',
-    currency: 'USD ($)',
-    fiscal: 'Jan - Dec',
+    state: '',
+    timezone: 'Asia/Kolkata',
+    currency: 'INR',
+    fiscalMonth: 4,
     address: '',
     postal: '',
   })
@@ -37,28 +43,55 @@ export function OfficeFormPage() {
         name: existing.name,
         country: existing.country,
         city: existing.city,
+        state: existing.state ?? '',
         timezone: existing.timezone,
         currency: existing.currency,
-        fiscal: existing.fiscal,
+        fiscalMonth: existing.fiscal_year_start_month ?? 4,
         address: existing.address,
-        postal: existing.postal,
+        postal: '',
       })
     }
   }, [existing])
 
-  const set = (k: keyof typeof form, v: string) => setForm((p) => ({ ...p, [k]: v }))
+  const set = (k: keyof typeof form, v: string | number) => setForm((p) => ({ ...p, [k]: v }))
 
   const saveMutation = useMutation({
     mutationFn: async () => {
       if (!form.name.trim()) throw new Error('Office name is required')
-      if (isEdit && officeId) {
-        return updateOffice(officeId, form)
+      if (isEdit && Number.isFinite(numericId)) {
+        return updateLocation(numericId, {
+          name: form.name.trim(),
+          country: form.country,
+          city: form.city,
+          state: form.state,
+          timezone: form.timezone,
+          currency: form.currency,
+          fiscal_year_start_month: Number(form.fiscalMonth),
+          address: form.address,
+        })
       }
-      return createOffice(form)
+      return createLocation({
+        name: form.name.trim(),
+        timezone: form.timezone,
+        working_week_id: 1,
+        holiday_calendar_id: 1,
+        latitude: 0,
+        longitude: 0,
+        attendance_radius_meters: 200,
+        allowed_ip_cidrs: [],
+        country: form.country || 'India',
+        state: form.state || '',
+        city: form.city || '',
+        address: form.address || '',
+        payroll_region: form.state || null,
+        currency: form.currency || 'INR',
+        fiscal_year_start_month: Number(form.fiscalMonth) || 4,
+      })
     },
     onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['organization', 'locations'] })
       await qc.invalidateQueries({ queryKey: ['admin', 'offices'] })
-      navigate({ to: '/admin/settings' })
+      navigate({ to: '/admin/settings/locations' })
     },
     onError: (e: Error) => setError(e.message || 'Failed to save office'),
   })
@@ -71,13 +104,13 @@ export function OfficeFormPage() {
     <div className="space-y-6 animate-fade-in">
       <button
         type="button"
-        onClick={() => navigate({ to: '/admin/settings' })}
+        onClick={() => navigate({ to: '/admin/settings/locations' })}
         className="inline-flex items-center gap-2 text-secondary hover:text-primary transition-colors group"
       >
         <span className="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">
           arrow_back
         </span>
-        <span className="text-label-md font-medium">Back to Settings</span>
+        <span className="text-label-md font-medium">Back to Locations</span>
       </button>
 
       <PageHeader
@@ -89,7 +122,11 @@ export function OfficeFormPage() {
         }
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => navigate({ to: '/admin/settings' })}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => navigate({ to: '/admin/settings/locations' })}
+            >
               Cancel
             </Button>
             <Button
@@ -119,12 +156,22 @@ export function OfficeFormPage() {
           Office Details
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field label="Office Name" value={form.name} onChange={(v) => set('name', v)} placeholder="e.g. Singapore Office" />
-          <Field label="Country" value={form.country} onChange={(v) => set('country', v)} placeholder="Singapore" />
-          <Field label="City" value={form.city} onChange={(v) => set('city', v)} placeholder="Singapore" />
-          <Field label="Postal Code" value={form.postal} onChange={(v) => set('postal', v)} placeholder="018956" />
+          <Field
+            label="Office Name"
+            value={form.name}
+            onChange={(v) => set('name', v)}
+            placeholder="e.g. Singapore Office"
+          />
+          <Field label="Country" value={form.country} onChange={(v) => set('country', v)} placeholder="India" />
+          <Field label="State" value={form.state} onChange={(v) => set('state', v)} placeholder="Karnataka" />
+          <Field label="City" value={form.city} onChange={(v) => set('city', v)} placeholder="Bengaluru" />
           <div className="md:col-span-2">
-            <Field label="Address" value={form.address} onChange={(v) => set('address', v)} placeholder="Street, building, suite" />
+            <Field
+              label="Address"
+              value={form.address}
+              onChange={(v) => set('address', v)}
+              placeholder="Street, building, suite"
+            />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-bold text-on-surface-variant uppercase">Timezone</label>
@@ -133,8 +180,10 @@ export function OfficeFormPage() {
               onChange={(e) => set('timezone', e.target.value)}
               className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
             >
-              {['UTC-05:00 Eastern Time', 'UTC+00:00 GMT', 'UTC+05:30 IST', 'UTC+08:00 SGT'].map((t) => (
-                <option key={t}>{t}</option>
+              {['Asia/Kolkata', 'America/New_York', 'Europe/London', 'Asia/Singapore', 'UTC'].map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
               ))}
             </select>
           </div>
@@ -145,21 +194,23 @@ export function OfficeFormPage() {
               onChange={(e) => set('currency', e.target.value)}
               className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
             >
-              {['USD ($)', 'GBP (£)', 'INR (₹)', 'SGD (S$)', 'EUR (€)'].map((c) => (
-                <option key={c}>{c}</option>
+              {['INR', 'USD', 'GBP', 'SGD', 'EUR'].map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
               ))}
             </select>
           </div>
           <div className="space-y-1">
-            <label className="text-xs font-bold text-on-surface-variant uppercase">Fiscal Year</label>
+            <label className="text-xs font-bold text-on-surface-variant uppercase">Fiscal Year Start Month</label>
             <select
-              value={form.fiscal}
-              onChange={(e) => set('fiscal', e.target.value)}
+              value={String(form.fiscalMonth)}
+              onChange={(e) => set('fiscalMonth', Number(e.target.value))}
               className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
             >
-              <option>Jan - Dec</option>
-              <option>Apr - Mar</option>
-              <option>Jul - Jun</option>
+              <option value={1}>January</option>
+              <option value={4}>April</option>
+              <option value={7}>July</option>
             </select>
           </div>
         </div>

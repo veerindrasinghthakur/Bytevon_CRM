@@ -8,10 +8,29 @@ function delay(ms = 200) {
   return new Promise((r) => setTimeout(r, ms))
 }
 
+const TOTAL_MODULES = 18
+
+/** Derive coverage from permission keys (module-ish tokens). */
+export function computeCoverage(permissions: string[]): { pct: number; label: string } {
+  if (!permissions?.length) return { pct: 0, label: '0 modules' }
+  const modules = new Set<
+    string
+  >()
+  for (const p of permissions) {
+    const part = p.split(/[./_]/)[0]?.toLowerCase()
+    if (part) modules.add(part)
+  }
+  // Prefer explicit "Full Access" when manage/security present
+  if (permissions.some((p) => p.includes('manage') || p.includes('security') || p === '*')) {
+    return { pct: 100, label: 'Full Access' }
+  }
+  const count = Math.min(modules.size, TOTAL_MODULES)
+  const pct = Math.round((count / TOTAL_MODULES) * 100)
+  return { pct, label: `${count}/${TOTAL_MODULES} Modules` }
+}
+
 /**
  * Seeded RBAC catalogue: resources (modules) + actions.
- * Backend: GET /rbac/resources + /rbac/permissions (or combined).
- * Mock returns permissionCatalogSeed shaped like DB seed.
  */
 export async function listPermissionCatalog(): Promise<PermissionCatalog> {
   if (env.useMockApi) {
@@ -25,9 +44,7 @@ export async function listPermissionCatalog(): Promise<PermissionCatalog> {
   }
 
   const [resourcesRes, permissionsRes] = await Promise.all([
-    apiClient.get<Array<{ id: number; name: string; description?: string | null }>>(
-      '/rbac/resources',
-    ),
+    apiClient.get<Array<{ id: number; name: string; description?: string | null }>>('/rbac/resources'),
     apiClient.get<
       Array<{
         id: number
@@ -49,7 +66,8 @@ export async function listPermissionCatalog(): Promise<PermissionCatalog> {
   const permissions = permissionsRes.data.map((p) => ({
     id: p.id,
     resource_id: p.resource_id,
-    resource_name: p.resource_name ?? p.resource?.name ?? nameById[p.resource_id] ?? String(p.resource_id),
+    resource_name:
+      p.resource_name ?? p.resource?.name ?? nameById[p.resource_id] ?? String(p.resource_id),
     action: p.action,
   }))
 
@@ -74,20 +92,38 @@ export async function listPermissionCatalog(): Promise<PermissionCatalog> {
 export async function listAdminRoles(): Promise<AdminRole[]> {
   if (env.useMockApi) {
     await delay()
-    return adminRoles.map((r) => ({ ...r }))
+    return adminRoles.map((r) => {
+      const cov = computeCoverage(r.permissions ?? [])
+      return {
+        ...r,
+        coveragePct: cov.pct,
+        coverageLabel: cov.label,
+      }
+    })
   }
   const { data } = await apiClient.get<AdminRole[]>('/rbac/roles')
-  return data
+  return (data ?? []).map((r) => {
+    const cov = computeCoverage(r.permissions ?? [])
+    return {
+      ...r,
+      coveragePct: r.coveragePct ?? cov.pct,
+      coverageLabel: r.coverageLabel ?? cov.label,
+    }
+  })
 }
 
 export async function getAdminRole(roleId: string): Promise<AdminRole | null> {
   if (env.useMockApi) {
     await delay()
-    return adminRoles.find((r) => r.id === roleId) ?? null
+    const r = adminRoles.find((x) => x.id === roleId)
+    if (!r) return null
+    const cov = computeCoverage(r.permissions ?? [])
+    return { ...r, coveragePct: cov.pct, coverageLabel: cov.label }
   }
   try {
     const { data } = await apiClient.get<AdminRole>(`/rbac/roles/${roleId}`)
-    return data
+    const cov = computeCoverage(data.permissions ?? [])
+    return { ...data, coveragePct: data.coveragePct ?? cov.pct, coverageLabel: data.coverageLabel ?? cov.label }
   } catch {
     return null
   }
@@ -97,19 +133,22 @@ export async function createAdminRole(payload: {
   name: string
   description: string
   status: 'Active' | 'Archived'
+  permissions?: string[]
 }): Promise<AdminRole> {
   if (env.useMockApi) {
     await delay(300)
-    return {
+    const perms = payload.permissions ?? []
+    const cov = computeCoverage(perms)
+    const row: AdminRole = {
       id: `R-${Date.now()}`,
       name: payload.name,
       description: payload.description,
       usersCount: 0,
-      permissions: [],
+      permissions: perms,
       status: payload.status,
       category: 'Standard',
-      coveragePct: 0,
-      coverageLabel: '0 modules',
+      coveragePct: cov.pct,
+      coverageLabel: cov.label,
       created: new Date().toLocaleDateString('en-US', {
         month: 'short',
         day: '2-digit',
@@ -117,6 +156,8 @@ export async function createAdminRole(payload: {
       }),
       updated: 'just now',
     }
+    adminRoles.push(row)
+    return { ...row }
   }
   const { data } = await apiClient.post<AdminRole>('/rbac/roles', payload)
   return data
@@ -130,7 +171,18 @@ export async function updateAdminRole(
     await delay(300)
     const existing = adminRoles.find((r) => r.id === roleId)
     if (!existing) throw new Error('Role not found')
-    return { ...existing, ...payload, updated: 'just now' }
+    Object.assign(existing, payload, { updated: 'just now' })
+    if (payload.permissions) {
+      const cov = computeCoverage(payload.permissions)
+      existing.coveragePct = cov.pct
+      existing.coverageLabel = cov.label
+      existing.permissions = payload.permissions
+    } else {
+      const cov = computeCoverage(existing.permissions ?? [])
+      existing.coveragePct = cov.pct
+      existing.coverageLabel = cov.label
+    }
+    return { ...existing }
   }
   const { data } = await apiClient.patch<AdminRole>(`/rbac/roles/${roleId}`, payload)
   return data
