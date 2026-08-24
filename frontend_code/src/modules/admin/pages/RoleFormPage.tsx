@@ -19,19 +19,29 @@ const ACTION_LABEL: Record<string, string> = {
 type Props = {
   mode: RoleFormMode
   roleId?: string
+  /** Create mode: pre-fill permissions from this role */
+  duplicateFromId?: string
 }
 
-export function RoleFormPage({ mode, roleId }: Props) {
-  const form = useRoleForm(mode, roleId)
+export function RoleFormPage({ mode, roleId, duplicateFromId }: Props) {
+  const form = useRoleForm(mode, roleId, duplicateFromId)
 
   if (form.isLoadingRole || form.isLoadingCatalog) {
-    return <div className="p-12 text-center text-on-surface-variant">Loading…</div>
+    return <div className="p-12 text-center text-on-surface-variant">Loading...</div>
   }
 
-  const title = mode === 'create' ? 'Add New Role' : `Edit Role: ${form.role?.name ?? ''}`
+  const isDuplicate = mode === 'create' && form.isDuplicate
+  const title =
+    mode === 'create'
+      ? isDuplicate
+        ? `Duplicate Role: ${form.sourceRole?.name ?? ''}`
+        : 'Add New Role'
+      : `Edit Role: ${form.role?.name ?? ''}`
   const description =
     mode === 'create'
-      ? 'Define access levels and assign granular permissions for a new organizational role.'
+      ? isDuplicate
+        ? 'Create a new role starting from the source permissions. Adjust what you need, then save.'
+        : 'Define access levels and assign granular permissions for a new organizational role.'
       : 'Update functional access levels and module permissions.'
 
   const { modules, actions, matrix } = form
@@ -156,11 +166,12 @@ export function RoleFormPage({ mode, roleId }: Props) {
             <div className="bg-surface-container-low p-6 rounded-xl border border-secondary/20">
               <h4 className="text-label-md text-secondary flex items-center gap-2 mb-2 font-medium">
                 <span className="material-symbols-outlined text-[18px]">info</span>
-                Best Practice
+                {isDuplicate ? 'Duplicating' : 'Best Practice'}
               </h4>
               <p className="text-body-sm text-on-surface-variant">
-                Assign the lowest necessary permissions. Modules and actions are loaded from the RBAC
-                seed catalogue (resources + Action enum).
+                {isDuplicate
+                  ? 'Permission ticks are copied from the source role. Saving creates a new role; the original is unchanged.'
+                  : 'Assign the lowest necessary permissions. Modules and actions are loaded from the RBAC seed catalogue (resources + Action enum).'}
               </p>
             </div>
           )}
@@ -252,7 +263,6 @@ export function RoleFormPage({ mode, roleId }: Props) {
             </div>
           </div>
 
-          {/* Bottom section 1 — permission summary */}
           <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm p-5 flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
@@ -275,12 +285,13 @@ export function RoleFormPage({ mode, roleId }: Props) {
         </section>
       </div>
 
-      {/* Bottom section 2 — sticky action bar (matches edit_role design) */}
       <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-outline-variant bg-surface-container-lowest/95 backdrop-blur-sm executive-shadow">
         <div className="max-w-[1600px] mx-auto px-6 py-4 flex flex-wrap items-center justify-between gap-3">
           <p className="text-body-sm text-on-surface-variant">
             {mode === 'create'
-              ? 'Review the matrix carefully before creating this role.'
+              ? isDuplicate
+                ? 'Saving creates a new role with the selected permissions.'
+                : 'Review the matrix carefully before creating this role.'
               : 'Changes apply to all users currently assigned this role.'}
           </p>
           <div className="flex gap-2">
