@@ -1,4 +1,5 @@
 import { useMemo, useState, useRef } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
@@ -6,6 +7,8 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { DateRangeFilter } from '@/shared/components/forms/DateRangeFilter'
 import { TimeRangeFilter } from '@/shared/components/forms/TimeRangeFilter'
+import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import {
   QuickSection,
@@ -15,7 +18,9 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { ResourceName } from '@/shared/schema'
-import { auditLogs } from '../data/mock'
+import { queryKeys } from '@/shared/lib/query-keys'
+import { listAuditLogs } from '../api/audit'
+import type { AuditLog } from '../types'
 import { cn } from '@/shared/lib/cn'
 
 const actionBadge: Record<string, string> = {
@@ -33,8 +38,6 @@ const actionDot: Record<string, string> = {
   Login: 'bg-sky-500',
   Lock: 'bg-amber-500',
 }
-
-type AuditLog = (typeof auditLogs)[number]
 
 function parseAuditTimestamp(ts: string): { dateKey: string; minutes: number } | null {
   const m = ts.match(
@@ -110,6 +113,13 @@ export function AuditLogsPage() {
   const [dateRange, setDateRange] = useState({ from: '', to: '' })
   const [timeRange, setTimeRange] = useState({ from: '', to: '' })
 
+  const logsQuery = useQuery({
+    queryKey: queryKeys.admin.audit.list(),
+    queryFn: () => listAuditLogs({ limit: 500 }),
+  })
+
+  const auditLogs = logsQuery.data ?? []
+
   const filtersActive =
     Boolean(search.trim()) ||
     actionFilter !== 'All Actions' ||
@@ -156,7 +166,7 @@ export function AuditLogsPage() {
       }
       return true
     })
-  }, [search, actionFilter, moduleFilter, dateRange, timeRange])
+  }, [auditLogs, search, actionFilter, moduleFilter, dateRange, timeRange])
 
   const parentRef = useRef<HTMLDivElement>(null)
 
@@ -192,6 +202,16 @@ export function AuditLogsPage() {
     })
   }
 
+  if (logsQuery.isLoading) {
+    return <PageLoadingSkeleton />
+  }
+
+  if (logsQuery.isError) {
+    return (
+      <ErrorState title="Could not load audit logs" onRetry={() => void logsQuery.refetch()} />
+    )
+  }
+
   return (
     <div className="space-y-6 relative animate-fade-in">
       <PageHeader
@@ -199,6 +219,9 @@ export function AuditLogsPage() {
         description="Immutable record of significant administrative and security actions."
         actions={
           <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => void logsQuery.refetch()}>
+              Refresh
+            </Button>
             <ExportButton
               resource={ResourceName.AUDIT}
               query={search.trim() || undefined}
@@ -218,10 +241,25 @@ export function AuditLogsPage() {
       />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard icon="event_note" value="1,284" title="Today's Activities" subtitle="Total audit events generated today." />
-        <KpiCard icon="shield_person" value="342" title="Login Events" subtitle="Successful login and logout events." />
-        <KpiCard icon="business_center" value="891" title="Business Events" subtitle="Projects, Leaves, and Approvals." />
-        <KpiCard icon="terminal" value="51" title="System Events" subtitle="Background jobs and automation." />
+        <KpiCard icon="event_note" value={String(auditLogs.length)} title="Loaded events" subtitle="From audit API / store." />
+        <KpiCard
+          icon="shield_person"
+          value={String(auditLogs.filter((l) => /login/i.test(l.action)).length)}
+          title="Login-related"
+          subtitle="Successful login and logout style events."
+        />
+        <KpiCard
+          icon="business_center"
+          value={String(auditLogs.filter((l) => !/login|lock/i.test(l.action)).length)}
+          title="Business events"
+          subtitle="Roles, users, settings changes."
+        />
+        <KpiCard
+          icon="terminal"
+          value={String(auditLogs.filter((l) => l.actor === 'System').length)}
+          title="System events"
+          subtitle="Automated / system actor rows."
+        />
       </section>
 
       <section className="bv-surface p-5 space-y-4">
@@ -287,18 +325,8 @@ export function AuditLogsPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3 pt-1 border-t border-outline-variant/40">
-          <DateRangeFilter
-            value={dateRange}
-            onChange={setDateRange}
-            label="Date"
-            placeholder="Date"
-          />
-          <TimeRangeFilter
-            value={timeRange}
-            onChange={setTimeRange}
-            label="Time"
-            placeholder="Time"
-          />
+          <DateRangeFilter value={dateRange} onChange={setDateRange} label="Date" placeholder="Date" />
+          <TimeRangeFilter value={timeRange} onChange={setTimeRange} label="Time" placeholder="Time" />
         </div>
       </section>
 
@@ -359,10 +387,7 @@ export function AuditLogsPage() {
                 return (
                   <tr
                     key={log.id}
-                    className={cn(
-                      'cursor-pointer select-none',
-                      selected ? 'bg-secondary/10' : 'zebra-row',
-                    )}
+                    className={cn('cursor-pointer select-none', selected ? 'bg-secondary/10' : 'zebra-row')}
                     onMouseDown={() => selection.onRowPressStart(id)}
                     onMouseUp={() => selection.onRowPressEnd(id, () => openAuditOverview(log))}
                     onMouseLeave={selection.onRowPressCancel}
