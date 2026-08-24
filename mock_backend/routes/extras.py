@@ -33,7 +33,6 @@ def _append_audit(action: str, target: str, module: str) -> None:
 
 
 def _ensure() -> None:
-    """Only light defaults if store.json missing keys — prefer seed.py / JSON store."""
     if not get_collection("shifts"):
         set_collection("shifts", [
             {"id": 1, "name": "General", "code": "GEN", "start_time": "09:00", "end_time": "18:00",
@@ -195,6 +194,25 @@ def put_org_profile(body: dict[str, Any] = Body(default={})):
     return cur
 
 
+@router.get("/organization/settings")
+def get_org_settings():
+    return get_obj("organization_settings") or {
+        "company_name": (get_obj("organization_profile") or {}).get("name") or "Bytevon",
+        "head_office_location_id": 1,
+        "default_timezone": "Asia/Kolkata",
+        "default_currency": "INR",
+        "logo_reference": None,
+    }
+
+
+@router.patch("/organization/settings")
+def patch_org_settings(body: dict[str, Any] = Body(default={})):
+    cur = get_obj("organization_settings") or {}
+    cur.update(body)
+    set_obj("organization_settings", cur)
+    return cur
+
+
 @router.get("/admin/offices/head-options")
 def head_options():
     out = []
@@ -224,6 +242,51 @@ def get_location(location_id: int):
     return next((x for x in get_collection("locations") if x.get("id") == location_id), None)
 
 
+@router.post("/organization/locations")
+def create_location(body: dict[str, Any] = Body(default={})):
+    _ensure()
+    locs = get_collection("locations")
+    counters = get_obj("counters") or {}
+    n = counters.get("next_location") or (len(locs) + 1)
+    counters["next_location"] = n + 1
+    set_obj("counters", counters)
+    row = {
+        "id": body.get("id") or n,
+        "name": body.get("name") or f"Location {n}",
+        "code": body.get("code") or f"LOC{n}",
+        "city": body.get("city") or "",
+        "country": body.get("country") or "",
+        "timezone": body.get("timezone") or "UTC",
+        "address": body.get("address") or "",
+        "postal_code": body.get("postal_code") or body.get("postalCode") or "",
+        "payroll_region": body.get("payroll_region") or body.get("payrollRegion") or "",
+        "is_archived": False,
+        "created_at": _now_iso(),
+        "updated_at": _now_iso(),
+        "changed_by": body.get("changed_by") or 1,
+    }
+    locs.append(row)
+    set_collection("locations", locs)
+    _append_audit("Location created", row["name"], "Organization")
+    return row
+
+
+@router.patch("/organization/locations/{location_id}")
+@router.put("/organization/locations/{location_id}")
+def update_location(location_id: int, body: dict[str, Any] = Body(default={})):
+    _ensure()
+    locs = get_collection("locations")
+    row = next((x for x in locs if x.get("id") == location_id), None)
+    if not row:
+        return {"detail": "not found"}
+    for k, v in body.items():
+        if k != "id":
+            row[k] = v
+    row["updated_at"] = _now_iso()
+    set_collection("locations", locs)
+    return row
+
+
 @router.get("/organization/shifts")
 def list_shifts(includeArchived: bool = Query(default=False)):
     _ensure()
@@ -241,14 +304,12 @@ def get_shift(shift_id: int):
 
 @router.post("/organization/shifts")
 def create_shift(body: dict[str, Any] = Body(default={})):
-    """Create shift — persists to data/store.json."""
     _ensure()
     shifts = get_collection("shifts")
     counters = get_obj("counters") or {}
     n = counters.get("next_shift") or (len(shifts) + 1)
     counters["next_shift"] = n + 1
     set_obj("counters", counters)
-
     name = body.get("name") or f"Shift {n}"
     code = body.get("code") or name[:4].upper().replace(" ", "")
     row = {
@@ -277,9 +338,7 @@ def update_shift(shift_id: int, body: dict[str, Any] = Body(default={})):
     s = next((x for x in shifts if x.get("id") == shift_id), None)
     if not s:
         return {"detail": "not found"}
-    mapping = {
-        "startTime": "start_time", "endTime": "end_time", "breakMinutes": "break_minutes",
-    }
+    mapping = {"startTime": "start_time", "endTime": "end_time", "breakMinutes": "break_minutes"}
     for k, v in body.items():
         if k == "id":
             continue
