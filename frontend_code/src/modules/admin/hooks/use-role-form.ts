@@ -38,6 +38,17 @@ function seedMatrix(
   return init
 }
 
+/** Flatten matrix → permission strings for storage / coverage. */
+function matrixToPermissions(matrix: RolePermissionMatrix): string[] {
+  const out: string[] = []
+  for (const [mod, row] of Object.entries(matrix)) {
+    for (const [action, on] of Object.entries(row ?? {})) {
+      if (on) out.push(`${mod.toLowerCase()}.${action.toLowerCase()}`)
+    }
+  }
+  return out
+}
+
 export type RoleFormMode = 'create' | 'edit'
 
 export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId?: string) {
@@ -158,17 +169,20 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
 
   const saveMutation = useMutation({
     mutationFn: async () => {
+      const permissions = matrixToPermissions(matrix)
       if (mode === 'create') {
         return createAdminRole({
           name,
           description,
           status: active ? 'Active' : 'Archived',
+          permissions,
         })
       }
       return updateAdminRole(roleId as string, {
         name,
         description,
         status: active ? 'Active' : 'Archived',
+        permissions,
       })
     },
     onSuccess: (saved) => {

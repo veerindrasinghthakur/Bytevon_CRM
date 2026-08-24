@@ -1,12 +1,17 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
+import { Select } from '@/shared/components/ui/Select'
+import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { cn } from '@/shared/lib/cn'
 import { getAttendanceSettings, updateAttendanceSettings } from '../api/settings'
 import { getAttendanceAdminMetrics } from '../api/metrics'
+import { getShifts } from '../api/organization'
 import type { AttendanceSettings } from '../types'
+import type { ShiftRow } from '@/shared/schema'
 
 function Toggle({ on = false, disabled = false }: { on?: boolean; disabled?: boolean }) {
   return (
@@ -17,7 +22,38 @@ function Toggle({ on = false, disabled = false }: { on?: boolean; disabled?: boo
   )
 }
 
+function shiftToForm(s: ShiftRow): AttendanceSettings {
+  return {
+    shiftStart: String(s.start_time).slice(0, 5),
+    shiftEnd: String(s.end_time).slice(0, 5),
+    graceMinutes: s.grace_late_minutes ?? 15,
+    earlyOutMinutes: 30,
+    otMinMinutes: 60,
+    allowRemoteCheckIn: true,
+  }
+}
+
+function aggregateShifts(shifts: ShiftRow[]): AttendanceSettings {
+  if (!shifts.length) {
+    return {
+      shiftStart: '09:00',
+      shiftEnd: '18:00',
+      graceMinutes: 15,
+      earlyOutMinutes: 30,
+      otMinMinutes: 60,
+      allowRemoteCheckIn: true,
+    }
+  }
+  // Show first shift times as representative when "all shifts"
+  const s = shifts[0]
+  return {
+    ...shiftToForm(s),
+    graceMinutes: Math.max(...shifts.map((x) => x.grace_late_minutes ?? 15)),
+  }
+}
+
 export function AttendanceSettingsPage() {
+  const navigate = useNavigate()
   const qc = useQueryClient()
   const { data, isLoading } = useQuery({
     queryKey: ['admin', 'settings', 'attendance'],
@@ -29,12 +65,34 @@ export function AttendanceSettingsPage() {
     queryFn: getAttendanceAdminMetrics,
   })
 
+  const shiftsQuery = useQuery({
+    queryKey: ['organization', 'shifts', { includeArchived: false }],
+    queryFn: () => getShifts({ includeArchived: false }),
+  })
+
+  const shifts = shiftsQuery.data?.items ?? []
+  const [selectedShiftId, setSelectedShiftId] = useState<string>('')
+
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
   const [form, setForm] = useState<AttendanceSettings | null>(null)
 
+  const activeShift = useMemo(
+    () => (selectedShiftId ? shifts.find((s) => String(s.id) === selectedShiftId) : null),
+    [selectedShiftId, shifts],
+  )
+
   useEffect(() => {
-    if (data) setForm({ ...data })
-  }, [data])
+    if (selectedShiftId && activeShift) {
+      setForm(shiftToForm(activeShift))
+      return
+    }
+    // No shift picked → aggregate / company defaults
+    if (shifts.length) {
+      setForm(aggregateShifts(shifts))
+    } else if (data) {
+      setForm({ ...data })
+    }
+  }, [selectedShiftId, activeShift, shifts, data])
 
   const save = useMutation({
     mutationFn: () => updateAttendanceSettings(form!),
@@ -44,15 +102,22 @@ export function AttendanceSettingsPage() {
     },
   })
 
-  if (isLoading || !form) {
+  if (isLoading || shiftsQuery.isLoading || !form) {
     return (
       <div className="py-12 text-center text-on-surface-variant text-body-sm">Loading attendance settings…</div>
     )
   }
 
+  const shiftOptions = [
+    { value: '', label: 'All shifts (company default)' },
+    ...shifts.map((s) => ({
+      value: String(s.id),
+      label: `${s.name} (${String(s.start_time).slice(0, 5)}–${String(s.end_time).slice(0, 5)})`,
+    })),
+  ]
+
   return (
     <div className="space-y-8 animate-fade-in">
-      {/* Metric cards only — append, do not change form layout */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MetricCard
           icon="how_to_reg"
@@ -81,35 +146,72 @@ export function AttendanceSettingsPage() {
         />
       </section>
 
-      <div className="flex justify-end">
-        {isEditing ? (
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                if (data) setForm({ ...data })
-                cancelEditing()
-              }}
-              disabled={save.isPending}
-            >
-              Discard
-            </Button>
-            <Button variant="primary" size="sm" isLoading={save.isPending} onClick={() => save.mutate()}>
-              Save Changes
-            </Button>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="min-w-[240px]">
+            <Select
+              value={selectedShiftId}
+              onChange={setSelectedShiftId}
+              options={shiftOptions}
+              placeholder="Select shift"
+              minWidthClass="min-w-[240px]"
+            />
           </div>
-        ) : (
+          <p className="text-body-sm text-on-surface-variant">
+            {selectedShiftId
+              ? `Settings scoped to ${activeShift?.name ?? 'shift'}`
+              : 'Showing combined / default settings across all shifts'}
+          </p>
+        </div>
+        <div className="flex gap-2">
           <Button
             variant="outline"
             size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>}
-            onClick={startEditing}
+            leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+            onClick={() => navigate({ to: '/admin/settings/shifts/new' })}
           >
-            Edit
+            Create Shift
           </Button>
-        )}
+          {isEditing ? (
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (selectedShiftId && activeShift) setForm(shiftToForm(activeShift))
+                  else if (shifts.length) setForm(aggregateShifts(shifts))
+                  else if (data) setForm({ ...data })
+                  cancelEditing()
+                }}
+                disabled={save.isPending}
+              >
+                Discard
+              </Button>
+              <Button variant="primary" size="sm" isLoading={save.isPending} onClick={() => save.mutate()}>
+                Save Changes
+              </Button>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>}
+              onClick={startEditing}
+            >
+              Edit
+            </Button>
+          )}
+        </div>
       </div>
+
+      {!shifts.length && (
+        <EmptyState
+          title="No shifts configured"
+          description="Create a shift to apply attendance rules per schedule. Until then, company defaults are shown."
+          actionLabel="Create Shift"
+          onAction={() => navigate({ to: '/admin/settings/shifts/new' })}
+        />
+      )}
 
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-12 lg:col-span-8 bv-surface card-hover p-6">
@@ -145,6 +247,22 @@ export function AttendanceSettingsPage() {
               )}
             </div>
           </div>
+          {!selectedShiftId && shifts.length > 1 && (
+            <div className="mt-6 border-t border-outline-variant pt-4">
+              <p className="text-label-sm text-on-surface-variant uppercase mb-2">All shifts</p>
+              <ul className="space-y-1 text-body-sm">
+                {shifts.map((s) => (
+                  <li key={s.id} className="flex justify-between gap-2">
+                    <span className="font-medium text-on-surface">{s.name}</span>
+                    <span className="text-on-surface-variant">
+                      {String(s.start_time).slice(0, 5)} – {String(s.end_time).slice(0, 5)} · grace{' '}
+                      {s.grace_late_minutes}m
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         <div className="col-span-12 lg:col-span-4 bv-surface card-hover p-6">
