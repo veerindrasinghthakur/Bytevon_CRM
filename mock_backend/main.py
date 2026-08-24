@@ -11,11 +11,20 @@ Run:
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from routes import admin, auth, health
+try:
+    from routes import admin, auth, health
+except ImportError as e:
+    raise SystemExit(
+        "Mock backend routes incomplete. Ensure routes/admin.py, auth.py, health.py exist.\n"
+        f"Original error: {e}"
+    ) from e
+
 from store import STORE_PATH, load
 
 app = FastAPI(
