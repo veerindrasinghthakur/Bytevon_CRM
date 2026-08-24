@@ -4,7 +4,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
-import { IconButton } from '@/shared/components/ui/IconButton'
+import { DateRangeFilter } from '@/shared/components/forms/DateRangeFilter'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import {
   QuickSection,
@@ -34,6 +34,34 @@ const actionDot: Record<string, string> = {
 }
 
 type AuditLog = (typeof auditLogs)[number]
+
+/** Parse mock timestamps like "Aug 14, 2026 10:22" into comparable pieces. */
+function parseAuditTimestamp(ts: string): { dateKey: string; minutes: number } | null {
+  const m = ts.match(
+    /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),\s+(\d{4})\s+(\d{1,2}):(\d{2})$/,
+  )
+  if (!m) return null
+  const months: Record<string, string> = {
+    Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
+    Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12',
+  }
+  const mon = months[m[1]]
+  const day = m[2].padStart(2, '0')
+  const year = m[3]
+  const hour = Number(m[4])
+  const min = Number(m[5])
+  return { dateKey: `${year}-${mon}-${day}`, minutes: hour * 60 + min }
+}
+
+function timeToMinutes(t: string): number | null {
+  if (!t) return null
+  const parts = t.split(':')
+  if (parts.length < 2) return null
+  const h = Number(parts[0])
+  const mi = Number(parts[1])
+  if (Number.isNaN(h) || Number.isNaN(mi)) return null
+  return h * 60 + mi
+}
 
 function AuditQuickContent({ log }: { log: AuditLog }) {
   return (
@@ -77,8 +105,31 @@ export function AuditLogsPage() {
   const [search, setSearch] = useState('')
   const [actionFilter, setActionFilter] = useState('All Actions')
   const [moduleFilter, setModuleFilter] = useState('All Modules')
+  const [dateRange, setDateRange] = useState({ from: '', to: '' })
+  const [timeFrom, setTimeFrom] = useState('')
+  const [timeTo, setTimeTo] = useState('')
+
+  const filtersActive =
+    Boolean(search.trim()) ||
+    actionFilter !== 'All Actions' ||
+    moduleFilter !== 'All Modules' ||
+    Boolean(dateRange.from) ||
+    Boolean(dateRange.to) ||
+    Boolean(timeFrom) ||
+    Boolean(timeTo)
+
+  const clearFilters = () => {
+    setSearch('')
+    setActionFilter('All Actions')
+    setModuleFilter('All Modules')
+    setDateRange({ from: '', to: '' })
+    setTimeFrom('')
+    setTimeTo('')
+  }
 
   const filtered = useMemo(() => {
+    const fromMin = timeToMinutes(timeFrom)
+    const toMin = timeToMinutes(timeTo)
     return auditLogs.filter((log) => {
       if (search) {
         const q = search.toLowerCase()
@@ -93,9 +144,19 @@ export function AuditLogsPage() {
       if (actionFilter !== 'All Actions' && !log.action.toLowerCase().includes(actionFilter.toLowerCase()))
         return false
       if (moduleFilter !== 'All Modules' && log.module !== moduleFilter) return false
+
+      const parsed = parseAuditTimestamp(log.timestamp)
+      if (parsed) {
+        if (dateRange.from && parsed.dateKey < dateRange.from) return false
+        if (dateRange.to && parsed.dateKey > dateRange.to) return false
+        if (fromMin != null && parsed.minutes < fromMin) return false
+        if (toMin != null && parsed.minutes > toMin) return false
+      } else if (dateRange.from || dateRange.to || timeFrom || timeTo) {
+        return false
+      }
       return true
     })
-  }, [search, actionFilter, moduleFilter])
+  }, [search, actionFilter, moduleFilter, dateRange, timeFrom, timeTo])
 
   const parentRef = useRef<HTMLDivElement>(null)
 
@@ -144,6 +205,10 @@ export function AuditLogsPage() {
               filters={{
                 action: actionFilter !== 'All Actions' ? actionFilter : undefined,
                 module: moduleFilter !== 'All Modules' ? moduleFilter : undefined,
+                dateFrom: dateRange.from || undefined,
+                dateTo: dateRange.to || undefined,
+                timeFrom: timeFrom || undefined,
+                timeTo: timeTo || undefined,
               }}
               selectedIds={selection.selectionMode ? Array.from(selection.selectedIds) : undefined}
               filenameStem="audit-logs"
@@ -159,7 +224,7 @@ export function AuditLogsPage() {
         <KpiCard icon="terminal" value="51" title="System Events" subtitle="Background jobs and automation." />
       </section>
 
-      <section className="bv-surface p-5">
+      <section className="bv-surface p-5 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <div className="flex flex-col gap-1.5">
             <label className="text-label-md text-on-surface" htmlFor="audit-search">
@@ -212,14 +277,45 @@ export function AuditLogsPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                setSearch('')
-                setActionFilter('All Actions')
-                setModuleFilter('All Modules')
-              }}
+              className="w-auto self-start min-w-[5.5rem]"
+              disabled={!filtersActive}
+              onClick={clearFilters}
             >
-              Clear Filters
+              Clear
             </Button>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-end gap-4 pt-1 border-t border-outline-variant/40">
+          <DateRangeFilter
+            value={dateRange}
+            onChange={setDateRange}
+            label="Date"
+            fromLabel="From"
+            toLabel="To"
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-label-sm text-on-surface-variant whitespace-nowrap">Time</span>
+            <label className="flex items-center gap-1.5">
+              <span className="text-label-sm text-on-surface-variant">From</span>
+              <input
+                type="time"
+                value={timeFrom}
+                onChange={(e) => setTimeFrom(e.target.value)}
+                className="px-2 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-sm text-on-surface outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                aria-label="Time from"
+              />
+            </label>
+            <label className="flex items-center gap-1.5">
+              <span className="text-label-sm text-on-surface-variant">To</span>
+              <input
+                type="time"
+                value={timeTo}
+                onChange={(e) => setTimeTo(e.target.value)}
+                className="px-2 py-2 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-sm text-on-surface outline-none focus:border-secondary focus:ring-1 focus:ring-secondary"
+                aria-label="Time to"
+              />
+            </label>
           </div>
         </div>
       </section>
@@ -241,7 +337,7 @@ export function AuditLogsPage() {
 
       <section className="bv-surface overflow-hidden">
         <div ref={parentRef} className="overflow-x-auto max-h-[640px] overflow-y-auto">
-          <table className="w-full text-left border-collapse min-w-[960px]">
+          <table className="w-full text-left border-collapse min-w-[880px]">
             <thead className="sticky top-0 z-10 bg-surface-container-low shadow-sm">
               <tr>
                 <th className="px-3 py-3 w-12 text-center">
@@ -263,13 +359,12 @@ export function AuditLogsPage() {
                 <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">Description</th>
                 <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">Module</th>
                 <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">IP</th>
-                <th className="px-6 py-3" />
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {paddingTop > 0 && (
                 <tr>
-                  <td colSpan={8} style={{ height: `${paddingTop}px` }} />
+                  <td colSpan={7} style={{ height: `${paddingTop}px` }} />
                 </tr>
               )}
               {virtualRows.map((virtualRow) => {
@@ -333,21 +428,12 @@ export function AuditLogsPage() {
                     </td>
                     <td className="px-6 py-4 text-body-sm text-on-surface-variant">{log.module}</td>
                     <td className="px-6 py-4 text-body-sm font-mono text-on-surface-variant">{log.ip}</td>
-                    <td
-                      className="px-6 py-4 text-right"
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <IconButton label={`View event ${log.id}`} size="sm" onClick={() => openAuditOverview(log)}>
-                        <span className="material-symbols-outlined text-[20px]">visibility</span>
-                      </IconButton>
-                    </td>
                   </tr>
                 )
               })}
               {paddingBottom > 0 && (
                 <tr>
-                  <td colSpan={8} style={{ height: `${paddingBottom}px` }} />
+                  <td colSpan={7} style={{ height: `${paddingBottom}px` }} />
                 </tr>
               )}
             </tbody>
@@ -358,7 +444,7 @@ export function AuditLogsPage() {
         )}
         {filtered.length > 0 && !selection.selectionMode && (
           <div className="px-6 py-3 border-t border-outline-variant text-label-sm text-on-surface-variant">
-            Showing {filtered.length} events · Hold a row 3s to multi-select
+            Showing {filtered.length} events · Hold a row 3s to multi-select · click row for overview
           </div>
         )}
       </section>
