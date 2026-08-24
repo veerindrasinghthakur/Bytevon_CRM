@@ -187,11 +187,8 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
     },
     onSuccess: (saved) => {
       void queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] })
-      if (mode === 'create') {
-        navigate({ to: '/admin/roles' } as any)
-      } else {
-        navigate({ to: '/admin/roles/$roleId', params: { roleId: saved.id } } as any)
-      }
+      // Always land on live role detail (not a static/permanent page)
+      navigate({ to: '/admin/roles/$roleId', params: { roleId: saved.id } } as any)
     },
   })
 

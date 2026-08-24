@@ -35,6 +35,7 @@ export function HolidaysListPage() {
     recurring_flag: true,
   })
   const [pickHolidayId, setPickHolidayId] = useState('')
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const allHolidaysQuery = useQuery({
     queryKey: ['organization', 'holidays', 'all'],
@@ -52,6 +53,7 @@ export function HolidaysListPage() {
 
   const createMut = useMutation({
     mutationFn: async () => {
+      setSaveError(null)
       if (mode === 'existing' && pickHolidayId) {
         const src = allHolidaysQuery.data?.items.find((h) => String(h.id) === pickHolidayId)
         if (!src) throw new Error('Holiday not found')
@@ -73,11 +75,15 @@ export function HolidaysListPage() {
       })
     },
     onSuccess: async () => {
+      // Match useHolidays query key shape: ['organization', 'holidays', { calendarId }]
       await qc.invalidateQueries({ queryKey: ['organization', 'holidays'] })
+      await qc.invalidateQueries({ queryKey: ['organization', 'holidays', { calendarId: id }] })
       setAdding(false)
       setForm({ name: '', date: '', holiday_type: 'NATIONAL', recurring_flag: true })
       setPickHolidayId('')
+      setSaveError(null)
     },
+    onError: (e: Error) => setSaveError(e.message || 'Failed to save holiday'),
   })
 
   if (isLoading || calQuery.isLoading) return <PageLoadingSkeleton />
@@ -105,7 +111,10 @@ export function HolidaysListPage() {
           variant="primary"
           size="sm"
           leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-          onClick={() => setAdding(true)}
+          onClick={() => {
+            setAdding(true)
+            setSaveError(null)
+          }}
         >
           Add Holiday
         </Button>
@@ -190,7 +199,14 @@ export function HolidaysListPage() {
           )}
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => setAdding(false)}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setAdding(false)
+                setSaveError(null)
+              }}
+            >
               Cancel
             </Button>
             <Button
@@ -202,8 +218,10 @@ export function HolidaysListPage() {
               Save holiday
             </Button>
           </div>
-          {createMut.isError && (
-            <p className="text-body-sm text-error">{(createMut.error as Error).message}</p>
+          {(saveError || createMut.isError) && (
+            <p className="text-body-sm text-error">
+              {saveError || (createMut.error as Error)?.message}
+            </p>
           )}
         </div>
       )}
