@@ -78,11 +78,49 @@ def _ensure() -> None:
              "eligibility": "All Employees", "eligibilityStyle": "bg-secondary/10 text-secondary"},
             {"name": "Sick Leave", "desc": "Medical and health related", "days": "10 Days",
              "eligibility": "All Employees", "eligibilityStyle": "bg-secondary/10 text-secondary"},
+            {"name": "Maternity Leave", "desc": "Parental support leave", "days": "90 Days",
+             "eligibility": "Female only", "eligibilityStyle": "bg-surface-container text-on-surface-variant"},
+            {"name": "Casual Leave", "desc": "Unplanned personal matters", "days": "5 Days",
+             "eligibility": "Full-time", "eligibilityStyle": "bg-secondary/10 text-secondary"},
         ])
     if not get_collection("leave_policies"):
-        set_collection("leave_policies", [])
+        set_collection("leave_policies", [
+            {"id": 1, "name": "Casual 2026", "leave_type": "CASUAL", "annual_entitlement": 12,
+             "carry_forward_limit": 3, "effective_from": "2026-01-01", "effective_to": None},
+            {"id": 2, "name": "Sick 2026", "leave_type": "SICK", "annual_entitlement": 10,
+             "carry_forward_limit": 0, "effective_from": "2026-01-01", "effective_to": None},
+            {"id": 3, "name": "Earned 2025", "leave_type": "EARNED", "annual_entitlement": 15,
+             "carry_forward_limit": 5, "effective_from": "2025-01-01", "effective_to": "2025-12-31"},
+        ])
     if not get_collection("leave_ledger"):
-        set_collection("leave_ledger", [])
+        set_collection("leave_ledger", [
+            {"id": 1, "employeeId": "1", "leave_type": "CASUAL", "transaction_type": "CREDIT",
+             "days": 12, "reference_type": "POLICY", "created_at": "2026-01-01"},
+            {"id": 2, "employeeId": "1", "leave_type": "CASUAL", "transaction_type": "DEBIT",
+             "days": -2, "reference_type": "LEAVE_REQUEST", "created_at": "2026-03-12"},
+            {"id": 3, "employeeId": "1", "leave_type": "SICK", "transaction_type": "CREDIT",
+             "days": 10, "reference_type": "POLICY", "created_at": "2026-01-01"},
+        ])
+    if not get_collection("holiday_calendars"):
+        set_collection("holiday_calendars", [
+            {"id": 1, "name": "India Public Holidays 2026", "region": "IN", "year": 2026},
+            {"id": 2, "name": "US Federal Holidays 2026", "region": "US", "year": 2026},
+        ])
+    if not get_collection("holidays"):
+        set_collection("holidays", [
+            {"id": 1, "holiday_calendar_id": 1, "name": "Republic Day", "date": "2026-01-26", "is_optional": False},
+            {"id": 2, "holiday_calendar_id": 1, "name": "Independence Day", "date": "2026-08-15", "is_optional": False},
+            {"id": 3, "holiday_calendar_id": 2, "name": "New Year's Day", "date": "2026-01-01", "is_optional": False},
+        ])
+    if not get_obj("organization_settings"):
+        profile = get_obj("organization_profile") or {}
+        set_obj("organization_settings", {
+            "company_name": profile.get("name") or "Bytevon",
+            "head_office_location_id": 1,
+            "default_timezone": "Asia/Kolkata",
+            "default_currency": "INR",
+            "logo_reference": None,
+        })
     positions = get_collection("positions")
     changed = False
     for p in positions:
@@ -106,6 +144,9 @@ def metrics_hub():
         "activeSessions": m.get("activeSessions", 12),
         "auditEventsToday": m.get("auditEventsToday", 20),
         "configHealth": m.get("configHealth", "Good"),
+        "securityScore": m.get("securityScore", 94),
+        "mfaAdoption": m.get("mfaAdoption", 0),
+        "openAlerts": m.get("openAlerts", 0),
         "activeRoles": sum(1 for r in roles if r.get("status") == "Active"),
         "archivedRoles": sum(1 for r in roles if r.get("status") == "Archived"),
         "activeUsers": sum(1 for u in users if u.get("status") == "Active"),
@@ -177,7 +218,13 @@ def leave_policies():
 @router.get("/admin/leave/ledger")
 def leave_ledger(employeeId: Optional[str] = None):
     _ensure()
-    return get_collection("leave_ledger")
+    items = list(get_collection("leave_ledger"))
+    if employeeId is not None:
+        items = [
+            x for x in items
+            if str(x.get("employeeId") or x.get("employee_id") or "") == str(employeeId)
+        ]
+    return items
 
 
 @router.get("/admin/settings/organization-profile")
@@ -196,6 +243,7 @@ def put_org_profile(body: dict[str, Any] = Body(default={})):
 
 @router.get("/organization/settings")
 def get_org_settings():
+    _ensure()
     return get_obj("organization_settings") or {
         "company_name": (get_obj("organization_profile") or {}).get("name") or "Bytevon",
         "head_office_location_id": 1,
@@ -207,8 +255,10 @@ def get_org_settings():
 
 @router.patch("/organization/settings")
 def patch_org_settings(body: dict[str, Any] = Body(default={})):
+    _ensure()
     cur = get_obj("organization_settings") or {}
     cur.update(body)
+    cur["updated_at"] = _now_iso()
     set_obj("organization_settings", cur)
     return cur
 
@@ -371,12 +421,14 @@ def list_working_weeks():
 
 @router.get("/organization/holiday-calendars")
 def list_holiday_calendars():
+    _ensure()
     items = get_collection("holiday_calendars") or []
     return {"items": items, "total": len(items)}
 
 
 @router.get("/organization/holidays")
 def list_holidays(calendarId: Optional[int] = None):
+    _ensure()
     items = get_collection("holidays") or []
     if calendarId is not None:
         items = [h for h in items if h.get("holiday_calendar_id") == calendarId]
