@@ -61,7 +61,6 @@ export interface AdminKpis {
   openAlerts: number
 }
 
-/** Leave settings UI row (display labels from settings page) */
 export interface LeaveTypeSettingRow {
   name: string
   desc: string
@@ -101,7 +100,6 @@ export interface OfficeLocation {
   postal: string
 }
 
-/** Organisation profile — company identity (settings server state) */
 export interface OrganizationProfile {
   name: string
   legal: string
@@ -113,7 +111,6 @@ export interface OrganizationProfile {
   description: string
 }
 
-/** Attendance company policy (settings server state) */
 export interface AttendanceSettings {
   shiftStart: string
   shiftEnd: string
@@ -123,19 +120,11 @@ export interface AttendanceSettings {
   allowRemoteCheckIn: boolean
 }
 
-/** Leave accrual company policy (settings server state) */
 export interface LeaveAccrualPolicy {
   maxCarryOverDays: number
   minimumNoticeDays: number
 }
 
-/**
- * RBAC catalog — modules = resources.name from DB (seeded).
- * Actions = Action enum values from backend (seeded permissions).
- * Do NOT hardcode for production matrix; fetch via listPermissionCatalog().
- */
-
-/** Backend Action enum (aligned with app.core.db.enums.Action) */
 export type RolePermissionAction =
   | 'VIEW'
   | 'CREATE'
@@ -158,11 +147,8 @@ export interface RbacPermission {
   action: RolePermissionAction
 }
 
-/** Catalog used to build the role permission matrix UI */
 export interface PermissionCatalog {
-  /** Resource names (modules) — order stable for matrix columns/rows */
   modules: string[]
-  /** Distinct actions present across permissions (usually full Action enum) */
   actions: RolePermissionAction[]
   resources: RbacResource[]
   permissions: RbacPermission[]
@@ -170,9 +156,6 @@ export interface PermissionCatalog {
 
 export type RolePermissionMatrix = Record<string, Record<string, boolean>>
 
-// ── Admin Users API ──────────────────────────────────────────────────
-
-/** List item for admin users table (from api/users.ts) */
 export interface AdminUserListItem {
   id: number
   employmentId: number
@@ -182,11 +165,12 @@ export interface AdminUserListItem {
   department: string
   status: 'Active' | 'Inactive' | 'Locked'
   lastLogin: string
+  /** ISO timestamp for date-range filters; null if never logged in */
+  lastLoginAt: string | null
   initials: string
   employeeCode: string
 }
 
-/** Employment record without login (available for new user creation) */
 export interface EmploymentWithoutLogin {
   employmentId: number
   employeeCode: string
@@ -196,9 +180,6 @@ export interface EmploymentWithoutLogin {
   joiningDate: string
 }
 
-// ── Audit API ────────────────────────────────────────────────────────
-
-/** Input for recording audit events (from api/audit.ts) */
 export interface RecordAuditInput {
   action: string
   target: string
@@ -208,9 +189,6 @@ export interface RecordAuditInput {
   ip?: string
 }
 
-// ── Metrics API ──────────────────────────────────────────────────────
-
-/** Admin hub metrics aggregates (from api/metrics.ts) */
 export interface AdminHubMetrics {
   users: number
   roles: number
@@ -222,7 +200,6 @@ export interface AdminHubMetrics {
   employees: number
 }
 
-/** Metrics for roles list page (from api/metrics.ts) */
 export interface RoleListMetrics {
   totalRoles: number
   activeRoles: number
@@ -230,7 +207,6 @@ export interface RoleListMetrics {
   archivedRoles: number
 }
 
-/** Metrics for leave admin (from api/metrics.ts) */
 export interface LeaveAdminMetrics {
   leaveTypes: number
   pendingRequests: number
@@ -238,7 +214,6 @@ export interface LeaveAdminMetrics {
   avgBalanceDays: number
 }
 
-/** Metrics for attendance admin (from api/metrics.ts) */
 export interface AttendanceAdminMetrics {
   presentToday: number
   lateToday: number

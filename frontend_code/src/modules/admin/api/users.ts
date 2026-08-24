@@ -65,6 +65,7 @@ export async function listAdminUsers(params?: { search?: string }) {
             minute: '2-digit',
           })
         : 'Never',
+      lastLoginAt: login.last_login_at ?? null,
       initials: initials(name),
       employeeCode: emp?.employee_code ?? '—',
     }
@@ -159,7 +160,6 @@ export async function createUserLogin(input: {
   }
   logins.push(row)
 
-  // Assign role (replace prior non-system employee role for this employment if only Employee was set)
   const existingRoles = db.employee_roles.filter((er) => er.employment_id === input.employmentId)
   const hasRole = existingRoles.some((er) => er.role_id === input.roleId)
   if (!hasRole) {
@@ -176,7 +176,12 @@ export async function createUserLogin(input: {
 
 export async function updateUserLogin(
   loginId: number,
-  patch: Partial<Pick<LoginUserRow, 'email' | 'status' | 'temporary_password' | 'locked_until' | 'failed_attempt_count'>>,
+  patch: Partial<
+    Pick<
+      LoginUserRow,
+      'email' | 'status' | 'temporary_password' | 'locked_until' | 'failed_attempt_count'
+    >
+  >,
 ): Promise<LoginUserRow> {
   await delay(300)
   const logins = ensureLoginUsers()
