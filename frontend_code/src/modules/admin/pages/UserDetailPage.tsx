@@ -14,8 +14,11 @@ import { Action, ResourceName } from '@/shared/schema'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { uploadUserAvatar } from '@/modules/profile/api/profile'
 import {
-  archiveUser,
+  activateUser,
+  archiveUserCredentials,
+  deactivateUser,
   getUserLogin,
+  listDepartments,
   listRoles,
   lockUser,
   unlockUser,
@@ -40,6 +43,11 @@ export function UserDetailPage() {
     queryFn: listRoles,
   })
 
+  const deptsQuery = useQuery({
+    queryKey: ['admin', 'departments', 'options'],
+    queryFn: listDepartments,
+  })
+
   const display = detailQuery.data?.display
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
 
@@ -47,6 +55,7 @@ export function UserDetailPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [department, setDepartment] = useState('')
+  const [departmentId, setDepartmentId] = useState('')
   const [role, setRole] = useState('')
   const [roleId, setRoleId] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
@@ -65,9 +74,16 @@ export function UserDetailPage() {
     setEmail(display.email)
     setDepartment(display.department)
     setRole(display.role)
-    const match = rolesQuery.data?.find((r) => r.name === display.role)
-    setRoleId(match ? String(match.id) : '')
-  }, [display, rolesQuery.data])
+    const matchRole = rolesQuery.data?.find((r) => r.name === display.role)
+    setRoleId(matchRole ? String(matchRole.id) : '')
+    const deptId =
+      (display as { departmentId?: number | null }).departmentId != null
+        ? String((display as { departmentId?: number | null }).departmentId)
+        : deptsQuery.data?.find((d) => d.name === display.department)?.id != null
+          ? String(deptsQuery.data.find((d) => d.name === display.department)!.id)
+          : ''
+    setDepartmentId(deptId)
+  }, [display, rolesQuery.data, deptsQuery.data])
 
   const roleOptions =
     rolesQuery.data?.map((r) => ({
@@ -76,12 +92,19 @@ export function UserDetailPage() {
       meta: r.description ?? undefined,
     })) ?? []
 
+  const deptOptions =
+    deptsQuery.data?.map((d) => ({
+      value: String(d.id),
+      label: d.name,
+    })) ?? []
+
   const saveMutation = useMutation({
     mutationFn: () =>
       updateUserLogin(loginId, {
         email,
         name,
-        department,
+        department: deptOptions.find((o) => o.value === departmentId)?.label ?? department,
+        departmentId: departmentId ? Number(departmentId) : undefined,
         role: roleOptions.find((o) => o.value === roleId)?.label ?? role,
       }),
     onSuccess: () => {
@@ -102,10 +125,27 @@ export function UserDetailPage() {
     },
   })
 
-  const archiveMutation = useMutation({
-    mutationFn: () => archiveUser(loginId),
+  const deactivateMutation = useMutation({
+    mutationFn: () => deactivateUser(loginId),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ['admin', 'users'] })
+      setStatus('Inactive')
+    },
+  })
+
+  const activateMutation = useMutation({
+    mutationFn: () => activateUser(loginId),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['admin', 'users'] })
+      setStatus('Active')
+    },
+  })
+
+  const hardArchiveMutation = useMutation({
+    mutationFn: () => archiveUserCredentials(loginId),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['admin', 'users'] })
+      await qc.invalidateQueries({ queryKey: ['admin', 'employments-without-login'] })
       navigate({ to: '/admin/users' })
     },
   })
@@ -131,8 +171,15 @@ export function UserDetailPage() {
       setEmail(display.email)
       setDepartment(display.department)
       setRole(display.role)
-      const match = rolesQuery.data?.find((r) => r.name === display.role)
-      setRoleId(match ? String(match.id) : '')
+      const matchRole = rolesQuery.data?.find((r) => r.name === display.role)
+      setRoleId(matchRole ? String(matchRole.id) : '')
+      const deptId =
+        (display as { departmentId?: number | null }).departmentId != null
+          ? String((display as { departmentId?: number | null }).departmentId)
+          : deptsQuery.data?.find((d) => d.name === display.department)?.id != null
+            ? String(deptsQuery.data.find((d) => d.name === display.department)!.id)
+            : ''
+      setDepartmentId(deptId)
     }
     cancelEditing()
   }
@@ -160,6 +207,7 @@ export function UserDetailPage() {
   }
 
   const isLocked = status === 'Locked'
+  const isInactive = status === 'Inactive'
   const initials = display.initials
 
   return (
@@ -179,6 +227,31 @@ export function UserDetailPage() {
           <Can action={Action.UNLOCK} resource={ResourceName.USER}>
             <Button variant="primary" size="sm" onClick={() => setLockOpen(true)}>
               Unlock
+            </Button>
+          </Can>
+        </div>
+      )}
+
+      {isInactive && !isLocked && (
+        <div
+          className="flex items-start gap-3 rounded-lg border border-outline-variant bg-surface-container px-4 py-3 text-body-sm"
+          role="status"
+        >
+          <span className="material-symbols-outlined text-on-surface-variant shrink-0">person_off</span>
+          <div className="flex-1">
+            <p className="font-semibold text-on-background">Account deactivated</p>
+            <p className="text-on-surface-variant">
+              Login is disabled. Activate to restore sign-in, or archive to remove credentials.
+            </p>
+          </div>
+          <Can action={Action.UPDATE} resource={ResourceName.USER}>
+            <Button
+              variant="primary"
+              size="sm"
+              isLoading={activateMutation.isPending}
+              onClick={() => activateMutation.mutate()}
+            >
+              Activate
             </Button>
           </Can>
         </div>
@@ -245,14 +318,40 @@ export function UserDetailPage() {
               </Button>
             </Can>
           )}
+
+          <Can action={Action.UPDATE} resource={ResourceName.USER}>
+            {isInactive ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-secondary text-secondary hover:bg-secondary/10"
+                isLoading={activateMutation.isPending}
+                onClick={() => activateMutation.mutate()}
+              >
+                Activate
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                isLoading={deactivateMutation.isPending}
+                onClick={() => deactivateMutation.mutate()}
+              >
+                Deactivate
+              </Button>
+            )}
+          </Can>
+
           <Can action={Action.DELETE} resource={ResourceName.USER}>
             <ArchiveButton
               entityLabel={name}
               mode="archive"
-              isLoading={archiveMutation.isPending}
-              onConfirm={() => archiveMutation.mutateAsync()}
+              label="Archive"
+              isLoading={hardArchiveMutation.isPending}
+              onConfirm={() => hardArchiveMutation.mutateAsync()}
             />
           </Can>
+
           {isEditing ? (
             <>
               <Button variant="outline" size="sm" onClick={handleCancelEdit}>
@@ -279,12 +378,26 @@ export function UserDetailPage() {
             <Field label="User ID" value={String(display.id)} />
             <EditableField label="Full Name" value={name} editing={isEditing} onChange={setName} />
             <EditableField label="Email" value={email} editing={isEditing} onChange={setEmail} />
-            <EditableField
-              label="Department"
-              value={department}
-              editing={isEditing}
-              onChange={setDepartment}
-            />
+            {isEditing ? (
+              <div className="mb-3">
+                <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">
+                  Department
+                </p>
+                <SearchableSelect
+                  options={deptOptions}
+                  value={departmentId}
+                  onChange={(v) => {
+                    setDepartmentId(v)
+                    const opt = deptOptions.find((o) => o.value === v)
+                    if (opt) setDepartment(opt.label)
+                  }}
+                  placeholder="Search departments…"
+                  emptyLabel="No departments match"
+                />
+              </div>
+            ) : (
+              <Field label="Department" value={department} />
+            )}
             <Field label="Last Login" value={display.lastLogin} />
             <Field label="Employee code" value={display.employeeCode} />
           </Card>
@@ -328,6 +441,12 @@ export function UserDetailPage() {
             >
               {status}
             </span>
+            <p className="text-body-sm text-on-surface-variant mt-3">
+              <strong>Deactivate</strong> keeps credentials but blocks sign-in (reversible).
+              <br />
+              <strong>Archive</strong> removes login credentials; the employment appears under users
+              without credentials.
+            </p>
           </Card>
           <Card title="Quick Actions">
             <div className="flex flex-col gap-2">

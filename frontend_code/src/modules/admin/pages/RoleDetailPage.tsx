@@ -1,31 +1,62 @@
 import { useNavigate, useParams } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
+import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
-import { adminRoles, adminUsers } from '../data/mock'
+import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { getAdminRole } from '../api/roles'
+import { listAdminUsers } from '../api/users'
 import { cn } from '@/shared/lib/cn'
 
 export function RoleDetailPage() {
   const { roleId } = useParams({ strict: false }) as { roleId?: string }
   const navigate = useNavigate()
-  const role = adminRoles.find((r) => r.id === roleId) ?? adminRoles[0]
 
-  const assignees = adminUsers.filter(
-    (u) => u.role.toLowerCase().includes(role.name.toLowerCase().split(' ')[0]) || role.name === 'Employee'
-  )
-  const assigned = assignees.length > 0 ? assignees : adminUsers.slice(0, Math.min(role.usersCount, 4))
+  const roleQuery = useQuery({
+    queryKey: ['admin', 'roles', roleId],
+    queryFn: () => getAdminRole(roleId as string),
+    enabled: Boolean(roleId),
+  })
+
+  const usersQuery = useQuery({
+    queryKey: ['admin', 'users', 'list'],
+    queryFn: () => listAdminUsers(),
+  })
+
+  if (roleQuery.isLoading) return <PageLoadingSkeleton />
+  if (roleQuery.isError || !roleQuery.data) {
+    return (
+      <ErrorState
+        title="Could not load role"
+        description={(roleQuery.error as Error)?.message ?? 'Role not found'}
+        onRetry={() => void roleQuery.refetch()}
+        onBack={() => navigate({ to: '/admin/roles' })}
+      />
+    )
+  }
+
+  const role = roleQuery.data
+
+  const assigned =
+    usersQuery.data?.items.filter((u) => {
+      if (!role.name) return false
+      const roleToken = role.name.toLowerCase().split(' ')[0]
+      return (
+        u.role.toLowerCase() === role.name.toLowerCase() ||
+        u.role.toLowerCase().includes(roleToken)
+      )
+    }) ?? []
+
+  const goDuplicate = () =>
+    navigate({
+      to: '/admin/roles/new',
+      search: { duplicateFrom: role.id },
+    } as any)
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <button
-        type="button"
-        onClick={() => navigate({ to: '/admin/roles' })}
-        className="inline-flex items-center gap-2 text-secondary hover:text-primary transition-colors group"
-      >
-        <span className="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">
-          arrow_back
-        </span>
-        <span className="text-label-md font-medium">Back to Roles & Permissions</span>
-      </button>
+      <BackButton to="/admin/roles" label="Back to Roles & Permissions" />
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
@@ -35,7 +66,7 @@ export function RoleDetailPage() {
                 'text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded',
                 role.category === 'Core Role'
                   ? 'bg-secondary/10 text-secondary'
-                  : 'bg-surface-container text-on-surface-variant'
+                  : 'bg-surface-container text-on-surface-variant',
               )}
             >
               {role.category}
@@ -43,7 +74,9 @@ export function RoleDetailPage() {
             <span
               className={cn(
                 'text-[10px] font-bold uppercase px-2 py-0.5 rounded-full',
-                role.status === 'Active' ? 'bg-green-100 text-green-700' : 'bg-surface-container text-on-surface-variant'
+                role.status === 'Active'
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-surface-container text-on-surface-variant',
               )}
             >
               {role.status}
@@ -55,7 +88,8 @@ export function RoleDetailPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => navigate({ to: '/admin/roles/new' })}
+            leftIcon={<span className="material-symbols-outlined text-[18px]">content_copy</span>}
+            onClick={goDuplicate}
           >
             Duplicate
           </Button>
@@ -141,53 +175,64 @@ export function RoleDetailPage() {
           <span className="text-label-sm text-on-surface-variant">{assigned.length} shown</span>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-surface-container-low">
-              <tr>
-                <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase">Employee</th>
-                <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase">Department</th>
-                <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase">Status</th>
-                <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase">Last Login</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-outline-variant">
-              {assigned.map((u) => (
-                <tr
-                  key={u.id}
-                  className="zebra-row cursor-pointer"
-                  onClick={() => navigate({ to: '/admin/users/$userId', params: { userId: u.id } })}
-                >
-                  <td className="px-6 py-3">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-label-sm font-bold">
-                        {u.initials}
-                      </div>
-                      <div>
-                        <p className="font-medium text-on-background">{u.name}</p>
-                        <p className="text-body-sm text-on-surface-variant">{u.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-3 text-on-surface-variant">{u.department}</td>
-                  <td className="px-6 py-3">
-                    <span
-                      className={cn(
-                        'px-2 py-0.5 rounded-full text-[10px] font-bold',
-                        u.status === 'Active'
-                          ? 'bg-green-100 text-green-700'
-                          : u.status === 'Locked'
-                            ? 'bg-red-100 text-red-700'
-                            : 'bg-surface-container text-on-surface-variant'
-                      )}
-                    >
-                      {u.status}
-                    </span>
-                  </td>
-                  <td className="px-6 py-3 text-on-surface-variant">{u.lastLogin}</td>
+          {assigned.length === 0 ? (
+            <p className="p-8 text-center text-on-surface-variant text-body-sm">
+              No users currently matched to this role name.
+            </p>
+          ) : (
+            <table className="w-full text-left text-sm">
+              <thead className="bg-surface-container-low">
+                <tr>
+                  <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase">Employee</th>
+                  <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase">Department</th>
+                  <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase">Status</th>
+                  <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase">Last Login</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-outline-variant">
+                {assigned.map((u) => (
+                  <tr
+                    key={u.id}
+                    className="zebra-row cursor-pointer"
+                    onClick={() =>
+                      navigate({
+                        to: '/admin/users/$userId',
+                        params: { userId: String(u.id) },
+                      })
+                    }
+                  >
+                    <td className="px-6 py-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-label-sm font-bold">
+                          {u.initials}
+                        </div>
+                        <div>
+                          <p className="font-medium text-on-background">{u.name}</p>
+                          <p className="text-body-sm text-on-surface-variant">{u.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-3 text-on-surface-variant">{u.department}</td>
+                    <td className="px-6 py-3">
+                      <span
+                        className={cn(
+                          'px-2 py-0.5 rounded-full text-[10px] font-bold',
+                          u.status === 'Active'
+                            ? 'bg-green-100 text-green-700'
+                            : u.status === 'Locked'
+                              ? 'bg-red-100 text-red-700'
+                              : 'bg-surface-container text-on-surface-variant',
+                        )}
+                      >
+                        {u.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3 text-on-surface-variant">{u.lastLogin}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>
