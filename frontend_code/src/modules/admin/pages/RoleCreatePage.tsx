@@ -1,5 +1,9 @@
+import { useSearch } from '@tanstack/react-router'
 import { RoleFormPage } from './RoleFormPage'
 
 export function RoleCreatePage() {
-  return <RoleFormPage mode="create" />
+  // optional ?duplicateFrom=<roleId>
+  const search = useSearch({ strict: false }) as { duplicateFrom?: string }
+  const duplicateFromId = search?.duplicateFrom
+  return <RoleFormPage mode="create" duplicateFromId={duplicateFromId} />
 }
