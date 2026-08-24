@@ -6,12 +6,12 @@ import type { ListToolbarProps } from '@/shared/types'
 /**
  * Shared list filter bar.
  *
- * Layout: [Search] · [filter controls as children] · [Refresh] · [Clear]
+ * Layout (single row): [Search] · [filter controls] · [Refresh] · [Clear]
+ * If the row is tight, search + filter boxes shrink (truncate) instead of wrapping.
  *
  * - **Clear** — resets filters only (does not reload data).
  * - **Refresh** — reloads rows (refetch / reload).
- * Both sit at the right of the filter controls when handlers are provided.
- * Do not put result counts ("Showing n of m") inside this bar — put them under the table/list.
+ * Do not put result counts ("Showing n of m") inside this bar.
  */
 export function ListToolbar({
   searchValue,
@@ -60,12 +60,13 @@ export function ListToolbar({
   return (
     <div
       className={cn(
-        'flex flex-wrap items-center gap-3 bg-surface-container-low p-4 rounded-xl border border-outline-variant',
+        // Single line always — boxes shrink when width is exceeded
+        'flex flex-nowrap items-center gap-2 bg-surface-container-low px-3 py-2.5 rounded-xl border border-outline-variant overflow-x-auto',
         className,
       )}
     >
-      <div className="relative min-w-[200px] flex-1 max-w-md">
-        <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
+      <div className="relative min-w-[8rem] max-w-[16rem] flex-1 basis-[10rem] shrink">
+        <span className="material-symbols-outlined absolute left-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">
           search
         </span>
         <input
@@ -73,27 +74,31 @@ export function ListToolbar({
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder={searchPlaceholder}
           className={cn(
-            'w-full pl-10 pr-4 py-2',
+            'w-full min-w-0 pl-9 pr-3 py-1.5',
             'bg-surface-container-lowest border border-outline-variant rounded-lg',
-            'text-body-md text-on-surface placeholder:text-on-surface-variant/50',
+            'text-body-sm text-on-surface placeholder:text-on-surface-variant/50',
             'transition-colors duration-200',
             'focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary',
           )}
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 ml-auto">
-        {filters}
-        {actionsSlot}
+      <div className="flex flex-nowrap items-center gap-1.5 min-w-0 flex-1 justify-end">
+        {/* Filter controls shrink; keep actions + refresh/clear from collapsing away */}
+        <div className="flex flex-nowrap items-center gap-1.5 min-w-0 overflow-hidden [&>*]:min-w-0 [&>*]:shrink [&>*]:max-w-[10rem]">
+          {filters}
+        </div>
+        {actionsSlot ? (
+          <div className="flex flex-nowrap items-center gap-1.5 shrink-0">{actionsSlot}</div>
+        ) : null}
 
-        {/* Refresh first, Clear to its right (product standard) */}
         {showRefresh && (
           <button
             type="button"
             onClick={() => void handleRefresh()}
             disabled={refreshing}
             className={cn(
-              'p-2 bg-surface-container-lowest border border-outline-variant rounded-lg',
+              'p-1.5 shrink-0 bg-surface-container-lowest border border-outline-variant rounded-lg',
               'text-on-surface-variant hover:text-secondary hover:bg-surface-container',
               'transition-colors duration-200 disabled:opacity-60',
             )}
@@ -102,7 +107,7 @@ export function ListToolbar({
           >
             <span
               className={cn(
-                'material-symbols-outlined text-[20px]',
+                'material-symbols-outlined text-[18px]',
                 refreshing && 'animate-spin',
               )}
             >
@@ -118,10 +123,11 @@ export function ListToolbar({
             onClick={() => void handleClear()}
             disabled={clearing || (filtersActive === false && !clearing)}
             title="Clear filters"
+            className="shrink-0 !px-2"
             leftIcon={
               <span
                 className={cn(
-                  'material-symbols-outlined text-[18px]',
+                  'material-symbols-outlined text-[16px]',
                   clearing && 'animate-spin',
                 )}
               >
@@ -129,7 +135,7 @@ export function ListToolbar({
               </span>
             }
           >
-            {clearing ? 'Clearing…' : 'Clear'}
+            {clearing ? '…' : 'Clear'}
           </Button>
         )}
       </div>
