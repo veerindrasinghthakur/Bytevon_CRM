@@ -43,6 +43,7 @@ const WorkingWeeksPage = lazyPage(() => import('./pages/organization/WorkingWeek
 const HolidayCalendarsPage = lazyPage(() => import('./pages/organization/HolidayCalendarsPage'), 'HolidayCalendarsPage')
 const HolidaysListPage = lazyPage(() => import('./pages/organization/HolidaysListPage'), 'HolidaysListPage')
 const PositionsListPage = lazyPage(() => import('./pages/organization/PositionsListPage'), 'PositionsListPage')
+const PositionDetailPage = lazyPage(() => import('./pages/organization/PositionDetailPage'), 'PositionDetailPage')
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createAdminSettingsLayoutRoute(appLayoutRoute: any) {
@@ -66,6 +67,8 @@ export function createAdminOrganizationSettingsRoutes(settingsLayoutRoute: any) 
     createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/holidays', component: HolidayCalendarsPage, validateSearch: () => ({}) }),
     createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/holidays/$calendarId', component: HolidaysListPage, validateSearch: () => ({}) }),
     createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/positions', component: PositionsListPage, validateSearch: () => ({}) }),
+    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/positions/new', component: PositionDetailPage, validateSearch: () => ({}) }),
+    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/positions/$positionId', component: PositionDetailPage, validateSearch: () => ({}) }),
   ]
 }
 
@@ -119,7 +122,6 @@ export function createAdminSettingsCoreRoutes(settingsLayoutRoute: any) {
     }),
   ]
 
-  // Import organization settings routes (merged from organization module)
   const organizationSettingsRoutes = createAdminOrganizationSettingsRoutes(settingsLayoutRoute)
 
   return [...adminSettingsRoutes, ...organizationSettingsRoutes]
@@ -190,7 +192,6 @@ export function createAdminRoutes(appLayoutRoute: any) {
       component: RoleEditPage,
       validateSearch: () => ({}),
     }),
-    // Organization redirects (removed - routes now in settings)
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/admin/organization',
@@ -198,7 +199,6 @@ export function createAdminRoutes(appLayoutRoute: any) {
         throw redirect({ to: '/admin/settings' } as any)
       },
     }),
-    // Attendance and leave layout
     attendanceLayout.addChildren([
       createRoute({
         getParentRoute: () => attendanceLayout,
