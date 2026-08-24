@@ -76,7 +76,10 @@ def create_role(body: dict[str, Any] = Body(default={})):
 
 @router.patch("/rbac/roles/{role_id}")
 @router.patch("/admin/roles/{role_id}")
+@router.put("/rbac/roles/{role_id}")
+@router.put("/admin/roles/{role_id}")
 def update_role(role_id: str, body: dict[str, Any] = Body(default={})):
+    """Edit role — PATCH/PUT. Persists to data/store.json."""
     roles = get_collection("roles")
     r = next((x for x in roles if str(x.get("id")) == str(role_id)), None)
     if not r:
@@ -86,6 +89,7 @@ def update_role(role_id: str, body: dict[str, Any] = Body(default={})):
             r[k] = v
     r["updated"] = "just now"
     set_collection("roles", roles)
+    _append_audit("Role updated", r.get("name") or role_id, "Roles")
     return r
 
 
@@ -111,6 +115,110 @@ def list_users(search: Optional[str] = None, status: Optional[str] = None):
         "locked": sum(1 for u in items if u.get("status") == "Locked"),
         "active": sum(1 for u in items if u.get("status") == "Active"),
     }
+
+
+@router.get("/admin/users/{user_id}")
+def get_user(user_id: str):
+    u = next((x for x in get_collection("admin_users") if str(x.get("id")) == str(user_id)), None)
+    if not u:
+        return {"detail": "not found"}
+    return u
+
+
+@router.post("/admin/users")
+def create_user(body: dict[str, Any] = Body(default={})):
+    """Create admin user — persists to data/store.json."""
+    users = get_collection("admin_users")
+    counters = get_obj("counters") or {}
+    n = counters.get("next_user") or (len(users) + 1)
+    counters["next_user"] = n + 1
+    set_obj("counters", counters)
+
+    email = (body.get("email") or f"user{n}@bytevon.local").strip().lower()
+    if any((u.get("email") or "").lower() == email for u in users):
+        return {"detail": "email already exists", "email": email}
+
+    uid = body.get("id") or f"U-{n:04d}"
+    name = body.get("name") or body.get("full_name") or f"User {n}"
+    roles = body.get("roles") or body.get("roleNames") or []
+    if isinstance(roles, str):
+        roles = [roles]
+
+    row = {
+        "id": uid,
+        "name": name,
+        "email": email,
+        "status": body.get("status") or "Active",
+        "roles": roles,
+        "department": body.get("department") or body.get("departmentName") or "",
+        "lastActive": "just now",
+        "created": datetime.utcnow().strftime("%b %d, %Y"),
+        "phone": body.get("phone") or "",
+        "employment_id": body.get("employment_id"),
+    }
+    users.append(row)
+    set_collection("admin_users", users)
+
+    # Optional login credentials for mock auth
+    if body.get("password"):
+        auth_users = get_collection("auth_users")
+        auth_users.append({
+            "email": email,
+            "password": body.get("password"),
+            "login_id": n,
+            "name": name,
+            "employment_id": body.get("employment_id") or n,
+            "roles": roles,
+        })
+        set_collection("auth_users", auth_users)
+
+    _append_audit("User created", name, "Users")
+    return row
+
+
+@router.patch("/admin/users/{user_id}")
+@router.put("/admin/users/{user_id}")
+def update_user(user_id: str, body: dict[str, Any] = Body(default={})):
+    users = get_collection("admin_users")
+    u = next((x for x in users if str(x.get("id")) == str(user_id)), None)
+    if not u:
+        return {"detail": "not found"}
+    for k, v in body.items():
+        if k != "id":
+            u[k] = v
+    u["lastActive"] = "just now"
+    set_collection("admin_users", users)
+    _append_audit("User updated", u.get("name") or user_id, "Users")
+    return u
+
+
+@router.post("/admin/users/{user_id}/lock")
+def lock_user(user_id: str):
+    users = get_collection("admin_users")
+    u = next((x for x in users if str(x.get("id")) == str(user_id)), None)
+    if not u:
+        return {"detail": "not found"}
+    u["status"] = "Locked"
+    set_collection("admin_users", users)
+    return u
+
+
+@router.post("/admin/users/{user_id}/unlock")
+def unlock_user(user_id: str):
+    users = get_collection("admin_users")
+    u = next((x for x in users if str(x.get("id")) == str(user_id)), None)
+    if not u:
+        return {"detail": "not found"}
+    u["status"] = "Active"
+    set_collection("admin_users", users)
+    return u
+
+
+@router.delete("/admin/users/{user_id}")
+def delete_user(user_id: str):
+    users = get_collection("admin_users")
+    set_collection("admin_users", [x for x in users if str(x.get("id")) != str(user_id)])
+    return {"ok": True}
 
 
 @router.get("/rbac/resources")
