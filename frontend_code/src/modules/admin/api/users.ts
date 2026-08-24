@@ -1,13 +1,20 @@
 /**
  * Admin users / logins API.
- * Mock: local getDb. Real: FastAPI mock_backend /admin/users*.
+ * Mock: shared getDb. Real: FastAPI mock_backend /admin/users*.
  */
 
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
-import type { LoginUserRow, RoleRow } from '@/shared/schema'
+import type { LoginUserRow } from '@/shared/schema'
 import type { AdminUserListItem, EmploymentWithoutLogin } from '../types'
+
+/** Role option for user-create picker (supports backend string ids e.g. R-01). */
+export interface AdminRoleOption {
+  id: string
+  name: string
+  description?: string | null
+}
 
 function statusLabel(s: LoginUserRow['status']): AdminUserListItem['status'] {
   if (s === 'LOCKED') return 'Locked'
@@ -40,7 +47,19 @@ export async function listAdminUsers(params?: { search?: string }) {
       locked: number
       active: number
     }>('/admin/users', { params })
-    return data
+    return {
+      items: (data.items ?? []).map((u) => ({
+        ...u,
+        id: Number(u.id),
+        employmentId: Number(u.employmentId ?? 0),
+        lastLoginAt: u.lastLoginAt ?? null,
+        employeeCode: u.employeeCode ?? '—',
+        initials: u.initials || initials(u.name || u.email || 'U'),
+      })),
+      total: data.total ?? data.items?.length ?? 0,
+      locked: data.locked ?? 0,
+      active: data.active ?? 0,
+    }
   }
 
   await delay()
@@ -105,7 +124,12 @@ export async function listAdminUsers(params?: { search?: string }) {
 export async function listEmploymentsWithoutLogin(): Promise<EmploymentWithoutLogin[]> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<EmploymentWithoutLogin[]>('/admin/employments-without-login')
-    return data
+    return Array.isArray(data)
+      ? data.map((e) => ({
+          ...e,
+          employmentId: Number(e.employmentId),
+        }))
+      : []
   }
 
   await delay()
@@ -136,26 +160,25 @@ export async function listEmploymentsWithoutLogin(): Promise<EmploymentWithoutLo
     })
 }
 
-export async function listRoles(): Promise<RoleRow[]> {
+/** Roles for assign-on-create. Ids stay as strings (R-01) when backend returns them. */
+export async function listRoles(): Promise<AdminRoleOption[]> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<Array<{ id: string | number; name: string; description?: string }>>(
-      '/rbac/roles',
-    )
-    // Normalize to RoleRow-like (id may be string R-01 from mock backend)
-    return data.map((r, i) => ({
-      id: typeof r.id === 'number' ? r.id : i + 1,
+    const { data } = await apiClient.get<
+      Array<{ id: string | number; name: string; description?: string | null }>
+    >('/rbac/roles')
+    const rows = Array.isArray(data) ? data : []
+    return rows.map((r) => ({
+      id: String(r.id),
       name: r.name,
       description: r.description ?? null,
-      is_system: false,
-      status: 'ACTIVE' as const,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      // keep original id for API create payload
-      ...( { _sourceId: r.id } as object),
-    })) as RoleRow[]
+    }))
   }
   await delay()
-  return getDb().roles.map((r) => ({ ...r }))
+  return getDb().roles.map((r) => ({
+    id: String(r.id),
+    name: r.name,
+    description: r.description ?? null,
+  }))
 }
 
 export async function createUserLogin(input: {
@@ -166,17 +189,17 @@ export async function createUserLogin(input: {
   status?: LoginUserRow['status']
 }): Promise<LoginUserRow> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<LoginUserRow>('/admin/users', {
+    const { data } = await apiClient.post<LoginUserRow & { detail?: string }>('/admin/users', {
       employmentId: input.employmentId,
       email: input.email,
       temporaryPassword: input.temporaryPassword,
       roleId: input.roleId,
       status: input.status,
     })
-    if ((data as { detail?: string }).detail) {
-      throw new Error((data as { detail: string }).detail)
+    if (data && typeof data === 'object' && 'detail' in data && data.detail) {
+      throw new Error(String(data.detail))
     }
-    return data
+    return data as LoginUserRow
   }
 
   await delay(400)
@@ -208,12 +231,14 @@ export async function createUserLogin(input: {
   }
   logins.push(row)
 
+  const numericRole = Number(input.roleId)
+  const roleIdForDb = Number.isFinite(numericRole) ? numericRole : 0
   const existingRoles = db.employee_roles.filter((er) => er.employment_id === input.employmentId)
-  const hasRole = existingRoles.some((er) => er.role_id === Number(input.roleId))
-  if (!hasRole) {
+  const hasRole = existingRoles.some((er) => er.role_id === roleIdForDb)
+  if (!hasRole && roleIdForDb > 0) {
     db.employee_roles.push({
       employment_id: input.employmentId,
-      role_id: Number(input.roleId),
+      role_id: roleIdForDb,
       assigned_at: now,
       changed_by: 1,
     })
@@ -229,11 +254,12 @@ export async function updateUserLogin(
       LoginUserRow,
       'email' | 'status' | 'temporary_password' | 'locked_until' | 'failed_attempt_count'
     >
-  > & { temporaryPassword?: string },
-): Promise<LoginUserRow> {
+  > & { temporaryPassword?: string; name?: string; role?: string; department?: string },
+): Promise<LoginUserRow | Record<string, unknown>> {
   if (!env.useMockApi) {
     const body: Record<string, unknown> = { ...patch }
     if (patch.temporary_password != null) body.temporaryPassword = patch.temporary_password
+    if (patch.temporaryPassword != null) body.temporaryPassword = patch.temporaryPassword
     if (patch.status) {
       const map: Record<string, string> = {
         ACTIVE: 'Active',
@@ -242,15 +268,17 @@ export async function updateUserLogin(
       }
       body.status = map[patch.status] ?? patch.status
     }
-    const { data } = await apiClient.patch<LoginUserRow>(`/admin/users/${loginId}`, body)
-    return data
+    const { data } = await apiClient.patch(`/admin/users/${loginId}`, body)
+    return data as LoginUserRow
   }
 
   await delay(300)
   const logins = ensureLoginUsers()
   const row = logins.find((l) => l.id === loginId)
   if (!row) throw new Error('User not found')
-  Object.assign(row, patch, { updated_at: new Date().toISOString() })
+  const { temporaryPassword, name: _n, role: _r, department: _d, ...rest } = patch
+  Object.assign(row, rest, { updated_at: new Date().toISOString() })
+  if (temporaryPassword != null) row.temporary_password = temporaryPassword
   return { ...row }
 }
 
@@ -258,25 +286,65 @@ export async function getUserLogin(loginId: number) {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<{
       id: number
+      detail?: string
       login?: LoginUserRow
-      employment?: unknown
-      person?: unknown
+      employment?: { id?: number; employee_code?: string } | null
+      person?: { first_name?: string; last_name?: string } | null
       roleIds?: Array<number | string>
       roleNames?: string[]
       email?: string
       name?: string
+      status?: string
+      department?: string
+      role?: string
+      lastLogin?: string
+      initials?: string
+      employeeCode?: string
+      employmentId?: number
     }>(`/admin/users/${loginId}`)
-    if ((data as { detail?: string }).detail) return null
+    if (data?.detail) return null
+    const name =
+      data.name ||
+      (data.person
+        ? `${data.person.first_name ?? ''} ${data.person.last_name ?? ''}`.trim()
+        : data.email) ||
+      'User'
     return {
-      login: data.login ?? ({
-        id: data.id,
-        email: data.email,
-        employment_id: (data as { employmentId?: number }).employmentId,
-      } as LoginUserRow),
+      login: data.login ??
+        ({
+          id: data.id,
+          email: data.email ?? '',
+          employment_id: data.employmentId ?? data.employment?.id ?? 0,
+          status:
+            data.status === 'Locked'
+              ? 'LOCKED'
+              : data.status === 'Inactive'
+                ? 'INACTIVE'
+                : 'ACTIVE',
+          temporary_password: null,
+          failed_attempt_count: 0,
+          locked_until: null,
+          last_login_at: null,
+          created_at: '',
+          updated_at: '',
+        } as LoginUserRow),
       employment: data.employment ?? null,
       person: data.person ?? null,
-      roleIds: (data.roleIds ?? []).map((x) => Number(x)),
-      roleNames: data.roleNames ?? [],
+      roleIds: (data.roleIds ?? []).map((x) => String(x)),
+      roleNames: data.roleNames ?? (data.role ? [data.role] : []),
+      display: {
+        id: data.id,
+        name,
+        email: data.email ?? data.login?.email ?? '',
+        status: (data.status as AdminUserListItem['status']) ?? statusLabel(
+          (data.login?.status as LoginUserRow['status']) ?? 'ACTIVE',
+        ),
+        department: data.department ?? '—',
+        role: data.role ?? data.roleNames?.[0] ?? '—',
+        lastLogin: data.lastLogin ?? 'Never',
+        initials: data.initials || initials(name),
+        employeeCode: data.employeeCode ?? data.employment?.employee_code ?? '—',
+      },
     }
   }
 
@@ -289,12 +357,33 @@ export async function getUserLogin(loginId: number) {
   const roleIds = emp
     ? db.employee_roles.filter((er) => er.employment_id === emp.id).map((er) => er.role_id)
     : []
+  const roleNames = db.roles.filter((r) => roleIds.includes(r.id)).map((r) => r.name)
+  const name = person ? `${person.first_name} ${person.last_name}` : login.email
+  const assignment = emp
+    ? db.employment_assignments.find((a) => a.employment_id === emp.id && a.effective_to == null)
+    : null
+  const dept = assignment
+    ? db.schema_departments.find((d) => d.id === assignment.department_id)
+    : null
   return {
     login: { ...login },
     employment: emp ? { ...emp } : null,
     person: person ? { ...person } : null,
-    roleIds,
-    roleNames: db.roles.filter((r) => roleIds.includes(r.id)).map((r) => r.name),
+    roleIds: roleIds.map(String),
+    roleNames,
+    display: {
+      id: login.id,
+      name,
+      email: login.email,
+      status: statusLabel(login.status),
+      department: dept?.name ?? '—',
+      role: roleNames[0] ?? '—',
+      lastLogin: login.last_login_at
+        ? new Date(login.last_login_at).toLocaleString('en-IN')
+        : 'Never',
+      initials: initials(name),
+      employeeCode: emp?.employee_code ?? '—',
+    },
   }
 }
 
@@ -311,5 +400,9 @@ export async function unlockUser(loginId: number) {
     const { data } = await apiClient.post(`/admin/users/${loginId}/unlock`)
     return data
   }
-  return updateUserLogin(loginId, { status: 'ACTIVE', failed_attempt_count: 0, locked_until: null })
+  return updateUserLogin(loginId, {
+    status: 'ACTIVE',
+    failed_attempt_count: 0,
+    locked_until: null,
+  })
 }
