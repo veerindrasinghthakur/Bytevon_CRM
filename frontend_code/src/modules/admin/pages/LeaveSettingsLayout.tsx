@@ -8,7 +8,7 @@ import { LeaveSettingsNav } from '../components/LeaveSettingsNav'
 import { LeaveEditContext } from '../context/LeaveEditContext'
 import { getLeaveAdminMetrics } from '../api/metrics'
 
-/** Layout for /admin/leave-settings/* — metrics + edit above nav; hidden on policies */
+/** Layout for /admin/leave-settings/* — metrics above nav; Edit pencil moved to Accrual Policy section */
 export function LeaveSettingsLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const [editing, setEditing] = useState(false)
@@ -27,30 +27,18 @@ export function LeaveSettingsLayout() {
             title="Leave Settings"
             description="Leave types, entitlements, policies, and employee leave ledgers."
           />
-          {!isPolicies &&
-            (editing ? (
-              <div className="flex gap-2 shrink-0">
-                <Button variant="outline" size="sm" onClick={() => setEditing(false)}>
-                  Discard
-                </Button>
-                <Button variant="primary" size="sm" onClick={() => setEditing(false)}>
-                  Save
-                </Button>
-              </div>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                className="shrink-0"
-                leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>}
-                onClick={() => setEditing(true)}
-              >
-                Edit
+          {!isPolicies && editing && (
+            <div className="flex gap-2 shrink-0">
+              <Button variant="outline" size="sm" onClick={() => setEditing(false)}>
+                Discard
               </Button>
-            ))}
+              <Button variant="primary" size="sm" onClick={() => setEditing(false)}>
+                Save
+              </Button>
+            </div>
+          )}
         </div>
 
-        {/* Metric cards only — existing layout preserved below */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <MetricCard
             icon="event_available"
