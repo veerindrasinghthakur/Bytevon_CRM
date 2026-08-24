@@ -5,6 +5,8 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
+import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
+import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Can } from '@/shared/rbac/Can.tsx'
@@ -12,7 +14,9 @@ import { Action, ResourceName } from '@/shared/schema'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { uploadUserAvatar } from '@/modules/profile/api/profile'
 import {
+  archiveUser,
   getUserLogin,
+  listRoles,
   lockUser,
   unlockUser,
   updateUserLogin,
@@ -31,6 +35,11 @@ export function UserDetailPage() {
     enabled: Number.isFinite(loginId),
   })
 
+  const rolesQuery = useQuery({
+    queryKey: ['admin', 'roles', 'options'],
+    queryFn: listRoles,
+  })
+
   const display = detailQuery.data?.display
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
 
@@ -39,6 +48,7 @@ export function UserDetailPage() {
   const [email, setEmail] = useState('')
   const [department, setDepartment] = useState('')
   const [role, setRole] = useState('')
+  const [roleId, setRoleId] = useState('')
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [avatarUploading, setAvatarUploading] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -55,7 +65,16 @@ export function UserDetailPage() {
     setEmail(display.email)
     setDepartment(display.department)
     setRole(display.role)
-  }, [display])
+    const match = rolesQuery.data?.find((r) => r.name === display.role)
+    setRoleId(match ? String(match.id) : '')
+  }, [display, rolesQuery.data])
+
+  const roleOptions =
+    rolesQuery.data?.map((r) => ({
+      value: String(r.id),
+      label: r.name,
+      meta: r.description ?? undefined,
+    })) ?? []
 
   const saveMutation = useMutation({
     mutationFn: () =>
@@ -63,7 +82,7 @@ export function UserDetailPage() {
         email,
         name,
         department,
-        role,
+        role: roleOptions.find((o) => o.value === roleId)?.label ?? role,
       }),
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: ['admin', 'users'] })
@@ -80,6 +99,14 @@ export function UserDetailPage() {
       void qc.invalidateQueries({ queryKey: ['admin', 'users'] })
       setStatus((s) => (s === 'Locked' ? 'Active' : 'Locked'))
       setLockOpen(false)
+    },
+  })
+
+  const archiveMutation = useMutation({
+    mutationFn: () => archiveUser(loginId),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['admin', 'users'] })
+      navigate({ to: '/admin/users' })
     },
   })
 
@@ -104,6 +131,8 @@ export function UserDetailPage() {
       setEmail(display.email)
       setDepartment(display.department)
       setRole(display.role)
+      const match = rolesQuery.data?.find((r) => r.name === display.role)
+      setRoleId(match ? String(match.id) : '')
     }
     cancelEditing()
   }
@@ -126,10 +155,7 @@ export function UserDetailPage() {
   if (detailQuery.isLoading) return <PageLoadingSkeleton />
   if (detailQuery.isError || !display) {
     return (
-      <ErrorState
-        title="Could not load user"
-        onRetry={() => void detailQuery.refetch()}
-      />
+      <ErrorState title="Could not load user" onRetry={() => void detailQuery.refetch()} />
     )
   }
 
@@ -219,6 +245,14 @@ export function UserDetailPage() {
               </Button>
             </Can>
           )}
+          <Can action={Action.DELETE} resource={ResourceName.USER}>
+            <ArchiveButton
+              entityLabel={name}
+              mode="archive"
+              isLoading={archiveMutation.isPending}
+              onConfirm={() => archiveMutation.mutateAsync()}
+            />
+          </Can>
           {isEditing ? (
             <>
               <Button variant="outline" size="sm" onClick={handleCancelEdit}>
@@ -255,9 +289,29 @@ export function UserDetailPage() {
             <Field label="Employee code" value={display.employeeCode} />
           </Card>
           <Card title="Role Assignment">
-            <EditableField label="Primary Role" value={role} editing={isEditing} onChange={setRole} />
+            {isEditing ? (
+              <div className="mb-3">
+                <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">
+                  Primary Role
+                </p>
+                <SearchableSelect
+                  options={roleOptions}
+                  value={roleId}
+                  onChange={(v) => {
+                    setRoleId(v)
+                    const opt = roleOptions.find((o) => o.value === v)
+                    if (opt) setRole(opt.label)
+                  }}
+                  placeholder="Search roles…"
+                  emptyLabel="No roles match"
+                />
+              </div>
+            ) : (
+              <Field label="Primary Role" value={role} />
+            )}
             <p className="text-body-sm text-on-surface-variant mt-2">
-              Additional scoped roles can be assigned from Roles & Permissions.
+              Search and pick a role from the catalogue. Additional scoped roles can be assigned from Roles
+              & Permissions.
             </p>
           </Card>
         </div>
@@ -297,7 +351,8 @@ export function UserDetailPage() {
           ) : (
             <>
               <p className="text-body-sm text-on-surface-variant mb-3">
-                Sets a temporary password on the login (V1). Optional custom value below; otherwise one is generated.
+                Sets a temporary password on the login (V1). Optional custom value below; otherwise one is
+                generated.
               </p>
               <input
                 type="text"

@@ -174,6 +174,19 @@ export async function listRoles(): Promise<AdminRoleOption[]> {
     }))
   }
   await delay()
+  // Prefer adminRoles (R-01 style) for UI consistency; fall back to schema roles
+  try {
+    const { adminRoles } = await import('../data/mock')
+    if (adminRoles?.length) {
+      return adminRoles.map((r) => ({
+        id: String(r.id),
+        name: r.name,
+        description: r.description ?? null,
+      }))
+    }
+  } catch {
+    /* use schema */
+  }
   return getDb().roles.map((r) => ({
     id: String(r.id),
     name: r.name,
@@ -280,6 +293,18 @@ export async function updateUserLogin(
   Object.assign(row, rest, { updated_at: new Date().toISOString() })
   if (temporaryPassword != null) row.temporary_password = temporaryPassword
   return { ...row }
+}
+
+/** Soft-archive: set login INACTIVE (shared ArchiveButton). */
+export async function archiveUser(loginId: number) {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post(`/admin/users/${loginId}/archive`).catch(async () => {
+      const { data: d } = await apiClient.patch(`/admin/users/${loginId}`, { status: 'Inactive' })
+      return { data: d }
+    })
+    return data
+  }
+  return updateUserLogin(loginId, { status: 'INACTIVE' })
 }
 
 export async function getUserLogin(loginId: number) {
