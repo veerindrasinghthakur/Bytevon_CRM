@@ -1,21 +1,9 @@
 import { cn } from '@/shared/lib/cn'
-import type { ReactNode } from 'react'
 import { useState } from 'react'
 import { Button } from '@/shared/components/ui/Button'
+import { ListToolbarProps } from '@/shared/types'
 
-interface ListToolbarProps {
-  searchValue?: string
-  search?: string
-  onSearchChange: (value: string) => void
-  searchPlaceholder?: string
-  filterSlot?: ReactNode
-  actionsSlot?: ReactNode
-  children?: ReactNode
-  filtersActive?: boolean
-  onResetFilters?: () => void | Promise<void>
-  onRefresh?: () => void | Promise<void>
-  className?: string
-}
+
 
 /** Search left · filters right — shared list filter bar */
 export function ListToolbar({

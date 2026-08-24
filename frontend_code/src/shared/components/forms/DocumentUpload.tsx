@@ -1,18 +1,6 @@
 import { useRef, useState, type ChangeEvent } from 'react'
 import { cn } from '@/shared/lib/cn'
-
-export interface DocumentUploadProps {
-  /** Controlled file list; if omitted, component is uncontrolled via onChange only. */
-  files?: File[]
-  onChange?: (files: File[]) => void
-  accept?: string
-  multiple?: boolean
-  maxSizeMb?: number
-  hint?: string
-  title?: string
-  className?: string
-  disabled?: boolean
-}
+import {DocumentUploadProps} from '@/shared/types'
 
 /**
  * Shared drag-style file picker used by Apply Leave, Compose Notification, etc.
@@ -37,9 +25,20 @@ export function DocumentUpload({
 
   const apply = (next: File[]) => {
     const maxBytes = maxSizeMb * 1024 * 1024
+    // Validate size first.
     const tooBig = next.find((f) => f.size > maxBytes)
     if (tooBig) {
-      setError(`"${tooBig.name}" exceeds ${maxSizeMb}MB limit.`)
+      setError(`\"${tooBig.name}\" exceeds ${maxSizeMb}MB limit.`)
+      return
+    }
+    // Validate MIME type against the accepted extensions list.
+    const acceptedExt = accept.split(',').map((s) => s.trim().toLowerCase())
+    const invalid = next.find((f) => {
+      const ext = '.' + f.name.split('.').pop()?.toLowerCase()
+      return !acceptedExt.includes(ext)
+    })
+    if (invalid) {
+      setError(`\"${invalid.name}\" is not an allowed file type.`)
       return
     }
     setError(null)

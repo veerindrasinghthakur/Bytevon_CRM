@@ -1,19 +1,7 @@
 import { cn } from '@/shared/lib/cn'
-import type { ReactNode } from 'react'
 import { BackButton } from './BackButton'
+import { PageHeaderProps } from '@/shared/types'
 
-interface PageHeaderProps {
-  title: string
-  description?: string
-  breadcrumbs?: ReactNode
-  actions?: ReactNode
-  /** Show back control above title (detail/create/edit only — not nav root pages) */
-  showBack?: boolean
-  backTo?: string
-  /** Always defaults to "Back" — do not pass destination names */
-  backLabel?: string
-  className?: string
-}
 
 export function PageHeader({
   title,

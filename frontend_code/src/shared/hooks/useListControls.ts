@@ -4,27 +4,11 @@ import { useListFilters, type FilterValues } from './useListFilters'
 import { useListPagination, type UseListPaginationOptions } from './useListPagination'
 
 export interface UseListControlsOptions<T extends FilterValues> {
-  /** Filter defaults (also used by reset) */
   filterDefaults: T
-  /** Optional pagination config */
   pagination?: UseListPaginationOptions
-  /** Initial search */
   initialSearch?: string
 }
 
-/**
- * One-stop list controls: search + named filters + client pagination.
- * Resets page to 1 whenever search or a filter changes.
- *
- * Usage in a list hook:
- *   const controls = useListControls({
- *     filterDefaults: { status: 'All', category: 'All' },
- *   })
- *   // controls.search, controls.setSearch
- *   // controls.filters.status, controls.setFilter('status', v)
- *   // controls.page, controls.setPage, controls.pageItems(filtered)
- *   // controls.resetAll(), controls.filtersActive || controls.hasSearch
- */
 export function useListControls<T extends FilterValues>(options: UseListControlsOptions<T>) {
   const pagination = useListPagination(options.pagination)
 

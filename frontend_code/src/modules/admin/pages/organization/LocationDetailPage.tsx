@@ -6,7 +6,7 @@ import { EditButton } from '@/shared/components/ui/EditButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
-import { useLocationDetail, useUpdateLocation } from '../hooks/use-locations'
+import { useLocationDetail, useUpdateLocation } from '../../hooks/use-organization-locations'
 import type { LocationRow } from '@/shared/schema'
 
 export function LocationDetailPage() {

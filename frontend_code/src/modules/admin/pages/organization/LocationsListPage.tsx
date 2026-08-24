@@ -15,7 +15,7 @@ import {
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
 import { useListControls } from '@/shared/hooks/useListControls'
-import { useLocationsList } from '../hooks/use-locations'
+import { useLocationsList } from '../../hooks/use-organization-locations'
 import type { LocationRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 

@@ -5,28 +5,7 @@
 
 import { delay, getDb, nextId } from '@/shared/mock/db'
 import type { LoginUserRow, RoleRow } from '@/shared/schema'
-
-export interface AdminUserListItem {
-  id: number
-  employmentId: number
-  name: string
-  email: string
-  role: string
-  department: string
-  status: 'Active' | 'Inactive' | 'Locked'
-  lastLogin: string
-  initials: string
-  employeeCode: string
-}
-
-export interface EmploymentWithoutLogin {
-  employmentId: number
-  employeeCode: string
-  name: string
-  department: string
-  position: string
-  joiningDate: string
-}
+import type { AdminUserListItem, EmploymentWithoutLogin } from '../types'
 
 function statusLabel(s: LoginUserRow['status']): AdminUserListItem['status'] {
   if (s === 'LOCKED') return 'Locked'

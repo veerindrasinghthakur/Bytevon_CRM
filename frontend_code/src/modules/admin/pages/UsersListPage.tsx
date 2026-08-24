@@ -18,7 +18,7 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { ResourceName } from '@/shared/schema'
 import { useUsersList } from '../hooks/use-users-list'
-import type { AdminUserListItem } from '../api/users'
+import type { AdminUserListItem } from '../types'
 import { cn } from '@/shared/lib/cn'
 
 const statusBadgeClass: Record<string, string> = {
@@ -113,7 +113,7 @@ export function UsersListPage() {
   } = useUsersList()
 
   const goDetail = (u: AdminUserListItem) => {
-    navigate({ to: '/admin/users/$userId', params: { userId: String(u.id) } })
+    navigate({ to: '/admin/users/$userId', params: { userId: String(u.id) } } as any)
   }
 
   const openUserOverview = (u: AdminUserListItem) => {
@@ -158,7 +158,7 @@ export function UsersListPage() {
               variant="primary"
               size="sm"
               leftIcon={<span className="material-symbols-outlined text-[18px]">person_add</span>}
-              onClick={() => navigate({ to: '/admin/users/new' })}
+              onClick={() => navigate({ to: '/admin/users/new' } as any)}
             >
               Add New User
             </Button>

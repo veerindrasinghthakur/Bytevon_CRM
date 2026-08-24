@@ -3,13 +3,13 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
-import { useHolidaysList } from '../hooks/use-organization'
+import { useHolidays } from '../../hooks/use-organization'
 
 export function HolidaysListPage() {
   const { calendarId } = useParams({ strict: false }) as { calendarId: string }
   const id = Number(calendarId)
   const navigate = useNavigate()
-  const { data, isLoading, isError, error, refetch } = useHolidaysList(id)
+  const { data, isLoading, isError, error, refetch } = useHolidays(id)
   const items = data?.items ?? []
 
   if (isLoading) return <PageLoadingSkeleton />

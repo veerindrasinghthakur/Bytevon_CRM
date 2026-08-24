@@ -1,16 +1,8 @@
 import { cn } from '@/shared/lib/cn'
+import { ProgressProps } from '@/shared/types'
 
-export interface ProgressProps {
-  value: number
-  max?: number
-  label?: string
-  showValue?: boolean
-  className?: string
-  /** Accessible name when label is not visible */
-  'aria-label'?: string
-}
 
-/** Token-based progress bar (light/dark). */
+
 export function Progress({
   value,
   max = 100,

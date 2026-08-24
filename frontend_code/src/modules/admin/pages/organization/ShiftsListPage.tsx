@@ -11,7 +11,7 @@ import {
   QuickMetaTile,
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
-import { useShiftsList } from '../hooks/use-shifts'
+import { useShiftsList } from '../../hooks/use-organization-shifts'
 import { can } from '@/shared/rbac/can'
 import { Action, ResourceName } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'

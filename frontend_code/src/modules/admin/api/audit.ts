@@ -6,16 +6,7 @@
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { auditLogs } from '../data/mock'
-import type { AuditLog } from '../types'
-
-export interface RecordAuditInput {
-  action: string
-  target: string
-  module: string
-  actor?: string
-  actorInitials?: string
-  ip?: string
-}
+import type { AuditLog, RecordAuditInput } from '../types'
 
 function delay(ms = 80) {
   return new Promise((r) => setTimeout(r, ms))

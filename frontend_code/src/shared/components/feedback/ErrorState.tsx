@@ -12,9 +12,7 @@ export function ErrorState({
   title?: string
   description?: string
   onRetry?: () => void
-  /** Explicit back handler; when omitted and showBack, uses history.back() */
   onBack?: () => void
-  /** Default true — show Go back using history when onBack not provided */
   showBack?: boolean
   className?: string
 }) {

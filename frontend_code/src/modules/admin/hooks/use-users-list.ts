@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { queryKeys } from '@/shared/lib/query-keys'
-import { listAdminUsers, type AdminUserListItem } from '../api/users'
+import { listAdminUsers } from '../api/users'
+import type { AdminUserListItem } from '../types'
 
 const FILTER_DEFAULTS = {
   status: 'All' as 'All' | 'Active' | 'Inactive' | 'Locked',

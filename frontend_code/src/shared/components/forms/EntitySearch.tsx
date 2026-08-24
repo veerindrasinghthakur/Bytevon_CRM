@@ -1,27 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { cn } from '@/shared/lib/cn'
-
-export interface EntityOption {
-  id: string | number
-  label: string
-  sublabel?: string
-}
-
-interface EntitySearchProps {
-  label?: string
-  placeholder?: string
-  options: EntityOption[]
-  /** Single select */
-  value?: EntityOption | null
-  onChange?: (value: EntityOption | null) => void
-  /** Multi select chips */
-  multi?: boolean
-  values?: EntityOption[]
-  onChangeMulti?: (values: EntityOption[]) => void
-  disabled?: boolean
-  className?: string
-  emptyMessage?: string
-}
+import { EntityOption, EntitySearchProps } from '@/shared/types'
+import { useDispatch, useSelector } from 'react-redux'
+import type { RootState } from '@/shared/store'
+import { setSelected, setSelectedMultiple } from '@/shared/store/entitySearchSlice'
 
 export function EntitySearch({
   label,
@@ -40,10 +22,21 @@ export function EntitySearch({
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
 
+  const dispatch = useDispatch()
+  // Pull selected state from Redux when the component is uncontrolled (no callbacks).
+  const reduxSelected = useSelector((state: RootState) =>
+    multi ? state.entitySearch.selectedMultiple : state.entitySearch.selected,
+  ) as EntityOption | EntityOption[] | null
+
   const selectedIds = useMemo(() => {
-    if (multi) return new Set(values.map((v) => String(v.id)))
-    return new Set(value ? [String(value.id)] : [])
-  }, [multi, values, value])
+    // Prefer controlled props; otherwise fall back to Redux state.
+    if (multi) {
+      const src = values.length ? values : (reduxSelected as EntityOption[] | null) ?? []
+      return new Set(src.map((v) => String(v.id)))
+    }
+    const src = value ?? (reduxSelected as EntityOption | null)
+    return new Set(src ? [String(src.id)] : [])
+  }, [multi, values, value, reduxSelected])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -70,20 +63,40 @@ export function EntitySearch({
     if (multi) {
       const id = String(opt.id)
       if (selectedIds.has(id)) {
-        onChangeMulti?.(values.filter((v) => String(v.id) !== id))
+        // Controlled path
+        if (onChangeMulti) {
+          onChangeMulti(values.filter((v) => String(v.id) !== id))
+        } else {
+          // Redux path – filter out the removed option
+          const current = (reduxSelected as EntityOption[]) ?? []
+          dispatch(setSelectedMultiple(current.filter((v) => String(v.id) !== id)))
+        }
       } else {
-        onChangeMulti?.([...values, opt])
+        if (onChangeMulti) {
+          onChangeMulti([...values, opt])
+        } else {
+          const current = (reduxSelected as EntityOption[]) ?? []
+          dispatch(setSelectedMultiple([...current, opt]))
+        }
       }
       setQuery('')
     } else {
-      onChange?.(opt)
+      if (onChange) {
+        onChange(opt)
+      } else {
+        dispatch(setSelected(opt))
+      }
       setQuery(opt.label)
       setOpen(false)
     }
   }
 
   const clearSingle = () => {
-    onChange?.(null)
+    if (onChange) {
+      onChange(null)
+    } else {
+      dispatch(setSelected(null))
+    }
     setQuery('')
   }
 

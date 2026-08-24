@@ -1,21 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { cn } from '@/shared/lib/cn'
+import { RowActionsProps } from '@/shared/types'
 
-export interface RowAction {
-  id: string
-  label: string
-  icon?: string
-  onClick: () => void
-  danger?: boolean
-  disabled?: boolean
-}
 
-interface RowActionsProps {
-  actions: RowAction[]
-  /** Accessible name for the trigger */
-  label?: string
-}
 
 /**
  * Table row action menu (⋯). Opens a fixed menu; closes on outside click / Escape.

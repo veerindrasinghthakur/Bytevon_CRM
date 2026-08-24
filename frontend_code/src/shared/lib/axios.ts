@@ -9,7 +9,7 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios'
 import { env } from '@/config/env'
-import { loadStoredSession, persistSession } from '@/modules/auth/api/auth'
+import { loadStoredSession, persistSession, refreshApi } from '@/modules/auth/api/auth'
 
 export const apiClient = axios.create({
   baseURL: env.apiBaseUrl,
@@ -32,8 +32,28 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => response,
-  (error: AxiosError) => {
-    if (error.response?.status === 401) {
+  async (error: AxiosError) => {
+    const original = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
+    // If we get a 401 and haven't retried yet, attempt token refresh.
+    if (error.response?.status === 401 && !original._retry) {
+      original._retry = true
+      try {
+        const session = loadStoredSession()
+        const refreshToken = session?.tokens?.refreshToken
+        if (refreshToken) {
+          const newSession = await refreshApi(refreshToken)
+          // Update Authorization header with new access token.
+          if (original.headers) {
+            ;(original.headers as any).Authorization = `Bearer ${newSession.tokens.accessToken}`
+          }
+          // Retry the original request.
+          return apiClient(original)
+        }
+      } catch (refreshErr) {
+        // Refresh failed – fall through to logout handling.
+        console.warn('Token refresh failed', refreshErr)
+      }
+      // If refresh didn't work, clear session and redirect.
       persistSession(null)
       if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
         const redirect = encodeURIComponent(window.location.pathname + window.location.search)

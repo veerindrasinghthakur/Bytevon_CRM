@@ -23,4 +23,32 @@ export {
   createAdminRoutes,
   createAdminSettingsLayoutRoute,
   createAdminSettingsCoreRoutes,
+  createAdminOrganizationSettingsRoutes,
+  createWorkforceShiftRoutes,
 } from './routes'
+
+export {
+  LocationsListPage,
+  LocationDetailPage,
+  ShiftsListPage,
+  ShiftDetailPage,
+  WorkingWeeksPage,
+  HolidayCalendarsPage,
+  HolidaysListPage,
+  PositionsListPage,
+  OrganizationSettingsPage,
+} from './pages/organization'
+
+// Organization API and hooks (merged from separate organization module)
+export * from './api/organization'
+export { useLocationsList, useLocationDetail, useUpdateLocation } from './hooks/use-organization-locations'
+export { useShiftsList, useShiftDetail, useShiftStaff, useCreateShift, useUpdateShift } from './hooks/use-organization-shifts'
+export {
+  useOrganizationSettings,
+  useUpdateOrganizationSettings,
+  useOrgLocationsForSelect,
+  useWorkingWeeks,
+  useHolidayCalendars,
+  useHolidays,
+  usePositions,
+} from './hooks/use-organization'

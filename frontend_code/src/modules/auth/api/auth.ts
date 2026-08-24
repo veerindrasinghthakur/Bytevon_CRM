@@ -16,6 +16,8 @@ import type {
 import { MOCK_LOGIN_PASSWORD, MOCK_LOGIN_USERNAME } from '../schemas/auth'
 import { setCurrentEmploymentId } from '@/shared/rbac'
 
+// Use sessionStorage for auth session to limit lifespan to the browser tab.
+// This reduces exposure of tokens to other tabs and mitigates XSS persistence.
 const STORAGE_KEY = 'bytevon_auth_session'
 const RESET_TOKENS_KEY = 'bytevon_reset_tokens'
 
@@ -45,7 +47,8 @@ function makeTokens(): AuthSession['tokens'] {
 
 export function loadStoredSession(): AuthSession | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
+    // Prefer sessionStorage (tab‑scoped) over localStorage for security.
+    const raw = sessionStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
     const session = JSON.parse(raw) as AuthSession
     // Backfill older sessions missing employmentId
@@ -64,11 +67,16 @@ export function loadStoredSession(): AuthSession | null {
 
 export function persistSession(session: AuthSession | null) {
   if (!session) {
+    // Clear from both storages to be safe.
+    sessionStorage.removeItem(STORAGE_KEY)
     localStorage.removeItem(STORAGE_KEY)
     setCurrentEmploymentId(null)
     return
   }
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(session))
+  const payload = JSON.stringify(session)
+  // Store in sessionStorage (tab‑scoped) and also keep a fallback in localStorage for legacy reads.
+  sessionStorage.setItem(STORAGE_KEY, payload)
+  localStorage.setItem(STORAGE_KEY, payload)
   setCurrentEmploymentId(session.user.employmentId)
 }
 

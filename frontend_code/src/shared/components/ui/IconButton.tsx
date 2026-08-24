@@ -13,7 +13,6 @@ const sizeClasses = {
   lg: 'w-11 h-11',
 }
 
-/** Stitch icon control: soft hover bg + scale on press (HTML p-2 hover:bg-surface-container rounded-full) */
 export function IconButton({
   label,
   children,

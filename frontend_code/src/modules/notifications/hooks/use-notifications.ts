@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  getNotifications,
+  getNotification,
   markNotificationRead,
   markAllNotificationsRead,
   type NotificationItem,
@@ -13,7 +13,7 @@ const LIST_KEY = ['notifications', 'list'] as const
 export function useNotifications() {
   return useQuery({
     queryKey: LIST_KEY,
-    queryFn: () => getNotifications(),
+    queryFn: () => getNotification(),
   })
 }
 

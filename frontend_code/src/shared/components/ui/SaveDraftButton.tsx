@@ -1,13 +1,7 @@
-import { Button, type ButtonSize } from '@/shared/components/ui/Button'
+import { Button } from '@/shared/components/ui/Button'
+import { SaveDraftButtonProps } from '@/shared/types'
 
-export interface SaveDraftButtonProps {
-  onClick?: () => void
-  isLoading?: boolean
-  disabled?: boolean
-  size?: ButtonSize
-  className?: string
-  label?: string
-}
+
 
 /** Shared Save draft control for forms that support draft persistence. */
 export function SaveDraftButton({

@@ -1,18 +1,11 @@
 import { useState } from 'react'
 import { cn } from '@/shared/lib/cn'
 import { Button } from '@/shared/components/ui/Button'
+import { NoteItem, NotesPanelProps } from '@/shared/types'
 
-export type NoteReferenceType = 'PROJECT' | 'LEAD' | 'TASK' | 'CLIENT'
+export type NoteReferenceType = 'PROJECT' | 'LEAD' | 'TASK' 
 
-export interface NoteItem {
-  id: number
-  body: string
-  author_name: string
-  author_initials: string
-  created_at: string
-  reference_type: NoteReferenceType
-  reference_id: number
-}
+
 
 function formatWhen(iso: string) {
   try {
@@ -27,20 +20,7 @@ function formatWhen(iso: string) {
   }
 }
 
-export interface NotesPanelProps {
-  title?: string
-  className?: string
-  initialNotes?: NoteItem[]
-  referenceType?: NoteReferenceType
-  referenceId?: number
-  /** Optional async add — parent can persist via API */
-  onAdd?: (body: string) => Promise<NoteItem | void> | NoteItem | void
-}
 
-/**
- * Shared notes panel — used by Project / Task / Lead detail and notes routes.
- * Local state by default; pass onAdd for API persistence.
- */
 export function NotesPanel({
   title = 'Notes',
   className,

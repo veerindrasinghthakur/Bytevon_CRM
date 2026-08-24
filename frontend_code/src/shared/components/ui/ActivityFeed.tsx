@@ -1,33 +1,7 @@
-import type { ReactNode } from 'react'
 import { cn } from '@/shared/lib/cn'
+import { ActivityFeedProps, ActivityItem } from '@/shared/types'
 
-export interface ActivityItem {
-  id: string
-  title: string
-  description?: string
-  actor?: string
-  timestamp: string
-  icon?: string
-  /** Module / type badge e.g. ROLES, AUTH */
-  badge?: string
-}
 
-export interface ActivityFeedProps {
-  items: ActivityItem[]
-  /** standard = detail pages; compact = sidebars / overview cards */
-  variant?: 'standard' | 'compact'
-  emptyMessage?: string
-  emptyHint?: string
-  className?: string
-  /** Card header title (default: Recent Activity / Quick Log) */
-  title?: string
-  /** Optional action on the right of the header (e.g. View All button) */
-  headerAction?: ReactNode
-  /** When false, omit outer card chrome (for embedding inside an existing card) */
-  framed?: boolean
-  /** @deprecated use title + headerAction */
-  header?: ReactNode
-}
 
 /**
  * Activity timeline — matches Bytevon Component Library: Timeline.

@@ -1,26 +1,10 @@
 import { useRef, type ChangeEvent } from 'react'
-import { Button, type ButtonSize, type ButtonVariant } from '@/shared/components/ui/Button'
+import { Button,  } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
+import { UploadButtonProps } from '@/shared/types'
 
-export interface UploadButtonProps {
-  onFiles?: (files: File[]) => void
-  accept?: string
-  multiple?: boolean
-  maxSizeMb?: number
-  variant?: ButtonVariant
-  size?: ButtonSize
-  label?: string
-  className?: string
-  disabled?: boolean
-  /** When true, only icon (no label) */
-  iconOnly?: boolean
-}
 
-/**
- * Shared upload control — opens OS file manager and returns selected File(s).
- * Parent owns API upload / draft; this only attaches files from disk.
- * Pair with DocumentUpload for drop-zone UX or FilePreviewModal for preview.
- */
+
 export function UploadButton({
   onFiles,
   accept = '.pdf,.jpg,.jpeg,.png,.docx,.doc,.xlsx,.csv,.txt,.webp',

@@ -25,7 +25,6 @@ export function lazyPage<
   function LazyPageRoute(props: Record<string, unknown>) {
     return (
       <Suspense fallback={<PageLoadingSkeleton />}>
-        {/* @ts-expect-error - dynamic router component prop forwarding */}
         <Lazy {...props} />
       </Suspense>
     )

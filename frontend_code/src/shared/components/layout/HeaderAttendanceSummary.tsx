@@ -2,10 +2,6 @@ import { Link } from '@tanstack/react-router'
 import { useHeaderAttendance } from '@/shared/hooks/useHeaderAttendance'
 import { cn } from '@/shared/lib/cn'
 
-/**
- * Header strip: Check-in · Check-out · Net work hours
- * (work hours = elapsed since check-in minus break time).
- */
 export function HeaderAttendanceSummary() {
   const { summary, checkedOut, formatClockTime, formatHoursCompact } = useHeaderAttendance()
 

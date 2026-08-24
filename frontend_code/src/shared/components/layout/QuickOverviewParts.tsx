@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 import { cn } from '@/shared/lib/cn'
 
-/** Section card inside Quick View body (matches stitch overview panel). */
 export function QuickSection({
   title,
   children,

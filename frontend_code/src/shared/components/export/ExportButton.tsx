@@ -1,32 +1,26 @@
 import { useState } from 'react'
-import { Button, type ButtonSize, type ButtonVariant } from '@/shared/components/ui/Button'
+import { Button } from '@/shared/components/ui/Button'
 import { Can } from '@/shared/rbac/Can.tsx'
 import { Action, type ResourceName } from '@/shared/schema'
 import { useExport, type ExportFormat, type ExportRequest } from '@/shared/hooks/useExport'
 import { ExportDialog } from './ExportDialog'
+import {ButtonVariant,ButtonSize} from '@/shared/types'
 
 export interface ExportButtonProps {
-  /** RBAC resource name (e.g. user, employment, leave_request) */
   resource: ResourceName | string
-  /** Selected ids from useListSelection; omit or [] for full filtered set */
   selectedIds?: string[]
   filters?: Record<string, unknown>
   query?: string
   sort?: ExportRequest['sort']
   filenameStem?: string
-  /** Button chrome */
   variant?: ButtonVariant
   size?: ButtonSize
   className?: string
   label?: string
-  /** When false, render nothing (e.g. hide until selection mode) */
   visible?: boolean
 }
 
-/**
- * Shared export control: permission-gated button + format dialog + download.
- * Reuse on any list/detail page; pass the page's current filters and selection.
- */
+
 export function ExportButton({
   resource,
   selectedIds,

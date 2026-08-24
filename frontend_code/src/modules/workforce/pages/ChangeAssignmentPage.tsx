@@ -3,7 +3,7 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { getSchemaDepartments, getLocations, getPositions, getShifts } from '@/modules/organization'
+import { getSchemaDepartments, getLocations, getPositions, getShifts } from '@/modules/admin'
 import { WorkMode } from '@/shared/schema'
 
 export function ChangeAssignmentPage() {

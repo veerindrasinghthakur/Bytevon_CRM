@@ -2,23 +2,13 @@ import { useState } from 'react'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
 import type { ExportFormat } from '@/shared/api/export'
+import {ExportDialogProps} from '@/shared/types'
 
 const FORMATS: { value: ExportFormat; label: string; hint: string }[] = [
   { value: 'csv', label: 'CSV', hint: 'Comma-separated values' },
   { value: 'xlsx', label: 'Excel', hint: 'Microsoft Excel (.xlsx)' },
   { value: 'pdf', label: 'PDF', hint: 'Portable document' },
 ]
-
-export interface ExportDialogProps {
-  open: boolean
-  onClose: () => void
-  onConfirm: (format: ExportFormat) => void
-  isExporting?: boolean
-  errorMessage?: string | null
-  /** e.g. "12 selected rows" or "current filtered list" */
-  contextLabel?: string
-  title?: string
-}
 
 /**
  * Format-selection modal for shared export.

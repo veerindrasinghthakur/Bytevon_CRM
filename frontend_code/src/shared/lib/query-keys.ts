@@ -136,18 +136,14 @@ export const invalidate = {
   projects: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.projects.all }),
   tasks: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.tasks.all }),
   documents: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.documents.all }),
-  departments: (qc: Qc) =>
-    void qc.invalidateQueries({ queryKey: queryKeys.workforce.departments.all }),
   employees: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.workforce.employees.all }),
   users: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.admin.users.all }),
   roles: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.admin.roles.all }),
   audit: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.admin.audit.all }),
   salesLeads: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.sales.leads.all }),
   salesClients: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.sales.clients.all }),
-  salesCaseStudies: (qc: Qc) =>
-    void qc.invalidateQueries({ queryKey: queryKeys.sales.caseStudies.all }),
-  caseStudies: (qc: Qc) =>
-    void qc.invalidateQueries({ queryKey: queryKeys.sales.caseStudies.all }),
+  salesCaseStudies: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.sales.caseStudies.all }),
+  caseStudies: (qc: Qc) =>  void qc.invalidateQueries({ queryKey: queryKeys.sales.caseStudies.all }),
   notifications: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.notifications.all }),
   approvals: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.approvals.all }),
   /** Canonical names */

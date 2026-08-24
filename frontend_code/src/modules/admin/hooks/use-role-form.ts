@@ -150,18 +150,18 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string) {
     onSuccess: (saved) => {
       void queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] })
       if (mode === 'create') {
-        navigate({ to: '/admin/roles' })
+        navigate({ to: '/admin/roles' } as any)
       } else {
-        navigate({ to: '/admin/roles/$roleId', params: { roleId: saved.id } })
+        navigate({ to: '/admin/roles/$roleId', params: { roleId: saved.id } } as any)
       }
     },
   })
 
   const cancel = useCallback(() => {
     if (mode === 'edit' && roleId) {
-      navigate({ to: '/admin/roles/$roleId', params: { roleId } })
+      navigate({ to: '/admin/roles/$roleId', params: { roleId } } as any)
     } else {
-      navigate({ to: '/admin/roles' })
+      navigate({ to: '/admin/roles' } as any)
     }
   }, [mode, roleId, navigate])
 

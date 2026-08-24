@@ -25,7 +25,6 @@ function delay(ms = 200) {
   return new Promise((r) => setTimeout(r, ms))
 }
 
-/** In-memory mock stores (mutated by mark-read / archive / compose send). */
 let inboxStore: AppNotification[] | null = null
 let sentStore: SentNotificationRow[] | null = null
 
@@ -76,7 +75,7 @@ export async function listInboxNotifications(): Promise<AppNotification[]> {
   return data
 }
 
-export async function getNotification(id: string): Promise<AppNotification | null> {
+export async function getNotification(id?: string | number): Promise<AppNotification | null> {
   if (env.useMockApi) {
     await delay()
     return getInbox().find((n) => n.id === id) ?? null
@@ -173,10 +172,7 @@ const MOCK_EMPLOYEES = [
   { name: 'Alex Rivera', contact: 'a.rivera@bytevon.com', initials: 'AR' },
 ]
 
-/**
- * Send notification — one row per recipient (all employees or targeted roles mock).
- * Runs “in background” via async; persists to sent store.
- */
+
 export async function sendNotification(input: ComposeNotificationInput): Promise<ComposeDeliveryResult> {
   if (env.useMockApi) {
     await delay(400)

@@ -1,22 +1,10 @@
-import { Button, type ButtonSize, type ButtonVariant } from '@/shared/components/ui/Button'
+import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
+import { RefreshButtonProps } from '@/shared/types'
 
-export interface RefreshButtonProps {
-  onClick?: () => void
-  isLoading?: boolean
-  variant?: ButtonVariant
-  size?: ButtonSize
-  className?: string
-  label?: string
-  /** Icon-only for toolbars */
-  iconOnly?: boolean
-  disabled?: boolean
-  title?: string
-}
 
-/**
- * Shared refresh control — re-fetch / invalidate query data on the current page.
- */
+
+
 export function RefreshButton({
   onClick,
   isLoading = false,

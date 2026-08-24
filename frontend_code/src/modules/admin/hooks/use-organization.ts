@@ -48,29 +48,28 @@ export function useOrgLocationsForSelect() {
   })
 }
 
-export function useWorkingWeeksList() {
+export function useWorkingWeeks() {
   return useQuery({
     queryKey: [...QK, 'working-weeks'],
-    queryFn: () => getWorkingWeeks(),
+    queryFn: getWorkingWeeks,
   })
 }
 
-export function useHolidayCalendarsList() {
+export function useHolidayCalendars() {
   return useQuery({
     queryKey: [...QK, 'holiday-calendars'],
-    queryFn: () => getHolidayCalendars(),
+    queryFn: getHolidayCalendars,
   })
 }
 
-export function useHolidaysList(calendarId: number) {
+export function useHolidays(calendarId?: number) {
   return useQuery({
-    queryKey: [...QK, 'holidays', calendarId],
+    queryKey: [...QK, 'holidays', { calendarId }],
     queryFn: () => getHolidays(calendarId),
-    enabled: Number.isFinite(calendarId) && calendarId > 0,
   })
 }
 
-export function usePositionsList(includeArchived = true) {
+export function usePositions(includeArchived = true) {
   return useQuery({
     queryKey: [...QK, 'positions', { includeArchived }],
     queryFn: () => getPositions({ includeArchived }),

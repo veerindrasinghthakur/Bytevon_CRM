@@ -11,41 +11,11 @@ import {
 import { HEADER_HEIGHT_PX } from './Header'
 import { Button } from '@/shared/components/ui/Button'
 import { IconButton } from '@/shared/components/ui/IconButton'
+import { OpenQuickOverviewOptions, QuickOverviewContextValue } from '@/shared/types'
 
 /** Gap between panel and viewport edges (below header / above bottom) */
-const PANEL_EDGE_GAP_PX = 12
-/** Must match CSS --duration-slide-in */
+const PANEL_EDGE_GAP_PX = 4
 const EXIT_MS = 280
-
-export type OpenQuickOverviewOptions = {
-  /** Primary entity name shown in header */
-  title: string
-  /** Secondary line under title (e.g. ID, email) */
-  subtitle?: string
-  /** Material symbol name for header icon well */
-  icon?: string
-  /** Status label next to title */
-  status?: string
-  /** Dot color class for status (e.g. bg-emerald-500) */
-  statusDotClass?: string
-  /** Body content — use QuickSection / QuickStat / etc. */
-  content: ReactNode
-  onOpenFull?: () => void
-  fullRecordLabel?: string
-  onEdit?: () => void
-  editLabel?: string
-  secondaryLabel?: string
-  onSecondary?: () => void
-  /** Default max-w matches stitch ~md panel */
-  widthClass?: string
-}
-
-interface QuickOverviewContextValue {
-  isOpen: boolean
-  openPanel: (options: OpenQuickOverviewOptions) => void
-  open: (options: OpenQuickOverviewOptions) => void
-  closePanel: () => void
-}
 
 const QuickOverviewContext = createContext<QuickOverviewContextValue | null>(null)
 
@@ -63,7 +33,6 @@ export function QuickOverviewProvider({ children }: { children: ReactNode }) {
   const openPanel = useCallback((opts: OpenQuickOverviewOptions) => {
     setOptions(opts)
     setVisible(true)
-    // Double rAF so enter class always applies after paint
     requestAnimationFrame(() => {
       requestAnimationFrame(() => setIsOpen(true))
     })
@@ -115,12 +84,6 @@ export function QuickOverviewProvider({ children }: { children: ReactNode }) {
   )
 }
 
-/**
- * Contextual Detail Drawer
- * - Starts BELOW the app header (backdrop + panel never cover header)
- * - z-50 so it stacks above page content but header stays interactive
- * - Smooth enter / exit slide
- */
 function QuickOverviewPanelShell({
   isOpen,
   visible,

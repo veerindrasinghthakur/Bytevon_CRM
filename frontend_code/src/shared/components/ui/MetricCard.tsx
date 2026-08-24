@@ -1,17 +1,7 @@
-import type { ReactNode } from 'react'
 import { cn } from '@/shared/lib/cn'
+import { MetricCardProps } from '@/shared/types'
 
-export interface MetricCardProps {
-  label: string
-  value: ReactNode
-  hint?: string
-  icon?: string
-  /** Optional value emphasis class (e.g. text-error) */
-  valueClassName?: string
-  className?: string
-}
 
-/** Reusable KPI / metric tile — tokens only. */
 export function MetricCard({
   label,
   value,

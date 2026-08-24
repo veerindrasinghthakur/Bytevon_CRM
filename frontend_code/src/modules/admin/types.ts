@@ -169,3 +169,79 @@ export interface PermissionCatalog {
 }
 
 export type RolePermissionMatrix = Record<string, Record<string, boolean>>
+
+// ── Admin Users API ──────────────────────────────────────────────────
+
+/** List item for admin users table (from api/users.ts) */
+export interface AdminUserListItem {
+  id: number
+  employmentId: number
+  name: string
+  email: string
+  role: string
+  department: string
+  status: 'Active' | 'Inactive' | 'Locked'
+  lastLogin: string
+  initials: string
+  employeeCode: string
+}
+
+/** Employment record without login (available for new user creation) */
+export interface EmploymentWithoutLogin {
+  employmentId: number
+  employeeCode: string
+  name: string
+  department: string
+  position: string
+  joiningDate: string
+}
+
+// ── Audit API ────────────────────────────────────────────────────────
+
+/** Input for recording audit events (from api/audit.ts) */
+export interface RecordAuditInput {
+  action: string
+  target: string
+  module: string
+  actor?: string
+  actorInitials?: string
+  ip?: string
+}
+
+// ── Metrics API ──────────────────────────────────────────────────────
+
+/** Admin hub metrics aggregates (from api/metrics.ts) */
+export interface AdminHubMetrics {
+  users: number
+  roles: number
+  activeSessions: number
+  auditEventsToday: number
+  configHealth: string
+  offices: number
+  departments: number
+  employees: number
+}
+
+/** Metrics for roles list page (from api/metrics.ts) */
+export interface RoleListMetrics {
+  totalRoles: number
+  activeRoles: number
+  activeUsers: number
+  archivedRoles: number
+}
+
+/** Metrics for leave admin (from api/metrics.ts) */
+export interface LeaveAdminMetrics {
+  leaveTypes: number
+  pendingRequests: number
+  approvedThisMonth: number
+  avgBalanceDays: number
+}
+
+/** Metrics for attendance admin (from api/metrics.ts) */
+export interface AttendanceAdminMetrics {
+  presentToday: number
+  lateToday: number
+  onLeaveToday: number
+  remoteCheckIns: number
+}

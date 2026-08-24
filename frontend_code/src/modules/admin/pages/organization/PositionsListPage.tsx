@@ -1,11 +1,11 @@
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
-import { usePositionsList } from '../hooks/use-organization'
+import { usePositions } from '../../hooks/use-organization'
 import { cn } from '@/shared/lib/cn'
 
 export function PositionsListPage() {
-  const { data, isLoading, isError, error, refetch } = usePositionsList(true)
+  const { data, isLoading, isError, error, refetch } = usePositions(true)
   const items = data?.items ?? []
 
   if (isLoading) return <PageLoadingSkeleton />

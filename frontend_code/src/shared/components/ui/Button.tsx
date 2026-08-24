@@ -1,22 +1,6 @@
 import { cn } from '@/shared/lib/cn'
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { ButtonProps, ButtonSize, ButtonVariant } from '@/shared/types'
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'
-export type ButtonSize = 'sm' | 'md' | 'lg'
-
-interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: ButtonVariant
-  size?: ButtonSize
-  isLoading?: boolean
-  leftIcon?: ReactNode
-  rightIcon?: ReactNode
-  children: ReactNode
-}
-
-/**
- * Primary CTAs use deep-navy brand fill (Manage Leave style) via tokens —
- * bg-primary / text-on-primary. No hardcoded hex.
- */
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
     'bg-primary text-on-primary hover:bg-primary-container executive-shadow hover:opacity-95 active:scale-95',

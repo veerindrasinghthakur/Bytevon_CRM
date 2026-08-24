@@ -13,7 +13,7 @@ import {
   useShiftDetail,
   useShiftStaff,
   useUpdateShift,
-} from '../hooks/use-shifts'
+} from '../../hooks/use-organization-shifts'
 
 const emptyShift: ShiftRow = {
   id: 0,

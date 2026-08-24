@@ -25,15 +25,12 @@ import { createApprovalRoutes } from '@/modules/approvals/routes'
 import { createSalesRoutes } from '@/modules/sales/routes'
 import { createProjectsRoutes } from '@/modules/projects/routes'
 import { createPayrollRoutes } from '@/modules/payroll/routes'
-import {
-  createOrganizationSettingsRoutes,
-  createWorkforceShiftRoutes,
-} from '@/modules/organization/routes'
 import { createWorkforceRoutes } from '@/modules/workforce/routes'
 import {
   createAdminRoutes,
   createAdminSettingsLayoutRoute,
   createAdminSettingsCoreRoutes,
+  createWorkforceShiftRoutes,
 } from '@/modules/admin/routes'
 
 function requireAuth() {
@@ -146,7 +143,6 @@ const routeTree = rootRoute.addChildren([
     ...createAdminRoutes(appLayoutRoute),
     adminSettingsLayoutRoute.addChildren([
       ...createAdminSettingsCoreRoutes(adminSettingsLayoutRoute),
-      ...createOrganizationSettingsRoutes(adminSettingsLayoutRoute),
     ]),
   ]),
 ])

@@ -4,7 +4,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
-import { useWorkingWeeksList } from '../hooks/use-organization'
+import { useWorkingWeeks } from '../../hooks/use-organization'
 import type { WorkingWeekRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 
@@ -13,7 +13,7 @@ const WEEKS_QK = ['organization', 'working-weeks'] as const
 
 export function WorkingWeeksPage() {
   const qc = useQueryClient()
-  const { data, isLoading, isError, error, refetch } = useWorkingWeeksList()
+  const { data, isLoading, isError, error, refetch } = useWorkingWeeks()
   const items = data?.items ?? []
   // Client form state only while editing one row — never a local copy of the list
   const [editingId, setEditingId] = useState<number | null>(null)

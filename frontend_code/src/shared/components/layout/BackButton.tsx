@@ -1,19 +1,9 @@
 import { useNavigate } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
+import { BackButtonProps } from '@/shared/types'
 
-interface BackButtonProps {
-  /** Fallback when history cannot go back */
-  to?: string
-  /** Optional originating route (documentation); navigation prefers history */
-  from?: string
-  label?: string
-  className?: string
-}
 
-/**
- * Shared back control — matches Role form interaction
- * (cursor, hover color, arrow slide on hover, focus ring).
- */
+
 export function BackButton({ to, from: _from, label = 'Back', className }: BackButtonProps) {
   const navigate = useNavigate()
 

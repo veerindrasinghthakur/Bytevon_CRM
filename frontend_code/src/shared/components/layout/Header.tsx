@@ -2,15 +2,11 @@ import { Link, useRouterState } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
 import { HeaderBreakChip } from './HeaderBreakChip'
 import { HeaderAttendanceSummary } from './HeaderAttendanceSummary'
+import { HeaderProps } from '@/shared/types'
 
-/** Shared shell header height — keep SecondarySidebar top row the same */
 export const HEADER_HEIGHT_PX = 56
 
-interface HeaderProps {
-  title?: string
-  className?: string
-  style?: React.CSSProperties
-}
+
 
 export function Header({ title, className, style }: HeaderProps) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })

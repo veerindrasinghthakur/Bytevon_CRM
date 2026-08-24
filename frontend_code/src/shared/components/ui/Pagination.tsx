@@ -1,21 +1,12 @@
 import { cn } from '@/shared/lib/cn'
 import { Button } from './Button'
+import { PaginationProps } from '@/shared/types'
 
 export const DEFAULT_PAGE_SIZE = 10
 
-interface PaginationProps {
-  page: number
-  pageSize?: number
-  total: number
-  onPageChange: (page: number) => void
-  itemLabel?: string
-  className?: string
-}
 
-/**
- * Only renders when total > pageSize.
- * Shows "Showing a–b of total" + prev/next + page chips.
- */
+
+
 export function Pagination({
   page,
   pageSize = DEFAULT_PAGE_SIZE,

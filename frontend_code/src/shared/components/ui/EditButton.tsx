@@ -1,23 +1,9 @@
-import { Button, type ButtonSize, type ButtonVariant } from '@/shared/components/ui/Button'
+import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
+import { EditButtonProps } from '@/shared/types'
 
-export interface EditButtonProps {
-  onClick?: () => void
-  /** Icon-only pencil (for card headers) vs labeled Edit */
-  iconOnly?: boolean
-  variant?: ButtonVariant
-  size?: ButtonSize
-  className?: string
-  label?: string
-  disabled?: boolean
-  title?: string
-  'aria-label'?: string
-}
 
-/**
- * Shared edit control — use with useEditMode (startEditing).
- * Prefer iconOnly on dense headers; labeled button on page toolbars.
- */
+
 export function EditButton({
   onClick,
   iconOnly = false,

@@ -1,13 +1,8 @@
 import { cn } from '@/shared/lib/cn'
+import { StatusDotProps } from '@/shared/types'
 
-export type SimpleRecordStatus = 'Active' | 'Inactive' | boolean
 
-interface StatusDotProps {
-  /** Active | Inactive, or boolean (true = active) */
-  status: SimpleRecordStatus
-  className?: string
-  size?: 'sm' | 'md'
-}
+
 
 /**
  * Leftmost status indicator for list rows.

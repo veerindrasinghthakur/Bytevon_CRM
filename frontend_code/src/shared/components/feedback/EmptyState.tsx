@@ -1,16 +1,7 @@
 import { cn } from '@/shared/lib/cn'
-import type { ReactNode } from 'react'
 import { Button } from '@/shared/components/ui/Button'
+import {EmptyStateProps} from '@/shared/types'
 
-interface EmptyStateProps {
-  icon?: string
-  title: string
-  description?: string
-  actionLabel?: string
-  onAction?: () => void
-  className?: string
-  children?: ReactNode
-}
 
 export function EmptyState({
   icon = 'inbox',

@@ -1,18 +1,6 @@
-import type { ReactNode } from 'react'
 import { Button } from '@/shared/components/ui/Button'
+import { BulkSelectionBarProps } from '@/shared/types'
 
-interface BulkSelectionBarProps {
-  selectedCount: number
-  /** Number of rows currently visible after filters (select-all scope) */
-  filteredCount: number
-  onCancel: () => void
-  children?: ReactNode
-}
-
-/**
- * Shown when list selection mode is on.
- * Place bulk action buttons in `children`.
- */
 export function BulkSelectionBar({
   selectedCount,
   filteredCount,

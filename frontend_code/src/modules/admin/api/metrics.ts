@@ -3,42 +3,16 @@
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { adminKpis, adminRoles, adminUsers, offices } from '../data/mock'
+import type {
+  AdminHubMetrics,
+  RoleListMetrics,
+  LeaveAdminMetrics,
+  AttendanceAdminMetrics,
+} from '../types'
 import { getDb } from '@/shared/mock/db'
 
 function delay(ms = 200) {
   return new Promise((r) => setTimeout(r, ms))
-}
-
-export interface AdminHubMetrics {
-  users: number
-  roles: number
-  activeSessions: number
-  auditEventsToday: number
-  configHealth: string
-  offices: number
-  departments: number
-  employees: number
-}
-
-export interface RoleListMetrics {
-  totalRoles: number
-  activeRoles: number
-  activeUsers: number
-  archivedRoles: number
-}
-
-export interface LeaveAdminMetrics {
-  leaveTypes: number
-  pendingRequests: number
-  approvedThisMonth: number
-  avgBalanceDays: number
-}
-
-export interface AttendanceAdminMetrics {
-  presentToday: number
-  lateToday: number
-  onLeaveToday: number
-  remoteCheckIns: number
 }
 
 export async function getAdminHubMetrics(): Promise<AdminHubMetrics> {

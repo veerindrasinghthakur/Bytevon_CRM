@@ -1,12 +1,10 @@
 import { Link } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
 import { useHeaderBreak } from '@/shared/hooks/useHeaderBreak'
+import { HeaderBreakChipProps } from '@/shared/types'
 
-interface HeaderBreakChipProps {
-  active?: boolean
-}
 
-/** Header break control — label is simply "Break". */
+
 export function HeaderBreakChip({ active }: HeaderBreakChipProps) {
   const { runningLabel, isOnBreak } = useHeaderBreak()
 

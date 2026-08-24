@@ -88,7 +88,11 @@ export async function createLocation(
       updated_at: new Date().toISOString(),
       changed_by: 1,
     }
-    list.push(row)
+    const fullRow: LocationRow = {
+      ...row,
+      payroll_region: row.payroll_region ?? '', // Ensure payroll_region is not undefined
+    }
+    list.push(fullRow as any)
     return { ...row }
   }
   const { data } = await apiClient.post<LocationRow>('/organization/locations', input)
@@ -148,7 +152,7 @@ export async function createShift(
       updated_at: new Date().toISOString(),
       changed_by: 1,
     }
-    list.push(row)
+    list.push(row as any)
     return { ...row }
   }
   const { data } = await apiClient.post<ShiftRow>('/organization/shifts', input)

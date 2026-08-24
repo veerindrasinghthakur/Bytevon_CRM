@@ -9,7 +9,7 @@ import {
   useOrganizationSettings,
   useOrgLocationsForSelect,
   useUpdateOrganizationSettings,
-} from '../hooks/use-organization'
+} from '../../hooks/use-organization'
 import type { OrganizationSettings } from '@/shared/schema'
 
 export function OrganizationSettingsPage() {

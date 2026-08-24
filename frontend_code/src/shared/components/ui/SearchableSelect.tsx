@@ -1,12 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { cn } from '@/shared/lib/cn'
+import { SearchableOption } from '@/shared/types'
 
-export interface SearchableOption {
-  value: string
-  label: string
-  meta?: string
-  disabled?: boolean
-}
+
 
 /**
  * Typeahead select — panel styling matches redesigned Select options panel.

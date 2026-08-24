@@ -94,14 +94,24 @@ export async function exportResource(req: ExportRequest): Promise<ExportResult> 
   return realExport(req)
 }
 
+/** Export a resource and trigger a download.
+ * Errors are caught and re‑thrown after optionally showing a user‑friendly toast.
+ */
 export async function exportAndDownload(req: ExportRequest): Promise<ExportResult> {
-  const result = await exportResource(req)
-  downloadFile(result)
-  const count = req.selectedIds?.length
-  void recordAuditEvent({
-    action: 'Export completed',
-    target: `${req.resource} (${req.format}${count != null ? `, ${count} selected` : ''})`,
-    module: 'Export',
-  })
-  return result
+  try {
+    const result = await exportResource(req)
+    downloadFile(result)
+    const count = req.selectedIds?.length
+    // Record audit – fire‑and‑forget, but log any failure.
+    void recordAuditEvent({
+      action: 'Export completed',
+      target: `${req.resource} (${req.format}${count != null ? `, ${count} selected` : ''})`,
+      module: 'Export',
+    }).catch((e) => console.warn('Export audit failed', e))
+    return result
+  } catch (err) {
+    // Propagate a clearer error for callers/UI.
+    console.error('Export failed', err)
+    throw err
+  }
 }

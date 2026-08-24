@@ -1,11 +1,11 @@
 import { Link } from '@tanstack/react-router'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
-import { useHolidayCalendarsList } from '../hooks/use-organization'
+import { useHolidayCalendars } from '../../hooks/use-organization'
 import { cn } from '@/shared/lib/cn'
 
 export function HolidayCalendarsPage() {
-  const { data, isLoading, isError, error, refetch } = useHolidayCalendarsList()
+  const { data, isLoading, isError, error, refetch } = useHolidayCalendars()
   const items = data?.items ?? []
 
   if (isLoading) return <PageLoadingSkeleton />

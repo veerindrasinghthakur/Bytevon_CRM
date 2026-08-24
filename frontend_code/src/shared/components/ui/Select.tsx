@@ -1,27 +1,8 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { cn } from '@/shared/lib/cn'
+import { SelectOption, SelectProps } from '@/shared/types'
 
-export interface SelectOption {
-  value: string
-  label: string
-  disabled?: boolean
-  /** Optional group heading — consecutive options with same group render under one header */
-  group?: string
-}
 
-export interface SelectProps {
-  value: string
-  onChange: (value: string) => void
-  options: SelectOption[]
-  placeholder?: string
-  label?: string
-  error?: string
-  className?: string
-  minWidthClass?: string
-  id?: string
-  disabled?: boolean
-  'aria-label'?: string
-}
 
 /**
  * Custom select — options panel matches Bytevon Component Reference design:

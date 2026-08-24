@@ -2,26 +2,8 @@ import { useMemo } from 'react'
 import { Button } from '@/shared/components/ui/Button'
 import { downloadFile } from '@/shared/lib/download-file'
 import { cn } from '@/shared/lib/cn'
+import {FilePreviewModalProps} from '@/shared/types'
 
-export interface FilePreviewItem {
-  id: string | number
-  name: string
-  mimeType?: string
-  sizeLabel?: string
-  uploadedBy?: string
-  uploadedAt?: string
-  /** Object URL, data URL, or remote URL for preview / download */
-  url?: string
-  /** Optional blob for download when url is not a direct file */
-  blob?: Blob
-}
-
-export interface FilePreviewModalProps {
-  open: boolean
-  file: FilePreviewItem | null
-  onClose: () => void
-  className?: string
-}
 
 function kindFromMime(name: string, mime?: string): 'image' | 'pdf' | 'text' | 'other' {
   const m = (mime ?? '').toLowerCase()
