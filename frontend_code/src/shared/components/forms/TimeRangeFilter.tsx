@@ -22,10 +22,7 @@ function formatDisplay(value: TimeRangeValue): string {
   return value.from || value.to
 }
 
-/**
- * Compact filter-bar time control (optional — use where needed, e.g. Audit).
- * Same interaction model as DateRangeFilter: icon box → single/range choice → pickers.
- */
+/** Compact filter-bar time control — shrinks in single-line filter bars. */
 export function TimeRangeFilter({
   value,
   onChange,
@@ -93,7 +90,7 @@ export function TimeRangeFilter({
   }
 
   return (
-    <div ref={rootRef} className={cn('relative inline-flex', className)}>
+    <div ref={rootRef} className={cn('relative inline-flex min-w-0 max-w-[9rem] shrink', className)}>
       <button
         type="button"
         disabled={disabled}
@@ -101,7 +98,7 @@ export function TimeRangeFilter({
         aria-expanded={open}
         onClick={() => !disabled && setOpen((o) => !o)}
         className={cn(
-          'inline-flex items-center gap-2 min-w-[7.5rem] max-w-[14rem] px-3 py-2 rounded-lg border',
+          'inline-flex items-center gap-1.5 min-w-0 w-full max-w-full px-2.5 py-1.5 rounded-lg border',
           'border-outline-variant bg-surface-container-lowest text-body-sm text-on-surface',
           'outline-none focus:border-secondary focus:ring-1 focus:ring-secondary',
           'disabled:opacity-50 disabled:pointer-events-none',
@@ -113,7 +110,7 @@ export function TimeRangeFilter({
         </span>
         <span
           className={cn(
-            'truncate flex-1 text-left',
+            'truncate flex-1 text-left min-w-0',
             hasValue ? 'text-on-surface font-medium' : 'text-on-surface-variant',
           )}
         >
@@ -163,11 +160,7 @@ export function TimeRangeFilter({
           {step === 'single' && (
             <div className="space-y-3 p-1">
               <div className="flex items-center justify-between px-1">
-                <button
-                  type="button"
-                  className="text-label-sm text-secondary hover:underline"
-                  onClick={() => setStep('menu')}
-                >
+                <button type="button" className="text-label-sm text-secondary hover:underline" onClick={() => setStep('menu')}>
                   Back
                 </button>
                 <span className="text-label-sm text-on-surface-variant">Pick a time</span>
@@ -191,11 +184,7 @@ export function TimeRangeFilter({
           {step === 'range' && (
             <div className="space-y-3 p-1">
               <div className="flex items-center justify-between px-1">
-                <button
-                  type="button"
-                  className="text-label-sm text-secondary hover:underline"
-                  onClick={() => setStep('menu')}
-                >
+                <button type="button" className="text-label-sm text-secondary hover:underline" onClick={() => setStep('menu')}>
                   Back
                 </button>
                 <span className="text-label-sm text-on-surface-variant">Pick a range</span>
