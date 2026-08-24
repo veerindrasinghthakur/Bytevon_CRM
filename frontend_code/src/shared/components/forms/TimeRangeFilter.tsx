@@ -1,25 +1,21 @@
 import { useEffect, useRef, useState, type MouseEvent } from 'react'
 import { cn } from '@/shared/lib/cn'
 
-export interface DateRangeValue {
+export interface TimeRangeValue {
   from: string
   to: string
 }
 
-export type DatePickerMode = 'single' | 'range'
-
-export interface DateRangeFilterProps {
-  value: DateRangeValue
-  onChange: (value: DateRangeValue) => void
-  /** Optional label for a11y */
+export interface TimeRangeFilterProps {
+  value: TimeRangeValue
+  onChange: (value: TimeRangeValue) => void
   label?: string
   className?: string
   disabled?: boolean
-  /** Placeholder when empty (default: Date) */
   placeholder?: string
 }
 
-function formatDisplay(value: DateRangeValue): string {
+function formatDisplay(value: TimeRangeValue): string {
   if (!value.from && !value.to) return ''
   if (value.from && (!value.to || value.to === value.from)) return value.from
   if (value.from && value.to) return `${value.from} – ${value.to}`
@@ -27,19 +23,17 @@ function formatDisplay(value: DateRangeValue): string {
 }
 
 /**
- * Compact filter-bar date control.
- * - Idle: single box with calendar icon
- * - Click: choose "Select date" (one calendar) or "Select range" (two calendars)
- * - Selected value shows inside the same box next to the icon
+ * Compact filter-bar time control (optional — use where needed, e.g. Audit).
+ * Same interaction model as DateRangeFilter: icon box → single/range choice → pickers.
  */
-export function DateRangeFilter({
+export function TimeRangeFilter({
   value,
   onChange,
-  label = 'Date',
+  label = 'Time',
   className,
   disabled,
-  placeholder = 'Date',
-}: DateRangeFilterProps) {
+  placeholder = 'Time',
+}: TimeRangeFilterProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const [open, setOpen] = useState(false)
   const [step, setStep] = useState<'menu' | 'single' | 'range'>('menu')
@@ -53,7 +47,7 @@ export function DateRangeFilter({
     if (value.from && value.to && value.from !== value.to) setStep('range')
     else if (value.from || value.to) setStep('single')
     else setStep('menu')
-  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps -- sync on open only
+  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!open) return
@@ -74,8 +68,8 @@ export function DateRangeFilter({
   const display = formatDisplay(value)
   const hasValue = Boolean(display)
 
-  const applySingle = (d: string) => {
-    onChange({ from: d, to: d })
+  const applySingle = (t: string) => {
+    onChange({ from: t, to: t })
     setOpen(false)
   }
 
@@ -107,7 +101,7 @@ export function DateRangeFilter({
         aria-expanded={open}
         onClick={() => !disabled && setOpen((o) => !o)}
         className={cn(
-          'inline-flex items-center gap-2 min-w-[7.5rem] max-w-[16rem] px-3 py-2 rounded-lg border',
+          'inline-flex items-center gap-2 min-w-[7.5rem] max-w-[14rem] px-3 py-2 rounded-lg border',
           'border-outline-variant bg-surface-container-lowest text-body-sm text-on-surface',
           'outline-none focus:border-secondary focus:ring-1 focus:ring-secondary',
           'disabled:opacity-50 disabled:pointer-events-none',
@@ -115,7 +109,7 @@ export function DateRangeFilter({
         )}
       >
         <span className="material-symbols-outlined text-[18px] text-on-surface-variant shrink-0">
-          calendar_month
+          schedule
         </span>
         <span
           className={cn(
@@ -131,7 +125,7 @@ export function DateRangeFilter({
             tabIndex={-1}
             onClick={clear}
             className="material-symbols-outlined text-[16px] text-on-surface-variant hover:text-on-surface shrink-0"
-            aria-label="Clear date"
+            aria-label="Clear time"
           >
             close
           </span>
@@ -141,7 +135,7 @@ export function DateRangeFilter({
       {open && (
         <div
           className={cn(
-            'absolute z-50 top-full left-0 mt-1 min-w-[240px]',
+            'absolute z-50 top-full left-0 mt-1 min-w-[220px]',
             'rounded-xl border border-outline-variant bg-surface-container-lowest shadow-lg p-2',
           )}
         >
@@ -152,15 +146,15 @@ export function DateRangeFilter({
                 className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-body-sm text-on-surface hover:bg-surface-container-low text-left"
                 onClick={() => setStep('single')}
               >
-                <span className="material-symbols-outlined text-[18px] text-secondary">event</span>
-                Select date
+                <span className="material-symbols-outlined text-[18px] text-secondary">schedule</span>
+                Select time
               </button>
               <button
                 type="button"
                 className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-body-sm text-on-surface hover:bg-surface-container-low text-left"
                 onClick={() => setStep('range')}
               >
-                <span className="material-symbols-outlined text-[18px] text-secondary">date_range</span>
+                <span className="material-symbols-outlined text-[18px] text-secondary">timelapse</span>
                 Select range
               </button>
             </div>
@@ -176,10 +170,10 @@ export function DateRangeFilter({
                 >
                   Back
                 </button>
-                <span className="text-label-sm text-on-surface-variant">Pick a date</span>
+                <span className="text-label-sm text-on-surface-variant">Pick a time</span>
               </div>
               <input
-                type="date"
+                type="time"
                 value={draftFrom || value.from}
                 onChange={(e) => {
                   setDraftFrom(e.target.value)
@@ -210,7 +204,7 @@ export function DateRangeFilter({
                 <label className="flex flex-col gap-1">
                   <span className="text-label-sm text-on-surface-variant">From</span>
                   <input
-                    type="date"
+                    type="time"
                     value={draftFrom}
                     onChange={(e) => setDraftFrom(e.target.value)}
                     className={cn(
@@ -222,9 +216,8 @@ export function DateRangeFilter({
                 <label className="flex flex-col gap-1">
                   <span className="text-label-sm text-on-surface-variant">To</span>
                   <input
-                    type="date"
+                    type="time"
                     value={draftTo}
-                    min={draftFrom || undefined}
                     onChange={(e) => setDraftTo(e.target.value)}
                     className={cn(
                       'w-full px-2 py-2 rounded-lg border border-outline-variant bg-transparent',
