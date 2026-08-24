@@ -1,54 +1,64 @@
 import { useNavigate } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { adminKpis } from '../data/mock'
+import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { getAdminHubMetrics } from '../api/metrics'
 import { cn } from '@/shared/lib/cn'
-
-const tiles = [
-  {
-    id: 'users',
-    title: 'User Management',
-    description: 'Provision accounts, lock sessions, and assign roles.',
-    icon: 'manage_accounts',
-    to: '/admin/users',
-    stat: `${adminKpis.users} users`,
-  },
-  {
-    id: 'roles',
-    title: 'Roles & Permissions',
-    description: 'Define RBAC roles and permission scopes.',
-    icon: 'qr_code_2',
-    to: '/admin/roles',
-    stat: `${adminKpis.roles} roles`,
-  },
-  {
-    id: 'settings',
-    title: 'Organization Settings',
-    description: 'Profile, offices, branding, attendance & leave policies.',
-    icon: 'settings',
-    to: '/admin/settings',
-    stat: 'Config hub',
-  },
-  {
-    id: 'audit',
-    title: 'Audit Logs',
-    description: 'Immutable trail of significant administrative actions.',
-    icon: 'receipt_long',
-    to: '/admin/audit',
-    stat: `${adminKpis.auditEventsToday} today`,
-  },
-  {
-    id: 'security',
-    title: 'Security Center',
-    description: 'Sessions, lockouts, and password policy overview.',
-    icon: 'security',
-    to: '/admin/security',
-    stat: `${adminKpis.activeSessions} sessions`,
-  },
-]
 
 export function AdminHubPage() {
   const navigate = useNavigate()
+  const { data: kpis, isLoading } = useQuery({
+    queryKey: ['admin', 'metrics', 'hub'],
+    queryFn: getAdminHubMetrics,
+  })
+
+  if (isLoading || !kpis) {
+    return <PageLoadingSkeleton />
+  }
+
+  const tiles = [
+    {
+      id: 'users',
+      title: 'User Management',
+      description: 'Provision accounts, lock sessions, and assign roles.',
+      icon: 'manage_accounts',
+      to: '/admin/users',
+      stat: `${kpis.users} users`,
+    },
+    {
+      id: 'roles',
+      title: 'Roles & Permissions',
+      description: 'Define RBAC roles and permission scopes.',
+      icon: 'qr_code_2',
+      to: '/admin/roles',
+      stat: `${kpis.roles} roles`,
+    },
+    {
+      id: 'settings',
+      title: 'Organization Settings',
+      description: 'Profile, offices, branding, attendance & leave policies.',
+      icon: 'settings',
+      to: '/admin/settings',
+      stat: 'Config hub',
+    },
+    {
+      id: 'audit',
+      title: 'Audit Logs',
+      description: 'Immutable trail of significant administrative actions.',
+      icon: 'receipt_long',
+      to: '/admin/audit',
+      stat: `${kpis.auditEventsToday} today`,
+    },
+    {
+      id: 'security',
+      title: 'Security Center',
+      description: 'Sessions, lockouts, and password policy overview.',
+      icon: 'security',
+      to: '/admin/security',
+      stat: `${kpis.activeSessions} sessions`,
+    },
+  ]
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -67,16 +77,16 @@ export function AdminHubPage() {
       />
 
       <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <Kpi label="Users" value={adminKpis.users.toLocaleString()} />
-        <Kpi label="Roles" value={String(adminKpis.roles)} />
-        <Kpi label="Active Sessions" value={String(adminKpis.activeSessions)} />
-        <Kpi label="Audit Today" value={String(adminKpis.auditEventsToday)} />
+        <Kpi label="Users" value={kpis.users.toLocaleString()} />
+        <Kpi label="Roles" value={String(kpis.roles)} />
+        <Kpi label="Active Sessions" value={String(kpis.activeSessions)} />
+        <Kpi label="Audit Today" value={String(kpis.auditEventsToday)} />
         <Kpi
           label="Health"
           value={
             <span className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-emerald-500" />
-              {adminKpis.configHealth}
+              {kpis.configHealth}
             </span>
           }
         />
@@ -88,10 +98,7 @@ export function AdminHubPage() {
             key={t.id}
             type="button"
             onClick={() => navigate({ to: t.to })}
-            className={cn(
-              'text-left p-6 bv-surface card-hover',
-              'hover:border-secondary/40'
-            )}
+            className={cn('text-left p-6 bv-surface card-hover', 'hover:border-secondary/40')}
           >
             <div className="flex items-start justify-between mb-4">
               <span className="material-symbols-outlined p-2 rounded-lg bg-secondary/10 text-secondary text-2xl">
