@@ -2,12 +2,9 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { cn } from '@/shared/lib/cn'
 import { SelectOption, SelectProps } from '@/shared/types'
 
-
-
 /**
- * Custom select — options panel matches Bytevon Component Reference design:
- * rounded-xl panel, 44px rows, hover / selected+check / disabled, scroll max 240px, optional groups.
- * API stays compatible with the previous native Select.
+ * Custom select — options panel matches Bytevon Component Reference design.
+ * Default minWidthClass is compact so filter bars stay on one line.
  */
 export function Select({
   value,
@@ -17,7 +14,7 @@ export function Select({
   label,
   error,
   className,
-  minWidthClass = 'min-w-[140px]',
+  minWidthClass = 'min-w-[7rem] max-w-[12rem]',
   id,
   disabled,
   'aria-label': ariaLabel,
@@ -95,7 +92,7 @@ export function Select({
   }
 
   return (
-    <div ref={rootRef} className={cn('relative', minWidthClass, className)}>
+    <div ref={rootRef} className={cn('relative min-w-0 shrink', minWidthClass, className)}>
       {label ? (
         <label htmlFor={selectId} className="block text-label-sm text-on-surface-variant mb-1.5">
           {label}
@@ -113,9 +110,9 @@ export function Select({
         onClick={() => setOpen((o) => !o)}
         onKeyDown={onKeyDown}
         className={cn(
-          'w-full h-11 px-4 flex items-center justify-between gap-2',
+          'w-full h-9 px-3 flex items-center justify-between gap-2',
           'bg-surface-container-lowest border rounded-lg',
-          'text-body-md text-on-surface text-left',
+          'text-body-sm text-on-surface text-left',
           'transition-colors duration-200',
           'focus:outline-none focus:border-secondary focus:ring-1 focus:ring-secondary/40',
           'disabled:opacity-50 disabled:cursor-not-allowed',
@@ -123,12 +120,12 @@ export function Select({
           error ? 'border-error' : 'border-outline-variant',
         )}
       >
-        <span className={cn('truncate', !selected && 'text-on-surface-variant')}>
+        <span className={cn('truncate min-w-0', !selected && 'text-on-surface-variant')}>
           {selected?.label ?? placeholder}
         </span>
         <span
           className={cn(
-            'material-symbols-outlined text-on-surface-variant text-[20px] shrink-0 transition-transform',
+            'material-symbols-outlined text-on-surface-variant text-[18px] shrink-0 transition-transform',
             open && 'rotate-180',
           )}
           aria-hidden
@@ -140,7 +137,7 @@ export function Select({
       {open && !disabled ? (
         <div
           className={cn(
-            'absolute z-50 mt-2 w-full',
+            'absolute z-50 mt-2 w-full min-w-[10rem]',
             'bg-surface-container-lowest rounded-xl border border-outline-variant/50',
             'executive-shadow overflow-hidden',
           )}
