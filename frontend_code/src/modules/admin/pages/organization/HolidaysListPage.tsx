@@ -1,18 +1,86 @@
+import { useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { BackButton } from '@/shared/components/layout/BackButton'
+import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { useHolidays } from '../../hooks/use-organization'
+import { createHoliday, getHolidayCalendar, getHolidays } from '../../api/organization'
+import type { HolidayRow } from '@/shared/schema'
+
+const TYPES: HolidayRow['holiday_type'][] = ['NATIONAL', 'REGIONAL', 'OPTIONAL', 'COMPANY']
 
 export function HolidaysListPage() {
   const { calendarId } = useParams({ strict: false }) as { calendarId: string }
   const id = Number(calendarId)
   const navigate = useNavigate()
+  const qc = useQueryClient()
   const { data, isLoading, isError, error, refetch } = useHolidays(id)
+  const calQuery = useQuery({
+    queryKey: ['organization', 'holiday-calendars', id],
+    queryFn: () => getHolidayCalendar(id),
+    enabled: Number.isFinite(id),
+  })
   const items = data?.items ?? []
 
-  if (isLoading) return <PageLoadingSkeleton />
+  const [adding, setAdding] = useState(false)
+  const [mode, setMode] = useState<'new' | 'existing'>('new')
+  const [form, setForm] = useState({
+    name: '',
+    date: '',
+    holiday_type: 'NATIONAL' as HolidayRow['holiday_type'],
+    recurring_flag: true,
+  })
+  const [pickHolidayId, setPickHolidayId] = useState('')
+
+  const allHolidaysQuery = useQuery({
+    queryKey: ['organization', 'holidays', 'all'],
+    queryFn: () => getHolidays(),
+    enabled: adding && mode === 'existing',
+  })
+
+  const existingOptions =
+    allHolidaysQuery.data?.items
+      ?.filter((h) => h.holiday_calendar_id !== id)
+      .map((h) => ({
+        value: String(h.id),
+        label: `${h.name} (${h.date})`,
+      })) ?? []
+
+  const createMut = useMutation({
+    mutationFn: async () => {
+      if (mode === 'existing' && pickHolidayId) {
+        const src = allHolidaysQuery.data?.items.find((h) => String(h.id) === pickHolidayId)
+        if (!src) throw new Error('Holiday not found')
+        return createHoliday({
+          holiday_calendar_id: id,
+          name: src.name,
+          date: src.date,
+          holiday_type: src.holiday_type,
+          recurring_flag: src.recurring_flag,
+        })
+      }
+      if (!form.name.trim() || !form.date) throw new Error('Name and date are required')
+      return createHoliday({
+        holiday_calendar_id: id,
+        name: form.name,
+        date: form.date,
+        holiday_type: form.holiday_type,
+        recurring_flag: form.recurring_flag,
+      })
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['organization', 'holidays'] })
+      setAdding(false)
+      setForm({ name: '', date: '', holiday_type: 'NATIONAL', recurring_flag: true })
+      setPickHolidayId('')
+    },
+  })
+
+  if (isLoading || calQuery.isLoading) return <PageLoadingSkeleton />
   if (isError) {
     return (
       <ErrorState
@@ -23,13 +91,123 @@ export function HolidaysListPage() {
     )
   }
 
+  const calName = calQuery.data?.name ?? `Calendar #${id}`
+
   return (
     <div className="space-y-6 animate-fade-in">
       <BackButton to="/admin/settings/holidays" label="Back to calendars" />
-      <div>
-        <h2 className="text-title-lg font-semibold text-on-background">Holiday schedule</h2>
-        <p className="text-body-sm text-on-surface-variant mt-0.5">Calendar #{id}</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 className="text-title-lg font-semibold text-on-background">{calName}</h2>
+          <p className="text-body-sm text-on-surface-variant mt-0.5">Holiday schedule · Calendar #{id}</p>
+        </div>
+        <Button
+          variant="primary"
+          size="sm"
+          leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+          onClick={() => setAdding(true)}
+        >
+          Add Holiday
+        </Button>
       </div>
+
+      {adding && (
+        <div className="bv-surface p-5 space-y-4 max-w-xl">
+          <h3 className="text-title-md font-semibold">Add holiday</h3>
+          <div className="flex gap-2">
+            <Button
+              variant={mode === 'new' ? 'primary' : 'outline'}
+              size="sm"
+              onClick={() => setMode('new')}
+            >
+              Create new
+            </Button>
+            <Button
+              variant={mode === 'existing' ? 'primary' : 'outline'}
+              size="sm"
+              onClick={() => setMode('existing')}
+            >
+              Add existing
+            </Button>
+          </div>
+
+          {mode === 'existing' ? (
+            <Select
+              value={pickHolidayId}
+              onChange={setPickHolidayId}
+              options={[{ value: '', label: 'Select holiday…' }, ...existingOptions]}
+              placeholder="Search existing"
+              minWidthClass="w-full"
+            />
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="sm:col-span-2">
+                <label className="text-xs font-bold text-on-surface-variant uppercase">Name</label>
+                <input
+                  value={form.name}
+                  onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                  className="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm mt-1"
+                  placeholder="Republic Day"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-on-surface-variant uppercase">Date</label>
+                <input
+                  type="date"
+                  value={form.date}
+                  onChange={(e) => setForm((p) => ({ ...p, date: e.target.value }))}
+                  className="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm mt-1"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-on-surface-variant uppercase">Type</label>
+                <select
+                  value={form.holiday_type}
+                  onChange={(e) =>
+                    setForm((p) => ({
+                      ...p,
+                      holiday_type: e.target.value as HolidayRow['holiday_type'],
+                    }))
+                  }
+                  className="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm mt-1"
+                >
+                  {TYPES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <label className="inline-flex items-center gap-2 text-body-sm sm:col-span-2">
+                <input
+                  type="checkbox"
+                  checked={form.recurring_flag}
+                  onChange={(e) => setForm((p) => ({ ...p, recurring_flag: e.target.checked }))}
+                />
+                Recurring annually
+              </label>
+            </div>
+          )}
+
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" size="sm" onClick={() => setAdding(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              isLoading={createMut.isPending}
+              onClick={() => createMut.mutate()}
+            >
+              Save holiday
+            </Button>
+          </div>
+          {createMut.isError && (
+            <p className="text-body-sm text-error">{(createMut.error as Error).message}</p>
+          )}
+        </div>
+      )}
+
       {items.length === 0 ? (
         <EmptyState title="No holidays" description="Add holidays to this calendar." />
       ) : (

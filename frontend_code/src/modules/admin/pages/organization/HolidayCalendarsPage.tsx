@@ -1,12 +1,33 @@
-import { Link } from '@tanstack/react-router'
+import { useState } from 'react'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useHolidayCalendars } from '../../hooks/use-organization'
+import { createHolidayCalendar } from '../../api/organization'
 import { cn } from '@/shared/lib/cn'
 
 export function HolidayCalendarsPage() {
+  const navigate = useNavigate()
+  const qc = useQueryClient()
   const { data, isLoading, isError, error, refetch } = useHolidayCalendars()
   const items = data?.items ?? []
+  const [creating, setCreating] = useState(false)
+  const [name, setName] = useState('')
+
+  const createMut = useMutation({
+    mutationFn: () => createHolidayCalendar({ name }),
+    onSuccess: async (row) => {
+      await qc.invalidateQueries({ queryKey: ['organization', 'holiday-calendars'] })
+      setCreating(false)
+      setName('')
+      navigate({
+        to: '/admin/settings/holidays/$calendarId',
+        params: { calendarId: String(row.id) },
+      })
+    },
+  })
 
   if (isLoading) return <PageLoadingSkeleton />
   if (isError) {
@@ -15,12 +36,52 @@ export function HolidayCalendarsPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div>
-        <h2 className="text-title-lg font-semibold text-on-background">Calendars</h2>
-        <p className="text-body-sm text-on-surface-variant mt-0.5">
-          Holiday calendars linked to office locations — open a calendar to manage holidays
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 className="text-title-lg font-semibold text-on-background">Calendars</h2>
+          <p className="text-body-sm text-on-surface-variant mt-0.5">
+            Holiday calendars linked to office locations — open a calendar to manage holidays
+          </p>
+        </div>
+        <Button
+          variant="primary"
+          size="sm"
+          leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+          onClick={() => setCreating(true)}
+        >
+          Create Calendar
+        </Button>
       </div>
+
+      {creating && (
+        <div className="bv-surface p-5 space-y-3 max-w-lg">
+          <h3 className="text-title-md font-semibold">New holiday calendar</h3>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. India National 2027"
+            className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary"
+          />
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" size="sm" onClick={() => setCreating(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={!name.trim() || createMut.isPending}
+              isLoading={createMut.isPending}
+              onClick={() => createMut.mutate()}
+            >
+              Create
+            </Button>
+          </div>
+          {createMut.isError && (
+            <p className="text-body-sm text-error">{(createMut.error as Error).message}</p>
+          )}
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {items.map((c) => (
           <Link

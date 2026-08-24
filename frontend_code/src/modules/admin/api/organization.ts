@@ -90,7 +90,7 @@ export async function createLocation(
     }
     const fullRow: LocationRow = {
       ...row,
-      payroll_region: row.payroll_region ?? '', // Ensure payroll_region is not undefined
+      payroll_region: row.payroll_region ?? '',
     }
     list.push(fullRow as any)
     return { ...row }
@@ -195,6 +195,58 @@ export async function getHolidayCalendars() {
   return data
 }
 
+export async function getHolidayCalendar(id: number): Promise<HolidayCalendarRow | null> {
+  if (env.useMockApi) {
+    await delay()
+    const row = getDb().holiday_calendars.find((c) => c.id === id)
+    return row ? { ...row } : null
+  }
+  try {
+    const { data } = await apiClient.get<HolidayCalendarRow>(`/organization/holiday-calendars/${id}`)
+    return data
+  } catch {
+    return null
+  }
+}
+
+export async function createHolidayCalendar(input: { name: string }): Promise<HolidayCalendarRow> {
+  if (env.useMockApi) {
+    await delay(400)
+    const list = getDb().holiday_calendars
+    const now = new Date().toISOString()
+    const row: HolidayCalendarRow = {
+      id: nextId(list),
+      name: input.name.trim(),
+      is_archived: false,
+      created_at: now,
+      updated_at: now,
+      changed_by: 1,
+    }
+    list.push(row as any)
+    return { ...row }
+  }
+  const { data } = await apiClient.post<HolidayCalendarRow>('/organization/holiday-calendars', input)
+  return data
+}
+
+export async function updateHolidayCalendar(
+  id: number,
+  patch: Partial<Pick<HolidayCalendarRow, 'name' | 'is_archived'>>,
+): Promise<HolidayCalendarRow> {
+  if (env.useMockApi) {
+    await delay(400)
+    const row = getDb().holiday_calendars.find((c) => c.id === id)
+    if (!row) throw new Error('Calendar not found')
+    Object.assign(row, patch, { updated_at: new Date().toISOString() })
+    return { ...row }
+  }
+  const { data } = await apiClient.patch<HolidayCalendarRow>(
+    `/organization/holiday-calendars/${id}`,
+    patch,
+  )
+  return data
+}
+
 export async function getHolidays(calendarId?: number) {
   if (env.useMockApi) {
     await delay()
@@ -208,6 +260,33 @@ export async function getHolidays(calendarId?: number) {
   return data
 }
 
+export async function createHoliday(input: {
+  holiday_calendar_id: number
+  name: string
+  date: string
+  holiday_type: HolidayRow['holiday_type']
+  recurring_flag: boolean
+}): Promise<HolidayRow> {
+  if (env.useMockApi) {
+    await delay(400)
+    const list = getDb().holidays
+    const row: HolidayRow = {
+      id: nextId(list),
+      holiday_calendar_id: input.holiday_calendar_id,
+      name: input.name.trim(),
+      date: input.date,
+      holiday_type: input.holiday_type,
+      recurring_flag: input.recurring_flag,
+      created_at: new Date().toISOString(),
+      changed_by: 1,
+    }
+    list.push(row as any)
+    return { ...row }
+  }
+  const { data } = await apiClient.post<HolidayRow>('/organization/holidays', input)
+  return data
+}
+
 export async function getPositions(params?: { includeArchived?: boolean }) {
   if (env.useMockApi) {
     await delay()
@@ -218,6 +297,54 @@ export async function getPositions(params?: { includeArchived?: boolean }) {
   const { data } = await apiClient.get<{ items: PositionRow[]; total: number }>('/organization/positions', {
     params,
   })
+  return data
+}
+
+export async function getPosition(id: number): Promise<PositionRow | null> {
+  if (env.useMockApi) {
+    await delay()
+    const row = getDb().positions.find((p) => p.id === id)
+    return row ? { ...row } : null
+  }
+  try {
+    const { data } = await apiClient.get<PositionRow>(`/organization/positions/${id}`)
+    return data
+  } catch {
+    return null
+  }
+}
+
+export async function createPosition(input: { name: string }): Promise<PositionRow> {
+  if (env.useMockApi) {
+    await delay(400)
+    const list = getDb().positions
+    const now = new Date().toISOString()
+    const row: PositionRow = {
+      id: nextId(list),
+      name: input.name.trim(),
+      is_archived: false,
+      created_at: now,
+      updated_at: now,
+    }
+    list.push(row as any)
+    return { ...row }
+  }
+  const { data } = await apiClient.post<PositionRow>('/organization/positions', input)
+  return data
+}
+
+export async function updatePosition(
+  id: number,
+  patch: Partial<Pick<PositionRow, 'name' | 'is_archived'>>,
+): Promise<PositionRow> {
+  if (env.useMockApi) {
+    await delay(400)
+    const row = getDb().positions.find((p) => p.id === id)
+    if (!row) throw new Error('Position not found')
+    Object.assign(row, patch, { updated_at: new Date().toISOString() })
+    return { ...row }
+  }
+  const { data } = await apiClient.patch<PositionRow>(`/organization/positions/${id}`, patch)
   return data
 }
 
