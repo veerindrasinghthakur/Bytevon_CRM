@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import { cn } from '@/shared/lib/cn'
 import { Button } from '@/shared/components/ui/Button'
-import { NoteItem, NotesPanelProps } from '@/shared/types'
+import { NoteReferenceType } from '@/shared/schema'
+import type { NoteItem, NotesPanelProps } from '@/shared/types'
 
-export type NoteReferenceType = 'PROJECT' | 'LEAD' | 'TASK' 
-
-
+export type { NoteReferenceType }
 
 function formatWhen(iso: string) {
   try {
@@ -20,12 +19,11 @@ function formatWhen(iso: string) {
   }
 }
 
-
 export function NotesPanel({
   title = 'Notes',
   className,
   initialNotes = [],
-  referenceType = 'PROJECT',
+  referenceType = NoteReferenceType.LEAD,
   referenceId = 0,
   onAdd,
 }: NotesPanelProps) {

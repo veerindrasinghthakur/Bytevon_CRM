@@ -129,6 +129,17 @@ export const DeviceType = {
 } as const
 export type DeviceType = (typeof DeviceType)[keyof typeof DeviceType]
 
+/**
+ * Polymorphic note targets (schema locked: no PROJECT).
+ * Notes attach to LEAD | TASK | CLIENT only.
+ */
+export const NoteReferenceType = {
+  LEAD: 'LEAD',
+  TASK: 'TASK',
+  CLIENT: 'CLIENT',
+} as const
+export type NoteReferenceType = (typeof NoteReferenceType)[keyof typeof NoteReferenceType]
+
 /** Seeded RBAC resource names used by can() */
 export const ResourceName = {
   EMPLOYMENT: 'employment',
