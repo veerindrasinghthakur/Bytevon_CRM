@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { getOffice } from '../api/offices'
+import { createOffice, getOffice, updateOffice } from '../api/offices'
 
 export function OfficeFormPage() {
   const navigate = useNavigate()
+  const qc = useQueryClient()
   const { officeId } = useParams({ strict: false }) as { officeId?: string }
   const isEdit = Boolean(officeId && officeId !== 'new')
 
@@ -28,6 +29,7 @@ export function OfficeFormPage() {
     address: '',
     postal: '',
   })
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (existing) {
@@ -45,6 +47,21 @@ export function OfficeFormPage() {
   }, [existing])
 
   const set = (k: keyof typeof form, v: string) => setForm((p) => ({ ...p, [k]: v }))
+
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      if (!form.name.trim()) throw new Error('Office name is required')
+      if (isEdit && officeId) {
+        return updateOffice(officeId, form)
+      }
+      return createOffice(form)
+    },
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['admin', 'offices'] })
+      navigate({ to: '/admin/settings' })
+    },
+    onError: (e: Error) => setError(e.message || 'Failed to save office'),
+  })
 
   if (isEdit && officeQuery.isLoading) {
     return <div className="p-12 text-center text-on-surface-variant">Loading office…</div>
@@ -75,12 +92,26 @@ export function OfficeFormPage() {
             <Button variant="outline" size="sm" onClick={() => navigate({ to: '/admin/settings' })}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm">
+            <Button
+              variant="primary"
+              size="sm"
+              isLoading={saveMutation.isPending}
+              onClick={() => {
+                setError(null)
+                saveMutation.mutate()
+              }}
+            >
               {isEdit ? 'Save Changes' : 'Create Office'}
             </Button>
           </div>
         }
       />
+
+      {error && (
+        <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error">
+          {error}
+        </div>
+      )}
 
       <div className="bv-surface p-6 space-y-5">
         <h3 className="text-title-lg font-semibold text-on-background flex items-center gap-2">

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
@@ -11,11 +11,43 @@ import { cn } from '@/shared/lib/cn'
 const DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const WEEKS_QK = ['organization', 'working-weeks'] as const
 
+/** Normalize mock (monday:true) or schema (working_days_of_week:[1,2,...]) into day indexes 0–6. */
+function toDayIndexes(w: WorkingWeekRow | Record<string, unknown>): number[] {
+  const row = w as Record<string, unknown>
+  if (Array.isArray(row.working_days_of_week)) {
+    return (row.working_days_of_week as number[]).filter((d) => d >= 0 && d <= 6)
+  }
+  const map: [string, number][] = [
+    ['sunday', 0],
+    ['monday', 1],
+    ['tuesday', 2],
+    ['wednesday', 3],
+    ['thursday', 4],
+    ['friday', 5],
+    ['saturday', 6],
+  ]
+  const days: number[] = []
+  for (const [key, idx] of map) {
+    if (row[key] === true) days.push(idx)
+  }
+  // Default Mon–Fri when nothing set
+  return days.length ? days : [1, 2, 3, 4, 5]
+}
+
 export function WorkingWeeksPage() {
   const qc = useQueryClient()
   const { data, isLoading, isError, error, refetch } = useWorkingWeeks()
-  const items = data?.items ?? []
-  // Client form state only while editing one row — never a local copy of the list
+  const items = useMemo(() => {
+    const raw = data?.items ?? []
+    return raw.map((w) => ({
+      ...w,
+      working_days_of_week: toDayIndexes(w as WorkingWeekRow),
+      name: (w as WorkingWeekRow).name || 'Working week',
+      effective_from: (w as WorkingWeekRow).effective_from || '—',
+      effective_to: (w as WorkingWeekRow).effective_to ?? null,
+    }))
+  }, [data?.items])
+
   const [editingId, setEditingId] = useState<number | null>(null)
   const [draftDays, setDraftDays] = useState<number[]>([])
 
@@ -24,7 +56,7 @@ export function WorkingWeeksPage() {
     return <ErrorState description={(error as Error).message} onRetry={() => void refetch()} />
   }
 
-  const startEdit = (w: WorkingWeekRow) => {
+  const startEdit = (w: (typeof items)[0]) => {
     setEditingId(w.id)
     setDraftDays([...w.working_days_of_week])
   }
@@ -40,7 +72,6 @@ export function WorkingWeeksPage() {
     )
   }
 
-  // Optimistic update via Query cache (server state) — no localItems mirror
   const save = (id: number) => {
     qc.setQueryData(WEEKS_QK, (prev: { items: WorkingWeekRow[]; total: number } | undefined) => {
       if (!prev) return prev
@@ -63,6 +94,13 @@ export function WorkingWeeksPage() {
           Versioned weekly schedules (effective dating — previous versions are never overwritten)
         </p>
       </div>
+
+      {items.length === 0 && (
+        <div className="bv-surface p-12 text-center text-on-surface-variant border border-dashed border-outline-variant rounded-xl">
+          No working weeks configured yet.
+        </div>
+      )}
+
       <div className="space-y-4">
         {items.map((w) => {
           const editing = editingId === w.id
