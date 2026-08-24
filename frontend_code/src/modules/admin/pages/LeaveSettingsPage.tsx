@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
+import { IconButton } from '@/shared/components/ui/IconButton'
 import { cn } from '@/shared/lib/cn'
 import { useLeaveEdit } from '../context/LeaveEditContext'
 import { listLeaveTypeSettings } from '../api/leave'
 import { getLeaveAccrualPolicy, updateLeaveAccrualPolicy } from '../api/settings'
 import type { LeaveAccrualPolicy } from '../types'
 
-/** Content only — Edit lives above sub-nav in LeaveSettingsLayout */
+/** Content only — pencil Edit lives on Accrual Policy section */
 export function LeaveSettingsPage() {
-  const { editing } = useLeaveEdit()
+  const { editing, setEditing } = useLeaveEdit()
   const qc = useQueryClient()
   const [modalOpen, setModalOpen] = useState(false)
   const [newType, setNewType] = useState({ name: '', days: '10', eligibility: 'All Employees' })
@@ -36,8 +37,6 @@ export function LeaveSettingsPage() {
     },
   })
 
-  // Persist accrual edits when leaving edit mode via layout is out of scope;
-  // fields update local state while editing; Save is implicit on blur of number fields when editing ends is not forced.
   useEffect(() => {
     if (!editing && accrual && accrualData) {
       const dirty =
@@ -108,9 +107,16 @@ export function LeaveSettingsPage() {
         </section>
 
         <section className="col-span-12 lg:col-span-4 bv-surface card-hover p-6">
-          <div className="flex items-center gap-2 mb-6">
-            <span className="material-symbols-outlined text-secondary">update</span>
-            <h3 className="text-title-lg font-semibold text-on-surface">Accrual Policy</h3>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-secondary">update</span>
+              <h3 className="text-title-lg font-semibold text-on-surface">Accrual Policy</h3>
+            </div>
+            {!editing && (
+              <IconButton label="Edit accrual policy" size="sm" onClick={() => setEditing(true)}>
+                <span className="material-symbols-outlined text-[20px]">edit</span>
+              </IconButton>
+            )}
           </div>
           {accrualLoading || !accrual ? (
             <p className="text-body-sm text-on-surface-variant">Loading policy…</p>
