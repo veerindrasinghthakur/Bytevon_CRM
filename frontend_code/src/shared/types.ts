@@ -1,3 +1,6 @@
+import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from 'react'
+import type { ExportFormat } from '@/shared/api/export'
+import type { NoteReferenceType } from '@/shared/schema'
 
 export interface SecondaryNavItem {
   id: string
@@ -70,7 +73,6 @@ export interface FilePreviewModalProps {
   className?: string
 }
 
-import type { ExportFormat } from '@/shared/api/export'
 export interface ExportDialogProps {
   open: boolean
   onClose: () => void
@@ -81,9 +83,9 @@ export interface ExportDialogProps {
   title?: string
 }
 
-import type { ButtonHTMLAttributes, ReactNode } from 'react'
-// import { type ButtonSize, type ButtonVariant } from './components/ui/Button'
-import { NoteReferenceType } from './components/notes/NotesPanel'
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'
+export type ButtonSize = 'sm' | 'md' | 'lg'
+
 export interface EmptyStateProps {
   icon?: string
   title: string
@@ -156,7 +158,7 @@ export interface BulkSelectionBarProps {
 export interface HeaderProps {
   title?: string
   className?: string
-  style?: React.CSSProperties
+  style?: CSSProperties
 }
 
 export interface HeaderBreakChipProps {
@@ -273,10 +275,6 @@ export interface ActivityFeedProps {
   /** @deprecated use title + headerAction */
   header?: ReactNode
 }
-
-
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger'
-export type ButtonSize = 'sm' | 'md' | 'lg'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
@@ -397,4 +395,3 @@ export interface StatusDotProps {
   className?: string
   size?: 'sm' | 'md'
 }
-
