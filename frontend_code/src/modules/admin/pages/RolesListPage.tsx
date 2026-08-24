@@ -1,13 +1,12 @@
-import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { ExportButton } from '@/shared/components/export/ExportButton'
+import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
-import { IconButton } from '@/shared/components/ui/IconButton'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import {
   QuickSection,
@@ -104,7 +103,6 @@ function RoleQuickContent({ role }: { role: AdminRole }) {
 export function RolesListPage() {
   const navigate = useNavigate()
   const { openPanel } = useQuickOverview()
-  const [openMenu, setOpenMenu] = useState<string | null>(null)
 
   const {
     filtered,
@@ -122,6 +120,7 @@ export function RolesListPage() {
     statusOptions,
     categoryOptions,
     resetFilters,
+    filtersActive,
     selectionMode,
     selectedIds,
     selectedCount,
@@ -138,6 +137,9 @@ export function RolesListPage() {
   const goDetail = (roleId: string) =>
     navigate({ to: '/admin/roles/$roleId', params: { roleId } })
 
+  const goEdit = (roleId: string) =>
+    navigate({ to: '/admin/roles/$roleId/edit', params: { roleId } })
+
   const openRoleOverview = (role: AdminRole) => {
     openPanel({
       title: role.name,
@@ -148,6 +150,12 @@ export function RolesListPage() {
       content: <RoleQuickContent role={role} />,
       fullRecordLabel: 'Open full record',
       onOpenFull: () => goDetail(role.id),
+      onEdit: () => goEdit(role.id),
+      editLabel: 'Edit',
+      actions: [
+        { id: 'duplicate', label: 'Duplicate', icon: 'content_copy', onClick: () => goDetail(role.id) },
+        { id: 'delete', label: 'Delete', icon: 'delete', danger: true, onClick: () => goDetail(role.id) },
+      ],
       widthClass: 'max-w-[520px]',
     })
   }
@@ -208,52 +216,35 @@ export function RolesListPage() {
         />
       </section>
 
-      <section className="bv-surface p-4">
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="relative flex-1 min-w-[200px]">
-            <label className="block text-label-sm text-on-surface-variant mb-1.5" htmlFor="roles-search">
-              Search
-            </label>
-            <span className="material-symbols-outlined absolute left-3 bottom-2.5 text-on-surface-variant text-[18px]">
-              search
-            </span>
-            <input
-              id="roles-search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg pl-10 pr-4 py-2 focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none text-body-sm transition-all duration-200"
-              placeholder="Search roles by name or description..."
-              type="text"
-            />
-          </div>
-          <Select
-            label="Status"
-            value={statusFilter}
-            onChange={(v) => setStatusFilter(v as typeof statusFilter)}
-            options={statusOptions.map((o) => ({
-              value: o,
-              label: o === 'All' ? 'All Status' : o,
-            }))}
-            minWidthClass="min-w-[140px]"
-          />
-          <Select
-            label="Category"
-            value={categoryFilter}
-            onChange={(v) => setCategoryFilter(v as typeof categoryFilter)}
-            options={categoryOptions.map((o) => ({
-              value: o,
-              label: o === 'All' ? 'All Categories' : o,
-            }))}
-            minWidthClass="min-w-[160px]"
-          />
-          <Button variant="outline" size="sm" onClick={resetFilters}>
-            Clear
-          </Button>
-          <p className="text-label-sm text-on-surface-variant ml-auto self-center">
-            Showing {filtered.length} of {totalCount} roles
-          </p>
-        </div>
-      </section>
+      <ListToolbar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search roles by name or description..."
+        filtersActive={filtersActive ?? statusFilter !== 'All' || categoryFilter !== 'All' || Boolean(search.trim())}
+        onResetFilters={resetFilters}
+        onRefresh={() => void refetch()}
+      >
+        <Select
+          value={statusFilter}
+          onChange={(v) => setStatusFilter(v as typeof statusFilter)}
+          placeholder="Status"
+          options={statusOptions.map((o) => ({
+            value: o,
+            label: o === 'All' ? 'All Status' : o,
+          }))}
+          minWidthClass="min-w-[140px]"
+        />
+        <Select
+          value={categoryFilter}
+          onChange={(v) => setCategoryFilter(v as typeof categoryFilter)}
+          placeholder="Category"
+          options={categoryOptions.map((o) => ({
+            value: o,
+            label: o === 'All' ? 'All Categories' : o,
+          }))}
+          minWidthClass="min-w-[160px]"
+        />
+      </ListToolbar>
 
       {selectionMode && (
         <div className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl border border-secondary/30 bg-secondary/5">
@@ -332,66 +323,6 @@ export function RolesListPage() {
                       />
                     </div>
                   )}
-
-                  <div className="absolute top-4 right-4 z-10" onMouseDown={(e) => e.stopPropagation()}>
-                    <IconButton
-                      label={`Actions for ${role.name}`}
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setOpenMenu(openMenu === role.id ? null : role.id)
-                      }}
-                    >
-                      <span className="material-symbols-outlined text-on-surface-variant">more_vert</span>
-                    </IconButton>
-                    {openMenu === role.id && (
-                      <div className="absolute right-0 top-10 w-48 bg-surface-container-lowest border border-outline-variant rounded-lg executive-shadow z-20 py-2">
-                        <button
-                          type="button"
-                          className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container transition-colors duration-200 flex items-center gap-2 cursor-pointer"
-                          onClick={() => {
-                            setOpenMenu(null)
-                            openRoleOverview(role)
-                          }}
-                        >
-                          <span className="material-symbols-outlined text-[18px]">visibility</span> Quick view
-                        </button>
-                        <button
-                          type="button"
-                          className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container transition-colors duration-200 flex items-center gap-2 cursor-pointer"
-                          onClick={() => {
-                            setOpenMenu(null)
-                            goDetail(role.id)
-                          }}
-                        >
-                          <span className="material-symbols-outlined text-[18px]">description</span> View Details
-                        </button>
-                        <button
-                          type="button"
-                          className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container transition-colors duration-200 flex items-center gap-2 cursor-pointer"
-                          onClick={() => {
-                            setOpenMenu(null)
-                            navigate({ to: '/admin/roles/$roleId/edit', params: { roleId: role.id } })
-                          }}
-                        >
-                          <span className="material-symbols-outlined text-[18px]">edit</span> Edit
-                        </button>
-                        <button
-                          type="button"
-                          className="w-full text-left px-4 py-2 text-body-sm hover:bg-surface-container transition-colors duration-200 flex items-center gap-2 cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">content_copy</span> Duplicate
-                        </button>
-                        <div className="h-px bg-outline-variant my-1" />
-                        <button
-                          type="button"
-                          className="w-full text-left px-4 py-2 text-body-sm hover:bg-error-container text-error transition-colors duration-200 flex items-center gap-2 cursor-pointer"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">delete</span> Delete
-                        </button>
-                      </div>
-                    )}
-                  </div>
 
                   <button
                     type="button"
@@ -482,24 +413,11 @@ export function RolesListPage() {
               Showing <span className="font-bold text-on-surface">1–{filtered.length}</span> of {totalCount}{' '}
               roles
               {!selectionMode && (
-                <span className="ml-2 text-on-surface-variant/80">· Hold a card 3s to multi-select</span>
+                <span className="ml-2 text-on-surface-variant/80">
+                  · Hold a card 3s to multi-select · open overview for actions
+                </span>
               )}
             </span>
-            <div className="flex gap-1">
-              <button
-                type="button"
-                className="px-3 py-1.5 rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled
-              >
-                Previous
-              </button>
-              <button
-                type="button"
-                className="px-3 py-1.5 rounded-lg border border-outline-variant hover:bg-surface-container-low transition-colors duration-200 cursor-pointer"
-              >
-                Next
-              </button>
-            </div>
           </div>
         </>
       )}
