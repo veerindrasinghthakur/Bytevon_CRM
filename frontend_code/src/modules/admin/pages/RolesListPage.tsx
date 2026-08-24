@@ -226,7 +226,7 @@ export function RolesListPage() {
         search={search}
         onSearchChange={setSearch}
         searchPlaceholder="Search roles by name or description..."
-        filtersActive={filtersActive ?? statusFilter !== 'All' || categoryFilter !== 'All' || Boolean(search.trim())}
+        filtersActive={filtersActive ?? (statusFilter !== 'All' || categoryFilter !== 'All' || Boolean(search.trim()))}
         onResetFilters={resetFilters}
         onRefresh={() => void refetch()}
       >
