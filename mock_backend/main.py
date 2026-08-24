@@ -18,13 +18,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
 try:
-    from routes import admin, auth, health
+    from routes import admin, auth, health, extras
 except ImportError as e:
     raise SystemExit(
-        "Mock backend routes incomplete. Ensure routes/admin.py, auth.py, health.py exist.\n"
+        "Mock backend routes incomplete. Ensure routes/admin.py, auth.py, health.py, extras.py exist.\n"
         f"Original error: {e}"
     ) from e
-
 from store import STORE_PATH, load
 
 app = FastAPI(
@@ -59,6 +58,8 @@ class AuthBypassMiddleware(BaseHTTPMiddleware):
 app.add_middleware(AuthBypassMiddleware)
 
 app.include_router(health.router)
+app.include_router(extras.router, prefix="/api/v1")
+app.include_router(extras.router)
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(admin.router, prefix="/api/v1")
 app.include_router(auth.router)
