@@ -16,6 +16,11 @@ export interface AdminRoleOption {
   description?: string | null
 }
 
+export interface DepartmentOption {
+  id: number
+  name: string
+}
+
 function statusLabel(s: LoginUserRow['status']): AdminUserListItem['status'] {
   if (s === 'LOCKED') return 'Locked'
   if (s === 'INACTIVE') return 'Inactive'
@@ -160,6 +165,19 @@ export async function listEmploymentsWithoutLogin(): Promise<EmploymentWithoutLo
     })
 }
 
+/** Departments for user-detail picker. */
+export async function listDepartments(): Promise<DepartmentOption[]> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<{ items?: Array<{ id: number; name: string }> } | Array<{ id: number; name: string }>>(
+      '/organization/departments',
+    )
+    const rows = Array.isArray(data) ? data : data?.items ?? []
+    return rows.map((d) => ({ id: Number(d.id), name: d.name }))
+  }
+  await delay()
+  return getDb().schema_departments.map((d) => ({ id: d.id, name: d.name }))
+}
+
 /** Roles for assign-on-create. Ids stay as strings (R-01) when backend returns them. */
 export async function listRoles(): Promise<AdminRoleOption[]> {
   if (!env.useMockApi) {
@@ -174,7 +192,6 @@ export async function listRoles(): Promise<AdminRoleOption[]> {
     }))
   }
   await delay()
-  // Prefer adminRoles (R-01 style) for UI consistency; fall back to schema roles
   try {
     const { adminRoles } = await import('../data/mock')
     if (adminRoles?.length) {
@@ -267,7 +284,13 @@ export async function updateUserLogin(
       LoginUserRow,
       'email' | 'status' | 'temporary_password' | 'locked_until' | 'failed_attempt_count'
     >
-  > & { temporaryPassword?: string; name?: string; role?: string; department?: string },
+  > & {
+    temporaryPassword?: string
+    name?: string
+    role?: string
+    department?: string
+    departmentId?: number
+  },
 ): Promise<LoginUserRow | Record<string, unknown>> {
   if (!env.useMockApi) {
     const body: Record<string, unknown> = { ...patch }
@@ -286,25 +309,84 @@ export async function updateUserLogin(
   }
 
   await delay(300)
+  const db = getDb()
   const logins = ensureLoginUsers()
   const row = logins.find((l) => l.id === loginId)
   if (!row) throw new Error('User not found')
-  const { temporaryPassword, name: _n, role: _r, department: _d, ...rest } = patch
+  const { temporaryPassword, name: _n, role: _r, department: _d, departmentId, ...rest } = patch
   Object.assign(row, rest, { updated_at: new Date().toISOString() })
   if (temporaryPassword != null) row.temporary_password = temporaryPassword
+
+  // Update current assignment department when picker saves a departmentId
+  if (departmentId != null && Number.isFinite(departmentId)) {
+    const assignment = db.employment_assignments.find(
+      (a) => a.employment_id === row.employment_id && a.effective_to == null,
+    )
+    if (assignment) {
+      assignment.department_id = departmentId
+    }
+  }
+
   return { ...row }
 }
 
-/** Soft-archive: set login INACTIVE (shared ArchiveButton). */
-export async function archiveUser(loginId: number) {
+/** Soft deactivate — login kept; can activate again. */
+export async function deactivateUser(loginId: number) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post(`/admin/users/${loginId}/archive`).catch(async () => {
-      const { data: d } = await apiClient.patch(`/admin/users/${loginId}`, { status: 'Inactive' })
-      return { data: d }
-    })
-    return data
+    try {
+      const { data } = await apiClient.post(`/admin/users/${loginId}/deactivate`)
+      return data
+    } catch {
+      const { data } = await apiClient.patch(`/admin/users/${loginId}`, { status: 'Inactive' })
+      return data
+    }
   }
   return updateUserLogin(loginId, { status: 'INACTIVE' })
+}
+
+/** Reactivate a deactivated login. */
+export async function activateUser(loginId: number) {
+  if (!env.useMockApi) {
+    try {
+      const { data } = await apiClient.post(`/admin/users/${loginId}/activate`)
+      return data
+    } catch {
+      const { data } = await apiClient.patch(`/admin/users/${loginId}`, { status: 'Active' })
+      return data
+    }
+  }
+  return updateUserLogin(loginId, {
+    status: 'ACTIVE',
+    failed_attempt_count: 0,
+    locked_until: null,
+  })
+}
+
+/**
+ * Hard archive: remove login credentials entirely.
+ * Employment remains and appears under "employments without login".
+ */
+export async function archiveUserCredentials(loginId: number) {
+  if (!env.useMockApi) {
+    try {
+      const { data } = await apiClient.post(`/admin/users/${loginId}/archive`)
+      return data
+    } catch {
+      const { data } = await apiClient.delete(`/admin/users/${loginId}`)
+      return data
+    }
+  }
+  await delay(300)
+  const logins = ensureLoginUsers()
+  const idx = logins.findIndex((l) => l.id === loginId)
+  if (idx < 0) throw new Error('User not found')
+  const [removed] = logins.splice(idx, 1)
+  return { ok: true, employmentId: removed.employment_id }
+}
+
+/** @deprecated Prefer deactivateUser / archiveUserCredentials */
+export async function archiveUser(loginId: number) {
+  return deactivateUser(loginId)
 }
 
 export async function getUserLogin(loginId: number) {
@@ -321,6 +403,7 @@ export async function getUserLogin(loginId: number) {
       name?: string
       status?: string
       department?: string
+      departmentId?: number
       role?: string
       lastLogin?: string
       initials?: string
@@ -365,6 +448,7 @@ export async function getUserLogin(loginId: number) {
           (data.login?.status as LoginUserRow['status']) ?? 'ACTIVE',
         ),
         department: data.department ?? '—',
+        departmentId: data.departmentId ?? null,
         role: data.role ?? data.roleNames?.[0] ?? '—',
         lastLogin: data.lastLogin ?? 'Never',
         initials: data.initials || initials(name),
@@ -402,6 +486,7 @@ export async function getUserLogin(loginId: number) {
       email: login.email,
       status: statusLabel(login.status),
       department: dept?.name ?? '—',
+      departmentId: assignment?.department_id ?? null,
       role: roleNames[0] ?? '—',
       lastLogin: login.last_login_at
         ? new Date(login.last_login_at).toLocaleString('en-IN')
