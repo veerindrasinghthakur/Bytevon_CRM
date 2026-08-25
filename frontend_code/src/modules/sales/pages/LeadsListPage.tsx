@@ -374,6 +374,7 @@ export function LeadsListPage() {
           title="Failed to load leads"
           description="We could not load the leads list. Check your connection and try again."
           onRetry={() => void refetch()}
+          onBack={() => safeNavigate(navigate, { to: salesRoutes.leads })}
         />
       )}
 
