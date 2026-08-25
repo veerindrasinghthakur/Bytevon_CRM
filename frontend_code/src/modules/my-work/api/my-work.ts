@@ -34,9 +34,11 @@ import type {
   LeaveBalance,
   LeaveListResponse,
   LeaveRequest,
+  LeaveTypeOption,
   MyTask,
   MyTaskListResponse,
   MyWorkOverview,
+  ApproverOption,
 } from '../types'
 
 export interface MyWorkListParams {
@@ -105,12 +107,12 @@ export async function listMyLeaveBalances(): Promise<LeaveBalance[]> {
   return data
 }
 
-export async function listLeaveTypeOptions() {
+export async function listLeaveTypeOptions(): Promise<LeaveTypeOption[]> {
   if (env.useMockApi) {
     await delay()
     return leaveTypeOptions.map((o) => ({ ...o }))
   }
-  const { data } = await apiClient.get('/my-work/leave/types')
+  const { data } = await apiClient.get<LeaveTypeOption[]>('/my-work/leave/types')
   return data
 }
 
@@ -141,6 +143,18 @@ export async function listMyAttendance(
   }
   const sliced = paginateItems(items, page, pageSize)
   return { ...sliced, page, pageSize }
+}
+
+/** Attendance rows eligible for correction requests (half day / absent / noted). */
+export async function listCorrectionCandidates(): Promise<AttendanceRecord[]> {
+  if (env.useMockApi) {
+    await delay()
+    return attendanceHistory
+      .filter((r) => r.status === 'Half Day' || r.status === 'Absent' || Boolean(r.note))
+      .map((r) => ({ ...r }))
+  }
+  const { data } = await apiClient.get<AttendanceRecord[]>('/my-work/attendance/correction-candidates')
+  return data
 }
 
 export async function listMyTasks(params: MyWorkListParams = {}): Promise<MyTaskListResponse> {
@@ -259,11 +273,11 @@ export async function submitLeaveRequest(input: CreateLeaveRequestInput): Promis
   return data
 }
 
-export async function listApproverDirectory() {
+export async function listApproverDirectory(): Promise<ApproverOption[]> {
   if (env.useMockApi) {
     await delay()
     return approverDirectory.map((a) => ({ ...a }))
   }
-  const { data } = await apiClient.get('/my-work/approvers')
+  const { data } = await apiClient.get<ApproverOption[]>('/my-work/approvers')
   return data
 }

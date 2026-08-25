@@ -1,101 +1,73 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { env } from '@/config/env'
-import { apiClient } from '@/shared/lib/axios'
+import { useListControls } from '@/shared/hooks/useListControls'
+import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 import {
-  attendanceHistory,
-  approverDirectory,
-  correctionRequestsSeed,
-} from '../data/mock'
-import type { AttendanceCorrectionRequest, ApproverOption } from '../types'
+  listAttendanceCorrections,
+  listApproverDirectory,
+  listCorrectionCandidates,
+  submitAttendanceCorrection,
+} from '../api/my-work'
+import type { AttendanceCorrectionRequest } from '../types'
 
-function delay(ms = 200) {
-  return new Promise((r) => setTimeout(r, ms))
-}
-
-async function listCorrections(): Promise<AttendanceCorrectionRequest[]> {
-  if (env.useMockApi) {
-    await delay()
-    return correctionRequestsSeed.map((c) => ({ ...c }))
-  }
-  const { data } = await apiClient.get<AttendanceCorrectionRequest[]>('/my-work/attendance/corrections')
-  return data
-}
-
-async function submitCorrection(
-  body: Omit<AttendanceCorrectionRequest, 'id' | 'submittedOn' | 'status'>,
-): Promise<AttendanceCorrectionRequest> {
-  if (env.useMockApi) {
-    await delay()
-    return {
-      ...body,
-      id: `corr-${Date.now()}`,
-      status: 'Pending',
-      submittedOn: new Date().toISOString().slice(0, 10),
-    }
-  }
-  const { data } = await apiClient.post<AttendanceCorrectionRequest>(
-    '/my-work/attendance/corrections',
-    body,
-  )
-  return data
+const FILTER_DEFAULTS = {
+  status: '',
 }
 
 export function useAttendanceCorrections() {
   const qc = useQueryClient()
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
+  const controls = useListControls({
+    filterDefaults: FILTER_DEFAULTS,
+    pageSize: 50,
+  })
+
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedDateId, setSelectedDateId] = useState('')
   const [checkIn, setCheckIn] = useState('09:00 AM')
   const [checkOut, setCheckOut] = useState('06:00 PM')
   const [reason, setReason] = useState('')
-  const [approverId, setApproverId] = useState(approverDirectory[0]?.id ?? '')
+  const [approverId, setApproverId] = useState('')
   const [approverQuery, setApproverQuery] = useState('')
-
-  const { data: requests = [], isLoading } = useQuery({
-    queryKey: ['my-work', 'attendance-corrections'],
-    queryFn: listCorrections,
-  })
-
   const [localExtra, setLocalExtra] = useState<AttendanceCorrectionRequest[]>([])
 
+  const listParams = {
+    search: controls.debouncedSearch || undefined,
+    status: controls.filters.status || undefined,
+    page: controls.page,
+    pageSize: controls.pageSize,
+  }
+
+  const { data: listData, isLoading } = useQuery({
+    queryKey: queryKeys.myWork.corrections.list(listParams),
+    queryFn: () => listAttendanceCorrections(listParams),
+    placeholderData: (prev) => prev,
+  })
+
+  const { data: candidates = [] } = useQuery({
+    queryKey: [...queryKeys.myWork.corrections.all, 'candidates'] as const,
+    queryFn: listCorrectionCandidates,
+  })
+
+  const { data: approvers = [] } = useQuery({
+    queryKey: queryKeys.myWork.approvers(),
+    queryFn: listApproverDirectory,
+  })
+
+  const requests = listData?.items ?? []
   const allRequests = useMemo(() => [...localExtra, ...requests], [localExtra, requests])
 
-  const candidates = useMemo(
-    () =>
-      attendanceHistory.filter(
-        (r) => r.status === 'Half Day' || r.status === 'Absent' || Boolean(r.note),
-      ),
-    [],
-  )
-
-  const filteredApprovers: ApproverOption[] = useMemo(() => {
+  const filteredApprovers = useMemo(() => {
     const q = approverQuery.trim().toLowerCase()
-    if (!q) return approverDirectory
-    return approverDirectory.filter(
+    if (!q) return approvers
+    return approvers.filter(
       (a) =>
         a.name.toLowerCase().includes(q) ||
         a.title.toLowerCase().includes(q) ||
         (a.department ?? '').toLowerCase().includes(q),
     )
-  }, [approverQuery])
+  }, [approvers, approverQuery])
 
-  const visible = useMemo(() => {
-    let list = allRequests
-    if (statusFilter) list = list.filter((r) => r.status === statusFilter)
-    if (search.trim()) {
-      const q = search.toLowerCase()
-      list = list.filter(
-        (r) =>
-          r.date.includes(q) ||
-          r.reason.toLowerCase().includes(q) ||
-          r.originalStatus.toLowerCase().includes(q) ||
-          r.approver.toLowerCase().includes(q),
-      )
-    }
-    return list
-  }, [allRequests, search, statusFilter])
+  const visible = allRequests
 
   const openNew = useCallback(
     (preselectId?: string) => {
@@ -107,11 +79,11 @@ export function useAttendanceCorrections() {
       setCheckIn(inTime)
       setCheckOut(outTime)
       setReason(row?.note ?? '')
-      setApproverId(approverDirectory[0]?.id ?? '')
+      setApproverId(approvers[0]?.id ?? '')
       setApproverQuery('')
       setModalOpen(true)
     },
-    [candidates],
+    [candidates, approvers],
   )
 
   const onSelectDay = useCallback(
@@ -126,10 +98,10 @@ export function useAttendanceCorrections() {
   )
 
   const mutation = useMutation({
-    mutationFn: submitCorrection,
+    mutationFn: submitAttendanceCorrection,
     onSuccess: (created) => {
       setLocalExtra((prev) => [created, ...prev])
-      qc.invalidateQueries({ queryKey: ['my-work', 'attendance-corrections'] })
+      void invalidate.myWorkCorrections(qc)
       setModalOpen(false)
       setReason('')
     },
@@ -137,7 +109,7 @@ export function useAttendanceCorrections() {
 
   const submit = useCallback(() => {
     const row = candidates.find((c) => c.id === selectedDateId)
-    const approver = approverDirectory.find((a) => a.id === approverId)
+    const approver = approvers.find((a) => a.id === approverId)
     if (!row || !reason.trim() || !approver) return
     mutation.mutate({
       date: row.date,
@@ -148,21 +120,23 @@ export function useAttendanceCorrections() {
       approver: approver.name,
       approverId: approver.id,
     })
-  }, [candidates, selectedDateId, reason, approverId, checkIn, checkOut, mutation])
+  }, [candidates, selectedDateId, reason, approverId, checkIn, checkOut, mutation, approvers])
 
   return {
     isLoading,
     visible,
+    total: listData?.total ?? visible.length,
     candidates,
-    search,
-    setSearch,
-    statusFilter,
-    setStatusFilter,
-    filtersActive: Boolean(search || statusFilter),
-    resetFilters: () => {
-      setSearch('')
-      setStatusFilter('')
-    },
+    search: controls.search,
+    setSearch: controls.setSearch,
+    statusFilter: controls.filters.status,
+    setStatusFilter: (v: string) => controls.setFilter('status', v),
+    filtersActive: controls.anyActive,
+    resetFilters: controls.resetAll,
+    page: controls.page,
+    setPage: controls.setPage,
+    pageSize: controls.pageSize,
+    setPageSize: controls.setPageSize,
     modalOpen,
     setModalOpen,
     openNew,

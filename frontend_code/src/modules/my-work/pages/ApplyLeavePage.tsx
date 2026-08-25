@@ -1,15 +1,22 @@
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { SaveDraftButton } from '@/shared/components/ui/SaveDraftButton'
 import { DocumentUpload } from '@/shared/components/forms/DocumentUpload'
-import { leaveBalances, leaveTypeOptions } from '../data/mock'
+import { queryKeys, invalidate } from '@/shared/lib/query-keys'
+import { useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/shared/lib/cn'
+import {
+  listLeaveTypeOptions,
+  listMyLeaveBalances,
+  submitLeaveRequest,
+} from '../api/my-work'
+import { emptyLeaveForm, leaveFormSchema, type LeaveFormValues } from '../types'
 
 export const HOLIDAYS_2026: Record<string, string> = {
   '2026-01-26': 'Republic Day',
@@ -19,21 +26,6 @@ export const HOLIDAYS_2026: Record<string, string> = {
   '2026-10-20': 'Diwali',
   '2026-12-25': 'Christmas',
 }
-
-const schema = z
-  .object({
-    type: z.enum(['Casual', 'Sick', 'Earned', 'Unpaid', 'Comp Off']),
-    halfDay: z.boolean().optional(),
-    from: z.string().min(1, 'Start date required'),
-    to: z.string().min(1, 'End date required'),
-    reason: z.string().min(10, 'Minimum 10 characters required').max(500),
-  })
-  .refine((data) => !data.from || !data.to || data.to >= data.from, {
-    message: 'End date must be on or after start date',
-    path: ['to'],
-  })
-
-type FormValues = z.infer<typeof schema>
 
 const leaveTypeIcons: Record<string, string> = {
   Casual: 'sunny',
@@ -70,6 +62,7 @@ function countLeaveDays(from: string, to: string, halfDay: boolean) {
 
 export function ApplyLeavePage() {
   const navigate = useNavigate()
+  const qc = useQueryClient()
   const [files, setFiles] = useState<File[]>([])
   const [showToast, setShowToast] = useState(false)
   const today = useMemo(() => todayISO(), [])
@@ -78,15 +71,35 @@ export function ApplyLeavePage() {
     return new Date(n.getFullYear(), n.getMonth(), 1)
   })
 
+  const balancesQuery = useQuery({
+    queryKey: queryKeys.myWork.leave.balances(),
+    queryFn: listMyLeaveBalances,
+  })
+  const typesQuery = useQuery({
+    queryKey: [...queryKeys.myWork.leave.all, 'types'] as const,
+    queryFn: listLeaveTypeOptions,
+  })
+
+  const leaveBalances = balancesQuery.data ?? []
+  const leaveTypeOptions = typesQuery.data ?? []
+
   const {
     register,
     handleSubmit,
     watch,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: { type: 'Casual', halfDay: false, from: '', to: '', reason: '' },
+  } = useForm<LeaveFormValues>({
+    resolver: zodResolver(leaveFormSchema),
+    defaultValues: emptyLeaveForm(),
+  })
+
+  const submitMut = useMutation({
+    mutationFn: submitLeaveRequest,
+    onSuccess: () => {
+      void invalidate.myWorkLeave(qc)
+      navigate({ to: '/my-work/leave' })
+    },
   })
 
   const from = watch('from')
@@ -96,10 +109,15 @@ export function ApplyLeavePage() {
   const dayCost = countLeaveDays(from, to, Boolean(halfDay))
   const balanceForType = leaveBalances.find((b) => b.type === leaveType)
 
-  const onSubmit = async (_data: FormValues) => {
+  const onSubmit = async (data: LeaveFormValues) => {
     void files
-    await new Promise((r) => setTimeout(r, 600))
-    navigate({ to: '/my-work/leave' })
+    await submitMut.mutateAsync({
+      type: data.type,
+      from: data.from,
+      to: data.to,
+      reason: data.reason,
+      halfDay: data.halfDay,
+    })
   }
 
   const handleSaveDraft = () => {
@@ -193,7 +211,7 @@ export function ApplyLeavePage() {
                 </label>
                 <Select
                   value={leaveType}
-                  onChange={(v) => setValue('type', v as FormValues['type'], { shouldValidate: true })}
+                  onChange={(v) => setValue('type', v as LeaveFormValues['type'], { shouldValidate: true })}
                   options={leaveTypeOptions.map((o) => ({ value: String(o.name), label: String(o.name) }))}
                 />
               </div>
@@ -372,7 +390,7 @@ export function ApplyLeavePage() {
               <Button
                 type="submit"
                 variant="primary"
-                isLoading={isSubmitting}
+                isLoading={isSubmitting || submitMut.isPending}
                 rightIcon={<span className="material-symbols-outlined text-sm">send</span>}
               >
                 Submit Request
