@@ -23,9 +23,18 @@ export function useRolesList() {
     filterDefaults: FILTER_DEFAULTS,
   })
 
+  const listParams = {
+    search: controls.search || undefined,
+    status: controls.filters.status !== 'All' ? controls.filters.status : undefined,
+    category: controls.filters.category !== 'All' ? controls.filters.category : undefined,
+  }
+
   const rolesQuery = useQuery({
-    queryKey: queryKeys.admin.roles.list(),
-    queryFn: listAdminRoles,
+    queryKey: queryKeys.admin.roles.list(listParams),
+    queryFn: async () => {
+      const result = await listAdminRoles(listParams)
+      return Array.isArray(result) ? result : result.items
+    },
   })
 
   const metricsQuery = useQuery({
@@ -36,6 +45,7 @@ export function useRolesList() {
   const roles = rolesQuery.data ?? []
 
   const filtered = useMemo(() => {
+    // Client-side re-filter when API returns full list without server filters applied
     return roles.filter((r) => {
       if (controls.search) {
         const q = controls.search.toLowerCase()

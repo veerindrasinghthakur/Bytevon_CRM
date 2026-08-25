@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { useTasks } from './use-tasks'
 
@@ -9,30 +8,24 @@ export function useTasksList(projectId?: number) {
     filterDefaults: FILTER_DEFAULTS,
   })
 
-  const { data, isLoading, isError, refetch } = useTasks(
-    projectId != null ? { projectId } : undefined,
-  )
+  const filters = {
+    ...(projectId != null ? { projectId } : {}),
+    search: controls.search || undefined,
+    status: controls.filters.status || undefined,
+    page: controls.page,
+    pageSize: controls.pageSize,
+  }
+
+  const { data, isLoading, isError, refetch } = useTasks(filters)
 
   const items = data?.items ?? []
-
-  const filtered = useMemo(() => {
-    const q = controls.search.toLowerCase()
-    return items.filter((t) => {
-      const matchQ =
-        !q ||
-        t.title.toLowerCase().includes(q) ||
-        (t.assigneeName?.toLowerCase().includes(q) ?? false)
-      const matchStatus = !controls.filters.status || t.status === controls.filters.status
-      return matchQ && matchStatus
-    })
-  }, [items, controls.search, controls.filters.status])
-
-  const pageItems = controls.pageItems(filtered)
+  const total = data?.total ?? items.length
 
   return {
     items,
-    filtered,
-    pageItems,
+    filtered: items,
+    pageItems: items,
+    totalCount: total,
     search: controls.search,
     setSearch: controls.setSearch,
     status: controls.filters.status,

@@ -1,5 +1,6 @@
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
+import { paginateItems } from '@/shared/lib/list-params'
 import { permissionCatalogSeed } from '../data/rbac-catalog'
 import { adminRoles } from '../data/mock'
 import type { AdminRole, PermissionCatalog, RolePermissionAction } from '../types'
@@ -20,7 +21,6 @@ export function computeCoverage(permissions: string[]): { pct: number; label: st
     const part = p.split(/[./_]/)[0]?.toLowerCase()
     if (part) modules.add(part)
   }
-  // Prefer explicit "Full Access" when manage/security present
   if (permissions.some((p) => p.includes('manage') || p.includes('security') || p === '*')) {
     return { pct: 100, label: 'Full Access' }
   }
@@ -29,9 +29,6 @@ export function computeCoverage(permissions: string[]): { pct: number; label: st
   return { pct, label: `${count}/${TOTAL_MODULES} Modules` }
 }
 
-/**
- * Seeded RBAC catalogue: resources (modules) + actions.
- */
 export async function listPermissionCatalog(): Promise<PermissionCatalog> {
   if (env.useMockApi) {
     await delay()
@@ -89,10 +86,16 @@ export async function listPermissionCatalog(): Promise<PermissionCatalog> {
   return { modules, actions, resources, permissions }
 }
 
-export async function listAdminRoles(): Promise<AdminRole[]> {
+export async function listAdminRoles(params?: {
+  search?: string
+  status?: string
+  category?: string
+  page?: number
+  pageSize?: number
+}): Promise<{ items: AdminRole[]; total: number } | AdminRole[]> {
   if (env.useMockApi) {
     await delay()
-    return adminRoles.map((r) => {
+    let items = adminRoles.map((r) => {
       const cov = computeCoverage(r.permissions ?? [])
       return {
         ...r,
@@ -100,16 +103,48 @@ export async function listAdminRoles(): Promise<AdminRole[]> {
         coverageLabel: cov.label,
       }
     })
-  }
-  const { data } = await apiClient.get<AdminRole[]>('/rbac/roles')
-  return (data ?? []).map((r) => {
-    const cov = computeCoverage(r.permissions ?? [])
-    return {
-      ...r,
-      coveragePct: r.coveragePct ?? cov.pct,
-      coverageLabel: r.coverageLabel ?? cov.label,
+    if (params?.search) {
+      const q = params.search.toLowerCase()
+      items = items.filter(
+        (r) => r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q),
+      )
     }
-  })
+    if (params?.status && params.status !== 'All') {
+      items = items.filter((r) => r.status === params.status)
+    }
+    if (params?.category && params.category !== 'All') {
+      items = items.filter((r) => r.category === params.category)
+    }
+    if (params?.page != null || params?.pageSize != null) {
+      return paginateItems(items, params.page, params.pageSize)
+    }
+    return items
+  }
+  const { data } = await apiClient.get<AdminRole[] | { items: AdminRole[]; total: number }>(
+    '/rbac/roles',
+    { params },
+  )
+  if (Array.isArray(data)) {
+    return data.map((r) => {
+      const cov = computeCoverage(r.permissions ?? [])
+      return {
+        ...r,
+        coveragePct: r.coveragePct ?? cov.pct,
+        coverageLabel: r.coverageLabel ?? cov.label,
+      }
+    })
+  }
+  return {
+    items: (data.items ?? []).map((r) => {
+      const cov = computeCoverage(r.permissions ?? [])
+      return {
+        ...r,
+        coveragePct: r.coveragePct ?? cov.pct,
+        coverageLabel: r.coverageLabel ?? cov.label,
+      }
+    }),
+    total: data.total,
+  }
 }
 
 export async function getAdminRole(roleId: string): Promise<AdminRole | null> {

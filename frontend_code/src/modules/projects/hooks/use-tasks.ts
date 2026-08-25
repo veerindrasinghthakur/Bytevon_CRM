@@ -7,6 +7,8 @@ export function useTasks(filters?: {
   search?: string
   status?: string
   projectId?: number
+  page?: number
+  pageSize?: number
 }) {
   return useQuery({
     queryKey: queryKeys.tasks.list(filters ?? {}),

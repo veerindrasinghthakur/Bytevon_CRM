@@ -1,5 +1,6 @@
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
+import { paginateItems } from '@/shared/lib/list-params'
 import {
   leaveLedger,
   leavePolicies,
@@ -20,22 +21,52 @@ export async function listLeaveTypeSettings(): Promise<LeaveTypeSettingRow[]> {
   return data
 }
 
-export async function listLeavePolicies(): Promise<LeavePolicyRow[]> {
+export async function listLeavePolicies(params?: {
+  search?: string
+  page?: number
+  pageSize?: number
+}): Promise<{ items: LeavePolicyRow[]; total: number } | LeavePolicyRow[]> {
   if (env.useMockApi) {
     await delay()
-    return leavePolicies.map((r) => ({ ...r }))
+    let items = leavePolicies.map((r) => ({ ...r }))
+    if (params?.search) {
+      const q = params.search.toLowerCase()
+      items = items.filter(
+        (r) =>
+          r.name.toLowerCase().includes(q) ||
+          r.leave_type.toLowerCase().includes(q),
+      )
+    }
+    if (params?.page != null || params?.pageSize != null) {
+      return paginateItems(items, params.page, params.pageSize)
+    }
+    return items
   }
-  const { data } = await apiClient.get<LeavePolicyRow[]>('/admin/leave/policies')
+  const { data } = await apiClient.get<
+    LeavePolicyRow[] | { items: LeavePolicyRow[]; total: number }
+  >('/admin/leave/policies', { params })
   return data
 }
 
-export async function listLeaveLedger(_employeeId?: string): Promise<LeaveLedgerRow[]> {
+export async function listLeaveLedger(
+  employeeId?: string,
+  params?: { page?: number; pageSize?: number },
+): Promise<{ items: LeaveLedgerRow[]; total: number } | LeaveLedgerRow[]> {
   if (env.useMockApi) {
     await delay()
-    return leaveLedger.map((r) => ({ ...r }))
+    const items = leaveLedger.map((r) => ({ ...r }))
+    if (params?.page != null || params?.pageSize != null) {
+      return paginateItems(items, params.page, params.pageSize)
+    }
+    return items
   }
-  const { data } = await apiClient.get<LeaveLedgerRow[]>('/admin/leave/ledger', {
-    params: _employeeId ? { employeeId: _employeeId } : undefined,
+  const { data } = await apiClient.get<
+    LeaveLedgerRow[] | { items: LeaveLedgerRow[]; total: number }
+  >('/admin/leave/ledger', {
+    params: {
+      ...(employeeId ? { employeeId } : {}),
+      ...params,
+    },
   })
   return data
 }

@@ -4,6 +4,7 @@
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
+import { paginateItems } from '@/shared/lib/list-params'
 import type { Task, TaskPriority } from '../types'
 
 export type { Task, TaskPriority, TaskStatus } from '../types'
@@ -28,6 +29,8 @@ export async function getTasks(params?: {
   search?: string
   status?: string
   projectId?: number
+  page?: number
+  pageSize?: number
 }): Promise<{ items: Task[]; total: number }> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<{ items: Task[]; total: number }>('/projects/tasks', {
@@ -51,6 +54,9 @@ export async function getTasks(params?: {
   }
   if (params?.status) {
     items = items.filter((t) => t.status === params.status)
+  }
+  if (params?.page != null || params?.pageSize != null) {
+    return paginateItems(items, params.page, params.pageSize)
   }
   return { items, total: items.length }
 }
