@@ -18,9 +18,23 @@ import type { Lead, Client, SalesMetric } from '../types'
 type LeadListData = { items: Lead[]; total: number; metrics: SalesMetric[] }
 type ClientListData = { items: Client[]; total: number; metrics: SalesMetric[] }
 
-/** Stable list key — full dataset once; filters applied client-side. */
-const LEADS_LIST_KEY = queryKeys.sales.leads.list()
-const CLIENTS_LIST_KEY = queryKeys.sales.clients.list()
+export type LeadListParams = {
+  search?: string
+  status?: string
+  stage?: string
+  priority?: string
+  source?: string
+  page?: number
+  pageSize?: number
+}
+
+export type ClientListParams = {
+  search?: string
+  status?: string
+  type?: string
+  page?: number
+  pageSize?: number
+}
 
 function findLeadInCache(
   qc: ReturnType<typeof useQueryClient>,
@@ -53,7 +67,11 @@ function upsertLeadInLists(qc: ReturnType<typeof useQueryClient>, row: Lead) {
     const items = exists
       ? old.items.map((l) => (l.id === row.id ? { ...l, ...row } : l))
       : [row, ...old.items]
-    return { ...old, items, total: items.length }
+    return {
+      ...old,
+      items,
+      total: exists ? old.total : (old.total ?? items.length) + (exists ? 0 : 1),
+    }
   })
   qc.setQueryData(queryKeys.sales.leads.detail(row.id), row)
 }
@@ -65,24 +83,32 @@ function upsertClientInLists(qc: ReturnType<typeof useQueryClient>, row: Client)
     const items = exists
       ? old.items.map((c) => (c.id === row.id ? { ...c, ...row } : c))
       : [row, ...old.items]
-    return { ...old, items, total: items.length }
+    return {
+      ...old,
+      items,
+      total: exists ? old.total : (old.total ?? items.length) + (exists ? 0 : 1),
+    }
   })
   qc.setQueryData(queryKeys.sales.clients.detail(row.id), row)
 }
 
-/** One network call for the whole table; do not pass filters (client-side filter). */
-export function useLeadsQuery(_filters?: {
-  search?: string
-  status?: string
-  stage?: string
-  priority?: string
-  source?: string
-}) {
+/** Server-side filters + pagination; query key includes params. */
+export function useLeadsQuery(filters?: LeadListParams) {
+  const params: LeadListParams = {
+    search: filters?.search || undefined,
+    status: filters?.status && filters.status !== 'All' ? filters.status : undefined,
+    stage: filters?.stage && filters.stage !== 'All' ? filters.stage : undefined,
+    priority: filters?.priority && filters.priority !== 'All' ? filters.priority : undefined,
+    source: filters?.source && filters.source !== 'All' ? filters.source : undefined,
+    page: filters?.page,
+    pageSize: filters?.pageSize,
+  }
   return useQuery({
-    queryKey: LEADS_LIST_KEY,
-    queryFn: () => listLeads(),
+    queryKey: queryKeys.sales.leads.list(params),
+    queryFn: () => listLeads(params),
     staleTime: 30_000,
     refetchOnWindowFocus: false,
+    placeholderData: (prev) => prev,
   })
 }
 
@@ -93,7 +119,6 @@ export function useLead(id: string | undefined) {
     queryKey: queryKeys.sales.leads.detail(id as string),
     queryFn: () => getLeadById(id!),
     enabled: Boolean(id),
-    // Prefer list payload — avoid GET /leads/:id when we already have the row
     initialData: cached,
     staleTime: cached ? 60_000 : 0,
     refetchOnWindowFocus: false,
@@ -102,7 +127,6 @@ export function useLead(id: string | undefined) {
 
 /**
  * Cache strategy: upsert on success only (no onSettled invalidate).
- * Invalidation after upsert races and can overwrite the optimistic/server row.
  */
 export function useCreateLead() {
   const qc = useQueryClient()
@@ -140,13 +164,20 @@ export function useUpdateLead() {
   })
 }
 
-/** One network call for the whole clients table. */
-export function useClientsQuery(_filters?: { search?: string; status?: string; type?: string }) {
+export function useClientsQuery(filters?: ClientListParams) {
+  const params: ClientListParams = {
+    search: filters?.search || undefined,
+    status: filters?.status && filters.status !== 'All' ? filters.status : undefined,
+    type: filters?.type && filters.type !== 'All' ? filters.type : undefined,
+    page: filters?.page,
+    pageSize: filters?.pageSize,
+  }
   return useQuery({
-    queryKey: CLIENTS_LIST_KEY,
-    queryFn: () => listClients(),
+    queryKey: queryKeys.sales.clients.list(params),
+    queryFn: () => listClients(params),
     staleTime: 30_000,
     refetchOnWindowFocus: false,
+    placeholderData: (prev) => prev,
   })
 }
 

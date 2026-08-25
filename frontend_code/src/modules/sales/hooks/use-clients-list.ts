@@ -27,32 +27,22 @@ export function useClientsList() {
     refetchOnReconnect: false,
   })
 
-  const { data, isLoading, isError, refetch, isFetching } = useClientsQuery()
-
-  const allItems = data?.items ?? []
-  const metrics = useMemo(() => data?.metrics ?? [], [data?.metrics])
-
-  const filtered = useMemo(() => {
-    const q = controls.debouncedSearch.trim().toLowerCase()
-    const { status, type } = controls.filters
-    return allItems.filter((c) => {
-      if (q) {
-        const hay =
-          `${c.name} ${c.industry} ${c.id} ${c.primaryContact ?? ''} ${c.country}`.toLowerCase()
-        if (!hay.includes(q)) return false
-      }
-      if (status !== 'All' && c.status !== status) return false
-      if (type !== 'All' && c.type !== type) return false
-      return true
-    })
-  }, [allItems, controls.debouncedSearch, controls.filters])
-
-  const selection = useListSelection({
-    items: filtered,
-    getId: (c) => c.id,
+  const { data, isLoading, isError, refetch, isFetching } = useClientsQuery({
+    search: controls.debouncedSearch.trim() || undefined,
+    status: controls.filters.status,
+    type: controls.filters.type,
+    page: controls.page,
+    pageSize: controls.pageSize,
   })
 
-  const pageItems = useMemo(() => controls.pageItems(filtered), [controls, filtered])
+  const pageItems = data?.items ?? []
+  const totalCount = data?.total ?? 0
+  const metrics = useMemo(() => data?.metrics ?? [], [data?.metrics])
+
+  const selection = useListSelection({
+    items: pageItems,
+    getId: (c) => c.id,
+  })
 
   const startLongPress = (id: string) => selection.onRowPressStart(id)
   const endLongPress = (client: Client, onShortPress?: (c: Client) => void) => {
@@ -61,8 +51,9 @@ export function useClientsList() {
 
   return {
     metrics,
-    totalCount: allItems.length,
-    filtered,
+    totalCount,
+    filtered: pageItems,
+    pageItems,
     isLoading: isLoading || filterOptionsQuery.isLoading,
     isError,
     refetch,
@@ -73,8 +64,8 @@ export function useClientsList() {
     setStatusFilter: (v: string) => controls.setFilter('status', v),
     typeFilter: controls.filters.type,
     setTypeFilter: (v: string) => controls.setFilter('type', v),
-    statuses: filterOptionsQuery.data?.statuses ?? [],
     types: filterOptionsQuery.data?.types ?? [],
+    statuses: filterOptionsQuery.data?.statuses ?? [],
     industries: filterOptionsQuery.data?.industries ?? [],
     countries: filterOptionsQuery.data?.countries ?? [],
     resetFilters: controls.resetAll,
@@ -82,7 +73,6 @@ export function useClientsList() {
     page: controls.page,
     setPage: controls.setPage,
     pageSize: controls.pageSize,
-    pageItems,
     selectionMode: selection.selectionMode,
     selectedIds: selection.selectedIds,
     allFilteredSelected: selection.allFilteredSelected,

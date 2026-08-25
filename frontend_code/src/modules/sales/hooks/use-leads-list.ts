@@ -19,7 +19,6 @@ export function useLeadsList() {
     filterDefaults: FILTER_DEFAULTS,
   })
 
-  /** Filter options: once per session while mounted cache lives */
   const filterOptionsQuery = useQuery({
     queryKey: queryKeys.sales.leads.filterOptions(),
     queryFn: getLeadFilterOptions,
@@ -30,34 +29,25 @@ export function useLeadsList() {
     refetchOnReconnect: false,
   })
 
-  /** Single list call — no filter params (avoids refetch on every filter change) */
-  const { data, isLoading, isError, refetch, isFetching } = useLeadsQuery()
-
-  const allItems = data?.items ?? []
-  const metrics = useMemo(() => data?.metrics ?? [], [data?.metrics])
-
-  const filtered = useMemo(() => {
-    const q = controls.debouncedSearch.trim().toLowerCase()
-    const { status, stage, priority, source } = controls.filters
-    return allItems.filter((l) => {
-      if (q) {
-        const hay = `${l.contactName} ${l.title} ${l.id} ${l.company} ${l.email ?? ''}`.toLowerCase()
-        if (!hay.includes(q)) return false
-      }
-      if (status !== 'All' && l.status !== status) return false
-      if (stage !== 'All' && l.stage !== stage) return false
-      if (priority !== 'All' && l.priority !== priority) return false
-      if (source !== 'All' && l.source !== source) return false
-      return true
-    })
-  }, [allItems, controls.debouncedSearch, controls.filters])
-
-  const selection = useListSelection({
-    items: filtered,
-    getId: (l) => l.id,
+  /** Server-side filter + page — API receives page/pageSize/search/filters */
+  const { data, isLoading, isError, refetch, isFetching } = useLeadsQuery({
+    search: controls.debouncedSearch.trim() || undefined,
+    status: controls.filters.status,
+    stage: controls.filters.stage,
+    priority: controls.filters.priority,
+    source: controls.filters.source,
+    page: controls.page,
+    pageSize: controls.pageSize,
   })
 
-  const pageItems = useMemo(() => controls.pageItems(filtered), [controls, filtered])
+  const pageItems = data?.items ?? []
+  const totalCount = data?.total ?? 0
+  const metrics = useMemo(() => data?.metrics ?? [], [data?.metrics])
+
+  const selection = useListSelection({
+    items: pageItems,
+    getId: (l) => l.id,
+  })
 
   const startLongPress = (id: string) => selection.onRowPressStart(id)
   const endLongPress = (lead: Lead, onShortPress?: (l: Lead) => void) => {
@@ -66,8 +56,10 @@ export function useLeadsList() {
 
   return {
     metrics,
-    totalCount: allItems.length,
-    filtered,
+    totalCount,
+    /** Current page rows (server-paginated) */
+    filtered: pageItems,
+    pageItems,
     isLoading: isLoading || filterOptionsQuery.isLoading,
     isError,
     refetch,
@@ -91,7 +83,6 @@ export function useLeadsList() {
     page: controls.page,
     setPage: controls.setPage,
     pageSize: controls.pageSize,
-    pageItems,
     selectionMode: selection.selectionMode,
     selectedIds: selection.selectedIds,
     allFilteredSelected: selection.allFilteredSelected,
