@@ -4,6 +4,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
+import { Pagination } from '@/shared/components/ui/Pagination'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
@@ -187,6 +188,9 @@ export function LeadsListPage() {
     stages,
     priorities,
     resetFilters,
+    page,
+    setPage,
+    pageSize,
     selectionMode,
     selectedIds,
     allFilteredSelected,
@@ -251,6 +255,9 @@ export function LeadsListPage() {
       widthClass: 'max-w-[520px]',
     })
   }
+
+  const rangeFrom = totalCount === 0 ? 0 : (page - 1) * pageSize + 1
+  const rangeTo = Math.min(page * pageSize, totalCount)
 
   return (
     <div className="space-y-6 relative">
@@ -351,7 +358,7 @@ export function LeadsListPage() {
         <div className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl border border-secondary/30 bg-secondary/5">
           <span className="text-body-sm font-semibold text-on-surface">
             {selectedIds.size} selected
-            <span className="text-on-surface-variant font-normal"> (of {filtered.length} shown)</span>
+            <span className="text-on-surface-variant font-normal"> (of {filtered.length} on this page)</span>
           </span>
           <div className="flex-1" />
           <Button variant="outline" size="sm" onClick={exitSelectionMode}>
@@ -396,8 +403,8 @@ export function LeadsListPage() {
                         className="rounded border-outline-variant text-secondary"
                         checked={allFilteredSelected}
                         onChange={toggleSelectAllFiltered}
-                        title="Select all filtered rows"
-                        aria-label="Select all filtered rows"
+                        title="Select all on this page"
+                        aria-label="Select all on this page"
                       />
                     ) : (
                       <span className="sr-only">Status</span>
@@ -568,15 +575,25 @@ export function LeadsListPage() {
               </tbody>
             </table>
           </div>
-          <div className="px-6 py-4 bg-surface-container-low/30 border-t border-outline-variant flex items-center justify-between">
+          <div className="px-6 py-3 bg-surface-container-low/30 border-t border-outline-variant flex flex-col sm:flex-row items-center justify-between gap-2">
             <p className="text-xs text-on-surface-variant">
-              Showing <span className="font-semibold text-on-surface">1–{filtered.length}</span> of{' '}
-              <span className="font-semibold text-on-surface">{totalCount}</span> leads
+              Showing{' '}
+              <span className="font-semibold text-on-surface">
+                {rangeFrom}–{rangeTo}
+              </span>{' '}
+              of <span className="font-semibold text-on-surface">{totalCount}</span> leads
               {!selectionMode && (
                 <span className="ml-2 text-on-surface-variant/80">· Hold a row 3s to multi-select</span>
               )}
             </p>
           </div>
+          <Pagination
+            page={page}
+            pageSize={pageSize}
+            total={totalCount}
+            onPageChange={setPage}
+            itemLabel="leads"
+          />
         </div>
       )}
     </div>
