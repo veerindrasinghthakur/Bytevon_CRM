@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import type { RolePermissionAction, RolePermissionMatrix } from '../types'
 import { emptyMatrix, matrixToPermissions, seedMatrix } from '../lib/role-matrix'
 import {
@@ -46,7 +47,6 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
   const [active, setActive] = useState(true)
   const [matrix, setMatrix] = useState<RolePermissionMatrix>({})
   const [seededFromDuplicate, setSeededFromDuplicate] = useState(false)
-  // Seed the edit form only once per role so refetches never wipe user edits
   const seededEditRoleIdRef = useRef<string | null>(null)
 
   useEffect(() => {
@@ -152,18 +152,21 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
     },
     onSuccess: (saved) => {
       void queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] })
-      navigate({ to: '/admin/roles/$roleId', params: { roleId: saved.id } })
-    },
-    onError: (e) => {
-      // Errors surface via the component; keep mutation side-effect free
+      safeNavigate(navigate, {
+        to: '/admin/roles/$roleId',
+        params: { roleId: String(saved.id) },
+      })
     },
   })
 
   const cancel = useCallback(() => {
     if (mode === 'edit' && roleId) {
-      navigate({ to: '/admin/roles/$roleId', params: { roleId } })
+      safeNavigate(navigate, {
+        to: '/admin/roles/$roleId',
+        params: { roleId },
+      })
     } else {
-      navigate({ to: '/admin/roles' })
+      safeNavigate(navigate, { to: '/admin/roles' })
     }
   }, [mode, roleId, navigate])
 
