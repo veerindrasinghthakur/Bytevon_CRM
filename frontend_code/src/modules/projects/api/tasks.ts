@@ -1,3 +1,8 @@
+/**
+ * Tasks API — env.useMockApi → shared mock DB; false → /projects/tasks or /tasks
+ */
+import { env } from '@/config/env'
+import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
 import type { Task, TaskPriority } from '../types'
 
@@ -24,6 +29,12 @@ export async function getTasks(params?: {
   status?: string
   projectId?: number
 }): Promise<{ items: Task[]; total: number }> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<{ items: Task[]; total: number }>('/projects/tasks', {
+      params,
+    })
+    return data
+  }
   await delay()
   let items = getDb().tasks.map(asTask)
   if (params?.projectId != null) {
@@ -45,6 +56,14 @@ export async function getTasks(params?: {
 }
 
 export async function getTask(id: number): Promise<Task | null> {
+  if (!env.useMockApi) {
+    try {
+      const { data } = await apiClient.get<Task>(`/projects/tasks/${id}`)
+      return data
+    } catch {
+      return null
+    }
+  }
   await delay()
   const row = getDb().tasks.find((t) => t.id === id)
   return row ? asTask(row) : null
@@ -56,6 +75,10 @@ export async function updateTask(
     Pick<Task, 'title' | 'description' | 'priority' | 'status' | 'assigneeName' | 'dueDate'>
   >,
 ): Promise<Task> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.patch<Task>(`/projects/tasks/${id}`, patch)
+    return data
+  }
   await delay(400)
   const tasks = getDb().tasks
   const idx = tasks.findIndex((t) => t.id === id)
@@ -72,6 +95,10 @@ export async function createTask(input: {
   projectName?: string
   assigneeName?: string
 }): Promise<Task> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<Task>('/projects/tasks', input)
+    return data
+  }
   await delay(500)
   const db = getDb()
   const tasks = db.tasks

@@ -1,3 +1,8 @@
+/**
+ * Teams API — env.useMockApi → shared mock DB; false → /projects/teams
+ */
+import { env } from '@/config/env'
+import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
 import type { Team } from '../types'
 
@@ -54,7 +59,15 @@ export function resolveProjectTeamId(projectId: number): number | null {
   return byName?.id ?? null
 }
 
-export async function getTeams(params?: { search?: string }): Promise<{ items: Team[]; total: number }> {
+export async function getTeams(params?: {
+  search?: string
+}): Promise<{ items: Team[]; total: number }> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<{ items: Team[]; total: number }>('/projects/teams', {
+      params,
+    })
+    return data
+  }
   await delay()
   let items = getDb().teams.map(asTeam)
   if (params?.search) {
@@ -70,6 +83,14 @@ export async function getTeams(params?: { search?: string }): Promise<{ items: T
 }
 
 export async function getTeam(id: number): Promise<Team | null> {
+  if (!env.useMockApi) {
+    try {
+      const { data } = await apiClient.get<Team>(`/projects/teams/${id}`)
+      return data
+    } catch {
+      return null
+    }
+  }
   await delay()
   const row = getDb().teams.find((t) => t.id === id)
   return row ? asTeam(row) : null
@@ -77,6 +98,12 @@ export async function getTeam(id: number): Promise<Team | null> {
 
 /** Teams linked to a project via teamId (or projectName fallback). */
 export async function getTeamsForProject(projectId: number): Promise<Team[]> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<{ items: Team[] } | Team[]>(
+      `/projects/${projectId}/teams`,
+    )
+    return Array.isArray(data) ? data : (data.items ?? [])
+  }
   await delay()
   const teamId = resolveProjectTeamId(projectId)
   if (teamId == null) return []
@@ -89,6 +116,12 @@ export async function getTeamsForProject(projectId: number): Promise<Team[]> {
  * (mock has no team_members table yet). Head is sorted first when present.
  */
 export async function getTeamMembers(teamId: number): Promise<TeamMemberRow[]> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<TeamMemberRow[] | { items: TeamMemberRow[] }>(
+      `/projects/teams/${teamId}/members`,
+    )
+    return Array.isArray(data) ? data : (data.items ?? [])
+  }
   await delay()
   const db = getDb()
   const team = db.teams.find((t) => t.id === teamId)
@@ -133,6 +166,12 @@ function projectUiStatus(status: string): TeamProjectRow['status'] {
 
 /** Projects linked to this team via teamId or matching projectName. */
 export async function getTeamProjects(teamId: number): Promise<TeamProjectRow[]> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<TeamProjectRow[] | { items: TeamProjectRow[] }>(
+      `/projects/teams/${teamId}/projects`,
+    )
+    return Array.isArray(data) ? data : (data.items ?? [])
+  }
   await delay()
   const db = getDb()
   const team = db.teams.find((t) => t.id === teamId)
@@ -169,8 +208,14 @@ export async function getTeamProjects(teamId: number): Promise<TeamProjectRow[]>
 
 export async function updateTeam(
   id: number,
-  patch: Partial<Pick<Team, 'name' | 'description' | 'department' | 'headName' | 'headRole' | 'status'>>,
+  patch: Partial<
+    Pick<Team, 'name' | 'description' | 'department' | 'headName' | 'headRole' | 'status'>
+  >,
 ): Promise<Team> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.patch<Team>(`/projects/teams/${id}`, patch)
+    return data
+  }
   await delay(400)
   const teams = getDb().teams
   const idx = teams.findIndex((t) => t.id === id)
@@ -188,6 +233,10 @@ export async function createTeam(input: {
   projectId?: number
   projectName?: string
 }): Promise<Team> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<Team>('/projects/teams', input)
+    return data
+  }
   await delay(500)
   const db = getDb()
   const teams = db.teams
