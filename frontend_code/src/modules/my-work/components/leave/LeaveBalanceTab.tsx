@@ -1,15 +1,17 @@
-import { leaveBalances } from '../../data/mock'
+import type { LeaveBalance } from '../../types'
 
 export function LeaveBalanceTab({
   totalAllocated,
   totalUsed,
   totalRemaining,
   pendingDays,
+  balances,
 }: {
   totalAllocated: number
   totalUsed: number
   totalRemaining: number
   pendingDays: number
+  balances: LeaveBalance[]
 }) {
   return (
     <div className="space-y-8">
@@ -94,7 +96,7 @@ export function LeaveBalanceTab({
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
-                {leaveBalances.map((lb) => {
+                {balances.map((lb) => {
                   const pct = lb.total ? Math.round((lb.used / lb.total) * 100) : 0
                   return (
                     <tr key={lb.type} className="zebra-row">
