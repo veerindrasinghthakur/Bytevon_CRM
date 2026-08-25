@@ -6,6 +6,7 @@
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
+import { paginateItems } from '@/shared/lib/list-params'
 import type { LoginUserRow } from '@/shared/schema'
 import type { AdminUserListItem, EmploymentWithoutLogin } from '../types'
 
@@ -19,6 +20,17 @@ export interface AdminRoleOption {
 export interface DepartmentOption {
   id: number
   name: string
+}
+
+export type AdminUserListParams = {
+  search?: string
+  status?: string
+  department?: string
+  role?: string
+  dateFrom?: string
+  dateTo?: string
+  page?: number
+  pageSize?: number
 }
 
 function statusLabel(s: LoginUserRow['status']): AdminUserListItem['status'] {
@@ -44,33 +56,19 @@ function ensureLoginUsers(): LoginUserRow[] {
   return db.login_users
 }
 
-export async function listAdminUsers(params?: { search?: string }) {
-  if (!env.useMockApi) {
-    const { data } = await apiClient.get<{
-      items: AdminUserListItem[]
-      total: number
-      locked: number
-      active: number
-    }>('/admin/users', { params })
-    return {
-      items: (data.items ?? []).map((u) => ({
-        ...u,
-        id: Number(u.id),
-        employmentId: Number(u.employmentId ?? 0),
-        lastLoginAt: u.lastLoginAt ?? null,
-        employeeCode: u.employeeCode ?? '—',
-        initials: u.initials || initials(u.name || u.email || 'U'),
-      })),
-      total: data.total ?? data.items?.length ?? 0,
-      locked: data.locked ?? 0,
-      active: data.active ?? 0,
-    }
-  }
+function inDateRange(iso: string | null, from?: string, to?: string): boolean {
+  if (!from && !to) return true
+  if (!iso) return false
+  const day = iso.slice(0, 10)
+  if (from && day < from) return false
+  if (to && day > to) return false
+  return true
+}
 
-  await delay()
+function mapLoginUsers(): AdminUserListItem[] {
   const db = getDb()
   const logins = ensureLoginUsers()
-  let items: AdminUserListItem[] = logins.map((login) => {
+  return logins.map((login) => {
     const emp = db.employments.find((e) => e.id === login.employment_id)
     const person = emp ? db.persons.find((p) => p.id === emp.person_id) : null
     const name = person ? `${person.first_name} ${person.last_name}` : login.email
@@ -106,7 +104,45 @@ export async function listAdminUsers(params?: { search?: string }) {
       employeeCode: emp?.employee_code ?? '—',
     }
   })
+}
 
+export async function listAdminUsers(params?: AdminUserListParams) {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<{
+      items: AdminUserListItem[]
+      total: number
+      locked: number
+      active: number
+      departments?: string[]
+      roles?: string[]
+    }>('/admin/users', { params })
+    return {
+      items: (data.items ?? []).map((u) => ({
+        ...u,
+        id: Number(u.id),
+        employmentId: Number(u.employmentId ?? 0),
+        lastLoginAt: u.lastLoginAt ?? null,
+        employeeCode: u.employeeCode ?? '—',
+        initials: u.initials || initials(u.name || u.email || 'U'),
+      })),
+      total: data.total ?? data.items?.length ?? 0,
+      locked: data.locked ?? 0,
+      active: data.active ?? 0,
+      departments: data.departments ?? [],
+      roles: data.roles ?? [],
+    }
+  }
+
+  await delay()
+  const all = mapLoginUsers()
+  const departments = Array.from(
+    new Set(all.map((u) => u.department).filter((d) => d && d !== '—')),
+  ).sort()
+  const roles = Array.from(new Set(all.map((u) => u.role).filter((r) => r && r !== '—'))).sort()
+  const lockedAll = all.filter((u) => u.status === 'Locked').length
+  const activeAll = all.filter((u) => u.status === 'Active').length
+
+  let items = all
   if (params?.search) {
     const q = params.search.toLowerCase()
     items = items.filter(
@@ -114,15 +150,41 @@ export async function listAdminUsers(params?: { search?: string }) {
         u.name.toLowerCase().includes(q) ||
         u.email.toLowerCase().includes(q) ||
         u.role.toLowerCase().includes(q) ||
-        u.employeeCode.toLowerCase().includes(q),
+        u.employeeCode.toLowerCase().includes(q) ||
+        u.department.toLowerCase().includes(q),
     )
+  }
+  if (params?.status && params.status !== 'All') {
+    items = items.filter((u) => u.status === params.status)
+  }
+  if (params?.department && params.department !== 'All') {
+    items = items.filter((u) => u.department === params.department)
+  }
+  if (params?.role && params.role !== 'All') {
+    items = items.filter((u) => u.role === params.role)
+  }
+  if (params?.dateFrom || params?.dateTo) {
+    items = items.filter((u) => inDateRange(u.lastLoginAt, params.dateFrom, params.dateTo))
+  }
+
+  if (params?.page != null || params?.pageSize != null) {
+    const page = paginateItems(items, params.page, params.pageSize)
+    return {
+      ...page,
+      locked: lockedAll,
+      active: activeAll,
+      departments,
+      roles,
+    }
   }
 
   return {
     items,
     total: items.length,
-    locked: items.filter((u) => u.status === 'Locked').length,
-    active: items.filter((u) => u.status === 'Active').length,
+    locked: lockedAll,
+    active: activeAll,
+    departments,
+    roles,
   }
 }
 
@@ -317,7 +379,6 @@ export async function updateUserLogin(
   Object.assign(row, rest, { updated_at: new Date().toISOString() })
   if (temporaryPassword != null) row.temporary_password = temporaryPassword
 
-  // Update current assignment department when picker saves a departmentId
   if (departmentId != null && Number.isFinite(departmentId)) {
     const assignment = db.employment_assignments.find(
       (a) => a.employment_id === row.employment_id && a.effective_to == null,

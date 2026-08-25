@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
@@ -14,61 +13,36 @@ const FILTER_DEFAULTS = {
   dateTo: '',
 }
 
-function inDateRange(iso: string | null, from: string, to: string): boolean {
-  if (!from && !to) return true
-  if (!iso) return false
-  const day = iso.slice(0, 10)
-  if (from && day < from) return false
-  if (to && day > to) return false
-  return true
-}
-
 export function useUsersList() {
   const controls = useListControls({
     filterDefaults: FILTER_DEFAULTS,
   })
 
+  const listParams = {
+    search: controls.debouncedSearch.trim() || undefined,
+    status: controls.filters.status !== 'All' ? controls.filters.status : undefined,
+    department: controls.filters.department !== 'All' ? controls.filters.department : undefined,
+    role: controls.filters.role !== 'All' ? controls.filters.role : undefined,
+    dateFrom: controls.filters.dateFrom || undefined,
+    dateTo: controls.filters.dateTo || undefined,
+    page: controls.page,
+    pageSize: controls.pageSize,
+  }
+
   const usersQuery = useQuery({
-    queryKey: queryKeys.admin.users.list(),
-    queryFn: () => listAdminUsers(),
+    queryKey: queryKeys.admin.users.list(listParams),
+    queryFn: () => listAdminUsers(listParams),
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+    placeholderData: (prev) => prev,
   })
 
-  const items = usersQuery.data?.items ?? []
+  const pageItems = usersQuery.data?.items ?? []
+  const total = usersQuery.data?.total ?? 0
   const locked = usersQuery.data?.locked ?? 0
   const active = usersQuery.data?.active ?? 0
-
-  const departments = useMemo(() => {
-    const set = new Set(items.map((u) => u.department).filter((d) => d && d !== '—'))
-    return Array.from(set).sort()
-  }, [items])
-
-  const roles = useMemo(() => {
-    const set = new Set(items.map((u) => u.role).filter((r) => r && r !== '—'))
-    return Array.from(set).sort()
-  }, [items])
-
-  const filtered = useMemo(() => {
-    const q = controls.search.trim().toLowerCase()
-    const { status, department, role, dateFrom, dateTo } = controls.filters
-    return items.filter((u) => {
-      if (q) {
-        const match =
-          u.name.toLowerCase().includes(q) ||
-          u.email.toLowerCase().includes(q) ||
-          u.role.toLowerCase().includes(q) ||
-          u.employeeCode.toLowerCase().includes(q) ||
-          u.department.toLowerCase().includes(q)
-        if (!match) return false
-      }
-      if (status !== 'All' && u.status !== status) return false
-      if (department !== 'All' && u.department !== department) return false
-      if (role !== 'All' && u.role !== role) return false
-      if (!inDateRange(u.lastLoginAt, dateFrom, dateTo)) return false
-      return true
-    })
-  }, [items, controls.search, controls.filters])
-
-  const pageItems = controls.pageItems(filtered)
+  const departments = usersQuery.data?.departments ?? []
+  const roles = usersQuery.data?.roles ?? []
 
   const selection = useListSelection<AdminUserListItem>({
     items: pageItems,
@@ -76,10 +50,11 @@ export function useUsersList() {
   })
 
   return {
-    items,
-    filtered,
+    /** Page rows (server-paginated) */
+    items: pageItems,
+    filtered: pageItems,
     pageItems,
-    totalCount: items.length,
+    totalCount: total,
     locked,
     active,
     departments,

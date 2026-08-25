@@ -8,7 +8,7 @@ import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { DateRangeFilter } from '@/shared/components/forms/DateRangeFilter'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
-import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
+import { Pagination } from '@/shared/components/ui/Pagination'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import {
   QuickSection,
@@ -79,9 +79,8 @@ export function UsersListPage() {
   const navigate = useNavigate()
   const { openPanel } = useQuickOverview()
   const {
-    items,
-    filtered,
     pageItems,
+    totalCount,
     locked,
     active,
     departments,
@@ -105,6 +104,7 @@ export function UsersListPage() {
     resetFilters,
     page,
     setPage,
+    pageSize,
     selectionMode,
     selectedIds,
     selectedCount,
@@ -147,12 +147,16 @@ export function UsersListPage() {
     })
   }
 
+  const rangeFrom = totalCount === 0 ? 0 : (page - 1) * pageSize + 1
+  const rangeTo = Math.min(page * pageSize, totalCount)
+
   if (isError) {
     return (
       <ErrorState
         title="Could not load users"
         description="User list failed to load. Retry or go back."
         onRetry={() => void refetch()}
+        onBack={() => safeNavigate(navigate, { to: '/admin/users' })}
       />
     )
   }
@@ -190,10 +194,10 @@ export function UsersListPage() {
       />
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Metric icon="group" label="Total Users" value={String(items.length)} hint="From mock DB" />
-        <Metric icon="bolt" label="Active" value={String(active)} hint="ACTIVE status" />
+        <Metric icon="group" label="Total (filtered)" value={String(totalCount)} hint="Matching filters" />
+        <Metric icon="bolt" label="Active" value={String(active)} hint="All accounts" />
         <Metric icon="lock_person" label="Locked" value={String(locked)} hint="Action required" valueClass="text-error" />
-        <Metric icon="person_off" label="Shown" value={String(filtered.length)} hint="After filter" />
+        <Metric icon="person_off" label="This page" value={String(pageItems.length)} hint="Current page" />
       </section>
 
       <ListToolbar
@@ -208,6 +212,7 @@ export function UsersListPage() {
           value={statusFilter}
           onChange={(v) => setStatusFilter(v as typeof statusFilter)}
           placeholder="Status"
+          aria-label="Filter by status"
           options={STATUS_OPTIONS}
           minWidthClass="min-w-[130px]"
         />
@@ -215,6 +220,7 @@ export function UsersListPage() {
           value={departmentFilter}
           onChange={setDepartmentFilter}
           placeholder="Department"
+          aria-label="Filter by department"
           options={[
             { value: 'All', label: 'All Departments' },
             ...departments.map((d) => ({ value: d, label: d })),
@@ -225,6 +231,7 @@ export function UsersListPage() {
           value={roleFilter}
           onChange={setRoleFilter}
           placeholder="Role"
+          aria-label="Filter by role"
           options={[
             { value: 'All', label: 'All Roles' },
             ...roles.map((r) => ({ value: r, label: r })),
@@ -270,7 +277,7 @@ export function UsersListPage() {
                       className="rounded border-outline-variant text-secondary"
                       checked={allFilteredSelected}
                       onChange={toggleSelectAllFiltered}
-                      aria-label="Select all filtered users on this page"
+                      aria-label="Select all users on this page"
                     />
                   ) : (
                     <span className="sr-only">Select</span>
@@ -358,21 +365,23 @@ export function UsersListPage() {
             </tbody>
           </table>
         </div>
+        <div className="px-6 py-3 border-t border-outline-variant text-label-sm text-on-surface-variant">
+          Showing{' '}
+          <span className="font-semibold text-on-background">
+            {rangeFrom}–{rangeTo}
+          </span>{' '}
+          of <span className="font-semibold text-on-background">{totalCount}</span> users
+          {!selectionMode && (
+            <span className="ml-2 opacity-80">· Hold a row 3s to multi-select · open overview for actions</span>
+          )}
+        </div>
         <Pagination
           page={page}
-          pageSize={DEFAULT_PAGE_SIZE}
-          total={filtered.length}
+          pageSize={pageSize}
+          total={totalCount}
           onPageChange={setPage}
           itemLabel="users"
         />
-        {filtered.length <= DEFAULT_PAGE_SIZE && (
-          <div className="px-6 py-3 border-t border-outline-variant text-label-sm text-on-surface-variant">
-            Showing {filtered.length} of {items.length} users
-            {!selectionMode && (
-              <span className="ml-2 opacity-80">· Hold a row 3s to multi-select · open overview for actions</span>
-            )}
-          </div>
-        )}
       </section>
     </div>
   )
