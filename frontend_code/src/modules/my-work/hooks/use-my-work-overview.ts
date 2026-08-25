@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
+import { queryKeys } from '@/shared/lib/query-keys'
 import { getMyWorkOverview } from '../api/my-work'
 
 export function useMyWorkOverview() {
   const query = useQuery({
-    queryKey: ['my-work', 'overview'],
+    queryKey: queryKeys.myWork.overview(),
     queryFn: getMyWorkOverview,
   })
 

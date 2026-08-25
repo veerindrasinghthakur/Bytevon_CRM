@@ -1,20 +1,47 @@
-import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useListControls } from '@/shared/hooks/useListControls'
+import { queryKeys } from '@/shared/lib/query-keys'
 import { listMyAttendance } from '../api/my-work'
 
+const FILTER_DEFAULTS = {
+  status: 'All',
+}
+
 export function useMyAttendance() {
-  const [search, setSearch] = useState('')
+  const controls = useListControls({
+    filterDefaults: FILTER_DEFAULTS,
+    pageSize: 20,
+  })
+
+  const params = {
+    search: controls.debouncedSearch || undefined,
+    status: controls.filters.status !== 'All' ? controls.filters.status : undefined,
+    page: controls.page,
+    pageSize: controls.pageSize,
+  }
 
   const query = useQuery({
-    queryKey: ['my-work', 'attendance', search],
-    queryFn: () => listMyAttendance({ search: search || undefined }),
+    queryKey: queryKeys.myWork.attendance.list(params),
+    queryFn: () => listMyAttendance(params),
+    placeholderData: (prev) => prev,
   })
 
   return {
-    records: query.data ?? [],
-    search,
-    setSearch,
+    records: query.data?.items ?? [],
+    total: query.data?.total ?? 0,
+    search: controls.search,
+    setSearch: controls.setSearch,
+    statusFilter: controls.filters.status,
+    setStatusFilter: (v: string) => controls.setFilter('status', v),
+    page: controls.page,
+    setPage: controls.setPage,
+    pageSize: controls.pageSize,
+    setPageSize: controls.setPageSize,
+    filtersActive: controls.anyActive,
+    resetFilters: controls.resetAll,
     isLoading: query.isLoading,
+    isFetching: query.isFetching,
+    isError: query.isError,
     refetch: query.refetch,
   }
 }

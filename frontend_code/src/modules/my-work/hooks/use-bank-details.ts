@@ -1,31 +1,20 @@
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEditMode } from '@/shared/hooks/useEditMode'
+import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 import { getBankDetails, saveBankDetails } from '../api/bank'
-import { currentUser } from '../data/mock'
+import { emptyBankForm } from '../schemas/bank-form'
 import type { BankDetails } from '../types'
-
-const EMPTY: BankDetails = {
-  accountHolderName: '',
-  bankName: '',
-  accountNumber: '',
-  confirmAccountNumber: '',
-  ifscOrRouting: '',
-  branchName: '',
-  accountType: 'Salary',
-  country: 'India',
-  currency: 'INR',
-}
 
 export function useBankDetails() {
   const qc = useQueryClient()
   const { data, isLoading } = useQuery({
-    queryKey: ['my-work', 'bank-details'],
+    queryKey: queryKeys.myWork.bankDetails(),
     queryFn: getBankDetails,
   })
 
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
-  const [draft, setDraft] = useState<BankDetails>(EMPTY)
+  const [draft, setDraft] = useState<BankDetails>(emptyBankForm())
   const [errors, setErrors] = useState<Partial<Record<keyof BankDetails, string>>>({})
   const [toast, setToast] = useState<string | null>(null)
 
@@ -36,7 +25,7 @@ export function useBankDetails() {
   const save = useMutation({
     mutationFn: () => saveBankDetails(draft),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['my-work', 'bank-details'] })
+      void invalidate.myWorkBank(qc)
       finishEditing()
       setToast(data ? 'Bank details updated successfully.' : 'Bank details saved successfully.')
       window.setTimeout(() => setToast(null), 2800)
@@ -60,7 +49,7 @@ export function useBankDetails() {
     setDraft(
       data
         ? { ...data, confirmAccountNumber: data.accountNumber }
-        : { ...EMPTY, accountHolderName: currentUser.name },
+        : { ...emptyBankForm() },
     )
     setErrors({})
     startEditing()
@@ -68,7 +57,7 @@ export function useBankDetails() {
 
   const onCancel = () => {
     if (data) setDraft({ ...data, confirmAccountNumber: data.accountNumber })
-    else setDraft(EMPTY)
+    else setDraft(emptyBankForm())
     setErrors({})
     cancelEditing()
   }
