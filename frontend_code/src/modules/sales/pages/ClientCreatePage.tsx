@@ -7,18 +7,15 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useClient, useCreateClient, useUpdateClient } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
-import type { ClientType, RecordStatus, ClientContactForm } from '../types'
+import {
+  emptyClientContact,
+  emptyClientForm,
+  type ClientContactForm,
+  type ClientForm,
+  type ClientType,
+  type RecordStatus,
+} from '../types'
 import { cn } from '@/shared/lib/cn'
-
-function emptyContact(): ClientContactForm {
-  return {
-    id: `tmp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    name: '',
-    designation: '',
-    email: '',
-    phone: '',
-  }
-}
 
 const fieldClass =
   'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors'
@@ -34,53 +31,52 @@ export function ClientCreatePage() {
   const updateMut = useUpdateClient()
   const existing = existingQuery.data
 
-  const [name, setName] = useState('')
-  const [legalName, setLegalName] = useState('')
-  const [type, setType] = useState<ClientType>('SMB')
-  const [status, setStatus] = useState<RecordStatus>('Active')
-  const [industry, setIndustry] = useState('')
-  const [website, setWebsite] = useState('')
-  const [country, setCountry] = useState('')
-  const [state, setState] = useState('')
-  const [city, setCity] = useState('')
-  const [address, setAddress] = useState('')
-  const [taxId, setTaxId] = useState('')
-  const [founded, setFounded] = useState('')
-  const [chatLink, setChatLink] = useState('')
-  const [contacts, setContacts] = useState<ClientContactForm[]>([emptyContact()])
+  const [form, setForm] = useState<ClientForm>(emptyClientForm)
   const [editingContactId, setEditingContactId] = useState<string | null>(null)
   const [error, setError] = useState('')
 
+  const patchForm = (patch: Partial<ClientForm>) => setForm((prev) => ({ ...prev, ...patch }))
+
   useEffect(() => {
     if (!existing) return
-    setName(existing.name ?? '')
-    setLegalName(existing.legalName ?? '')
-    setType(existing.type ?? 'SMB')
-    setStatus(existing.status ?? 'Active')
-    setIndustry(existing.industry ?? '')
-    setWebsite(existing.website ?? '')
-    setCountry(existing.country ?? '')
-    setAddress(existing.address ?? '')
-    setTaxId(existing.taxId ?? '')
-    setFounded(existing.founded ?? '')
-    setChatLink(existing.chatLink ?? '')
-    setContacts([
-      {
-        id: 'primary',
-        name: existing.primaryContact ?? '',
-        designation: '',
-        email: existing.email ?? '',
-        phone: existing.phone ?? '',
-      },
-    ])
+    setForm({
+      name: existing.name ?? '',
+      legalName: existing.legalName ?? '',
+      type: existing.type ?? 'SMB',
+      status: existing.status ?? 'Active',
+      industry: existing.industry ?? '',
+      website: existing.website ?? '',
+      country: existing.country ?? '',
+      state: '',
+      city: '',
+      address: existing.address ?? '',
+      taxId: existing.taxId ?? '',
+      founded: existing.founded ?? '',
+      chatLink: existing.chatLink ?? '',
+      contacts: [
+        {
+          id: 'primary',
+          name: existing.primaryContact ?? '',
+          designation: '',
+          email: existing.email ?? '',
+          phone: existing.phone ?? '',
+        },
+      ],
+    })
   }, [existing])
 
   const updateContact = (id: string, patch: Partial<ClientContactForm>) => {
-    setContacts((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)))
+    setForm((prev) => ({
+      ...prev,
+      contacts: prev.contacts.map((c) => (c.id === id ? { ...c, ...patch } : c)),
+    }))
   }
 
   const removeContact = (id: string) => {
-    setContacts((prev) => (prev.length <= 1 ? prev : prev.filter((c) => c.id !== id)))
+    setForm((prev) => ({
+      ...prev,
+      contacts: prev.contacts.length <= 1 ? prev.contacts : prev.contacts.filter((c) => c.id !== id),
+    }))
     if (editingContactId === id) setEditingContactId(null)
   }
 
@@ -89,32 +85,36 @@ export function ClientCreatePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    if (!name.trim()) {
+    if (!form.name.trim()) {
       setError('Client name is required.')
       return
     }
-    const primary = contacts[0]
+    const primary = form.contacts[0]
     const payload = {
-      name: name.trim(),
-      legalName: legalName.trim() || undefined,
-      type,
-      status,
-      industry: industry.trim() || undefined,
-      website: website.trim() || undefined,
-      country: country.trim() || undefined,
-      address: address.trim() || undefined,
-      taxId: taxId.trim() || undefined,
-      founded: founded || undefined,
-      chatLink: chatLink.trim() || undefined,
-      primaryContact: primary?.name?.trim() || undefined,
-      email: primary?.email?.trim() || undefined,
-      phone: primary?.phone?.trim() || undefined,
+      name: form.name.trim(),
+      legalName: form.legalName.trim() || undefined,
+      type: form.type,
+      status: form.status,
+      industry: form.industry.trim() || undefined,
+      website: form.website.trim() || undefined,
+      country: form.country.trim() || undefined,
+      address: form.address.trim() || undefined,
+      taxId: form.taxId.trim() || undefined,
+      founded: form.founded || undefined,
+      chatLink: form.chatLink.trim() || undefined,
+      primaryContact: primary?.name || undefined,
+      email: primary?.email || undefined,
+      phone: primary?.phone || undefined,
     }
     try {
       if (isEdit && params.clientId) {
         await updateMut.mutateAsync({
           id: params.clientId,
-          patch: payload,
+          patch: {
+            ...payload,
+            industry: form.industry.trim() || '—',
+            country: form.country.trim() || '—',
+          },
         })
       } else {
         await createMut.mutateAsync(payload)
@@ -171,8 +171,8 @@ export function ClientCreatePage() {
               <input
                 id="name"
                 required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                value={form.name}
+                onChange={(e) => patchForm({ name: e.target.value })}
                 className={fieldClass}
                 placeholder="Nexus Global Holdings"
               />
@@ -183,16 +183,16 @@ export function ClientCreatePage() {
               </label>
               <input
                 id="legalName"
-                value={legalName}
-                onChange={(e) => setLegalName(e.target.value)}
+                value={form.legalName}
+                onChange={(e) => patchForm({ legalName: e.target.value })}
                 className={fieldClass}
                 placeholder="Nexus Global Holdings, Inc."
               />
             </div>
             <Select
               label="Type"
-              value={type}
-              onChange={(v) => setType(v as ClientType)}
+              value={form.type}
+              onChange={(v) => patchForm({ type: v as ClientType })}
               options={[
                 { value: 'Enterprise', label: 'Enterprise' },
                 { value: 'SMB', label: 'SMB' },
@@ -202,8 +202,8 @@ export function ClientCreatePage() {
             />
             <Select
               label="Status"
-              value={status}
-              onChange={(v) => setStatus(v as RecordStatus)}
+              value={form.status}
+              onChange={(v) => patchForm({ status: v as RecordStatus })}
               options={[
                 { value: 'Active', label: 'Active' },
                 { value: 'Inactive', label: 'Inactive' },
@@ -216,8 +216,8 @@ export function ClientCreatePage() {
               </label>
               <input
                 id="industry"
-                value={industry}
-                onChange={(e) => setIndustry(e.target.value)}
+                value={form.industry}
+                onChange={(e) => patchForm({ industry: e.target.value })}
                 className={fieldClass}
                 placeholder="Technology"
               />
@@ -228,8 +228,8 @@ export function ClientCreatePage() {
               </label>
               <input
                 id="website"
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
+                value={form.website}
+                onChange={(e) => patchForm({ website: e.target.value })}
                 className={fieldClass}
                 placeholder="nexusglobal.com"
               />
@@ -240,8 +240,8 @@ export function ClientCreatePage() {
               </label>
               <input
                 id="taxId"
-                value={taxId}
-                onChange={(e) => setTaxId(e.target.value)}
+                value={form.taxId}
+                onChange={(e) => patchForm({ taxId: e.target.value })}
                 className={fieldClass}
               />
             </div>
@@ -252,8 +252,8 @@ export function ClientCreatePage() {
               <input
                 id="founded"
                 type="date"
-                value={founded}
-                onChange={(e) => setFounded(e.target.value)}
+                value={form.founded}
+                onChange={(e) => patchForm({ founded: e.target.value })}
                 className={fieldClass}
               />
             </div>
@@ -269,8 +269,8 @@ export function ClientCreatePage() {
               </label>
               <input
                 id="country"
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
+                value={form.country}
+                onChange={(e) => patchForm({ country: e.target.value })}
                 className={fieldClass}
                 placeholder="United States"
               />
@@ -281,8 +281,8 @@ export function ClientCreatePage() {
               </label>
               <input
                 id="state"
-                value={state}
-                onChange={(e) => setState(e.target.value)}
+                value={form.state}
+                onChange={(e) => patchForm({ state: e.target.value })}
                 className={fieldClass}
               />
             </div>
@@ -292,8 +292,8 @@ export function ClientCreatePage() {
               </label>
               <input
                 id="city"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
+                value={form.city}
+                onChange={(e) => patchForm({ city: e.target.value })}
                 className={fieldClass}
               />
             </div>
@@ -304,8 +304,8 @@ export function ClientCreatePage() {
               <textarea
                 id="address"
                 rows={3}
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                value={form.address}
+                onChange={(e) => patchForm({ address: e.target.value })}
                 className={cn(fieldClass, 'resize-y')}
                 placeholder="Street, building, postal code…"
               />
@@ -322,8 +322,8 @@ export function ClientCreatePage() {
               size="sm"
               leftIcon={<span className="material-symbols-outlined text-[18px]">person_add</span>}
               onClick={() => {
-                const c = emptyContact()
-                setContacts((prev) => [...prev, c])
+                const c = emptyClientContact()
+                setForm((prev) => ({ ...prev, contacts: [...prev.contacts, c] }))
                 setEditingContactId(c.id)
               }}
             >
@@ -335,7 +335,7 @@ export function ClientCreatePage() {
           </p>
 
           <div className="space-y-3">
-            {contacts.map((c, index) => {
+            {form.contacts.map((c, index) => {
               const open = editingContactId === c.id
               return (
                 <div
@@ -423,7 +423,7 @@ export function ClientCreatePage() {
                           className={fieldClass}
                         />
                       </div>
-                      {contacts.length > 1 && (
+                      {form.contacts.length > 1 && (
                         <div className="md:col-span-2 flex justify-end">
                           <Button type="button" variant="ghost" size="sm" onClick={() => removeContact(c.id)}>
                             Remove contact
@@ -444,11 +444,13 @@ export function ClientCreatePage() {
             Chat with client
           </h2>
           <input
+            id="chatLink"
             type="url"
-            value={chatLink}
-            onChange={(e) => setChatLink(e.target.value)}
+            value={form.chatLink}
+            onChange={(e) => patchForm({ chatLink: e.target.value })}
             className={fieldClass}
             placeholder="https://chat.bytevon.app/c/..."
+            aria-label="Chat link"
           />
         </section>
 
