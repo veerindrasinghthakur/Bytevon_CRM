@@ -1,24 +1,54 @@
 import { useNavigate, useParams } from '@tanstack/react-router'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
-import { inboxNotifications } from '../data/mock'
+import { BackButton } from '@/shared/components/layout/BackButton'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import {
+  useMarkNotificationRead,
+  useNotificationDetail,
+} from '../hooks/use-notifications'
+import { archiveNotification } from '../api/notifications'
+import { invalidate } from '@/shared/lib/query-keys'
 import { cn } from '@/shared/lib/cn'
 
 export function NotificationDetailPage() {
   const navigate = useNavigate()
+  const qc = useQueryClient()
   const { notificationId } = useParams({ from: '/notifications/$notificationId' as never }) as {
     notificationId: string
   }
-  const n = inboxNotifications.find((x) => x.id === notificationId) ?? inboxNotifications[0]
+
+  const { data: n, isLoading, isError, refetch } = useNotificationDetail(notificationId)
+  const markRead = useMarkNotificationRead()
+
+  const archiveMut = useMutation({
+    mutationFn: archiveNotification,
+    onSuccess: () => {
+      void invalidate.notifications(qc)
+      navigate({ to: '/notifications' })
+    },
+  })
+
+  if (isLoading) {
+    return <div className="py-16 text-center text-on-surface-variant">Loading notification…</div>
+  }
+
+  if (isError || !n) {
+    return (
+      <ErrorState
+        title="Notification not found"
+        description="This notification may have been archived or the link is invalid."
+        onRetry={() => void refetch()}
+        onBack={() => navigate({ to: '/notifications' })}
+      />
+    )
+  }
 
   return (
     <div className="space-y-6 max-w-6xl animate-fade-in">
-      <nav className="flex items-center gap-2 text-label-md text-on-surface-variant flex-wrap">
-        <button type="button" className="hover:text-secondary" onClick={() => navigate({ to: '/notifications' })}>
-          Notification Center
-        </button>
-        <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-        <span className="text-deep-navy font-semibold">Notification Details</span>
-      </nav>
+      <div className="flex items-center gap-3 flex-wrap">
+        <BackButton to="/notifications" label="Back to inbox" />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-8 space-y-6">
@@ -47,20 +77,6 @@ export function NotificationDetailPage() {
                     </span>
                   )}
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  className="p-2 border border-outline-variant hover:bg-surface-container rounded-lg transition-colors"
-                >
-                  <span className="material-symbols-outlined">print</span>
-                </button>
-                <button
-                  type="button"
-                  className="p-2 border border-outline-variant hover:bg-surface-container rounded-lg transition-colors"
-                >
-                  <span className="material-symbols-outlined">share</span>
-                </button>
               </div>
             </div>
             <hr className="border-outline-variant my-4" />
@@ -121,13 +137,19 @@ export function NotificationDetailPage() {
                 variant="primary"
                 size="md"
                 leftIcon={<span className="material-symbols-outlined text-[20px]">check_circle</span>}
+                onClick={() => markRead.mutate(n.id)}
+                isLoading={markRead.isPending}
               >
-                Mark as Resolved
+                {n.status === 'Unread' ? 'Mark as Read' : 'Marked Read'}
               </Button>
               <Button
                 variant="outline"
                 size="md"
                 leftIcon={<span className="material-symbols-outlined text-[20px]">assignment_turned_in</span>}
+                disabled={!n.relatedHref}
+                onClick={() => {
+                  if (n.relatedHref) navigate({ to: n.relatedHref as never })
+                }}
               >
                 Open Related
               </Button>
@@ -136,6 +158,8 @@ export function NotificationDetailPage() {
               variant="outline"
               size="md"
               leftIcon={<span className="material-symbols-outlined text-[20px]">archive</span>}
+              isLoading={archiveMut.isPending}
+              onClick={() => archiveMut.mutate(n.id)}
             >
               Archive
             </Button>
@@ -185,10 +209,6 @@ export function NotificationDetailPage() {
               </div>
             </div>
           </section>
-
-          <Button variant="outline" size="md" className="w-full" onClick={() => navigate({ to: '/notifications' })}>
-            Back to inbox
-          </Button>
         </div>
       </div>
     </div>
