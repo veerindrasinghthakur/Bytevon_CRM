@@ -3,12 +3,9 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { createLocation, getLocation, updateLocation } from '../api/organization'
 
-/**
- * Create / edit office location — persists via organization locations API
- * (same store as Locations list).
- */
 export function OfficeFormPage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
@@ -37,7 +34,6 @@ export function OfficeFormPage() {
   })
   const [error, setError] = useState<string | null>(null)
 
-  // Seed the form once per office so background refetches never wipe edits
   const seededOfficeIdRef = useRef<number | null>(null)
   useEffect(() => {
     if (!existing || seededOfficeIdRef.current === existing.id) return
@@ -56,6 +52,8 @@ export function OfficeFormPage() {
   }, [existing])
 
   const set = (k: keyof typeof form, v: string | number) => setForm((p) => ({ ...p, [k]: v }))
+
+  const goLocations = () => safeNavigate(navigate, { to: '/admin/settings/locations' })
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -93,7 +91,7 @@ export function OfficeFormPage() {
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ['organization', 'locations'] })
       await qc.invalidateQueries({ queryKey: ['admin', 'offices'] })
-      navigate({ to: '/admin/settings/locations' })
+      goLocations()
     },
     onError: (e: Error) => setError(e.message || 'Failed to save office'),
   })
@@ -106,7 +104,7 @@ export function OfficeFormPage() {
     <div className="space-y-6 animate-fade-in">
       <button
         type="button"
-        onClick={() => navigate({ to: '/admin/settings/locations' })}
+        onClick={goLocations}
         className="inline-flex items-center gap-2 text-secondary hover:text-primary transition-colors group"
       >
         <span className="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">
@@ -124,11 +122,7 @@ export function OfficeFormPage() {
         }
         actions={
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate({ to: '/admin/settings/locations' })}
-            >
+            <Button variant="outline" size="sm" onClick={goLocations}>
               Cancel
             </Button>
             <Button
