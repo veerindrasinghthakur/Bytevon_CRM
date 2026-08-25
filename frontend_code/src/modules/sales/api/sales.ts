@@ -16,7 +16,15 @@ import {
   dashboardMetrics,
   caseStudyMetrics,
 } from '../data/mock'
-import type { Lead, Client, CaseStudy, SalesActivity, SalesMetric } from '../types'
+import type {
+  Lead,
+  Client,
+  CaseStudy,
+  SalesActivity,
+  SalesMetric,
+  CreateLeadInput,
+  CreateClientInput,
+} from '../types'
 
 /** Mutable in-memory stores when useMockApi */
 let leadsStore: Lead[] | null = null
@@ -107,7 +115,6 @@ export async function getClientFilterOptions(): Promise<ClientFilterOptions> {
 export async function listSalesRepresentatives(): Promise<SalesRepOption[]> {
   if (env.useMockApi) {
     await delay()
-    // Derive unique assignees already on leads as soft fallback for pure-mock mode
     const names = Array.from(
       new Set(leads().map((l) => l.assignedTo).filter(Boolean) as string[]),
     )
@@ -172,25 +179,7 @@ export async function getLeadById(id: string): Promise<Lead | null> {
   return leads().find((l) => l.id === id) ?? null
 }
 
-export async function createLead(input: {
-  title: string
-  company: string
-  contactName: string
-  email?: string
-  phone?: string
-  source?: string
-  priority?: Lead['priority']
-  status?: Lead['status']
-  stage?: Lead['stage']
-  budget?: number
-  date?: string
-  assignedTo?: string
-  assignedEmploymentId?: number | null
-  notes?: string
-  chatLink?: string
-  contactTitle?: string
-  industry?: string
-}): Promise<Lead> {
+export async function createLead(input: CreateLeadInput): Promise<Lead> {
   if (!env.useMockApi) {
     const { data } = await apiClient.post<Lead>('/sales/leads', input)
     return data
@@ -222,7 +211,10 @@ export async function createLead(input: {
   return row
 }
 
-export async function updateLead(id: string, patch: Partial<Lead> & { assignedEmploymentId?: number | null }): Promise<Lead> {
+export async function updateLead(
+  id: string,
+  patch: Partial<Lead> & { assignedEmploymentId?: number | null },
+): Promise<Lead> {
   if (!env.useMockApi) {
     const { data } = await apiClient.patch<Lead>(`/sales/leads/${id}`, patch)
     return data
@@ -278,12 +270,7 @@ export async function getClientById(id: string): Promise<Client | null> {
   return clients().find((c) => c.id === id) ?? null
 }
 
-export async function createClient(input: {
-  name: string
-  industry?: string
-  type?: Client['type']
-  country?: string
-}): Promise<Client> {
+export async function createClient(input: CreateClientInput): Promise<Client> {
   if (!env.useMockApi) {
     const { data } = await apiClient.post<Client>('/sales/clients', input)
     return data
@@ -293,13 +280,23 @@ export async function createClient(input: {
   const row: Client = {
     id: `c${list.length + 1}`,
     name: input.name,
+    legalName: input.legalName,
     type: input.type ?? 'SMB',
-    status: 'Active',
+    status: input.status ?? 'Active',
     industry: input.industry ?? '—',
+    website: input.website,
     country: input.country ?? '—',
+    address: input.address,
+    taxId: input.taxId,
+    founded: input.founded,
+    chatLink: input.chatLink,
+    primaryContact: input.primaryContact,
+    email: input.email,
+    phone: input.phone,
     projects: 0,
     leads: 0,
     logoInitials: input.name.slice(0, 2).toUpperCase(),
+    clientSince: new Date().toISOString().slice(0, 10),
   }
   list.unshift(row)
   return row
