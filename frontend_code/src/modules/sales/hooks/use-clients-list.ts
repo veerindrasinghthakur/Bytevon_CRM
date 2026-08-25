@@ -19,18 +19,32 @@ export function useClientsList() {
   const filterOptionsQuery = useQuery({
     queryKey: ['sales', 'clients', 'filter-options'],
     queryFn: getClientFilterOptions,
-    staleTime: 60_000,
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   })
 
-  const { data, isLoading, isError, refetch, isFetching } = useClientsQuery({
-    search: controls.debouncedSearch || undefined,
-    status: controls.filters.status,
-    type: controls.filters.type,
-  })
+  const { data, isLoading, isError, refetch, isFetching } = useClientsQuery()
 
-  const filtered = useMemo(() => data?.items ?? [], [data?.items])
+  const allItems = data?.items ?? []
   const metrics = useMemo(() => data?.metrics ?? [], [data?.metrics])
-  const totalCount = data?.total ?? 0
+
+  const filtered = useMemo(() => {
+    const q = controls.debouncedSearch.trim().toLowerCase()
+    const { status, type } = controls.filters
+    return allItems.filter((c) => {
+      if (q) {
+        const hay =
+          `${c.name} ${c.industry} ${c.id} ${c.primaryContact ?? ''} ${c.country}`.toLowerCase()
+        if (!hay.includes(q)) return false
+      }
+      if (status !== 'All' && c.status !== status) return false
+      if (type !== 'All' && c.type !== type) return false
+      return true
+    })
+  }, [allItems, controls.debouncedSearch, controls.filters])
 
   const selection = useListSelection({
     items: filtered,
@@ -43,11 +57,10 @@ export function useClientsList() {
   const endLongPress = (client: Client, onShortPress?: (c: Client) => void) => {
     selection.onRowPressEnd(client.id, () => onShortPress?.(client))
   }
-  const clearLongPress = selection.onRowPressCancel
 
   return {
     metrics,
-    totalCount,
+    totalCount: allItems.length,
     filtered,
     isLoading: isLoading || filterOptionsQuery.isLoading,
     isError,
@@ -77,7 +90,7 @@ export function useClientsList() {
     exitSelectionMode: selection.exitSelectionMode,
     startLongPress,
     endLongPress,
-    clearLongPress,
+    clearLongPress: selection.onRowPressCancel,
     selection,
   }
 }
