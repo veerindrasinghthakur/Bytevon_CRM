@@ -10,8 +10,18 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getLeadFilterOptions, listSalesRepresentatives } from '../api/sales'
 import { useCreateLead, useLead, useUpdateLead } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
-import type { LeadPriority, PipelineStage, RecordStatus } from '../types'
+import {
+  emptyLeadForm,
+  type LeadForm,
+  type LeadPriority,
+  type PipelineStage,
+  type RecordStatus,
+} from '../types'
 import { cn } from '@/shared/lib/cn'
+
+const fieldClass =
+  'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors'
+const labelClass = 'block text-label-md text-on-surface-variant mb-1.5'
 
 export function LeadCreatePage() {
   const navigate = useNavigate()
@@ -33,54 +43,46 @@ export function LeadCreatePage() {
 
   const createMut = useCreateLead()
   const updateMut = useUpdateLead()
-
   const existing = existingQuery.data
 
-  const [title, setTitle] = useState('')
-  const [contactName, setContactName] = useState('')
-  const [contactTitle, setContactTitle] = useState('')
-  const [company, setCompany] = useState('')
-  const [industry, setIndustry] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [source, setSource] = useState('LinkedIn')
-  const [priority, setPriority] = useState<LeadPriority>('Medium')
-  const [status, setStatus] = useState<RecordStatus>('Active')
-  const [stage, setStage] = useState<PipelineStage>('New')
-  const [budget, setBudget] = useState('')
-  const [date, setDate] = useState('')
-  const [assignedEmploymentId, setAssignedEmploymentId] = useState('')
-  const [notes, setNotes] = useState('')
-  const [chatLink, setChatLink] = useState('')
+  const [form, setForm] = useState<LeadForm>(emptyLeadForm)
   const [error, setError] = useState('')
+
+  const patchForm = (patch: Partial<LeadForm>) => setForm((prev) => ({ ...prev, ...patch }))
 
   useEffect(() => {
     if (!existing) return
-    setTitle(existing.title ?? '')
-    setContactName(existing.contactName ?? '')
-    setContactTitle(existing.contactTitle ?? '')
-    setCompany(existing.company ?? '')
-    setIndustry(existing.industry ?? '')
-    setEmail(existing.email ?? '')
-    setPhone(existing.phone ?? '')
-    setSource(existing.source ?? 'LinkedIn')
-    setPriority(existing.priority ?? 'Medium')
-    setStatus(existing.status ?? 'Active')
-    setStage(existing.stage ?? 'New')
-    setBudget(existing.budget != null ? String(existing.budget) : '')
-    setDate(existing.date ?? '')
-    setNotes(existing.notes ?? '')
-    setChatLink(existing.chatLink ?? '')
+    setForm({
+      title: existing.title ?? '',
+      contactName: existing.contactName ?? '',
+      contactTitle: existing.contactTitle ?? '',
+      company: existing.company ?? '',
+      industry: existing.industry ?? '',
+      email: existing.email ?? '',
+      phone: existing.phone ?? '',
+      source: existing.source ?? 'LinkedIn',
+      priority: existing.priority ?? 'Medium',
+      status: existing.status ?? 'Active',
+      stage: existing.stage ?? 'New',
+      budget: existing.budget != null ? String(existing.budget) : '',
+      date: existing.date ?? '',
+      assignedEmploymentId: '',
+      notes: existing.notes ?? '',
+      chatLink: existing.chatLink ?? '',
+    })
   }, [existing])
 
   useEffect(() => {
     if (!existing?.assignedTo || !repsQuery.data?.length) return
-    if (assignedEmploymentId) return
-    const match = repsQuery.data.find(
-      (r) => r.name.toLowerCase() === existing.assignedTo!.toLowerCase(),
-    )
-    if (match) setAssignedEmploymentId(String(match.employmentId))
-  }, [existing, repsQuery.data, assignedEmploymentId])
+    setForm((prev) => {
+      if (prev.assignedEmploymentId) return prev
+      const match = repsQuery.data!.find(
+        (r) => r.name.toLowerCase() === existing.assignedTo!.toLowerCase(),
+      )
+      if (!match) return prev
+      return { ...prev, assignedEmploymentId: String(match.employmentId) }
+    })
+  }, [existing, repsQuery.data])
 
   const stages = filterOptionsQuery.data?.stages ?? []
   const priorities = filterOptionsQuery.data?.priorities ?? []
@@ -103,31 +105,33 @@ export function LeadCreatePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    if (!title.trim() || !contactName.trim()) {
+    if (!form.title.trim() || !form.contactName.trim()) {
       setError('Title and contact name are required.')
       return
     }
     const selectedRep = (repsQuery.data ?? []).find(
-      (r) => String(r.employmentId) === assignedEmploymentId,
+      (r) => String(r.employmentId) === form.assignedEmploymentId,
     )
     const payload = {
-      title: title.trim(),
-      contactName: contactName.trim(),
-      contactTitle: contactTitle.trim() || undefined,
-      company: company.trim(),
-      industry: industry.trim() || undefined,
-      email: email.trim() || undefined,
-      phone: phone.trim() || undefined,
-      source,
-      priority,
-      status,
-      stage,
-      budget: budget ? Number(budget) : 0,
-      date: date || undefined,
-      assignedEmploymentId: assignedEmploymentId ? Number(assignedEmploymentId) : null,
+      title: form.title.trim(),
+      contactName: form.contactName.trim(),
+      contactTitle: form.contactTitle.trim() || undefined,
+      company: form.company.trim(),
+      industry: form.industry.trim() || undefined,
+      email: form.email.trim() || undefined,
+      phone: form.phone.trim() || undefined,
+      source: form.source,
+      priority: form.priority,
+      status: form.status,
+      stage: form.stage,
+      budget: form.budget ? Number(form.budget) : 0,
+      date: form.date || undefined,
+      assignedEmploymentId: form.assignedEmploymentId
+        ? Number(form.assignedEmploymentId)
+        : null,
       assignedTo: selectedRep?.name,
-      notes: notes.trim() || undefined,
-      chatLink: chatLink.trim() || undefined,
+      notes: form.notes.trim() || undefined,
+      chatLink: form.chatLink.trim() || undefined,
     }
     try {
       if (isEdit && params.leadId) {
@@ -142,10 +146,6 @@ export function LeadCreatePage() {
   }
 
   if (isEdit && existingQuery.isLoading) return <PageLoadingSkeleton />
-
-  const fieldClass =
-    'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors'
-  const labelClass = 'block text-label-md text-on-surface-variant mb-1.5'
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -171,7 +171,10 @@ export function LeadCreatePage() {
       />
 
       {error && (
-        <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error" role="alert">
+        <div
+          className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error"
+          role="alert"
+        >
           {error}
         </div>
       )}
@@ -190,8 +193,8 @@ export function LeadCreatePage() {
               <input
                 id="title"
                 required
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                value={form.title}
+                onChange={(e) => patchForm({ title: e.target.value })}
                 className={fieldClass}
                 placeholder="e.g. TechNexus ERP Migration"
               />
@@ -203,8 +206,8 @@ export function LeadCreatePage() {
               <input
                 id="contactName"
                 required
-                value={contactName}
-                onChange={(e) => setContactName(e.target.value)}
+                value={form.contactName}
+                onChange={(e) => patchForm({ contactName: e.target.value })}
                 className={fieldClass}
                 placeholder="Sarah Miller"
               />
@@ -215,8 +218,8 @@ export function LeadCreatePage() {
               </label>
               <input
                 id="contactTitle"
-                value={contactTitle}
-                onChange={(e) => setContactTitle(e.target.value)}
+                value={form.contactTitle}
+                onChange={(e) => patchForm({ contactTitle: e.target.value })}
                 className={fieldClass}
                 placeholder="VP of Growth"
               />
@@ -227,8 +230,8 @@ export function LeadCreatePage() {
               </label>
               <input
                 id="company"
-                value={company}
-                onChange={(e) => setCompany(e.target.value)}
+                value={form.company}
+                onChange={(e) => patchForm({ company: e.target.value })}
                 className={fieldClass}
                 placeholder="TechNexus Corp. (optional — client created on WON)"
               />
@@ -242,8 +245,8 @@ export function LeadCreatePage() {
               </label>
               <input
                 id="industry"
-                value={industry}
-                onChange={(e) => setIndustry(e.target.value)}
+                value={form.industry}
+                onChange={(e) => patchForm({ industry: e.target.value })}
                 className={fieldClass}
                 placeholder="SaaS / Technology"
               />
@@ -255,8 +258,8 @@ export function LeadCreatePage() {
               <input
                 id="email"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={form.email}
+                onChange={(e) => patchForm({ email: e.target.value })}
                 className={fieldClass}
                 placeholder="s.miller@technexus.com"
               />
@@ -267,8 +270,8 @@ export function LeadCreatePage() {
               </label>
               <input
                 id="phone"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                value={form.phone}
+                onChange={(e) => patchForm({ phone: e.target.value })}
                 className={fieldClass}
                 placeholder="+1 (555) 012-3456"
               />
@@ -284,29 +287,29 @@ export function LeadCreatePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Select
               label="Stage"
-              value={stage}
-              onChange={(v) => setStage(v as PipelineStage)}
+              value={form.stage}
+              onChange={(v) => patchForm({ stage: v as PipelineStage })}
               options={stages.map((s) => ({ value: s, label: s }))}
               minWidthClass="w-full"
             />
             <Select
               label="Priority"
-              value={priority}
-              onChange={(v) => setPriority(v as LeadPriority)}
+              value={form.priority}
+              onChange={(v) => patchForm({ priority: v as LeadPriority })}
               options={priorities.map((p) => ({ value: p, label: p }))}
               minWidthClass="w-full"
             />
             <Select
               label="Status"
-              value={status}
-              onChange={(v) => setStatus(v as RecordStatus)}
+              value={form.status}
+              onChange={(v) => patchForm({ status: v as RecordStatus })}
               options={statuses.map((s) => ({ value: s, label: s }))}
               minWidthClass="w-full"
             />
             <Select
               label="Source"
-              value={source}
-              onChange={setSource}
+              value={form.source}
+              onChange={(v) => patchForm({ source: v })}
               options={sources.map((s) => ({ value: s, label: s }))}
               minWidthClass="w-full"
             />
@@ -327,8 +330,8 @@ export function LeadCreatePage() {
                 id="budget"
                 type="number"
                 min={0}
-                value={budget}
-                onChange={(e) => setBudget(e.target.value)}
+                value={form.budget}
+                onChange={(e) => patchForm({ budget: e.target.value })}
                 className={fieldClass}
                 placeholder="120000"
               />
@@ -340,16 +343,16 @@ export function LeadCreatePage() {
               <input
                 id="date"
                 type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
+                value={form.date}
+                onChange={(e) => patchForm({ date: e.target.value })}
                 className={fieldClass}
               />
             </div>
             <div>
               <Select
                 label="Assigned sales representative"
-                value={assignedEmploymentId}
-                onChange={setAssignedEmploymentId}
+                value={form.assignedEmploymentId}
+                onChange={(v) => patchForm({ assignedEmploymentId: v })}
                 placeholder="Select Sales employee"
                 options={repOptions}
                 minWidthClass="w-full"
@@ -373,8 +376,8 @@ export function LeadCreatePage() {
             <input
               id="chatLink"
               type="url"
-              value={chatLink}
-              onChange={(e) => setChatLink(e.target.value)}
+              value={form.chatLink}
+              onChange={(e) => patchForm({ chatLink: e.target.value })}
               className={fieldClass}
               placeholder="https://chat.bytevon.app/c/..."
             />
@@ -387,11 +390,13 @@ export function LeadCreatePage() {
             Background & context
           </h2>
           <textarea
+            id="notes"
             rows={5}
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            value={form.notes}
+            onChange={(e) => patchForm({ notes: e.target.value })}
             className={cn(fieldClass, 'resize-y')}
             placeholder="Discovery notes, internal context, next steps..."
+            aria-label="Notes"
           />
         </section>
 
@@ -399,7 +404,11 @@ export function LeadCreatePage() {
           <Button type="submit" variant="primary" isLoading={saving}>
             {isEdit ? 'Save changes' : 'Create lead'}
           </Button>
-          <Button type="button" variant="ghost" onClick={() => safeNavigate(navigate, { to: salesRoutes.leads })}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => safeNavigate(navigate, { to: salesRoutes.leads })}
+          >
             Cancel
           </Button>
         </div>
