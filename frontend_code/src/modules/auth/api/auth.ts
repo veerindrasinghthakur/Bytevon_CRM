@@ -1,10 +1,12 @@
 /**
- * Auth API — single module file (all auth methods).
- * Mock for V1 UI; replace bodies with real backend calls later.
+ * Auth API — single module file (login, logout, refresh, password flows).
+ * env.useMockApi → sessionStorage mock; false → POST /auth/*
  *
- * Temporary test user: username `admin` / password `123`
+ * Temporary test user (mock): username `admin` / password `123`
  */
 
+import { env } from '@/config/env'
+import { apiClient } from '@/shared/lib/axios'
 import type {
   AuthSession,
   AuthUser,
@@ -16,8 +18,7 @@ import type {
 import { MOCK_LOGIN_PASSWORD, MOCK_LOGIN_USERNAME } from '../schemas/auth'
 import { setCurrentEmploymentId } from '@/shared/rbac'
 
-// Use sessionStorage for auth session to limit lifespan to the browser tab.
-// This reduces exposure of tokens to other tabs and mitigates XSS persistence.
+// sessionStorage for auth session (tab-scoped); localStorage fallback for legacy reads.
 const STORAGE_KEY = 'bytevon_auth_session'
 const RESET_TOKENS_KEY = 'bytevon_reset_tokens'
 
@@ -47,11 +48,9 @@ function makeTokens(): AuthSession['tokens'] {
 
 export function loadStoredSession(): AuthSession | null {
   try {
-    // Prefer sessionStorage (tab‑scoped) over localStorage for security.
     const raw = sessionStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
     const session = JSON.parse(raw) as AuthSession
-    // Backfill older sessions missing employmentId
     if (session.user && session.user.employmentId == null) {
       session.user.employmentId = 1
       session.user.personId = session.user.personId ?? 1
@@ -67,22 +66,29 @@ export function loadStoredSession(): AuthSession | null {
 
 export function persistSession(session: AuthSession | null) {
   if (!session) {
-    // Clear from both storages to be safe.
     sessionStorage.removeItem(STORAGE_KEY)
     localStorage.removeItem(STORAGE_KEY)
     setCurrentEmploymentId(null)
     return
   }
   const payload = JSON.stringify(session)
-  // Store in sessionStorage (tab‑scoped) and also keep a fallback in localStorage for legacy reads.
   sessionStorage.setItem(STORAGE_KEY, payload)
   localStorage.setItem(STORAGE_KEY, payload)
   setCurrentEmploymentId(session.user.employmentId)
 }
 
 export async function loginApi(input: LoginInput): Promise<AuthSession> {
-  await delay()
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<AuthSession>('/auth/login', {
+      username: input.username.trim(),
+      password: input.password,
+      rememberMe: input.rememberMe ?? false,
+    })
+    persistSession(data)
+    return data
+  }
 
+  await delay()
   const username = input.username.trim().toLowerCase()
   const password = input.password
 
@@ -98,12 +104,26 @@ export async function loginApi(input: LoginInput): Promise<AuthSession> {
   return session
 }
 
-export async function logoutApi(_revokeAll = false): Promise<void> {
+export async function logoutApi(revokeAll = false): Promise<void> {
+  if (!env.useMockApi) {
+    try {
+      await apiClient.post('/auth/logout', { revokeAll })
+    } finally {
+      persistSession(null)
+    }
+    return
+  }
   await delay(250)
   persistSession(null)
 }
 
 export async function refreshApi(refreshToken: string): Promise<AuthSession> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<AuthSession>('/auth/refresh', { refreshToken })
+    persistSession(data)
+    return data
+  }
+
   await delay(150)
   const current = loadStoredSession()
   if (!current || current.tokens.refreshToken !== refreshToken) {
@@ -120,6 +140,11 @@ export async function refreshApi(refreshToken: string): Promise<AuthSession> {
 }
 
 export async function forgotPasswordApi(input: ForgotPasswordInput): Promise<{ message: string }> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<{ message: string }>('/auth/forgot-password', input)
+    return data
+  }
+
   await delay()
   const token = `rst_${Math.random().toString(36).slice(2)}_${Date.now()}`
   const map = JSON.parse(localStorage.getItem(RESET_TOKENS_KEY) || '{}') as Record<
@@ -136,6 +161,15 @@ export async function resetPasswordApi(
   token: string,
   input: ResetPasswordInput,
 ): Promise<{ message: string }> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<{ message: string }>('/auth/reset-password', {
+      token,
+      password: input.password,
+      confirmPassword: input.confirmPassword,
+    })
+    return data
+  }
+
   await delay()
   const map = JSON.parse(localStorage.getItem(RESET_TOKENS_KEY) || '{}') as Record<
     string,
@@ -152,6 +186,11 @@ export async function resetPasswordApi(
 }
 
 export async function changePasswordApi(input: ChangePasswordInput): Promise<{ message: string }> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<{ message: string }>('/auth/change-password', input)
+    return data
+  }
+
   await delay()
   if (input.currentPassword === 'wrong') {
     throw new Error('Current password is incorrect.')

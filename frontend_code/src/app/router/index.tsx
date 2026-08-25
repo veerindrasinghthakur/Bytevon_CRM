@@ -8,14 +8,8 @@ import {
 import { AppShell } from '@/app/layouts/AppShell'
 import { AuthLayout } from '@/app/layouts/AuthLayout'
 import { loadStoredSession } from '@/modules/auth/api/auth'
-import {
-  LoginPage,
-  ForgotPasswordPage,
-  ResetPasswordPage,
-  SessionExpiredPage,
-  AccessDeniedPage,
-  NotFoundPage,
-} from '@/modules/auth'
+import { NotFoundPage } from '@/modules/auth'
+import { createAuthRoutes, authRoutes } from '@/modules/auth/routes'
 
 import { createDashboardRoutes } from '@/modules/dashboard/routes'
 import { createProfileRoutes } from '@/modules/profile/routes'
@@ -36,14 +30,10 @@ import {
 function requireAuth() {
   const session = loadStoredSession()
   if (!session) {
-    throw redirect({ to: '/login', search: { redirect: window.location.pathname } })
-  }
-}
-
-function requireGuest() {
-  const session = loadStoredSession()
-  if (session) {
-    throw redirect({ to: '/dashboard' })
+    throw redirect({
+      to: authRoutes.login,
+      search: { redirect: window.location.pathname },
+    })
   }
 }
 
@@ -56,48 +46,6 @@ const authLayoutRoute = createRoute({
   getParentRoute: () => rootRoute,
   id: 'auth',
   component: AuthLayout,
-})
-
-const loginRoute = createRoute({
-  getParentRoute: () => authLayoutRoute,
-  path: '/login',
-  beforeLoad: () => {
-    requireGuest()
-  },
-  validateSearch: (search: Record<string, unknown>) => ({
-    redirect: typeof search.redirect === 'string' ? search.redirect : undefined,
-  }),
-  component: LoginPage,
-})
-
-const forgotPasswordRoute = createRoute({
-  getParentRoute: () => authLayoutRoute,
-  path: '/forgot-password',
-  beforeLoad: () => {
-    requireGuest()
-  },
-  component: ForgotPasswordPage,
-})
-
-const resetPasswordRoute = createRoute({
-  getParentRoute: () => authLayoutRoute,
-  path: '/reset-password',
-  validateSearch: (search: Record<string, unknown>) => ({
-    token: typeof search.token === 'string' ? search.token : undefined,
-  }),
-  component: ResetPasswordPage,
-})
-
-const sessionExpiredRoute = createRoute({
-  getParentRoute: () => authLayoutRoute,
-  path: '/session-expired',
-  component: SessionExpiredPage,
-})
-
-const accessDeniedRoute = createRoute({
-  getParentRoute: () => authLayoutRoute,
-  path: '/access-denied',
-  component: AccessDeniedPage,
 })
 
 const appLayoutRoute = createRoute({
@@ -114,7 +62,7 @@ const indexRoute = createRoute({
   path: '/',
   beforeLoad: () => {
     const session = loadStoredSession()
-    throw redirect({ to: session ? '/dashboard' : '/login' })
+    throw redirect({ to: session ? authRoutes.dashboard : authRoutes.login })
   },
 })
 
@@ -122,13 +70,7 @@ const adminSettingsLayoutRoute = createAdminSettingsLayoutRoute(appLayoutRoute)
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  authLayoutRoute.addChildren([
-    loginRoute,
-    forgotPasswordRoute,
-    resetPasswordRoute,
-    sessionExpiredRoute,
-    accessDeniedRoute,
-  ]),
+  authLayoutRoute.addChildren([...createAuthRoutes(authLayoutRoute)]),
   appLayoutRoute.addChildren([
     ...createDashboardRoutes(appLayoutRoute),
     ...createProfileRoutes(appLayoutRoute),
