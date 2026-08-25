@@ -10,12 +10,13 @@ export function BackButton({ to, from: _from, label = 'Back', className }: BackB
       window.history.back()
       return
     }
+    // Router search often typed as `never` for routes without real search params;
+    // cast avoids MakeRequiredSearchParams / ParamsReducerFn conflicts.
     if (to) {
-      // Routes use validateSearch: () => ({}) — search is required by typed navigate
-      void navigate({ to, search: {} } as never)
+      void navigate({ to } as never)
       return
     }
-    void navigate({ to: '/dashboard', search: {} } as never)
+    void navigate({ to: '/dashboard' } as never)
   }
 
   return (
