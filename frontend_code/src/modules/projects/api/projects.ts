@@ -6,6 +6,9 @@ import { apiClient } from '@/shared/lib/axios'
 import type { CreateProjectInput, ProjectDetail, ProjectListItem } from '../schemas/project'
 import { delay, getDb, nextId } from '@/shared/mock/db'
 import { paginateItems } from '@/shared/lib/list-params'
+import { computeProjectListMetrics } from '@/shared/compute/project-metrics'
+
+export type ProjectListMetrics = ReturnType<typeof computeProjectListMetrics>
 
 export async function getProjects(params?: {
   search?: string
@@ -13,12 +16,18 @@ export async function getProjects(params?: {
   teamId?: number
   page?: number
   pageSize?: number
-}): Promise<{ items: ProjectListItem[]; total: number }> {
+}): Promise<{ items: ProjectListItem[]; total: number; metrics: ProjectListMetrics }> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<{ items: ProjectListItem[]; total: number }>('/projects', {
-      params,
-    })
-    return data
+    const { data } = await apiClient.get<{
+      items: ProjectListItem[]
+      total: number
+      metrics?: ProjectListMetrics
+    }>('/projects', { params })
+    return {
+      items: data.items,
+      total: data.total,
+      metrics: data.metrics ?? computeProjectListMetrics(data.items),
+    }
   }
   await delay()
   let items = [...getDb().projects] as ProjectDetail[]
@@ -37,10 +46,12 @@ export async function getProjects(params?: {
   if (params?.teamId != null) {
     items = items.filter((p) => p.teamId === params.teamId)
   }
+  const metrics = computeProjectListMetrics(items)
   if (params?.page != null || params?.pageSize != null) {
-    return paginateItems(items, params.page, params.pageSize)
+    const page = paginateItems(items, params.page, params.pageSize)
+    return { ...page, metrics }
   }
-  return { items, total: items.length }
+  return { items, total: items.length, metrics }
 }
 
 export async function getProjectById(id: number): Promise<ProjectDetail | null> {

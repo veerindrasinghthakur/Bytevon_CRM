@@ -5,15 +5,39 @@ import {
   getProjectById,
   createProject,
   updateProject,
+  type ProjectListMetrics,
 } from '../api/projects'
 import type { CreateProjectInput, ProjectDetail, ProjectListItem } from '../schemas/project'
 
-type ProjectListCache = { items: ProjectListItem[]; total: number }
+type ProjectListCache = {
+  items: ProjectListItem[]
+  total: number
+  metrics?: ProjectListMetrics
+}
 
-export function useProjects(filters?: { search?: string; status?: string }) {
+export type ProjectListParams = {
+  search?: string
+  status?: string
+  teamId?: number
+  page?: number
+  pageSize?: number
+}
+
+/** Server-side filters + pagination; query key includes params. */
+export function useProjects(filters?: ProjectListParams) {
+  const params: ProjectListParams = {
+    search: filters?.search || undefined,
+    status: filters?.status || undefined,
+    teamId: filters?.teamId,
+    page: filters?.page,
+    pageSize: filters?.pageSize,
+  }
   return useQuery({
-    queryKey: queryKeys.projects.list(filters),
-    queryFn: () => getProjects(filters),
+    queryKey: queryKeys.projects.list(params),
+    queryFn: () => getProjects(params),
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+    placeholderData: (prev) => prev,
   })
 }
 

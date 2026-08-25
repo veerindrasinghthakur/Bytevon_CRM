@@ -1,7 +1,5 @@
-import { useMemo } from 'react'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
-import { computeProjectListMetrics } from '@/shared/compute/project-metrics'
 import { useProjects } from './use-projects'
 
 const FILTER_DEFAULTS = { status: '' }
@@ -12,19 +10,20 @@ export function useProjectsList() {
   })
 
   const { data, isLoading, isFetching, isError, refetch } = useProjects({
-    search: controls.search || undefined,
+    search: controls.debouncedSearch.trim() || undefined,
     status: controls.filters.status || undefined,
+    page: controls.page,
+    pageSize: controls.pageSize,
   })
 
-  const items = data?.items ?? []
-  const pageItems = controls.pageItems(items)
+  const pageItems = data?.items ?? []
+  const total = data?.total ?? 0
+  const metrics = data?.metrics
 
   const selection = useListSelection({
     items: pageItems,
     getId: (p) => String(p.id),
   })
-
-  const metrics = useMemo(() => computeProjectListMetrics(items), [items])
 
   return {
     search: controls.search,
@@ -36,12 +35,13 @@ export function useProjectsList() {
     pageSize: controls.pageSize,
     filtersActive: controls.anyActive,
     resetFilters: controls.resetAll,
-    items,
+    /** Alias: full filtered set is no longer client-held; use pageItems for rows */
+    items: pageItems,
     pageItems,
-    total: metrics.total,
-    active: metrics.active,
-    atRisk: metrics.atRisk,
-    avgProgress: metrics.avgProgress,
+    total,
+    active: metrics?.active ?? 0,
+    atRisk: metrics?.atRisk ?? 0,
+    avgProgress: metrics?.avgProgress ?? 0,
     isLoading,
     isFetching,
     isError,
