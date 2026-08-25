@@ -14,6 +14,7 @@ import {
   QuickMetaTile,
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
+import { ExportButton } from '@/shared/components/export/ExportButton'
 import { useMyTasks } from '../hooks/use-my-tasks'
 import type { MyTask } from '../types'
 import { cn } from '@/shared/lib/cn'
@@ -75,6 +76,7 @@ export function MyTasksPage() {
     isFetching,
     isError,
     refetch,
+    selectedIds,
   } = useMyTasks()
 
   const open = tasks.filter((t) => t.status !== 'Completed').length
@@ -192,6 +194,15 @@ export function MyTasksPage() {
         filtersActive={filtersActive}
         onResetFilters={resetFilters}
         onRefresh={() => void refetch()}
+        actions={
+          <ExportButton
+            resource="TASK"
+            selectedIds={selectedIds}
+            filters={{ status: statusFilter !== 'All' ? statusFilter : undefined }}
+            query={search}
+            filenameStem="my-tasks"
+          />
+        }
       >
         <Select
           value={statusFilter}

@@ -36,6 +36,7 @@ export function ProjectTeamAddMemberPage() {
         description={`Expand ${team.name} by onboarding company employees.`}
         showBack
         backTo={`/projects/teams/${team.id}`}
+        backLabel="Back to team"
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">

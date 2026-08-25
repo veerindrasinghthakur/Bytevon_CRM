@@ -33,6 +33,7 @@ export function ProjectTeamMembersPage() {
         description="Team roster"
         showBack
         backTo={`/projects/teams/${team.id}`}
+        backLabel="Back to team"
         actions={
           <Button
             variant="primary"

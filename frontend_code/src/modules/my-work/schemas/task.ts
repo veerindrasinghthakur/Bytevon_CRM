@@ -23,14 +23,6 @@ export const myTaskSchema = z.object({
 })
 export type MyTask = z.infer<typeof myTaskSchema>
 
-export const myTaskListResponseSchema = z.object({
-  items: z.array(myTaskSchema),
-  total: z.number(),
-  page: z.number(),
-  pageSize: z.number(),
-})
-export type MyTaskListResponse = z.infer<typeof myTaskListResponseSchema>
-
 export const createMyTaskSchema = z.object({
   name: z.string().min(2).max(200),
   project: z.string().max(120).optional(),

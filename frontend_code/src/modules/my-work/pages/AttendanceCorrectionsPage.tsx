@@ -3,6 +3,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
+import { ExportButton } from '@/shared/components/export/ExportButton'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { cn } from '@/shared/lib/cn'
@@ -43,6 +44,14 @@ export function AttendanceCorrectionsPage() {
         searchPlaceholder="Search by date, reason, or approver…"
         filtersActive={c.filtersActive}
         onResetFilters={c.resetFilters}
+        actions={
+          <ExportButton
+            resource="ATTENDANCE_CORRECTION"
+            filters={{ status: c.statusFilter || undefined }}
+            query={c.search || undefined}
+            filenameStem="attendance-corrections"
+          />
+        }
       >
         <Select
           value={c.statusFilter}

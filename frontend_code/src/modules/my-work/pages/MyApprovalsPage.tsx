@@ -1,7 +1,10 @@
-import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
-import { myApprovals } from '../data/mock'
+import { Button } from '@/shared/components/ui/Button'
+import { ExportButton } from '@/shared/components/export/ExportButton'
+import { ListToolbar } from '@/shared/components/layout/ListToolbar'
+import { Select } from '@/shared/components/ui/Select'
+import { useMyApprovals } from '../hooks/use-my-approvals'
 import type { ApprovalStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 
@@ -18,29 +21,42 @@ const typeIcon: Record<string, string> = {
   Other: 'description',
 }
 
-type RequestFilter = 'Pending' | 'Approved' | null
-
 /**
  * Card view of approval-tracked items the employee submitted (leave, corrections, expense).
  * Distinct from MyRequestsPage (`/my-work/requests`) which is the full table of org requests.
  */
 export function MyApprovalsPage() {
   const navigate = useNavigate()
-  const [filter, setFilter] = useState<RequestFilter>(null)
+  const {
+    approvals,
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    filtersActive,
+    resetFilters,
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+  } = useMyApprovals()
 
-  const pending = myApprovals.filter((a) => a.status === 'Pending').length
-  const approved = myApprovals.filter((a) => a.status === 'Approved').length
-
-  const filtered = useMemo(() => {
-    if (!filter) return myApprovals
-    return myApprovals.filter((a) => a.status === filter)
-  }, [filter])
+  const pending = approvals.filter((a) => a.status === 'Pending').length
+  const approved = approvals.filter((a) => a.status === 'Approved').length
 
   return (
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="My Approvals"
         description="Leave, attendance corrections, and other items you submitted for approval."
+        actions={
+          <ExportButton
+            resource="APPROVAL"
+            filters={{ status: statusFilter !== 'All' ? statusFilter : undefined }}
+            query={search || undefined}
+            filenameStem="my-approvals"
+          />
+        }
       />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -48,9 +64,9 @@ export function MyApprovalsPage() {
           type="button"
           className={cn(
             'bv-surface card-hover p-5 cursor-pointer text-left w-full',
-            filter === 'Pending' && 'ring-1 ring-secondary/30 border-secondary'
+            statusFilter === 'Pending' && 'ring-1 ring-secondary/30 border-secondary',
           )}
-          onClick={() => setFilter((f) => (f === 'Pending' ? null : 'Pending'))}
+          onClick={() => setStatusFilter(statusFilter === 'Pending' ? 'All' : 'Pending')}
         >
           <p className="text-label-sm text-on-surface-variant mb-1">Pending</p>
           <p className="text-headline-md font-bold text-amber-600">{pending}</p>
@@ -60,9 +76,9 @@ export function MyApprovalsPage() {
           type="button"
           className={cn(
             'bv-surface card-hover p-5 cursor-pointer text-left w-full',
-            filter === 'Approved' && 'ring-1 ring-secondary/30 border-secondary'
+            statusFilter === 'Approved' && 'ring-1 ring-secondary/30 border-secondary',
           )}
-          onClick={() => setFilter((f) => (f === 'Approved' ? null : 'Approved'))}
+          onClick={() => setStatusFilter(statusFilter === 'Approved' ? 'All' : 'Approved')}
         >
           <p className="text-label-sm text-on-surface-variant mb-1">Approved</p>
           <p className="text-headline-md font-bold text-emerald-600">{approved}</p>
@@ -70,28 +86,42 @@ export function MyApprovalsPage() {
         </button>
       </section>
 
-      {filter && (
-        <div className="flex items-center justify-end">
-          <button
-            type="button"
-            onClick={() => setFilter(null)}
-            className="inline-flex items-center gap-1.5 text-label-md text-on-surface-variant hover:text-on-surface rounded-md px-2 py-1 transition-colors"
-            aria-label="Clear filter"
-            title="Clear filter"
-          >
-            <span className="material-symbols-outlined text-[20px]">filter_alt_off</span>
-            <span>Clear filter</span>
-          </button>
-        </div>
+      <ListToolbar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search approvals…"
+        filtersActive={filtersActive}
+        onResetFilters={resetFilters}
+        onRefresh={() => void refetch()}
+      >
+        <Select
+          value={statusFilter}
+          onChange={setStatusFilter}
+          placeholder="All status"
+          options={[
+            { value: 'All', label: 'All status' },
+            { value: 'Pending', label: 'Pending' },
+            { value: 'Approved', label: 'Approved' },
+            { value: 'Rejected', label: 'Rejected' },
+          ]}
+          minWidthClass="min-w-[140px]"
+        />
+      </ListToolbar>
+
+      {isError && (
+        <p className="text-body-md text-error text-center py-8">Could not load approvals. Retry or go back.</p>
       )}
 
       <section className="space-y-3">
-        {filtered.length === 0 && (
+        {(isLoading || isFetching) && (
+          <p className="text-body-md text-on-surface-variant py-8 text-center">Loading…</p>
+        )}
+        {approvals.length === 0 && !isLoading && !isFetching && (
           <p className="text-body-md text-on-surface-variant py-8 text-center">
-            No approvals match this filter.
+            No approvals found.
           </p>
         )}
-        {filtered.map((item) => (
+        {approvals.map((item) => (
           <button
             key={item.id}
             type="button"

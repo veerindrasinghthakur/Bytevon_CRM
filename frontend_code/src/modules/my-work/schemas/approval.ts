@@ -16,14 +16,6 @@ export const approvalRequestSchema = z.object({
 })
 export type ApprovalRequest = z.infer<typeof approvalRequestSchema>
 
-export const approvalListResponseSchema = z.object({
-  items: z.array(approvalRequestSchema),
-  total: z.number(),
-  page: z.number(),
-  pageSize: z.number(),
-})
-export type ApprovalListResponse = z.infer<typeof approvalListResponseSchema>
-
 export const approverOptionSchema = z.object({
   id: z.string(),
   name: z.string(),

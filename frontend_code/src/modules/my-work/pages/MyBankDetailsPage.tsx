@@ -1,61 +1,64 @@
-import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
 import { Select } from '@/shared/components/ui/Select'
-import { currentUser } from '../data/mock'
+import { useBankDetails } from '../hooks/use-bank-details'
 import { cn } from '@/shared/lib/cn'
-
-export interface BankDetailsForm {
-  accountHolderName: string
-  bankName: string
-  accountNumber: string
-  confirmAccountNumber: string
-  ifscOrRouting: string
-  branchName: string
-  accountType: 'Savings' | 'Current' | 'Salary'
-  country: string
-  currency: string
-}
-
-const EMPTY_FORM: BankDetailsForm = {
-  accountHolderName: '',
-  bankName: '',
-  accountNumber: '',
-  confirmAccountNumber: '',
-  ifscOrRouting: '',
-  branchName: '',
-  accountType: 'Salary',
-  country: 'India',
-  currency: 'INR',
-}
-
-const INITIAL_SAVED: BankDetailsForm | null = {
-  accountHolderName: 'Alex Rivera',
-  bankName: 'HDFC Bank',
-  accountNumber: '50100234567890',
-  confirmAccountNumber: '50100234567890',
-  ifscOrRouting: 'HDFC0001234',
-  branchName: 'Koramangala, Bengaluru',
-  accountType: 'Salary',
-  country: 'India',
-  currency: 'INR',
-}
+import type { BankFormValues } from '../schemas/bank-form'
 
 function maskAccount(num: string) {
-  if (!num || num.length < 4) return '••••'
-  return `•••• •••• ${num.slice(-4)}`
+  if (!num || num.length < 4) return '\u2022\u2022\u2022\u2022'
+  return `\u2022\u2022\u2022\u2022 \u2022\u2022\u2022\u2022 ${num.slice(-4)}`
 }
 
 export function MyBankDetailsPage() {
   const navigate = useNavigate()
-  const [saved, setSaved] = useState<BankDetailsForm | null>(INITIAL_SAVED)
-  const [draft, setDraft] = useState<BankDetailsForm>(INITIAL_SAVED ?? EMPTY_FORM)
-  const [isEditing, setIsEditing] = useState(false)
-  const [errors, setErrors] = useState<Partial<Record<keyof BankDetailsForm, string>>>({})
-  const [toast, setToast] = useState<string | null>(null)
+  const { isLoading, saved, save, isSaving, emptyForm, formSchema } = useBankDetails()
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<BankFormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: emptyForm,
+  })
 
   const isCreate = !saved
+  const [isEditing, setIsEditing] = useState(false)
+  const [toast, setToast] = useState<string | null>(null)
+
+  const startEdit = () => {
+    if (saved) {
+      reset({
+        ...saved,
+        confirmAccountNumber: saved.accountNumber,
+      })
+    } else {
+      reset({ ...emptyForm })
+    }
+    setIsEditing(true)
+  }
+
+  const cancelEdit = () => {
+    reset(saved ? { ...saved, confirmAccountNumber: saved.accountNumber } : emptyForm)
+    setIsEditing(false)
+  }
+
+  const onSubmit = async (data: BankFormValues) => {
+    await save.mutateAsync(data)
+    setIsEditing(false)
+    setToast(isCreate ? 'Bank details saved successfully.' : 'Bank details updated successfully.')
+    setTimeout(() => setToast(null), 2800)
+  }
+
+  const statusLabel = saved ? 'On file' : 'Not set'
 
   const fieldClass = (disabled: boolean) =>
     cn(
@@ -65,42 +68,9 @@ export function MyBankDetailsPage() {
         : 'bg-surface-container-lowest border-outline-variant focus:border-secondary focus:ring-2 focus:ring-secondary/30 text-deep-navy',
     )
 
-  const validate = (data: BankDetailsForm) => {
-    const next: Partial<Record<keyof BankDetailsForm, string>> = {}
-    if (!data.accountHolderName.trim()) next.accountHolderName = 'Required'
-    if (!data.bankName.trim()) next.bankName = 'Required'
-    if (!data.accountNumber.trim()) next.accountNumber = 'Required'
-    if (data.accountNumber !== data.confirmAccountNumber) {
-      next.confirmAccountNumber = 'Account numbers do not match'
-    }
-    if (!data.ifscOrRouting.trim()) next.ifscOrRouting = 'Required'
-    if (!data.branchName.trim()) next.branchName = 'Required'
-    return next
+  if (isLoading) {
+    return <div className="animate-fade-in">Loading...</div>
   }
-
-  const startEdit = () => {
-    setDraft(saved ?? { ...EMPTY_FORM, accountHolderName: currentUser.name })
-    setErrors({})
-    setIsEditing(true)
-  }
-
-  const cancelEdit = () => {
-    setDraft(saved ?? EMPTY_FORM)
-    setErrors({})
-    setIsEditing(false)
-  }
-
-  const save = () => {
-    const nextErrors = validate(draft)
-    setErrors(nextErrors)
-    if (Object.keys(nextErrors).length > 0) return
-    setSaved({ ...draft, confirmAccountNumber: draft.accountNumber })
-    setIsEditing(false)
-    setToast(isCreate ? 'Bank details saved successfully.' : 'Bank details updated successfully.')
-    window.setTimeout(() => setToast(null), 2800)
-  }
-
-  const statusLabel = useMemo(() => (saved ? 'On file' : 'Not set'), [saved])
 
   return (
     <div className="space-y-8 max-w-[960px] animate-fade-in">
@@ -116,8 +86,22 @@ export function MyBankDetailsPage() {
         <span className="text-deep-navy font-medium">Bank Details</span>
       </div>
 
-      <header className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
+      <PageHeader
+        title="Bank Details"
+        description="Manage the account used for salary disbursement. Only you can create or update these details."
+        showBack
+        backTo="/my-work"
+      />
+
+      {toast && (
+        <div className="rounded-lg border border-success-emerald/30 bg-success-emerald/10 px-4 py-3 text-label-md text-success-emerald flex items-center gap-2">
+          <span className="material-symbols-outlined text-[20px]">check_circle</span>
+          {toast}
+        </div>
+      )}
+
+      <section className="bv-surface p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
           <button
             type="button"
             className="text-on-surface-variant hover:text-secondary p-1 rounded-full hover:bg-surface-container transition-colors mt-0.5"
@@ -128,9 +112,6 @@ export function MyBankDetailsPage() {
           </button>
           <div>
             <h1 className="text-headline-lg font-semibold text-deep-navy">Bank Details</h1>
-            <p className="text-body-md text-on-surface-variant mt-1">
-              Manage the account used for salary disbursement. Only you can create or update these details.
-            </p>
           </div>
         </div>
 
@@ -154,7 +135,7 @@ export function MyBankDetailsPage() {
                 variant="primary"
                 size="sm"
                 leftIcon={<span className="material-symbols-outlined text-[18px]">save</span>}
-                onClick={save}
+                onClick={() => handleSubmit(onSubmit)()}
               >
                 {isCreate ? 'Save' : 'Save changes'}
               </Button>
@@ -163,27 +144,18 @@ export function MyBankDetailsPage() {
         </div>
       </header>
 
-      {toast && (
-        <div className="rounded-lg border border-success-emerald/30 bg-success-emerald/10 px-4 py-3 text-label-md text-success-emerald flex items-center gap-2">
-          <span className="material-symbols-outlined text-[20px]">check_circle</span>
-          {toast}
-        </div>
-      )}
-
       <section className="bv-surface p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center font-bold text-primary">
-            {currentUser.name.slice(0, 1)}
+            {saved?.accountHolderName?.slice(0, 1) ?? 'U'}
           </div>
           <div>
-            <p className="text-title-lg font-semibold text-deep-navy">{currentUser.name}</p>
+            <p className="text-title-lg font-semibold text-deep-navy">{saved?.accountHolderName ?? 'Current User'}</p>
             <div className="flex flex-wrap items-center gap-2 text-body-sm text-on-surface-variant mt-0.5">
               <span className="flex items-center gap-1">
                 <span className="material-symbols-outlined text-[16px]">badge</span>
-                {currentUser.employeeId}
+                Employee
               </span>
-              <span className="w-1 h-1 rounded-full bg-outline-variant" />
-              <span>{currentUser.department}</span>
             </div>
           </div>
         </div>
@@ -220,164 +192,166 @@ export function MyBankDetailsPage() {
       )}
 
       {(saved || isEditing) && (
-        <section className="bv-surface overflow-hidden">
-          <div className="px-6 py-4 border-b border-outline-variant bg-surface-container-low flex items-center justify-between">
-            <h2 className="text-title-lg font-semibold text-deep-navy flex items-center gap-2">
-              <span className="material-symbols-outlined text-secondary">account_balance</span>
-              {isEditing ? (isCreate ? 'Add bank account' : 'Edit bank account') : 'Salary account'}
-            </h2>
-            {!isEditing && <EditButton iconOnly onClick={startEdit} title="Edit bank details" />}
-          </div>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <section className="bv-surface overflow-hidden">
+            <div className="px-6 py-4 border-b border-outline-variant bg-surface-container-low flex items-center justify-between">
+              <h2 className="text-title-lg font-semibold text-deep-navy flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary">account_balance</span>
+                {isEditing ? (isCreate ? 'Add bank account' : 'Edit bank account') : 'Salary account'}
+              </h2>
+              {!isEditing && <EditButton iconOnly onClick={startEdit} title="Edit bank details" />}
+            </div>
 
-          <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-            <Field label="Account holder name" required error={errors.accountHolderName}>
-              {isEditing ? (
-                <input
-                  className={fieldClass(false)}
-                  value={draft.accountHolderName}
-                  onChange={(e) => setDraft((d) => ({ ...d, accountHolderName: e.target.value }))}
-                  placeholder="Name as on bank account"
-                />
-              ) : (
-                <p className="text-body-md font-medium text-deep-navy">{saved?.accountHolderName}</p>
-              )}
-            </Field>
-
-            <Field label="Bank name" required error={errors.bankName}>
-              {isEditing ? (
-                <input
-                  className={fieldClass(false)}
-                  value={draft.bankName}
-                  onChange={(e) => setDraft((d) => ({ ...d, bankName: e.target.value }))}
-                  placeholder="e.g. HDFC Bank"
-                />
-              ) : (
-                <p className="text-body-md font-medium text-deep-navy">{saved?.bankName}</p>
-              )}
-            </Field>
-
-            <Field label="Account number" required error={errors.accountNumber}>
-              {isEditing ? (
-                <input
-                  className={fieldClass(false)}
-                  value={draft.accountNumber}
-                  onChange={(e) => setDraft((d) => ({ ...d, accountNumber: e.target.value.replace(/\s/g, '') }))}
-                  placeholder="Enter account number"
-                  autoComplete="off"
-                />
-              ) : (
-                <p className="text-body-md font-medium text-deep-navy font-mono tracking-wide">
-                  {maskAccount(saved?.accountNumber ?? '')}
-                </p>
-              )}
-            </Field>
-
-            {isEditing && (
-              <Field label="Confirm account number" required error={errors.confirmAccountNumber}>
-                <input
-                  className={fieldClass(false)}
-                  value={draft.confirmAccountNumber}
-                  onChange={(e) =>
-                    setDraft((d) => ({ ...d, confirmAccountNumber: e.target.value.replace(/\s/g, '') }))
-                  }
-                  placeholder="Re-enter account number"
-                  autoComplete="off"
-                />
+            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+              <Field label="Account holder name" required error={errors.accountHolderName?.message}>
+                {isEditing ? (
+                  <input
+                    {...register('accountHolderName')}
+                    className={fieldClass(false)}
+                    placeholder="Name as on bank account"
+                  />
+                ) : (
+                  <p className="text-body-md font-medium text-deep-navy">{saved?.accountHolderName}</p>
+                )}
               </Field>
+
+              <Field label="Bank name" required error={errors.bankName?.message}>
+                {isEditing ? (
+                  <input
+                    {...register('bankName')}
+                    className={fieldClass(false)}
+                    placeholder="e.g. HDFC Bank"
+                  />
+                ) : (
+                  <p className="text-body-md font-medium text-deep-navy">{saved?.bankName}</p>
+                )}
+              </Field>
+
+              <Field label="Account number" required error={errors.accountNumber?.message}>
+                {isEditing ? (
+                  <input
+                    {...register('accountNumber')}
+                    className={fieldClass(false)}
+                    placeholder="Enter account number"
+                    autoComplete="off"
+                    onChange={(e) => setValue('accountNumber', e.target.value.replace(/\s/g, ''))}
+                  />
+                ) : (
+                  <p className="text-body-md font-medium text-deep-navy font-mono tracking-wide">
+                    {maskAccount(saved?.accountNumber ?? '')}
+                  </p>
+                )}
+              </Field>
+
+              {isEditing && (
+                <Field label="Confirm account number" required error={errors.confirmAccountNumber?.message}>
+                  <input
+                    {...register('confirmAccountNumber')}
+                    className={fieldClass(false)}
+                    placeholder="Re-enter account number"
+                    autoComplete="off"
+                    onChange={(e) => setValue('confirmAccountNumber', e.target.value.replace(/\s/g, ''))}
+                  />
+                </Field>
+              )}
+
+              <Field label="IFSC / Routing code" required error={errors.ifscOrRouting?.message}>
+                {isEditing ? (
+                  <input
+                    {...register('ifscOrRouting')}
+                    className={fieldClass(false)}
+                    placeholder="e.g. HDFC0001234"
+                    onChange={(e) => setValue('ifscOrRouting', e.target.value.toUpperCase())}
+                  />
+                ) : (
+                  <p className="text-body-md font-medium text-deep-navy font-mono">{saved?.ifscOrRouting}</p>
+                )}
+              </Field>
+
+              <Field label="Branch" required error={errors.branchName?.message}>
+                {isEditing ? (
+                  <input
+                    {...register('branchName')}
+                    className={fieldClass(false)}
+                    placeholder="Branch name / city"
+                  />
+                ) : (
+                  <p className="text-body-md font-medium text-deep-navy">{saved?.branchName}</p>
+                )}
+              </Field>
+
+              <Field label="Account type">
+                {isEditing ? (
+                  <Select
+                    {...register('accountType')}
+                    options={[
+                      { value: 'Salary', label: 'Salary' },
+                      { value: 'Savings', label: 'Savings' },
+                      { value: 'Current', label: 'Current' },
+                    ]}
+                    minWidthClass="w-full"
+                  />
+                ) : (
+                  <p className="text-body-md font-medium text-deep-navy">{saved?.accountType}</p>
+                )}
+              </Field>
+
+              <Field label="Country">
+                {isEditing ? (
+                  <input {...register('country')} className={fieldClass(false)} />
+                ) : (
+                  <p className="text-body-md font-medium text-deep-navy">{saved?.country}</p>
+                )}
+              </Field>
+
+              <Field label="Currency">
+                {isEditing ? (
+                  <Select
+                    {...register('currency')}
+                    options={[
+                      { value: 'INR', label: 'INR' },
+                      { value: 'USD', label: 'USD' },
+                      { value: 'EUR', label: 'EUR' },
+                      { value: 'GBP', label: 'GBP' },
+                    ]}
+                    minWidthClass="w-full"
+                  />
+                ) : (
+                  <p className="text-body-md font-medium text-deep-navy">{saved?.currency}</p>
+                )}
+              </Field>
+            </div>
+
+            {!isEditing && saved && (
+              <div className="px-6 pb-6">
+                <div className="rounded-lg bg-surface-container-low border border-outline-variant px-4 py-3 text-label-md text-on-surface-variant flex items-start gap-2">
+                  <span className="material-symbols-outlined text-[18px] text-secondary shrink-0 mt-0.5">info</span>
+                  <span>
+                    Account number is masked for security. Use the pencil to update any field. Changes apply to future
+                    payroll runs only.
+                  </span>
+                </div>
+              </div>
             )}
 
-            <Field label="IFSC / Routing code" required error={errors.ifscOrRouting}>
-              {isEditing ? (
-                <input
-                  className={fieldClass(false)}
-                  value={draft.ifscOrRouting}
-                  onChange={(e) => setDraft((d) => ({ ...d, ifscOrRouting: e.target.value.toUpperCase() }))}
-                  placeholder="e.g. HDFC0001234"
-                />
-              ) : (
-                <p className="text-body-md font-medium text-deep-navy font-mono">{saved?.ifscOrRouting}</p>
-              )}
-            </Field>
-
-            <Field label="Branch" required error={errors.branchName}>
-              {isEditing ? (
-                <input
-                  className={fieldClass(false)}
-                  value={draft.branchName}
-                  onChange={(e) => setDraft((d) => ({ ...d, branchName: e.target.value }))}
-                  placeholder="Branch name / city"
-                />
-              ) : (
-                <p className="text-body-md font-medium text-deep-navy">{saved?.branchName}</p>
-              )}
-            </Field>
-
-            <Field label="Account type">
-              {isEditing ? (
-                <Select
-                  value={draft.accountType}
-                  onChange={(v) =>
-                    setDraft((d) => ({ ...d, accountType: v as BankDetailsForm['accountType'] }))
-                  }
-                  options={[
-                    { value: 'Salary', label: 'Salary' },
-                    { value: 'Savings', label: 'Savings' },
-                    { value: 'Current', label: 'Current' },
-                  ]}
-                  minWidthClass="w-full"
-                />
-              ) : (
-                <p className="text-body-md font-medium text-deep-navy">{saved?.accountType}</p>
-              )}
-            </Field>
-
-            <Field label="Country">
-              {isEditing ? (
-                <input
-                  className={fieldClass(false)}
-                  value={draft.country}
-                  onChange={(e) => setDraft((d) => ({ ...d, country: e.target.value }))}
-                />
-              ) : (
-                <p className="text-body-md font-medium text-deep-navy">{saved?.country}</p>
-              )}
-            </Field>
-
-            <Field label="Currency">
-              {isEditing ? (
-                <Select
-                  value={draft.currency}
-                  onChange={(v) => setDraft((d) => ({ ...d, currency: v }))}
-                  options={[
-                    { value: 'INR', label: 'INR' },
-                    { value: 'USD', label: 'USD' },
-                    { value: 'EUR', label: 'EUR' },
-                    { value: 'GBP', label: 'GBP' },
-                  ]}
-                  minWidthClass="w-full"
-                />
-              ) : (
-                <p className="text-body-md font-medium text-deep-navy">{saved?.currency}</p>
-              )}
-            </Field>
-          </div>
-
-          {!isEditing && saved && (
-            <div className="px-6 pb-6">
-              <div className="rounded-lg bg-surface-container-low border border-outline-variant px-4 py-3 text-label-md text-on-surface-variant flex items-start gap-2">
-                <span className="material-symbols-outlined text-[18px] text-secondary shrink-0 mt-0.5">info</span>
-                <span>
-                  Account number is masked for security. Use the pencil to update any field. Changes apply to future
-                  payroll runs only.
-                </span>
+            {isEditing && (
+              <div className="px-6 py-4 border-t border-outline-variant bg-surface flex items-center gap-3 justify-end">
+                <Button type="button" variant="ghost" onClick={cancelEdit}>
+                  Cancel
+                </Button>
+                <Button type="submit" variant="primary" isLoading={isSubmitting || isSaving}>
+                  {isCreate ? 'Save' : 'Save changes'}
+                </Button>
               </div>
-            </div>
-          )}
-        </section>
+            )}
+          </section>
+        </form>
       )}
     </div>
   )
 }
+
+import { useState } from 'react'
 
 function Field({
   label,

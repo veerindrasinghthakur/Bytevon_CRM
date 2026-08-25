@@ -22,14 +22,6 @@ export const attendanceRecordSchema = z.object({
 })
 export type AttendanceRecord = z.infer<typeof attendanceRecordSchema>
 
-export const attendanceListResponseSchema = z.object({
-  items: z.array(attendanceRecordSchema),
-  total: z.number(),
-  page: z.number(),
-  pageSize: z.number(),
-})
-export type AttendanceListResponse = z.infer<typeof attendanceListResponseSchema>
-
 export const correctionStatusSchema = z.enum(['Pending', 'Approved', 'Rejected', 'Draft'])
 export type CorrectionStatus = z.infer<typeof correctionStatusSchema>
 
@@ -46,14 +38,6 @@ export const attendanceCorrectionSchema = z.object({
   approverId: z.string().optional(),
 })
 export type AttendanceCorrectionRequest = z.infer<typeof attendanceCorrectionSchema>
-
-export const correctionListResponseSchema = z.object({
-  items: z.array(attendanceCorrectionSchema),
-  total: z.number(),
-  page: z.number(),
-  pageSize: z.number(),
-})
-export type CorrectionListResponse = z.infer<typeof correctionListResponseSchema>
 
 export const breakBarMarkerSchema = z.object({
   id: z.string(),

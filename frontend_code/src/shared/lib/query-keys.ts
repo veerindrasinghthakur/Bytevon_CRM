@@ -146,6 +146,10 @@ export const queryKeys = {
     overview: () => ['my-work', 'overview'] as const,
     bankDetails: () => ['my-work', 'bank-details'] as const,
     approvers: () => ['my-work', 'approvers'] as const,
+    approvals: {
+      all: ['my-work', 'approvals'] as const,
+      list: (filters?: unknown) => [...queryKeys.myWork.approvals.all, 'list', filters ?? {}] as const,
+    },
   },
 } as const
 
@@ -180,4 +184,5 @@ export const invalidate = {
   myWorkAttendance: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.attendance.all }),
   myWorkCorrections: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.corrections.all }),
   myWorkBank: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.bankDetails() }),
+  myWorkApprovals: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.approvals.all }),
 }

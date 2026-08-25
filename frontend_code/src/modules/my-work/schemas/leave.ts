@@ -38,14 +38,6 @@ export const leaveRequestSchema = z.object({
 })
 export type LeaveRequest = z.infer<typeof leaveRequestSchema>
 
-export const leaveListResponseSchema = z.object({
-  items: z.array(leaveRequestSchema),
-  total: z.number(),
-  page: z.number(),
-  pageSize: z.number(),
-})
-export type LeaveListResponse = z.infer<typeof leaveListResponseSchema>
-
 export const createLeaveRequestSchema = z.object({
   type: leaveTypeSchema,
   from: z.string().min(1),

@@ -190,6 +190,9 @@ export function ClientsListPage() {
             </Button>
           </div>
         }
+        showBack
+        backTo={salesRoutes.clients}
+        backLabel="Back to clients"
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
