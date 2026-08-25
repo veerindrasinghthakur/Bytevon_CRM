@@ -1,11 +1,8 @@
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
-import { bankDetailsSeed } from '../data/mock'
+import { delay } from '@/shared/mock/db'
+import { bankDetailsSeed } from '@/shared/mock/data/my-work'
 import type { BankDetails } from '../types'
-
-function delay(ms = 200) {
-  return new Promise((r) => setTimeout(r, ms))
-}
 
 let mockStore: BankDetails | null = { ...bankDetailsSeed }
 

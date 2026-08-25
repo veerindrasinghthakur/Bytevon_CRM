@@ -1,207 +1,58 @@
-/** My Work (employee self-service) domain types
- *
- * Schema-as-truth (Complete_Final_Schema):
- * UI keeps human-readable labels; map to API/DB enums at the boundary (api/*).
- *
- * LeaveType:        Casual→CASUAL, Sick→SICK, Earned→EARNED, Unpaid→LOSS_OF_PAY, Comp Off→COMP_OFF
- * LeaveStatus:      Pending→PENDING, Approved→APPROVED, Rejected→REJECTED, Cancelled→CANCELLED
- * AttendanceStatus: Present→PRESENT, Absent→ABSENT, Half Day→HALF_DAY, On Leave→ON_LEAVE,
- *                   Holiday→HOLIDAY, Weekend→WEEK_OFF
- * ApprovalStatus:   Pending→PENDING, Approved→APPROVED, Rejected→REJECTED
- * Task priority/status are project-module UX labels; map to task enums when Projects API is wired.
- */
+/** Re-export domain types from Zod schemas — MODULE_STANDARDS §3.4 */
 
-export type AttendanceStatus =
-  | 'Present'
-  | 'Absent'
-  | 'Half Day'
-  | 'On Leave'
-  | 'Holiday'
-  | 'Weekend'
+export type {
+  LeaveType,
+  LeaveStatus,
+  LeaveBalance,
+  LeaveTypeOption,
+  LeaveRequest,
+  LeaveListResponse,
+  CreateLeaveRequestInput,
+} from './schemas/leave'
 
-export type LeaveType = 'Casual' | 'Sick' | 'Earned' | 'Unpaid' | 'Comp Off'
+export type { LeaveFormValues } from './schemas/leave-form'
+export { emptyLeaveForm, leaveFormSchema } from './schemas/leave-form'
 
-export type LeaveStatus = 'Pending' | 'Approved' | 'Rejected' | 'Cancelled'
+export type {
+  AttendanceStatus,
+  AttendanceRecord,
+  AttendanceListResponse,
+  CorrectionStatus,
+  AttendanceCorrectionRequest,
+  CorrectionListResponse,
+  BreakBarMarker,
+  WeekHourBar,
+} from './schemas/attendance'
 
-export type TaskPriority = 'Critical' | 'High' | 'Medium' | 'Low'
+export type {
+  TaskPriority,
+  TaskStatus,
+  MyTask,
+  MyTaskListResponse,
+  CreateMyTaskInput,
+} from './schemas/task'
 
-export type TaskStatus = 'Not Started' | 'In Progress' | 'Blocked' | 'Completed' | 'Pending'
+export type { MyTaskFormValues } from './schemas/task-form'
+export { emptyMyTaskForm, myTaskFormSchema } from './schemas/task-form'
 
-export type ApprovalStatus = 'Pending' | 'Approved' | 'Rejected'
+export type {
+  ApprovalStatus,
+  ApprovalType,
+  ApprovalRequest,
+  ApprovalListResponse,
+  ApproverOption,
+} from './schemas/approval'
 
-export type ApprovalType = 'Leave' | 'Attendance Correction' | 'Expense' | 'Other'
+export type { BankAccountType, BankDetails } from './schemas/bank'
+export type { BankFormValues } from './schemas/bank-form'
+export { emptyBankForm, bankFormSchema } from './schemas/bank-form'
 
-/** Break session (client-local until backend) */
-export type BreakMode = 'countdown' | 'stopwatch'
+export type {
+  MetricCard,
+  NotificationItem,
+  UpcomingEvent,
+  MyWorkUser,
+  MyWorkOverview,
+} from './schemas/overview'
 
-export interface BreakSession {
-  id: string
-  mode: BreakMode
-  /** ISO start */
-  startedAt: string
-  /** Minutes when mode is countdown; undefined for stopwatch */
-  durationMinutes?: number
-  /** ISO end when user stops the break */
-  endedAt?: string
-  note?: string
-}
-
-/** Position of a break segment inside a day bar (0–100 from bottom of bar height). */
-export interface BreakBarMarker {
-  id: string
-  /** 0–100: start of break along the work window (bottom = start of day) */
-  startPct: number
-  /** 0–100: end of break; omit for a point marker */
-  endPct?: number
-}
-
-export interface TodayAttendanceSession {
-  /** ISO date YYYY-MM-DD */
-  date: string
-  /** ISO timestamp — exact check-in time */
-  checkInAt: string
-  /** ISO timestamp when checked out */
-  checkOutAt?: string
-}
-
-export interface WorkHoursSummary {
-  checkInAt: string
-  checkOutAt?: string
-  grossMs: number
-  breakMs: number
-  netMs: number
-}
-
-export interface MetricCard {
-  id: string
-  label: string
-  value: string
-  subtitle?: string
-  icon: string
-  changeType?: 'positive' | 'negative' | 'neutral'
-}
-
-export interface AttendanceRecord {
-  id: string
-  date: string
-  checkIn?: string
-  checkOut?: string
-  totalHours?: string
-  status: AttendanceStatus
-  shift?: string
-  note?: string
-}
-
-export interface LeaveBalance {
-  type: LeaveType
-  used: number
-  total: number
-  remaining: number
-}
-
-/** Policy-defined leave type (from leave policies / settings) */
-export interface LeaveTypeOption {
-  id: string
-  name: LeaveType | string
-  code: string
-  annualEntitlement: number
-  description?: string
-}
-
-export interface LeaveRequest {
-  id: string
-  type: LeaveType
-  from: string
-  to: string
-  days: number
-  reason: string
-  status: LeaveStatus
-  appliedOn: string
-  approver?: string
-  halfDay?: 'start' | 'end' | 'both' | null
-}
-
-export interface MyTask {
-  id: string
-  name: string
-  project?: string
-  priority: TaskPriority
-  dueDate: string
-  status: TaskStatus
-  estimatedHours?: string
-}
-
-export interface ApprovalRequest {
-  id: string
-  type: ApprovalType
-  title: string
-  submittedOn: string
-  status: ApprovalStatus
-  summary?: string
-}
-
-export interface NotificationItem {
-  id: string
-  title: string
-  body: string
-  time: string
-  unread: boolean
-  icon: string
-  tag?: string
-}
-
-export interface UpcomingEvent {
-  id: string
-  title: string
-  subtitle: string
-  month: string
-  day: string
-  icon: string
-}
-
-export type CorrectionStatus = 'Pending' | 'Approved' | 'Rejected' | 'Draft'
-
-export interface AttendanceCorrectionRequest {
-  id: string
-  date: string
-  originalStatus: string
-  requestedCheckIn: string
-  requestedCheckOut: string
-  reason: string
-  status: CorrectionStatus
-  submittedOn: string
-  approver: string
-  approverId?: string
-}
-
-export interface ApproverOption {
-  id: string
-  name: string
-  title: string
-  department?: string
-}
-
-export type BankAccountType = 'Savings' | 'Current' | 'Salary'
-
-export interface BankDetails {
-  id?: string
-  accountHolderName: string
-  bankName: string
-  accountNumber: string
-  confirmAccountNumber?: string
-  ifscOrRouting: string
-  branchName: string
-  accountType: BankAccountType
-  country: string
-  currency: string
-}
-
-export interface WeekHourBar {
-  day: string
-  hours: number
-  pct: number
-  isToday: boolean
-  isWeekend: boolean
-  /** Red break markers drawn on the bar (multiple per day if multiple breaks) */
-  breakMarkers?: BreakBarMarker[]
-}
+export type { BreakMode, BreakSession } from './schemas/break'
