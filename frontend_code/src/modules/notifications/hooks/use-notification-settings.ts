@@ -1,10 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { listChannelCards, listNotificationTriggers } from '../api/notifications'
 import { queryKeys } from '@/shared/lib/query-keys'
+import {
+  emptyNotificationSettingsForm,
+  notificationSettingsFormSchema,
+  type BatchFrequency,
+  type NotificationSettingsForm,
+} from '../schemas/settings-form'
 import type { ChannelCard, NotificationTrigger } from '../types'
 
-export type BatchFrequency = 'immediate' | 'hourly' | 'daily'
+export type { BatchFrequency }
 
 export function useNotificationSettings() {
   const channelsQuery = useQuery({
@@ -19,106 +27,105 @@ export function useNotificationSettings() {
   const seedChannels = channelsQuery.data ?? []
   const seedTriggers = triggersQuery.data ?? []
 
-  const [channelEnabled, setChannelEnabled] = useState<Record<string, boolean>>({})
-  const [triggers, setTriggers] = useState<NotificationTrigger[]>([])
-  const [freq, setFreq] = useState<BatchFrequency>('hourly')
-  const [quietOn, setQuietOn] = useState(true)
-  const [quietStart, setQuietStart] = useState('21:00')
-  const [quietEnd, setQuietEnd] = useState('07:00')
+  const form = useForm<NotificationSettingsForm>({
+    resolver: zodResolver(notificationSettingsFormSchema),
+    defaultValues: emptyNotificationSettingsForm(),
+  })
+
+  const [baseline, setBaseline] = useState<NotificationSettingsForm | null>(null)
   const [hydrated, setHydrated] = useState(false)
-  const [baseline, setBaseline] = useState<{
-    channels: Record<string, boolean>
-    triggers: NotificationTrigger[]
-    freq: BatchFrequency
-    quietOn: boolean
-    quietStart: string
-    quietEnd: string
-  } | null>(null)
   const [toast, setToast] = useState<string | null>(null)
 
   useEffect(() => {
     if (hydrated) return
     if (seedChannels.length === 0 || seedTriggers.length === 0) return
-    const ch = Object.fromEntries(seedChannels.map((c) => [c.id, c.enabled])) as Record<string, boolean>
-    const tr = seedTriggers.map((t) => ({ ...t, channels: [...t.channels] }))
-    setChannelEnabled(ch)
-    setTriggers(tr)
-    setBaseline({
-      channels: { ...ch },
-      triggers: tr.map((t) => ({ ...t, channels: [...t.channels] })),
+    const next: NotificationSettingsForm = {
+      channelEnabled: Object.fromEntries(seedChannels.map((c) => [c.id, c.enabled])),
+      triggerEnabled: Object.fromEntries(seedTriggers.map((t) => [t.id, t.enabled])),
       freq: 'hourly',
       quietOn: true,
       quietStart: '21:00',
       quietEnd: '07:00',
+    }
+    form.reset(next)
+    setBaseline({
+      ...next,
+      channelEnabled: { ...next.channelEnabled },
+      triggerEnabled: { ...next.triggerEnabled },
     })
     setHydrated(true)
-  }, [seedChannels, seedTriggers, hydrated])
+  }, [seedChannels, seedTriggers, hydrated, form])
+
+  const values = form.watch()
 
   const isDirty = useMemo(() => {
     if (!baseline) return false
-    if (freq !== baseline.freq) return true
-    if (quietOn !== baseline.quietOn) return true
-    if (quietStart !== baseline.quietStart || quietEnd !== baseline.quietEnd) return true
-    for (const id of Object.keys(channelEnabled)) {
-      if (channelEnabled[id] !== baseline.channels[id]) return true
+    if (values.freq !== baseline.freq) return true
+    if (values.quietOn !== baseline.quietOn) return true
+    if (values.quietStart !== baseline.quietStart || values.quietEnd !== baseline.quietEnd) return true
+    for (const id of Object.keys(values.channelEnabled ?? {})) {
+      if (values.channelEnabled[id] !== baseline.channelEnabled[id]) return true
     }
-    if (triggers.length !== baseline.triggers.length) return true
-    for (let i = 0; i < triggers.length; i++) {
-      if (triggers[i].enabled !== baseline.triggers[i]?.enabled) return true
+    for (const id of Object.keys(values.triggerEnabled ?? {})) {
+      if (values.triggerEnabled[id] !== baseline.triggerEnabled[id]) return true
     }
     return false
-  }, [channelEnabled, triggers, freq, quietOn, quietStart, quietEnd, baseline])
+  }, [values, baseline])
 
   const discard = () => {
     if (!baseline) return
-    setChannelEnabled({ ...baseline.channels })
-    setTriggers(baseline.triggers.map((t) => ({ ...t, channels: [...t.channels] })))
-    setFreq(baseline.freq)
-    setQuietOn(baseline.quietOn)
-    setQuietStart(baseline.quietStart)
-    setQuietEnd(baseline.quietEnd)
+    form.reset({
+      ...baseline,
+      channelEnabled: { ...baseline.channelEnabled },
+      triggerEnabled: { ...baseline.triggerEnabled },
+    })
     setToast(null)
   }
 
-  const save = () => {
+  const save = form.handleSubmit((data) => {
     setBaseline({
-      channels: { ...channelEnabled },
-      triggers: triggers.map((t) => ({ ...t, channels: [...t.channels] })),
-      freq,
-      quietOn,
-      quietStart,
-      quietEnd,
+      ...data,
+      channelEnabled: { ...data.channelEnabled },
+      triggerEnabled: { ...data.triggerEnabled },
     })
     setToast('Notification settings saved.')
     window.setTimeout(() => setToast(null), 2500)
-  }
+  })
 
   const toggleChannel = (id: string) => {
-    setChannelEnabled((p) => ({ ...p, [id]: !p[id] }))
+    const cur = form.getValues('channelEnabled')
+    form.setValue('channelEnabled', { ...cur, [id]: !cur[id] }, { shouldDirty: true })
   }
 
   const toggleTrigger = (id: string) => {
-    setTriggers((prev) => prev.map((x) => (x.id === id ? { ...x, enabled: !x.enabled } : x)))
+    const cur = form.getValues('triggerEnabled')
+    form.setValue('triggerEnabled', { ...cur, [id]: !cur[id] }, { shouldDirty: true })
   }
 
   const channelCards: ChannelCard[] = seedChannels
+  const triggers: NotificationTrigger[] = seedTriggers.map((t) => ({
+    ...t,
+    channels: [...t.channels],
+    enabled: values.triggerEnabled?.[t.id] ?? t.enabled,
+  }))
 
   return {
     isLoading: channelsQuery.isLoading || triggersQuery.isLoading,
     isError: channelsQuery.isError || triggersQuery.isError,
+    form,
     channelCards,
-    channelEnabled,
+    channelEnabled: values.channelEnabled ?? {},
     toggleChannel,
     triggers,
     toggleTrigger,
-    freq,
-    setFreq,
-    quietOn,
-    setQuietOn,
-    quietStart,
-    setQuietStart,
-    quietEnd,
-    setQuietEnd,
+    freq: values.freq as BatchFrequency,
+    setFreq: (v: BatchFrequency) => form.setValue('freq', v, { shouldDirty: true }),
+    quietOn: values.quietOn,
+    setQuietOn: (v: boolean) => form.setValue('quietOn', v, { shouldDirty: true }),
+    quietStart: values.quietStart,
+    setQuietStart: (v: string) => form.setValue('quietStart', v, { shouldDirty: true }),
+    quietEnd: values.quietEnd,
+    setQuietEnd: (v: string) => form.setValue('quietEnd', v, { shouldDirty: true }),
     isDirty,
     discard,
     save,

@@ -1,5 +1,7 @@
 import { useCallback, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useListControls } from '@/shared/hooks/useListControls'
+import { useListSelection } from '@/shared/hooks/useListSelection'
 import {
   archiveNotification,
   archiveReadNotifications,
@@ -10,31 +12,46 @@ import {
   markNotificationRead,
 } from '../api/notifications'
 import { queryKeys, invalidate } from '@/shared/lib/query-keys'
-import type { NotificationTab, NotificationTabId } from '../types'
+import type { AppNotification, NotificationTab, NotificationTabId } from '../types'
 
 export type { NotificationTabId }
+
+const FILTER_DEFAULTS = {
+  type: 'All',
+  priority: 'All',
+  module: 'All',
+}
 
 export function useNotificationCenter() {
   const qc = useQueryClient()
   const [tab, setTab] = useState<NotificationTabId>('all')
   const [selectedId, setSelectedId] = useState<string>('')
-  const [query, setQuery] = useState('')
-  const [typeFilter, setTypeFilter] = useState('All')
-  const [priorityFilter, setPriorityFilter] = useState('All')
-  const [moduleFilter, setModuleFilter] = useState('All')
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null)
+
+  const controls = useListControls({
+    filterDefaults: FILTER_DEFAULTS,
+    pagination: { pageSize: 100 },
+  })
 
   const listParams = useMemo(
     () => ({
-      search: query || undefined,
+      search: controls.search || undefined,
       tab,
-      typeFilter,
-      priorityFilter,
-      moduleFilter,
-      page: 1,
-      pageSize: 100,
+      typeFilter: controls.filters.type || 'All',
+      priorityFilter: controls.filters.priority || 'All',
+      moduleFilter: controls.filters.module || 'All',
+      page: controls.page,
+      pageSize: controls.pageSize,
     }),
-    [query, tab, typeFilter, priorityFilter, moduleFilter],
+    [
+      controls.search,
+      tab,
+      controls.filters.type,
+      controls.filters.priority,
+      controls.filters.module,
+      controls.page,
+      controls.pageSize,
+    ],
   )
 
   const inboxQuery = useQuery({
@@ -43,14 +60,14 @@ export function useNotificationCenter() {
     placeholderData: (prev) => prev,
   })
 
-  /** Full set for KPIs / module options (stable key) */
   const allQuery = useQuery({
-    queryKey: [...queryKeys.notifications.all, 'inbox-all'] as const,
+    queryKey: queryKeys.notifications.inboxAll(),
     queryFn: listAllInboxNotifications,
   })
 
   const items = allQuery.data ?? []
   const filtered = inboxQuery.data?.items ?? []
+  const total = inboxQuery.data?.total ?? filtered.length
   const unreadCount = inboxQuery.data?.unreadCount ?? items.filter((n) => n.status === 'Unread').length
   const highCount =
     inboxQuery.data?.highCount ??
@@ -63,6 +80,11 @@ export function useNotificationCenter() {
         n.title.toLowerCase().includes('mention') ||
         (n.tags ?? []).some((t) => t.toLowerCase().includes('mention')),
     ).length
+
+  const selection = useListSelection<AppNotification>({
+    items: filtered,
+    getId: (n) => n.id,
+  })
 
   const markReadMut = useMutation({
     mutationFn: markNotificationRead,
@@ -96,16 +118,6 @@ export function useNotificationCenter() {
     [items, filtered, markReadMut],
   )
 
-  const resetFilters = () => {
-    setQuery('')
-    setTypeFilter('All')
-    setPriorityFilter('All')
-    setModuleFilter('All')
-  }
-
-  const filtersActive =
-    Boolean(query) || typeFilter !== 'All' || priorityFilter !== 'All' || moduleFilter !== 'All'
-
   const tabs: NotificationTab[] = [
     { id: 'all', label: `All (${items.length})` },
     { id: 'unread', label: `Unread (${unreadCount})` },
@@ -127,24 +139,39 @@ export function useNotificationCenter() {
     selectedId,
     setSelectedId,
     selectNotification,
-    query,
-    setQuery,
-    typeFilter,
-    setTypeFilter,
-    priorityFilter,
-    setPriorityFilter,
-    moduleFilter,
-    setModuleFilter,
+    query: controls.search,
+    setQuery: controls.setSearch,
+    typeFilter: controls.filters.type,
+    setTypeFilter: (v: string) => controls.setFilter('type', v),
+    priorityFilter: controls.filters.priority,
+    setPriorityFilter: (v: string) => controls.setFilter('priority', v),
+    moduleFilter: controls.filters.module,
+    setModuleFilter: (v: string) => controls.setFilter('module', v),
     modules,
     filtered,
     items,
-    filtersActive,
-    resetFilters,
+    total,
+    page: controls.page,
+    setPage: controls.setPage,
+    pageSize: controls.pageSize,
+    filtersActive: controls.anyActive,
+    resetFilters: controls.resetAll,
     markAllRead: () => markAllMut.mutate(),
     archiveRead: () => archiveReadMut.mutate(),
     markRead: (id: string) => markReadMut.mutate(id),
     archiveOne: (id: string) => archiveMut.mutate(id),
     menuOpenId,
     setMenuOpenId,
+    selectionMode: selection.selectionMode,
+    selectedIds: selection.selectedIds,
+    selectedCount: selection.selectedCount,
+    allFilteredSelected: selection.allFilteredSelected,
+    toggleOne: selection.toggleOne,
+    toggleSelectAllFiltered: selection.toggleSelectAllFiltered,
+    exitSelectionMode: selection.exitSelectionMode,
+    onRowPressStart: selection.onRowPressStart,
+    onRowPressEnd: selection.onRowPressEnd,
+    onRowPressCancel: selection.onRowPressCancel,
+    isSelected: selection.isSelected,
   }
 }
