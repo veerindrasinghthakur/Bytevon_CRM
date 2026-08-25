@@ -21,7 +21,6 @@ import {
 import { ResourceName } from '@/shared/schema'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useLeadsList } from '../hooks/use-leads-list'
-import { usePrefetchLead } from '../hooks/use-sales'
 import { LeadMetricsRow } from '../components/LeadMetricsRow'
 import { salesRoutes } from '../routes'
 import type { PipelineStage, LeadPriority, RecordStatus, Lead } from '../types'
@@ -206,7 +205,6 @@ export function LeadsListPage() {
     priorityFilter !== 'All' ||
     sourceFilter !== 'All'
 
-  const prefetchLead = usePrefetchLead()
   const parentRef = useRef<HTMLDivElement>(null)
 
   const goDetail = (leadId: string) => {
@@ -306,6 +304,7 @@ export function LeadsListPage() {
           value={statusFilter}
           onChange={setStatusFilter}
           placeholder="All Status"
+          aria-label="Filter by status"
           options={[
             { value: 'All', label: 'All Status' },
             { value: 'Active', label: 'Active' },
@@ -317,6 +316,7 @@ export function LeadsListPage() {
           value={stageFilter}
           onChange={setStageFilter}
           placeholder="All Stages"
+          aria-label="Filter by stage"
           options={[{ value: 'All', label: 'All Stages' }, ...stages.map((s) => ({ value: s, label: s }))]}
           minWidthClass="min-w-[140px]"
         />
@@ -324,6 +324,7 @@ export function LeadsListPage() {
           value={priorityFilter}
           onChange={setPriorityFilter}
           placeholder="All Priority"
+          aria-label="Filter by priority"
           options={[
             { value: 'All', label: 'All Priority' },
             ...priorities.map((p) => ({ value: p, label: p })),
@@ -334,6 +335,7 @@ export function LeadsListPage() {
           value={sourceFilter}
           onChange={setSourceFilter}
           placeholder="All Sources"
+          aria-label="Filter by source"
           options={[
             { value: 'All', label: 'All Sources' },
             { value: 'LinkedIn', label: 'LinkedIn' },
@@ -372,7 +374,6 @@ export function LeadsListPage() {
           title="Failed to load leads"
           description="We could not load the leads list. Check your connection and try again."
           onRetry={() => void refetch()}
-          showBack={false}
         />
       )}
 
@@ -428,7 +429,6 @@ export function LeadsListPage() {
                         'transition-colors cursor-pointer group select-none',
                         isSelected ? 'bg-secondary/10' : 'hover:bg-surface-container-low/50',
                       )}
-                      onMouseEnter={() => prefetchLead(lead.id)}
                       onMouseDown={() => startLongPress(lead.id)}
                       onMouseUp={() => endLongPress(lead, openLeadOverview)}
                       onMouseLeave={clearLongPress}
