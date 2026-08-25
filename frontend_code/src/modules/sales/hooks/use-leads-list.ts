@@ -18,23 +18,38 @@ export function useLeadsList() {
     filterDefaults: FILTER_DEFAULTS,
   })
 
+  /** Filter options: once per session while mounted cache lives */
   const filterOptionsQuery = useQuery({
     queryKey: ['sales', 'leads', 'filter-options'],
     queryFn: getLeadFilterOptions,
-    staleTime: 60_000,
+    staleTime: Infinity,
+    gcTime: 1000 * 60 * 60,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   })
 
-  const { data, isLoading, isError, refetch, isFetching } = useLeadsQuery({
-    search: controls.debouncedSearch || undefined,
-    status: controls.filters.status,
-    stage: controls.filters.stage,
-    priority: controls.filters.priority,
-    source: controls.filters.source,
-  })
+  /** Single list call — no filter params (avoids refetch on every filter change) */
+  const { data, isLoading, isError, refetch, isFetching } = useLeadsQuery()
 
-  const filtered = useMemo(() => data?.items ?? [], [data?.items])
+  const allItems = data?.items ?? []
   const metrics = useMemo(() => data?.metrics ?? [], [data?.metrics])
-  const totalCount = data?.total ?? 0
+
+  const filtered = useMemo(() => {
+    const q = controls.debouncedSearch.trim().toLowerCase()
+    const { status, stage, priority, source } = controls.filters
+    return allItems.filter((l) => {
+      if (q) {
+        const hay = `${l.contactName} ${l.title} ${l.id} ${l.company} ${l.email ?? ''}`.toLowerCase()
+        if (!hay.includes(q)) return false
+      }
+      if (status !== 'All' && l.status !== status) return false
+      if (stage !== 'All' && l.stage !== stage) return false
+      if (priority !== 'All' && l.priority !== priority) return false
+      if (source !== 'All' && l.source !== source) return false
+      return true
+    })
+  }, [allItems, controls.debouncedSearch, controls.filters])
 
   const selection = useListSelection({
     items: filtered,
@@ -48,14 +63,9 @@ export function useLeadsList() {
     selection.onRowPressEnd(lead.id, () => onShortPress?.(lead))
   }
 
-  const stages = filterOptionsQuery.data?.stages ?? []
-  const priorities = filterOptionsQuery.data?.priorities ?? []
-  const sources = filterOptionsQuery.data?.sources ?? []
-  const statuses = filterOptionsQuery.data?.statuses ?? []
-
   return {
     metrics,
-    totalCount,
+    totalCount: allItems.length,
     filtered,
     isLoading: isLoading || filterOptionsQuery.isLoading,
     isError,
@@ -71,10 +81,10 @@ export function useLeadsList() {
     setPriorityFilter: (v: string) => controls.setFilter('priority', v),
     sourceFilter: controls.filters.source,
     setSourceFilter: (v: string) => controls.setFilter('source', v),
-    stages,
-    priorities,
-    sources,
-    statuses,
+    stages: filterOptionsQuery.data?.stages ?? [],
+    priorities: filterOptionsQuery.data?.priorities ?? [],
+    sources: filterOptionsQuery.data?.sources ?? [],
+    statuses: filterOptionsQuery.data?.statuses ?? [],
     resetFilters: controls.resetAll,
     filtersActive: controls.anyActive,
     page: controls.page,
