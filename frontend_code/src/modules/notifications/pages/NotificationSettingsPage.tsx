@@ -1,66 +1,12 @@
-import { useMemo, useState } from 'react'
 import { Button } from '@/shared/components/ui/Button'
-import { channelCards, notificationTriggers } from '../data/mock'
+import { useNotificationSettings } from '../hooks/use-notification-settings'
 import { cn } from '@/shared/lib/cn'
 
 export function NotificationSettingsPage() {
-  const initialChannels = useMemo(
-    () => Object.fromEntries(channelCards.map((c) => [c.id, c.enabled])) as Record<string, boolean>,
-    [],
-  )
-  const initialTriggers = useMemo(() => notificationTriggers.map((t) => ({ ...t })), [])
+  const s = useNotificationSettings()
 
-  const [channels, setChannels] = useState(initialChannels)
-  const [triggers, setTriggers] = useState(initialTriggers)
-  const [freq, setFreq] = useState<'immediate' | 'hourly' | 'daily'>('hourly')
-  const [quietOn, setQuietOn] = useState(true)
-  const [quietStart, setQuietStart] = useState('21:00')
-  const [quietEnd, setQuietEnd] = useState('07:00')
-  const [baseline, setBaseline] = useState({
-    channels: initialChannels,
-    triggers: initialTriggers,
-    freq: 'hourly' as const,
-    quietOn: true,
-    quietStart: '21:00',
-    quietEnd: '07:00',
-  })
-  const [toast, setToast] = useState<string | null>(null)
-
-  const isDirty = useMemo(() => {
-    if (freq !== baseline.freq) return true
-    if (quietOn !== baseline.quietOn) return true
-    if (quietStart !== baseline.quietStart || quietEnd !== baseline.quietEnd) return true
-    for (const id of Object.keys(channels)) {
-      if (channels[id] !== baseline.channels[id]) return true
-    }
-    if (triggers.length !== baseline.triggers.length) return true
-    for (let i = 0; i < triggers.length; i++) {
-      if (triggers[i].enabled !== baseline.triggers[i]?.enabled) return true
-    }
-    return false
-  }, [channels, triggers, freq, quietOn, quietStart, quietEnd, baseline])
-
-  const discard = () => {
-    setChannels({ ...baseline.channels })
-    setTriggers(baseline.triggers.map((t) => ({ ...t })))
-    setFreq(baseline.freq)
-    setQuietOn(baseline.quietOn)
-    setQuietStart(baseline.quietStart)
-    setQuietEnd(baseline.quietEnd)
-    setToast(null)
-  }
-
-  const save = () => {
-    setBaseline({
-      channels: { ...channels },
-      triggers: triggers.map((t) => ({ ...t })),
-      freq,
-      quietOn,
-      quietStart,
-      quietEnd,
-    })
-    setToast('Notification settings saved.')
-    window.setTimeout(() => setToast(null), 2500)
+  if (s.isLoading) {
+    return <div className="py-16 text-center text-on-surface-variant">Loading settings…</div>
   }
 
   return (
@@ -72,21 +18,21 @@ export function NotificationSettingsPage() {
             Configure system-wide notification protocols, delivery channels, and trigger-based alerts.
           </p>
         </div>
-        {isDirty && (
+        {s.isDirty && (
           <div className="flex gap-3">
-            <Button variant="outline" size="md" onClick={discard}>
+            <Button variant="outline" size="md" onClick={s.discard}>
               Discard Changes
             </Button>
-            <Button variant="primary" size="md" onClick={save}>
+            <Button variant="primary" size="md" onClick={s.save}>
               Save Settings
             </Button>
           </div>
         )}
       </div>
 
-      {toast && (
+      {s.toast && (
         <div className="rounded-lg border border-success-emerald/30 bg-success-emerald/10 px-4 py-3 text-label-md text-success-emerald">
-          {toast}
+          {s.toast}
         </div>
       )}
 
@@ -96,16 +42,13 @@ export function NotificationSettingsPage() {
           <h3 className="text-title-lg font-semibold text-deep-navy">Delivery Channels</h3>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          {channelCards.map((c) => (
+          {s.channelCards.map((c) => (
             <div key={c.id} className="bv-surface card-hover p-6">
               <div className="flex justify-between items-start mb-4">
                 <div className="w-12 h-12 bg-primary-container/10 rounded-lg flex items-center justify-center">
                   <span className="material-symbols-outlined text-deep-navy">{c.icon}</span>
                 </div>
-                <Toggle
-                  checked={!!channels[c.id]}
-                  onChange={() => setChannels((p) => ({ ...p, [c.id]: !p[c.id] }))}
-                />
+                <Toggle checked={!!s.channelEnabled[c.id]} onChange={() => s.toggleChannel(c.id)} />
               </div>
               <h4 className="text-title-lg font-semibold text-deep-navy mb-1">{c.title}</h4>
               <p className="text-body-sm text-on-surface-variant mb-4">{c.description}</p>
@@ -139,7 +82,7 @@ export function NotificationSettingsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
-              {triggers.map((t) => (
+              {s.triggers.map((t) => (
                 <tr key={t.id} className="zebra-row">
                   <td className="py-4 px-6">
                     <p className="text-body-md font-medium text-deep-navy">{t.event}</p>
@@ -167,14 +110,7 @@ export function NotificationSettingsPage() {
                   </td>
                   <td className="py-4 px-6 text-on-surface-variant text-body-sm">{t.lastTriggered}</td>
                   <td className="py-4 px-6">
-                    <Toggle
-                      checked={t.enabled}
-                      onChange={() =>
-                        setTriggers((prev) =>
-                          prev.map((x) => (x.id === t.id ? { ...x, enabled: !x.enabled } : x)),
-                        )
-                      }
-                    />
+                    <Toggle checked={t.enabled} onChange={() => s.toggleTrigger(t.id)} />
                   </td>
                   <td className="py-4 px-6 text-right">
                     <button type="button" className="text-on-surface-variant hover:text-deep-navy transition-colors">
@@ -202,28 +138,16 @@ export function NotificationSettingsPage() {
             <div className="space-y-3">
               {(
                 [
-                  {
-                    id: 'immediate' as const,
-                    title: 'Immediate Delivery',
-                    desc: 'Send triggers the moment they occur.',
-                  },
-                  {
-                    id: 'hourly' as const,
-                    title: 'Hourly Digest',
-                    desc: 'Collect notifications and send once per hour.',
-                  },
-                  {
-                    id: 'daily' as const,
-                    title: 'Daily Summary',
-                    desc: 'One consolidated report at end of day (18:00).',
-                  },
+                  { id: 'immediate' as const, title: 'Immediate Delivery', desc: 'Send triggers the moment they occur.' },
+                  { id: 'hourly' as const, title: 'Hourly Digest', desc: 'Collect notifications and send once per hour.' },
+                  { id: 'daily' as const, title: 'Daily Summary', desc: 'One consolidated report at end of day (18:00).' },
                 ] as const
               ).map((o) => (
                 <label
                   key={o.id}
                   className={cn(
                     'flex items-center gap-4 p-4 rounded-lg border cursor-pointer transition-all',
-                    freq === o.id
+                    s.freq === o.id
                       ? 'border-secondary bg-surface-container-high'
                       : 'border-outline-variant hover:border-secondary bg-surface-container-lowest',
                   )}
@@ -232,11 +156,11 @@ export function NotificationSettingsPage() {
                     type="radio"
                     name="freq"
                     className="text-secondary focus:ring-secondary"
-                    checked={freq === o.id}
-                    onChange={() => setFreq(o.id)}
+                    checked={s.freq === o.id}
+                    onChange={() => s.setFreq(o.id)}
                   />
                   <div>
-                    <p className={cn('text-body-md font-medium', freq === o.id && 'text-secondary')}>{o.title}</p>
+                    <p className={cn('text-body-md font-medium', s.freq === o.id && 'text-secondary')}>{o.title}</p>
                     <p className="text-[12px] text-on-surface-variant">{o.desc}</p>
                   </div>
                 </label>
@@ -252,15 +176,15 @@ export function NotificationSettingsPage() {
                   Suppress non-critical alerts during specified periods.
                 </p>
               </div>
-              <Toggle checked={quietOn} onChange={() => setQuietOn((v) => !v)} />
+              <Toggle checked={s.quietOn} onChange={() => s.setQuietOn(!s.quietOn)} />
             </div>
-            <div className={cn('grid grid-cols-2 gap-4', !quietOn && 'opacity-50 pointer-events-none')}>
+            <div className={cn('grid grid-cols-2 gap-4', !s.quietOn && 'opacity-50 pointer-events-none')}>
               <div>
                 <label className="block text-label-md text-deep-navy mb-2">Start Time</label>
                 <input
                   type="time"
-                  value={quietStart}
-                  onChange={(e) => setQuietStart(e.target.value)}
+                  value={s.quietStart}
+                  onChange={(e) => s.setQuietStart(e.target.value)}
                   className="w-full p-3 bg-surface-container-low border border-outline-variant rounded-lg outline-none focus:ring-2 focus:ring-secondary transition-colors"
                 />
               </div>
@@ -268,8 +192,8 @@ export function NotificationSettingsPage() {
                 <label className="block text-label-md text-deep-navy mb-2">End Time</label>
                 <input
                   type="time"
-                  value={quietEnd}
-                  onChange={(e) => setQuietEnd(e.target.value)}
+                  value={s.quietEnd}
+                  onChange={(e) => s.setQuietEnd(e.target.value)}
                   className="w-full p-3 bg-surface-container-low border border-outline-variant rounded-lg outline-none focus:ring-2 focus:ring-secondary transition-colors"
                 />
               </div>
