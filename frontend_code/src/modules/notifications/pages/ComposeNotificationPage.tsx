@@ -1,12 +1,19 @@
 import { useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { SaveDraftButton } from '@/shared/components/ui/SaveDraftButton'
 import { DocumentUpload } from '@/shared/components/forms/DocumentUpload'
+import { BackButton } from '@/shared/components/layout/BackButton'
 import { cn } from '@/shared/lib/cn'
+import { invalidate } from '@/shared/lib/query-keys'
 import { saveNotificationDraft, sendNotification } from '../api/notifications'
+import {
+  composeNotificationFormSchema,
+  emptyComposeForm,
+  type ComposeNotificationForm,
+} from '../schemas/notification-form'
 import type { NotificationPriority } from '../types'
 
 const PRIORITIES: { id: NotificationPriority; color: string }[] = [
@@ -53,11 +60,14 @@ function defaultScheduleDate() {
 
 export function ComposeNotificationPage() {
   const navigate = useNavigate()
+  const qc = useQueryClient()
   const bodyRef = useRef<HTMLTextAreaElement>(null)
-  const [title, setTitle] = useState('')
-  const [body, setBody] = useState('')
-  const [priority, setPriority] = useState<NotificationPriority>('Normal')
-  const [broadcastAll, setBroadcastAll] = useState(false)
+
+  const empty = emptyComposeForm()
+  const [title, setTitle] = useState(empty.title)
+  const [body, setBody] = useState(empty.body)
+  const [priority, setPriority] = useState<NotificationPriority>(empty.priority)
+  const [broadcastAll, setBroadcastAll] = useState(empty.broadcastAll)
   const [roles, setRoles] = useState(['Management', 'IT Support'])
   const [roleQuery, setRoleQuery] = useState('')
   const [channels, setChannels] = useState({ inApp: true, email: true, sms: false, push: false })
@@ -67,14 +77,29 @@ export function ComposeNotificationPage() {
   const [moduleCtx, setModuleCtx] = useState('General / System')
   const [files, setFiles] = useState<File[]>([])
   const [toast, setToast] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
 
   const roleMatches = ROLE_SUGGESTIONS.filter(
     (r) => roleQuery && r.toLowerCase().includes(roleQuery.toLowerCase()) && !roles.includes(r),
   )
 
+  const buildPayload = (): ComposeNotificationForm => ({
+    title: title.trim(),
+    body: body.trim(),
+    priority,
+    moduleCtx,
+    broadcastAll,
+    roles,
+    channels: { ...channels, sms: false },
+    scheduleMode,
+    scheduleAt: scheduleMode === 'later' ? `${scheduleDate}T${scheduleTime}` : undefined,
+    attachmentNames: files.map((f) => f.name),
+  })
+
   const sendMut = useMutation({
     mutationFn: sendNotification,
     onSuccess: (res) => {
+      void invalidate.notifications(qc)
       setToast(
         scheduleMode === 'later'
           ? `Scheduled for ${scheduleDate} ${scheduleTime} · ${res.queued} recipient(s).`
@@ -92,40 +117,43 @@ export function ComposeNotificationPage() {
     },
   })
 
-  const payload = () => ({
-    title: title.trim(),
-    body: body.trim(),
-    priority,
-    moduleCtx,
-    broadcastAll,
-    roles,
-    channels: { ...channels, sms: false },
-    scheduleMode,
-    scheduleAt: scheduleMode === 'later' ? `${scheduleDate}T${scheduleTime}` : undefined,
-    attachmentNames: files.map((f) => f.name),
-  })
+  const validateAndGet = (): ComposeNotificationForm | null => {
+    const raw = buildPayload()
+    const parsed = composeNotificationFormSchema.safeParse(raw)
+    if (!parsed.success) {
+      const errs: Record<string, string> = {}
+      for (const issue of parsed.error.issues) {
+        const key = String(issue.path[0] ?? 'form')
+        if (!errs[key]) errs[key] = issue.message
+      }
+      setFieldErrors(errs)
+      setToast(Object.values(errs)[0] ?? 'Please fix the form errors.')
+      return null
+    }
+    if (parsed.data.scheduleMode === 'later' && !parsed.data.scheduleAt) {
+      setFieldErrors({ scheduleAt: 'Choose a date and time for scheduled send.' })
+      setToast('Choose a date and time for scheduled send.')
+      return null
+    }
+    setFieldErrors({})
+    return parsed.data
+  }
 
   const send = () => {
-    if (!title.trim() || !body.trim()) {
-      setToast('Title and message body are required.')
-      return
-    }
-    if (scheduleMode === 'later' && (!scheduleDate || !scheduleTime)) {
-      setToast('Choose a date and time for scheduled send.')
-      return
-    }
-    sendMut.mutate(payload())
+    const data = validateAndGet()
+    if (!data) return
+    sendMut.mutate(data)
+  }
+
+  const saveDraft = () => {
+    const data = validateAndGet()
+    if (!data) return
+    draftMut.mutate(data)
   }
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <nav className="flex items-center gap-2 text-label-md text-on-surface-variant">
-        <button type="button" className="hover:text-secondary" onClick={() => navigate({ to: '/notifications' })}>
-          Notification Center
-        </button>
-        <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-        <span className="text-deep-navy font-bold">Compose</span>
-      </nav>
+      <BackButton to="/notifications" label="Back to Notification Center" />
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
@@ -138,7 +166,7 @@ export function ComposeNotificationPage() {
           <Button variant="outline" size="md" onClick={() => navigate({ to: '/notifications' })}>
             Discard
           </Button>
-          <SaveDraftButton isLoading={draftMut.isPending} onClick={() => draftMut.mutate(payload())} />
+          <SaveDraftButton isLoading={draftMut.isPending} onClick={saveDraft} />
           <Button
             variant="primary"
             size="md"
@@ -166,11 +194,15 @@ export function ComposeNotificationPage() {
             <div>
               <label className="block text-label-md text-on-surface-variant mb-2">Notification Title</label>
               <input
-                className="w-full h-12 bg-surface-container-lowest px-4 rounded-lg border border-outline-variant focus:border-secondary outline-none text-body-md"
+                className={cn(
+                  'w-full h-12 bg-surface-container-lowest px-4 rounded-lg border outline-none text-body-md',
+                  fieldErrors.title ? 'border-error' : 'border-outline-variant focus:border-secondary',
+                )}
                 placeholder="e.g., Scheduled Maintenance Downtime"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
               />
+              {fieldErrors.title && <p className="text-label-sm text-error mt-1">{fieldErrors.title}</p>}
             </div>
             <div>
               <label className="block text-label-md text-on-surface-variant mb-2">Priority Level</label>
@@ -202,7 +234,12 @@ export function ComposeNotificationPage() {
             </div>
             <div>
               <label className="block text-label-md text-on-surface-variant mb-2">Message Body</label>
-              <div className="border border-outline-variant rounded-lg overflow-hidden focus-within:border-secondary">
+              <div
+                className={cn(
+                  'border rounded-lg overflow-hidden focus-within:border-secondary',
+                  fieldErrors.body ? 'border-error' : 'border-outline-variant',
+                )}
+              >
                 <div className="bg-surface-container-low border-b border-outline-variant p-2 flex items-center gap-1">
                   <button
                     type="button"
@@ -238,16 +275,6 @@ export function ComposeNotificationPage() {
                   >
                     <span className="material-symbols-outlined text-[20px]">link</span>
                   </button>
-                  <button
-                    type="button"
-                    className="p-1.5 rounded hover:bg-surface-container"
-                    title="Image"
-                    onClick={() =>
-                      bodyRef.current && wrapSelection(bodyRef.current, '![', '](https://)', setBody)
-                    }
-                  >
-                    <span className="material-symbols-outlined text-[20px]">image</span>
-                  </button>
                 </div>
                 <textarea
                   ref={bodyRef}
@@ -258,6 +285,7 @@ export function ComposeNotificationPage() {
                   onChange={(e) => setBody(e.target.value)}
                 />
               </div>
+              {fieldErrors.body && <p className="text-label-sm text-error mt-1">{fieldErrors.body}</p>}
             </div>
             <div>
               <label className="block text-label-md text-on-surface-variant mb-2">Attachments (Optional)</label>
