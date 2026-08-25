@@ -5,9 +5,11 @@ import { useNavigate, Link } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { createProjectSchema, type CreateProjectInput } from '../schemas/project'
 import { useCreateProject } from '../hooks/use-projects'
 import { useTeams } from '../hooks/use-teams'
+import { projectRoutes } from '../routes'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { createTeam } from '../api/teams'
 
@@ -30,7 +32,7 @@ export function ProjectCreatePage() {
           .filter(Boolean)
           .join(' · '),
       })),
-    [teamsData]
+    [teamsData],
   )
 
   const {
@@ -48,6 +50,12 @@ export function ProjectCreatePage() {
     },
   })
 
+  const goProject = (id: number) =>
+    safeNavigate(navigate, {
+      to: projectRoutes.projectDetail(id),
+      params: { projectId: String(id) },
+    })
+
   const onSubmit = async (data: CreateProjectInput) => {
     try {
       const project = await createMutation.mutateAsync(data)
@@ -62,22 +70,22 @@ export function ProjectCreatePage() {
             ? selectedTeam.sublabel.split('Head: ')[1]?.split(' · ')[0]
             : undefined,
         }).catch(() => undefined)
-        navigate({ to: '/projects/$projectId', params: { projectId: String(project.id) } })
+        goProject(project.id)
         return
       }
 
       if (assignMode === 'new') {
-        navigate({
-          to: '/projects/teams/new',
+        safeNavigate(navigate, {
+          to: projectRoutes.teamNew,
           search: {
             projectId: String(project.id),
-            returnTo: `/projects/${project.id}`,
+            returnTo: projectRoutes.projectDetail(project.id),
           },
         })
         return
       }
 
-      navigate({ to: '/projects/$projectId', params: { projectId: String(project.id) } })
+      goProject(project.id)
     } catch {
       // mutation state
     }
@@ -86,7 +94,7 @@ export function ProjectCreatePage() {
   return (
     <div className="max-w-3xl mx-auto">
       <div className="mb-4">
-        <BackButton to="/projects" label="Back to projects" />
+        <BackButton to={projectRoutes.list} label="Back to projects" />
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
@@ -98,7 +106,7 @@ export function ProjectCreatePage() {
             </p>
           </div>
           <Link
-            to="/projects"
+            to={projectRoutes.list}
             className="text-on-surface-variant hover:text-error p-1 rounded-md hover:bg-surface-container"
           >
             <span className="material-symbols-outlined">close</span>
@@ -302,7 +310,11 @@ export function ProjectCreatePage() {
           </div>
 
           <div className="p-6 border-t border-outline-variant bg-surface flex justify-end gap-3 items-center">
-            <Button type="button" variant="ghost" onClick={() => navigate({ to: '/projects' })}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => safeNavigate(navigate, { to: projectRoutes.list })}
+            >
               Cancel
             </Button>
             <Button
