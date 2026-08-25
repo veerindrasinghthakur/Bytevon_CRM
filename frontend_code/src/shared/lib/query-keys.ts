@@ -38,6 +38,11 @@ export const queryKeys = {
       detail: (id: number) => [...queryKeys.organization.shifts.all, 'detail', id] as const,
       staff: (id: number) => [...queryKeys.organization.shifts.all, 'staff', id] as const,
     },
+    holidays: {
+      all: () => ['organization', 'holidays'] as const,
+      list: () => [...queryKeys.organization.holidays.all(), 'list'] as const,
+      detail: (calendarId: number) => [...queryKeys.organization.holidays.all(), 'detail', calendarId] as const,
+    },
   },
   workforce: {
     departments: {

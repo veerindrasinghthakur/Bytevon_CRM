@@ -11,6 +11,8 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useHolidays } from '../../hooks/use-organization'
 import { createHoliday, getHolidayCalendar, getHolidays } from '../../api/organization'
 import type { HolidayRow } from '@/shared/schema'
+// Shared utilities for typed query keys and route constants
+import { queryKeys } from '@/shared/lib/query-keys'
 
 const TYPES: HolidayRow['holiday_type'][] = ['NATIONAL', 'REGIONAL', 'OPTIONAL', 'COMPANY']
 
@@ -21,7 +23,7 @@ export function HolidaysListPage() {
   const qc = useQueryClient()
   const { data, isLoading, isError, error, refetch } = useHolidays(id)
   const calQuery = useQuery({
-    queryKey: ['organization', 'holiday-calendars', id],
+    queryKey: queryKeys.organization.holidays.detail(id),
     queryFn: () => getHolidayCalendar(id),
     enabled: Number.isFinite(id),
   })
@@ -39,7 +41,7 @@ export function HolidaysListPage() {
   const [saveError, setSaveError] = useState<string | null>(null)
 
   const allHolidaysQuery = useQuery({
-    queryKey: ['organization', 'holidays', 'all'],
+    queryKey: queryKeys.organization.holidays.all(),
     queryFn: () => getHolidays(),
     enabled: adding && mode === 'existing',
   })
@@ -76,8 +78,8 @@ export function HolidaysListPage() {
       })
     },
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: ['organization', 'holidays'] })
-      await qc.invalidateQueries({ queryKey: ['organization', 'holidays', { calendarId: id }] })
+      await qc.invalidateQueries({ queryKey: queryKeys.organization.holidays.all() })
+      await qc.invalidateQueries({ queryKey: queryKeys.organization.holidays.detail(id) })
       setAdding(false)
       setForm({ name: '', date: '', holiday_type: 'NATIONAL', recurring_flag: true })
       setPickHolidayId('')

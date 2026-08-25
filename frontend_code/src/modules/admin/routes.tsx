@@ -46,76 +46,73 @@ const HolidaysListPage = lazyPage(() => import('./pages/organization/HolidaysLis
 const PositionsListPage = lazyPage(() => import('./pages/organization/PositionsListPage'), 'PositionsListPage')
 const PositionDetailPage = lazyPage(() => import('./pages/organization/PositionDetailPage'), 'PositionDetailPage')
 
-export function createAdminSettingsLayoutRoute(appLayoutRoute: AnyRoute) {
+export function createAdminSettingsLayoutRoute<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   return createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/admin/settings',
     component: AdminSettingsLayout,
-    validateSearch: () => ({}),
   })
 }
 
-export function createAdminOrganizationSettingsRoutes(settingsLayoutRoute: AnyRoute) {
+export function createAdminOrganizationSettingsRoutes<TParent extends AnyRoute>(
+  settingsLayoutRoute: TParent,
+) {
   return [
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/locations', component: LocationsListPage, validateSearch: () => ({}) }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/locations/$locationId', component: LocationDetailPage, validateSearch: () => ({}) }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/shifts', component: ShiftsListPage, validateSearch: () => ({}) }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/shifts/new', component: ShiftDetailPage, validateSearch: () => ({}) }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/shifts/$shiftId', component: ShiftDetailPage, validateSearch: () => ({}) }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/working-weeks', component: WorkingWeeksPage, validateSearch: () => ({}) }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/holidays', component: HolidayCalendarsPage, validateSearch: () => ({}) }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/holidays/$calendarId', component: HolidaysListPage, validateSearch: () => ({}) }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/positions', component: PositionsListPage, validateSearch: () => ({}) }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/positions/new', component: PositionDetailPage, validateSearch: () => ({}) }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/positions/$positionId', component: PositionDetailPage, validateSearch: () => ({}) }),
+    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/locations', component: LocationsListPage }),
+    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/locations/$locationId', component: LocationDetailPage }),
+    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/shifts', component: ShiftsListPage }),
+    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/shifts/new', component: ShiftDetailPage }),
+    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/shifts/$shiftId', component: ShiftDetailPage }),
+    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/working-weeks', component: WorkingWeeksPage }),
+    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/holidays', component: HolidayCalendarsPage }),
+    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/holidays/$calendarId', component: HolidaysListPage }),
+    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/positions', component: PositionsListPage }),
+    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/positions/new', component: PositionDetailPage }),
+    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/positions/$positionId', component: PositionDetailPage }),
   ]
 }
 
-export function createWorkforceShiftRoutes(appLayoutRoute: AnyRoute) {
+export function createWorkforceShiftRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   return [
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/shifts', component: ShiftsListPage, validateSearch: () => ({}) }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/shifts/new', component: ShiftDetailPage, validateSearch: () => ({}) }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/shifts/$shiftId', component: ShiftDetailPage, validateSearch: () => ({}) }),
+    createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/shifts', component: ShiftsListPage }),
+    createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/shifts/new', component: ShiftDetailPage }),
+    createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/shifts/$shiftId', component: ShiftDetailPage }),
   ]
 }
 
-export function createAdminSettingsCoreRoutes(settingsLayoutRoute: AnyRoute) {
+export function createAdminSettingsCoreRoutes<TParent extends AnyRoute>(
+  settingsLayoutRoute: TParent,
+) {
   const adminSettingsRoutes = [
     createRoute({
       getParentRoute: () => settingsLayoutRoute,
       path: '/',
       component: OrganizationProfileSection,
-      validateSearch: () => ({}),
     }),
     createRoute({
       getParentRoute: () => settingsLayoutRoute,
       path: '/head-office',
       component: HeadOfficeSection,
-      validateSearch: () => ({}),
     }),
     createRoute({
       getParentRoute: () => settingsLayoutRoute,
       path: '/branding',
       component: BrandingSection,
-      validateSearch: () => ({}),
     }),
     createRoute({
       getParentRoute: () => settingsLayoutRoute,
       path: '/regional',
       component: RegionalSection,
-      validateSearch: () => ({}),
     }),
     createRoute({
       getParentRoute: () => settingsLayoutRoute,
       path: '/offices/new',
       component: OfficeFormPage,
-      validateSearch: () => ({}),
     }),
     createRoute({
       getParentRoute: () => settingsLayoutRoute,
       path: '/offices/$officeId/edit',
       component: OfficeFormPage,
-      validateSearch: () => ({}),
     }),
   ]
 
@@ -124,18 +121,16 @@ export function createAdminSettingsCoreRoutes(settingsLayoutRoute: AnyRoute) {
   return [...adminSettingsRoutes, ...organizationSettingsRoutes]
 }
 
-export function createAdminRoutes(appLayoutRoute: AnyRoute) {
+export function createAdminRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   const attendanceLayout = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/admin/attendance-settings',
     component: AttendanceSettingsLayout,
-    validateSearch: () => ({}),
   })
   const leaveLayout = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/admin/leave-settings',
     component: LeaveSettingsLayout,
-    validateSearch: () => ({}),
   })
 
   return [
@@ -150,43 +145,36 @@ export function createAdminRoutes(appLayoutRoute: AnyRoute) {
       getParentRoute: () => appLayoutRoute,
       path: '/admin/users',
       component: UsersListPage,
-      validateSearch: () => ({}),
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/admin/users/new',
       component: UserCreatePage,
-      validateSearch: () => ({}),
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/admin/users/$userId',
       component: UserDetailPage,
-      validateSearch: () => ({}),
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/admin/roles',
       component: RolesListPage,
-      validateSearch: () => ({}),
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/admin/roles/new',
       component: RoleCreatePage,
-      validateSearch: () => ({}),
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/admin/roles/$roleId',
       component: RoleDetailPage,
-      validateSearch: () => ({}),
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/admin/roles/$roleId/edit',
       component: RoleEditPage,
-      validateSearch: () => ({}),
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
@@ -200,7 +188,6 @@ export function createAdminRoutes(appLayoutRoute: AnyRoute) {
         getParentRoute: () => attendanceLayout,
         path: '/',
         component: AttendanceSettingsPage,
-        validateSearch: () => ({}),
       }),
     ]),
     leaveLayout.addChildren([
@@ -208,19 +195,16 @@ export function createAdminRoutes(appLayoutRoute: AnyRoute) {
         getParentRoute: () => leaveLayout,
         path: '/',
         component: LeaveSettingsPage,
-        validateSearch: () => ({}),
       }),
       createRoute({
         getParentRoute: () => leaveLayout,
         path: '/policies',
         component: LeavePoliciesPage,
-        validateSearch: () => ({}),
       }),
       createRoute({
         getParentRoute: () => leaveLayout,
         path: '/ledger/$employeeId',
         component: LeaveLedgerPage,
-        validateSearch: () => ({}),
       }),
     ]),
     createRoute({
@@ -244,13 +228,11 @@ export function createAdminRoutes(appLayoutRoute: AnyRoute) {
       getParentRoute: () => appLayoutRoute,
       path: '/admin/audit',
       component: AuditLogsPage,
-      validateSearch: () => ({}),
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/admin/security',
       component: SecurityCenterPage,
-      validateSearch: () => ({}),
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
