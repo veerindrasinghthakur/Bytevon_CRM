@@ -1,3 +1,8 @@
+/**
+ * Projects API — env.useMockApi → shared mock DB; false → GET/POST/PATCH /projects
+ */
+import { env } from '@/config/env'
+import { apiClient } from '@/shared/lib/axios'
 import type { CreateProjectInput, ProjectDetail, ProjectListItem } from '../schemas/project'
 import { delay, getDb, nextId } from '@/shared/mock/db'
 
@@ -6,6 +11,12 @@ export async function getProjects(params?: {
   status?: string
   teamId?: number
 }): Promise<{ items: ProjectListItem[]; total: number }> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<{ items: ProjectListItem[]; total: number }>('/projects', {
+      params,
+    })
+    return data
+  }
   await delay()
   let items = [...getDb().projects] as ProjectDetail[]
   if (params?.search) {
@@ -27,6 +38,14 @@ export async function getProjects(params?: {
 }
 
 export async function getProjectById(id: number): Promise<ProjectDetail | null> {
+  if (!env.useMockApi) {
+    try {
+      const { data } = await apiClient.get<ProjectDetail>(`/projects/${id}`)
+      return data
+    } catch {
+      return null
+    }
+  }
   await delay()
   const row = getDb().projects.find((p) => p.id === id)
   return (row as ProjectDetail | undefined) ?? null
@@ -39,6 +58,10 @@ export async function getProjectsForTeam(teamId: number): Promise<ProjectListIte
 }
 
 export async function createProject(input: CreateProjectInput): Promise<ProjectDetail> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<ProjectDetail>('/projects', input)
+    return data
+  }
   await delay(500)
   const projects = getDb().projects
   const id = nextId(projects)
@@ -83,6 +106,10 @@ export async function updateProject(
     >
   >,
 ): Promise<ProjectDetail> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.patch<ProjectDetail>(`/projects/${id}`, patch)
+    return data
+  }
   await delay(400)
   const projects = getDb().projects
   const idx = projects.findIndex((p) => p.id === id)

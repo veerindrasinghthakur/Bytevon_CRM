@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getTeams, getTeam, createTeam, updateTeam } from '../api/teams'
 import type { Team, TeamListCache } from '../types'
-import { queryKeys, invalidate } from '@/shared/lib/query-keys'
+import { queryKeys } from '@/shared/lib/query-keys'
 
 function isTeamListCache(value: unknown): value is TeamListCache {
   return (
@@ -27,6 +27,7 @@ export function useTeam(id: number | undefined) {
   })
 }
 
+/** Optimistic + upsert only — no onSettled invalidate (avoids race). */
 export function useCreateTeam() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -60,7 +61,6 @@ export function useCreateTeam() {
         createdAt: new Date().toISOString(),
       }
 
-      // Only mutate list-shaped caches — never overwrite detail/member queries
       queryClient.setQueriesData({ queryKey: queryKeys.teams.all }, (old) => {
         if (!isTeamListCache(old)) return old
         return { items: [optimistic, ...old.items], total: old.total + 1 }
@@ -80,10 +80,6 @@ export function useCreateTeam() {
         }
       })
       queryClient.setQueryData(queryKeys.teams.detail(created.id), created)
-    },
-    onSettled: () => {
-      invalidate.teams(queryClient)
-      invalidate.projects(queryClient)
     },
   })
 }
@@ -138,9 +134,6 @@ export function useUpdateTeam() {
           items: old.items.map((t) => (t.id === team.id ? team : t)),
         }
       })
-    },
-    onSettled: () => {
-      invalidate.teams(queryClient)
     },
   })
 }

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getTasks, getTask, createTask, updateTask } from '../api/tasks'
 import type { Task, TaskPriority, TaskListCache } from '../types'
-import { queryKeys, invalidate } from '@/shared/lib/query-keys'
+import { queryKeys } from '@/shared/lib/query-keys'
 
 export function useTasks(filters?: {
   search?: string
@@ -22,6 +22,7 @@ export function useTask(id: number | undefined) {
   })
 }
 
+/** Optimistic + upsert only — no onSettled invalidate (avoids race). */
 export function useCreateTask() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -71,10 +72,6 @@ export function useCreateTask() {
         }
       })
       queryClient.setQueryData(queryKeys.tasks.detail(created.id), created)
-    },
-    onSettled: () => {
-      invalidate.tasks(queryClient)
-      invalidate.projects(queryClient)
     },
   })
 }
@@ -131,9 +128,6 @@ export function useUpdateTask() {
           items: old.items.map((t) => (t.id === task.id ? task : t)),
         }
       })
-    },
-    onSettled: () => {
-      invalidate.tasks(queryClient)
     },
   })
 }
