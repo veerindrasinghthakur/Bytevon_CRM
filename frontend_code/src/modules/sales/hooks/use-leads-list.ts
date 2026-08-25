@@ -1,8 +1,10 @@
 import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
+import { getLeadFilterOptions } from '../api/sales'
 import { useLeadsQuery } from './use-sales'
-import type { Lead, PipelineStage, LeadPriority } from '../types'
+import type { Lead } from '../types'
 
 const FILTER_DEFAULTS = {
   status: 'All',
@@ -14,6 +16,12 @@ const FILTER_DEFAULTS = {
 export function useLeadsList() {
   const controls = useListControls({
     filterDefaults: FILTER_DEFAULTS,
+  })
+
+  const filterOptionsQuery = useQuery({
+    queryKey: ['sales', 'leads', 'filter-options'],
+    queryFn: getLeadFilterOptions,
+    staleTime: 60_000,
   })
 
   const { data, isLoading, isError, refetch, isFetching } = useLeadsQuery({
@@ -40,22 +48,16 @@ export function useLeadsList() {
     selection.onRowPressEnd(lead.id, () => onShortPress?.(lead))
   }
 
-  const stages: PipelineStage[] = [
-    'New',
-    'Contacted',
-    'Qualified',
-    'Proposal',
-    'Negotiation',
-    'Won',
-    'Lost',
-  ]
-  const priorities: LeadPriority[] = ['Critical', 'High', 'Medium', 'Low']
+  const stages = filterOptionsQuery.data?.stages ?? []
+  const priorities = filterOptionsQuery.data?.priorities ?? []
+  const sources = filterOptionsQuery.data?.sources ?? []
+  const statuses = filterOptionsQuery.data?.statuses ?? []
 
   return {
     metrics,
     totalCount,
     filtered,
-    isLoading,
+    isLoading: isLoading || filterOptionsQuery.isLoading,
     isError,
     refetch,
     isFetching,
@@ -71,6 +73,8 @@ export function useLeadsList() {
     setSourceFilter: (v: string) => controls.setFilter('source', v),
     stages,
     priorities,
+    sources,
+    statuses,
     resetFilters: controls.resetAll,
     filtersActive: controls.anyActive,
     page: controls.page,
