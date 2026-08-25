@@ -13,9 +13,65 @@ import {
   listSalesActivities,
   getDashboardMetrics,
 } from '../api/sales'
-import type { Lead, Client } from '../types'
+import type { Lead, Client, SalesMetric } from '../types'
 
-export function useLeadsQuery(filters?: {
+type LeadListData = { items: Lead[]; total: number; metrics: SalesMetric[] }
+type ClientListData = { items: Client[]; total: number; metrics: SalesMetric[] }
+
+/** Stable list key — full dataset once; filters applied client-side. */
+const LEADS_LIST_KEY = queryKeys.sales.leads.list()
+const CLIENTS_LIST_KEY = queryKeys.sales.clients.list()
+
+function findLeadInCache(
+  qc: ReturnType<typeof useQueryClient>,
+  id: string,
+): Lead | undefined {
+  const lists = qc.getQueriesData<LeadListData>({ queryKey: queryKeys.sales.leads.all })
+  for (const [, data] of lists) {
+    const found = data?.items?.find((l) => l.id === id)
+    if (found) return found
+  }
+  return undefined
+}
+
+function findClientInCache(
+  qc: ReturnType<typeof useQueryClient>,
+  id: string,
+): Client | undefined {
+  const lists = qc.getQueriesData<ClientListData>({ queryKey: queryKeys.sales.clients.all })
+  for (const [, data] of lists) {
+    const found = data?.items?.find((c) => c.id === id)
+    if (found) return found
+  }
+  return undefined
+}
+
+function upsertLeadInLists(qc: ReturnType<typeof useQueryClient>, row: Lead) {
+  qc.setQueriesData<LeadListData>({ queryKey: queryKeys.sales.leads.all }, (old) => {
+    if (!old?.items) return old
+    const exists = old.items.some((l) => l.id === row.id)
+    const items = exists
+      ? old.items.map((l) => (l.id === row.id ? { ...l, ...row } : l))
+      : [row, ...old.items]
+    return { ...old, items, total: items.length }
+  })
+  qc.setQueryData(queryKeys.sales.leads.detail(row.id), row)
+}
+
+function upsertClientInLists(qc: ReturnType<typeof useQueryClient>, row: Client) {
+  qc.setQueriesData<ClientListData>({ queryKey: queryKeys.sales.clients.all }, (old) => {
+    if (!old?.items) return old
+    const exists = old.items.some((c) => c.id === row.id)
+    const items = exists
+      ? old.items.map((c) => (c.id === row.id ? { ...c, ...row } : c))
+      : [row, ...old.items]
+    return { ...old, items, total: items.length }
+  })
+  qc.setQueryData(queryKeys.sales.clients.detail(row.id), row)
+}
+
+/** One network call for the whole table; do not pass filters (client-side filter). */
+export function useLeadsQuery(_filters?: {
   search?: string
   status?: string
   stage?: string
@@ -23,16 +79,24 @@ export function useLeadsQuery(filters?: {
   source?: string
 }) {
   return useQuery({
-    queryKey: queryKeys.sales.leads.list(filters),
-    queryFn: () => listLeads(filters),
+    queryKey: LEADS_LIST_KEY,
+    queryFn: () => listLeads(),
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
   })
 }
 
 export function useLead(id: string | undefined) {
+  const qc = useQueryClient()
+  const cached = id ? findLeadInCache(qc, id) : undefined
   return useQuery({
     queryKey: queryKeys.sales.leads.detail(id as string),
     queryFn: () => getLeadById(id!),
     enabled: Boolean(id),
+    // Prefer list payload — avoid GET /leads/:id when we already have the row
+    initialData: cached,
+    staleTime: cached ? 60_000 : 0,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -40,7 +104,12 @@ export function useCreateLead() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: createLead,
-    onSettled: () => invalidate.salesLeads(qc),
+    onSuccess: (row) => {
+      upsertLeadInLists(qc, row)
+    },
+    onSettled: () => {
+      void invalidate.salesLeads(qc)
+    },
   })
 }
 
@@ -51,48 +120,57 @@ export function useUpdateLead() {
     onMutate: async ({ id, patch }) => {
       await qc.cancelQueries({ queryKey: queryKeys.sales.leads.all })
       const previousLead = qc.getQueryData<Lead>(queryKeys.sales.leads.detail(id))
+      const optimistic = previousLead ? { ...previousLead, ...patch, id } : ({ id, ...patch } as Lead)
       if (previousLead) {
-        qc.setQueryData(queryKeys.sales.leads.detail(id), {
-          ...previousLead,
-          ...patch,
-        })
+        qc.setQueryData(queryKeys.sales.leads.detail(id), optimistic)
       }
+      upsertLeadInLists(qc, optimistic)
       return { previousLead }
     },
     onError: (_err, { id }, context) => {
       if (context?.previousLead) {
         qc.setQueryData(queryKeys.sales.leads.detail(id), context.previousLead)
+        upsertLeadInLists(qc, context.previousLead)
       }
     },
-    onSettled: () => invalidate.salesLeads(qc),
+    onSuccess: (row) => {
+      upsertLeadInLists(qc, row)
+    },
+    onSettled: () => {
+      void invalidate.salesLeads(qc)
+    },
   })
 }
 
-export function prefetchLead(qc: ReturnType<typeof useQueryClient>, id: string) {
-  if (!id) return
-  return qc.prefetchQuery({
-    queryKey: queryKeys.sales.leads.detail(id),
-    queryFn: () => getLeadById(id),
-  })
+/** Disabled — list rows already contain full data; no per-hover GET /:id */
+export function prefetchLead(_qc: ReturnType<typeof useQueryClient>, _id: string) {
+  return undefined
 }
 
 export function usePrefetchLead() {
-  const qc = useQueryClient()
-  return (id: string) => prefetchLead(qc, id)
+  return (_id: string) => undefined
 }
 
-export function useClientsQuery(filters?: { search?: string; status?: string; type?: string }) {
+/** One network call for the whole clients table. */
+export function useClientsQuery(_filters?: { search?: string; status?: string; type?: string }) {
   return useQuery({
-    queryKey: queryKeys.sales.clients.list(filters),
-    queryFn: () => listClients(filters),
+    queryKey: CLIENTS_LIST_KEY,
+    queryFn: () => listClients(),
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
   })
 }
 
 export function useClient(id: string | undefined) {
+  const qc = useQueryClient()
+  const cached = id ? findClientInCache(qc, id) : undefined
   return useQuery({
     queryKey: queryKeys.sales.clients.detail(id as string),
     queryFn: () => getClientById(id!),
     enabled: Boolean(id),
+    initialData: cached,
+    staleTime: cached ? 60_000 : 0,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -100,7 +178,12 @@ export function useCreateClient() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: createClient,
-    onSettled: () => invalidate.salesClients(qc),
+    onSuccess: (row) => {
+      upsertClientInLists(qc, row)
+    },
+    onSettled: () => {
+      void invalidate.salesClients(qc)
+    },
   })
 }
 
@@ -111,41 +194,45 @@ export function useUpdateClient() {
     onMutate: async ({ id, patch }) => {
       await qc.cancelQueries({ queryKey: queryKeys.sales.clients.all })
       const previousClient = qc.getQueryData<Client>(queryKeys.sales.clients.detail(id))
+      const optimistic = previousClient
+        ? { ...previousClient, ...patch, id }
+        : ({ id, ...patch } as Client)
       if (previousClient) {
-        qc.setQueryData(queryKeys.sales.clients.detail(id), {
-          ...previousClient,
-          ...patch,
-        })
+        qc.setQueryData(queryKeys.sales.clients.detail(id), optimistic)
       }
+      upsertClientInLists(qc, optimistic)
       return { previousClient }
     },
     onError: (_err, { id }, context) => {
       if (context?.previousClient) {
         qc.setQueryData(queryKeys.sales.clients.detail(id), context.previousClient)
+        upsertClientInLists(qc, context.previousClient)
       }
     },
-    onSettled: () => invalidate.salesClients(qc),
+    onSuccess: (row) => {
+      upsertClientInLists(qc, row)
+    },
+    onSettled: () => {
+      void invalidate.salesClients(qc)
+    },
   })
 }
 
-export function prefetchClient(qc: ReturnType<typeof useQueryClient>, id: string) {
-  if (!id) return
-  return qc.prefetchQuery({
-    queryKey: queryKeys.sales.clients.detail(id),
-    queryFn: () => getClientById(id),
-  })
+/** Disabled — avoids GET /clients/:id on every row hover */
+export function prefetchClient(_qc: ReturnType<typeof useQueryClient>, _id: string) {
+  return undefined
 }
 
 export function usePrefetchClient() {
-  const qc = useQueryClient()
-  return (id: string) => prefetchClient(qc, id)
+  return (_id: string) => undefined
 }
 
-/** Case studies — server returns full list; client filters via useListControls on the page/hook. */
 export function useCaseStudies() {
   return useQuery({
     queryKey: queryKeys.sales.caseStudies.list(),
     queryFn: listCaseStudies,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -153,6 +240,8 @@ export function useSalesActivities() {
   return useQuery({
     queryKey: queryKeys.sales.activities(),
     queryFn: listSalesActivities,
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
   })
 }
 
@@ -160,5 +249,7 @@ export function useSalesDashboardMetrics() {
   return useQuery({
     queryKey: queryKeys.sales.dashboardMetrics(),
     queryFn: getDashboardMetrics,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
   })
 }
