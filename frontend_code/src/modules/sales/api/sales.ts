@@ -1,3 +1,10 @@
+/**
+ * Sales API — leads, clients, case studies, filter options, sales reps.
+ * env.useMockApi → local seed stores; false → mock backend /api/v1/sales/*
+ */
+
+import { env } from '@/config/env'
+import { apiClient } from '@/shared/lib/axios'
 import { delay } from '@/shared/mock/db'
 import {
   leads as seedLeads,
@@ -11,7 +18,7 @@ import {
 } from '../data/mock'
 import type { Lead, Client, CaseStudy, SalesActivity, SalesMetric } from '../types'
 
-/** Mutable in-memory stores — seeded once from mock (mock-data rules: UI never hardcodes lists). */
+/** Mutable in-memory stores when useMockApi */
 let leadsStore: Lead[] | null = null
 let clientsStore: Client[] | null = null
 
@@ -25,6 +32,98 @@ function clients(): Client[] {
   return clientsStore
 }
 
+export interface LeadFilterOptions {
+  statuses: string[]
+  stages: string[]
+  priorities: string[]
+  sources: string[]
+}
+
+export interface ClientFilterOptions {
+  statuses: string[]
+  types: string[]
+  industries: string[]
+  countries: string[]
+}
+
+export interface SalesRepOption {
+  employmentId: number
+  name: string
+  employeeCode: string
+  department: string
+}
+
+export async function getLeadFilterOptions(): Promise<LeadFilterOptions> {
+  if (env.useMockApi) {
+    await delay()
+    const items = leads()
+    const uniq = (vals: string[]) => Array.from(new Set(vals.filter(Boolean))).sort()
+    return {
+      statuses: uniq([...items.map((l) => l.status), 'Active', 'Inactive']),
+      stages: uniq([
+        ...items.map((l) => l.stage),
+        'New',
+        'Contacted',
+        'Qualified',
+        'Proposal',
+        'Negotiation',
+        'Won',
+        'Lost',
+      ]),
+      priorities: uniq([...items.map((l) => l.priority), 'Critical', 'High', 'Medium', 'Low']),
+      sources: uniq([
+        ...items.map((l) => l.source),
+        'LinkedIn',
+        'Website',
+        'Referral',
+        'Direct Referral',
+        'Event',
+        'Other',
+        'Manual',
+      ]),
+    }
+  }
+  const { data } = await apiClient.get<LeadFilterOptions>('/sales/leads/filter-options')
+  return data
+}
+
+export async function getClientFilterOptions(): Promise<ClientFilterOptions> {
+  if (env.useMockApi) {
+    await delay()
+    const items = clients()
+    const uniq = (vals: string[]) => Array.from(new Set(vals.filter(Boolean))).sort()
+    return {
+      statuses: uniq([...items.map((c) => c.status), 'Active', 'Inactive']),
+      types: uniq([...items.map((c) => c.type), 'Enterprise', 'SMB', 'Partner']),
+      industries: uniq(items.map((c) => c.industry)),
+      countries: uniq(items.map((c) => c.country)),
+    }
+  }
+  const { data } = await apiClient.get<ClientFilterOptions>('/sales/clients/filter-options')
+  return data
+}
+
+/** Employees assigned to Sales department — for assigned-rep picker */
+export async function listSalesRepresentatives(): Promise<SalesRepOption[]> {
+  if (env.useMockApi) {
+    await delay()
+    // Derive unique assignees already on leads as soft fallback for pure-mock mode
+    const names = Array.from(
+      new Set(leads().map((l) => l.assignedTo).filter(Boolean) as string[]),
+    )
+    return names.map((name, i) => ({
+      employmentId: i + 1,
+      name,
+      employeeCode: `SALES-${i + 1}`,
+      department: 'Sales',
+    }))
+  }
+  const { data } = await apiClient.get<{ items: SalesRepOption[]; total: number }>(
+    '/sales/sales-representatives',
+  )
+  return data.items ?? []
+}
+
 export async function listLeads(params?: {
   search?: string
   status?: string
@@ -32,6 +131,13 @@ export async function listLeads(params?: {
   priority?: string
   source?: string
 }): Promise<{ items: Lead[]; total: number; metrics: SalesMetric[] }> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<{ items: Lead[]; total: number; metrics: SalesMetric[] }>(
+      '/sales/leads',
+      { params },
+    )
+    return data
+  }
   await delay()
   let items = [...leads()]
   if (params?.search) {
@@ -53,6 +159,15 @@ export async function listLeads(params?: {
 }
 
 export async function getLeadById(id: string): Promise<Lead | null> {
+  if (!env.useMockApi) {
+    try {
+      const { data } = await apiClient.get<Lead & { detail?: string }>(`/sales/leads/${id}`)
+      if ((data as { detail?: string }).detail) return null
+      return data
+    } catch {
+      return null
+    }
+  }
   await delay()
   return leads().find((l) => l.id === id) ?? null
 }
@@ -62,9 +177,24 @@ export async function createLead(input: {
   company: string
   contactName: string
   email?: string
+  phone?: string
   source?: string
   priority?: Lead['priority']
+  status?: Lead['status']
+  stage?: Lead['stage']
+  budget?: number
+  date?: string
+  assignedTo?: string
+  assignedEmploymentId?: number | null
+  notes?: string
+  chatLink?: string
+  contactTitle?: string
+  industry?: string
 }): Promise<Lead> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<Lead>('/sales/leads', input)
+    return data
+  }
   await delay(400)
   const list = leads()
   const id = `LD-${1000 + list.length + 1}`
@@ -73,20 +203,30 @@ export async function createLead(input: {
     title: input.title,
     company: input.company,
     contactName: input.contactName,
+    contactTitle: input.contactTitle,
+    industry: input.industry,
     email: input.email,
+    phone: input.phone,
     source: input.source ?? 'Manual',
     priority: input.priority ?? 'Medium',
-    status: 'Active',
-    stage: 'New',
-    budget: 0,
+    status: input.status ?? 'Active',
+    stage: input.stage ?? 'New',
+    budget: input.budget ?? 0,
     createdAt: new Date().toISOString().slice(0, 10),
-    date: new Date().toISOString().slice(0, 10),
+    date: input.date ?? new Date().toISOString().slice(0, 10),
+    assignedTo: input.assignedTo,
+    notes: input.notes,
+    chatLink: input.chatLink,
   }
   list.unshift(row)
   return row
 }
 
-export async function updateLead(id: string, patch: Partial<Lead>): Promise<Lead> {
+export async function updateLead(id: string, patch: Partial<Lead> & { assignedEmploymentId?: number | null }): Promise<Lead> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.patch<Lead>(`/sales/leads/${id}`, patch)
+    return data
+  }
   await delay(350)
   const list = leads()
   const idx = list.findIndex((l) => l.id === id)
@@ -100,6 +240,13 @@ export async function listClients(params?: {
   status?: string
   type?: string
 }): Promise<{ items: Client[]; total: number; metrics: SalesMetric[] }> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<{ items: Client[]; total: number; metrics: SalesMetric[] }>(
+      '/sales/clients',
+      { params },
+    )
+    return data
+  }
   await delay()
   let items = [...clients()]
   if (params?.search) {
@@ -118,6 +265,15 @@ export async function listClients(params?: {
 }
 
 export async function getClientById(id: string): Promise<Client | null> {
+  if (!env.useMockApi) {
+    try {
+      const { data } = await apiClient.get<Client & { detail?: string }>(`/sales/clients/${id}`)
+      if ((data as { detail?: string }).detail) return null
+      return data
+    } catch {
+      return null
+    }
+  }
   await delay()
   return clients().find((c) => c.id === id) ?? null
 }
@@ -128,6 +284,10 @@ export async function createClient(input: {
   type?: Client['type']
   country?: string
 }): Promise<Client> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<Client>('/sales/clients', input)
+    return data
+  }
   await delay(400)
   const list = clients()
   const row: Client = {
@@ -146,6 +306,10 @@ export async function createClient(input: {
 }
 
 export async function updateClient(id: string, patch: Partial<Client>): Promise<Client> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.patch<Client>(`/sales/clients/${id}`, patch)
+    return data
+  }
   await delay(350)
   const list = clients()
   const idx = list.findIndex((c) => c.id === id)
@@ -155,16 +319,30 @@ export async function updateClient(id: string, patch: Partial<Client>): Promise<
 }
 
 export async function listCaseStudies(): Promise<{ items: CaseStudy[]; metrics: SalesMetric[] }> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<{ items: CaseStudy[]; metrics: SalesMetric[] }>(
+      '/sales/case-studies',
+    )
+    return data
+  }
   await delay()
   return { items: seedCaseStudies, metrics: caseStudyMetrics }
 }
 
 export async function listSalesActivities(): Promise<SalesActivity[]> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<SalesActivity[]>('/sales/activities')
+    return Array.isArray(data) ? data : []
+  }
   await delay()
   return seedActivities
 }
 
 export async function getDashboardMetrics(): Promise<SalesMetric[]> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<SalesMetric[]>('/sales/metrics/dashboard')
+    return Array.isArray(data) ? data : []
+  }
   await delay()
   return dashboardMetrics
 }
