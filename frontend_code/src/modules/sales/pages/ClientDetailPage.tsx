@@ -6,7 +6,9 @@ import { RefreshButton } from '@/shared/components/ui/RefreshButton'
 import { ActivityFeed } from '@/shared/components/ui/ActivityFeed'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { StatusDot } from '@/shared/components/ui/StatusDot'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useClient, useSalesActivities } from '../hooks/use-sales'
+import { salesRoutes } from '../routes'
 import type { ClientType } from '../types'
 import { cn } from '@/shared/lib/cn'
 
@@ -43,7 +45,12 @@ export function ClientDetailPage() {
   if (isError || !client) {
     return (
       <div className="animate-fade-in text-center py-16 space-y-4">
-        <PageHeader title="Client not found" showBack backTo="/sales/clients" backLabel="Back to clients" />
+        <PageHeader
+          title="Client not found"
+          showBack
+          backTo={salesRoutes.clients}
+          backLabel="Back to clients"
+        />
         <Button variant="outline" onClick={() => void refetch()}>
           Retry
         </Button>
@@ -74,15 +81,15 @@ export function ClientDetailPage() {
         title={client.name}
         description={client.legalName ?? client.industry}
         showBack
-        backTo="/sales/clients"
+        backTo={salesRoutes.clients}
         backLabel="Back to clients"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to="/sales" className="hover:text-secondary">
+            <Link to={salesRoutes.root} className="hover:text-secondary">
               Sales
             </Link>
             <span className="mx-2">/</span>
-            <Link to="/sales/clients" className="hover:text-secondary">
+            <Link to={salesRoutes.clients} className="hover:text-secondary">
               Clients
             </Link>
             <span className="mx-2">/</span>
@@ -106,7 +113,7 @@ export function ClientDetailPage() {
             <EditButton
               label="Edit Client"
               onClick={() =>
-                navigate({
+                safeNavigate(navigate, {
                   to: '/sales/clients/$clientId/edit',
                   params: { clientId: client.id },
                 })
@@ -120,7 +127,12 @@ export function ClientDetailPage() {
       />
 
       <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-        <span className={cn('px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tight', typeStyles[client.type])}>
+        <span
+          className={cn(
+            'px-3 py-1 rounded-full text-xs font-bold uppercase tracking-tight',
+            typeStyles[client.type],
+          )}
+        >
           {client.type}
         </span>
         <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-on-surface">
@@ -155,10 +167,13 @@ export function ClientDetailPage() {
           hint={client.growth ?? '+14% YoY'}
           positive
         />
-        <Kpi label="Client Since" value={client.clientSince ?? '—'} hint={client.clientSince ? 'Tenure' : undefined} />
+        <Kpi
+          label="Client Since"
+          value={client.clientSince ?? '—'}
+          hint={client.clientSince ? 'Tenure' : undefined}
+        />
       </div>
 
-      {/* Company + HQ side by side */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bv-surface p-6">
           <h3 className="text-title-md font-semibold text-on-surface mb-6 flex items-center gap-2">
@@ -166,31 +181,43 @@ export function ClientDetailPage() {
           </h3>
           <dl className="space-y-4">
             <div>
-              <dt className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Full Legal Name</dt>
+              <dt className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">
+                Full Legal Name
+              </dt>
               <dd className="text-body-md text-on-surface">{client.legalName ?? client.name}</dd>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <dt className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Industry</dt>
+                <dt className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">
+                  Industry
+                </dt>
                 <dd className="text-body-md text-on-surface">{client.industry}</dd>
               </div>
               <div>
-                <dt className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Sector</dt>
+                <dt className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">
+                  Sector
+                </dt>
                 <dd className="text-body-md text-on-surface">{client.sector ?? '—'}</dd>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <dt className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Tax ID</dt>
+                <dt className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">
+                  Tax ID
+                </dt>
                 <dd className="text-body-md text-on-surface">{client.taxId ?? '—'}</dd>
               </div>
               <div>
-                <dt className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Founding Date</dt>
+                <dt className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">
+                  Founding Date
+                </dt>
                 <dd className="text-body-md text-on-surface">{client.founded ?? '—'}</dd>
               </div>
             </div>
             <div>
-              <dt className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">Primary contact</dt>
+              <dt className="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-1">
+                Primary contact
+              </dt>
               <dd className="text-body-md text-on-surface">{client.primaryContact ?? '—'}</dd>
             </div>
             <div>
@@ -221,13 +248,12 @@ export function ClientDetailPage() {
         </div>
       </div>
 
-      {/* Shared vertical timeline BELOW company + HQ */}
       <ActivityFeed
         title="Activity timeline"
         items={timelineItems}
         variant="standard"
         headerAction={
-          <Link to="/sales/activity" className="text-secondary text-sm font-semibold hover:underline">
+          <Link to={salesRoutes.activity} className="text-secondary text-sm font-semibold hover:underline">
             View All
           </Link>
         }
