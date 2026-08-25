@@ -19,14 +19,6 @@ export const sentNotificationRowSchema = z.object({
 })
 export type SentNotificationRow = z.infer<typeof sentNotificationRowSchema>
 
-export const sentListResponseSchema = z.object({
-  items: z.array(sentNotificationRowSchema),
-  total: z.number(),
-  page: z.number(),
-  pageSize: z.number(),
-})
-export type SentListResponse = z.infer<typeof sentListResponseSchema>
-
 export const sentKpiSchema = z.object({
   id: z.string(),
   label: z.string(),
@@ -36,3 +28,6 @@ export const sentKpiSchema = z.object({
   danger: z.boolean().optional(),
 })
 export type SentKpi = z.infer<typeof sentKpiSchema>
+
+/** Re-export list response from dedicated file (MODULE_STANDARDS §3.1) */
+export { sentListResponseSchema, type SentListResponse } from './sent-list-response'

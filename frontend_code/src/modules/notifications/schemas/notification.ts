@@ -41,19 +41,6 @@ export const appNotificationSchema = z.object({
 })
 export type AppNotification = z.infer<typeof appNotificationSchema>
 
-export const notificationListResponseSchema = z.object({
-  items: z.array(appNotificationSchema),
-  total: z.number(),
-  page: z.number(),
-  pageSize: z.number(),
-  /** Counts on full filtered set (for tabs / KPIs) */
-  unreadCount: z.number().optional(),
-  highCount: z.number().optional(),
-  mentionCount: z.number().optional(),
-  archivedCount: z.number().optional(),
-})
-export type NotificationListResponse = z.infer<typeof notificationListResponseSchema>
-
 export const notificationKpiSchema = z.object({
   id: z.string(),
   label: z.string(),
@@ -69,3 +56,9 @@ export const notificationTabSchema = z.object({
   label: z.string(),
 })
 export type NotificationTab = z.infer<typeof notificationTabSchema>
+
+/** Re-export list response from dedicated file (MODULE_STANDARDS §3.1) */
+export {
+  notificationListResponseSchema,
+  type NotificationListResponse,
+} from './notification-list-response'
