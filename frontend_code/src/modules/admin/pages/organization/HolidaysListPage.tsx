@@ -7,6 +7,7 @@ import { Select } from '@/shared/components/ui/Select'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useHolidays } from '../../hooks/use-organization'
 import { createHoliday, getHolidayCalendar, getHolidays } from '../../api/organization'
 import type { HolidayRow } from '@/shared/schema'
@@ -91,8 +92,7 @@ export function HolidaysListPage() {
       <ErrorState
         description={(error as Error).message}
         onRetry={() => void refetch()}
-        // Route search typed as never in the tree — same pattern as admin redirects
-        onBack={() => navigate({ to: '/admin/settings/holidays' } as never)}
+        onBack={() => safeNavigate(navigate, { to: '/admin/settings/holidays' })}
       />
     )
   }
