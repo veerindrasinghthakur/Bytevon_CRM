@@ -15,6 +15,23 @@ const SalesActivityTimelinePage = lazyPage(
 )
 const CaseStudiesListPage = lazyPage(() => import('./pages/CaseStudiesListPage'), 'CaseStudiesListPage')
 
+/** Canonical path helpers — prefer these over hard-coded strings in pages. */
+export const salesRoutes = {
+  root: '/sales',
+  dashboard: '/sales/dashboard',
+  leads: '/sales',
+  leadNew: '/sales/leads/new',
+  leadDetail: (id: string) => `/sales/leads/${id}`,
+  leadEdit: (id: string) => `/sales/leads/${id}/edit`,
+  clients: '/sales/clients',
+  clientNew: '/sales/clients/new',
+  clientDetail: (id: string) => `/sales/clients/${id}`,
+  clientEdit: (id: string) => `/sales/clients/${id}/edit`,
+  analytics: '/sales/analytics',
+  activity: '/sales/activity',
+  caseStudies: '/sales/case-studies',
+} as const
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createSalesRoutes(appLayoutRoute: any) {
   return [

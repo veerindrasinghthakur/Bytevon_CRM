@@ -86,17 +86,20 @@ export const queryKeys = {
       all: ['sales', 'leads'] as const,
       list: (filters?: unknown) => [...queryKeys.sales.leads.all, 'list', filters ?? {}] as const,
       detail: (id: string) => [...queryKeys.sales.leads.all, 'detail', id] as const,
+      filterOptions: () => [...queryKeys.sales.leads.all, 'filter-options'] as const,
     },
     clients: {
       all: ['sales', 'clients'] as const,
       list: (filters?: unknown) => [...queryKeys.sales.clients.all, 'list', filters ?? {}] as const,
       detail: (id: string) => [...queryKeys.sales.clients.all, 'detail', id] as const,
+      filterOptions: () => [...queryKeys.sales.clients.all, 'filter-options'] as const,
     },
     caseStudies: {
       all: ['sales', 'case-studies'] as const,
       list: (filters?: unknown) =>
         [...queryKeys.sales.caseStudies.all, 'list', filters ?? {}] as const,
     },
+    salesRepresentatives: () => ['sales', 'sales-representatives'] as const,
     activities: () => ['sales', 'activities'] as const,
     dashboardMetrics: () => ['sales', 'dashboard-metrics'] as const,
   },
@@ -143,15 +146,13 @@ export const invalidate = {
   salesLeads: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.sales.leads.all }),
   salesClients: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.sales.clients.all }),
   salesCaseStudies: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.sales.caseStudies.all }),
-  caseStudies: (qc: Qc) =>  void qc.invalidateQueries({ queryKey: queryKeys.sales.caseStudies.all }),
+  caseStudies: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.sales.caseStudies.all }),
   notifications: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.notifications.all }),
   approvals: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.approvals.all }),
-  /** Canonical names */
   organizationLocations: (qc: Qc) =>
     void qc.invalidateQueries({ queryKey: queryKeys.organization.locations.all }),
   organizationShifts: (qc: Qc) =>
     void qc.invalidateQueries({ queryKey: queryKeys.organization.shifts.all }),
-  /** Aliases used by org hooks */
   locations: (qc: Qc) =>
     void qc.invalidateQueries({ queryKey: queryKeys.organization.locations.all }),
   orgShifts: (qc: Qc) =>

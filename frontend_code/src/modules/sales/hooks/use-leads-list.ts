@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
+import { queryKeys } from '@/shared/lib/query-keys'
 import { getLeadFilterOptions } from '../api/sales'
 import { useLeadsQuery } from './use-sales'
 import type { Lead } from '../types'
@@ -20,7 +21,7 @@ export function useLeadsList() {
 
   /** Filter options: once per session while mounted cache lives */
   const filterOptionsQuery = useQuery({
-    queryKey: ['sales', 'leads', 'filter-options'],
+    queryKey: queryKeys.sales.leads.filterOptions(),
     queryFn: getLeadFilterOptions,
     staleTime: Infinity,
     gcTime: 1000 * 60 * 60,
