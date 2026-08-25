@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import {
   createUserLogin,
   listEmploymentsWithoutLogin,
@@ -80,7 +81,7 @@ export function useUserCreate() {
     mutationFn: createUserLogin,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
-      navigate({ to: '/admin/users' })
+      safeNavigate(navigate, { to: '/admin/users' })
     },
     onError: (e) => {
       setError(e instanceof Error ? e.message : 'Failed to create user')
@@ -105,7 +106,6 @@ export function useUserCreate() {
       setError('Select a role.')
       return
     }
-    // Pass role id as-is (supports R-01 string ids from backend)
     createMutation.mutate({
       employmentId: Number(employmentId),
       email,
