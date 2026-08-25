@@ -1,4 +1,5 @@
-import { delay, getDb, nextId } from '@/shared/mock/db'
+import { delay } from '@/shared/mock/db'
+import { paginateItems } from '@/shared/lib/list-params'
 import type { ProjectDocument } from '../types'
 import { documentsList as seedDocs } from '../data/documentsMock'
 
@@ -26,6 +27,8 @@ export async function listDocuments(params?: {
   search?: string
   referenceType?: string
   referenceId?: number
+  page?: number
+  pageSize?: number
 }): Promise<{ items: ProjectDocument[]; total: number }> {
   await delay()
   let items = [...ensureStore()]
@@ -43,6 +46,9 @@ export async function listDocuments(params?: {
   }
   if (params?.referenceId != null) {
     items = items.filter((d) => (d as { referenceId?: number }).referenceId === params.referenceId)
+  }
+  if (params?.page != null || params?.pageSize != null) {
+    return paginateItems(items, params.page, params.pageSize)
   }
   return { items, total: items.length }
 }

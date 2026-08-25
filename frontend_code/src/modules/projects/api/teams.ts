@@ -4,6 +4,7 @@
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
+import { paginateItems } from '@/shared/lib/list-params'
 import type { Team } from '../types'
 
 export type { Team, TeamStatus } from '../types'
@@ -61,6 +62,8 @@ export function resolveProjectTeamId(projectId: number): number | null {
 
 export async function getTeams(params?: {
   search?: string
+  page?: number
+  pageSize?: number
 }): Promise<{ items: Team[]; total: number }> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<{ items: Team[]; total: number }>('/projects/teams', {
@@ -78,6 +81,9 @@ export async function getTeams(params?: {
         t.department?.toLowerCase().includes(q) ||
         t.headName?.toLowerCase().includes(q),
     )
+  }
+  if (params?.page != null || params?.pageSize != null) {
+    return paginateItems(items, params.page, params.pageSize)
   }
   return { items, total: items.length }
 }
@@ -111,10 +117,6 @@ export async function getTeamsForProject(projectId: number): Promise<Team[]> {
   return team ? [asTeam(team)] : []
 }
 
-/**
- * Members for a team — derived from employees in the same department as the team
- * (mock has no team_members table yet). Head is sorted first when present.
- */
 export async function getTeamMembers(teamId: number): Promise<TeamMemberRow[]> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<TeamMemberRow[] | { items: TeamMemberRow[] }>(
@@ -164,7 +166,6 @@ function projectUiStatus(status: string): TeamProjectRow['status'] {
   return 'Active'
 }
 
-/** Projects linked to this team via teamId or matching projectName. */
 export async function getTeamProjects(teamId: number): Promise<TeamProjectRow[]> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<TeamProjectRow[] | { items: TeamProjectRow[] }>(
