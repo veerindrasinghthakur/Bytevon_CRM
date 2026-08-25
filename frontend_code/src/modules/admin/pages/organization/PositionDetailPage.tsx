@@ -7,6 +7,7 @@ import { EditButton } from '@/shared/components/ui/EditButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { createPosition, getPosition, updatePosition } from '../../api/organization'
 import { cn } from '@/shared/lib/cn'
 
@@ -40,7 +41,7 @@ export function PositionDetailPage() {
     onSuccess: async (row) => {
       await qc.invalidateQueries({ queryKey: ['organization', 'positions'] })
       if (isNew) {
-        navigate({
+        safeNavigate(navigate, {
           to: '/admin/settings/positions/$positionId',
           params: { positionId: String(row.id) },
         })
@@ -59,7 +60,7 @@ export function PositionDetailPage() {
       <ErrorState
         description={(detailQuery.error as Error)?.message ?? 'Position not found'}
         onRetry={() => void detailQuery.refetch()}
-        onBack={() => navigate({ to: '/admin/settings/positions' })}
+        onBack={() => safeNavigate(navigate, { to: '/admin/settings/positions' })}
       />
     )
   }
