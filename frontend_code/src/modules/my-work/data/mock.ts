@@ -18,6 +18,7 @@ export const currentUser = {
   name: 'Alex Rivera',
   employeeId: 'EMP-102',
   department: 'Design Dept',
+  role: 'Senior Designer',
   todayLabel: 'Oct 24, 2024',
   shift: '09:00 AM - 06:00 PM',
 }
@@ -95,7 +96,7 @@ export const weekHours: WeekHourBar[] = [
   { day: 'Sun', hours: 0, pct: 0, isToday: false, isWeekend: true, breakMarkers: [] },
 ]
 
-/** Leave types from policies (mock of DB / leave_policies) */
+/** Leave types from policies (mock of DB / leave_policies). `code` matches schema LeaveType. */
 export const leaveTypeOptions: LeaveTypeOption[] = [
   { id: 'lt-casual', name: 'Casual', code: 'CASUAL', annualEntitlement: 10, description: 'Personal / unplanned' },
   { id: 'lt-sick', name: 'Sick', code: 'SICK', annualEntitlement: 8, description: 'Medical' },
@@ -273,6 +274,7 @@ export const myTasks: MyTask[] = [
   },
 ]
 
+/** Card-list feed for /my-work/approvals — items the employee submitted for approval */
 export const myApprovals: ApprovalRequest[] = [
   {
     id: 'APR-501',

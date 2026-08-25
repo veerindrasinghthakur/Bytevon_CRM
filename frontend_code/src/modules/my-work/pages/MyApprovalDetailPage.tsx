@@ -25,7 +25,7 @@ export function MyApprovalDetailPage() {
   if (!item) {
     return (
       <div className="animate-fade-in">
-        <PageHeader title="Request details" showBack />
+        <PageHeader title="Approval details" showBack />
         <p className="text-body-md text-on-surface-variant">Request not found.</p>
       </div>
     )
@@ -125,13 +125,20 @@ export function MyApprovalDetailPage() {
             </div>
           </section>
 
-          <section className="bv-surface p-4">
+          <section className="bv-surface p-4 space-y-2">
             <Button
               variant="outline"
               className="w-full"
               onClick={() => navigate({ to: '/my-work/approvals' })}
             >
-              All my requests
+              All my approvals
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full"
+              onClick={() => navigate({ to: '/my-work/requests' })}
+            >
+              Open full requests table
             </Button>
           </section>
         </div>

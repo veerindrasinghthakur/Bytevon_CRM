@@ -20,6 +20,10 @@ const typeIcon: Record<string, string> = {
 
 type RequestFilter = 'Pending' | 'Approved' | null
 
+/**
+ * Card view of approval-tracked items the employee submitted (leave, corrections, expense).
+ * Distinct from MyRequestsPage (`/my-work/requests`) which is the full table of org requests.
+ */
 export function MyApprovalsPage() {
   const navigate = useNavigate()
   const [filter, setFilter] = useState<RequestFilter>(null)
@@ -35,8 +39,8 @@ export function MyApprovalsPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <PageHeader
-        title="My Requests"
-        description="Leave, attendance corrections, and other requests you submitted."
+        title="My Approvals"
+        description="Leave, attendance corrections, and other items you submitted for approval."
       />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -84,7 +88,7 @@ export function MyApprovalsPage() {
       <section className="space-y-3">
         {filtered.length === 0 && (
           <p className="text-body-md text-on-surface-variant py-8 text-center">
-            No requests match this filter.
+            No approvals match this filter.
           </p>
         )}
         {filtered.map((item) => (

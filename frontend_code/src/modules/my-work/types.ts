@@ -1,4 +1,15 @@
-/** My Work (employee self-service) domain types */
+/** My Work (employee self-service) domain types
+ *
+ * Schema-as-truth (Complete_Final_Schema):
+ * UI keeps human-readable labels; map to API/DB enums at the boundary (api/*).
+ *
+ * LeaveType:        Casual→CASUAL, Sick→SICK, Earned→EARNED, Unpaid→LOSS_OF_PAY, Comp Off→COMP_OFF
+ * LeaveStatus:      Pending→PENDING, Approved→APPROVED, Rejected→REJECTED, Cancelled→CANCELLED
+ * AttendanceStatus: Present→PRESENT, Absent→ABSENT, Half Day→HALF_DAY, On Leave→ON_LEAVE,
+ *                   Holiday→HOLIDAY, Weekend→WEEK_OFF
+ * ApprovalStatus:   Pending→PENDING, Approved→APPROVED, Rejected→REJECTED
+ * Task priority/status are project-module UX labels; map to task enums when Projects API is wired.
+ */
 
 export type AttendanceStatus =
   | 'Present'

@@ -14,6 +14,11 @@ const statusStyles: Record<string, string> = {
 
 const filters = ['All Requests', 'In-Progress', 'Approved', 'Rejected'] as const
 
+/**
+ * Full table of organizational requests the employee submitted.
+ * Distinct from MyApprovalsPage (`/my-work/approvals`) card summary of approval-tracked items.
+ * Status: UI may show In-Progress; schema ApprovalStatus is PENDING | APPROVED | REJECTED.
+ */
 export function MyRequestsPage() {
   const navigate = useNavigate()
   const [filter, setFilter] = useState<(typeof filters)[number]>('All Requests')
@@ -39,7 +44,7 @@ export function MyRequestsPage() {
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="My Requests"
-        description="Track and manage your submitted organizational requests and their real-time statuses."
+        description="Track and manage every organizational request you submitted and its status."
         actions={
           <ExportButton resource="approval_request" filenameStem="my-requests" label="Export" />
         }
