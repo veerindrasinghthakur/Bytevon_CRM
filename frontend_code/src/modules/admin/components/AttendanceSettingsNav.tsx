@@ -28,7 +28,7 @@ export function AttendanceSettingsNav() {
           return (
             <li key={item.id} className="shrink-0">
               <Link
-                to={item.to}
+                to={item.to as never}
                 className={cn(
                   'flex items-center gap-2 px-4 py-3 text-body-sm border-b-2 transition-colors duration-200 whitespace-nowrap',
                   active

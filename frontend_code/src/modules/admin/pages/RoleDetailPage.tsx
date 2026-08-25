@@ -5,6 +5,7 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getAdminRole } from '../api/roles'
 import { listAdminUsers } from '../api/users'
 import { cn } from '@/shared/lib/cn'
@@ -31,7 +32,7 @@ export function RoleDetailPage() {
         title="Could not load role"
         description={(roleQuery.error as Error)?.message ?? 'Role not found'}
         onRetry={() => void roleQuery.refetch()}
-        onBack={() => navigate({ to: '/admin/roles' })}
+        onBack={() => safeNavigate(navigate, { to: '/admin/roles' })}
       />
     )
   }
@@ -49,9 +50,21 @@ export function RoleDetailPage() {
     }) ?? []
 
   const goDuplicate = () =>
-    navigate({
+    safeNavigate(navigate, {
       to: '/admin/roles/new',
       search: { duplicateFrom: role.id },
+    })
+
+  const goEdit = () =>
+    safeNavigate(navigate, {
+      to: '/admin/roles/$roleId/edit',
+      params: { roleId: role.id },
+    })
+
+  const goUser = (userId: number) =>
+    safeNavigate(navigate, {
+      to: '/admin/users/$userId',
+      params: { userId: String(userId) },
     })
 
   return (
@@ -97,9 +110,7 @@ export function RoleDetailPage() {
             variant="primary"
             size="sm"
             leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>}
-            onClick={() =>
-              navigate({ to: '/admin/roles/$roleId/edit', params: { roleId: role.id } })
-            }
+            onClick={goEdit}
           >
             Edit Role
           </Button>
@@ -194,12 +205,7 @@ export function RoleDetailPage() {
                   <tr
                     key={u.id}
                     className="zebra-row cursor-pointer"
-                    onClick={() =>
-                      navigate({
-                        to: '/admin/users/$userId',
-                        params: { userId: String(u.id) },
-                      })
-                    }
+                    onClick={() => goUser(u.id)}
                   >
                     <td className="px-6 py-3">
                       <div className="flex items-center gap-3">

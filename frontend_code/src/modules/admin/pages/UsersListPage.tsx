@@ -17,6 +17,7 @@ import {
   QuickPersonRow,
 } from '@/shared/components/layout/QuickOverviewParts'
 import { ResourceName } from '@/shared/schema'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useUsersList } from '../hooks/use-users-list'
 import type { AdminUserListItem } from '../types'
 import { cn } from '@/shared/lib/cn'
@@ -118,8 +119,13 @@ export function UsersListPage() {
   } = useUsersList()
 
   const goDetail = (u: AdminUserListItem) => {
-    navigate({ to: '/admin/users/$userId', params: { userId: String(u.id) } } as never)
+    safeNavigate(navigate, {
+      to: '/admin/users/$userId',
+      params: { userId: String(u.id) },
+    })
   }
+
+  const goNew = () => safeNavigate(navigate, { to: '/admin/users/new' })
 
   const openUserOverview = (u: AdminUserListItem) => {
     openPanel({
@@ -175,7 +181,7 @@ export function UsersListPage() {
               variant="primary"
               size="sm"
               leftIcon={<span className="material-symbols-outlined text-[18px]">person_add</span>}
-              onClick={() => navigate({ to: '/admin/users/new' } as never)}
+              onClick={goNew}
             >
               Add New User
             </Button>

@@ -12,6 +12,7 @@ import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Can } from '@/shared/rbac/Can.tsx'
 import { Action, ResourceName } from '@/shared/schema'
 import { useEditMode } from '@/shared/hooks/useEditMode'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { uploadUserAvatar } from '@/modules/profile/api/profile'
 import {
   activateUser,
@@ -159,7 +160,7 @@ export function UserDetailPage() {
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ['admin', 'users'] })
       await qc.invalidateQueries({ queryKey: ['admin', 'employments-without-login'] })
-      navigate({ to: '/admin/users' })
+      safeNavigate(navigate, { to: '/admin/users' })
     },
     onError: () => {
       // Side-effect free
@@ -473,7 +474,7 @@ export function UserDetailPage() {
                 variant="outline"
                 size="sm"
                 className="justify-start"
-                onClick={() => navigate({ to: '/admin/audit' })}
+                onClick={() => safeNavigate(navigate, { to: '/admin/audit' })}
               >
                 Audit for user
               </Button>

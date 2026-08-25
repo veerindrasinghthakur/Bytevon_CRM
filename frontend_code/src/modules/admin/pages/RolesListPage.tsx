@@ -16,6 +16,7 @@ import {
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
 import { ResourceName } from '@/shared/schema'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useRolesList } from '../hooks/use-roles-list'
 import type { AdminRole } from '../types'
 import { cn } from '@/shared/lib/cn'
@@ -135,16 +136,18 @@ export function RolesListPage() {
   } = useRolesList()
 
   const goDetail = (roleId: string) =>
-    navigate({ to: '/admin/roles/$roleId', params: { roleId } })
+    safeNavigate(navigate, { to: '/admin/roles/$roleId', params: { roleId } })
 
   const goEdit = (roleId: string) =>
-    navigate({ to: '/admin/roles/$roleId/edit', params: { roleId } })
+    safeNavigate(navigate, { to: '/admin/roles/$roleId/edit', params: { roleId } })
 
   const goDuplicate = (roleId: string) =>
-    navigate({
+    safeNavigate(navigate, {
       to: '/admin/roles/new',
       search: { duplicateFrom: roleId },
     })
+
+  const goNew = () => safeNavigate(navigate, { to: '/admin/roles/new' })
 
   const openRoleOverview = (role: AdminRole) => {
     openPanel({
@@ -187,7 +190,7 @@ export function RolesListPage() {
               variant="primary"
               size="sm"
               leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-              onClick={() => navigate({ to: '/admin/roles/new' })}
+              onClick={goNew}
             >
               Add Role
             </Button>
@@ -362,7 +365,6 @@ export function RolesListPage() {
                         </p>
                       </div>
                       <div className="flex-1 border-l border-outline-variant/30 pl-4">
-                        <p className="text-[10px] text-on-surface-variant uppercase font-semibold">Permissions</p>
                         <p className="text-body-sm font-bold text-secondary">{role.coverageLabel}</p>
                       </div>
                     </div>
