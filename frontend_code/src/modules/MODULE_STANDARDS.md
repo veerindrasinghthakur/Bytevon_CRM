@@ -1,6 +1,6 @@
 # Module Standards & Patterns
 
-This document defines the standardized architecture, patterns, and conventions derived from the `admin` module (`frontend_code/src/modules/admin`). Apply these when creating or refactoring other modules (sales, workforce, projects, payroll, etc.).
+This document defines the standardized architecture, patterns, and conventions for all modules (admin, sales, projects, workforce, payroll, etc.).
 
 ---
 
@@ -8,13 +8,13 @@ This document defines the standardized architecture, patterns, and conventions d
 
 ```
 modules/<module>/
-  api/           # Pure async functions; branch on env.useMockApi
-  data/          # Mock tables + catalogue seeds only
-  hooks/         # useQuery / useMutation + local UI state
-  pages/         # Presentation only (no direct API/mock imports)
-  types.ts       # All domain types for this module
-  index.ts       # Public exports
-  routes.tsx     # Route definitions (if module has routing)
+  api/              # Pure async functions; branch on env.useMockApi
+  schemas/          # Zod schemas + inferred types (single source of truth)
+  hooks/            # useQuery / useMutation + local UI state
+  pages/            # Presentation only (no direct API/mock imports)
+  components/       # Module-specific UI components
+  index.ts          # Public exports
+  routes.tsx        # Route definitions (if module has routing)
 ```
 
 **Shared Infrastructure** (do not duplicate per module):
@@ -30,9 +30,11 @@ shared/components/export/ExportButton.tsx
 shared/components/export/ExportDialog.tsx
 shared/components/layout/BackButton.tsx
 shared/hooks/useListSelection.ts      # bulk selection (export reuses selectedIds)
-shared/hooks/useListControls.ts       # pagination, search, filters
+shared/hooks/useListControls.ts       # pagination, search, filters (client-side UI state only)
 shared/lib/lazyPage.tsx               # lazy route component loader
 shared/lib/query-keys.ts              # typed query key factories
+shared/mock/db.ts                     # Shared mock database + seed data
+shared/mock/seed.ts                   # Seed functions for all modules
 ```
 
 ---
@@ -57,55 +59,194 @@ VITE_API_BASE_URL=/api/v1
 
 ---
 
-## 3. API Function Pattern
+## 3. Schemas & Types (Zod-First)
+
+### 3.1 Schema File per Entity
+
+Each entity gets a dedicated schema file in `schemas/`:
+
+```
+modules/<module>/schemas/
+  entity.ts         # Zod schemas for Entity, CreateEntityInput, UpdateEntityInput, ListResponse
+  entity-form.ts    # Zod schemas for form state (string fields for inputs)
+  list-response.ts  # Zod schema for paginated list response
+```
+
+### 3.2 Schema Pattern
 
 ```ts
-// modules/<module>/api/<entity>.ts
+// modules/<module>/schemas/entity.ts
+import { z } from 'zod'
+
+// --- Enums / Status types ---
+export const entityStatusSchema = z.enum(['ACTIVE', 'INACTIVE', 'ARCHIVED'])
+export type EntityStatus = z.infer<typeof entityStatusSchema>
+
+// --- List Item (minimal for tables) ---
+export const entityListItemSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  status: entityStatusSchema,
+  // ... other list fields
+})
+export type EntityListItem = z.infer<typeof entityListItemSchema>
+
+// --- Detail (full object) ---
+export const entityDetailSchema = entityListItemSchema.extend({
+  description: z.string().optional(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  // ... other detail fields
+})
+export type EntityDetail = z.infer<typeof entityDetailSchema>
+
+// --- Create Input ---
+export const createEntitySchema = z.object({
+  name: z.string().min(2).max(120),
+  // ... other create fields
+})
+export type CreateEntityInput = z.infer<typeof createEntitySchema>
+
+// --- Update Input (partial) ---
+export const updateEntitySchema = createEntitySchema.partial()
+export type UpdateEntityInput = z.infer<typeof updateEntitySchema>
+
+// --- Paginated List Response ---
+export const entityListResponseSchema = z.object({
+  items: z.array(entityListItemSchema),
+  total: z.number(),
+  page: z.number(),
+  pageSize: z.number(),
+})
+export type EntityListResponse = z.infer<typeof entityListResponseSchema>
+```
+
+### 3.3 Form Schemas (Separate File)
+
+```ts
+// modules/<module>/schemas/entity-form.ts
+import { z } from 'zod'
+import { createEntitySchema } from './entity'
+
+// Form state uses strings for all inputs (controlled components)
+// Maps to CreateEntityInput on submit
+export const entityFormSchema = createEntitySchema.extend({
+  // Override fields that need string representation in form
+  budget: z.string().optional(),        // number in API, string in form
+  date: z.string().optional(),          // Date in API, string in form
+  assignedEmploymentId: z.string().optional(), // number in API, string in form
+}).transform((data) => ({
+  ...data,
+  budget: data.budget ? Number(data.budget) : undefined,
+  assignedEmploymentId: data.assignedEmploymentId ? Number(data.assignedEmploymentId) : undefined,
+}))
+export type EntityForm = z.infer<typeof entityFormSchema>
+
+// Empty form factory
+export const emptyEntityForm = (): EntityForm => ({
+  name: '',
+  // ... all fields as empty strings
+})
+```
+
+### 3.4 Types Re-Export
+
+```ts
+// modules/<module>/types.ts
+/** Re-export all types from schemas — single source of truth */
+export type {
+  EntityStatus,
+  EntityListItem,
+  EntityDetail,
+  CreateEntityInput,
+  UpdateEntityInput,
+  EntityListResponse,
+} from './schemas/entity'
+
+export type {
+  EntityForm,
+} from './schemas/entity-form'
+
+// Module-specific enums/types not in schemas
+export type { ModuleSpecificType } from './schemas/module-specific'
+```
+
+**Rules**:
+- **All domain types defined in Zod schemas** — no manual TypeScript interfaces for API entities
+- `types.ts` only re-exports from `schemas/`
+- Form state types in separate `*-form.ts` schema file
+- UI-only types (e.g., `TableColumn`) stay in component file
+
+---
+
+## 4. API Function Pattern (Server-Side Pagination & Filtering)
+
+```ts
+// modules/<module>/api/entity.ts
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb } from '@/shared/mock/db'
-import type { Entity } from '../types'
+import type { EntityListItem, EntityListResponse, CreateEntityInput, UpdateEntityInput } from '../schemas/entity'
 
-export async function listEntities(params?: ListParams): Promise<ListResponse<Entity>> {
+export interface EntityListParams {
+  search?: string
+  status?: string
+  page?: number
+  pageSize?: number
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+  // Module-specific filters
+  [key: string]: unknown
+}
+
+export async function listEntities(params: EntityListParams = {}): Promise<EntityListResponse> {
+  const { page = 1, pageSize = 20, ...filters } = params
+
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<ListResponse<Entity>>('/api/path', { params })
+    const { data } = await apiClient.get<EntityListResponse>('/api/entities', {
+      params: { page, pageSize, ...filters },
+    })
     return data
   }
 
   await delay(200)
   const db = getDb()
-  // Transform mock data to match Entity shape
-  return { items: db.entities.map(e => ({ ...e })), total: db.entities.length }
+  let items = [...db.entities] as EntityListItem[]
+
+  // Apply filters (mock-side)
+  if (filters.search) {
+    const q = String(filters.search).toLowerCase()
+    items = items.filter((e) => e.name.toLowerCase().includes(q))
+  }
+  if (filters.status) {
+    items = items.filter((e) => e.status === filters.status)
+  }
+
+  // Apply pagination (mock-side)
+  const total = items.length
+  const start = (page - 1) * pageSize
+  const paginatedItems = items.slice(start, start + pageSize)
+
+  return { items: paginatedItems, total, page, pageSize }
 }
 
-export async function getEntity(id: string): Promise<Entity | null> { /* ... */ }
-export async function createEntity(input: CreateInput): Promise<Entity> { /* ... */ }
-export async function updateEntity(id: string, patch: Partial<Entity>): Promise<Entity> { /* ... */ }
-export async function deleteEntity(id: string): Promise<void> { /* ... */ }
+export async function getEntity(id: number): Promise<EntityDetail | null> { /* ... */ }
+export async function createEntity(input: CreateEntityInput): Promise<EntityDetail> { /* ... */ }
+export async function updateEntity(id: number, patch: UpdateEntityInput): Promise<EntityDetail> { /* ... */ }
+export async function deleteEntity(id: number): Promise<void> { /* ... */ }
 ```
 
 **Rules**:
-- Branch **inside** the API function, never in the page.
-- Mock path returns **copies** (`{ ...e }`) for reads; mutable mocks OK for settings patches in mock mode.
-- Real path uses `apiClient` only (no raw `fetch` / second axios instance).
-- Align paths with backend routers.
+- **Server-side pagination & filtering** — API accepts `page`, `pageSize`, `sortBy`, `sortOrder`, and filter params
+- Mock mode replicates server behavior (filter → paginate)
+- Real mode passes params to backend
+- List hooks call API with current page/filters — **no client-side filtering of full dataset**
 
 ---
 
-## 4. Server State vs Local Form State
+## 5. Hook Pattern (Server-Side Pagination)
 
-| Kind | Source | UI Pattern |
-|------|--------|------------|
-| **Server state** (DB / company policy) | Module API + TanStack Query | `useQuery` loads; `useMutation` saves; invalidate on success |
-| **Local form/UI state** | `useState` / form hook | Edit drafts, modal open, search string, selection mode |
-
-**Do not** keep organisation profile, attendance policy numbers, leave accrual limits, or similar company-policy values as page-only hardcoded constants. Move them to `data/mock` + `api/*`.
-
-**Do not** move static UI labels, validation constants, or purely presentational options into the API layer.
-
----
-
-## 5. Hook Pattern
+### 5.1 List Hook
 
 ```ts
 // modules/<module>/hooks/use-entity-list.ts
@@ -114,240 +255,293 @@ import { useListControls } from '@/shared/hooks/useListControls'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { listEntities } from '../api/entity'
-import type { Entity } from '../types'
+import type { EntityListItem, EntityListParams } from '../schemas/entity'
+
+const FILTER_DEFAULTS = { status: '' }
 
 export function useEntityList() {
-  const controls = useListControls({ filterDefaults: { status: 'All', ... } })
+  const controls = useListControls({
+    filterDefaults: FILTER_DEFAULTS,
+    pageSize: 20,
+  })
+
+  const params: EntityListParams = {
+    search: controls.search || undefined,
+    status: controls.filters.status || undefined,
+    page: controls.page,
+    pageSize: controls.pageSize,
+    sortBy: controls.sortBy,
+    sortOrder: controls.sortOrder,
+  }
 
   const query = useQuery({
-    queryKey: queryKeys.module.entities.list(),
-    queryFn: () => listEntities(),
+    queryKey: queryKeys.module.entities.list(params),
+    queryFn: () => listEntities(params),
+    placeholderData: (prev) => prev, // Smooth pagination transitions
   })
 
   const items = query.data?.items ?? []
-  const filtered = useMemo(() => applyFilters(items, controls), [items, controls])
-  const pageItems = controls.pageItems(filtered)
+  const total = query.data?.total ?? 0
 
-  const selection = useListSelection<Entity>({
-    items: pageItems,
+  const selection = useListSelection<EntityListItem>({
+    items,
     getId: (e) => String(e.id),
   })
 
   return {
     items,
-    filtered,
-    pageItems,
-    totalCount: items.length,
+    total,
     isLoading: query.isLoading,
     isFetching: query.isFetching,
     isError: query.isError,
     refetch: query.refetch,
     search: controls.search,
     setSearch: controls.setSearch,
-    // ... filters, pagination, selection
+    statusFilter: controls.filters.status,
+    setStatusFilter: (v: string) => controls.setFilter('status', v),
+    page: controls.page,
+    setPage: controls.setPage,
+    pageSize: controls.pageSize,
+    setPageSize: controls.setPageSize,
+    sortBy: controls.sortBy,
+    setSortBy: controls.setSortBy,
+    sortOrder: controls.sortOrder,
+    setSortOrder: controls.setSortOrder,
+    filtersActive: controls.anyActive,
+    resetFilters: controls.resetAll,
+    selectionMode: selection.selectionMode,
+    selectedIds: selection.selectedIds,
+    selectedCount: selection.selectedCount,
+    allFilteredSelected: selection.allFilteredSelected,
+    toggleOne: selection.toggleOne,
+    toggleSelectAllFiltered: selection.toggleSelectAllFiltered,
+    exitSelectionMode: selection.exitSelectionMode,
+    onRowPressStart: selection.onRowPressStart,
+    onRowPressEnd: selection.onRowPressEnd,
+    onRowPressCancel: selection.onRowPressCancel,
   }
 }
 ```
 
-```ts
-// modules/<module>/hooks/use-entity-form.ts
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createEntity, updateEntity, getEntity } from '../api/entity'
-import { listCatalog } from '../api/catalog' // for seeded catalogues
-
-export function useEntityForm(mode: 'create' | 'edit', id?: string) {
-  const queryClient = useQueryClient()
-
-  const catalogQuery = useQuery({
-    queryKey: ['module', 'catalog'],
-    queryFn: listCatalog,
-  })
-
-  const detailQuery = useQuery({
-    queryKey: ['module', 'entities', id],
-    queryFn: () => getEntity(id as string),
-    enabled: mode === 'edit' && Boolean(id),
-  })
-
-  const saveMutation = useMutation({
-    mutationFn: async (input) => {
-      return mode === 'create' ? createEntity(input) : updateEntity(id as string, input)
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['module', 'entities'] })
-    },
-  })
-
-  // Local form state (useState)
-  return {
-    catalog: catalogQuery.data,
-    detail: detailQuery.data,
-    isLoading: detailQuery.isLoading,
-    submit: saveMutation.mutate,
-    isSubmitting: saveMutation.isPending,
-    // ... form fields
-  }
-}
-```
-
-**Rules**:
-- Pages call hooks; render loading / empty / data. No direct mock imports for server data.
-- Invalidate related query keys on mutations.
-- Use `queryKeys` factory for consistent, typed query keys.
-
----
-
-## 6. Seeded Catalogues (RBAC Example)
-
-Backend seeds `resources` + `permissions` (Action enum: VIEW, CREATE, UPDATE, DELETE, APPROVE, **EXPORT**, UNLOCK).
-
-Frontend:
-| Concern | Location |
-|---------|----------|
-| Types | `<module>/types.ts` → `PermissionCatalog`, `RolePermissionAction` |
-| Mock seed | `<module>/data/rbac-catalog.ts` → `permissionCatalogSeed` |
-| Fetch | `<module>/api/roles.ts` → `listPermissionCatalog()` |
-| Hook | `useRoleForm` → `useQuery(['module','rbac','permission-catalog'], …)` |
-| UI | Form uses `form.modules` / `form.actions` only |
-
-**Do not** keep `ROLE_MODULES` / `ROLE_ACTIONS` constants in pages or hooks for the matrix.
-
----
-
-## 7. Settings / Company-Policy APIs
-
-| Concern | API | Query Key |
-|---------|-----|-----------|
-| Organisation profile | `getOrganizationProfile` / `updateOrganizationProfile` | `['admin','settings','organization-profile']` |
-| Attendance policy | `getAttendanceSettings` / `updateAttendanceSettings` | `['admin','settings','attendance']` |
-| Leave accrual | `getLeaveAccrualPolicy` / `updateLeaveAccrualPolicy` | `['admin','settings','leave-accrual']` |
-
-File: `<module>/api/settings.ts` + seeds in `<module>/data/mock.ts`.
-
----
-
-## 8. Shared Export
-
-### Flow
-```
-Page (filters + query + selectedIds from useListSelection)
-  → ExportButton (Can EXPORT + resource)
-  → ExportDialog (CSV | Excel | PDF)
-  → useExport → exportAndDownload
-  → shared/api/export.ts (mock file OR POST /export/:resource blob)
-  → downloadFile(blob)
-```
-
-### Usage
-```tsx
-import { ExportButton } from '@/shared/components/export/ExportButton'
-import { ResourceName } from '@/shared/schema'
-
-<ExportButton
-  resource={ResourceName.USER}
-  selectedIds={selectionMode ? [...selectedIds] : undefined}
-  query={search}
-  filters={{ status: statusFilter }}
-  filenameStem="users"
-/>
-```
-
-### Rules
-- Permission: `Action.EXPORT` on the same RBAC `resource` (via `<Can>` / `can()`).
-- Prefer sending **params** (ids, filters, query, format) so backend regenerates from latest DB — do not POST the full rendered table unless contract requires it.
-- Mock mode still downloads a file (CSV text; xlsx/pdf are placeholder MIME for UI testing).
-- Real mode: `POST /export/{resource}` with `responseType: 'blob'`.
-- Backend must enforce export authorization; UI gating is not enough.
-
----
-
-## 9. Shared Back Button
-
-Location: `shared/components/layout/BackButton.tsx`
-
-```tsx
-<BackButton to="/admin/users" label="Back" />
-```
-
-- Prefers `window.history.back()` when history exists.
-- Falls back to `to`, then `/dashboard`.
-- Do **not** invent per-page back helpers.
-- Use on create / detail / edit shells only; list pages usually have no Back.
-
----
-
-## 10. Routing Pattern
-
-```tsx
-// modules/<module>/routes.tsx
-import { createRoute, redirect } from '@tanstack/react-router'
-import { lazyPage } from '@/shared/lib/lazyPage'
-
-const ListPage = lazyPage(() => import('./pages/ListPage'), 'ListPage')
-const DetailPage = lazyPage(() => import('./pages/DetailPage'), 'DetailPage')
-const CreatePage = lazyPage(() => import('./pages/CreatePage'), 'CreatePage')
-const EditPage = lazyPage(() => import('./pages/EditPage'), 'EditPage')
-
-export function createModuleRoutes<TParent extends AnyRoute>(parentRoute: TParent) {
-  return [
-    createRoute({
-      getParentRoute: () => parentRoute,
-      path: '/module',
-      beforeLoad: () => throw redirect({ to: '/module/list' }),
-    }),
-    createRoute({ getParentRoute: () => parentRoute, path: '/module/list', component: ListPage }),
-    createRoute({ getParentRoute: () => parentRoute, path: '/module/new', component: CreatePage }),
-    createRoute({ getParentRoute: () => parentRoute, path: '/module/$id', component: DetailPage }),
-    createRoute({ getParentRoute: () => parentRoute, path: '/module/$id/edit', component: EditPage }),
-  ]
-}
-```
-
-**Rules**:
-- Heavy pages lazy-loaded via `lazyPage` helper.
-- Redirect root to list.
-- Use `$param` for dynamic segments.
-
----
-
-## 11. Types File
+### 5.2 Detail Hook
 
 ```ts
-// modules/<module>/types.ts
-export type EntityStatus = 'Active' | 'Inactive' | 'Archived'
+// modules/<module>/hooks/use-entity-detail.ts
+import { useQuery } from '@tanstack/react-query'
+import { queryKeys } from '@/shared/lib/query-keys'
+import { getEntity } from '../api/entity'
+import type { EntityDetail } from '../schemas/entity'
 
-export interface Entity {
-  id: string | number
-  name: string
-  status: EntityStatus
-  createdAt: string
-  updatedAt: string
-}
-
-export interface CreateEntityInput {
-  name: string
-  // ...
-}
-
-export interface UpdateEntityInput extends Partial<CreateEntityInput> {}
-
-export interface ListParams {
-  search?: string
-  status?: EntityStatus
-  page?: number
-  pageSize?: number
-}
-
-export interface ListResponse<T> {
-  items: T[]
-  total: number
+export function useEntityDetail(id: number | undefined) {
+  return useQuery({
+    queryKey: queryKeys.module.entities.detail(id!),
+    queryFn: () => getEntity(id!),
+    enabled: id != null && !Number.isNaN(id),
+  })
 }
 ```
 
+### 5.3 Create/Update Hooks (Optimistic Updates)
+
+```ts
+// modules/<module>/hooks/use-entity-mutations.ts
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { queryKeys, invalidate } from '@/shared/lib/query-keys'
+import { createEntity, updateEntity, deleteEntity } from '../api/entity'
+import type { CreateEntityInput, UpdateEntityInput, EntityDetail } from '../schemas/entity'
+
+type EntityListCache = { items: EntityListItem[]; total: number; page: number; pageSize: number }
+
+function upsertInLists(qc: ReturnType<typeof useQueryClient>, row: EntityDetail) {
+  qc.setQueriesData<EntityListCache>({ queryKey: queryKeys.module.entities.all }, (old) => {
+    if (!old?.items) return old
+    const exists = old.items.some((e) => e.id === row.id)
+    const items = exists
+      ? old.items.map((e) => (e.id === row.id ? { ...e, ...row } : e))
+      : [row, ...old.items]
+    return { ...old, items, total: exists ? old.total : old.total + 1 }
+  })
+  qc.setQueryData(queryKeys.module.entities.detail(row.id), row)
+}
+
+export function useCreateEntity() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: createEntity,
+    onMutate: async (input) => {
+      await qc.cancelQueries({ queryKey: queryKeys.module.entities.all })
+      const previous = qc.getQueriesData<EntityListCache>({ queryKey: queryKeys.module.entities.all })
+
+      const optimistic: EntityDetail = {
+        id: -Date.now(),
+        ...input,
+        status: 'ACTIVE',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      } as EntityDetail
+
+      qc.setQueriesData<EntityListCache>({ queryKey: queryKeys.module.entities.all }, (old) => {
+        if (!old) return { items: [optimistic], total: 1, page: 1, pageSize: 20 }
+        return { ...old, items: [optimistic, ...old.items], total: old.total + 1 }
+      })
+
+      return { previous, optimisticId: optimistic.id }
+    },
+    onError: (_err, _input, ctx) => {
+      ctx?.previous.forEach(([key, data]) => qc.setQueryData(key, data))
+    },
+    onSuccess: (created, _input, ctx) => {
+      qc.setQueriesData<EntityListCache>({ queryKey: queryKeys.module.entities.all }, (old) => {
+        if (!old) return { items: [created], total: 1, page: 1, pageSize: 20 }
+        return {
+          ...old,
+          items: old.items.map((e) => (e.id === ctx?.optimisticId ? created : e)),
+          total: old.total,
+        }
+      })
+      qc.setQueryData(queryKeys.module.entities.detail(created.id), created)
+    },
+  })
+}
+
+export function useUpdateEntity() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, patch }: { id: number; patch: UpdateEntityInput }) => updateEntity(id, patch),
+    onMutate: async ({ id, patch }) => {
+      await qc.cancelQueries({ queryKey: queryKeys.module.entities.all })
+      const previousLists = qc.getQueriesData<EntityListCache>({ queryKey: queryKeys.module.entities.all })
+      const previousDetail = qc.getQueryData<EntityDetail>(queryKeys.module.entities.detail(id))
+
+      qc.setQueriesData<EntityListCache>({ queryKey: queryKeys.module.entities.all }, (old) => {
+        if (!old) return old
+        return { ...old, items: old.items.map((e) => (e.id === id ? { ...e, ...patch } : e)) }
+      })
+
+      if (previousDetail) {
+        qc.setQueryData(queryKeys.module.entities.detail(id), { ...previousDetail, ...patch, updatedAt: new Date().toISOString() })
+      }
+
+      return { previousLists, previousDetail, id }
+    },
+    onError: (_err, _vars, ctx) => {
+      ctx?.previousLists.forEach(([key, data]) => qc.setQueryData(key, data))
+      if (ctx?.previousDetail) qc.setQueryData(queryKeys.module.entities.detail(ctx.id), ctx.previousDetail)
+    },
+    onSuccess: (updated) => {
+      qc.setQueryData(queryKeys.module.entities.detail(updated.id), updated)
+      upsertInLists(qc, updated)
+    },
+  })
+}
+
+export function useDeleteEntity() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: deleteEntity,
+    onMutate: async (id: number) => {
+      await qc.cancelQueries({ queryKey: queryKeys.module.entities.all })
+      const previousLists = qc.getQueriesData<EntityListCache>({ queryKey: queryKeys.module.entities.all })
+      const previousDetail = qc.getQueryData<EntityDetail>(queryKeys.module.entities.detail(id))
+
+      qc.setQueriesData<EntityListCache>({ queryKey: queryKeys.module.entities.all }, (old) => {
+        if (!old) return old
+        return { ...old, items: old.items.filter((e) => e.id !== id), total: old.total - 1 }
+      })
+      qc.removeQueries({ queryKey: queryKeys.module.entities.detail(id) })
+
+      return { previousLists, previousDetail, id }
+    },
+    onError: (_err, _id, ctx) => {
+      ctx?.previousLists.forEach(([key, data]) => qc.setQueryData(key, data))
+      if (ctx?.previousDetail) qc.setQueryData(queryKeys.module.entities.detail(ctx.id), ctx.previousDetail)
+    },
+    onSettled: () => {
+      void invalidate.moduleEntities(qc)
+    },
+  })
+}
+```
+
+---
+
+## 6. Query Key Factory (Per Module)
+
+```ts
+// shared/lib/query-keys.ts (add per module)
+export const queryKeys = {
+  // ... existing modules
+  moduleName: {
+    entities: {
+      all: ['moduleName', 'entities'] as const,
+      list: (params?: Record<string, unknown>) => [...queryKeys.moduleName.entities.all, 'list', params ?? {}] as const,
+      detail: (id: number) => [...queryKeys.moduleName.entities.all, 'detail', id] as const,
+    },
+    // ... other entities
+  },
+  // Invalidation helpers
+  invalidate: {
+    moduleEntities: (qc: { invalidateQueries: (opts: { queryKey: readonly unknown[] }) => unknown }) =>
+      void qc.invalidateQueries({ queryKey: queryKeys.moduleName.entities.all }),
+  },
+} as const
+```
+
+---
+
+## 7. Mock Data (Shared Location)
+
+```
+shared/mock/
+  db.ts             # getDb(), delay(), nextId(), seedDb()
+  seed.ts           # seedAll() — calls all module seed functions
+  data/
+    admin.ts        # Admin mock data (users, roles, settings, etc.)
+    sales.ts        # Sales mock data (leads, clients, etc.)
+    projects.ts     # Projects mock data (projects, tasks, teams, etc.)
+```
+
+**API Import Path**:
+```ts
+import { delay, getDb } from '@/shared/mock/db'
+import { adminSeed } from '@/shared/mock/data/admin'
+import { salesSeed } from '@/shared/mock/data/sales'
+import { projectsSeed } from '@/shared/mock/data/projects'
+```
+
 **Rules**:
-- All domain types in one `types.ts`.
-- Export types used by API, hooks, and pages.
-- Keep UI-only types (e.g., `TableColumn`) in the component file, not here.
+- Single shared mock DB (`shared/mock/db.ts`)
+- Module seed data in `shared/mock/data/<module>.ts`
+- No `data/mock.ts` inside module folders
+
+---
+
+## 8. Server State vs Local Form State
+
+| Kind | Source | UI Pattern |
+|------|--------|------------|
+| **Server state** (DB) | Module API + TanStack Query | `useQuery` loads; `useMutation` saves; optimistic updates + invalidation |
+| **Local form/UI state** | `useState` / `react-hook-form` | Edit drafts, modal open, search string, selection mode |
+
+**Do not** keep company-policy values as page-only constants. Move to mock seed + API.
+
+---
+
+## 9. Shared Export
+
+Same as before — `ExportButton` with `ResourceName`, `selectedIds`, `query`, `filters`, `filenameStem`.
+
+---
+
+## 10. Shared Back Button
+
+Same as before — `<BackButton to={routes.list} label="Back" />` on create/detail/edit pages.
+
+---
+
+## 11. Routing Pattern
+
+Same as before — lazy-loaded pages, `routeConstants` export, `$param` for dynamic segments.
 
 ---
 
@@ -360,400 +554,110 @@ export { DetailPage } from './pages/DetailPage'
 export { CreatePage } from './pages/CreatePage'
 export { EditPage } from './pages/EditPage'
 
-export { createModuleRoutes } from './routes'
+export { createModuleRoutes, moduleRoutes } from './routes'
 
 export * from './api/entity'
 export { useEntityList } from './hooks/use-entity-list'
-export { useEntityForm } from './hooks/use-entity-form'
+export { useEntityDetail } from './hooks/use-entity-detail'
+export { useCreateEntity, useUpdateEntity, useDeleteEntity } from './hooks/use-entity-mutations'
 ```
 
-**Rules**:
-- Only export public API: pages, routes, hooks, API functions.
-- Do not export internal utilities, mock data, or types (types are imported directly from `types.ts`).
+---
+
+## 13. Checklist to Port/Align a Module
+
+1. [ ] Create `schemas/` folder with Zod schemas per entity (`entity.ts`, `entity-form.ts`, `list-response.ts`)
+2. [ ] Move all mock data to `shared/mock/data/<module>.ts`
+3. [ ] Update API imports to `@/shared/mock/db` and `@/shared/mock/data/<module>`
+4. [ ] Update API functions for server-side pagination/filtering (`page`, `pageSize`, filters as params)
+5. [ ] Update list hooks to pass pagination/filter params to API (no client-side filtering)
+6. [ ] Update query keys to include params in list key
+7. [ ] Add `invalidate.moduleEntities` helper to `query-keys.ts`
+8. [ ] Create form schemas (`*-form.ts`) with string fields + transform
+9. [ ] Update `types.ts` to re-export only from `schemas/`
+10. [ ] Use `react-hook-form` + `zodResolver` in create/edit pages
+11. [ ] Add `ErrorState` with `onBack` handler in list pages
+12. [ ] Wire `ExportButton` with `selectedIds` for bulk export
+13. [ ] Use `BackButton` on nested routes
+14. [ ] Document endpoints in `<MODULE>_API_CATALOG.md`
 
 ---
 
-## 13. Mock Data Structure
+## 14. Template Prompt for New Module
 
-```ts
-// modules/<module>/data/mock.ts
-import type { Entity, EntitySettings } from '../types'
-
-export const entities: Entity[] = [
-  { id: '1', name: 'Item 1', status: 'Active', createdAt: '2024-01-01', updatedAt: '2024-01-01' },
-  // ...
-]
-
-// Mutable mocks for settings (company policy)
-export let entitySettingsMock: EntitySettings = {
-  setting1: 'value',
-  setting2: 10,
-}
-```
-
-**Rules**:
-- Read-only arrays for list data.
-- Mutable `let` for settings/policy data that can be patched in mock mode.
-- Import from `types.ts`, not from pages or hooks.
+> Create module `<module>` following `MODULE_STANDARDS.md`:
+> - `schemas/` with Zod schemas (entity, form, list-response)
+> - Mock data in `shared/mock/data/<module>.ts`
+> - API functions with server-side pagination/filtering
+> - Hooks with TanStack Query (optimistic updates, no client-side filtering)
+> - Query keys with params in list key
+> - `react-hook-form` + `zodResolver` in create/edit pages
+> - Shared `ExportButton`, `BackButton`, `ErrorState` with back handler
+> - Re-export types from `schemas/` in `types.ts`
 
 ---
 
-## 14. Checklist to Port a Module
+## 15. Migration Plan for Existing Modules
 
-1. [ ] Add `types.ts` for every entity the module surfaces.
-2. [ ] Move hardcoded arrays / company-policy values from pages into `data/mock.ts`.
-3. [ ] Create `api/*.ts` with `env.useMockApi` branch + real paths matching backend.
-4. [ ] Create/update hooks with `useQuery` / `useMutation`.
-5. [ ] Slim pages to UI + hooks only (no direct API/mock imports).
-6. [ ] For any **seeded** matrix/catalogue: add catalog API + seed file; never hardcode in components.
-7. [ ] Add `<ExportButton resource={…} selectedIds={…} query={…} filters={…} />` where export is needed; reuse bulk selection.
-8. [ ] Use shared `BackButton` on nested routes.
-9. [ ] Invalidate related query keys on mutations.
-10. [ ] Document module-specific endpoints if paths differ.
+### Admin Module
+| Change | Files |
+|--------|-------|
+| Move mock data | `admin/data/mock.ts` → `shared/mock/data/admin.ts`, `admin/data/rbac-catalog.ts` → `shared/mock/data/admin-rbac.ts` |
+| Create schemas | `admin/schemas/users.ts`, `admin/schemas/roles.ts`, `admin/schemas/leave.ts`, `admin/schemas/settings.ts`, `admin/schemas/offices.ts`, `admin/schemas/audit.ts` |
+| Create form schemas | `admin/schemas/users-form.ts`, `admin/schemas/roles-form.ts`, etc. |
+| Update API | `admin/api/*.ts` — server-side pagination, import from `@/shared/mock/data/admin` |
+| Update hooks | `admin/hooks/use-users-list.ts` — pass params to API, remove client-side filter |
+| Update query keys | Add params to `queryKeys.admin.users.list(params)` |
+| Update types | `admin/types.ts` → re-export from `schemas/` |
+| Update pages | Use `react-hook-form` + `zodResolver` |
+
+### Sales Module
+| Change | Files |
+|--------|-------|
+| Move mock data | `sales/data/mock.ts` → `shared/mock/data/sales.ts` |
+| Create schemas | `sales/schemas/lead.ts`, `sales/schemas/client.ts`, `sales/schemas/case-study.ts`, `sales/schemas/activity.ts` |
+| Create form schemas | `sales/schemas/lead-form.ts`, `sales/schemas/client-form.ts`, `sales/schemas/case-study-form.ts` |
+| Update API | `sales/api/sales.ts` — server-side pagination, import from `@/shared/mock/data/sales` |
+| Update hooks | `sales/hooks/use-leads-list.ts`, `use-clients-list.ts` — pass params to API |
+| Update query keys | Add params to `queryKeys.sales.leads.list(params)` |
+| Update types | `sales/types.ts` → re-export from `schemas/` |
+| Update pages | `LeadCreatePage` already uses `LeadForm` — verify Zod schema matches |
+
+### Projects Module
+| Change | Files |
+|--------|-------|
+| Move mock data | Projects uses `shared/mock/db` — extract to `shared/mock/data/projects.ts` |
+| Create schemas | `projects/schemas/project.ts` (exists), `projects/schemas/task.ts`, `projects/schemas/team.ts`, `projects/schemas/document.ts`, `projects/schemas/note.ts` |
+| Create form schemas | `projects/schemas/project-form.ts`, `projects/schemas/task-form.ts`, `projects/schemas/team-form.ts` |
+| Update API | `projects/api/projects.ts`, `tasks.ts`, `teams.ts`, `documents.ts` — server-side pagination |
+| Update hooks | `projects/hooks/use-projects-list.ts`, `use-tasks-list.ts`, `use-teams.ts` — pass params |
+| Update query keys | Add params to `queryKeys.projects.list(params)`, `queryKeys.tasks.list(params)` |
+| Update types | `projects/types.ts` → re-export from `schemas/` |
+| Update pages | `ProjectCreatePage` uses `react-hook-form` + Zod — verify form schema exists |
 
 ---
 
-## 15. Template Prompt for New Module
-
-> Apply the Admin API pattern from `frontend_code/src/modules/admin/ADMIN_API_PATTERN.md` to the `<module>` module:
-> - Extract hardcoded page data into `data/mock`
-> - Add `api/*` with `env.useMockApi` branch
-> - Create hooks with TanStack Query
-> - Slim pages to UI + hooks only
-> - For any seeded catalogues, fetch via API
-> - Wire shared `ExportButton` where lists need export
-> - Use shared `BackButton` on nested routes
-> - Distinguish server state (Query) from local form state (useState)
-> - Keep UI identical
-
----
-
-## 16. Key Files Reference (from admin module)
+## 16. Key Files Reference
 
 | File | Role |
 |------|------|
-| `config/env.ts` | Mock flag |
-| `shared/lib/axios.ts` | HTTP client |
-| `shared/lib/download-file.ts` | Blob download |
-| `shared/api/export.ts` | Export mock/real |
-| `shared/hooks/useExport.ts` | Export mutation |
-| `shared/components/export/*` | Export UI |
-| `shared/components/layout/BackButton.tsx` | Shared back |
-| `admin/types.ts` | Domain + settings + catalog types |
-| `admin/data/mock.ts` | Users, roles, leave, offices, **settings seeds** |
-| `admin/data/rbac-catalog.ts` | Permission matrix seed |
-| `admin/api/leave.ts` | Leave settings / policies / ledger |
-| `admin/api/settings.ts` | Org profile, attendance, leave accrual |
-| `admin/api/roles.ts` | Roles + `listPermissionCatalog` |
-| `admin/api/offices.ts` | Offices / head-office options |
-| `admin/api/users.ts` | Users / create login |
-| `admin/hooks/use-role-form.ts` | Role form + catalog query |
-| `admin/hooks/use-user-create.ts` | User create flow |
-| `admin/hooks/use-users-list.ts` | Users list with filters/pagination/selection |
-| `admin/pages/*` | Wired to hooks/API |
-| `admin/routes.tsx` | Route definitions |
-| `admin/index.ts` | Public exports |
+| `config/env.ts` | Mock flag, API base URL |
+| `shared/lib/axios.ts` | HTTP client with auth interceptors |
+| `shared/mock/db.ts` | Shared mock DB (`getDb`, `delay`, `nextId`, `seedDb`) |
+| `shared/mock/seed.ts` | `seedAll()` — orchestrates all module seeds |
+| `shared/mock/data/admin.ts` | Admin seed data |
+| `shared/mock/data/sales.ts` | Sales seed data |
+| `shared/mock/data/projects.ts` | Projects seed data |
+| `shared/lib/query-keys.ts` | Typed query key factories + invalidation helpers |
+| `shared/hooks/useListControls.ts` | Pagination, search, sort, filter UI state |
+| `shared/hooks/useListSelection.ts` | Bulk selection |
+| `modules/<module>/schemas/` | Zod schemas (types source of truth) |
+| `modules/<module>/api/` | API functions (server-side pagination) |
+| `modules/<module>/hooks/` | TanStack Query hooks |
+| `modules/<module>/pages/` | UI components |
+| `modules/<module>/routes.tsx` | Route definitions + path helpers |
+| `modules/<module>/index.ts` | Public exports |
 
 ---
 
-*Last updated: 2026-08-25 — Based on admin module analysis*
-
----
-
-## 17. Typed Query Key Factory
-
-The admin module defines `shared/lib/query-keys.ts` for strongly-typed keys. Using raw arrays (`['organization', 'holiday-calendars', id]`) works but loses autocomplete and type safety.
-
-**Pattern**: Replace raw arrays with typed factory functions.
-
-```ts
-// shared/lib/query-keys.ts
-export const queryKeys = {
-  admin: {
-    holidays: {
-      all: () => ['admin', 'holidays'] as const,
-      list: () => [...queryKeys.admin.holidays.all(), 'list'] as const,
-      detail: (id: string) => [...queryKeys.admin.holidays.all(), 'detail', id] as const,
-      calendars: {
-        all: () => ['admin', 'holidays', 'calendars'] as const,
-        list: () => [...queryKeys.admin.holidays.calendars.all(), 'list'] as const,
-        detail: (id: string) => [...queryKeys.admin.holidays.calendars.all(), 'detail', id] as const,
-      },
-    },
-  },
-} as const
-```
-
-**Usage in hooks**:
-```ts
-const query = useQuery({
-  queryKey: queryKeys.admin.holidays.detail(calendarId),
-  queryFn: () => getHolidayCalendar(calendarId),
-  enabled: Boolean(calendarId),
-})
-```
-
-**Usage in invalidation**:
-```ts
-queryClient.invalidateQueries({ queryKey: queryKeys.admin.holidays.calendars.list() })
-queryClient.invalidateQueries({ queryKey: queryKeys.admin.holidays.all() })
-```
-
-**Benefits**:
-- Full TypeScript autocomplete
-- Compile-time safety for key structure
-- Single source of truth for key patterns
-- Easy bulk invalidation via prefix matching
-
----
-
-## 18. useParams Generic
-
-Cast `useParams` with the route's param type for proper typing.
-
-```tsx
-// Instead of:
-const { calendarId } = useParams<{ calendarId: string }>()
-
-// Or better: use generated route types from TanStack Router
-import type { Route } from '@/routes'
-const { calendarId } = useParams({ strict: true }) // Infers from route definition
-```
-
-**Rule**: Always type route params. Avoid `as { calendarId: string }` casts.
-
----
-
-## 19. safeNavigate vs BackButton
-
-The codebase provides `BackButton` (prefers history.back, falls back to `to` prop) and `safeNavigate` (programmatic navigation with fallback).
-
-**Standard**: Use `BackButton` for all user-facing back actions. Reserve `safeNavigate` for programmatic redirects (e.g., after mutation success, error fallbacks).
-
-```tsx
-// Good: User-facing back in ErrorState
-<ErrorState
-  onBack={<BackButton to="/admin/settings/holidays" label="Back to Calendars" />}
-/>
-
-// Good: Programmatic redirect after save
-onSuccess: (saved) => {
-  safeNavigate(navigate, { to: `/admin/settings/holidays/${saved.id}` })
-}
-
-// Avoid: safeNavigate for user back buttons
-<Button onClick={() => safeNavigate(navigate, { to: '/admin/settings/holidays' })}>Back</Button>
-```
-
-**ErrorState Pattern**: Accept a `back` prop (ReactNode) instead of `onBack` callback for maximum flexibility.
-
-```tsx
-interface ErrorStateProps {
-  back?: React.ReactNode // e.g., <BackButton to="..." />
-}
-```
-
----
-
-## 20. Query Key Invalidation Consolidation
-
-Avoid duplicate invalidation calls for related keys. Use the query key factory's `all()` or `list()` methods to invalidate entire hierarchies.
-
-```tsx
-// Instead of multiple calls:
-queryClient.invalidateQueries({ queryKey: ['organization', 'holidays'] })
-queryClient.invalidateQueries({ queryKey: ['organization', 'holidays', { calendarId: id }] })
-
-// Do this:
-queryClient.invalidateQueries({ queryKey: queryKeys.admin.holidays.calendars.list() })
-// Or broader:
-queryClient.invalidateQueries({ queryKey: queryKeys.admin.holidays.all() })
-```
-
-**Rule**: Each module's `queryKeys` should expose an `all()` method for broad invalidation and `list()`/`detail(id)` for specific invalidation.
-
----
-
-## 21. Route Constants Export
-
-Export route patterns from `routes.tsx` to avoid hard-coded strings in components.
-
-```tsx
-// modules/admin/routes.tsx
-export const adminRoutes = {
-  users: '/admin/users',
-  userDetail: (id: string) => `/admin/users/${id}`,
-  userCreate: '/admin/users/new',
-  roles: '/admin/roles',
-  roleDetail: (id: string) => `/admin/roles/${id}`,
-  roleCreate: '/admin/roles/new',
-  settings: '/admin/settings',
-  holidays: '/admin/settings/holidays',
-  holidayCalendar: (id: string) => `/admin/settings/holidays/${id}`,
-  // ...
-} as const
-```
-
-```tsx
-// In components/pages
-import { adminRoutes } from '../routes'
-
-<BackButton to={adminRoutes.holidays} label="Back" />
-navigate({ to: adminRoutes.holidayCalendar(saved.id) })
-```
-
-**Benefits**:
-- Single source of truth for URL patterns
-- Type-safe route generation
-- Easy refactoring when routes change
-- No string hunting across files
-
----
-
-## 22. Form State Shape Types
-
-Define form state types in `types.ts` for larger forms. Keeps component code clean and enables reuse.
-
-```ts
-// modules/<module>/types.ts
-export interface HolidayForm {
-  name: string
-  date: string
-  holiday_type: HolidayRow['holiday_type']
-  recurring_flag: boolean
-}
-
-export interface HolidayRow {
-  id: string
-  name: string
-  date: string
-  holiday_type: 'FIXED' | 'RELATIVE' | 'LUNAR'
-  recurring_flag: boolean
-  calendar_id: string
-}
-```
-
-```tsx
-// In component
-import type { HolidayForm } from '../types'
-
-const [form, setForm] = useState<HolidayForm>({
-  name: '',
-  date: '',
-  holiday_type: 'FIXED',
-  recurring_flag: false,
-})
-```
-
-**Rule**: For forms with >3 fields or reused across create/edit, extract to `types.ts`.
-
----
-
-## 23. Accessibility — Label htmlFor Association
-
-Always associate `<label>` with inputs via `htmlFor` + matching `id` for screen-reader support.
-
-```tsx
-// Good
-<label htmlFor="holiday-name">Name</label>
-<input id="holiday-name" name="name" value={form.name} onChange={handleChange} />
-
-// Avoid: implicit association (wrapping) — less reliable for complex layouts
-<label>Name <input name="name" ... /></label>
-```
-
-**Pattern for dynamic forms**:
-```tsx
-const fieldIds = useMemo(() => ({
-  name: 'holiday-name',
-  date: 'holiday-date',
-  type: 'holiday-type',
-  recurring: 'holiday-recurring',
-}), [])
-
-<label htmlFor={fieldIds.name}>Name</label>
-<input id={fieldIds.name} ... />
-```
-
----
-
-## 24. Error Message Handling
-
-Display save errors inline with consistent styling. Use a standard `ErrorState` component.
-
-```tsx
-// Pattern
-const [saveError, setSaveError] = useState<string | null>(null)
-
-const saveMutation = useMutation({
-  mutationFn: saveHoliday,
-  onError: (error: Error) => {
-    setSaveError(error.message)
-  },
-  onSuccess: () => {
-    setSaveError(null)
-    // redirect
-  },
-})
-
-// In JSX
-{saveError && (
-  <Alert variant="destructive" className="mb-4">
-    <AlertCircle className="h-4 w-4" />
-    <AlertDescription>{saveError}</AlertDescription>
-  </Alert>
-)}
-```
-
-**Rules**:
-- Clear error on new submit attempt (`onMutate` or form change)
-- Use accessible alert role (`role="alert"` or `<Alert>` component)
-- Keep error messages user-friendly (not raw API errors)
-
----
-
-## 25. Testing Hooks Pattern
-
-When copying pages to new modules, verify the corresponding hook follows the same pattern.
-
-**Expected hook return shape**:
-```ts
-export function useEntity(id: string) {
-  return useQuery({
-    queryKey: queryKeys.module.entity.detail(id),
-    queryFn: () => getEntity(id),
-    enabled: Boolean(id),
-  })
-}
-
-// Returns: { data, isLoading, isError, error, refetch, isFetching, isSuccess, ... }
-```
-
-**Checklist for new module hooks**:
-- [ ] Uses `queryKeys` factory (not raw arrays)
-- [ ] Has `enabled` flag for conditional fetches (e.g., `enabled: Boolean(id)`)
-- [ ] Returns standard `useQuery`/`useMutation` object
-- [ ] Error type is `Error` (not `unknown`)
-- [ ] No side effects in queryFn (pure fetch)
-
-**Unit test example**:
-```ts
-// hooks/__tests__/use-entity.test.ts
-import { renderHook, waitFor } from '@testing-library/react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { useEntity } from '../use-entity'
-
-test('fetches entity by id', async () => {
-  const queryClient = new QueryClient()
-  const { result } = renderHook(() => useEntity('123'), {
-    wrapper: ({ children }) => <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>,
-  })
-
-  await waitFor(() => expect(result.current.isSuccess).toBe(true))
-  expect(result.current.data).toEqual(expect.objectContaining({ id: '123' }))
-})
-```
-
----
-
-*Last updated: 2026-08-25 — Extended with query keys, routing, forms, accessibility, errors, testing patterns*
+*Last updated: 2026-08-25 — Server-side pagination, Zod schemas, shared mock, form schemas*
