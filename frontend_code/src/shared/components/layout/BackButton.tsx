@@ -2,8 +2,6 @@ import { useNavigate } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
 import { BackButtonProps } from '@/shared/types'
 
-
-
 export function BackButton({ to, from: _from, label = 'Back', className }: BackButtonProps) {
   const navigate = useNavigate()
 
@@ -13,10 +11,11 @@ export function BackButton({ to, from: _from, label = 'Back', className }: BackB
       return
     }
     if (to) {
-      navigate({ to: to })
+      // Routes use validateSearch: () => ({}) — search is required by typed navigate
+      void navigate({ to, search: {} } as never)
       return
     }
-    navigate({ to: '/dashboard' })
+    void navigate({ to: '/dashboard', search: {} } as never)
   }
 
   return (
