@@ -1,6 +1,8 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
+import { ExportButton } from '@/shared/components/export/ExportButton'
+import { ResourceName } from '@/shared/schema'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import {
   QuickSection,
@@ -100,6 +102,18 @@ export function NotificationCenterPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          <ExportButton
+            resource={ResourceName.NOTIFICATION}
+            query={c.query}
+            filters={{
+              type: c.typeFilter,
+              priority: c.priorityFilter,
+              module: c.moduleFilter,
+              tab: c.tab,
+            }}
+            selectedIds={c.selectionMode ? Array.from(c.selectedIds) : undefined}
+            filenameStem="notifications-inbox"
+          />
           <Button
             variant="outline"
             size="sm"
@@ -231,6 +245,25 @@ export function NotificationCenterPage() {
         </div>
       </section>
 
+      {c.selectionMode && (
+        <div className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl border border-secondary/30 bg-secondary/5 executive-shadow">
+          <span className="text-body-sm font-semibold text-on-surface">
+            {c.selectedCount} selected
+            <span className="text-on-surface-variant font-normal"> (of {c.filtered.length} visible)</span>
+          </span>
+          <div className="flex-1" />
+          <Button variant="outline" size="sm" onClick={c.exitSelectionMode}>
+            Cancel
+          </Button>
+          <ExportButton
+            resource={ResourceName.NOTIFICATION}
+            selectedIds={Array.from(c.selectedIds)}
+            filenameStem="notifications-selected"
+            label="Export selected"
+          />
+        </div>
+      )}
+
       <section className="flex flex-col lg:flex-row gap-4 items-stretch min-h-[420px]">
         <div className="lg:w-2/5 flex flex-col gap-3 pr-1">
           {c.filtered.map((n) => (
@@ -238,7 +271,15 @@ export function NotificationCenterPage() {
               key={n.id}
               n={n}
               active={c.selected?.id === n.id}
-              onSelect={() => openNotificationOverview(n)}
+              selected={c.isSelected(n.id)}
+              selectionMode={c.selectionMode}
+              onSelect={() => {
+                if (c.selectionMode) c.toggleOne(n.id)
+                else openNotificationOverview(n)
+              }}
+              onPressStart={() => c.onRowPressStart(n.id)}
+              onPressEnd={() => c.onRowPressEnd(n.id, () => openNotificationOverview(n))}
+              onPressCancel={c.onRowPressCancel}
               onArchive={() => c.archiveOne(n.id)}
               onMarkRead={() => c.markRead(n.id)}
               onFullDetail={() =>
@@ -252,6 +293,9 @@ export function NotificationCenterPage() {
             <div className="p-8 text-center text-on-surface-variant border border-dashed border-outline-variant rounded-xl">
               No notifications match your filters.
             </div>
+          )}
+          {!c.selectionMode && c.filtered.length > 0 && (
+            <p className="text-[11px] text-on-surface-variant px-1">Hold a card 3s to multi-select</p>
           )}
         </div>
 
@@ -295,7 +339,7 @@ export function NotificationCenterPage() {
                 {c.selected.note && (
                   <div className="bg-surface-container-low p-5 rounded-xl border-l-4 border-secondary">
                     <h5 className="text-label-md font-bold uppercase text-secondary mb-2 tracking-wider">Note</h5>
-                    <p className="text-body-md text-on-surface italic">"{c.selected.note}"</p>
+                    <p className="text-body-md text-on-surface italic">&quot;{c.selected.note}&quot;</p>
                   </div>
                 )}
               </div>
@@ -338,7 +382,12 @@ export function NotificationCenterPage() {
 function NotificationCard({
   n,
   active,
+  selected,
+  selectionMode,
   onSelect,
+  onPressStart,
+  onPressEnd,
+  onPressCancel,
   onArchive,
   onMarkRead,
   onFullDetail,
@@ -347,7 +396,12 @@ function NotificationCard({
 }: {
   n: AppNotification
   active: boolean
+  selected: boolean
+  selectionMode: boolean
   onSelect: () => void
+  onPressStart: () => void
+  onPressEnd: () => void
+  onPressCancel: () => void
   onArchive: () => void
   onMarkRead: () => void
   onFullDetail: () => void
@@ -357,16 +411,35 @@ function NotificationCard({
   return (
     <div
       className={cn(
-        'text-left rounded-xl p-5 border transition-all relative',
+        'text-left rounded-xl p-5 border transition-all relative select-none',
         active
           ? 'bg-surface-container-high border-2 border-secondary executive-shadow'
           : 'bv-surface hover:border-secondary/50',
+        selected && 'ring-2 ring-secondary/40',
         n.status === 'Read' && !active && 'opacity-80',
       )}
+      onMouseDown={onPressStart}
+      onMouseUp={onPressEnd}
+      onMouseLeave={onPressCancel}
+      onTouchStart={onPressStart}
+      onTouchEnd={onPressEnd}
+      onTouchCancel={onPressCancel}
+      onContextMenu={(e) => e.preventDefault()}
     >
       {active && <span className="absolute left-0 top-0 bottom-0 w-1 bg-secondary rounded-r" />}
+      {selectionMode && (
+        <div className="absolute top-3 left-3 z-10">
+          <input
+            type="checkbox"
+            className="rounded border-outline-variant text-secondary"
+            checked={selected}
+            onChange={onSelect}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
       <button type="button" className="w-full text-left" onClick={onSelect}>
-        <div className="flex items-start gap-4">
+        <div className={cn('flex items-start gap-4', selectionMode && 'pl-6')}>
           <div
             className={cn(
               'w-12 h-12 rounded-full flex items-center justify-center shrink-0',
