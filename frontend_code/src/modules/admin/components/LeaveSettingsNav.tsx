@@ -30,7 +30,7 @@ export function LeaveSettingsNav() {
           return (
             <li key={item.id} className="flex-1">
               <Link
-                to={item.to}
+                to={item.to as never}
                 title={item.label}
                 className={cn(
                   'flex flex-col items-center justify-center gap-1 px-3 py-2.5 text-[11px] border-b-2 transition-colors duration-200',
