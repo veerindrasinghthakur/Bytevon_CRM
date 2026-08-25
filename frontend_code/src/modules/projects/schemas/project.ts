@@ -53,3 +53,6 @@ export const projectListResponseSchema = z.object({
   items: z.array(projectListItemSchema),
   total: z.number(),
 })
+
+/** Re-export form schema from dedicated file */
+export { projectFormSchema, type ProjectFormInput } from './project-form'

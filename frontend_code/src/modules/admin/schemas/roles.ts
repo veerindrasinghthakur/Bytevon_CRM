@@ -24,15 +24,6 @@ export const adminRoleSchema = z.object({
 
 export type AdminRoleSchema = z.infer<typeof adminRoleSchema>
 
-export const roleFormSchema = z.object({
-  name: z.string().min(2, 'Name is required').max(80),
-  description: z.string().max(500).optional().or(z.literal('')),
-  category: adminRoleCategorySchema.optional(),
-  status: adminRoleStatusSchema.optional(),
-})
-
-export type RoleFormInput = z.infer<typeof roleFormSchema>
-
 export const rolePermissionActionSchema = z.enum([
   'VIEW',
   'CREATE',
@@ -42,3 +33,6 @@ export const rolePermissionActionSchema = z.enum([
   'EXPORT',
   'UNLOCK',
 ])
+
+/** Re-export form schema from dedicated file */
+export { roleFormSchema, type RoleFormInput } from './role-form'

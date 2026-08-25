@@ -64,21 +64,5 @@ export const createClientSchema = z.object({
 
 export type CreateClientSchemaInput = z.infer<typeof createClientSchema>
 
-export const clientFormSchema = z.object({
-  name: z.string().min(2, 'Name is required'),
-  legalName: z.string().optional().or(z.literal('')),
-  type: clientTypeSchema,
-  status: recordStatusSchema,
-  industry: z.string().optional().or(z.literal('')),
-  website: z.string().optional().or(z.literal('')),
-  country: z.string().optional().or(z.literal('')),
-  state: z.string().optional().or(z.literal('')),
-  city: z.string().optional().or(z.literal('')),
-  address: z.string().optional().or(z.literal('')),
-  taxId: z.string().optional().or(z.literal('')),
-  founded: z.string().optional().or(z.literal('')),
-  chatLink: z.string().optional().or(z.literal('')),
-  contacts: z.array(clientContactFormSchema).min(1),
-})
-
-export type ClientFormSchemaInput = z.infer<typeof clientFormSchema>
+/** Re-export form schema from dedicated file */
+export { clientFormSchema, type ClientFormSchemaInput } from './client-form'

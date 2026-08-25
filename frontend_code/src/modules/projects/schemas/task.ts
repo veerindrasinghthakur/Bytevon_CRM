@@ -41,13 +41,5 @@ export const createTaskSchema = z.object({
 
 export type CreateTaskSchemaInput = z.infer<typeof createTaskSchema>
 
-export const taskFormSchema = z.object({
-  title: z.string().min(2, 'Title is required'),
-  description: z.string().optional().or(z.literal('')),
-  priority: taskPrioritySchema.default('MEDIUM'),
-  projectId: z.string().optional().or(z.literal('')),
-  assigneeName: z.string().optional().or(z.literal('')),
-  dueDate: z.string().optional().or(z.literal('')),
-})
-
-export type TaskFormInput = z.infer<typeof taskFormSchema>
+/** Re-export form schema from dedicated file */
+export { taskFormSchema, type TaskFormInput } from './task-form'
