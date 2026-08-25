@@ -6,6 +6,7 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { ResourceName } from '@/shared/schema'
 import { Pagination, paginate, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { RowActions } from '@/shared/components/ui/RowActions'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
@@ -18,7 +19,9 @@ import {
   QuickPersonRow,
 } from '@/shared/components/layout/QuickOverviewParts'
 import { useListSelection } from '@/shared/hooks/useListSelection'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useTasks } from '../hooks/use-tasks'
+import { projectRoutes } from '../routes'
 import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
 import { CreateTaskModal } from '../components/CreateTaskModal'
 import type { Task } from '../types'
@@ -120,8 +123,8 @@ export function TasksListPage() {
   const blocked = filtered.filter((t) => t.status === 'BLOCKED').length
 
   const goTask = (taskId: number, edit?: boolean) =>
-    navigate({
-      to: '/projects/tasks/$taskId',
+    safeNavigate(navigate, {
+      to: projectRoutes.taskDetail(taskId),
       params: { taskId: String(taskId) },
       search: edit ? { edit: '1' } : undefined,
     })
@@ -185,6 +188,7 @@ export function TasksListPage() {
             setPage(1)
           }}
           placeholder="Priority: All"
+          aria-label="Filter by priority"
           options={[
             { value: 'URGENT', label: 'Urgent' },
             { value: 'HIGH', label: 'High' },
@@ -199,6 +203,7 @@ export function TasksListPage() {
             setPage(1)
           }}
           placeholder="Status: All"
+          aria-label="Filter by status"
           options={[
             { value: 'TODO', label: 'To do' },
             { value: 'IN_PROGRESS', label: 'In progress' },
@@ -234,12 +239,11 @@ export function TasksListPage() {
 
       {isLoading && <TableSkeleton rows={5} />}
       {isError && (
-        <div className="rounded-lg border border-error/30 bg-error/5 p-6 text-center">
-          <p className="text-body-md text-error mb-3">Failed to load tasks.</p>
-          <Button variant="outline" onClick={() => refetch()}>
-            Retry
-          </Button>
-        </div>
+        <ErrorState
+          title="Failed to load tasks"
+          description="We could not load the tasks list. Check your connection and try again."
+          onRetry={() => void refetch()}
+        />
       )}
       {!isLoading && !isError && filtered.length === 0 && (
         <EmptyState

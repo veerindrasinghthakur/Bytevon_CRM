@@ -20,7 +20,9 @@ import {
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
 import { useListSelection } from '@/shared/hooks/useListSelection'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useTeams } from '../hooks/use-teams'
+import { projectRoutes } from '../routes'
 import { CreateTeamModal } from '../components/CreateTeamModal'
 import type { Team } from '../types'
 import { cn } from '@/shared/lib/cn'
@@ -102,8 +104,8 @@ export function TeamsListPage() {
   const avgSize = total > 0 ? (activeMembers / total).toFixed(1) : '0'
 
   const goTeam = (teamId: number, edit?: boolean) =>
-    navigate({
-      to: '/projects/teams/$teamId',
+    safeNavigate(navigate, {
+      to: projectRoutes.teamDetail(teamId),
       params: { teamId: String(teamId) },
       search: edit ? { edit: '1' } : undefined,
     })
@@ -169,6 +171,7 @@ export function TeamsListPage() {
             setPage(1)
           }}
           placeholder="All Statuses"
+          aria-label="Filter by team status"
           options={[
             { value: 'ACTIVE', label: 'Active' },
             { value: 'INACTIVE', label: 'Inactive' },
@@ -181,6 +184,7 @@ export function TeamsListPage() {
             setPage(1)
           }}
           placeholder="All Departments"
+          aria-label="Filter by department"
           options={[
             { value: 'Engineering', label: 'Engineering' },
             { value: 'Design', label: 'Design' },
@@ -216,7 +220,6 @@ export function TeamsListPage() {
           title="Failed to load teams"
           description="We could not load the teams list. Check your connection and try again."
           onRetry={() => void refetch()}
-          showBack={false}
         />
       )}
 
