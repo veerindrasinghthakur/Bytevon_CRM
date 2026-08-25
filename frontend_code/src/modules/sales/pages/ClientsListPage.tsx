@@ -17,8 +17,10 @@ import {
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
 import { ResourceName } from '@/shared/schema'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useClientsList } from '../hooks/use-clients-list'
 import { usePrefetchClient } from '../hooks/use-sales'
+import { salesRoutes } from '../routes'
 import type { ClientType, Client } from '../types'
 import { cn } from '@/shared/lib/cn'
 
@@ -121,9 +123,21 @@ export function ClientsListPage() {
 
   const prefetchClient = usePrefetchClient()
 
-  const openFull = (clientId: string) => {
-    navigate({ to: '/sales/clients/$clientId', params: { clientId } })
+  const goDetail = (clientId: string) => {
+    safeNavigate(navigate, {
+      to: salesRoutes.clientDetail(clientId),
+      params: { clientId },
+    })
   }
+
+  const goEdit = (clientId: string) => {
+    safeNavigate(navigate, {
+      to: salesRoutes.clientEdit(clientId),
+      params: { clientId },
+    })
+  }
+
+  const goNew = () => safeNavigate(navigate, { to: salesRoutes.clientNew })
 
   const openClientOverview = (client: Client) => {
     openPanel({
@@ -134,9 +148,8 @@ export function ClientsListPage() {
       statusDotClass: client.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400',
       content: <ClientQuickContent client={client} />,
       fullRecordLabel: 'Open full record',
-      onOpenFull: () => openFull(client.id),
-      onEdit: () =>
-        navigate({ to: '/sales/clients/$clientId/edit', params: { clientId: client.id } }),
+      onOpenFull: () => goDetail(client.id),
+      onEdit: () => goEdit(client.id),
       editLabel: 'Edit client',
       widthClass: 'max-w-[520px]',
     })
@@ -167,7 +180,7 @@ export function ClientsListPage() {
               variant="primary"
               size="sm"
               leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-              onClick={() => navigate({ to: '/sales/clients/new', search: {} })}
+              onClick={goNew}
             >
               New Client
             </Button>
@@ -381,17 +394,13 @@ export function ClientsListPage() {
                                 id: 'details',
                                 label: 'View details',
                                 icon: 'description',
-                                onClick: () => openFull(client.id),
+                                onClick: () => goDetail(client.id),
                               },
                               {
                                 id: 'edit',
                                 label: 'Edit',
                                 icon: 'edit',
-                                onClick: () =>
-                                  navigate({
-                                    to: '/sales/clients/$clientId/edit',
-                                    params: { clientId: client.id },
-                                  }),
+                                onClick: () => goEdit(client.id),
                               },
                             ]}
                           />

@@ -7,16 +7,8 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useClient, useCreateClient, useUpdateClient } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
-import type { ClientType, RecordStatus } from '../types'
+import type { ClientType, RecordStatus, ClientContactForm } from '../types'
 import { cn } from '@/shared/lib/cn'
-
-export type ClientContactForm = {
-  id: string
-  name: string
-  designation: string
-  email: string
-  phone: string
-}
 
 function emptyContact(): ClientContactForm {
   return {
@@ -102,34 +94,30 @@ export function ClientCreatePage() {
       return
     }
     const primary = contacts[0]
+    const payload = {
+      name: name.trim(),
+      legalName: legalName.trim() || undefined,
+      type,
+      status,
+      industry: industry.trim() || undefined,
+      website: website.trim() || undefined,
+      country: country.trim() || undefined,
+      address: address.trim() || undefined,
+      taxId: taxId.trim() || undefined,
+      founded: founded || undefined,
+      chatLink: chatLink.trim() || undefined,
+      primaryContact: primary?.name?.trim() || undefined,
+      email: primary?.email?.trim() || undefined,
+      phone: primary?.phone?.trim() || undefined,
+    }
     try {
       if (isEdit && params.clientId) {
         await updateMut.mutateAsync({
           id: params.clientId,
-          patch: {
-            name: name.trim(),
-            legalName: legalName.trim() || undefined,
-            type,
-            status,
-            industry: industry.trim() || '—',
-            website: website.trim() || undefined,
-            country: country.trim() || '—',
-            address: address.trim() || undefined,
-            taxId: taxId.trim() || undefined,
-            founded: founded || undefined,
-            chatLink: chatLink.trim() || undefined,
-            primaryContact: primary?.name || undefined,
-            email: primary?.email || undefined,
-            phone: primary?.phone || undefined,
-          },
+          patch: payload,
         })
       } else {
-        await createMut.mutateAsync({
-          name: name.trim(),
-          industry: industry.trim() || undefined,
-          type,
-          country: country.trim() || undefined,
-        })
+        await createMut.mutateAsync(payload)
       }
       safeNavigate(navigate, { to: salesRoutes.clients })
     } catch (err) {
