@@ -75,7 +75,6 @@ export function HolidaysListPage() {
       })
     },
     onSuccess: async () => {
-      // Match useHolidays query key shape: ['organization', 'holidays', { calendarId }]
       await qc.invalidateQueries({ queryKey: ['organization', 'holidays'] })
       await qc.invalidateQueries({ queryKey: ['organization', 'holidays', { calendarId: id }] })
       setAdding(false)
@@ -92,7 +91,12 @@ export function HolidaysListPage() {
       <ErrorState
         description={(error as Error).message}
         onRetry={() => void refetch()}
-        onBack={() => navigate({ to: '/admin/settings/holidays' })}
+        onBack={() =>
+          navigate({
+            to: '/admin/settings/holidays',
+            search: {},
+          })
+        }
       />
     )
   }
