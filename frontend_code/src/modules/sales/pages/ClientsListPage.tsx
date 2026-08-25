@@ -19,7 +19,6 @@ import {
 import { ResourceName } from '@/shared/schema'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useClientsList } from '../hooks/use-clients-list'
-import { usePrefetchClient } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
 import type { ClientType, Client } from '../types'
 import { cn } from '@/shared/lib/cn'
@@ -120,8 +119,6 @@ export function ClientsListPage() {
     endLongPress,
     clearLongPress,
   } = useClientsList()
-
-  const prefetchClient = usePrefetchClient()
 
   const goDetail = (clientId: string) => {
     safeNavigate(navigate, {
@@ -228,6 +225,7 @@ export function ClientsListPage() {
           value={statusFilter}
           onChange={setStatusFilter}
           placeholder="All Status"
+          aria-label="Filter by status"
           options={[
             { value: 'All', label: 'All Status' },
             { value: 'Active', label: 'Active' },
@@ -239,6 +237,7 @@ export function ClientsListPage() {
           value={typeFilter}
           onChange={setTypeFilter}
           placeholder="All Types"
+          aria-label="Filter by type"
           options={[
             { value: 'All', label: 'All Types' },
             { value: 'Enterprise', label: 'Enterprise' },
@@ -276,7 +275,6 @@ export function ClientsListPage() {
           title="Failed to load clients"
           description="We could not load the clients list. Check your connection and try again."
           onRetry={() => void refetch()}
-          showBack={false}
         />
       )}
 
@@ -324,7 +322,6 @@ export function ClientsListPage() {
                         'cursor-pointer group select-none',
                         isSelected ? 'bg-secondary/10' : 'zebra-row',
                       )}
-                      onMouseEnter={() => prefetchClient(client.id)}
                       onMouseDown={() => startLongPress(client.id)}
                       onMouseUp={() => endLongPress(client, openClientOverview)}
                       onMouseLeave={clearLongPress}
