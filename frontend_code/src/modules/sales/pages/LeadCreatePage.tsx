@@ -5,12 +5,11 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
-import {
-  getLeadById,
-  getLeadFilterOptions,
-  listSalesRepresentatives,
-} from '../api/sales'
-import { useCreateLead, useUpdateLead } from '../hooks/use-sales'
+import { queryKeys } from '@/shared/lib/query-keys'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getLeadFilterOptions, listSalesRepresentatives } from '../api/sales'
+import { useCreateLead, useLead, useUpdateLead } from '../hooks/use-sales'
+import { salesRoutes } from '../routes'
 import type { LeadPriority, PipelineStage, RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 
@@ -19,18 +18,15 @@ export function LeadCreatePage() {
   const params = useParams({ strict: false }) as { leadId?: string }
   const isEdit = Boolean(params.leadId)
 
-  const existingQuery = useQuery({
-    queryKey: ['sales', 'leads', 'detail', params.leadId],
-    queryFn: () => getLeadById(params.leadId!),
-    enabled: Boolean(params.leadId),
-  })
+  const existingQuery = useLead(params.leadId)
   const filterOptionsQuery = useQuery({
-    queryKey: ['sales', 'leads', 'filter-options'],
+    queryKey: queryKeys.sales.leads.filterOptions(),
     queryFn: getLeadFilterOptions,
-    staleTime: 60_000,
+    staleTime: Infinity,
+    refetchOnMount: false,
   })
   const repsQuery = useQuery({
-    queryKey: ['sales', 'sales-representatives'],
+    queryKey: queryKeys.sales.salesRepresentatives(),
     queryFn: listSalesRepresentatives,
     staleTime: 60_000,
   })
@@ -77,7 +73,6 @@ export function LeadCreatePage() {
     setChatLink(existing.chatLink ?? '')
   }, [existing])
 
-  // Match assigned rep by name when employment id not on record
   useEffect(() => {
     if (!existing?.assignedTo || !repsQuery.data?.length) return
     if (assignedEmploymentId) return
@@ -140,7 +135,7 @@ export function LeadCreatePage() {
       } else {
         await createMut.mutateAsync(payload)
       }
-      navigate({ to: '/sales' })
+      safeNavigate(navigate, { to: salesRoutes.leads })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Save failed')
     }
@@ -162,11 +157,11 @@ export function LeadCreatePage() {
             : 'Capture a new opportunity. Client is optional until the lead is won.'
         }
         showBack
-        backTo="/sales"
+        backTo={salesRoutes.leads}
         backLabel="Back to leads"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to="/sales" className="hover:text-secondary">
+            <Link to={salesRoutes.root} className="hover:text-secondary">
               Sales
             </Link>
             <span className="mx-2">/</span>
@@ -176,7 +171,7 @@ export function LeadCreatePage() {
       />
 
       {error && (
-        <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error">
+        <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error" role="alert">
           {error}
         </div>
       )}
@@ -404,7 +399,7 @@ export function LeadCreatePage() {
           <Button type="submit" variant="primary" isLoading={saving}>
             {isEdit ? 'Save changes' : 'Create lead'}
           </Button>
-          <Button type="button" variant="ghost" onClick={() => navigate({ to: '/sales' })}>
+          <Button type="button" variant="ghost" onClick={() => safeNavigate(navigate, { to: salesRoutes.leads })}>
             Cancel
           </Button>
         </div>

@@ -122,3 +122,53 @@ export interface SalesMetric {
   subtitle?: string
   icon: string
 }
+
+/** Create / update payloads (API + forms) */
+export interface CreateLeadInput {
+  title: string
+  company: string
+  contactName: string
+  contactTitle?: string
+  industry?: string
+  email?: string
+  phone?: string
+  source?: string
+  priority?: LeadPriority
+  status?: RecordStatus
+  stage?: PipelineStage
+  budget?: number
+  date?: string
+  assignedTo?: string
+  assignedEmploymentId?: number | null
+  notes?: string
+  chatLink?: string
+}
+
+export type UpdateLeadInput = Partial<CreateLeadInput>
+
+export interface ClientContactForm {
+  id: string
+  name: string
+  designation: string
+  email: string
+  phone: string
+}
+
+export interface CreateClientInput {
+  name: string
+  legalName?: string
+  type?: ClientType
+  status?: RecordStatus
+  industry?: string
+  website?: string
+  country?: string
+  address?: string
+  taxId?: string
+  founded?: string
+  chatLink?: string
+  primaryContact?: string
+  email?: string
+  phone?: string
+}
+
+export type UpdateClientInput = Partial<CreateClientInput>

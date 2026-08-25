@@ -1,7 +1,11 @@
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { leads, salesActivities } from '../data/mock'
+import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { useLead, useSalesActivities } from '../hooks/use-sales'
+import { salesRoutes } from '../routes'
 import type { PipelineStage, LeadPriority, RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 
@@ -37,17 +41,26 @@ function StatusDot({ status }: { status: RecordStatus }) {
     <span
       className={cn(
         'inline-flex items-center gap-1.5 text-[11px] font-semibold',
-        status === 'Active' ? 'text-emerald-700' : 'text-slate-500'
+        status === 'Active' ? 'text-emerald-700' : 'text-slate-500',
       )}
     >
-      <span className={cn('w-2.5 h-2.5 rounded-full', status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400')} />
+      <span
+        className={cn(
+          'w-2.5 h-2.5 rounded-full',
+          status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400',
+        )}
+      />
       {status}
     </span>
   )
 }
 
 function formatBudget(n: number) {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n)
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(n)
 }
 
 const activityIcon: Record<string, string> = {
@@ -65,19 +78,25 @@ const activityIcon: Record<string, string> = {
 export function LeadDetailPage() {
   const navigate = useNavigate()
   const { leadId } = useParams({ strict: false }) as { leadId: string }
-  const lead = leads.find((l) => l.id === leadId) ?? leads[0]
+  const leadQuery = useLead(leadId)
+  const activitiesQuery = useSalesActivities()
+  const lead = leadQuery.data ?? null
+  const timeline = (activitiesQuery.data ?? []).slice(0, 4)
 
-  if (!lead) {
+  if (leadQuery.isLoading) return <PageLoadingSkeleton />
+
+  if (leadQuery.isError || !lead) {
     return (
-      <div className="animate-fade-in">
-        <PageHeader title="Lead not found" showBack backTo="/sales" backLabel="Back to leads" />
-        <p className="text-body-md text-on-surface-variant">This lead does not exist in mock data.</p>
-      </div>
+      <ErrorState
+        title="Lead not found"
+        description="This lead could not be loaded."
+        onRetry={() => void leadQuery.refetch()}
+        onBack={() => safeNavigate(navigate, { to: salesRoutes.leads })}
+      />
     )
   }
 
   const currentIdx = STAGES.indexOf(lead.stage)
-  const timeline = salesActivities.slice(0, 4)
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -85,15 +104,15 @@ export function LeadDetailPage() {
         title={lead.title}
         description={`${lead.contactName}${lead.contactTitle ? ` · ${lead.contactTitle}` : ''} at ${lead.company}`}
         showBack
-        backTo="/sales"
+        backTo={salesRoutes.leads}
         backLabel="Back to leads"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to="/sales" className="hover:text-secondary">
+            <Link to={salesRoutes.root} className="hover:text-secondary">
               Sales
             </Link>
             <span className="mx-2">/</span>
-            <Link to="/sales" className="hover:text-secondary">
+            <Link to={salesRoutes.leads} className="hover:text-secondary">
               Leads
             </Link>
             <span className="mx-2">/</span>
@@ -116,7 +135,12 @@ export function LeadDetailPage() {
             <Button
               variant="primary"
               leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
-              onClick={() => navigate({ to: '/sales/leads/$leadId/edit', params: { leadId: lead.id } })}
+              onClick={() =>
+                safeNavigate(navigate, {
+                  to: '/sales/leads/$leadId/edit',
+                  params: { leadId: lead.id },
+                })
+              }
             >
               Edit lead
             </Button>
@@ -128,12 +152,13 @@ export function LeadDetailPage() {
         <span className={cn('px-2.5 py-1 rounded-full text-[11px] font-bold uppercase', stageStyles[lead.stage])}>
           {lead.stage}
         </span>
-        <span className={cn('text-[11px] font-bold uppercase', priorityStyles[lead.priority])}>{lead.priority}</span>
+        <span className={cn('text-[11px] font-bold uppercase', priorityStyles[lead.priority])}>
+          {lead.priority}
+        </span>
         <StatusDot status={lead.status} />
         <span className="text-xs text-on-surface-variant font-mono">{lead.id}</span>
       </div>
 
-      {/* Pipeline progression */}
       <div className="bv-surface p-5">
         <p className="text-[10px] font-bold uppercase text-on-surface-variant mb-4">Pipeline stage</p>
         <div className="flex flex-wrap items-center gap-2">
@@ -149,19 +174,23 @@ export function LeadDetailPage() {
                       ? stageStyles[stage]
                       : done
                         ? 'bg-secondary/15 text-secondary'
-                        : 'bg-surface-container text-on-surface-variant'
+                        : 'bg-surface-container text-on-surface-variant',
                   )}
                 >
                   {stage}
                 </span>
                 {i < STAGES.filter((s) => s !== 'Lost').length - 1 && (
-                  <span className="material-symbols-outlined text-on-surface-variant text-sm">chevron_right</span>
+                  <span className="material-symbols-outlined text-on-surface-variant text-sm">
+                    chevron_right
+                  </span>
                 )}
               </div>
             )
           })}
           {lead.stage === 'Lost' && (
-            <span className={cn('px-2.5 py-1 rounded-full text-[10px] font-bold uppercase', stageStyles.Lost)}>Lost</span>
+            <span className={cn('px-2.5 py-1 rounded-full text-[10px] font-bold uppercase', stageStyles.Lost)}>
+              Lost
+            </span>
           )}
         </div>
       </div>
@@ -174,7 +203,9 @@ export function LeadDetailPage() {
               <div>
                 <dt className="text-[10px] font-bold uppercase text-on-surface-variant">Contact</dt>
                 <dd className="font-semibold text-on-surface mt-0.5">{lead.contactName}</dd>
-                {lead.contactTitle && <dd className="text-xs text-on-surface-variant">{lead.contactTitle}</dd>}
+                {lead.contactTitle && (
+                  <dd className="text-xs text-on-surface-variant">{lead.contactTitle}</dd>
+                )}
               </div>
               <div>
                 <dt className="text-[10px] font-bold uppercase text-on-surface-variant">Company</dt>
@@ -217,7 +248,7 @@ export function LeadDetailPage() {
           <section className="bv-surface p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-title-md font-semibold">Activity</h2>
-              <Link to="/sales/dashboard" className="text-secondary text-sm font-semibold hover:underline">
+              <Link to={salesRoutes.activity} className="text-secondary text-sm font-semibold hover:underline">
                 Full timeline
               </Link>
             </div>
@@ -228,7 +259,9 @@ export function LeadDetailPage() {
                     <span className="absolute left-[11px] top-6 bottom-0 w-0.5 bg-outline-variant" aria-hidden />
                   )}
                   <div className="z-10 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 bg-secondary/15 text-secondary">
-                    <span className="material-symbols-outlined text-xs">{activityIcon[a.type] ?? 'circle'}</span>
+                    <span className="material-symbols-outlined text-xs">
+                      {activityIcon[a.type] ?? 'circle'}
+                    </span>
                   </div>
                   <div className="min-w-0">
                     <p className="font-medium text-sm text-on-surface">{a.title}</p>
@@ -239,6 +272,9 @@ export function LeadDetailPage() {
                   </div>
                 </div>
               ))}
+              {timeline.length === 0 && (
+                <p className="text-body-sm text-on-surface-variant">No recent activity.</p>
+              )}
             </div>
           </section>
 

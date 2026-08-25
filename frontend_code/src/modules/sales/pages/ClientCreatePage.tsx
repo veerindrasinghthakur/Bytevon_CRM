@@ -1,19 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
-import { clients } from '../data/mock'
-import type { ClientType, RecordStatus } from '../types'
+import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { useClient, useCreateClient, useUpdateClient } from '../hooks/use-sales'
+import { salesRoutes } from '../routes'
+import type { ClientType, RecordStatus, ClientContactForm } from '../types'
 import { cn } from '@/shared/lib/cn'
-
-export type ClientContactForm = {
-  id: string
-  name: string
-  designation: string
-  email: string
-  phone: string
-}
 
 function emptyContact(): ClientContactForm {
   return {
@@ -32,33 +27,53 @@ const labelClass = 'block text-label-md text-on-surface-variant mb-1.5'
 export function ClientCreatePage() {
   const navigate = useNavigate()
   const params = useParams({ strict: false }) as { clientId?: string }
-  const existing = params.clientId ? clients.find((c) => c.id === params.clientId) : undefined
-  const isEdit = Boolean(existing)
+  const isEdit = Boolean(params.clientId)
 
-  const [name, setName] = useState(existing?.name ?? '')
-  const [legalName, setLegalName] = useState(existing?.legalName ?? '')
-  const [type, setType] = useState<ClientType>(existing?.type ?? 'SMB')
-  const [status, setStatus] = useState<RecordStatus>(existing?.status ?? 'Active')
-  const [industry, setIndustry] = useState(existing?.industry ?? '')
-  const [website, setWebsite] = useState(existing?.website ?? '')
-  const [country, setCountry] = useState(existing?.country ?? '')
+  const existingQuery = useClient(params.clientId)
+  const createMut = useCreateClient()
+  const updateMut = useUpdateClient()
+  const existing = existingQuery.data
+
+  const [name, setName] = useState('')
+  const [legalName, setLegalName] = useState('')
+  const [type, setType] = useState<ClientType>('SMB')
+  const [status, setStatus] = useState<RecordStatus>('Active')
+  const [industry, setIndustry] = useState('')
+  const [website, setWebsite] = useState('')
+  const [country, setCountry] = useState('')
   const [state, setState] = useState('')
   const [city, setCity] = useState('')
-  const [address, setAddress] = useState(existing?.address ?? '')
-  const [taxId, setTaxId] = useState(existing?.taxId ?? '')
-  const [founded, setFounded] = useState(existing?.founded ?? '')
-  const [chatLink, setChatLink] = useState(existing?.chatLink ?? '')
-  const [contacts, setContacts] = useState<ClientContactForm[]>([
-    {
-      id: 'primary',
-      name: existing?.primaryContact ?? '',
-      designation: '',
-      email: existing?.email ?? '',
-      phone: existing?.phone ?? '',
-    },
-  ])
+  const [address, setAddress] = useState('')
+  const [taxId, setTaxId] = useState('')
+  const [founded, setFounded] = useState('')
+  const [chatLink, setChatLink] = useState('')
+  const [contacts, setContacts] = useState<ClientContactForm[]>([emptyContact()])
   const [editingContactId, setEditingContactId] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!existing) return
+    setName(existing.name ?? '')
+    setLegalName(existing.legalName ?? '')
+    setType(existing.type ?? 'SMB')
+    setStatus(existing.status ?? 'Active')
+    setIndustry(existing.industry ?? '')
+    setWebsite(existing.website ?? '')
+    setCountry(existing.country ?? '')
+    setAddress(existing.address ?? '')
+    setTaxId(existing.taxId ?? '')
+    setFounded(existing.founded ?? '')
+    setChatLink(existing.chatLink ?? '')
+    setContacts([
+      {
+        id: 'primary',
+        name: existing.primaryContact ?? '',
+        designation: '',
+        email: existing.email ?? '',
+        phone: existing.phone ?? '',
+      },
+    ])
+  }, [existing])
 
   const updateContact = (id: string, patch: Partial<ClientContactForm>) => {
     setContacts((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)))
@@ -69,13 +84,48 @@ export function ClientCreatePage() {
     if (editingContactId === id) setEditingContactId(null)
   }
 
+  const saving = createMut.isPending || updateMut.isPending
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSaving(true)
-    await new Promise((r) => setTimeout(r, 400))
-    setSaving(false)
-    navigate({ to: '/sales/clients' })
+    setError('')
+    if (!name.trim()) {
+      setError('Client name is required.')
+      return
+    }
+    const primary = contacts[0]
+    const payload = {
+      name: name.trim(),
+      legalName: legalName.trim() || undefined,
+      type,
+      status,
+      industry: industry.trim() || undefined,
+      website: website.trim() || undefined,
+      country: country.trim() || undefined,
+      address: address.trim() || undefined,
+      taxId: taxId.trim() || undefined,
+      founded: founded || undefined,
+      chatLink: chatLink.trim() || undefined,
+      primaryContact: primary?.name?.trim() || undefined,
+      email: primary?.email?.trim() || undefined,
+      phone: primary?.phone?.trim() || undefined,
+    }
+    try {
+      if (isEdit && params.clientId) {
+        await updateMut.mutateAsync({
+          id: params.clientId,
+          patch: payload,
+        })
+      } else {
+        await createMut.mutateAsync(payload)
+      }
+      safeNavigate(navigate, { to: salesRoutes.clients })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Save failed')
+    }
   }
+
+  if (isEdit && existingQuery.isLoading) return <PageLoadingSkeleton />
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -87,15 +137,15 @@ export function ClientCreatePage() {
             : 'Register a client account with full address fields and contact persons (schema-aligned).'
         }
         showBack
-        backTo="/sales/clients"
+        backTo={salesRoutes.clients}
         backLabel="Back to clients"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to="/sales" className="hover:text-secondary">
+            <Link to={salesRoutes.root} className="hover:text-secondary">
               Sales
             </Link>
             <span className="mx-2">/</span>
-            <Link to="/sales/clients" className="hover:text-secondary">
+            <Link to={salesRoutes.clients} className="hover:text-secondary">
               Clients
             </Link>
             <span className="mx-2">/</span>
@@ -104,7 +154,13 @@ export function ClientCreatePage() {
         }
       />
 
-      <form onSubmit={handleSubmit} className="space-y-5 max-w-3xl">
+      {error && (
+        <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error" role="alert">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5 max-w-3xl">
         <section className="bv-surface p-6 space-y-4">
           <h2 className="text-title-md font-semibold">Account</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -320,8 +376,11 @@ export function ClientCreatePage() {
                   {open && (
                     <div className="px-4 pb-4 grid grid-cols-1 md:grid-cols-2 gap-3 border-t border-outline-variant pt-4">
                       <div>
-                        <label className={labelClass}>Name <span className="text-error">*</span></label>
+                        <label className={labelClass} htmlFor={`contact-name-${c.id}`}>
+                          Name <span className="text-error">*</span>
+                        </label>
                         <input
+                          id={`contact-name-${c.id}`}
                           required
                           value={c.name}
                           onChange={(e) => updateContact(c.id, { name: e.target.value })}
@@ -330,8 +389,11 @@ export function ClientCreatePage() {
                         />
                       </div>
                       <div>
-                        <label className={labelClass}>Designation</label>
+                        <label className={labelClass} htmlFor={`contact-desig-${c.id}`}>
+                          Designation
+                        </label>
                         <input
+                          id={`contact-desig-${c.id}`}
                           value={c.designation}
                           onChange={(e) => updateContact(c.id, { designation: e.target.value })}
                           className={fieldClass}
@@ -339,8 +401,11 @@ export function ClientCreatePage() {
                         />
                       </div>
                       <div>
-                        <label className={labelClass}>Email</label>
+                        <label className={labelClass} htmlFor={`contact-email-${c.id}`}>
+                          Email
+                        </label>
                         <input
+                          id={`contact-email-${c.id}`}
                           type="email"
                           value={c.email}
                           onChange={(e) => updateContact(c.id, { email: e.target.value })}
@@ -348,8 +413,11 @@ export function ClientCreatePage() {
                         />
                       </div>
                       <div>
-                        <label className={labelClass}>Phone</label>
+                        <label className={labelClass} htmlFor={`contact-phone-${c.id}`}>
+                          Phone
+                        </label>
                         <input
+                          id={`contact-phone-${c.id}`}
                           value={c.phone}
                           onChange={(e) => updateContact(c.id, { phone: e.target.value })}
                           className={fieldClass}
@@ -388,7 +456,11 @@ export function ClientCreatePage() {
           <Button type="submit" variant="primary" isLoading={saving}>
             {isEdit ? 'Save changes' : 'Create client'}
           </Button>
-          <Button type="button" variant="ghost" onClick={() => navigate({ to: '/sales/clients' })}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => safeNavigate(navigate, { to: salesRoutes.clients })}
+          >
             Cancel
           </Button>
         </div>

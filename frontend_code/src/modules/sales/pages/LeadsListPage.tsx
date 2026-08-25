@@ -19,9 +19,11 @@ import {
   QuickPersonRow,
 } from '@/shared/components/layout/QuickOverviewParts'
 import { ResourceName } from '@/shared/schema'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useLeadsList } from '../hooks/use-leads-list'
 import { usePrefetchLead } from '../hooks/use-sales'
 import { LeadMetricsRow } from '../components/LeadMetricsRow'
+import { salesRoutes } from '../routes'
 import type { PipelineStage, LeadPriority, RecordStatus, Lead } from '../types'
 import { cn } from '@/shared/lib/cn'
 
@@ -207,6 +209,22 @@ export function LeadsListPage() {
   const prefetchLead = usePrefetchLead()
   const parentRef = useRef<HTMLDivElement>(null)
 
+  const goDetail = (leadId: string) => {
+    safeNavigate(navigate, {
+      to: salesRoutes.leadDetail(leadId),
+      params: { leadId },
+    })
+  }
+
+  const goEdit = (leadId: string) => {
+    safeNavigate(navigate, {
+      to: salesRoutes.leadEdit(leadId),
+      params: { leadId },
+    })
+  }
+
+  const goNew = () => safeNavigate(navigate, { to: salesRoutes.leadNew })
+
   const rowVirtualizer = useVirtualizer({
     count: filtered.length,
     getScrollElement: () => parentRef.current,
@@ -229,9 +247,8 @@ export function LeadsListPage() {
       statusDotClass: stageDot[lead.stage] ?? 'bg-outline',
       content: <LeadQuickContent lead={lead} />,
       fullRecordLabel: 'Open full record',
-      onOpenFull: () => navigate({ to: '/sales/leads/$leadId', params: { leadId: lead.id } }),
-      onEdit: () =>
-        navigate({ to: '/sales/leads/$leadId/edit', params: { leadId: lead.id } }),
+      onOpenFull: () => goDetail(lead.id),
+      onEdit: () => goEdit(lead.id),
       editLabel: 'Edit lead',
       widthClass: 'max-w-[520px]',
     })
@@ -267,7 +284,7 @@ export function LeadsListPage() {
               variant="primary"
               size="sm"
               leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-              onClick={() => navigate({ to: '/sales/leads/new' })}
+              onClick={goNew}
             >
               New Lead
             </Button>
@@ -517,21 +534,13 @@ export function LeadsListPage() {
                                 id: 'details',
                                 label: 'View details',
                                 icon: 'description',
-                                onClick: () =>
-                                  navigate({
-                                    to: '/sales/leads/$leadId',
-                                    params: { leadId: lead.id },
-                                  }),
+                                onClick: () => goDetail(lead.id),
                               },
                               {
                                 id: 'edit',
                                 label: 'Edit',
                                 icon: 'edit',
-                                onClick: () =>
-                                  navigate({
-                                    to: '/sales/leads/$leadId/edit',
-                                    params: { leadId: lead.id },
-                                  }),
+                                onClick: () => goEdit(lead.id),
                               },
                               ...(lead.chatLink
                                 ? [

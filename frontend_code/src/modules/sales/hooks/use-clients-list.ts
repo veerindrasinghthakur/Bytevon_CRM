@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
+import { queryKeys } from '@/shared/lib/query-keys'
 import { getClientFilterOptions } from '../api/sales'
 import { useClientsQuery } from './use-sales'
 import type { Client } from '../types'
@@ -17,7 +18,7 @@ export function useClientsList() {
   })
 
   const filterOptionsQuery = useQuery({
-    queryKey: ['sales', 'clients', 'filter-options'],
+    queryKey: queryKeys.sales.clients.filterOptions(),
     queryFn: getClientFilterOptions,
     staleTime: Infinity,
     gcTime: 1000 * 60 * 60,
