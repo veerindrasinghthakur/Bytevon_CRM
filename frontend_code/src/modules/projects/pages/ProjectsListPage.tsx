@@ -5,6 +5,7 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { ResourceName } from '@/shared/schema'
 import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { RowActions } from '@/shared/components/ui/RowActions'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
@@ -17,7 +18,9 @@ import {
   QuickMetaTile,
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useProjectsList } from '../hooks/use-projects-list'
+import { projectRoutes } from '../routes'
 import type { ProjectStatus } from '../schemas/project'
 import { cn } from '@/shared/lib/cn'
 
@@ -119,12 +122,14 @@ export function ProjectsListPage() {
   } = useProjectsList()
 
   const goDetail = (id: number, edit?: boolean) => {
-    navigate({
-      to: '/projects/$projectId',
+    safeNavigate(navigate, {
+      to: projectRoutes.projectDetail(id),
       params: { projectId: String(id) },
       search: edit ? { edit: '1' } : undefined,
     })
   }
+
+  const goNew = () => safeNavigate(navigate, { to: projectRoutes.projectNew })
 
   const openProjectOverview = (project: (typeof pageItems)[number]) => {
     const track = statusTrackLabel(project.status)
@@ -179,7 +184,7 @@ export function ProjectsListPage() {
             variant="primary"
             size="sm"
             leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-            onClick={() => navigate({ to: '/projects/new' })}
+            onClick={goNew}
           >
             New Project
           </Button>
@@ -194,7 +199,13 @@ export function ProjectsListPage() {
         onResetFilters={resetFilters}
         onRefresh={() => void refetch()}
       >
-        <Select value={status} onChange={setStatus} placeholder="Project Status" options={STATUS_OPTIONS} />
+        <Select
+          value={status}
+          onChange={setStatus}
+          placeholder="Project Status"
+          aria-label="Filter by project status"
+          options={STATUS_OPTIONS}
+        />
       </ListToolbar>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -229,10 +240,11 @@ export function ProjectsListPage() {
       )}
 
       {isError && (
-        <div className="rounded-lg border border-error/30 bg-error/5 p-6 text-center">
-          <p className="text-body-md text-error mb-3">Failed to load projects.</p>
-          <Button variant="outline" onClick={() => refetch()}>Retry</Button>
-        </div>
+        <ErrorState
+          title="Failed to load projects"
+          description="We could not load the projects list. Check your connection and try again."
+          onRetry={() => void refetch()}
+        />
       )}
 
       {!isError && items.length === 0 && !isLoading && (
@@ -241,7 +253,7 @@ export function ProjectsListPage() {
           title="No projects yet"
           description="Create your first project or clear filters."
           actionLabel="New Project"
-          onAction={() => navigate({ to: '/projects/new' })}
+          onAction={goNew}
         />
       )}
 
