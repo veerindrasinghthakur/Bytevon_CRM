@@ -6,6 +6,7 @@
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay } from '@/shared/mock/db'
+import { paginateItems } from '@/shared/lib/list-params'
 import {
   leads as seedLeads,
   clients as seedClients,
@@ -137,6 +138,8 @@ export async function listLeads(params?: {
   stage?: string
   priority?: string
   source?: string
+  page?: number
+  pageSize?: number
 }): Promise<{ items: Lead[]; total: number; metrics: SalesMetric[] }> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<{ items: Lead[]; total: number; metrics: SalesMetric[] }>(
@@ -162,7 +165,12 @@ export async function listLeads(params?: {
   if (params?.priority && params.priority !== 'All')
     items = items.filter((l) => l.priority === params.priority)
   if (params?.source && params.source !== 'All') items = items.filter((l) => l.source === params.source)
-  return { items, total: leads().length, metrics: salesMetrics }
+  // When page/pageSize omitted, return full filtered set (client-side list hooks)
+  if (params?.page != null || params?.pageSize != null) {
+    const page = paginateItems(items, params.page, params.pageSize)
+    return { items: page.items, total: page.total, metrics: salesMetrics }
+  }
+  return { items, total: items.length, metrics: salesMetrics }
 }
 
 export async function getLeadById(id: string): Promise<Lead | null> {
@@ -231,6 +239,8 @@ export async function listClients(params?: {
   search?: string
   status?: string
   type?: string
+  page?: number
+  pageSize?: number
 }): Promise<{ items: Client[]; total: number; metrics: SalesMetric[] }> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<{ items: Client[]; total: number; metrics: SalesMetric[] }>(
@@ -253,7 +263,11 @@ export async function listClients(params?: {
   }
   if (params?.status && params.status !== 'All') items = items.filter((c) => c.status === params.status)
   if (params?.type && params.type !== 'All') items = items.filter((c) => c.type === params.type)
-  return { items, total: clients().length, metrics: clientMetrics }
+  if (params?.page != null || params?.pageSize != null) {
+    const page = paginateItems(items, params.page, params.pageSize)
+    return { items: page.items, total: page.total, metrics: clientMetrics }
+  }
+  return { items, total: items.length, metrics: clientMetrics }
 }
 
 export async function getClientById(id: string): Promise<Client | null> {

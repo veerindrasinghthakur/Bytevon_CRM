@@ -5,11 +5,14 @@ import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import type { CreateProjectInput, ProjectDetail, ProjectListItem } from '../schemas/project'
 import { delay, getDb, nextId } from '@/shared/mock/db'
+import { paginateItems } from '@/shared/lib/list-params'
 
 export async function getProjects(params?: {
   search?: string
   status?: string
   teamId?: number
+  page?: number
+  pageSize?: number
 }): Promise<{ items: ProjectListItem[]; total: number }> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<{ items: ProjectListItem[]; total: number }>('/projects', {
@@ -33,6 +36,9 @@ export async function getProjects(params?: {
   }
   if (params?.teamId != null) {
     items = items.filter((p) => p.teamId === params.teamId)
+  }
+  if (params?.page != null || params?.pageSize != null) {
+    return paginateItems(items, params.page, params.pageSize)
   }
   return { items, total: items.length }
 }
