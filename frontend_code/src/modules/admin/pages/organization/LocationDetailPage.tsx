@@ -6,6 +6,7 @@ import { EditButton } from '@/shared/components/ui/EditButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useLocationDetail, useUpdateLocation } from '../../hooks/use-organization-locations'
 import type { LocationRow } from '@/shared/schema'
 
@@ -16,7 +17,6 @@ export function LocationDetailPage() {
   const { data: loc, isLoading, isError, error, refetch } = useLocationDetail(id)
   const updateMut = useUpdateLocation(id)
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
-  // Client form state only — seeded when user starts editing, never synced via useEffect
   const [draft, setDraft] = useState<Partial<LocationRow>>({})
 
   const beginEdit = () => {
@@ -58,7 +58,7 @@ export function LocationDetailPage() {
       <ErrorState
         description={(error as Error)?.message ?? 'Location not found'}
         onRetry={() => void refetch()}
-        onBack={() => navigate({ to: '/admin/settings/locations' })}
+        onBack={() => safeNavigate(navigate, { to: '/admin/settings/locations' })}
       />
     )
   }
