@@ -91,12 +91,8 @@ export function HolidaysListPage() {
       <ErrorState
         description={(error as Error).message}
         onRetry={() => void refetch()}
-        onBack={() =>
-          navigate({
-            to: '/admin/settings/holidays',
-            search: {},
-          })
-        }
+        // Route search typed as never in the tree — same pattern as admin redirects
+        onBack={() => navigate({ to: '/admin/settings/holidays' } as never)}
       />
     )
   }
