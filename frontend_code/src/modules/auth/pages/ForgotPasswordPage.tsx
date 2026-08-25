@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Link } from '@tanstack/react-router'
 import { forgotPasswordSchema, type ForgotPasswordInput } from '../schemas/auth'
 import { forgotPasswordApi } from '../api/auth'
+import { authRoutes } from '../routes'
 import { Button } from '@/shared/components/ui/Button'
 import { BrandLogo } from '@/shared/components/brand/BrandLogo'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
@@ -35,7 +36,7 @@ export function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="w-full px-6 md:px-10 py-4 flex justify-between items-center border-b border-outline-variant/40">
-        <Link to="/login">
+        <Link to={authRoutes.login}>
           <BrandLogo
             withWordmark
             sizeClassName="w-8 h-8"
@@ -86,7 +87,7 @@ export function ForgotPasswordPage() {
                     Send Reset Link
                   </Button>
                   <Link
-                    to="/login"
+                    to={authRoutes.login}
                     className="w-full h-12 flex items-center justify-center gap-2 text-on-surface-variant text-label-md hover:text-on-background border border-transparent hover:border-outline-variant rounded-lg"
                   >
                     <span className="material-symbols-outlined text-[18px]">arrow_back</span>
@@ -120,7 +121,7 @@ export function ForgotPasswordPage() {
               </div>
               <div className="flex flex-col gap-2">
                 <Link
-                  to="/reset-password"
+                  to={authRoutes.resetPassword}
                   search={{ token: 'demo' }}
                   className="text-secondary text-label-md font-medium hover:underline"
                 >

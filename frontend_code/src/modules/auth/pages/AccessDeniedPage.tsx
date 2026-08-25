@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
+import { authRoutes } from '../routes'
 
 export function AccessDeniedPage() {
   return (
@@ -14,10 +15,10 @@ export function AccessDeniedPage() {
           an error.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link to="/dashboard">
+          <Link to={authRoutes.dashboard}>
             <Button variant="primary">Go to Dashboard</Button>
           </Link>
-          <Link to="/login">
+          <Link to={authRoutes.login}>
             <Button variant="outline">Sign in as another user</Button>
           </Link>
         </div>

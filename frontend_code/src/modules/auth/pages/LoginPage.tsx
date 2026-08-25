@@ -9,9 +9,11 @@ import {
   MOCK_LOGIN_USERNAME,
 } from '../schemas/auth'
 import { useAuth } from '../context/AuthContext'
+import { authRoutes } from '../routes'
 import { Button } from '@/shared/components/ui/Button'
 import { BrandLogo, BrandMark } from '@/shared/components/brand/BrandLogo'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 
 export function LoginPage() {
   const { login } = useAuth()
@@ -36,11 +38,11 @@ export function LoginPage() {
       const target =
         search.redirect &&
         search.redirect.startsWith('/') &&
-        !search.redirect.startsWith('/login') &&
+        !search.redirect.startsWith(authRoutes.login) &&
         !search.redirect.startsWith('/profile')
           ? search.redirect
-          : '/dashboard'
-      await navigate({ to: target })
+          : authRoutes.dashboard
+      safeNavigate(navigate, { to: target })
     } catch (e) {
       setServerError(e instanceof Error ? e.message : 'Login failed. Please try again.')
     }
@@ -165,7 +167,10 @@ export function LoginPage() {
                   />
                   <span className="text-label-md text-on-surface-variant">Remember Me</span>
                 </label>
-                <Link to="/forgot-password" className="text-label-md text-secondary hover:underline">
+                <Link
+                  to={authRoutes.forgotPassword}
+                  className="text-label-md text-secondary hover:underline"
+                >
                   Forgot Password?
                 </Link>
               </div>

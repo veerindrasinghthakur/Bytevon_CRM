@@ -4,9 +4,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate, useSearch } from '@tanstack/react-router'
 import { resetPasswordSchema, type ResetPasswordInput } from '../schemas/auth'
 import { resetPasswordApi } from '../api/auth'
+import { authRoutes } from '../routes'
 import { Button } from '@/shared/components/ui/Button'
 import { BrandLogo } from '@/shared/components/brand/BrandLogo'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 
 export function ResetPasswordPage() {
   const navigate = useNavigate()
@@ -47,7 +49,7 @@ export function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="w-full px-6 md:px-10 py-4 flex items-center border-b border-outline-variant/40">
-        <Link to="/login">
+        <Link to={authRoutes.login}>
           <BrandLogo
             withWordmark
             sizeClassName="w-8 h-8"
@@ -72,7 +74,11 @@ export function ResetPasswordPage() {
               <p className="text-body-md text-on-surface-variant">
                 You can now sign in with your new password.
               </p>
-              <Button variant="primary" className="w-full" onClick={() => navigate({ to: '/login' })}>
+              <Button
+                variant="primary"
+                className="w-full"
+                onClick={() => safeNavigate(navigate, { to: authRoutes.login })}
+              >
                 Go to Login
               </Button>
             </div>
