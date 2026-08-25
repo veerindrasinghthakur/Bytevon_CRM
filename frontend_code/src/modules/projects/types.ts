@@ -5,7 +5,12 @@ export type {
   ProjectListItem,
   ProjectDetail,
   CreateProjectInput,
+  ProjectFormInput,
 } from './schemas/project'
+
+export type { TaskSchema, CreateTaskSchemaInput, TaskFormInput } from './schemas/task'
+export type { TeamSchema, CreateTeamSchemaInput, TeamFormInput } from './schemas/team'
+export type { ProjectNoteSchema, NoteFormInput } from './schemas/note'
 
 /** Task API priority / status (uppercase enum style) */
 export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'

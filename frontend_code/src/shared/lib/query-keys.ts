@@ -11,7 +11,7 @@ export const queryKeys = {
     },
     roles: {
       all: ['admin', 'roles'] as const,
-      list: () => [...queryKeys.admin.roles.all, 'list'] as const,
+      list: (filters?: unknown) => [...queryKeys.admin.roles.all, 'list', filters ?? {}] as const,
       metrics: () => ['admin', 'metrics', 'roles'] as const,
     },
     audit: {
@@ -20,7 +20,8 @@ export const queryKeys = {
     },
     leave: {
       all: ['admin', 'leave'] as const,
-      policies: () => [...queryKeys.admin.leave.all, 'policies'] as const,
+      policies: (filters?: unknown) =>
+        [...queryKeys.admin.leave.all, 'policies', filters ?? {}] as const,
       ledger: (filters?: unknown) => [...queryKeys.admin.leave.all, 'ledger', filters ?? {}] as const,
     },
   },

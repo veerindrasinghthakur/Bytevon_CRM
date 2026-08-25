@@ -1,4 +1,13 @@
-/** Administration domain types */
+/** Administration domain types — interfaces + schema re-exports */
+
+export type {
+  AdminUserListItemSchema,
+  CreateUserLoginInput,
+  UserFormInput,
+} from './schemas/users'
+export type { AdminRoleSchema, RoleFormInput } from './schemas/roles'
+export type { LeaveAccrualPolicyInput, LeavePolicyFormInput } from './schemas/leave'
+export type { OrganizationProfileInput, AttendanceSettingsInput } from './schemas/settings'
 
 export type AdminRoleStatus = 'Active' | 'Archived'
 export type AdminRoleCategory = 'Core Role' | 'Operational' | 'Financial' | 'Standard'

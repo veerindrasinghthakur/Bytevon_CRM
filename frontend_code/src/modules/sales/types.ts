@@ -1,4 +1,16 @@
-/** Sales / CRM domain types */
+/** Sales / CRM domain types — interfaces + schema re-exports */
+
+export type {
+  LeadSchema,
+  CreateLeadSchemaInput,
+  LeadFormSchemaInput,
+} from './schemas/lead'
+export type {
+  ClientSchema,
+  CreateClientSchemaInput,
+  ClientFormSchemaInput,
+} from './schemas/client'
+export type { CaseStudySchema, CaseStudyFormInput } from './schemas/case-study'
 
 /** Simple account/lead active state — shown as colored dots */
 export type RecordStatus = 'Active' | 'Inactive'
