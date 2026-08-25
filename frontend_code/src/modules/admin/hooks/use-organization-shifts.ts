@@ -33,6 +33,9 @@ export function useCreateShift() {
     mutationFn: (input: Omit<ShiftRow, 'id' | 'created_at' | 'updated_at' | 'is_archived' | 'changed_by'>) =>
       createShift(input),
     onSuccess: () => invalidate.orgShifts(qc),
+    onError: () => {
+      // Handled by consumer
+    },
   })
 }
 
@@ -43,6 +46,9 @@ export function useUpdateShift(id: number) {
     onSuccess: (row) => {
       invalidate.orgShifts(qc)
       qc.setQueryData(queryKeys.organization.shifts.detail(id), row)
+    },
+    onError: () => {
+      // Handled by consumer
     },
   })
 }

@@ -38,6 +38,9 @@ export function useUpdateOrganizationSettings() {
       qc.setQueryData([...QK, 'settings'], row)
       qc.invalidateQueries({ queryKey: [...QK, 'settings'] })
     },
+    onError: () => {
+      // Handled by consumer
+    },
   })
 }
 

@@ -152,7 +152,7 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
     },
     onSuccess: (saved) => {
       void queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] })
-      navigate({ to: '/admin/roles/$roleId', params: { roleId: saved.id } } as any)
+      navigate({ to: '/admin/roles/$roleId', params: { roleId: saved.id } })
     },
     onError: (e) => {
       // Errors surface via the component; keep mutation side-effect free
@@ -161,9 +161,9 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
 
   const cancel = useCallback(() => {
     if (mode === 'edit' && roleId) {
-      navigate({ to: '/admin/roles/$roleId', params: { roleId } } as any)
+      navigate({ to: '/admin/roles/$roleId', params: { roleId } })
     } else {
-      navigate({ to: '/admin/roles' } as any)
+      navigate({ to: '/admin/roles' })
     }
   }, [mode, roleId, navigate])
 

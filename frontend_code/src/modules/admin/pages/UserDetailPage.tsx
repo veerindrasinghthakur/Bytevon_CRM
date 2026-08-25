@@ -112,6 +112,9 @@ export function UserDetailPage() {
       void qc.invalidateQueries({ queryKey: ['admin', 'users'] })
       finishEditing()
     },
+    onError: () => {
+      // Consider adding a toast or error state if failures occur frequently
+    },
   })
 
   const lockMutation = useMutation({
@@ -124,6 +127,9 @@ export function UserDetailPage() {
       setStatus((s) => (s === 'Locked' ? 'Active' : 'Locked'))
       setLockOpen(false)
     },
+    onError: () => {
+      setLockOpen(false)
+    },
   })
 
   const deactivateMutation = useMutation({
@@ -131,6 +137,9 @@ export function UserDetailPage() {
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ['admin', 'users'] })
       setStatus('Inactive')
+    },
+    onError: () => {
+      // Side-effect free
     },
   })
 
@@ -140,6 +149,9 @@ export function UserDetailPage() {
       await qc.invalidateQueries({ queryKey: ['admin', 'users'] })
       setStatus('Active')
     },
+    onError: () => {
+      // Side-effect free
+    },
   })
 
   const hardArchiveMutation = useMutation({
@@ -148,6 +160,9 @@ export function UserDetailPage() {
       await qc.invalidateQueries({ queryKey: ['admin', 'users'] })
       await qc.invalidateQueries({ queryKey: ['admin', 'employments-without-login'] })
       navigate({ to: '/admin/users' })
+    },
+    onError: () => {
+      // Side-effect free
     },
   })
 
@@ -163,6 +178,9 @@ export function UserDetailPage() {
         setResetSent(false)
         setTempPassword('')
       }, 1500)
+    },
+    onError: () => {
+      setResetOpen(false)
     },
   })
 

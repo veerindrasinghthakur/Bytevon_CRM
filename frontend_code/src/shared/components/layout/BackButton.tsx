@@ -13,10 +13,10 @@ export function BackButton({ to, from: _from, label = 'Back', className }: BackB
       return
     }
     if (to) {
-      navigate({ to: to as any })
+      navigate({ to: to })
       return
     }
-    navigate({ to: '/dashboard' as any })
+    navigate({ to: '/dashboard' })
   }
 
   return (

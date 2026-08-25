@@ -48,6 +48,9 @@ export function PositionDetailPage() {
         finishEditing()
       }
     },
+    onError: () => {
+      // Errors surface via saveMut.error in the UI
+    },
   })
 
   if (!isNew && detailQuery.isLoading) return <PageLoadingSkeleton />

@@ -27,5 +27,8 @@ export function useUpdateLocation(id: number) {
       invalidate.locations(qc)
       qc.setQueryData(queryKeys.organization.locations.detail(id), row)
     },
+    onError: () => {
+      // Handled by consumer
+    },
   })
 }

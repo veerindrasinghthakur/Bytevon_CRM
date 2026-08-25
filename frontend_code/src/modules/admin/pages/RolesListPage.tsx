@@ -144,7 +144,7 @@ export function RolesListPage() {
     navigate({
       to: '/admin/roles/new',
       search: { duplicateFrom: roleId },
-    } as any)
+    })
 
   const openRoleOverview = (role: AdminRole) => {
     openPanel({

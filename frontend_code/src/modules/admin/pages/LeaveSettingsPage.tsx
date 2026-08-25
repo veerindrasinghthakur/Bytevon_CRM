@@ -35,6 +35,9 @@ export function LeaveSettingsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['admin', 'settings', 'leave-accrual'] })
     },
+    onError: () => {
+      // Errors surface via mutation state if needed
+    },
   })
 
   useEffect(() => {

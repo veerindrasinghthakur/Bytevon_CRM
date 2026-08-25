@@ -27,6 +27,9 @@ export function HolidayCalendarsPage() {
         params: { calendarId: String(row.id) },
       })
     },
+    onError: () => {
+      // Errors surface via createMut.error in the UI
+    },
   })
 
   if (isLoading) return <PageLoadingSkeleton />

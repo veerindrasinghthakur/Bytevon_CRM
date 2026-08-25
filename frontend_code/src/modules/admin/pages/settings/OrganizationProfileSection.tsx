@@ -37,6 +37,9 @@ export function OrganizationProfileSection() {
       qc.invalidateQueries({ queryKey: ['admin', 'settings', 'organization-profile'] })
       finishEditing()
     },
+    onError: () => {
+      // Errors surface via mutation state if needed
+    },
   })
 
   const set = (k: keyof OrganizationProfile, v: string) => setForm((p) => ({ ...p, [k]: v }))

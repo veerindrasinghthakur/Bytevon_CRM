@@ -52,7 +52,7 @@ export function RoleDetailPage() {
     navigate({
       to: '/admin/roles/new',
       search: { duplicateFrom: role.id },
-    } as any)
+    })
 
   return (
     <div className="space-y-6 animate-fade-in">

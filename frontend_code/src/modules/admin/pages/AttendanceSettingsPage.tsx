@@ -101,6 +101,9 @@ export function AttendanceSettingsPage() {
       qc.invalidateQueries({ queryKey: ['admin', 'settings', 'attendance'] })
       finishEditing()
     },
+    onError: () => {
+      // Errors surface via mutation state if needed
+    },
   })
 
   if (isLoading || shiftsQuery.isLoading || !form) {
