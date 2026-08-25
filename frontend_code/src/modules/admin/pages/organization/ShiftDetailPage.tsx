@@ -6,6 +6,7 @@ import { EditButton } from '@/shared/components/ui/EditButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { can } from '@/shared/rbac/can'
 import { Action, ResourceName, type ShiftRow } from '@/shared/schema'
 import {
@@ -50,11 +51,9 @@ export function ShiftDetailPage() {
   const staffQuery = useShiftStaff(id, !isNew)
   const createMut = useCreateShift()
   const updateMut = useUpdateShift(id)
-  // isNew starts in edit mode; no useEffect to seed draft from server
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(isNew)
 
   const shift = isNew ? emptyShift : detailQuery.data ?? null
-  // Client form state only — seed on beginEdit / create flow
   const [draft, setDraft] = useState<Partial<ShiftRow>>(isNew ? { ...emptyShift } : {})
 
   if (!isNew && detailQuery.isLoading) return <PageLoadingSkeleton />
@@ -63,7 +62,7 @@ export function ShiftDetailPage() {
     return (
       <ErrorState
         description="You do not have permission to create shifts."
-        onBack={() => navigate({ to: listTo as never })}
+        onBack={() => safeNavigate(navigate, { to: listTo })}
       />
     )
   }
@@ -73,7 +72,7 @@ export function ShiftDetailPage() {
       <ErrorState
         description={(detailQuery.error as Error)?.message ?? 'Shift not found'}
         onRetry={() => void detailQuery.refetch()}
-        onBack={() => navigate({ to: listTo as never })}
+        onBack={() => safeNavigate(navigate, { to: listTo })}
       />
     )
   }
@@ -125,7 +124,7 @@ export function ShiftDetailPage() {
           break_duration_minutes: Number(draft.break_duration_minutes ?? 60),
         },
         {
-          onSuccess: () => navigate({ to: listTo as never }),
+          onSuccess: () => safeNavigate(navigate, { to: listTo }),
         },
       )
       return
@@ -262,7 +261,7 @@ export function ShiftDetailPage() {
                       key={e.employmentId}
                       className="bv-row-hover cursor-pointer"
                       onClick={() =>
-                        navigate({
+                        safeNavigate(navigate, {
                           to: '/workforce/employees/$employeeId',
                           params: { employeeId: String(e.employmentId) },
                         })
