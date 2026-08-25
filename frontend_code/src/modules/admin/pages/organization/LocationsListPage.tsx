@@ -15,6 +15,7 @@ import {
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
 import { useListControls } from '@/shared/hooks/useListControls'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useLocationsList } from '../../hooks/use-organization-locations'
 import type { LocationRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
@@ -68,6 +69,12 @@ export function LocationsListPage() {
   const active = items.filter((l) => !l.is_archived).length
   const archived = items.filter((l) => l.is_archived).length
 
+  const openLocation = (loc: LocationRow) =>
+    safeNavigate(navigate, {
+      to: '/admin/settings/locations/$locationId',
+      params: { locationId: String(loc.id) },
+    })
+
   const openLocationOverview = (loc: LocationRow) => {
     openPanel({
       title: loc.name,
@@ -77,11 +84,7 @@ export function LocationsListPage() {
       statusDotClass: loc.is_archived ? 'bg-slate-400' : 'bg-emerald-500',
       content: <LocationQuickContent loc={loc} />,
       fullRecordLabel: 'Open full record',
-      onOpenFull: () =>
-        navigate({
-          to: '/admin/settings/locations/$locationId',
-          params: { locationId: String(loc.id) },
-        }),
+      onOpenFull: () => openLocation(loc),
       widthClass: 'max-w-[520px]',
     })
   }
@@ -102,7 +105,7 @@ export function LocationsListPage() {
         <Button
           variant="primary"
           leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
-          onClick={() => navigate({ to: '/admin/settings/offices/new' })}
+          onClick={() => safeNavigate(navigate, { to: '/admin/settings/offices/new' })}
         >
           Add Location
         </Button>
@@ -136,7 +139,7 @@ export function LocationsListPage() {
           title="No locations"
           description="Add an office location to configure attendance radius, timezone, and payroll region."
           actionLabel="Add Location"
-          onAction={() => navigate({ to: '/admin/settings/offices/new' })}
+          onAction={() => safeNavigate(navigate, { to: '/admin/settings/offices/new' })}
         />
       ) : (
         <div className="bv-surface overflow-hidden relative">
@@ -196,11 +199,7 @@ export function LocationsListPage() {
                             id: 'details',
                             label: 'View details',
                             icon: 'description',
-                            onClick: () =>
-                              navigate({
-                                to: '/admin/settings/locations/$locationId',
-                                params: { locationId: String(loc.id) },
-                              }),
+                            onClick: () => openLocation(loc),
                           },
                         ]}
                       />
