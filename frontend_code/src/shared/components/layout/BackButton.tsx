@@ -1,5 +1,6 @@
 import { useNavigate } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { BackButtonProps } from '@/shared/types'
 
 export function BackButton({ to, from: _from, label = 'Back', className }: BackButtonProps) {
@@ -10,13 +11,11 @@ export function BackButton({ to, from: _from, label = 'Back', className }: BackB
       window.history.back()
       return
     }
-    // Router search often typed as `never` for routes without real search params;
-    // cast avoids MakeRequiredSearchParams / ParamsReducerFn conflicts.
     if (to) {
-      void navigate({ to } as never)
+      safeNavigate(navigate, { to })
       return
     }
-    void navigate({ to: '/dashboard' } as never)
+    safeNavigate(navigate, { to: '/dashboard' })
   }
 
   return (
