@@ -1,5 +1,4 @@
 import { Select } from '@/shared/components/ui/Select'
-import type { PipelineStage, LeadPriority } from '../types'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -21,8 +20,11 @@ export interface LeadFiltersBarProps {
   onPriorityChange: (v: string) => void
   sourceFilter: string
   onSourceChange: (v: string) => void
-  stages: PipelineStage[]
-  priorities: LeadPriority[]
+  /** Loaded from GET /sales/leads/filter-options */
+  statuses: string[]
+  stages: string[]
+  priorities: string[]
+  sources: string[]
   onReset: () => void
 }
 
@@ -37,13 +39,15 @@ export function LeadFiltersBar({
   onPriorityChange,
   sourceFilter,
   onSourceChange,
+  statuses,
   stages,
   priorities,
+  sources,
   onReset,
 }: LeadFiltersBarProps) {
   return (
-    <div className="flex flex-wrap items-center gap-3 bg-surface-container-low p-4 rounded-xl border border-outline-variant">
-      <div className="relative flex-1 min-w-[200px]">
+    <div className="flex flex-nowrap items-center gap-2 bg-surface-container-low p-3 rounded-xl border border-outline-variant overflow-x-auto">
+      <div className="relative flex-1 min-w-[10rem] max-w-[16rem]">
         <Icon
           name="search"
           className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg"
@@ -61,17 +65,16 @@ export function LeadFiltersBar({
         placeholder="All Status"
         options={[
           { value: 'All', label: 'All Status' },
-          { value: 'Active', label: 'Active' },
-          { value: 'Inactive', label: 'Inactive' },
+          ...statuses.map((s) => ({ value: s, label: s })),
         ]}
-        minWidthClass="min-w-[130px]"
+        minWidthClass="min-w-[7rem] max-w-[10rem]"
       />
       <Select
         value={stageFilter}
         onChange={onStageChange}
         placeholder="All Stages"
         options={[{ value: 'All', label: 'All Stages' }, ...stages.map((s) => ({ value: s, label: s }))]}
-        minWidthClass="min-w-[140px]"
+        minWidthClass="min-w-[7rem] max-w-[10rem]"
       />
       <Select
         value={priorityFilter}
@@ -81,7 +84,7 @@ export function LeadFiltersBar({
           { value: 'All', label: 'All Priority' },
           ...priorities.map((p) => ({ value: p, label: p })),
         ]}
-        minWidthClass="min-w-[130px]"
+        minWidthClass="min-w-[7rem] max-w-[10rem]"
       />
       <Select
         value={sourceFilter}
@@ -89,16 +92,13 @@ export function LeadFiltersBar({
         placeholder="All Sources"
         options={[
           { value: 'All', label: 'All Sources' },
-          { value: 'LinkedIn', label: 'LinkedIn' },
-          { value: 'Referral', label: 'Referral' },
-          { value: 'Website', label: 'Website' },
-          { value: 'Direct Referral', label: 'Direct Referral' },
+          ...sources.map((s) => ({ value: s, label: s })),
         ]}
-        minWidthClass="min-w-[140px]"
+        minWidthClass="min-w-[7rem] max-w-[10rem]"
       />
       <button
         type="button"
-        className="p-2 text-secondary border border-outline-variant rounded-lg hover:bg-secondary/5"
+        className="p-2 text-secondary border border-outline-variant rounded-lg hover:bg-secondary/5 shrink-0"
         onClick={onReset}
         aria-label="Reset filters"
       >

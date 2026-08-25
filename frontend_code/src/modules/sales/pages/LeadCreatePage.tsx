@@ -1,65 +1,152 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
-import { leads } from '../data/mock'
+import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import {
+  getLeadById,
+  getLeadFilterOptions,
+  listSalesRepresentatives,
+} from '../api/sales'
+import { useCreateLead, useUpdateLead } from '../hooks/use-sales'
 import type { LeadPriority, PipelineStage, RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
-
-const stages: PipelineStage[] = [
-  'New',
-  'Contacted',
-  'Qualified',
-  'Proposal',
-  'Negotiation',
-  'Won',
-  'Lost',
-]
-const priorities: LeadPriority[] = ['Critical', 'High', 'Medium', 'Low']
-const sources = ['LinkedIn', 'Website', 'Referral', 'Direct Referral', 'Event', 'Other']
-
-/** Mock employment options — replace with workforce employees query later */
-const SALES_REPS = [
-  { value: '', label: 'Unassigned' },
-  { value: 'Alex Rivera', label: 'Alex Rivera' },
-  { value: 'Jordan Lee', label: 'Jordan Lee' },
-  { value: 'Sam Patel', label: 'Sam Patel' },
-  { value: 'Morgan Chen', label: 'Morgan Chen' },
-  { value: 'Casey Brooks', label: 'Casey Brooks' },
-]
 
 export function LeadCreatePage() {
   const navigate = useNavigate()
   const params = useParams({ strict: false }) as { leadId?: string }
-  const existing = params.leadId ? leads.find((l) => l.id === params.leadId) : undefined
-  const isEdit = Boolean(existing)
+  const isEdit = Boolean(params.leadId)
 
-  const [title, setTitle] = useState(existing?.title ?? '')
-  const [contactName, setContactName] = useState(existing?.contactName ?? '')
-  const [contactTitle, setContactTitle] = useState(existing?.contactTitle ?? '')
-  const [company, setCompany] = useState(existing?.company ?? '')
-  const [industry, setIndustry] = useState(existing?.industry ?? '')
-  const [email, setEmail] = useState(existing?.email ?? '')
-  const [phone, setPhone] = useState(existing?.phone ?? '')
-  const [source, setSource] = useState(existing?.source ?? 'LinkedIn')
-  const [priority, setPriority] = useState<LeadPriority>(existing?.priority ?? 'Medium')
-  const [status, setStatus] = useState<RecordStatus>(existing?.status ?? 'Active')
-  const [stage, setStage] = useState<PipelineStage>(existing?.stage ?? 'New')
-  const [budget, setBudget] = useState(existing?.budget?.toString() ?? '')
-  const [date, setDate] = useState(existing?.date ?? '')
-  const [assignedTo, setAssignedTo] = useState(existing?.assignedTo ?? '')
-  const [notes, setNotes] = useState(existing?.notes ?? '')
-  const [chatLink, setChatLink] = useState(existing?.chatLink ?? '')
-  const [saving, setSaving] = useState(false)
+  const existingQuery = useQuery({
+    queryKey: ['sales', 'leads', 'detail', params.leadId],
+    queryFn: () => getLeadById(params.leadId!),
+    enabled: Boolean(params.leadId),
+  })
+  const filterOptionsQuery = useQuery({
+    queryKey: ['sales', 'leads', 'filter-options'],
+    queryFn: getLeadFilterOptions,
+    staleTime: 60_000,
+  })
+  const repsQuery = useQuery({
+    queryKey: ['sales', 'sales-representatives'],
+    queryFn: listSalesRepresentatives,
+    staleTime: 60_000,
+  })
+
+  const createMut = useCreateLead()
+  const updateMut = useUpdateLead()
+
+  const existing = existingQuery.data
+
+  const [title, setTitle] = useState('')
+  const [contactName, setContactName] = useState('')
+  const [contactTitle, setContactTitle] = useState('')
+  const [company, setCompany] = useState('')
+  const [industry, setIndustry] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  const [source, setSource] = useState('LinkedIn')
+  const [priority, setPriority] = useState<LeadPriority>('Medium')
+  const [status, setStatus] = useState<RecordStatus>('Active')
+  const [stage, setStage] = useState<PipelineStage>('New')
+  const [budget, setBudget] = useState('')
+  const [date, setDate] = useState('')
+  const [assignedEmploymentId, setAssignedEmploymentId] = useState('')
+  const [notes, setNotes] = useState('')
+  const [chatLink, setChatLink] = useState('')
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!existing) return
+    setTitle(existing.title ?? '')
+    setContactName(existing.contactName ?? '')
+    setContactTitle(existing.contactTitle ?? '')
+    setCompany(existing.company ?? '')
+    setIndustry(existing.industry ?? '')
+    setEmail(existing.email ?? '')
+    setPhone(existing.phone ?? '')
+    setSource(existing.source ?? 'LinkedIn')
+    setPriority(existing.priority ?? 'Medium')
+    setStatus(existing.status ?? 'Active')
+    setStage(existing.stage ?? 'New')
+    setBudget(existing.budget != null ? String(existing.budget) : '')
+    setDate(existing.date ?? '')
+    setNotes(existing.notes ?? '')
+    setChatLink(existing.chatLink ?? '')
+  }, [existing])
+
+  // Match assigned rep by name when employment id not on record
+  useEffect(() => {
+    if (!existing?.assignedTo || !repsQuery.data?.length) return
+    if (assignedEmploymentId) return
+    const match = repsQuery.data.find(
+      (r) => r.name.toLowerCase() === existing.assignedTo!.toLowerCase(),
+    )
+    if (match) setAssignedEmploymentId(String(match.employmentId))
+  }, [existing, repsQuery.data, assignedEmploymentId])
+
+  const stages = filterOptionsQuery.data?.stages ?? []
+  const priorities = filterOptionsQuery.data?.priorities ?? []
+  const sources = filterOptionsQuery.data?.sources ?? []
+  const statuses = filterOptionsQuery.data?.statuses ?? ['Active', 'Inactive']
+
+  const repOptions = useMemo(() => {
+    const items = repsQuery.data ?? []
+    return [
+      { value: '', label: 'Unassigned' },
+      ...items.map((r) => ({
+        value: String(r.employmentId),
+        label: `${r.name} (${r.employeeCode})`,
+      })),
+    ]
+  }, [repsQuery.data])
+
+  const saving = createMut.isPending || updateMut.isPending
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setSaving(true)
-    await new Promise((r) => setTimeout(r, 400))
-    setSaving(false)
-    navigate({ to: '/sales/leads' })
+    setError('')
+    if (!title.trim() || !contactName.trim()) {
+      setError('Title and contact name are required.')
+      return
+    }
+    const selectedRep = (repsQuery.data ?? []).find(
+      (r) => String(r.employmentId) === assignedEmploymentId,
+    )
+    const payload = {
+      title: title.trim(),
+      contactName: contactName.trim(),
+      contactTitle: contactTitle.trim() || undefined,
+      company: company.trim(),
+      industry: industry.trim() || undefined,
+      email: email.trim() || undefined,
+      phone: phone.trim() || undefined,
+      source,
+      priority,
+      status,
+      stage,
+      budget: budget ? Number(budget) : 0,
+      date: date || undefined,
+      assignedEmploymentId: assignedEmploymentId ? Number(assignedEmploymentId) : null,
+      assignedTo: selectedRep?.name,
+      notes: notes.trim() || undefined,
+      chatLink: chatLink.trim() || undefined,
+    }
+    try {
+      if (isEdit && params.leadId) {
+        await updateMut.mutateAsync({ id: params.leadId, patch: payload })
+      } else {
+        await createMut.mutateAsync(payload)
+      }
+      navigate({ to: '/sales' })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Save failed')
+    }
   }
+
+  if (isEdit && existingQuery.isLoading) return <PageLoadingSkeleton />
 
   const fieldClass =
     'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors'
@@ -75,7 +162,7 @@ export function LeadCreatePage() {
             : 'Capture a new opportunity. Client is optional until the lead is won.'
         }
         showBack
-        backTo="/sales/leads"
+        backTo="/sales"
         backLabel="Back to leads"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
@@ -83,16 +170,18 @@ export function LeadCreatePage() {
               Sales
             </Link>
             <span className="mx-2">/</span>
-            <Link to="/sales/leads" className="hover:text-secondary">
-              Leads
-            </Link>
-            <span className="mx-2">/</span>
             <span className="text-on-surface">{isEdit ? 'Edit' : 'New'}</span>
           </nav>
         }
       />
 
-      <form onSubmit={handleSubmit} className="space-y-5 max-w-4xl">
+      {error && (
+        <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5 max-w-4xl">
         <section className="bv-surface p-6 space-y-4">
           <h2 className="text-title-md font-semibold text-on-background flex items-center gap-2">
             <span className="material-symbols-outlined text-secondary">badge</span>
@@ -216,10 +305,7 @@ export function LeadCreatePage() {
               label="Status"
               value={status}
               onChange={(v) => setStatus(v as RecordStatus)}
-              options={[
-                { value: 'Active', label: 'Active' },
-                { value: 'Inactive', label: 'Inactive' },
-              ]}
+              options={statuses.map((s) => ({ value: s, label: s }))}
               minWidthClass="w-full"
             />
             <Select
@@ -267,12 +353,15 @@ export function LeadCreatePage() {
             <div>
               <Select
                 label="Assigned sales representative"
-                value={assignedTo}
-                onChange={setAssignedTo}
-                placeholder="Select employee"
-                options={SALES_REPS}
+                value={assignedEmploymentId}
+                onChange={setAssignedEmploymentId}
+                placeholder="Select Sales employee"
+                options={repOptions}
                 minWidthClass="w-full"
               />
+              <p className="text-[11px] text-on-surface-variant mt-1">
+                Employees currently assigned to the Sales department.
+              </p>
             </div>
           </div>
         </section>
@@ -282,9 +371,6 @@ export function LeadCreatePage() {
             <span className="material-symbols-outlined text-secondary">chat</span>
             Chat with client
           </h2>
-          <p className="text-body-sm text-on-surface-variant">
-            Paste the conversation URL so the team can open the thread from the lead record and list.
-          </p>
           <div>
             <label className={labelClass} htmlFor="chatLink">
               Chat link
@@ -318,7 +404,7 @@ export function LeadCreatePage() {
           <Button type="submit" variant="primary" isLoading={saving}>
             {isEdit ? 'Save changes' : 'Create lead'}
           </Button>
-          <Button type="button" variant="ghost" onClick={() => navigate({ to: '/sales/leads' })}>
+          <Button type="button" variant="ghost" onClick={() => navigate({ to: '/sales' })}>
             Cancel
           </Button>
         </div>

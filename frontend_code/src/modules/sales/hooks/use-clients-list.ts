@@ -1,6 +1,8 @@
 import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
+import { getClientFilterOptions } from '../api/sales'
 import { useClientsQuery } from './use-sales'
 import type { Client } from '../types'
 
@@ -12,6 +14,12 @@ const FILTER_DEFAULTS = {
 export function useClientsList() {
   const controls = useListControls({
     filterDefaults: FILTER_DEFAULTS,
+  })
+
+  const filterOptionsQuery = useQuery({
+    queryKey: ['sales', 'clients', 'filter-options'],
+    queryFn: getClientFilterOptions,
+    staleTime: 60_000,
   })
 
   const { data, isLoading, isError, refetch, isFetching } = useClientsQuery({
@@ -32,7 +40,6 @@ export function useClientsList() {
   const pageItems = useMemo(() => controls.pageItems(filtered), [controls, filtered])
 
   const startLongPress = (id: string) => selection.onRowPressStart(id)
-  /** Short press runs onShortPress (e.g. open shared QuickOverview) */
   const endLongPress = (client: Client, onShortPress?: (c: Client) => void) => {
     selection.onRowPressEnd(client.id, () => onShortPress?.(client))
   }
@@ -42,7 +49,7 @@ export function useClientsList() {
     metrics,
     totalCount,
     filtered,
-    isLoading,
+    isLoading: isLoading || filterOptionsQuery.isLoading,
     isError,
     refetch,
     isFetching,
@@ -52,6 +59,10 @@ export function useClientsList() {
     setStatusFilter: (v: string) => controls.setFilter('status', v),
     typeFilter: controls.filters.type,
     setTypeFilter: (v: string) => controls.setFilter('type', v),
+    statuses: filterOptionsQuery.data?.statuses ?? [],
+    types: filterOptionsQuery.data?.types ?? [],
+    industries: filterOptionsQuery.data?.industries ?? [],
+    countries: filterOptionsQuery.data?.countries ?? [],
     resetFilters: controls.resetAll,
     filtersActive: controls.anyActive,
     page: controls.page,
