@@ -25,8 +25,7 @@ export function HolidayCalendarsPage() {
       void navigate({
         to: '/admin/settings/holidays/$calendarId',
         params: { calendarId: String(row.id) },
-        search: {},
-      })
+      } as never)
     },
     onError: () => {
       // Errors surface via createMut.error in the UI
@@ -90,9 +89,8 @@ export function HolidayCalendarsPage() {
         {items.map((c) => (
           <Link
             key={c.id}
-            to="/admin/settings/holidays/$calendarId"
-            params={{ calendarId: String(c.id) }}
-            search={{}}
+            to={"/admin/settings/holidays/$calendarId" as never}
+            params={{ calendarId: String(c.id) } as never}
             className="block bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm card-hover"
           >
             <div className="flex items-center justify-between">
