@@ -3,6 +3,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { usePositions } from '../../hooks/use-organization'
 import { cn } from '@/shared/lib/cn'
 
@@ -26,7 +27,7 @@ export function PositionsListPage() {
             variant="primary"
             size="sm"
             leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-            onClick={() => navigate({ to: '/admin/settings/positions/new' })}
+            onClick={() => safeNavigate(navigate, { to: '/admin/settings/positions/new' })}
           >
             Create Position
           </Button>
@@ -46,7 +47,7 @@ export function PositionsListPage() {
                 key={p.id}
                 className="border-b border-outline-variant last:border-0 bv-row-hover cursor-pointer"
                 onClick={() =>
-                  navigate({
+                  safeNavigate(navigate, {
                     to: '/admin/settings/positions/$positionId',
                     params: { positionId: String(p.id) },
                   })
