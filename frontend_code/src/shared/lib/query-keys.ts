@@ -11,7 +11,7 @@ export const queryKeys = {
     },
     roles: {
       all: ['admin', 'roles'] as const,
-      list: (filters?: unknown) => [...queryKeys.admin.roles.all, 'list', filters ?? {}] as const,
+      list: () => [...queryKeys.admin.roles.all, 'list'] as const,
       metrics: () => ['admin', 'metrics', 'roles'] as const,
     },
     audit: {
@@ -20,8 +20,7 @@ export const queryKeys = {
     },
     leave: {
       all: ['admin', 'leave'] as const,
-      policies: (filters?: unknown) =>
-        [...queryKeys.admin.leave.all, 'policies', filters ?? {}] as const,
+      policies: () => [...queryKeys.admin.leave.all, 'policies'] as const,
       ledger: (filters?: unknown) => [...queryKeys.admin.leave.all, 'ledger', filters ?? {}] as const,
     },
   },
@@ -127,13 +126,26 @@ export const queryKeys = {
     detail: (id: number) => ['approvals', 'detail', id] as const,
   },
   myWork: {
-    attendance: ['my-work', 'attendance'] as const,
-    leave: ['my-work', 'leave'] as const,
+    attendance: {
+      all: ['my-work', 'attendance'] as const,
+      list: (filters?: unknown) => [...queryKeys.myWork.attendance.all, 'list', filters ?? {}] as const,
+    },
+    leave: {
+      all: ['my-work', 'leave'] as const,
+      list: (filters?: unknown) => [...queryKeys.myWork.leave.all, 'list', filters ?? {}] as const,
+      balances: () => [...queryKeys.myWork.leave.all, 'balances'] as const,
+    },
     tasks: {
       all: ['my-work', 'tasks'] as const,
       list: (filters?: unknown) => [...queryKeys.myWork.tasks.all, 'list', filters ?? {}] as const,
     },
-    overview: ['my-work', 'overview'] as const,
+    corrections: {
+      all: ['my-work', 'corrections'] as const,
+      list: (filters?: unknown) => [...queryKeys.myWork.corrections.all, 'list', filters ?? {}] as const,
+    },
+    overview: () => ['my-work', 'overview'] as const,
+    bankDetails: () => ['my-work', 'bank-details'] as const,
+    approvers: () => ['my-work', 'approvers'] as const,
   },
 } as const
 
@@ -164,4 +176,8 @@ export const invalidate = {
   orgShifts: (qc: Qc) =>
     void qc.invalidateQueries({ queryKey: queryKeys.organization.shifts.all }),
   myWorkTasks: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.tasks.all }),
+  myWorkLeave: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.leave.all }),
+  myWorkAttendance: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.attendance.all }),
+  myWorkCorrections: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.corrections.all }),
+  myWorkBank: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.bankDetails() }),
 }

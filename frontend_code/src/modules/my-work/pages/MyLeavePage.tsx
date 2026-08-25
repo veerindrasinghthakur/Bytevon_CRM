@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { leaveBalances, leaveRequests } from '../data/mock'
+import { useMyLeave } from '../hooks/use-my-leave'
 import { LeaveBalanceTab } from '../components/leave/LeaveBalanceTab'
 import { LeaveHistoryTab } from '../components/leave/LeaveHistoryTab'
 import { LeaveCalendarTab } from '../components/leave/LeaveCalendarTab'
@@ -12,36 +12,27 @@ type Tab = 'balance' | 'history' | 'calendar'
 export function MyLeavePage() {
   const navigate = useNavigate()
   const [tab, setTab] = useState<Tab>('balance')
-  const [statusFilter, setStatusFilter] = useState<string>('All')
-  const [typeFilter, setTypeFilter] = useState<string>('All')
-  const [search, setSearch] = useState('')
-  const [loading] = useState(false)
   const [calMonth, setCalMonth] = useState(() => {
     const n = new Date()
     return new Date(n.getFullYear(), n.getMonth(), 1)
   })
 
-  const filtered = useMemo(() => {
-    return leaveRequests.filter((r) => {
-      if (statusFilter !== 'All' && r.status !== statusFilter) return false
-      if (typeFilter !== 'All' && r.type !== typeFilter) return false
-      if (search) {
-        const q = search.toLowerCase()
-        if (
-          !r.reason.toLowerCase().includes(q) &&
-          !r.type.toLowerCase().includes(q) &&
-          !r.id.toLowerCase().includes(q)
-        )
-          return false
-      }
-      return true
-    })
-  }, [statusFilter, typeFilter, search])
+  const {
+    requests,
+    balances,
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    typeFilter,
+    setTypeFilter,
+    isLoading,
+  } = useMyLeave()
 
-  const totalRemaining = leaveBalances.reduce((s, b) => s + b.remaining, 0)
-  const totalUsed = leaveBalances.reduce((s, b) => s + b.used, 0)
-  const totalAllocated = leaveBalances.reduce((s, b) => s + b.total, 0)
-  const pendingDays = leaveRequests
+  const totalRemaining = balances.reduce((s, b) => s + b.remaining, 0)
+  const totalUsed = balances.reduce((s, b) => s + b.used, 0)
+  const totalAllocated = balances.reduce((s, b) => s + b.total, 0)
+  const pendingDays = requests
     .filter((r) => r.status === 'Pending')
     .reduce((s, r) => s + r.days, 0)
 
@@ -96,12 +87,13 @@ export function MyLeavePage() {
           totalUsed={totalUsed}
           totalRemaining={totalRemaining}
           pendingDays={pendingDays}
+          balances={balances}
         />
       )}
       {tab === 'history' && (
         <LeaveHistoryTab
-          filtered={filtered}
-          loading={loading}
+          filtered={requests}
+          loading={isLoading}
           search={search}
           setSearch={setSearch}
           statusFilter={statusFilter}
