@@ -260,7 +260,7 @@ export function LeadsListPage() {
   const rangeTo = Math.min(page * pageSize, totalCount)
 
   return (
-    <div className="space-y-6 relative">
+    <div className="space-y-6 relative animate-fade-in">
       <PageHeader
         title="Lead Management"
         description="Manage leads, assign ownership, qualify prospects and track progress through the sales pipeline."
@@ -355,7 +355,7 @@ export function LeadsListPage() {
       </ListToolbar>
 
       {selectionMode && (
-        <div className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl border border-secondary/30 bg-secondary/5">
+        <div className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl border border-secondary/30 bg-secondary/5 executive-shadow">
           <span className="text-body-sm font-semibold text-on-surface">
             {selectedIds.size} selected
             <span className="text-on-surface-variant font-normal"> (of {filtered.length} on this page)</span>
@@ -386,7 +386,7 @@ export function LeadsListPage() {
       )}
 
       {!isError && (
-        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden relative">
+        <div className="bv-surface overflow-hidden relative">
           {(isLoading || isFetching) && (
             <div className="absolute inset-0 z-10 bg-surface-container-lowest/70 backdrop-blur-[1px]">
               <TableSkeleton rows={6} />
@@ -394,7 +394,7 @@ export function LeadsListPage() {
           )}
           <div ref={parentRef} className="overflow-x-auto max-h-[640px] overflow-y-auto">
             <table className="w-full text-left border-collapse">
-              <thead className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container-low/90 backdrop-blur-[2px] shadow-sm">
+              <thead className="sticky top-0 z-10 border-b border-outline-variant bg-surface-container-low/90 backdrop-blur-[2px]">
                 <tr>
                   <th className="px-3 py-3 w-12 text-center">
                     {selectionMode ? (
@@ -434,8 +434,8 @@ export function LeadsListPage() {
                     <tr
                       key={lead.id}
                       className={cn(
-                        'transition-colors cursor-pointer group select-none',
-                        isSelected ? 'bg-secondary/10' : 'hover:bg-surface-container-low/50',
+                        'cursor-pointer group select-none',
+                        isSelected ? 'bg-secondary/10' : 'zebra-row',
                       )}
                       onMouseDown={() => startLongPress(lead.id)}
                       onMouseUp={() => endLongPress(lead, openLeadOverview)}

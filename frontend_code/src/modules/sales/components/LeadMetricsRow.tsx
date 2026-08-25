@@ -25,10 +25,10 @@ export function LeadMetricsRow({ metrics }: { metrics: LeadMetric[] }) {
         <div
           key={m.id}
           className={cn(
-            'p-5 rounded-xl border border-outline-variant shadow-sm hover:shadow-md transition-shadow',
+            'p-5 card-hover',
             m.id === 'pipeline'
-              ? 'bg-primary-container text-white border-primary-container'
-              : 'bg-surface-container-lowest',
+              ? 'rounded-xl border border-primary-container bg-primary-container text-white executive-shadow'
+              : 'bv-surface',
           )}
         >
           <div className="flex justify-between items-start mb-2">
