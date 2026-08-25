@@ -22,9 +22,10 @@ export function HolidayCalendarsPage() {
       await qc.invalidateQueries({ queryKey: ['organization', 'holiday-calendars'] })
       setCreating(false)
       setName('')
-      navigate({
+      void navigate({
         to: '/admin/settings/holidays/$calendarId',
         params: { calendarId: String(row.id) },
+        search: {},
       })
     },
     onError: () => {
@@ -91,6 +92,7 @@ export function HolidayCalendarsPage() {
             key={c.id}
             to="/admin/settings/holidays/$calendarId"
             params={{ calendarId: String(c.id) }}
+            search={{}}
             className="block bg-surface-container-lowest rounded-xl border border-outline-variant p-5 shadow-sm card-hover"
           >
             <div className="flex items-center justify-between">
