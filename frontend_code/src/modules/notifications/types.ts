@@ -1,98 +1,32 @@
-export type NotificationPriority = 'Low' | 'Normal' | 'High' | 'Critical'
-export type NotificationStatus = 'Unread' | 'Read' | 'Archived'
-export type DeliveryChannel = 'In-App' | 'Email' | 'SMS' | 'Push'
-export type DeliveryStatus = 'Delivered' | 'Pending' | 'Failed'
+/** Re-export all types from schemas — single source of truth (MODULE_STANDARDS §3.4) */
 
-export type NotificationTabId = 'all' | 'unread' | 'mentions' | 'high' | 'archived'
+export type {
+  NotificationPriority,
+  NotificationStatus,
+  NotificationTabId,
+  AppNotification,
+  NotificationListResponse,
+  NotificationKpi,
+  NotificationTab,
+} from './schemas/notification'
 
-export interface NotificationTab {
-  id: NotificationTabId
-  label: string
-}
+export type {
+  DeliveryChannel,
+  DeliveryStatus,
+  SentNotificationRow,
+  SentListResponse,
+  SentKpi,
+} from './schemas/sent'
 
-export interface NotificationKpi {
-  id: string
-  label: string
-  value: string
-  hint: string
-  hintTone: 'positive' | 'danger' | 'neutral'
-  icon: string
-}
+export type {
+  NotificationTrigger,
+  ChannelCard,
+} from './schemas/settings'
 
-export interface AppNotification {
-  id: string
-  title: string
-  body: string
-  module: string
-  priority: NotificationPriority
-  status: NotificationStatus
-  timeAgo: string
-  createdAt: string
-  icon: string
-  tags?: string[]
-  actor?: string
-  employeeId?: string
-  /** Route path for Open related record */
-  relatedHref?: string
-  note?: string
-  meta?: { label: string; value: string }[]
-  timeline?: { title: string; time: string; detail: string; active?: boolean }[]
-}
+export type {
+  ComposeNotificationForm,
+  ComposeNotificationInput,
+  ComposeDeliveryResult,
+} from './schemas/notification-form'
 
-export interface SentNotificationRow {
-  id: string
-  recipientName: string
-  recipientContact: string
-  initials?: string
-  title: string
-  preview: string
-  status: DeliveryStatus
-  type: DeliveryChannel
-  sentAt: string
-}
-
-export interface SentKpi {
-  id: string
-  label: string
-  value: string
-  hint: string
-  icon: string
-  danger?: boolean
-}
-
-export interface NotificationTrigger {
-  id: string
-  event: string
-  description: string
-  channels: DeliveryChannel[]
-  recipients: string
-  lastTriggered: string
-  enabled: boolean
-}
-
-export interface ChannelCard {
-  id: string
-  title: string
-  description: string
-  icon: string
-  enabled: boolean
-}
-
-export interface ComposeNotificationInput {
-  title: string
-  body: string
-  priority: NotificationPriority
-  moduleCtx: string
-  broadcastAll: boolean
-  roles: string[]
-  channels: { inApp: boolean; email: boolean; sms: boolean; push: boolean }
-  scheduleMode: 'now' | 'later'
-  /** ISO local datetime when scheduleMode is later */
-  scheduleAt?: string
-  attachmentNames?: string[]
-}
-
-export interface ComposeDeliveryResult {
-  queued: number
-  sentRows: SentNotificationRow[]
-}
+export { emptyComposeForm } from './schemas/notification-form'
