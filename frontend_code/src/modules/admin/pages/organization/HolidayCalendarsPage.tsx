@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useHolidayCalendars } from '../../hooks/use-organization'
 import { createHolidayCalendar } from '../../api/organization'
 import { cn } from '@/shared/lib/cn'
@@ -22,10 +23,10 @@ export function HolidayCalendarsPage() {
       await qc.invalidateQueries({ queryKey: ['organization', 'holiday-calendars'] })
       setCreating(false)
       setName('')
-      void navigate({
+      safeNavigate(navigate, {
         to: '/admin/settings/holidays/$calendarId',
         params: { calendarId: String(row.id) },
-      } as never)
+      })
     },
     onError: () => {
       // Errors surface via createMut.error in the UI
