@@ -7,7 +7,7 @@ export const queryKeys = {
   admin: {
     users: {
       all: ['admin', 'users'] as const,
-      list: () => [...queryKeys.admin.users.all, 'list'] as const,
+      list: (filters?: unknown) => [...queryKeys.admin.users.all, 'list', filters ?? {}] as const,
     },
     roles: {
       all: ['admin', 'roles'] as const,
