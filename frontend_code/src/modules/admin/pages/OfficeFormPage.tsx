@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
@@ -37,20 +37,22 @@ export function OfficeFormPage() {
   })
   const [error, setError] = useState<string | null>(null)
 
+  // Seed the form once per office so background refetches never wipe edits
+  const seededOfficeIdRef = useRef<number | null>(null)
   useEffect(() => {
-    if (existing) {
-      setForm({
-        name: existing.name,
-        country: existing.country,
-        city: existing.city,
-        state: existing.state ?? '',
-        timezone: existing.timezone,
-        currency: existing.currency,
-        fiscalMonth: existing.fiscal_year_start_month ?? 4,
-        address: existing.address,
-        postal: '',
-      })
-    }
+    if (!existing || seededOfficeIdRef.current === existing.id) return
+    seededOfficeIdRef.current = existing.id
+    setForm({
+      name: existing.name,
+      country: existing.country,
+      city: existing.city,
+      state: existing.state ?? '',
+      timezone: existing.timezone,
+      currency: existing.currency,
+      fiscalMonth: existing.fiscal_year_start_month ?? 4,
+      address: existing.address,
+      postal: '',
+    })
   }, [existing])
 
   const set = (k: keyof typeof form, v: string | number) => setForm((p) => ({ ...p, [k]: v }))

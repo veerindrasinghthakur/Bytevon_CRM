@@ -68,7 +68,8 @@ export function UserDetailPage() {
   const [tempPassword, setTempPassword] = useState('')
 
   useEffect(() => {
-    if (!display) return
+    // Skip while editing so background refetches never wipe in-progress changes
+    if (!display || isEditing) return
     setStatus(display.status)
     setName(display.name)
     setEmail(display.email)
@@ -83,7 +84,7 @@ export function UserDetailPage() {
           ? String(deptsQuery.data.find((d) => d.name === display.department)!.id)
           : ''
     setDepartmentId(deptId)
-  }, [display, rolesQuery.data, deptsQuery.data])
+  }, [display, isEditing, rolesQuery.data, deptsQuery.data])
 
   const roleOptions =
     rolesQuery.data?.map((r) => ({

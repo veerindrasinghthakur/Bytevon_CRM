@@ -1,20 +1,8 @@
 /** Administration domain types */
 
-export type AdminUserStatus = 'Active' | 'Inactive' | 'Locked'
 export type AdminRoleStatus = 'Active' | 'Archived'
 export type AdminRoleCategory = 'Core Role' | 'Operational' | 'Financial' | 'Standard'
 export type SecurityEventStatus = 'Success' | 'Blocked' | 'Warning'
-
-export interface AdminUser {
-  id: string
-  name: string
-  email: string
-  role: string
-  department: string
-  status: AdminUserStatus
-  lastLogin: string
-  initials: string
-}
 
 export interface AdminRole {
   id: string
@@ -48,17 +36,6 @@ export interface SecurityEvent {
   source: string
   timestamp: string
   status: SecurityEventStatus
-}
-
-export interface AdminKpis {
-  users: number
-  roles: number
-  activeSessions: number
-  auditEventsToday: number
-  configHealth: 'Good' | 'Warning' | 'Critical'
-  securityScore: number
-  mfaAdoption: number
-  openAlerts: number
 }
 
 export interface LeaveTypeSettingRow {
@@ -198,7 +175,13 @@ export interface AdminHubMetrics {
   offices: number
   departments: number
   employees: number
+  securityScore?: number
+  mfaAdoption?: number
+  openAlerts?: number
 }
+
+/** Canonical KPI shape — AdminKpis kept as an alias for existing imports. */
+export type AdminKpis = AdminHubMetrics
 
 export interface RoleListMetrics {
   totalRoles: number

@@ -2,7 +2,7 @@
 
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
-import { adminKpis, adminRoles, adminUsers, offices } from '../data/mock'
+import { adminKpis, adminRoles, offices } from '../data/mock'
 import type {
   AdminHubMetrics,
   RoleListMetrics,
@@ -37,11 +37,13 @@ export async function getAdminHubMetrics(): Promise<AdminHubMetrics> {
 export async function getRoleListMetrics(): Promise<RoleListMetrics> {
   if (env.useMockApi) {
     await delay()
+    const db = getDb()
+    const logins = (db as { login_users?: Array<{ status?: string }> }).login_users ?? []
     const active = adminRoles.filter((r) => r.status === 'Active')
     return {
       totalRoles: adminRoles.length,
       activeRoles: active.length,
-      activeUsers: adminUsers.filter((u) => u.status === 'Active').length,
+      activeUsers: logins.filter((l) => l.status === 'ACTIVE').length,
       archivedRoles: adminRoles.filter((r) => r.status === 'Archived').length,
     }
   }

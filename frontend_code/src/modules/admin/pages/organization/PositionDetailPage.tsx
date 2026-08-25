@@ -28,8 +28,8 @@ export function PositionDetailPage() {
   const [name, setName] = useState('')
 
   useEffect(() => {
-    if (detailQuery.data) setName(detailQuery.data.name)
-  }, [detailQuery.data])
+    if (detailQuery.data && !isEditing) setName(detailQuery.data.name)
+  }, [detailQuery.data, isEditing])
 
   const saveMut = useMutation({
     mutationFn: async () => {

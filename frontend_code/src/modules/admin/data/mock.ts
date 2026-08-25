@@ -1,6 +1,5 @@
-import { LeaveType } from '@/shared/schema'
+﻿import { LeaveType } from '@/shared/schema'
 import type {
-  AdminUser,
   AdminRole,
   AuditLog,
   SecurityEvent,
@@ -14,60 +13,7 @@ import type {
   LeaveAccrualPolicy,
 } from '../types'
 
-export type { AdminUser, AdminRole, AuditLog, SecurityEvent } from '../types'
-
-export const adminUsers: AdminUser[] = [
-  {
-    id: 'U-1001',
-    name: 'Sarah Chen',
-    email: 'sarah.chen@bytevon.com',
-    role: 'Super Admin',
-    department: 'Engineering',
-    status: 'Active',
-    lastLogin: 'Aug 14, 2026 09:12',
-    initials: 'SC',
-  },
-  {
-    id: 'U-1002',
-    name: 'Marcus Chen',
-    email: 'marcus.chen@bytevon.com',
-    role: 'HR Manager',
-    department: 'People',
-    status: 'Active',
-    lastLogin: 'Aug 14, 2026 08:40',
-    initials: 'MC',
-  },
-  {
-    id: 'U-1003',
-    name: 'Elena Rodriguez',
-    email: 'elena.r@bytevon.com',
-    role: 'Finance Lead',
-    department: 'Finance',
-    status: 'Active',
-    lastLogin: 'Aug 13, 2026 17:22',
-    initials: 'ER',
-  },
-  {
-    id: 'U-1004',
-    name: 'David Wilson',
-    email: 'david.w@bytevon.com',
-    role: 'Employee',
-    department: 'Sales',
-    status: 'Locked',
-    lastLogin: 'Aug 10, 2026 11:05',
-    initials: 'DW',
-  },
-  {
-    id: 'U-1005',
-    name: 'Priya Sharma',
-    email: 'priya.s@bytevon.com',
-    role: 'Project Manager',
-    department: 'Delivery',
-    status: 'Inactive',
-    lastLogin: 'Jul 28, 2026 14:18',
-    initials: 'PS',
-  },
-]
+export type { AdminRole, AuditLog, SecurityEvent } from '../types'
 
 export const adminRoles: AdminRole[] = [
   {
@@ -171,7 +117,7 @@ export const auditLogs: AuditLog[] = [
     target: 'David Wilson',
     module: 'Auth',
     timestamp: 'Aug 14, 2026 09:01',
-    ip: '—',
+    ip: 'â€”',
   },
   {
     id: 'AUD-8998',
@@ -188,7 +134,7 @@ export const auditLogs: AuditLog[] = [
     action: 'Permission granted',
     actor: 'Marcus Chen',
     actorInitials: 'MC',
-    target: 'leave.manage → Priya Sharma',
+    target: 'leave.manage â†’ Priya Sharma',
     module: 'Roles',
     timestamp: 'Aug 12, 2026 11:30',
     ip: '10.0.8.22',
@@ -200,7 +146,7 @@ export const securityEvents: SecurityEvent[] = [
     id: 'SEC-1001',
     eventType: 'Successful Login',
     identity: 'sarah.chen@bytevon.com',
-    source: '10.0.12.4 · Chrome',
+    source: '10.0.12.4 Â· Chrome',
     timestamp: 'Aug 14, 2026 09:12',
     status: 'Success',
   },
@@ -208,7 +154,7 @@ export const securityEvents: SecurityEvent[] = [
     id: 'SEC-1000',
     eventType: 'Account Lockout',
     identity: 'david.w@bytevon.com',
-    source: '203.0.113.42 · Unknown',
+    source: '203.0.113.42 Â· Unknown',
     timestamp: 'Aug 14, 2026 09:01',
     status: 'Blocked',
   },
@@ -216,7 +162,7 @@ export const securityEvents: SecurityEvent[] = [
     id: 'SEC-999',
     eventType: 'Password Changed',
     identity: 'marcus.chen@bytevon.com',
-    source: '10.0.8.22 · Safari',
+    source: '10.0.8.22 Â· Safari',
     timestamp: 'Aug 13, 2026 18:44',
     status: 'Success',
   },
@@ -224,7 +170,7 @@ export const securityEvents: SecurityEvent[] = [
     id: 'SEC-998',
     eventType: 'Geo-fence Block',
     identity: 'unknown@external.io',
-    source: '185.220.101.1 · Tor',
+    source: '185.220.101.1 Â· Tor',
     timestamp: 'Aug 13, 2026 14:22',
     status: 'Blocked',
   },
@@ -244,12 +190,15 @@ export const adminKpis: AdminKpis = {
   activeSessions: 86,
   auditEventsToday: 142,
   configHealth: 'Good',
+  offices: 3,
+  departments: 5,
+  employees: 6,
   securityScore: 94,
   mfaAdoption: 88,
   openAlerts: 0,
 }
 
-/** Leave settings page — type cards */
+/** Leave settings page â€” type cards */
 export const leaveTypeSettings: LeaveTypeSettingRow[] = [
   {
     name: 'Annual Leave',
@@ -357,7 +306,7 @@ export const offices: OfficeLocation[] = [
     country: 'United Kingdom',
     city: 'London',
     timezone: 'UTC+00:00 GMT',
-    currency: 'GBP (£)',
+    currency: 'GBP (Â£)',
     fiscal: 'Apr - Mar',
     address: '10 Canary Wharf',
     postal: 'E14 5AB',
@@ -368,7 +317,7 @@ export const offices: OfficeLocation[] = [
     country: 'India',
     city: 'Bengaluru',
     timezone: 'UTC+05:30 IST',
-    currency: 'INR (₹)',
+    currency: 'INR (â‚¹)',
     fiscal: 'Apr - Mar',
     address: 'Manyata Tech Park',
     postal: '560045',
@@ -388,7 +337,7 @@ export const headOfficeList = offices.map((o) => ({
   postal: o.postal,
 }))
 
-/** Mutable mock — organisation profile (settings server state) */
+/** Mutable mock â€” organisation profile (settings server state) */
 export const organizationProfileMock: OrganizationProfile = {
   name: 'Bytevon Global Holdings',
   legal: 'Bytevon Global Holdings Inc.',
@@ -400,7 +349,7 @@ export const organizationProfileMock: OrganizationProfile = {
   description: 'Leading enterprise solutions provider for global workforce management.',
 }
 
-/** Mutable mock — attendance company policy */
+/** Mutable mock â€” attendance company policy */
 export const attendanceSettingsMock: AttendanceSettings = {
   shiftStart: '09:00',
   shiftEnd: '18:00',
@@ -410,7 +359,7 @@ export const attendanceSettingsMock: AttendanceSettings = {
   allowRemoteCheckIn: true,
 }
 
-/** Mutable mock — leave accrual company policy */
+/** Mutable mock â€” leave accrual company policy */
 export const leaveAccrualPolicyMock: LeaveAccrualPolicy = {
   maxCarryOverDays: 10,
   minimumNoticeDays: 7,

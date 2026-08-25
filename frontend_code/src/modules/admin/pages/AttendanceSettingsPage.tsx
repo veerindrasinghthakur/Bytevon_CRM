@@ -82,6 +82,7 @@ export function AttendanceSettingsPage() {
   )
 
   useEffect(() => {
+    if (isEditing) return
     if (selectedShiftId && activeShift) {
       setForm(shiftToForm(activeShift))
       return
@@ -92,7 +93,7 @@ export function AttendanceSettingsPage() {
     } else if (data) {
       setForm({ ...data })
     }
-  }, [selectedShiftId, activeShift, shifts, data])
+  }, [isEditing, selectedShiftId, activeShift, shifts, data])
 
   const save = useMutation({
     mutationFn: () => updateAttendanceSettings(form!),

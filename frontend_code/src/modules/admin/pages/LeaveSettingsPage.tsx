@@ -27,8 +27,8 @@ export function LeaveSettingsPage() {
   })
 
   useEffect(() => {
-    if (accrualData) setAccrual({ ...accrualData })
-  }, [accrualData])
+    if (accrualData && !editing) setAccrual({ ...accrualData })
+  }, [accrualData, editing])
 
   const saveAccrual = useMutation({
     mutationFn: () => updateLeaveAccrualPolicy(accrual!),

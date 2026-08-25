@@ -262,10 +262,10 @@ export async function createUserLogin(input: {
   logins.push(row)
 
   const numericRole = Number(input.roleId)
-  const roleIdForDb = Number.isFinite(numericRole) ? numericRole : 0
+  const roleIdForDb = Number.isFinite(numericRole) ? numericRole : null
   const existingRoles = db.employee_roles.filter((er) => er.employment_id === input.employmentId)
   const hasRole = existingRoles.some((er) => er.role_id === roleIdForDb)
-  if (!hasRole && roleIdForDb > 0) {
+  if (!hasRole && roleIdForDb !== null) {
     db.employee_roles.push({
       employment_id: input.employmentId,
       role_id: roleIdForDb,
@@ -382,11 +382,6 @@ export async function archiveUserCredentials(loginId: number) {
   if (idx < 0) throw new Error('User not found')
   const [removed] = logins.splice(idx, 1)
   return { ok: true, employmentId: removed.employment_id }
-}
-
-/** @deprecated Prefer deactivateUser / archiveUserCredentials */
-export async function archiveUser(loginId: number) {
-  return deactivateUser(loginId)
 }
 
 export async function getUserLogin(loginId: number) {

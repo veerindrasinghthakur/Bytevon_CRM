@@ -1,53 +1,14 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { RolePermissionAction, RolePermissionMatrix } from '../types'
+import { emptyMatrix, matrixToPermissions, seedMatrix } from '../lib/role-matrix'
 import {
   createAdminRole,
   getAdminRole,
   listPermissionCatalog,
   updateAdminRole,
 } from '../api/roles'
-
-function emptyMatrix(modules: string[], actions: string[]): RolePermissionMatrix {
-  const init: RolePermissionMatrix = {}
-  modules.forEach((m) => {
-    init[m] = Object.fromEntries(actions.map((a) => [a, false]))
-  })
-  return init
-}
-
-function seedMatrix(
-  permissions: string[],
-  modules: string[],
-  actions: string[],
-): RolePermissionMatrix {
-  const init = emptyMatrix(modules, actions)
-  modules.forEach((m) => {
-    const key = m.toLowerCase()
-    const hasAny = permissions.some((p) => p.toLowerCase().includes(key.slice(0, 4)))
-    init[m] = Object.fromEntries(
-      actions.map((a) => [a, hasAny && (a === 'VIEW' || a === 'CREATE' || a === 'UPDATE')]),
-    )
-  })
-  if (permissions.some((p) => p.includes('manage') || p.includes('security'))) {
-    modules.forEach((m) => {
-      init[m] = Object.fromEntries(actions.map((a) => [a, true]))
-    })
-  }
-  return init
-}
-
-/** Flatten matrix → permission strings for storage / coverage. */
-function matrixToPermissions(matrix: RolePermissionMatrix): string[] {
-  const out: string[] = []
-  for (const [mod, row] of Object.entries(matrix)) {
-    for (const [action, on] of Object.entries(row ?? {})) {
-      if (on) out.push(`${mod.toLowerCase()}.${action.toLowerCase()}`)
-    }
-  }
-  return out
-}
 
 export type RoleFormMode = 'create' | 'edit'
 
@@ -85,6 +46,8 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
   const [active, setActive] = useState(true)
   const [matrix, setMatrix] = useState<RolePermissionMatrix>({})
   const [seededFromDuplicate, setSeededFromDuplicate] = useState(false)
+  // Seed the edit form only once per role so refetches never wipe user edits
+  const seededEditRoleIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (modules.length && actions.length) {
@@ -96,12 +59,14 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
   }, [modules, actions])
 
   useEffect(() => {
-    if (mode === 'edit' && role && modules.length && actions.length) {
-      setName(role.name)
-      setDescription(role.description)
-      setActive(role.status === 'Active')
-      setMatrix(seedMatrix(role.permissions, modules, actions))
-    }
+    if (mode !== 'edit' || !role || !modules.length || !actions.length) return
+    const roleKey = String(role.id)
+    if (seededEditRoleIdRef.current === roleKey) return
+    seededEditRoleIdRef.current = roleKey
+    setName(role.name)
+    setDescription(role.description)
+    setActive(role.status === 'Active')
+    setMatrix(seedMatrix(role.permissions, modules, actions))
   }, [mode, role, modules, actions])
 
   useEffect(() => {
@@ -187,8 +152,10 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
     },
     onSuccess: (saved) => {
       void queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] })
-      // Always land on live role detail (not a static/permanent page)
       navigate({ to: '/admin/roles/$roleId', params: { roleId: saved.id } } as any)
+    },
+    onError: (e) => {
+      // Errors surface via the component; keep mutation side-effect free
     },
   })
 

@@ -1,8 +1,9 @@
-/**
- * Admin module routes — heavy pages lazy-loaded via shared lazyPage helper.
+﻿/**
+ * Admin module routes â€” heavy pages lazy-loaded via shared lazyPage helper.
  * Organization module routes are integrated here as settings sub-routes.
  */
 import { createRoute, redirect } from '@tanstack/react-router'
+import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 
 const UsersListPage = lazyPage(() => import('./pages/UsersListPage'), 'UsersListPage')
@@ -45,8 +46,7 @@ const HolidaysListPage = lazyPage(() => import('./pages/organization/HolidaysLis
 const PositionsListPage = lazyPage(() => import('./pages/organization/PositionsListPage'), 'PositionsListPage')
 const PositionDetailPage = lazyPage(() => import('./pages/organization/PositionDetailPage'), 'PositionDetailPage')
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createAdminSettingsLayoutRoute(appLayoutRoute: any) {
+export function createAdminSettingsLayoutRoute(appLayoutRoute: AnyRoute) {
   return createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/admin/settings',
@@ -55,8 +55,7 @@ export function createAdminSettingsLayoutRoute(appLayoutRoute: any) {
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createAdminOrganizationSettingsRoutes(settingsLayoutRoute: any) {
+export function createAdminOrganizationSettingsRoutes(settingsLayoutRoute: AnyRoute) {
   return [
     createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/locations', component: LocationsListPage, validateSearch: () => ({}) }),
     createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/locations/$locationId', component: LocationDetailPage, validateSearch: () => ({}) }),
@@ -72,8 +71,7 @@ export function createAdminOrganizationSettingsRoutes(settingsLayoutRoute: any) 
   ]
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createWorkforceShiftRoutes(appLayoutRoute: any) {
+export function createWorkforceShiftRoutes(appLayoutRoute: AnyRoute) {
   return [
     createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/shifts', component: ShiftsListPage, validateSearch: () => ({}) }),
     createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/shifts/new', component: ShiftDetailPage, validateSearch: () => ({}) }),
@@ -81,8 +79,7 @@ export function createWorkforceShiftRoutes(appLayoutRoute: any) {
   ]
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createAdminSettingsCoreRoutes(settingsLayoutRoute: any) {
+export function createAdminSettingsCoreRoutes(settingsLayoutRoute: AnyRoute) {
   const adminSettingsRoutes = [
     createRoute({
       getParentRoute: () => settingsLayoutRoute,
@@ -127,8 +124,7 @@ export function createAdminSettingsCoreRoutes(settingsLayoutRoute: any) {
   return [...adminSettingsRoutes, ...organizationSettingsRoutes]
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createAdminRoutes(appLayoutRoute: any) {
+export function createAdminRoutes(appLayoutRoute: AnyRoute) {
   const attendanceLayout = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/admin/attendance-settings',

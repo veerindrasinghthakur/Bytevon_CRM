@@ -28,8 +28,8 @@ export function OrganizationProfileSection() {
   const [form, setForm] = useState<OrganizationProfile>(emptyForm)
 
   useEffect(() => {
-    if (data) setForm({ ...data })
-  }, [data])
+    if (data && !isEditing) setForm({ ...data })
+  }, [data, isEditing])
 
   const save = useMutation({
     mutationFn: () => updateOrganizationProfile(form),
