@@ -116,8 +116,10 @@ export const queryKeys = {
   notifications: {
     all: ['notifications'] as const,
     inbox: (filters?: unknown) => ['notifications', 'inbox', filters ?? {}] as const,
-    detail: (id: number) => ['notifications', 'detail', id] as const,
+    detail: (id: string | number) => ['notifications', 'detail', id] as const,
     sent: (filters?: unknown) => ['notifications', 'sent', filters ?? {}] as const,
+    triggers: () => ['notifications', 'triggers'] as const,
+    channels: () => ['notifications', 'channels'] as const,
   },
   approvals: {
     all: ['approvals'] as const,
