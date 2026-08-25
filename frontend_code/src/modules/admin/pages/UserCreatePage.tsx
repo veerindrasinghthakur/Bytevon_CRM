@@ -1,17 +1,22 @@
+import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 import { useUserCreate } from '../hooks/use-user-create'
 
 export function UserCreatePage() {
   const form = useUserCreate()
+  const navigate = useNavigate()
+  const goUsers = () => safeNavigate(navigate, { to: '/admin/users' })
+  const goNewEmployee = () => safeNavigate(navigate, { to: '/workforce/employees/new' })
 
   return (
     <div className="space-y-6 animate-fade-in">
       <button
         type="button"
-        onClick={() => form.navigate({ to: '/admin/users' })}
+        onClick={goUsers}
         className="inline-flex items-center gap-2 text-secondary hover:text-primary transition-colors group"
       >
         <span className="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">
@@ -25,7 +30,7 @@ export function UserCreatePage() {
         description="Pick an existing employee without login. Department is shown from their assignment (filterable)."
         actions={
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => form.navigate({ to: '/admin/users' })}>
+            <Button variant="outline" size="sm" onClick={goUsers}>
               Cancel
             </Button>
             <Button
@@ -54,7 +59,7 @@ export function UserCreatePage() {
         <div className="bv-surface p-10 text-center space-y-3">
           <span className="material-symbols-outlined text-4xl text-on-surface-variant">person_check</span>
           <h3 className="text-title-lg font-semibold">All employees have logins</h3>
-          <Button variant="primary" size="sm" onClick={() => form.navigate({ to: '/workforce/employees/new' })}>
+          <Button variant="primary" size="sm" onClick={goNewEmployee}>
             Add Employee
           </Button>
         </div>
