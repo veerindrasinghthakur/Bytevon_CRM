@@ -11,6 +11,7 @@ import {
   QuickMetaTile,
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useShiftsList } from '../../hooks/use-organization-shifts'
 import { can } from '@/shared/rbac/can'
 import { Action, ResourceName } from '@/shared/schema'
@@ -71,9 +72,9 @@ export function ShiftsListPage() {
       content: <ShiftQuickContent s={s} />,
       fullRecordLabel: 'Open full record',
       onOpenFull: () =>
-        navigate({
-          to: `${base}/$shiftId` as never,
-          params: { shiftId: String(s.id) } as never,
+        safeNavigate(navigate, {
+          to: `${base}/$shiftId`,
+          params: { shiftId: String(s.id) },
         }),
       widthClass: 'max-w-[520px]',
     })
@@ -98,7 +99,7 @@ export function ShiftsListPage() {
             variant="primary"
             size="sm"
             leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
-            onClick={() => navigate({ to: `${base}/new` as never })}
+            onClick={() => safeNavigate(navigate, { to: `${base}/new` })}
           >
             Add shift
           </Button>
@@ -107,7 +108,7 @@ export function ShiftsListPage() {
       {items.length === 0 ? (
         <EmptyState title="No shifts" description="Create a shift to assign employees.">
           {canCreate ? (
-            <Button variant="primary" onClick={() => navigate({ to: `${base}/new` as never })}>
+            <Button variant="primary" onClick={() => safeNavigate(navigate, { to: `${base}/new` })}>
               Add shift
             </Button>
           ) : null}
