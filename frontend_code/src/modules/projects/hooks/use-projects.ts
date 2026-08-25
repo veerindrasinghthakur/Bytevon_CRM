@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { queryKeys, invalidate } from '@/shared/lib/query-keys'
+import { queryKeys } from '@/shared/lib/query-keys'
 import {
   getProjects,
   getProjectById,
@@ -25,6 +25,7 @@ export function useProject(id: number | undefined) {
   })
 }
 
+/** Cache strategy: optimistic + upsert on success only (no onSettled invalidate). */
 export function useCreateProject() {
   const queryClient = useQueryClient()
   return useMutation({
@@ -73,9 +74,6 @@ export function useCreateProject() {
         }
       })
       queryClient.setQueryData(queryKeys.projects.detail(created.id), created)
-    },
-    onSettled: () => {
-      invalidate.projects(queryClient)
     },
   })
 }
@@ -131,9 +129,6 @@ export function useUpdateProject() {
           items: old.items.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)),
         }
       })
-    },
-    onSettled: () => {
-      invalidate.projects(queryClient)
     },
   })
 }

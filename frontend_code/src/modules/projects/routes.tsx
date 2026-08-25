@@ -7,11 +7,31 @@ const ProjectCreatePage = lazyPage(() => import('./pages/ProjectCreatePage'), 'P
 const TeamsListPage = lazyPage(() => import('./pages/TeamsListPage'), 'TeamsListPage')
 const TeamCreatePage = lazyPage(() => import('./pages/TeamCreatePage'), 'TeamCreatePage')
 const TeamDetailPage = lazyPage(() => import('./pages/TeamDetailPage'), 'TeamDetailPage')
+const TeamMembersPage = lazyPage(() => import('./pages/TeamMembersPage'), 'TeamMembersPage')
+const TeamAddMemberPage = lazyPage(() => import('./pages/TeamAddMemberPage'), 'TeamAddMemberPage')
 const TasksListPage = lazyPage(() => import('./pages/TasksListPage'), 'TasksListPage')
 const TaskCreatePage = lazyPage(() => import('./pages/TaskCreatePage'), 'TaskCreatePage')
 const TaskDetailPage = lazyPage(() => import('./pages/TaskDetailPage'), 'TaskDetailPage')
 const DocumentsPage = lazyPage(() => import('./pages/DocumentsPage'), 'DocumentsPage')
 const ProjectNotesPage = lazyPage(() => import('./pages/ProjectNotesPage'), 'ProjectNotesPage')
+
+/** Canonical path helpers — prefer these over hard-coded strings in pages. */
+export const projectRoutes = {
+  root: '/projects',
+  list: '/projects',
+  projectNew: '/projects/new',
+  projectDetail: (id: string | number) => `/projects/${id}`,
+  projectNotes: (id: string | number) => `/projects/${id}/notes`,
+  documents: '/projects/documents',
+  teams: '/projects/teams',
+  teamNew: '/projects/teams/new',
+  teamDetail: (id: string | number) => `/projects/teams/${id}`,
+  teamMembers: (id: string | number) => `/projects/teams/${id}/members`,
+  teamAddMember: (id: string | number) => `/projects/teams/${id}/members/add`,
+  tasks: '/projects/tasks',
+  taskNew: '/projects/tasks/new',
+  taskDetail: (id: string | number) => `/projects/tasks/${id}`,
+} as const
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createProjectsRoutes(appLayoutRoute: any) {
@@ -54,6 +74,16 @@ export function createProjectsRoutes(appLayoutRoute: any) {
         edit: typeof search.edit === 'string' ? search.edit : undefined,
       }),
       component: TeamDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/projects/teams/$teamId/members',
+      component: TeamMembersPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/projects/teams/$teamId/members/add',
+      component: TeamAddMemberPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
