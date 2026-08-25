@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { queryKeys, invalidate } from '@/shared/lib/query-keys'
+import { queryKeys } from '@/shared/lib/query-keys'
 import {
   listLeads,
   getLeadById,
@@ -100,15 +100,16 @@ export function useLead(id: string | undefined) {
   })
 }
 
+/**
+ * Cache strategy: upsert on success only (no onSettled invalidate).
+ * Invalidation after upsert races and can overwrite the optimistic/server row.
+ */
 export function useCreateLead() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: createLead,
     onSuccess: (row) => {
       upsertLeadInLists(qc, row)
-    },
-    onSettled: () => {
-      void invalidate.salesLeads(qc)
     },
   })
 }
@@ -136,19 +137,7 @@ export function useUpdateLead() {
     onSuccess: (row) => {
       upsertLeadInLists(qc, row)
     },
-    onSettled: () => {
-      void invalidate.salesLeads(qc)
-    },
   })
-}
-
-/** Disabled — list rows already contain full data; no per-hover GET /:id */
-export function prefetchLead(_qc: ReturnType<typeof useQueryClient>, _id: string) {
-  return undefined
-}
-
-export function usePrefetchLead() {
-  return (_id: string) => undefined
 }
 
 /** One network call for the whole clients table. */
@@ -181,9 +170,6 @@ export function useCreateClient() {
     onSuccess: (row) => {
       upsertClientInLists(qc, row)
     },
-    onSettled: () => {
-      void invalidate.salesClients(qc)
-    },
   })
 }
 
@@ -212,19 +198,7 @@ export function useUpdateClient() {
     onSuccess: (row) => {
       upsertClientInLists(qc, row)
     },
-    onSettled: () => {
-      void invalidate.salesClients(qc)
-    },
   })
-}
-
-/** Disabled — avoids GET /clients/:id on every row hover */
-export function prefetchClient(_qc: ReturnType<typeof useQueryClient>, _id: string) {
-  return undefined
-}
-
-export function usePrefetchClient() {
-  return (_id: string) => undefined
 }
 
 export function useCaseStudies() {
