@@ -1,8 +1,12 @@
 /**
  * Department API — schema_departments in mock DB.
+ * env.useMockApi → local mock; false → /workforce/departments
  */
 
+import { env } from '@/config/env'
+import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
+import { paginateItems } from '@/shared/lib/list-params'
 import type { DepartmentRow } from '@/shared/schema'
 import { WorkMode } from '@/shared/schema'
 import type { DepartmentListItem, DepartmentEmployee } from '../types'
@@ -42,10 +46,27 @@ function toListItem(d: DepartmentRow): DepartmentListItem {
   }
 }
 
-export async function listDepartments(params?: { search?: string; includeArchived?: boolean }) {
+export async function listDepartments(params?: {
+  search?: string
+  includeArchived?: boolean
+  status?: string
+  page?: number
+  pageSize?: number
+}) {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<{ items: DepartmentListItem[]; total: number }>(
+      '/workforce/departments',
+      { params },
+    )
+    return data
+  }
+
   await delay()
   let rows = getDb().schema_departments.map((d) => toListItem(d))
   if (!params?.includeArchived) rows = rows.filter((d) => !d.isArchived)
+  if (params?.status && params.status !== 'All') {
+    rows = rows.filter((d) => d.status === params.status)
+  }
   if (params?.search) {
     const q = params.search.toLowerCase()
     rows = rows.filter(
@@ -55,10 +76,21 @@ export async function listDepartments(params?: { search?: string; includeArchive
         d.headName.toLowerCase().includes(q),
     )
   }
+  if (params?.page != null || params?.pageSize != null) {
+    return paginateItems(rows, params.page, params.pageSize)
+  }
   return { items: rows, total: rows.length }
 }
 
 export async function getDepartment(id: number) {
+  if (!env.useMockApi) {
+    try {
+      const { data } = await apiClient.get<DepartmentListItem>(`/workforce/departments/${id}`)
+      return data
+    } catch {
+      return null
+    }
+  }
   await delay()
   const row = getDb().schema_departments.find((d) => d.id === id)
   if (!row) return null
@@ -66,6 +98,12 @@ export async function getDepartment(id: number) {
 }
 
 export async function listDepartmentEmployees(departmentId: number): Promise<DepartmentEmployee[]> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<DepartmentEmployee[] | { items: DepartmentEmployee[] }>(
+      `/workforce/departments/${departmentId}/employees`,
+    )
+    return Array.isArray(data) ? data : (data.items ?? [])
+  }
   await delay()
   const db = getDb()
   const empIds = db.employment_assignments
@@ -99,6 +137,12 @@ export async function listDepartmentEmployees(departmentId: number): Promise<Dep
 
 /** Employees not currently assigned to this department (for Add existing). */
 export async function listEmployeesNotInDepartment(departmentId: number) {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<{ value: string; label: string; meta?: string }[]>(
+      `/workforce/departments/${departmentId}/employees-available`,
+    )
+    return data
+  }
   await delay(150)
   const db = getDb()
   const inDept = new Set(
@@ -130,6 +174,10 @@ export async function assignEmployeeToDepartment(
   employmentId: number,
   departmentId: number,
 ) {
+  if (!env.useMockApi) {
+    await apiClient.post(`/workforce/departments/${departmentId}/assign`, { employmentId })
+    return { ok: true as const }
+  }
   await delay(350)
   const db = getDb()
   const today = new Date().toISOString().slice(0, 10)
@@ -163,6 +211,10 @@ export async function removeEmployeeFromDepartment(
   employmentId: number,
   departmentId: number,
 ) {
+  if (!env.useMockApi) {
+    await apiClient.post(`/workforce/departments/${departmentId}/remove`, { employmentId })
+    return { ok: true as const }
+  }
   await delay(300)
   const db = getDb()
   const today = new Date().toISOString().slice(0, 10)
@@ -176,7 +228,6 @@ export async function removeEmployeeFromDepartment(
   current.effective_to = today
   current.change_reason = 'Removed from department'
 
-  // Clear head if this employee was head
   const dept = db.schema_departments.find((d) => d.id === departmentId)
   if (dept && dept.department_head_employment_id === employmentId) {
     dept.department_head_employment_id = null
@@ -189,6 +240,10 @@ export async function createDepartment(input: {
   headEmploymentId?: number | null
   isArchived?: boolean
 }) {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<DepartmentListItem>('/workforce/departments', input)
+    return data
+  }
   await delay(400)
   const db = getDb()
   const now = new Date().toISOString()
@@ -208,6 +263,10 @@ export async function updateDepartment(
   id: number,
   patch: Partial<{ name: string; headEmploymentId: number | null; isArchived: boolean }>,
 ) {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.patch<DepartmentListItem>(`/workforce/departments/${id}`, patch)
+    return data
+  }
   await delay(300)
   const row = getDb().schema_departments.find((d) => d.id === id)
   if (!row) throw new Error('Department not found')
@@ -218,6 +277,12 @@ export async function updateDepartment(
 }
 
 export async function listEmploymentOptionsForPicker() {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<{ value: string; label: string; meta?: string }[]>(
+      '/workforce/employment-options',
+    )
+    return data
+  }
   await delay(150)
   const db = getDb()
   return db.employments.map((e) => {
@@ -233,6 +298,19 @@ export async function listEmploymentOptionsForPicker() {
 
 /** Employees on a given shift (from active assignments). */
 export async function listEmployeesOnShift(shiftId: number) {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get(
+      `/workforce/shifts/${shiftId}/employees`,
+    )
+    return data as {
+      employmentId: number
+      employeeCode: string
+      name: string
+      departmentName: string
+      positionName: string
+      state: string
+    }[]
+  }
   await delay()
   const db = getDb()
   const empIds = db.employment_assignments

@@ -17,14 +17,30 @@ export function useEmployeesList() {
     filterDefaults: FILTER_DEFAULTS,
   })
 
+  const listFilters = {
+    search: controls.debouncedSearch || undefined,
+    dept: controls.filters.dept !== 'all' ? controls.filters.dept : undefined,
+    state: controls.filters.state !== 'all' ? controls.filters.state : undefined,
+    type: controls.filters.type !== 'all' ? controls.filters.type : undefined,
+    page: controls.page,
+    pageSize: controls.pageSize,
+  }
+
   const employeesQuery = useQuery({
-    queryKey: queryKeys.workforce.employees.list({}),
-    queryFn: () => listEmployments({}),
+    queryKey: queryKeys.workforce.employees.list(listFilters),
+    queryFn: () =>
+      listEmployments({
+        search: listFilters.search,
+        // Server returns full set when page omitted; we still pass page for key stability.
+        // Client-side filters (dept/state/type) applied below until API supports them.
+        page: undefined,
+        pageSize: undefined,
+      }),
   })
 
   const departmentsQuery = useQuery({
     queryKey: queryKeys.workforce.departments.list({ includeArchived: false }),
-    queryFn: () => listDepartments({}),
+    queryFn: () => listDepartments({ includeArchived: false }),
   })
 
   const items = employeesQuery.data?.items ?? []

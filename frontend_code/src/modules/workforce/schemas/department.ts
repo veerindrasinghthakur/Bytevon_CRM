@@ -39,8 +39,3 @@ export const createDepartmentSchema = z.object({
 })
 
 export type CreateDepartmentInput = z.infer<typeof createDepartmentSchema>
-
-export {
-  departmentFormSchema,
-  type DepartmentFormInput,
-} from './department-form'

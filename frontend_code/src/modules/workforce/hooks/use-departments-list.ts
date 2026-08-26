@@ -5,8 +5,6 @@ import { listDepartments } from '../api/departments'
 import { computeDepartmentListMetrics } from '@/shared/compute/workforce-metrics'
 import { queryKeys } from '@/shared/lib/query-keys'
 
-export const DEPARTMENTS_LIST_KEY = ['workforce', 'departments', 'list'] as const
-
 const FILTER_DEFAULTS = { status: 'All' }
 
 export function useDepartmentsList() {
@@ -14,9 +12,25 @@ export function useDepartmentsList() {
     filterDefaults: FILTER_DEFAULTS,
   })
 
+  const listFilters = {
+    includeArchived: true,
+    search: controls.debouncedSearch || undefined,
+    status: controls.filters.status !== 'All' ? controls.filters.status : undefined,
+    page: controls.page,
+    pageSize: controls.pageSize,
+  }
+
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
-    queryKey: queryKeys.workforce.departments.list({ includeArchived: true }),
-    queryFn: () => listDepartments({ includeArchived: true }),
+    queryKey: queryKeys.workforce.departments.list(listFilters),
+    queryFn: () =>
+      listDepartments({
+        includeArchived: true,
+        search: listFilters.search,
+        status: listFilters.status,
+        // Full set for metrics + client page until server filters are complete
+        page: undefined,
+        pageSize: undefined,
+      }),
   })
 
   const items = data?.items ?? []
@@ -44,7 +58,9 @@ export function useDepartmentsList() {
     pageItems,
     metrics,
     loading: isLoading,
+    isLoading,
     error: isError,
+    isError,
     isFetching,
     search: controls.search,
     setSearch: controls.setSearch,
