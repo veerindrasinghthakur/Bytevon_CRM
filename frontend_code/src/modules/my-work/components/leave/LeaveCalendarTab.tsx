@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { Button } from '@/shared/components/ui/Button'
 import { leaveRequests } from '../../data/mock'
-import { HOLIDAYS_2026 } from '../../pages/ApplyLeavePage'
+import { useLeaveCalculations } from '../../hooks/useLeaveCalculations'
 
 function toISO(y: number, m: number, d: number) {
   return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
@@ -21,6 +21,7 @@ export function LeaveCalendarTab({
   setCalMonth: (d: Date) => void
   totalRemaining: number
 }) {
+  const { holidays } = useLeaveCalculations()
   const cy = calMonth.getFullYear()
   const cm = calMonth.getMonth()
   const firstDow = new Date(cy, cm, 1).getDay()
@@ -51,7 +52,7 @@ export function LeaveCalendarTab({
         day: d,
         iso,
         weekend: dow === 0 || dow === 6,
-        holiday: HOLIDAYS_2026[iso],
+        holiday: holidays[iso],
         leaves,
         isToday: iso === today,
       })
@@ -60,7 +61,7 @@ export function LeaveCalendarTab({
       cells.push({ day: null, iso: null, weekend: false, leaves: [], isToday: false })
     }
     return cells
-  }, [cy, cm, firstDow, daysInMonth, today])
+  }, [cy, cm, firstDow, daysInMonth, today, holidays])
 
   return (
     <div className="space-y-6">

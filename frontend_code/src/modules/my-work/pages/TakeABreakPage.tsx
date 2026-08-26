@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { myWorkRoutes } from '../routes'
 
 import {
   formatDuration,
@@ -177,7 +178,7 @@ export function TakeABreakPage() {
       </div>
 
       <div className="flex justify-center">
-        <Button variant="ghost" onClick={() => safeNavigate(navigate,{ to: '/my-work' })}>
+        <Button variant="ghost" onClick={() => safeNavigate(navigate,{ to: myWorkRoutes.root })}>
           Back to My Work
         </Button>
       </div>

@@ -1,35 +1,43 @@
 import { useNavigate } from '@tanstack/react-router'
-import {
-  currentUser,
-  myWorkMetrics,
-  todayAttendance,
-  weekHours,
-  leaveBalances,
-  myTasks,
-  recentNotifications,
-  upcomingEvents,
-  myWorkQuickActions,
-} from '../data/mock'
-import type { MyTask } from '../types'
+import { useMyWorkOverview } from '../hooks/use-my-work-overview'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-
-const priorityClass: Record<string, string> = {
-  Critical: 'bg-red-100 text-red-800',
-  High: 'bg-red-50 text-red-700',
-  Medium: 'bg-surface-container-high text-on-surface-variant',
-  Low: 'bg-surface-container text-on-surface-variant',
-}
-
-const statusDot: Record<string, string> = {
-  'In Progress': 'bg-secondary',
-  Pending: 'bg-outline',
-  'Not Started': 'bg-outline',
-  Completed: 'bg-emerald-500',
-  Blocked: 'bg-orange-500',
-}
+import { myWorkRoutes } from '../routes'
+import { priorityClass, statusDot } from '../schemas/enums'
+import type { MyTask } from '../types'
 
 export function MyWorkOverviewPage() {
+  const {
+    data,
+    isLoading,
+    isError,
+    todayAttendance,
+    weekHours,
+    leaveBalances,
+    metrics: myWorkMetrics,
+    tasks: myTasks,
+    notifications: recentNotifications,
+    events: upcomingEvents,
+  } = useMyWorkOverview()
   const navigate = useNavigate()
+
+
+  const myWorkQuickActions = [
+    { label: 'Apply Leave', to: myWorkRoutes.leaveApply, icon: 'event_available' },
+    { label: 'Mark Attendance', to: myWorkRoutes.attendanceMark, icon: 'calendar_today' },
+    { label: 'View Tasks', to: myWorkRoutes.tasks, icon: 'task_alt' },
+    { label: 'Request Approval', to: myWorkRoutes.requests, icon: 'approval' },
+    { label: 'Update Bank Details', to: myWorkRoutes.root, icon: 'account_balance' },
+  ]
+
+  if (isLoading || isError) {
+    return (
+      <div className="animate-fade-in">
+        <div className="h-96 flex items-center justify-center bg-surface-container-lowest text-on-surface-variant">
+          {isLoading ? 'Loading...' : 'Error loading data. Retry?'}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-8 max-w-[1440px] animate-fade-in">
@@ -37,26 +45,26 @@ export function MyWorkOverviewPage() {
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
           <div>
             <h2 className="text-headline-md md:text-headline-lg font-bold tracking-tight mb-3">
-              Good Morning, {currentUser.name}
+              Good Morning, {data?.user?.name ?? 'User'}
             </h2>
             <div className="flex flex-wrap gap-3 text-sm text-inverse-primary">
               <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full">
                 <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                   badge
                 </span>
-                {currentUser.employeeId}
+                {data?.user?.employeeId ?? 'EMP-001'}
               </span>
               <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full">
                 <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                   business_center
                 </span>
-                {currentUser.department}
+                {data?.user?.department ?? 'Engineering'}
               </span>
               <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full">
                 <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
                   calendar_month
                 </span>
-                {currentUser.todayLabel}
+                {data?.user?.todayLabel ?? 'Today'}
               </span>
             </div>
           </div>
@@ -68,7 +76,7 @@ export function MyWorkOverviewPage() {
             </div>
             <div className="flex flex-col">
               <span className="text-xs uppercase tracking-wider text-inverse-primary">Current Shift</span>
-              <span className="text-title-lg font-semibold text-on-primary">{currentUser.shift}</span>
+              <span className="text-title-lg font-semibold text-on-primary">{data?.user?.shift ?? 'Hybrid'}</span>
             </div>
           </div>
         </div>
@@ -117,7 +125,7 @@ export function MyWorkOverviewPage() {
                 >
                   {m.subtitle}
                 </span>
-              )}
+                )}
             </div>
           </div>
         ))}
@@ -129,7 +137,7 @@ export function MyWorkOverviewPage() {
             <h3 className="text-title-lg font-semibold text-on-background">Attendance Overview</h3>
             <button
               type="button"
-              onClick={() => safeNavigate(navigate,{ to: '/my-work/attendance' })}
+              onClick={() => safeNavigate(navigate,{ to: myWorkRoutes.attendance })}
               className="text-label-md font-semibold text-secondary hover:underline transition-colors duration-200 cursor-pointer"
             >
               Full Report
@@ -138,13 +146,13 @@ export function MyWorkOverviewPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-surface-container-low p-4 rounded-lg flex flex-col gap-1">
               <span className="text-label-sm text-on-surface-variant">Check-in</span>
-              <span className="text-body-lg font-bold text-secondary">{todayAttendance.checkIn}</span>
-              <span className="text-[10px] text-on-surface-variant">{todayAttendance.checkInNote}</span>
+              <span className="text-body-lg font-bold text-secondary">{todayAttendance?.checkIn ?? '—'}</span>
+              <span className="text-[10px] text-on-surface-variant">{todayAttendance?.checkInNote}</span>
             </div>
             <div className="bg-surface-container-low p-4 rounded-lg flex flex-col gap-1">
               <span className="text-label-sm text-on-surface-variant">Total Hours</span>
-              <span className="text-body-lg font-bold text-on-background">{todayAttendance.totalHours}</span>
-              <span className="text-[10px] text-on-surface-variant">{todayAttendance.totalHoursNote}</span>
+              <span className="text-body-lg font-bold text-on-background">{todayAttendance?.totalHours ?? '—'}</span>
+              <span className="text-[10px] text-on-surface-variant">{todayAttendance?.totalHoursNote}</span>
             </div>
             <div className="md:col-span-2 h-20 flex items-end gap-1.5">
               {weekHours.map((d) => (
@@ -189,7 +197,7 @@ export function MyWorkOverviewPage() {
           ))}
           <button
             type="button"
-            onClick={() => safeNavigate(navigate,{ to: '/my-work/leave' })}
+            onClick={() => safeNavigate(navigate,{ to: myWorkRoutes.leave })}
             className="mt-auto w-full py-2.5 bg-deep-navy text-on-primary rounded-lg text-label-md font-medium hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer"
           >
             Manage Leave
@@ -202,7 +210,7 @@ export function MyWorkOverviewPage() {
           <h3 className="text-title-lg font-semibold text-on-background">Assigned Tasks</h3>
           <button
             type="button"
-            onClick={() => safeNavigate(navigate,{ to: '/my-work/tasks' })}
+            onClick={() => safeNavigate(navigate,{ to: myWorkRoutes.tasks })}
             className="px-3 py-1.5 text-label-sm bg-secondary text-on-secondary rounded-md hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer"
           >
             View All

@@ -38,7 +38,7 @@ function countLeaveDays(
 export function useLeaveCalculations() {
   // Fetch holidays from the mock backend
   const { data: holidays = {} } = useQuery({
-    queryKey: queryKeys.myWork.holidays,
+    queryKey: queryKeys.myWork.holidays.list(),
     queryFn: fetchHolidays,
   });
 

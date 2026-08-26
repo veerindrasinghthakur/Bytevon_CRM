@@ -6,12 +6,12 @@ import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
 import { useBankDetails } from '../hooks/use-bank-details'
 import { cn } from '@/shared/lib/cn'
-import type { BankFormValues } from '../schemas/bank-form'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { myWorkRoutes } from '../routes'
 
 function maskAccount(num: string) {
   if (!num || num.length < 4) return '\u2022\u2022\u2022\u2022'
-  return `\u2022\u2022\u2022\u2022 \u2022\u2022\u2022\u2022 ${num.slice(-4)}`
+  return '\u2022\u2022\u2022\u2022 \u2022\u2022\u2022\u2022 ${num.slice(-4)}'
 }
 
 export function MyBankDetailsPage() {
@@ -77,7 +77,7 @@ export function MyBankDetailsPage() {
         <button
           type="button"
           className="hover:text-secondary transition-colors"
-          onClick={() => safeNavigate(navigate,{ to: '/my-work' })}
+          onClick={() => safeNavigate(navigate,{ to: myWorkRoutes.root })}
         >
           My Work
         </button>
@@ -89,7 +89,7 @@ export function MyBankDetailsPage() {
         title="Bank Details"
         description="Manage the account used for salary disbursement. Only you can create or update these details."
         showBack
-        backTo="/my-work"
+        backTo={myWorkRoutes.root}
       />
 
       {toast && (
@@ -104,7 +104,7 @@ export function MyBankDetailsPage() {
           <button
             type="button"
             className="text-on-surface-variant hover:text-secondary p-1 rounded-full hover:bg-surface-container transition-colors mt-0.5"
-            onClick={() => safeNavigate(navigate,{ to: '/my-work' })}
+            onClick={() => safeNavigate(navigate,{ to: myWorkRoutes.root })}
             aria-label="Back"
           >
             <span className="material-symbols-outlined">arrow_back</span>
@@ -158,16 +158,6 @@ export function MyBankDetailsPage() {
             </div>
           </div>
         </div>
-        <span
-          className={cn(
-            'inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold border',
-            saved
-              ? 'bg-success-emerald/10 text-success-emerald border-success-emerald/20'
-              : 'bg-surface-container text-on-surface-variant border-outline-variant',
-          )}
-        >
-          {statusLabel}
-        </span>
       </section>
 
       {!saved && !isEditing && (
@@ -236,7 +226,7 @@ export function MyBankDetailsPage() {
                     onChange={(e) => setValue('accountNumber', e.target.value.replace(/\s/g, ''))}
                   />
                 ) : (
-                  <p className="text-body-md font-medium text-deep-navy font-mono tracking-wide">
+                  <p className="text-body-md font-medium text-deep-navy font-mono">
                     {maskAccount(saved?.accountNumber ?? '')}
                   </p>
                 )}
@@ -252,7 +242,7 @@ export function MyBankDetailsPage() {
                     onChange={(e) => setValue('confirmAccountNumber', e.target.value.replace(/\s/g, ''))}
                   />
                 </Field>
-              )}
+              </Field>
 
               <Field label="IFSC / Routing code" required error={errors.ifscOrRouting?.message}>
                 {isEditing ? (

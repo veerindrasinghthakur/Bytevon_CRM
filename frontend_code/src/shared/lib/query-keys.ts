@@ -168,6 +168,10 @@ export const queryKeys = {
     overview: () => ['my-work', 'overview'] as const,
     bankDetails: () => ['my-work', 'bank-details'] as const,
     approvers: () => ['my-work', 'approvers'] as const,
+    holidays: {
+      all: ['my-work', 'holidays'] as const,
+      list: () => [...queryKeys.myWork.holidays.all, 'list'] as const,
+    },
     approvals: {
       all: ['my-work', 'approvals'] as const,
       list: (filters?: unknown) => [...queryKeys.myWork.approvals.all, 'list', filters ?? {}] as const,

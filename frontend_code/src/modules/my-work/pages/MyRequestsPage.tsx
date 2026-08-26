@@ -5,13 +5,8 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { myRequests } from '@/modules/approvals/data/mock'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-
-const statusStyles: Record<string, string> = {
-  'In-Progress': 'bg-amber-50 text-amber-700 border-amber-200',
-  Approved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  Rejected: 'bg-red-50 text-red-700 border-red-200',
-  Pending: 'bg-amber-50 text-amber-700 border-amber-200',
-}
+import { myWorkRoutes } from '../routes'
+import { statusStyles } from '../schemas/enums'
 
 const filters = ['All Requests', 'In-Progress', 'Approved', 'Rejected'] as const
 
@@ -117,7 +112,7 @@ export function MyRequestsPage() {
                   className="zebra-row group cursor-pointer"
                   onClick={() =>
                     safeNavigate(navigate,{
-                      to: '/my-work/approvals/$requestId',
+                      to: myWorkRoutes.approvalDetail(row.id),
                       params: { requestId: row.id },
                     })
                   }

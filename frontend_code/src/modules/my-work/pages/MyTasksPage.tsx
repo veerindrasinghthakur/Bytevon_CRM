@@ -7,34 +7,11 @@ import { Select } from '@/shared/components/ui/Select'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
-
-import {
-  QuickSection,
-  QuickStat,
-  QuickStatGrid,
-  QuickMetaTile,
-  QuickRelatedRow,
-} from '@/shared/components/layout/QuickOverviewParts'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { useMyTasks } from '../hooks/use-my-tasks'
 import type { MyTask } from '../types'
 import { cn } from '@/shared/lib/cn'
-
-const priorityClass: Record<string, string> = {
-  Critical: 'status-badge status-error',
-  High: 'status-badge status-warning',
-  Medium: 'status-badge status-neutral',
-  Low: 'status-badge status-neutral',
-}
-
-const statusDot: Record<string, string> = {
-  'In Progress': 'bg-secondary',
-  Pending: 'bg-outline',
-  'Not Started': 'bg-outline',
-  Completed: 'bg-emerald-500',
-  Blocked: 'bg-orange-500',
-}
+import { priorityClass, statusDot } from '../schemas/enums'
 
 type TaskFilter = 'open' | 'inProgress' | 'high' | null
 
@@ -141,7 +118,6 @@ export function MyTasksPage() {
             onClick={() => setCardFilter(null)}
             className="inline-flex items-center gap-1.5 text-label-md text-on-surface-variant hover:text-on-surface rounded-md px-2 py-1 transition-colors"
             aria-label="Clear filter"
-            title="Clear filter"
           >
             <span className="material-symbols-outlined text-[20px]">filter_alt_off</span>
             <span>Clear filter</span>
