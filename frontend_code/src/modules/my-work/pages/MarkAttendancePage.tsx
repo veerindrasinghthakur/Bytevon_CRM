@@ -1,178 +1,17 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { cn } from '@/shared/lib/cn'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
-
-import {
-  checkInNow,
-  checkOutNow,
-  formatClockTime,
-  formatHoursCompact,
-  getTodayAttendance,
-  getWorkHoursSummary,
-  subscribeAttendanceChange,
-} from '../lib/attendance-session'
-import {
-  formatDuration,
-  getElapsedMs,
-  getTodayBreaks,
-  subscribeBreakChange,
-} from '../lib/break-session'
 import { currentUser } from '../data/mock'
-import {
-  WorkingHoursLog,
-  type WorkLogRow,
-} from '../components/attendance/WorkingHoursLog'
+import { WorkingHoursLog } from '../components/attendance/WorkingHoursLog'
 import { ManualAttendanceForm } from '../components/attendance/ManualAttendanceForm'
-
-type WorkStatus = 'Present' | 'WFH' | 'Leave'
-
-function shiftStartToday(): Date {
-  const d = new Date()
-  d.setHours(9, 0, 0, 0)
-  return d
-}
-
-function isOnTime(checkInIso: string): boolean {
-  const inMs = new Date(checkInIso).getTime()
-  const grace = shiftStartToday().getTime() + 15 * 60 * 1000
-  return inMs <= grace
-}
-
-function dayPct(iso: string, now = Date.now()): number {
-  const d = new Date(iso)
-  const start = new Date(d)
-  start.setHours(0, 0, 0, 0)
-  const ms = Math.min(now, d.getTime()) - start.getTime()
-  return Math.min(100, Math.max(0, (ms / 86_400_000) * 100))
-}
+import { useMarkAttendance } from '../hooks/use-mark-attendance'
 
 export function MarkAttendancePage() {
-  const navigate = useNavigate()
-  const [now, setNow] = useState(() => new Date())
-  const [status, setStatus] = useState<WorkStatus>('Present')
-  const [submitting, setSubmitting] = useState(false)
-  const [tick, setTick] = useState(0)
-  const [manualToast, setManualToast] = useState<string | null>(null)
-
-  const [manualDate, setManualDate] = useState(() => new Date().toISOString().slice(0, 10))
-  const [manualReason, setManualReason] = useState<string>('Client Meeting')
-  const [manualIn, setManualIn] = useState('09:00')
-  const [manualOut, setManualOut] = useState('18:00')
-  const [manualNote, setManualNote] = useState('')
-
-  useEffect(() => {
-    const t = setInterval(() => setNow(new Date()), 1000)
-    return () => clearInterval(t)
-  }, [])
-
-  useEffect(() => {
-    const refresh = () => setTick((x) => x + 1)
-    const u1 = subscribeAttendanceChange(refresh)
-    const u2 = subscribeBreakChange(refresh)
-    return () => {
-      u1()
-      u2()
-    }
-  }, [])
-
-  void tick
-  const session = getTodayAttendance()
-  const summary = getWorkHoursSummary(now.getTime())
-  const breaks = getTodayBreaks(now.getTime())
-  const checkedIn = Boolean(session && !session.checkOutAt)
-  const hasSession = Boolean(session)
-
-  const hours = now.getHours()
-  const minutes = String(now.getMinutes()).padStart(2, '0')
-  const ampm = hours >= 12 ? 'PM' : 'AM'
-  const displayHours = String(hours % 12 || 12).padStart(2, '0')
-  const timeLabel = `${displayHours}:${minutes}`
-
-  const logRows: WorkLogRow[] = useMemo(() => {
-    const rows: WorkLogRow[] = []
-    if (!session) return rows
-
-    rows.push({
-      id: 'punch-in',
-      activity: 'Punch In',
-      time: formatClockTime(session.checkInAt),
-      duration: '—',
-      statusLabel: isOnTime(session.checkInAt) ? 'On Time' : 'Late',
-      statusTone: isOnTime(session.checkInAt) ? 'ok' : 'warn',
-      location: 'Office WiFi (HQ-GUEST)',
-    })
-
-    for (const b of breaks) {
-      const elapsed = getElapsedMs(b, now.getTime())
-      rows.push({
-        id: b.id,
-        activity: b.endedAt ? 'Break' : 'Break (active)',
-        time: `${formatClockTime(b.startedAt)}${b.endedAt ? ` – ${formatClockTime(b.endedAt)}` : ''}`,
-        duration: formatDuration(elapsed),
-        statusLabel: b.endedAt ? 'Completed' : 'In progress',
-        statusTone: b.endedAt ? 'neutral' : 'warn',
-        location: b.note || '—',
-      })
-    }
-
-    if (session.checkOutAt) {
-      rows.push({
-        id: 'punch-out',
-        activity: 'Punch Out',
-        time: formatClockTime(session.checkOutAt),
-        duration: summary ? formatHoursCompact(summary.netMs) : '—',
-        statusLabel: 'Complete',
-        statusTone: 'ok',
-        location: 'Office WiFi (HQ-GUEST)',
-      })
-    }
-
-    return rows
-  }, [session, breaks, now, summary])
-
-  const markerPct = session ? dayPct(session.checkInAt, now.getTime()) : null
-  const totalLoggedLabel = summary ? formatHoursCompact(summary.netMs) : '0m'
-
-  const handleCheckIn = () => {
-    if (status !== 'Present') return
-    setSubmitting(true)
-    checkInNow()
-    setSubmitting(false)
-  }
-
-  const handleCheckOut = () => {
-    setSubmitting(true)
-    checkOutNow()
-    setSubmitting(false)
-  }
-
-  const resetManual = () => {
-    setManualDate(new Date().toISOString().slice(0, 10))
-    setManualReason('Client Meeting')
-    setManualIn('09:00')
-    setManualOut('18:00')
-    setManualNote('')
-  }
-
-  const submitManual = () => {
-    if (!manualDate || !manualNote.trim()) {
-      setManualToast('Date and justification note are required.')
-      window.setTimeout(() => setManualToast(null), 2500)
-      return
-    }
-    setManualToast('Manual entry submitted for HR approval.')
-    window.setTimeout(() => {
-      setManualToast(null)
-      safeNavigate(navigate,{ to: '/my-work/attendance/corrections' })
-    }, 900)
-  }
+  const m = useMarkAttendance()
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <BackButton to="/my-work/attendance" label="Back to attendance" />
+      <BackButton to={m.attendanceBackTo} label="Back to attendance" />
       <PageHeader
         title="Mark Attendance"
         description={`Hello, ${currentUser.name}. Log your daily check-in — time is recorded exactly when you punch.`}
@@ -184,42 +23,37 @@ export function MarkAttendancePage() {
         }
       />
 
-      {manualToast && (
-        <div className="rounded-lg border border-secondary/30 bg-secondary/10 px-4 py-3 text-label-md text-secondary">
-          {manualToast}
+      {m.manualToast && (
+        <div className="rounded-lg border border-secondary/30 bg-secondary-container/40 px-4 py-3 text-label-md text-on-secondary-container">
+          {m.manualToast}
         </div>
       )}
 
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-12 lg:col-span-7 bv-surface p-6 overflow-hidden relative">
           <div className="absolute top-0 right-0 p-4">
-            <div className="flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-label-sm border border-emerald-100">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <div className="flex items-center gap-2 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-label-sm border border-outline-variant/40">
+              <span className="w-2 h-2 rounded-full bg-secondary" />
               Verified Location
             </div>
           </div>
 
           <div className="flex flex-col items-center justify-center py-8">
-            <div
-              className="w-48 h-48 rounded-full border-8 border-surface-container-high flex flex-col items-center justify-center mb-6 executive-shadow"
-              style={{
-                background: 'radial-gradient(circle at center, #f8f9ff 0%, #dce9ff 100%)',
-              }}
-            >
-              <span className="text-5xl font-bold text-secondary tracking-tighter">{timeLabel}</span>
-              <span className="text-label-md text-on-surface-variant font-medium">{ampm}</span>
+            <div className="w-48 h-48 rounded-full border-8 border-surface-container-high bg-surface-container-low flex flex-col items-center justify-center mb-6 executive-shadow">
+              <span className="text-5xl font-bold text-secondary tracking-tighter">{m.timeLabel}</span>
+              <span className="text-label-md text-on-surface-variant font-medium">{m.ampm}</span>
             </div>
 
             <div className="flex gap-4 w-full max-w-md mt-2">
               <button
                 type="button"
-                disabled={hasSession || submitting || status !== 'Present'}
-                onClick={handleCheckIn}
+                disabled={m.hasSession || m.submitting || m.status !== 'Present'}
+                onClick={m.handleCheckIn}
                 className={cn(
                   'flex-1 py-4 rounded-xl font-semibold flex flex-col items-center justify-center gap-1 executive-shadow',
-                  hasSession || status !== 'Present'
+                  m.hasSession || m.status !== 'Present'
                     ? 'bg-surface-container text-on-surface-variant opacity-50 cursor-not-allowed'
-                    : 'bg-secondary text-white shadow-secondary/20 hover:opacity-95 cursor-pointer',
+                    : 'bg-secondary text-on-secondary shadow-secondary/20 hover:opacity-95 cursor-pointer',
                 )}
               >
                 <span
@@ -232,11 +66,11 @@ export function MarkAttendancePage() {
               </button>
               <button
                 type="button"
-                disabled={!checkedIn || submitting}
-                onClick={handleCheckOut}
+                disabled={!m.checkedIn || m.submitting}
+                onClick={m.handleCheckOut}
                 className={cn(
                   'flex-1 py-4 rounded-xl font-semibold flex flex-col items-center justify-center gap-1 border border-outline-variant transition-colors',
-                  !checkedIn
+                  !m.checkedIn
                     ? 'text-on-surface-variant opacity-50 cursor-not-allowed'
                     : 'text-on-background hover:bg-surface-container cursor-pointer',
                 )}
@@ -259,7 +93,7 @@ export function MarkAttendancePage() {
             <div className="text-center">
               <p className="text-label-sm text-on-surface-variant uppercase">Net hours</p>
               <p className="text-title-lg font-bold text-on-background">
-                {summary ? formatHoursCompact(summary.netMs) : '—'}
+                {m.summary ? m.formatHoursCompact(m.summary.netMs) : '—'}
               </p>
             </div>
           </div>
@@ -282,12 +116,12 @@ export function MarkAttendancePage() {
                   key={s.id}
                   type="button"
                   disabled={!s.enabled}
-                  onClick={() => s.enabled && setStatus(s.id)}
+                  onClick={() => s.enabled && m.setStatus(s.id)}
                   className={cn(
                     'flex flex-col items-center justify-center p-4 border-2 rounded-lg transition-all',
                     !s.enabled && 'opacity-40 cursor-not-allowed',
-                    s.enabled && status === s.id
-                      ? 'border-secondary bg-secondary/10 text-secondary cursor-pointer'
+                    s.enabled && m.status === s.id
+                      ? 'border-secondary bg-secondary-container/50 text-secondary cursor-pointer'
                       : s.enabled
                         ? 'border-transparent bg-surface-container text-on-surface-variant hover:border-outline-variant cursor-pointer'
                         : 'border-transparent bg-surface-container text-on-surface-variant',
@@ -297,7 +131,7 @@ export function MarkAttendancePage() {
                   <span
                     className="material-symbols-outlined mb-2"
                     style={
-                      status === s.id && s.enabled
+                      m.status === s.id && s.enabled
                         ? { fontVariationSettings: "'FILL' 1" }
                         : undefined
                     }
@@ -319,19 +153,19 @@ export function MarkAttendancePage() {
               <div className="flex justify-between">
                 <dt className="text-on-surface-variant">Check-in</dt>
                 <dd className="font-semibold text-on-background">
-                  {session ? formatClockTime(session.checkInAt) : '—'}
+                  {m.session ? m.formatClockTime(m.session.checkInAt) : '—'}
                 </dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-on-surface-variant">Check-out</dt>
                 <dd className="font-semibold text-on-background">
-                  {session?.checkOutAt ? formatClockTime(session.checkOutAt) : '—'}
+                  {m.session?.checkOutAt ? m.formatClockTime(m.session.checkOutAt) : '—'}
                 </dd>
               </div>
               <div className="flex justify-between">
                 <dt className="text-on-surface-variant">Break time</dt>
                 <dd className="font-semibold text-on-background">
-                  {summary ? formatHoursCompact(summary.breakMs) : '—'}
+                  {m.summary ? m.formatHoursCompact(m.summary.breakMs) : '—'}
                 </dd>
               </div>
             </dl>
@@ -339,64 +173,70 @@ export function MarkAttendancePage() {
         </div>
 
         <WorkingHoursLog
-          logRows={logRows}
-          markerPct={markerPct}
-          totalLoggedLabel={totalLoggedLabel}
-          breaks={breaks}
-          nowMs={now.getTime()}
+          logRows={m.logRows}
+          markerPct={m.markerPct}
+          totalLoggedLabel={m.totalLoggedLabel}
+          breaks={m.breaks}
+          nowMs={m.now.getTime()}
         />
 
         <ManualAttendanceForm
-          manualDate={manualDate}
-          setManualDate={setManualDate}
-          manualReason={manualReason}
-          setManualReason={setManualReason}
-          manualIn={manualIn}
-          setManualIn={setManualIn}
-          manualOut={manualOut}
-          setManualOut={setManualOut}
-          manualNote={manualNote}
-          setManualNote={setManualNote}
-          onReset={resetManual}
-          onSubmit={submitManual}
+          manualDate={m.manualDate}
+          setManualDate={m.setManualDate}
+          manualReason={m.manualReason}
+          setManualReason={m.setManualReason}
+          manualIn={m.manualIn}
+          setManualIn={m.setManualIn}
+          manualOut={m.manualOut}
+          setManualOut={m.setManualOut}
+          manualNote={m.manualNote}
+          setManualNote={m.setManualNote}
+          onReset={m.resetManual}
+          onSubmit={m.submitManual}
         />
 
-        <div className="col-span-12 lg:col-span-4 bg-deep-navy text-white rounded-xl p-6 flex flex-col justify-between executive-shadow">
+        <div className="col-span-12 lg:col-span-4 bg-primary text-on-primary rounded-xl p-6 flex flex-col justify-between executive-shadow">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <span className="material-symbols-outlined text-secondary">info</span>
+              <span className="material-symbols-outlined text-secondary-container">info</span>
               <h4 className="text-title-lg font-semibold">Policy Highlights</h4>
             </div>
             <ul className="space-y-4">
               <li className="flex gap-3">
-                <span className="material-symbols-outlined text-secondary shrink-0">check_circle</span>
-                <p className="text-body-sm opacity-90">
+                <span className="material-symbols-outlined text-secondary-container shrink-0">
+                  check_circle
+                </span>
+                <p className="text-body-sm text-on-primary/90">
                   Grace period for Late marking is 15 minutes past the shift start.
                 </p>
               </li>
               <li className="flex gap-3">
-                <span className="material-symbols-outlined text-secondary shrink-0">check_circle</span>
-                <p className="text-body-sm opacity-90">
+                <span className="material-symbols-outlined text-secondary-container shrink-0">
+                  check_circle
+                </span>
+                <p className="text-body-sm text-on-primary/90">
                   Location must be within 500m of the office perimeter for verified punch-in.
                 </p>
               </li>
               <li className="flex gap-3">
-                <span className="material-symbols-outlined text-secondary shrink-0">check_circle</span>
-                <p className="text-body-sm opacity-90">
+                <span className="material-symbols-outlined text-secondary-container shrink-0">
+                  check_circle
+                </span>
+                <p className="text-body-sm text-on-primary/90">
                   Attendance corrections must be submitted within 48 hours of the missing log.
                 </p>
               </li>
             </ul>
           </div>
-          <div className="mt-6 p-4 bg-white/5 rounded-lg border border-white/10">
-            <p className="text-label-sm font-bold mb-2 uppercase opacity-80">Approval Status</p>
+          <div className="mt-6 p-4 bg-on-primary/5 rounded-lg border border-on-primary/10">
+            <p className="text-label-sm font-bold mb-2 uppercase text-on-primary/80">Approval Status</p>
             <button
               type="button"
               className="w-full flex justify-between items-center text-left hover:opacity-90"
-              onClick={() => safeNavigate(navigate,{ to: '/my-work/attendance/corrections' })}
+              onClick={m.goCorrections}
             >
               <span className="text-body-sm">Pending Corrections</span>
-              <span className="px-2 py-0.5 bg-secondary text-white rounded text-[10px] font-bold">
+              <span className="px-2 py-0.5 bg-secondary text-on-secondary rounded text-[10px] font-bold">
                 VIEW
               </span>
             </button>

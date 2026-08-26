@@ -4,7 +4,9 @@ import { Button } from '@/shared/components/ui/Button'
 import { leaveRequests, currentUser, leaveBalances } from '../data/mock'
 import type { LeaveStatus } from '../types'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { myWorkRoutes } from '../routes'
 
+/** Status badge colors — left as semantic status styles (not design-token pass). */
 const statusStyles: Record<LeaveStatus, string> = {
   Pending: 'bg-amber-100 text-amber-800 border border-amber-200',
   Approved: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
@@ -20,15 +22,21 @@ export function LeaveDetailPage() {
   if (!req) {
     return (
       <div className="animate-fade-in">
-        <PageHeader title="Leave details" showBack />
+        <PageHeader
+          title="Leave details"
+          showBack
+          backTo={myWorkRoutes.leave}
+          backLabel="Back to My Leave"
+        />
         <p className="text-body-md text-on-surface-variant">Request not found.</p>
       </div>
     )
   }
 
+  const totalRemaining = leaveBalances.reduce((s, b) => s + b.remaining, 0)
+  const totalAllocated = leaveBalances.reduce((s, b) => s + b.total, 0) || 1
   const remainingAfter =
-    leaveBalances.reduce((s, b) => s + b.remaining, 0) -
-    (req.status === 'Pending' || req.status === 'Approved' ? req.days : 0)
+    totalRemaining - (req.status === 'Pending' || req.status === 'Approved' ? req.days : 0)
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -36,7 +44,7 @@ export function LeaveDetailPage() {
         title={`Leave Request #${req.id.toUpperCase()}`}
         description={`${req.type} · ${req.from} → ${req.to} · ${req.days} day(s)`}
         showBack
-        backTo="/my-work/leave"
+        backTo={myWorkRoutes.leave}
         backLabel="Back to My Leave"
         actions={
           <div className="flex items-center gap-2">
@@ -67,7 +75,7 @@ export function LeaveDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8 space-y-6">
           <section className="bv-surface p-5 flex flex-col sm:flex-row items-start sm:items-center gap-5">
-            <div className="w-16 h-16 rounded-xl bg-secondary/10 flex items-center justify-center text-secondary shrink-0">
+            <div className="w-16 h-16 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
               <span className="material-symbols-outlined text-3xl">person</span>
             </div>
             <div className="flex-1 min-w-0">
@@ -142,7 +150,7 @@ export function LeaveDetailPage() {
               <p className="text-label-sm text-on-surface-variant mb-3">Supporting Documents</p>
               <div className="flex flex-wrap gap-3">
                 <div className="flex items-center gap-3 p-3 border border-outline-variant rounded-lg hover:border-secondary transition-colors cursor-pointer group bg-surface-container-low">
-                  <div className="w-10 h-10 bg-error/10 text-error rounded flex items-center justify-center">
+                  <div className="w-10 h-10 bg-error-container text-on-error-container rounded flex items-center justify-center">
                     <span className="material-symbols-outlined">picture_as_pdf</span>
                   </div>
                   <div>
@@ -167,7 +175,7 @@ export function LeaveDetailPage() {
             <div className="space-y-5">
               {req.approver && (
                 <div className="flex gap-3">
-                  <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined">person</span>
                   </div>
                   <div className="flex-1 bg-surface-container-low rounded-xl p-4">
@@ -215,8 +223,8 @@ export function LeaveDetailPage() {
             <h3 className="text-title-lg font-semibold text-on-background mb-5">Approval Timeline</h3>
             <div className="relative space-y-6 before:content-[''] before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-outline-variant/40">
               <div className="relative flex items-start pl-8">
-                <div className="absolute left-0 top-0.5 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center z-10 border-2 border-surface-container-lowest executive-shadow">
-                  <span className="material-symbols-outlined text-white text-sm">check</span>
+                <div className="absolute left-0 top-0.5 w-6 h-6 rounded-full bg-secondary text-on-secondary flex items-center justify-center z-10 border-2 border-surface-container-lowest executive-shadow">
+                  <span className="material-symbols-outlined text-sm">check</span>
                 </div>
                 <div>
                   <p className="text-label-md font-bold text-on-surface">Request Submitted</p>
@@ -231,10 +239,12 @@ export function LeaveDetailPage() {
                 <div className="relative flex items-start pl-8">
                   <div
                     className={`absolute left-0 top-0.5 w-6 h-6 rounded-full flex items-center justify-center z-10 border-2 border-surface-container-lowest executive-shadow ${
-                      req.status === 'Approved' ? 'bg-emerald-500' : 'bg-error'
+                      req.status === 'Approved'
+                        ? 'bg-secondary text-on-secondary'
+                        : 'bg-error text-on-error'
                     }`}
                   >
-                    <span className="material-symbols-outlined text-white text-sm">
+                    <span className="material-symbols-outlined text-sm">
                       {req.status === 'Approved' ? 'check' : 'close'}
                     </span>
                   </div>
@@ -249,8 +259,8 @@ export function LeaveDetailPage() {
 
               {req.status === 'Pending' && (
                 <div className="relative flex items-start pl-8">
-                  <div className="absolute left-0 top-0.5 w-6 h-6 rounded-full bg-secondary flex items-center justify-center z-10 border-2 border-surface-container-lowest ring-4 ring-secondary/15 executive-shadow">
-                    <span className="material-symbols-outlined text-white text-sm">pending</span>
+                  <div className="absolute left-0 top-0.5 w-6 h-6 rounded-full bg-secondary text-on-secondary flex items-center justify-center z-10 border-2 border-surface-container-lowest ring-4 ring-secondary/15 executive-shadow">
+                    <span className="material-symbols-outlined text-sm">pending</span>
                   </div>
                   <div>
                     <p className="text-label-md font-bold text-secondary">Manager Review</p>
@@ -261,8 +271,8 @@ export function LeaveDetailPage() {
               )}
 
               <div className="relative flex items-start pl-8 opacity-40">
-                <div className="absolute left-0 top-0.5 w-6 h-6 rounded-full bg-outline-variant flex items-center justify-center z-10 border-2 border-surface-container-lowest">
-                  <span className="material-symbols-outlined text-white text-sm">lock</span>
+                <div className="absolute left-0 top-0.5 w-6 h-6 rounded-full bg-outline-variant text-on-surface-variant flex items-center justify-center z-10 border-2 border-surface-container-lowest">
+                  <span className="material-symbols-outlined text-sm">lock</span>
                 </div>
                 <div>
                   <p className="text-label-md font-bold text-on-surface">Final Confirmation</p>
@@ -272,34 +282,32 @@ export function LeaveDetailPage() {
             </div>
           </section>
 
-          <section className="bg-primary text-white rounded-xl p-6 executive-shadow relative overflow-hidden">
+          <section className="bg-primary text-on-primary rounded-xl p-6 executive-shadow relative overflow-hidden">
             <div className="relative z-10 space-y-4">
-              <h3 className="text-label-md font-semibold text-white/80 uppercase tracking-wider">
+              <h3 className="text-label-md font-semibold text-on-primary/80 uppercase tracking-wider">
                 Balance after request
               </h3>
               <div className="flex justify-between items-end">
                 <div>
-                  <p className="text-label-sm text-white/60">Current</p>
-                  <p className="text-2xl font-bold">
-                    {leaveBalances.reduce((s, b) => s + b.remaining, 0)} days
-                  </p>
+                  <p className="text-label-sm text-on-primary/60">Current</p>
+                  <p className="text-2xl font-bold">{totalRemaining} days</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-label-sm text-white/60">This request</p>
-                  <p className="text-xl font-bold text-red-300">−{req.days} days</p>
+                  <p className="text-label-sm text-on-primary/60">This request</p>
+                  <p className="text-xl font-bold text-error-container">−{req.days} days</p>
                 </div>
               </div>
-              <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-2 bg-on-primary/10 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-secondary-container rounded-full"
                   style={{
-                    width: `${Math.max(10, (remainingAfter / (leaveBalances.reduce((s, b) => s + b.total, 0) || 1)) * 100)}%`,
+                    width: `${Math.max(10, (remainingAfter / totalAllocated) * 100)}%`,
                   }}
                 />
               </div>
-              <p className="text-label-sm text-white/70">
+              <p className="text-label-sm text-on-primary/70">
                 Remaining after approval:{' '}
-                <span className="font-bold text-white">{Math.max(0, remainingAfter)} days</span>
+                <span className="font-bold text-on-primary">{Math.max(0, remainingAfter)} days</span>
               </p>
             </div>
             <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-secondary/20 rounded-full blur-2xl" />
@@ -318,7 +326,7 @@ export function LeaveDetailPage() {
               <Button
                 variant="primary"
                 className="w-full"
-                onClick={() => safeNavigate(navigate,{ to: '/my-work/leave/apply' })}
+                onClick={() => safeNavigate(navigate, { to: myWorkRoutes.leaveApply })}
               >
                 Apply again
               </Button>
@@ -332,7 +340,7 @@ export function LeaveDetailPage() {
               <Button
                 variant="ghost"
                 className="w-full"
-                onClick={() => safeNavigate(navigate,{ to: '/my-work/leave' })}
+                onClick={() => safeNavigate(navigate, { to: myWorkRoutes.leave })}
               >
                 All leave requests
               </Button>

@@ -5,7 +5,9 @@ import { Button } from '@/shared/components/ui/Button'
 import { attendanceHistory, currentUser } from '../data/mock'
 import type { AttendanceStatus } from '../types'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { myWorkRoutes } from '../routes'
 
+/** Status badge colors — left as semantic status styles (not design-token pass). */
 const statusStyles: Record<AttendanceStatus, string> = {
   Present: 'bg-emerald-50 text-emerald-700',
   Absent: 'bg-red-50 text-red-700',
@@ -23,7 +25,7 @@ export function AttendanceDetailPage() {
   if (!record) {
     return (
       <div className="animate-fade-in space-y-4">
-        <BackButton to="/my-work/attendance" label="Back to attendance" />
+        <BackButton to={myWorkRoutes.attendance} label="Back to attendance" />
         <PageHeader title="Attendance details" />
         <p className="text-body-md text-on-surface-variant">Record not found.</p>
       </div>
@@ -32,7 +34,7 @@ export function AttendanceDetailPage() {
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <BackButton to="/my-work/attendance" label="Back to attendance" />
+      <BackButton to={myWorkRoutes.attendance} label="Back to attendance" />
       <PageHeader
         title={`Attendance · ${record.date}`}
         description={`${currentUser.name} · ${currentUser.employeeId}`}
@@ -40,7 +42,7 @@ export function AttendanceDetailPage() {
           <Button
             variant="outline"
             leftIcon={<span className="material-symbols-outlined text-lg">edit_calendar</span>}
-            onClick={() => safeNavigate(navigate,{ to: '/my-work/attendance/corrections' })}
+            onClick={() => safeNavigate(navigate, { to: myWorkRoutes.attendanceCorrections })}
           >
             Request correction
           </Button>
@@ -125,7 +127,11 @@ export function AttendanceDetailPage() {
           </section>
 
           <section className="bv-surface p-4">
-            <Button variant="outline" className="w-full" onClick={() => safeNavigate(navigate,{ to: '/my-work/attendance' })}>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => safeNavigate(navigate, { to: myWorkRoutes.attendance })}
+            >
               View all attendance
             </Button>
           </section>
