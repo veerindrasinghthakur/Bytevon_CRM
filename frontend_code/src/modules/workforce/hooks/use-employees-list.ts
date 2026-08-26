@@ -4,7 +4,7 @@ import { useListControls } from '@/shared/hooks/useListControls'
 import { listEmployments } from '../api/employment'
 import { listDepartments } from '../api/departments'
 import { queryKeys } from '@/shared/lib/query-keys'
-import { employmentStateSchema } from '../schemas/employment'
+import { computeEmploymentListMetrics } from '@/shared/compute/workforce-metrics'
 
 const FILTER_DEFAULTS = {
   dept: 'all',
@@ -12,24 +12,13 @@ const FILTER_DEFAULTS = {
   type: 'all',
 }
 
-/** Canonical employment states for filter Select (schema-driven). */
-const EMPLOYMENT_STATES = employmentStateSchema.options
-
-const EMPLOYMENT_TYPES = [
-  'FULL_TIME',
-  'PART_TIME',
-  'CONTRACT',
-  'INTERN',
-  'CONSULTANT',
-] as const
-
 export function useEmployeesList() {
   const controls = useListControls({
     filterDefaults: FILTER_DEFAULTS,
   })
 
   const listFilters = {
-    search: controls.debouncedSearch.trim() || undefined,
+    search: controls.debouncedSearch || undefined,
     department: controls.filters.dept !== 'all' ? controls.filters.dept : undefined,
     state: controls.filters.state !== 'all' ? controls.filters.state : undefined,
     type: controls.filters.type !== 'all' ? controls.filters.type : undefined,
@@ -55,31 +44,16 @@ export function useEmployeesList() {
     queryFn: () => listDepartments({ includeArchived: false }),
   })
 
-  const pageItems = employeesQuery.data?.items ?? []
-  const totalCount = employeesQuery.data?.total ?? 0
-  const metrics = employeesQuery.data?.metrics ?? { total: 0, active: 0, archived: 0 }
-
+  const items = employeesQuery.data?.items ?? []
   const departments = useMemo(
     () => (departmentsQuery.data?.items ?? []).map((d) => ({ id: d.id, name: d.name })),
     [departmentsQuery.data],
   )
 
-  /** length === totalCount for Pagination / empty; iteration is still current page */
-  const filtered = useMemo(() => {
-    return new Proxy(pageItems, {
-      get(target, prop, receiver) {
-        if (prop === 'length') return totalCount
-        return Reflect.get(target, prop, receiver)
-      },
-    }) as typeof pageItems
-  }, [pageItems, totalCount])
+  const metrics = useMemo(() => computeEmploymentListMetrics(items), [items])
 
   return {
-    pageItems,
-    filtered,
-    /** @deprecated use totalCount — kept so legacy "of {items.length}" footers stay correct */
-    items: { length: totalCount } as { length: number },
-    totalCount,
+    items,
     metrics,
     departments,
     states: [...EMPLOYMENT_STATES],
@@ -102,6 +76,7 @@ export function useEmployeesList() {
     page: controls.page,
     setPage: controls.setPage,
     pageSize: controls.pageSize,
+    setPageSize: controls.setPageSize,
     reload: () => void employeesQuery.refetch(),
     refetch: employeesQuery.refetch,
   }

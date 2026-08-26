@@ -56,8 +56,8 @@ class AuthBypassMiddleware(BaseHTTPMiddleware):
 app.add_middleware(AuthBypassMiddleware)
 
 app.include_router(health.router)
-# app.include_router(extras.router, prefix="/api/v1")
-# app.include_router(extras.router)
+app.include_router(extras.router, prefix="/api/v1")
+app.include_router(extras.router)
 app.include_router(auth.router, prefix="/api/v1")
 # app.include_router(admin.router, prefix="/api/v1")
 # app.include_router(sales.router, prefix="/api/v1")

@@ -69,34 +69,23 @@ function buildMetrics(items: EmploymentListItem[]) {
   }
 }
 
-export async function listEmployments(params?: {
-  search?: string
-  /** Department name filter */
-  department?: string
-  /** Employment current_state */
-  state?: string
-  /** employment_type */
-  type?: string
-  page?: number
-  pageSize?: number
-}) {
+export async function listEmployments(
+  params: { status?: string } & EntityListParams = {},
+) {
+  const { page = 1, pageSize = 20, search, status } = params
+
   if (!env.useMockApi) {
     const { data } = await apiClient.get<{
       items: EmploymentListItem[]
       total: number
-      metrics?: ReturnType<typeof buildMetrics>
-    }>('/workforce/employments', { params })
-    return {
-      items: data.items,
-      total: data.total,
-      metrics: data.metrics ?? buildMetrics(data.items),
-    }
+    }>('/workforce/employments', { params: { page, pageSize, search, status } })
+    return { items: data.items, total: data.total }
   }
 
   await delay()
   let items = getDb().employments.map((e) => enrichListRow(e))
-  if (params?.search) {
-    const q = params.search.toLowerCase()
+  if (search) {
+    const q = search.toLowerCase()
     items = items.filter(
       (e) =>
         e.employee_code.toLowerCase().includes(q) ||
@@ -106,21 +95,14 @@ export async function listEmployments(params?: {
         e.positionName.toLowerCase().includes(q),
     )
   }
-  if (params?.department) {
-    items = items.filter((e) => e.departmentName === params.department)
+  if (status) {
+    items = items.filter((e) => e.current_state === status)
   }
-  if (params?.state) {
-    items = items.filter((e) => e.current_state === params.state)
+  if (page != null || pageSize != null) {
+    const pageResult = paginateItems(items, page, pageSize)
+    return { ...pageResult, metrics: buildMetrics(items) }
   }
-  if (params?.type) {
-    items = items.filter((e) => e.employment_type === params.type)
-  }
-  const metrics = buildMetrics(items)
-  if (params?.page != null || params?.pageSize != null) {
-    const page = paginateItems(items, params.page, params.pageSize)
-    return { ...page, metrics }
-  }
-  return { items, total: items.length, metrics }
+  return { items, total: items.length, metrics: buildMetrics(items) }
 }
 
 export async function getEmployeeDetail(employmentId: number): Promise<EmployeeDetailDto | null> {

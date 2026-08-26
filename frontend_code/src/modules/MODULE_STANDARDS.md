@@ -580,6 +580,8 @@ export { useCreateEntity, useUpdateEntity, useDeleteEntity } from './hooks/use-e
 12. [ ] Wire `ExportButton` with `selectedIds` for bulk export
 13. [ ] Use `BackButton` on nested routes
 14. [ ] Document endpoints in `<MODULE>_API_CATALOG.md`
+15. [ ] All the pages should use safeNavigate for the navigation 
+      ```safeNavigate(navigate,{})```
 
 ---
 

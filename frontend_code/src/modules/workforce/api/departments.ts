@@ -7,10 +7,10 @@ import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
 import { paginateItems } from '@/shared/lib/list-params'
-import { computeDepartmentListMetrics } from '@/shared/compute/workforce-metrics'
 import type { DepartmentRow } from '@/shared/schema'
 import { WorkMode } from '@/shared/schema'
 import type { DepartmentListItem, DepartmentEmployee } from '../types'
+import type { EntityListParams } from '@/shared/lib/list-params'
 
 export type { DepartmentListItem, DepartmentEmployee }
 
@@ -47,34 +47,23 @@ function toListItem(d: DepartmentRow): DepartmentListItem {
   }
 }
 
-export async function listDepartments(params?: {
-  search?: string
-  includeArchived?: boolean
-  status?: string
-  page?: number
-  pageSize?: number
-}) {
+export async function listDepartments(
+  params: { includeArchived?: boolean } & EntityListParams = {},
+) {
+  const { page = 1, pageSize = 20, search, status } = params
+
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<{
-      items: DepartmentListItem[]
-      total: number
-      metrics?: ReturnType<typeof computeDepartmentListMetrics>
-    }>('/workforce/departments', { params })
-    return {
-      items: data.items,
-      total: data.total,
-      metrics: data.metrics ?? computeDepartmentListMetrics(data.items),
-    }
+    const { data } = await apiClient.get<{ items: DepartmentListItem[]; total: number }>(
+      '/workforce/departments',
+      { params: { page, pageSize, search, status } },
+    )
+    return { items: data.items, total: data.total }
   }
 
   await delay()
   let rows = getDb().schema_departments.map((d) => toListItem(d))
-  if (!params?.includeArchived) rows = rows.filter((d) => !d.isArchived)
-  if (params?.status && params.status !== 'All') {
-    rows = rows.filter((d) => d.status === params.status)
-  }
-  if (params?.search) {
-    const q = params.search.toLowerCase()
+  if (search) {
+    const q = search.toLowerCase()
     rows = rows.filter(
       (d) =>
         d.name.toLowerCase().includes(q) ||
@@ -82,12 +71,16 @@ export async function listDepartments(params?: {
         d.headName.toLowerCase().includes(q),
     )
   }
-  const metrics = computeDepartmentListMetrics(rows)
-  if (params?.page != null || params?.pageSize != null) {
-    const page = paginateItems(rows, params.page, params.pageSize)
-    return { ...page, metrics }
+  if (status && status !== 'All') {
+    rows = rows.filter((d) => d.status === status)
   }
-  return { items: rows, total: rows.length, metrics }
+  if (!params.includeArchived) {
+    rows = rows.filter((d) => !d.isArchived)
+  }
+  if (page != null || pageSize != null) {
+    return paginateItems(rows, page, pageSize)
+  }
+  return { items: rows, total: rows.length }
 }
 
 export async function getDepartment(id: number) {

@@ -13,7 +13,7 @@ export function useDepartmentsList() {
 
   const listFilters = {
     includeArchived: true,
-    search: controls.debouncedSearch.trim() || undefined,
+    search: controls.debouncedSearch || undefined,
     status: controls.filters.status !== 'All' ? controls.filters.status : undefined,
     page: controls.page,
     pageSize: controls.pageSize,
@@ -31,26 +31,12 @@ export function useDepartmentsList() {
       }),
   })
 
-  const pageItems = data?.items ?? []
+  const items = data?.items ?? []
   const totalCount = data?.total ?? 0
   const metrics = data?.metrics ?? { total: 0, active: 0, inactive: 0, staffing: 0 }
 
-  /**
-   * length === totalCount so Pagination / empty checks work without page rewrites.
-   * Iteration still walks the current page only.
-   */
-  const filtered = useMemo(() => {
-    return new Proxy(pageItems, {
-      get(target, prop, receiver) {
-        if (prop === 'length') return totalCount
-        return Reflect.get(target, prop, receiver)
-      },
-    }) as typeof pageItems
-  }, [pageItems, totalCount])
-
   return {
-    pageItems,
-    filtered,
+    items,
     totalCount,
     metrics,
     loading: isLoading,

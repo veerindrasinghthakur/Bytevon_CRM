@@ -4,16 +4,8 @@
  */
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
-import { SessionStatus } from '@/shared/schema'
-import type { ChangePasswordInput } from '@/modules/auth/schemas/auth'
-import { changePasswordApi as authChangePassword } from '@/modules/auth/api/auth'
-import {
-  getProfileStore,
-  setProfileStore,
-  mockActivity,
-  mockSessions,
-  replaceMockSessions,
-} from '../data/mock'
+import { delay } from '@/shared/lib/lazyPage'
+import { getProfileStore, setProfileStore, mockActivity, mockSessions, replaceMockSessions } from '@/shared/mock/data/profile'
 import type {
   ProfileActivityItem,
   ProfileDetail,
