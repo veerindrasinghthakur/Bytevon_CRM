@@ -1,8 +1,6 @@
-import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { listDepartments } from '../api/departments'
-import { computeDepartmentListMetrics } from '@/shared/compute/workforce-metrics'
 import { queryKeys } from '@/shared/lib/query-keys'
 
 const FILTER_DEFAULTS = { status: 'All' }
@@ -14,7 +12,7 @@ export function useDepartmentsList() {
 
   const listFilters = {
     includeArchived: true,
-    search: controls.debouncedSearch || undefined,
+    search: controls.debouncedSearch.trim() || undefined,
     status: controls.filters.status !== 'All' ? controls.filters.status : undefined,
     page: controls.page,
     pageSize: controls.pageSize,
@@ -27,35 +25,21 @@ export function useDepartmentsList() {
         includeArchived: true,
         search: listFilters.search,
         status: listFilters.status,
-        // Full set for metrics + client page until server filters are complete
-        page: undefined,
-        pageSize: undefined,
+        page: listFilters.page,
+        pageSize: listFilters.pageSize,
       }),
   })
 
-  const items = data?.items ?? []
-
-  const metrics = useMemo(() => computeDepartmentListMetrics(items), [items])
-
-  const filtered = useMemo(() => {
-    return items.filter((d) => {
-      const q = controls.debouncedSearch.toLowerCase().trim()
-      const matchQ =
-        !q ||
-        d.name.toLowerCase().includes(q) ||
-        d.code.toLowerCase().includes(q) ||
-        d.headName.toLowerCase().includes(q)
-      const matchS = controls.filters.status === 'All' || d.status === controls.filters.status
-      return matchQ && matchS
-    })
-  }, [items, controls.debouncedSearch, controls.filters.status])
-
-  const pageItems = useMemo(() => controls.pageItems(filtered), [controls, filtered])
+  const pageItems = data?.items ?? []
+  const totalCount = data?.total ?? 0
+  const metrics = data?.metrics ?? { total: 0, active: 0, inactive: 0, staffing: 0 }
 
   return {
-    items,
-    filtered,
+    /** Current page rows (server-paginated) */
     pageItems,
+    /** Alias for empty-state checks against total filtered count */
+    filtered: pageItems,
+    totalCount,
     metrics,
     loading: isLoading,
     isLoading,

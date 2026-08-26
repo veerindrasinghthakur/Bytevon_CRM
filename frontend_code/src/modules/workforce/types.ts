@@ -1,13 +1,16 @@
-/** Workforce domain types — UI shapes + schema re-exports */
+/** Workforce domain types — schema re-exports + UI shapes */
 
 export type {
-  DepartmentListItemSchema as DepartmentListItemFromSchema,
+  DepartmentListItemSchema,
+  DepartmentListResponse,
   DepartmentEmployeeSchema,
   CreateDepartmentInput,
   DepartmentFormInput,
 } from './schemas/department'
 
 export type {
+  EmploymentListItemSchema,
+  EmploymentListResponse,
   CreateEmploymentSchemaInput,
   EmploymentFormInput,
 } from './schemas/employment'
@@ -22,6 +25,10 @@ export {
   emptyEmploymentForm,
 } from './schemas/employment-form'
 
+/** Prefer schema-derived list item for departments */
+export type { DepartmentListItemSchema as DepartmentListItem } from './schemas/department'
+export type { DepartmentEmployeeSchema as DepartmentEmployee } from './schemas/department'
+
 export type RecordStatus = 'Active' | 'Inactive'
 export type EmploymentType = 'Full-Time Regular' | 'Contractor' | 'Part-Time' | 'Intern'
 export type EmployeeStatus =
@@ -34,6 +41,7 @@ export type EmployeeStatus =
   | 'Archived'
 export type DepartmentRole = 'Lead' | 'Senior' | 'Junior'
 
+/** Legacy / detail UI shape (string ids) — list pages use DepartmentListItem */
 export interface Department {
   id: string
   name: string
@@ -55,28 +63,7 @@ export interface Department {
   icon?: string
 }
 
-/** API list shape (numeric ids from mock DB) */
-export interface DepartmentListItem {
-  id: number
-  name: string
-  code: string
-  headName: string
-  headEmploymentId: number | null
-  staffCount: number
-  isArchived: boolean
-  status: 'Active' | 'Inactive'
-  createdAt: string
-}
-
-export interface DepartmentEmployee {
-  employmentId: number
-  employeeCode: string
-  name: string
-  positionName: string
-  state: string
-  email: string
-}
-
+/** Legacy employee UI shape — list pages use EmploymentListItem from API */
 export interface Employee {
   id: string
   employeeCode: string

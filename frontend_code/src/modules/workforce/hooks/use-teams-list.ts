@@ -50,25 +50,39 @@ export function useTeamsList() {
     filterDefaults: FILTER_DEFAULTS,
   })
 
+  const listFilters = {
+    search: controls.debouncedSearch.trim() || undefined,
+    status: controls.filters.status !== 'All' ? controls.filters.status : undefined,
+    department: controls.filters.department !== 'All' ? controls.filters.department : undefined,
+    page: controls.page,
+    pageSize: controls.pageSize,
+  }
+
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
-    queryKey: queryKeys.teams.list({ search: controls.search || undefined }),
-    queryFn: () => getTeams({ search: controls.search || undefined }),
+    queryKey: queryKeys.teams.list(listFilters),
+    queryFn: () =>
+      getTeams({
+        search: listFilters.search,
+        // Teams API supports search; status/department applied client-side until API expands
+        page: undefined,
+        pageSize: undefined,
+      }),
   })
 
   const mapped = useMemo(() => (data?.items ?? []).map(toWorkforceTeam), [data])
 
   const filtered = useMemo(() => {
     return mapped.filter((t) => {
-      if (controls.filters.status !== 'All' && t.status !== controls.filters.status) return false
+      if (listFilters.status && t.status !== listFilters.status) return false
       if (
-        controls.filters.department !== 'All' &&
-        t.department.toLowerCase() !== controls.filters.department.toLowerCase()
+        listFilters.department &&
+        t.department.toLowerCase() !== listFilters.department.toLowerCase()
       ) {
         return false
       }
       return true
     })
-  }, [mapped, controls.filters.status, controls.filters.department])
+  }, [mapped, listFilters.status, listFilters.department])
 
   const metrics = useMemo(() => buildMetrics(filtered), [filtered])
   const pageItems = controls.pageItems(filtered)
@@ -80,7 +94,7 @@ export function useTeamsList() {
 
   return {
     metrics,
-    totalCount: data?.total ?? mapped.length,
+    totalCount: filtered.length,
     filtered,
     pageItems,
     isLoading,

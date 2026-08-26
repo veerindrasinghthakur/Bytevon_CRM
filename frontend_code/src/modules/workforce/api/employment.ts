@@ -71,6 +71,12 @@ function buildMetrics(items: EmploymentListItem[]) {
 
 export async function listEmployments(params?: {
   search?: string
+  /** Department name filter */
+  department?: string
+  /** Employment current_state */
+  state?: string
+  /** employment_type */
+  type?: string
   page?: number
   pageSize?: number
 }) {
@@ -96,8 +102,18 @@ export async function listEmployments(params?: {
         e.employee_code.toLowerCase().includes(q) ||
         e.fullName.toLowerCase().includes(q) ||
         e.email.toLowerCase().includes(q) ||
-        e.departmentName.toLowerCase().includes(q),
+        e.departmentName.toLowerCase().includes(q) ||
+        e.positionName.toLowerCase().includes(q),
     )
+  }
+  if (params?.department) {
+    items = items.filter((e) => e.departmentName === params.department)
+  }
+  if (params?.state) {
+    items = items.filter((e) => e.current_state === params.state)
+  }
+  if (params?.type) {
+    items = items.filter((e) => e.employment_type === params.type)
   }
   const metrics = buildMetrics(items)
   if (params?.page != null || params?.pageSize != null) {

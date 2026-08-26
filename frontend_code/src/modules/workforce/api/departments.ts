@@ -7,6 +7,7 @@ import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
 import { paginateItems } from '@/shared/lib/list-params'
+import { computeDepartmentListMetrics } from '@/shared/compute/workforce-metrics'
 import type { DepartmentRow } from '@/shared/schema'
 import { WorkMode } from '@/shared/schema'
 import type { DepartmentListItem, DepartmentEmployee } from '../types'
@@ -54,11 +55,16 @@ export async function listDepartments(params?: {
   pageSize?: number
 }) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<{ items: DepartmentListItem[]; total: number }>(
-      '/workforce/departments',
-      { params },
-    )
-    return data
+    const { data } = await apiClient.get<{
+      items: DepartmentListItem[]
+      total: number
+      metrics?: ReturnType<typeof computeDepartmentListMetrics>
+    }>('/workforce/departments', { params })
+    return {
+      items: data.items,
+      total: data.total,
+      metrics: data.metrics ?? computeDepartmentListMetrics(data.items),
+    }
   }
 
   await delay()
@@ -76,10 +82,12 @@ export async function listDepartments(params?: {
         d.headName.toLowerCase().includes(q),
     )
   }
+  const metrics = computeDepartmentListMetrics(rows)
   if (params?.page != null || params?.pageSize != null) {
-    return paginateItems(rows, params.page, params.pageSize)
+    const page = paginateItems(rows, params.page, params.pageSize)
+    return { ...page, metrics }
   }
-  return { items: rows, total: rows.length }
+  return { items: rows, total: rows.length, metrics }
 }
 
 export async function getDepartment(id: number) {

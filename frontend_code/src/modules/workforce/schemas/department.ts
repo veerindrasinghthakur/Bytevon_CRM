@@ -16,10 +16,21 @@ export const departmentListItemSchema = z.object({
 
 export type DepartmentListItemSchema = z.infer<typeof departmentListItemSchema>
 
+/** List response — same shape as sales/admin entity list responses */
 export const departmentListResponseSchema = z.object({
   items: z.array(departmentListItemSchema),
   total: z.number(),
+  metrics: z
+    .object({
+      total: z.number(),
+      active: z.number(),
+      inactive: z.number(),
+      staffing: z.number(),
+    })
+    .optional(),
 })
+
+export type DepartmentListResponse = z.infer<typeof departmentListResponseSchema>
 
 export const departmentEmployeeSchema = z.object({
   employmentId: z.number(),
@@ -39,3 +50,10 @@ export const createDepartmentSchema = z.object({
 })
 
 export type CreateDepartmentInput = z.infer<typeof createDepartmentSchema>
+
+/** Re-export form schema from dedicated file */
+export {
+  departmentFormSchema,
+  type DepartmentFormInput,
+  emptyDepartmentForm,
+} from './department-form'
