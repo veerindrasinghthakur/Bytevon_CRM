@@ -1,9 +1,12 @@
 /**
  * Employment API — schema-shaped list/detail + create/update.
- * Pages load via this module (props), not local mock arrays.
+ * env.useMockApi → local mock DB; false → /workforce/employments
  */
 
+import { env } from '@/config/env'
+import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
+import { paginateItems } from '@/shared/lib/list-params'
 import type {
   EmployeeDetailDto,
   EmploymentRow,
@@ -54,7 +57,36 @@ function enrichListRow(e: EmploymentRow) {
   }
 }
 
-export async function listEmployments(params?: { search?: string }) {
+function buildMetrics(items: EmploymentListItem[]) {
+  return {
+    total: items.length,
+    active: items.filter((e) =>
+      ['CONFIRMED', 'PROBATION', 'ONBOARDING'].includes(e.current_state),
+    ).length,
+    archived: items.filter((e) =>
+      ['RESIGNED', 'TERMINATED', 'ALUMNI'].includes(e.current_state),
+    ).length,
+  }
+}
+
+export async function listEmployments(params?: {
+  search?: string
+  page?: number
+  pageSize?: number
+}) {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<{
+      items: EmploymentListItem[]
+      total: number
+      metrics?: ReturnType<typeof buildMetrics>
+    }>('/workforce/employments', { params })
+    return {
+      items: data.items,
+      total: data.total,
+      metrics: data.metrics ?? buildMetrics(data.items),
+    }
+  }
+
   await delay()
   let items = getDb().employments.map((e) => enrichListRow(e))
   if (params?.search) {
@@ -67,22 +99,26 @@ export async function listEmployments(params?: { search?: string }) {
         e.departmentName.toLowerCase().includes(q),
     )
   }
-  return {
-    items,
-    total: items.length,
-    metrics: {
-      total: items.length,
-      active: items.filter((e) =>
-        ['CONFIRMED', 'PROBATION', 'ONBOARDING'].includes(e.current_state),
-      ).length,
-      archived: items.filter((e) =>
-        ['RESIGNED', 'TERMINATED', 'ALUMNI'].includes(e.current_state),
-      ).length,
-    },
+  const metrics = buildMetrics(items)
+  if (params?.page != null || params?.pageSize != null) {
+    const page = paginateItems(items, params.page, params.pageSize)
+    return { ...page, metrics }
   }
+  return { items, total: items.length, metrics }
 }
 
 export async function getEmployeeDetail(employmentId: number): Promise<EmployeeDetailDto | null> {
+  if (!env.useMockApi) {
+    try {
+      const { data } = await apiClient.get<EmployeeDetailDto>(
+        `/workforce/employments/${employmentId}`,
+      )
+      return data
+    } catch {
+      return null
+    }
+  }
+
   await delay()
   const db = getDb()
   const employment = db.employments.find((e) => e.id === employmentId)
@@ -159,7 +195,6 @@ export interface CreateEmploymentInput {
   locationId: number
   shiftId: number
   workMode?: WorkMode | string
-  /** Optional bank */
   bank?: {
     accountHolderName: string
     bankName: string
@@ -169,6 +204,11 @@ export interface CreateEmploymentInput {
 }
 
 export async function createEmployment(input: CreateEmploymentInput) {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<EmploymentListItem>('/workforce/employments', input)
+    return data
+  }
+
   await delay(500)
   const db = getDb()
   const now = new Date().toISOString()
@@ -229,7 +269,6 @@ export async function createEmployment(input: CreateEmploymentInput) {
     changed_by: 1,
   })
 
-  // Default Employee role
   const employeeRole = db.roles.find((r) => r.name === 'Employee')
   if (employeeRole) {
     db.employee_roles.push({
@@ -273,6 +312,14 @@ export async function updateEmployment(
     currentState?: string
   },
 ) {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.patch<EmploymentListItem>(
+      `/workforce/employments/${employmentId}`,
+      patch,
+    )
+    return data
+  }
+
   await delay(400)
   const db = getDb()
   const emp = db.employments.find((e) => e.id === employmentId)
@@ -297,6 +344,15 @@ export async function updateEmployment(
 }
 
 export async function getOrgMastersForEmployeeForm() {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<{
+      departments: { id: number; name: string }[]
+      positions: { id: number; name: string }[]
+      locations: { id: number; name: string }[]
+      shifts: { id: number; name: string }[]
+    }>('/workforce/org-masters')
+    return data
+  }
   await delay(200)
   const db = getDb()
   return {
