@@ -1,18 +1,213 @@
-/** Canonical workforce UI seed — re-exports module seeds for shared consumers. */
-export {
-  attendanceKpis,
-  weeklyAttendance,
-  recentCheckIns,
-  todayAttendance,
-  corrections,
-  attendanceLogs,
-} from '@/modules/workforce/data/attendanceMock'
+/** Canonical workforce UI seed — shared mock location (MODULE_STANDARDS §7 / my-work pattern). */
 
-export {
-  shifts,
-  shiftEmployeesById,
-  employeesOnShift,
-  canCreateShift,
-  type ShiftRow,
-  type ShiftEmployee,
-} from '@/modules/workforce/data/shiftsMock'
+// --- Attendance dashboard seed ---
+export const attendanceKpis = [
+  { key: 'present', label: 'Present', value: 1248, hint: '4% vs yesterday', icon: 'check_circle' },
+  { key: 'absent', label: 'Absent', value: 32, hint: 'Scheduled leave: 14', icon: 'cancel' },
+  { key: 'late', label: 'Late', value: 56, hint: 'Grace period ends in 10m', icon: 'schedule' },
+  { key: 'leave', label: 'On Leave', value: 12, hint: 'Sick leave: 5', icon: 'event_busy' },
+  { key: 'wfh', label: 'Work From Home', value: 284, hint: 'Hybrid policy active', icon: 'home_work' },
+] as const
+
+export const weeklyAttendance = [
+  { day: 'Mon', thisWeek: 88, lastWeek: 84 },
+  { day: 'Tue', thisWeek: 91, lastWeek: 86 },
+  { day: 'Wed', thisWeek: 87, lastWeek: 89 },
+  { day: 'Thu', thisWeek: 90, lastWeek: 85 },
+  { day: 'Fri', thisWeek: 82, lastWeek: 80 },
+  { day: 'Sat', thisWeek: 40, lastWeek: 35 },
+  { day: 'Sun', thisWeek: 12, lastWeek: 10 },
+]
+
+export const recentCheckIns = [
+  { id: 'c1', name: 'Alex Rivera', team: 'Design Team', time: '08:42 AM', status: 'On Time' },
+  { id: 'c2', name: 'Sarah Chen', team: 'Engineering', time: '09:15 AM', status: 'Late' },
+  { id: 'c3', name: 'Marcus Thorne', team: 'HR Ops', time: '09:30 AM', status: 'Remote' },
+  { id: 'c4', name: 'Jason Miller', team: 'Sales', time: '09:44 AM', status: 'On Time' },
+]
+
+export const todayAttendance = [
+  { id: 'a1', name: 'Emma Larson', avatar: 'EL', department: 'Marketing', checkIn: '08:55 AM', checkOut: '—', status: 'PRESENT', hours: '—' },
+  { id: 'a2', name: 'Daniel Smith', avatar: 'DS', department: 'Legal', checkIn: '09:12 AM', checkOut: '—', status: 'LATE', hours: '—' },
+  { id: 'a3', name: 'Rachel Brown', avatar: 'RB', department: 'IT Support', checkIn: '—', checkOut: '—', status: 'ABSENT', hours: '—' },
+  { id: 'a4', name: 'Tom Peters', avatar: 'TP', department: 'Strategy', checkIn: '08:30 AM', checkOut: '—', status: 'WFH', hours: '—' },
+  { id: 'a5', name: 'Alex Rivera', avatar: 'AR', department: 'Engineering', checkIn: '08:42 AM', checkOut: '—', status: 'PRESENT', hours: '—' },
+  { id: 'a6', name: 'Priya Sharma', avatar: 'PS', department: 'Design', checkIn: '09:05 AM', checkOut: '—', status: 'LATE', hours: '—' },
+  { id: 'a7', name: 'Jordan Lee', avatar: 'JL', department: 'Engineering', checkIn: '08:50 AM', checkOut: '—', status: 'PRESENT', hours: '—' },
+  { id: 'a8', name: 'Maya Patel', avatar: 'MP', department: 'Design', checkIn: '—', checkOut: '—', status: 'ON_LEAVE', hours: '—' },
+]
+
+export const corrections = [
+  {
+    id: 'cor1',
+    name: 'Sophia Williams',
+    ago: '10m ago',
+    note: 'Forgot to clock-in while handling a priority client call at 08:30 AM.',
+    status: 'Pending',
+  },
+  {
+    id: 'cor2',
+    name: 'Robert Vance',
+    ago: '2h ago',
+    note: 'Device glitch, double clocked at same time. Requesting cleanup.',
+    status: 'Pending',
+  },
+]
+
+export const attendanceLogs = [
+  { time: '09:00:14 AM', action: 'Punch In', duration: '—', status: 'On Time', location: 'Office WiFi (HQ-GUEST)' },
+  { time: '01:05:00 PM', action: 'Break Start', duration: '32m', status: '—', location: 'Office' },
+  { time: '01:37:00 PM', action: 'Break End', duration: '—', status: '—', location: 'Office' },
+  { time: '06:02:10 PM', action: 'Punch Out', duration: '8h 02m', status: 'Complete', location: 'Office WiFi (HQ-GUEST)' },
+]
+
+// --- Shifts seed ---
+export interface ShiftRow {
+  id: string
+  name: string
+  code: string
+  startTime: string
+  endTime: string
+  breakMinutes: number
+  days: string
+  employeeCount: number
+  status: 'Active' | 'Inactive'
+  description?: string
+}
+
+export interface ShiftEmployee {
+  id: string
+  name: string
+  title: string
+  department: string
+  status: 'Active' | 'On Leave'
+}
+
+export const shifts: ShiftRow[] = [
+  {
+    id: 'sh1',
+    name: 'General Day',
+    code: 'SHIFT-DAY',
+    startTime: '09:00',
+    endTime: '18:00',
+    breakMinutes: 60,
+    days: 'Mon–Fri',
+    employeeCount: 86,
+    status: 'Active',
+    description: 'Standard office hours for HQ and hybrid staff.',
+  },
+  {
+    id: 'sh2',
+    name: 'Early Bird',
+    code: 'SHIFT-EARLY',
+    startTime: '07:00',
+    endTime: '16:00',
+    breakMinutes: 45,
+    days: 'Mon–Fri',
+    employeeCount: 22,
+    status: 'Active',
+    description: 'Early coverage for support and operations.',
+  },
+  {
+    id: 'sh3',
+    name: 'Evening Support',
+    code: 'SHIFT-EVE',
+    startTime: '14:00',
+    endTime: '23:00',
+    breakMinutes: 45,
+    days: 'Mon–Sat',
+    employeeCount: 18,
+    status: 'Active',
+    description: 'Extended coverage for customer success.',
+  },
+  {
+    id: 'sh4',
+    name: 'Weekend On-Call',
+    code: 'SHIFT-WKND',
+    startTime: '10:00',
+    endTime: '18:00',
+    breakMinutes: 30,
+    days: 'Sat–Sun',
+    employeeCount: 6,
+    status: 'Inactive',
+    description: 'Rotating weekend on-call (currently paused).',
+  },
+]
+
+export const shiftEmployeesById: Record<string, ShiftEmployee[]> = {
+  sh1: [
+    { id: 'e1', name: 'Sarah Jenkins', title: 'Senior Lead', department: 'Product Design', status: 'Active' },
+    { id: 'e4', name: 'Adrian Sterling', title: 'Solutions Architect', department: 'Engineering', status: 'Active' },
+    { id: 'e5', name: 'Marcus Thorne', title: 'Lead UI Architect', department: 'Engineering', status: 'Active' },
+    { id: 'e7', name: 'Elena Rodriguez', title: 'HR Specialist', department: 'Human Resources', status: 'Active' },
+    { id: 'e6', name: 'David Chen', title: 'Financial Controller', department: 'Finance', status: 'On Leave' },
+  ],
+  sh2: [
+    { id: 'e2', name: 'Rohan Gupta', title: 'Backend Dev', department: 'Engineering', status: 'Active' },
+    { id: 'e8', name: 'Samuel Wright', title: 'Backend Engineer', department: 'Engineering', status: 'Active' },
+  ],
+  sh3: [
+    { id: 'e3', name: 'Marcus Kane', title: 'Specialist', department: 'Human Resources', status: 'Active' },
+  ],
+  sh4: [],
+}
+
+export function employeesOnShift(shiftId: string): ShiftEmployee[] {
+  return shiftEmployeesById[shiftId] ?? []
+}
+
+export const canCreateShift = true
+
+// --- Deprecated team extras (prefer projects API) ---
+export const teamMembersByTeam: Record<
+  string,
+  Array<{
+    id: string
+    name: string
+    title: string
+    role: string
+    email: string
+    status: 'Active' | 'On Leave'
+    joined: string
+  }>
+> = {
+  t1: [
+    {
+      id: 'm1',
+      name: 'David Chen',
+      title: 'Senior Backend Engineer',
+      role: 'Lead',
+      email: 'd.chen@bytevon.io',
+      status: 'Active',
+      joined: '2021-03-12',
+    },
+  ],
+}
+
+export const teamProjectsByTeam: Record<
+  string,
+  Array<{
+    id: string
+    name: string
+    client: string
+    status: 'Active' | 'Completed' | 'On Hold'
+    due: string
+    pct: number
+    role: string
+  }>
+> = {
+  t1: [],
+}
+
+export const assignableProjects = [
+  { id: 'ap1', name: 'Customer Portal Redesign', client: 'Acme Retail', status: 'Planning' },
+  { id: 'ap2', name: 'Mobile SDK v3', client: 'Internal', status: 'Active' },
+]
+
+export function membersFor(teamId: string) {
+  return teamMembersByTeam[teamId] ?? teamMembersByTeam.t1 ?? []
+}
+
+export function projectsFor(teamId: string) {
+  return teamProjectsByTeam[teamId] ?? teamProjectsByTeam.t1 ?? []
+}
