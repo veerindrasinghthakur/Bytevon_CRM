@@ -1,13 +1,40 @@
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { ExportButton } from '@/shared/components/export/ExportButton'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { Pagination } from '@/shared/components/ui/Pagination'
 import { ResourceName } from '@/shared/schema'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useSalaryList } from '../hooks/use-payroll'
+import { payrollRoutes } from '../routes'
 
 /** List of all employees with gross salary only. Row → employee salary detail. */
 export function SalaryManagementPage() {
   const navigate = useNavigate()
-  const { rows, search, setSearch, formatMoney, isLoading } = useSalaryList()
+  const {
+    rows,
+    total,
+    search,
+    setSearch,
+    page,
+    setPage,
+    pageSize,
+    formatMoney,
+    isLoading,
+    isError,
+    refetch,
+  } = useSalaryList()
+
+  if (isError) {
+    return (
+      <ErrorState
+        title="Failed to load salaries"
+        description="Could not load salary management data."
+        onRetry={() => void refetch()}
+        onBack={() => safeNavigate(navigate, { to: payrollRoutes.root })}
+      />
+    )
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -38,7 +65,7 @@ export function SalaryManagementPage() {
           />
         </div>
         <p className="text-caption text-on-surface-variant">
-          {isLoading ? 'Loading…' : `${rows.length} employees`}
+          {isLoading ? 'Loading…' : `${total} employees`}
         </p>
       </div>
 
@@ -63,7 +90,10 @@ export function SalaryManagementPage() {
                   key={r.id}
                   className="zebra-row cursor-pointer h-[72px]"
                   onClick={() =>
-                    navigate({ to: '/payroll/salary/$employeeId', params: { employeeId: r.id } })
+                    safeNavigate(navigate, {
+                      to: '/payroll/salary/$employeeId',
+                      params: { employeeId: r.id },
+                    })
                   }
                 >
                   <td className="p-4 pl-6">
@@ -93,7 +123,10 @@ export function SalaryManagementPage() {
                       className="text-primary hover:text-secondary text-label-md transition-colors"
                       onClick={(e) => {
                         e.stopPropagation()
-                        navigate({ to: '/payroll/salary/$employeeId', params: { employeeId: r.id } })
+                        safeNavigate(navigate, {
+                          to: '/payroll/salary/$employeeId',
+                          params: { employeeId: r.id },
+                        })
                       }}
                     >
                       View
@@ -104,6 +137,11 @@ export function SalaryManagementPage() {
             </tbody>
           </table>
         </div>
+        {total > pageSize && (
+          <div className="p-4 border-t border-outline-variant flex justify-end">
+            <Pagination page={page} pageSize={pageSize} total={total} onPageChange={setPage} />
+          </div>
+        )}
       </section>
     </div>
   )
