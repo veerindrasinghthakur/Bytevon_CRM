@@ -3,7 +3,10 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
+import { BackButton } from '@/shared/components/layout/BackButton'
 import { createDepartment, listEmploymentOptionsForPicker } from '../api/departments'
+import { workforceRoutes } from '../routes'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -36,6 +39,8 @@ export function DepartmentCreatePage() {
     listEmploymentOptionsForPicker().then(setHeadOptions)
   }, [])
 
+  const goList = () => safeNavigate(navigate, { to: workforceRoutes.departments })
+
   const handleSave = async () => {
     if (!name.trim()) {
       setNameError(true)
@@ -50,8 +55,8 @@ export function DepartmentCreatePage() {
         headEmploymentId: headId ? Number(headId) : null,
         isArchived: status === 'Inactive',
       })
-      navigate({
-        to: '/workforce/departments/$departmentId',
+      safeNavigate(navigate, {
+        to: workforceRoutes.departmentDetail(created.id),
         params: { departmentId: String(created.id) },
       })
     } catch (e) {
@@ -63,13 +68,7 @@ export function DepartmentCreatePage() {
 
   return (
     <div className="space-y-6 pb-28 animate-fade-in">
-      <button
-        type="button"
-        className="flex items-center gap-2 text-secondary text-label-md hover:underline"
-        onClick={() => navigate({ to: '/workforce/departments' })}
-      >
-        <Icon name="arrow_back" className="text-lg" /> Back to Department List
-      </button>
+      <BackButton to={workforceRoutes.departments} label="Back to Department List" />
       <PageHeader
         title="Add New Department"
         description="Define identity, leadership, and operational settings for a new org unit."
@@ -82,7 +81,6 @@ export function DepartmentCreatePage() {
       )}
 
       <div className="grid grid-cols-12 gap-6">
-        {/* Identity */}
         <div className="col-span-12 lg:col-span-8 bv-surface p-8 space-y-6">
           <div className="flex items-center gap-3 border-b border-outline-variant pb-4">
             <span className="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
@@ -133,7 +131,6 @@ export function DepartmentCreatePage() {
           </p>
         </div>
 
-        {/* Settings */}
         <div className="col-span-12 lg:col-span-4 space-y-6">
           <div className="bv-surface p-8 space-y-6">
             <div className="flex items-center gap-3 border-b border-outline-variant pb-4">
@@ -191,7 +188,7 @@ export function DepartmentCreatePage() {
       </div>
 
       <div className="fixed bottom-0 right-0 left-0 z-30 bg-surface-container-lowest/95 backdrop-blur-md border-t border-outline-variant py-4 px-6 flex justify-end gap-3 executive-shadow">
-        <Button variant="outline" onClick={() => navigate({ to: '/workforce/departments' })}>
+        <Button variant="outline" onClick={goList}>
           Cancel
         </Button>
         <Button variant="primary" isLoading={saving} onClick={handleSave}>
