@@ -10,7 +10,11 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
   dashboard: {
     moduleId: 'dashboard',
     title: 'Dashboard',
-    items: [{ id: 'executive', label: 'Overview', icon: 'monitoring', to: '/dashboard' }],
+    items: [
+      { id: 'executive', label: 'Overview', icon: 'monitoring', to: '/dashboard' },
+      { id: 'employee', label: 'My day', icon: 'person', to: '/dashboard/employee' },
+      { id: 'payroll-dash', label: 'Payroll view', icon: 'payments', to: '/dashboard/payroll' },
+    ],
   },
   sales: {
     moduleId: 'sales',
