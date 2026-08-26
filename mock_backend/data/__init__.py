@@ -1,1 +1,5 @@
-"""Seed data packages (module-scoped). Runtime state lives in store.json via store.py."""
+"""Module seed loaders."""
+
+from data.modules import merge_module_seeds
+
+__all__ = ["merge_module_seeds"]
