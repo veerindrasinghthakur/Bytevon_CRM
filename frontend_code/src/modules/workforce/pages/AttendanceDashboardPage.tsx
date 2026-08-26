@@ -66,15 +66,22 @@ export function AttendanceDashboardPage() {
         description="Real-time monitoring of your organisation's workforce status."
         breadcrumbs={<DynamicRouteCrumbs />}
         actions={
-          <Button
-            variant="outline"
-            leftIcon={<Icon name="groups" />}
-            onClick={() =>
-              safeNavigate(navigate, { to: '/workforce/attendance/employees' })
-            }
-          >
-            All employees
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              leftIcon={<Icon name="calendar_view_month" />}
+              onClick={() => safeNavigate(navigate, { to: workforceRoutes.attendanceRoster })}
+            >
+              Roster
+            </Button>
+            <Button
+              variant="outline"
+              leftIcon={<Icon name="groups" />}
+              onClick={() => safeNavigate(navigate, { to: workforceRoutes.attendanceEmployees })}
+            >
+              All employees
+            </Button>
+          </div>
         }
       />
 
@@ -132,7 +139,7 @@ export function AttendanceDashboardPage() {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-title-md font-semibold">Recent check-ins</h2>
             <Link
-              to="/workforce/attendance/employees"
+              to={workforceRoutes.attendanceEmployees}
               className="text-label-sm text-secondary hover:underline"
             >
               View all

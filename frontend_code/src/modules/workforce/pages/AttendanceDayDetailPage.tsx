@@ -2,6 +2,7 @@ import { useParams, useSearch } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { cn } from '@/shared/lib/cn'
+import { workforceRoutes } from '../routes'
 
 const MOCK_PUNCHES = [
   {
@@ -33,7 +34,7 @@ export function AttendanceDayDetailPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <BackButton to="/workforce/attendance" label="Back to roster" />
+      <BackButton to={workforceRoutes.attendanceRoster} label="Back to roster" />
       <PageHeader
         title="Attendance day detail"
         description={`Employment #${employmentId} · ${date}`}

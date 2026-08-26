@@ -1,8 +1,9 @@
 import { useParams } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { cn } from '@/shared/lib/cn'
-import { todayAttendance, attendanceLogs } from '../data/attendanceMock'
+import { todayAttendance, attendanceLogs } from '@/shared/mock/data/workforce'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
+import { workforceRoutes } from '../routes'
 
 const statusClass: Record<string, string> = {
   PRESENT: 'bg-emerald-100 text-emerald-800',
@@ -23,7 +24,7 @@ export function WorkforceAttendanceDetailPage() {
         title={row.name}
         description={`${row.department} · attendance detail`}
         showBack
-        backTo="/workforce/attendance"
+        backTo={workforceRoutes.attendance}
         backLabel="Back to attendance"
         breadcrumbs={<DynamicRouteCrumbs lastLabel={row.name} />}
       />

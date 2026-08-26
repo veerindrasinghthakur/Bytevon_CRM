@@ -3,8 +3,10 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Select } from '@/shared/components/ui/Select'
 import { cn } from '@/shared/lib/cn'
-import { todayAttendance } from '../data/attendanceMock'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { todayAttendance } from '@/shared/mock/data/workforce'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
+import { workforceRoutes } from '../routes'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -55,7 +57,7 @@ export function AttendanceEmployeesPage() {
         title="All employees attendance"
         description="View and manage real-time attendance records for the entire organisation."
         showBack
-        backTo="/workforce/attendance"
+        backTo={workforceRoutes.attendance}
         backLabel="Back to attendance"
         breadcrumbs={
           <DynamicRouteCrumbs
@@ -101,7 +103,7 @@ export function AttendanceEmployeesPage() {
                 key={r.id}
                 className="zebra-row cursor-pointer"
                 onClick={() =>
-                  navigate({
+                  safeNavigate(navigate, {
                     to: '/workforce/attendance/$attendanceId',
                     params: { attendanceId: r.id },
                   })

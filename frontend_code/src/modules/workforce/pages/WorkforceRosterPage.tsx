@@ -6,6 +6,7 @@ import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { listEmployments } from '../api/employment'
 import { AttendanceStatus } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
+import { workforceRoutes } from '../routes'
 
 const STATUSES = Object.values(AttendanceStatus)
 
@@ -42,13 +43,25 @@ export function WorkforceRosterPage() {
   }, [date])
 
   if (loading) return <PageLoadingSkeleton />
-  if (error) return <ErrorState description={error} />
+  if (error) {
+    return (
+      <ErrorState
+        description={error}
+        onBack={() => {
+          window.history.back()
+        }}
+      />
+    )
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Workforce attendance roster"
         description="Organization-wide attendance by date"
+        showBack
+        backTo={workforceRoutes.attendance}
+        backLabel="Back to dashboard"
         actions={
           <input
             type="date"
@@ -92,7 +105,7 @@ export function WorkforceRosterPage() {
                 </td>
                 <td className="px-5 py-3 text-right">
                   <Link
-                    to="/workforce/attendance/$employmentId"
+                    to="/workforce/attendance/day/$employmentId"
                     params={{ employmentId: String(r.id) }}
                     search={{ date }}
                     className="text-secondary text-sm font-medium hover:underline"

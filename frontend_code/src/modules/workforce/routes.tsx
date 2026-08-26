@@ -12,7 +12,19 @@ const EmployeeDetailPage = lazyPage(() => import('./pages/EmployeeDetailPage'), 
 const DepartmentsListPage = lazyPage(() => import('./pages/DepartmentsListPage'), 'DepartmentsListPage')
 const DepartmentCreatePage = lazyPage(() => import('./pages/DepartmentCreatePage'), 'DepartmentCreatePage')
 const DepartmentDetailPage = lazyPage(() => import('./pages/DepartmentDetailPage'), 'DepartmentDetailPage')
+const AttendanceDashboardPage = lazyPage(
+  () => import('./pages/AttendanceDashboardPage'),
+  'AttendanceDashboardPage',
+)
+const AttendanceEmployeesPage = lazyPage(
+  () => import('./pages/AttendanceEmployeesPage'),
+  'AttendanceEmployeesPage',
+)
 const WorkforceRosterPage = lazyPage(() => import('./pages/WorkforceRosterPage'), 'WorkforceRosterPage')
+const WorkforceAttendanceDetailPage = lazyPage(
+  () => import('./pages/WorkforceAttendanceDetailPage'),
+  'WorkforceAttendanceDetailPage',
+)
 const AttendanceDayDetailPage = lazyPage(
   () => import('./pages/AttendanceDayDetailPage'),
   'AttendanceDayDetailPage',
@@ -41,8 +53,14 @@ export const workforceRoutes = {
   teamMembers: (id: string | number) => `/workforce/teams/${id}/members`,
   teamProjects: (id: string | number) => `/workforce/teams/${id}/projects`,
   teamAddMember: (id: string | number) => `/workforce/teams/${id}/add-member`,
+  /** Org attendance dashboard (primary secondary-nav entry). */
   attendance: '/workforce/attendance',
-  attendanceDetail: (employmentId: string | number) => `/workforce/attendance/${employmentId}`,
+  attendanceEmployees: '/workforce/attendance/employees',
+  attendanceRoster: '/workforce/attendance/roster',
+  /** Mock record detail (todayAttendance row id). */
+  attendanceRecord: (attendanceId: string | number) => `/workforce/attendance/${attendanceId}`,
+  /** Employment day detail (punches/breaks) with optional ?date=. */
+  attendanceDay: (employmentId: string | number) => `/workforce/attendance/day/${employmentId}`,
 } as const
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -120,18 +138,34 @@ export function createWorkforceRoutes(appLayoutRoute: any) {
       path: '/workforce/teams/$teamId/add-member',
       component: AddMemberPage,
     }),
+    // Attendance — static segments before $attendanceId
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/attendance',
+      component: AttendanceDashboardPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/attendance/employees',
+      component: AttendanceEmployeesPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/attendance/roster',
       component: WorkforceRosterPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
-      path: '/workforce/attendance/$employmentId',
+      path: '/workforce/attendance/day/$employmentId',
       validateSearch: (search: Record<string, unknown>) => ({
         date: typeof search.date === 'string' ? search.date : undefined,
       }),
       component: AttendanceDayDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/attendance/$attendanceId',
+      component: WorkforceAttendanceDetailPage,
     }),
   ]
 }
