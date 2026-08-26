@@ -9,3 +9,30 @@ export { EmployeeSalaryDetailPage } from './pages/EmployeeSalaryDetailPage'
 export { ReviseSalaryPage } from './pages/ReviseSalaryPage'
 export { EmployeePayrollHistoryPage } from './pages/EmployeePayrollHistoryPage'
 export { PayrollHistoryPage } from './pages/PayrollHistoryPage'
+
+export { createPayrollRoutes, payrollRoutes } from './routes'
+
+export {
+  listPayrollEmployees,
+  getPayrollKpis,
+  getPayrollPeriodMeta,
+  getPayrollEmployee,
+  getPayrollReview,
+  getPayslip,
+  getSalaryStructure,
+  saveSalaryStructure,
+} from './api/payroll'
+
+export {
+  usePayrollDashboard,
+  useMonthlyPayroll,
+  usePayrollReview,
+  usePayslip,
+  useSalaryList,
+  useSalaryDetail,
+  useReviseSalary,
+  useEmployeePayrollHistory,
+  useRunPayroll,
+} from './hooks/use-payroll'
+
+export type * from './types'

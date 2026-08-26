@@ -1,10 +1,12 @@
 /**
- * Merged payroll hooks — short hooks live here; pages import from this module
+ * Merged payroll hooks — pages import from this module
  * (thin re-export files keep old import paths working).
  */
 import { useMemo, useState } from 'react'
 import { useParams } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { queryKeys, invalidate } from '@/shared/lib/query-keys'
+import { useListControls } from '@/shared/hooks/useListControls'
 import {
   approvePayrollEmployee,
   getMonthlyPayrollSummary,
@@ -22,23 +24,26 @@ import {
   payPayrollEmployee,
   saveSalaryStructure,
 } from '../api/payroll'
-import { formatMoney, formatMoneyShort, structureGross } from '../data/mock'
+import { formatMoney, formatMoneyShort, structureGross } from '@/shared/mock/data/payroll'
 import type { SalaryItem } from '../types'
 
 export function usePayrollDashboard() {
-  const kpisQuery = useQuery({ queryKey: ['payroll', 'kpis'], queryFn: getPayrollKpis })
-  const periodQuery = useQuery({ queryKey: ['payroll', 'period'], queryFn: getPayrollPeriodMeta })
-  const activityQuery = useQuery({ queryKey: ['payroll', 'activity'], queryFn: listPayrollActivity })
+  const kpisQuery = useQuery({ queryKey: queryKeys.payroll.kpis(), queryFn: getPayrollKpis })
+  const periodQuery = useQuery({ queryKey: queryKeys.payroll.period(), queryFn: getPayrollPeriodMeta })
+  const activityQuery = useQuery({
+    queryKey: queryKeys.payroll.activity(),
+    queryFn: listPayrollActivity,
+  })
   const employeesQuery = useQuery({
-    queryKey: ['payroll', 'employees', 'dashboard'],
-    queryFn: () => listPayrollEmployees(),
+    queryKey: queryKeys.payroll.employees.list({ scope: 'dashboard', page: 1, pageSize: 20 }),
+    queryFn: () => listPayrollEmployees({ page: 1, pageSize: 20 }),
   })
 
   return {
     kpis: kpisQuery.data,
     period: periodQuery.data,
     activity: activityQuery.data ?? [],
-    employees: employeesQuery.data ?? [],
+    employees: employeesQuery.data?.items ?? [],
     formatMoney,
     formatMoneyShort,
     isLoading:
@@ -50,24 +55,32 @@ export function usePayrollDashboard() {
 }
 
 export function useMonthlyPayroll() {
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('All')
+  const controls = useListControls({
+    filterDefaults: { status: 'All' },
+    pageSize: 20,
+  })
+
+  const params = {
+    search: controls.search || undefined,
+    status: controls.filters.status || undefined,
+    page: controls.page,
+    pageSize: controls.pageSize,
+  }
 
   const employeesQuery = useQuery({
-    queryKey: ['payroll', 'employees', search, statusFilter],
-    queryFn: () =>
-      listPayrollEmployees({
-        search: search || undefined,
-        status: statusFilter,
-      }),
+    queryKey: queryKeys.payroll.employees.list(params),
+    queryFn: () => listPayrollEmployees(params),
+    placeholderData: (prev) => prev,
   })
 
   const summaryQuery = useQuery({
-    queryKey: ['payroll', 'monthly-summary'],
+    queryKey: queryKeys.payroll.monthlySummary(),
     queryFn: getMonthlyPayrollSummary,
   })
 
-  const filtered = employeesQuery.data ?? []
+  const filtered = employeesQuery.data?.items ?? []
+  const total = employeesQuery.data?.total ?? 0
+  const metrics = employeesQuery.data?.metrics ?? summaryQuery.data
 
   const totals = useMemo(() => {
     const gross = filtered.reduce((s, e) => s + e.gross, 0)
@@ -79,14 +92,19 @@ export function useMonthlyPayroll() {
 
   return {
     filtered,
+    total,
     totals,
-    summary: summaryQuery.data,
-    search,
-    setSearch,
-    statusFilter,
-    setStatusFilter,
+    summary: metrics,
+    search: controls.search,
+    setSearch: controls.setSearch,
+    statusFilter: controls.filters.status,
+    setStatusFilter: (v: string) => controls.setFilter('status', v),
+    page: controls.page,
+    setPage: controls.setPage,
+    pageSize: controls.pageSize,
+    setPageSize: controls.setPageSize,
     formatMoney,
-    allCount: filtered.length,
+    allCount: total,
     isLoading: employeesQuery.isLoading || summaryQuery.isLoading,
     isError: employeesQuery.isError || summaryQuery.isError,
     refetch: () => {
@@ -96,7 +114,6 @@ export function useMonthlyPayroll() {
   }
 }
 
-/** Review detail — all amounts from API/computeReview (structure + attendance + adjustments). */
 export function usePayrollReview() {
   const { employeeId } = useParams({ strict: false }) as { employeeId?: string }
   const id = employeeId ?? ''
@@ -105,7 +122,7 @@ export function usePayrollReview() {
   const [paymentRef, setPaymentRef] = useState('')
 
   const query = useQuery({
-    queryKey: ['payroll', 'review', id],
+    queryKey: queryKeys.payroll.review(id),
     queryFn: () => getPayrollReview(id),
     enabled: Boolean(id),
   })
@@ -115,11 +132,11 @@ export function usePayrollReview() {
 
   const approveMut = useMutation({
     mutationFn: () => approvePayrollEmployee(id),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: ['payroll'] }),
+    onSuccess: () => invalidate.payroll(qc),
   })
   const payMut = useMutation({
     mutationFn: (ref?: string) => payPayrollEmployee(id, ref),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: ['payroll'] }),
+    onSuccess: () => invalidate.payroll(qc),
   })
 
   const attendanceSummary: [string, string][] = review
@@ -164,7 +181,7 @@ export function usePayslip() {
   const id = employeeId ?? ''
 
   const query = useQuery({
-    queryKey: ['payroll', 'payslip', id],
+    queryKey: queryKeys.payroll.payslip(id),
     queryFn: () => getPayslip(id),
     enabled: Boolean(id),
   })
@@ -179,18 +196,32 @@ export function usePayslip() {
 }
 
 export function useSalaryList() {
-  const [search, setSearch] = useState('')
+  const controls = useListControls({ filterDefaults: {}, pageSize: 20 })
+  const params = {
+    search: controls.search || undefined,
+    page: controls.page,
+    pageSize: controls.pageSize,
+  }
+
   const query = useQuery({
-    queryKey: ['payroll', 'employees', 'salary', search],
-    queryFn: () => listPayrollEmployees({ search: search || undefined }),
+    queryKey: queryKeys.payroll.employees.list({ ...params, scope: 'salary' }),
+    queryFn: () => listPayrollEmployees(params),
+    placeholderData: (prev) => prev,
   })
 
   return {
-    rows: query.data ?? [],
-    search,
-    setSearch,
+    rows: query.data?.items ?? [],
+    total: query.data?.total ?? 0,
+    search: controls.search,
+    setSearch: controls.setSearch,
+    page: controls.page,
+    setPage: controls.setPage,
+    pageSize: controls.pageSize,
+    setPageSize: controls.setPageSize,
     formatMoney,
     isLoading: query.isLoading,
+    isError: query.isError,
+    refetch: query.refetch,
   }
 }
 
@@ -199,12 +230,12 @@ export function useSalaryDetail() {
   const id = employeeId ?? ''
 
   const empQuery = useQuery({
-    queryKey: ['payroll', 'employee', id],
+    queryKey: queryKeys.payroll.employees.detail(id),
     queryFn: () => getPayrollEmployee(id),
     enabled: Boolean(id),
   })
   const structureQuery = useQuery({
-    queryKey: ['payroll', 'salary', id],
+    queryKey: queryKeys.payroll.salary(id),
     queryFn: () => getSalaryStructure(id),
     enabled: Boolean(id),
   })
@@ -227,12 +258,12 @@ export function useReviseSalary() {
   const qc = useQueryClient()
 
   const empQuery = useQuery({
-    queryKey: ['payroll', 'employee', id],
+    queryKey: queryKeys.payroll.employees.detail(id),
     queryFn: () => getPayrollEmployee(id),
     enabled: Boolean(id),
   })
   const structureQuery = useQuery({
-    queryKey: ['payroll', 'salary', id],
+    queryKey: queryKeys.payroll.salary(id),
     queryFn: () => getSalaryStructure(id),
     enabled: Boolean(id),
   })
@@ -241,7 +272,6 @@ export function useReviseSalary() {
   const [rows, setRows] = useState<SalaryItem[] | null>(null)
   const [effectiveFrom, setEffectiveFrom] = useState('')
 
-  // Seed draft from server once loaded (no useEffect sync loop — only when null)
   if (structure && rows === null) {
     setRows(structure.items.map((i) => ({ ...i })))
     setEffectiveFrom(structure.effectiveFrom)
@@ -258,8 +288,9 @@ export function useReviseSalary() {
         effectiveFrom: effectiveFrom || new Date().toISOString().slice(0, 10),
         items: draft,
       }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['payroll'] })
+    onSuccess: (saved) => {
+      qc.setQueryData(queryKeys.payroll.salary(id), saved)
+      invalidate.payrollEmployees(qc)
     },
   })
 
@@ -298,17 +329,17 @@ export function useEmployeePayrollHistory() {
   const id = employeeId ?? ''
 
   const empQuery = useQuery({
-    queryKey: ['payroll', 'employee', id],
+    queryKey: queryKeys.payroll.employees.detail(id),
     queryFn: () => getPayrollEmployee(id),
     enabled: Boolean(id),
   })
   const historyQuery = useQuery({
-    queryKey: ['payroll', 'history', id],
+    queryKey: queryKeys.payroll.history(id),
     queryFn: () => listEmployeePayrollHistory(id),
     enabled: Boolean(id),
   })
   const structureQuery = useQuery({
-    queryKey: ['payroll', 'salary', id],
+    queryKey: queryKeys.payroll.salary(id),
     queryFn: () => getSalaryStructure(id),
     enabled: Boolean(id),
   })
@@ -360,11 +391,11 @@ export function useEmployeePayrollHistory() {
 
 export function useRunPayroll() {
   const checksQuery = useQuery({
-    queryKey: ['payroll', 'run-checks'],
+    queryKey: queryKeys.payroll.runChecks(),
     queryFn: getRunPayrollChecks,
   })
   const previewQuery = useQuery({
-    queryKey: ['payroll', 'run-preview'],
+    queryKey: queryKeys.payroll.runPreview(),
     queryFn: getRunPayrollPreview,
   })
 

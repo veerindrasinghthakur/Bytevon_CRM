@@ -110,8 +110,23 @@ export const queryKeys = {
   },
   payroll: {
     all: ['payroll'] as const,
+    kpis: () => ['payroll', 'kpis'] as const,
+    period: () => ['payroll', 'period'] as const,
+    activity: () => ['payroll', 'activity'] as const,
+    monthlySummary: () => ['payroll', 'monthly-summary'] as const,
+    employees: {
+      all: ['payroll', 'employees'] as const,
+      list: (filters?: unknown) => [...queryKeys.payroll.employees.all, 'list', filters ?? {}] as const,
+      detail: (id: string) => [...queryKeys.payroll.employees.all, 'detail', id] as const,
+    },
+    review: (id: string) => ['payroll', 'review', id] as const,
+    payslip: (id: string) => ['payroll', 'payslip', id] as const,
+    salary: (id: string) => ['payroll', 'salary', id] as const,
+    history: (id: string) => ['payroll', 'history', id] as const,
+    runChecks: () => ['payroll', 'run-checks'] as const,
+    runPreview: () => ['payroll', 'run-preview'] as const,
     runs: (filters?: unknown) => ['payroll', 'runs', filters ?? {}] as const,
-    structure: (employmentId: number) => ['payroll', 'structure', employmentId] as const,
+    structure: (employmentId: number | string) => ['payroll', 'structure', employmentId] as const,
   },
   notifications: {
     all: ['notifications'] as const,
@@ -189,4 +204,6 @@ export const invalidate = {
   myWorkCorrections: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.corrections.all }),
   myWorkBank: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.bankDetails() }),
   myWorkApprovals: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.approvals.all }),
+  payroll: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.payroll.all }),
+  payrollEmployees: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.payroll.employees.all }),
 }
