@@ -84,6 +84,7 @@ def next_id(collection: str, id_key: str = "id") -> int:
         elif isinstance(v, str) and v.isdigit():
             nums.append(int(v))
         elif isinstance(v, str):
+            # R-01, U-1001, AUD-9001
             tail = v.rsplit("-", 1)[-1]
             if tail.isdigit():
                 nums.append(int(tail))
