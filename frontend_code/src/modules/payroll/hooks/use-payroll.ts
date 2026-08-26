@@ -57,11 +57,11 @@ export function usePayrollDashboard() {
 export function useMonthlyPayroll() {
   const controls = useListControls({
     filterDefaults: { status: 'All' },
-    pageSize: 20,
+    pagination: { pageSize: 20 },
   })
 
   const params = {
-    search: controls.search || undefined,
+    search: controls.debouncedSearch.trim() || undefined,
     status: controls.filters.status || undefined,
     page: controls.page,
     pageSize: controls.pageSize,
@@ -102,7 +102,7 @@ export function useMonthlyPayroll() {
     page: controls.page,
     setPage: controls.setPage,
     pageSize: controls.pageSize,
-    setPageSize: controls.setPageSize,
+    setPageSize: controls.setPage,
     formatMoney,
     allCount: total,
     isLoading: employeesQuery.isLoading || summaryQuery.isLoading,
@@ -196,9 +196,12 @@ export function usePayslip() {
 }
 
 export function useSalaryList() {
-  const controls = useListControls({ filterDefaults: {}, pageSize: 20 })
+  const controls = useListControls({
+    filterDefaults: {},
+    pagination: { pageSize: 20 },
+  })
   const params = {
-    search: controls.search || undefined,
+    search: controls.debouncedSearch.trim() || undefined,
     page: controls.page,
     pageSize: controls.pageSize,
   }
@@ -217,7 +220,6 @@ export function useSalaryList() {
     page: controls.page,
     setPage: controls.setPage,
     pageSize: controls.pageSize,
-    setPageSize: controls.setPageSize,
     formatMoney,
     isLoading: query.isLoading,
     isError: query.isError,
