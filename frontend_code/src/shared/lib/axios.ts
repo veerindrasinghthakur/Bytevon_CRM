@@ -50,14 +50,25 @@ apiClient.interceptors.response.use(
           return apiClient(original)
         }
       } catch (refreshErr) {
-        // Refresh failed – fall through to logout handling.
-        console.warn('Token refresh failed', refreshErr)
-      }
-      // If refresh didn't work, clear session and redirect.
-      persistSession(null)
-      if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
-        const redirect = encodeURIComponent(window.location.pathname + window.location.search)
-        window.location.assign(`/session-expired?redirect=${redirect}`)
+        // Only clear the session when refresh definitively failed with 401.
+        // Network errors / backend-down must keep the user logged in.
+        const status =
+          typeof refreshErr === 'object' && refreshErr !== null && 'response' in refreshErr
+            ? (refreshErr as { response?: { status?: number } }).response?.status
+            : undefined
+        if (status === 401) {
+          persistSession(null)
+          if (
+            typeof window !== 'undefined' &&
+            !window.location.pathname.startsWith('/login')
+          ) {
+            const redirect = encodeURIComponent(
+              window.location.pathname + window.location.search,
+            )
+            window.location.assign(`/session-expired?redirect=${redirect}`)
+          }
+        }
+        console.warn('Token refresh skipped/failed without expiry', refreshErr)
       }
     }
     return Promise.reject(error)

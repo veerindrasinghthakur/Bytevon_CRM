@@ -43,7 +43,10 @@ import type {
   MyTaskListResponse,
   MyWorkOverview,
   ApproverOption,
+  WeekHourBar,
 } from '../types'
+import { myRequests } from '@/modules/approvals/data/mock'
+import type { ApprovalRow } from '@/modules/approvals/types'
 
 export interface MyWorkListParams {
   search?: string
@@ -226,6 +229,28 @@ export async function listMyAttendance(
   return { ...sliced, page, pageSize }
 }
 
+/** Current user context for the attendance page (today label + shift). */
+export async function getMyWorkTodayInfo(): Promise<{ todayLabel: string; shift: string }> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<{ todayLabel: string; shift: string }>(
+      '/my-work/attendance/today-info',
+    )
+    return data
+  }
+  await delay()
+  return { todayLabel: currentUser.todayLabel, shift: currentUser.shift }
+}
+
+/** Weekly hour bars for the attendance chart. */
+export async function getMyWeekHours(): Promise<WeekHourBar[]> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<WeekHourBar[]>('/my-work/attendance/week-hours')
+    return data
+  }
+  await delay()
+  return weekHours.map((w) => ({ ...w }))
+}
+
 /** Attendance rows eligible for correction requests (half day / absent / noted). */
 export async function listCorrectionCandidates(): Promise<AttendanceRecord[]> {
   if (env.useMockApi) {
@@ -280,6 +305,28 @@ export async function listMyApprovals(
   }
   const sliced = paginateItems(items, page, pageSize)
   return { ...sliced, page, pageSize }
+}
+
+/** Requests the current employee submitted (org-wide approval tracker rows). */
+export async function listMySubmittedRequests(
+  params: MyWorkListParams = {},
+): Promise<{ items: ApprovalRow[]; total: number }> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<{ items: ApprovalRow[]; total: number }>(
+      '/my-work/requests',
+      { params },
+    )
+    return data
+  }
+
+  await delay()
+  let items = myRequests.map((r) => ({ ...r })) as ApprovalRow[]
+  if (params.status && params.status !== 'All') {
+    items = items.filter(
+      (r) => r.status === params.status || (params.status === 'In-Progress' && r.status === 'Pending'),
+    )
+  }
+  return { items, total: items.length }
 }
 
 export async function listAttendanceCorrections(

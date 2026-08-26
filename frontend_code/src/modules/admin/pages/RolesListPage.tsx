@@ -17,16 +17,11 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { ResourceName } from '@/shared/schema'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { myAdminRoutes } from '../routes'
 import { useRolesList } from '../hooks/use-roles-list'
 import type { AdminRole } from '../types'
 import { cn } from '@/shared/lib/cn'
-
-const categoryStyles: Record<string, string> = {
-  'Core Role': 'bg-secondary/10 text-secondary',
-  Operational: 'bg-primary/10 text-primary',
-  Financial: 'status-badge status-warning',
-  Standard: 'status-badge status-neutral',
-}
+import { categoryStyles } from '../schemas/enums'
 
 function RoleQuickContent({ role }: { role: AdminRole }) {
   return (
@@ -136,18 +131,18 @@ export function RolesListPage() {
   } = useRolesList()
 
   const goDetail = (roleId: string) =>
-    safeNavigate(navigate, { to: '/admin/roles/$roleId', params: { roleId } })
+    safeNavigate(navigate, { to: myAdminRoutes.rolesDetail(roleId), params: { roleId } })
 
   const goEdit = (roleId: string) =>
-    safeNavigate(navigate, { to: '/admin/roles/$roleId/edit', params: { roleId } })
+    safeNavigate(navigate, { to: myAdminRoutes.rolesEdit(roleId), params: { roleId } })
 
   const goDuplicate = (roleId: string) =>
     safeNavigate(navigate, {
-      to: '/admin/roles/new',
+      to: myAdminRoutes.rolesNew,
       search: { duplicateFrom: roleId },
     })
 
-  const goNew = () => safeNavigate(navigate, { to: '/admin/roles/new' })
+  const goNew = () => safeNavigate(navigate, { to: myAdminRoutes.rolesNew })
 
   const openRoleOverview = (role: AdminRole) => {
     openPanel({

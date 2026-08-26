@@ -5,6 +5,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
 import { useBankDetails } from '../hooks/use-bank-details'
+import type { BankFormValues } from '../types'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../routes'
@@ -111,6 +112,14 @@ export function MyBankDetailsPage() {
           </button>
           <div>
             <h1 className="text-headline-lg font-semibold text-deep-navy">Bank Details</h1>
+            <span
+              className={cn(
+                'inline-flex mt-1 px-2.5 py-0.5 rounded-full text-label-sm font-semibold',
+                saved ? 'bg-emerald-50 text-emerald-700' : 'bg-surface-container-high text-on-surface-variant',
+              )}
+            >
+              {statusLabel}
+            </span>
           </div>
         </div>
 
@@ -242,7 +251,7 @@ export function MyBankDetailsPage() {
                     onChange={(e) => setValue('confirmAccountNumber', e.target.value.replace(/\s/g, ''))}
                   />
                 </Field>
-              </Field>
+              )}
 
               <Field label="IFSC / Routing code" required error={errors.ifscOrRouting?.message}>
                 {isEditing ? (

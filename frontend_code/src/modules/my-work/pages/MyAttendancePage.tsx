@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { queryKeys } from '@/shared/lib/query-keys'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 
@@ -21,17 +23,13 @@ import {
   isBreakRunning,
   subscribeBreakChange,
 } from '../lib/break-session'
-import { currentUser, attendanceHistory, weekHours } from '../data/mock'
-import type { AttendanceStatus, BreakBarMarker, WeekHourBar } from '../types'
-
-const statusStyles: Record<AttendanceStatus, string> = {
-  Present: 'bg-emerald-50 text-emerald-700',
-  Absent: 'bg-red-50 text-red-700',
-  'Half Day': 'bg-amber-50 text-amber-800',
-  'On Leave': 'bg-blue-50 text-blue-700',
-  Holiday: 'bg-violet-50 text-violet-700',
-  Weekend: 'bg-surface-container text-on-surface-variant',
-}
+import {
+  getMyWorkTodayInfo,
+  getMyWeekHours,
+  listMyAttendance,
+} from '../api/my-work'
+import { attendanceStatusStyles } from '../schemas/enums'
+import type { BreakBarMarker, WeekHourBar } from '../types'
 
 function WeekBar({
   d,
@@ -92,6 +90,23 @@ function WeekBar({
 export function MyAttendancePage() {
   const navigate = useNavigate()
   const [tick, setTick] = useState(0)
+
+  const todayInfoQuery = useQuery({
+    queryKey: queryKeys.myWork.attendance.todayInfo(),
+    queryFn: getMyWorkTodayInfo,
+  })
+  const weekHoursQuery = useQuery({
+    queryKey: queryKeys.myWork.attendance.weekHours(),
+    queryFn: getMyWeekHours,
+  })
+  const historyQuery = useQuery({
+    queryKey: queryKeys.myWork.attendance.list({}),
+    queryFn: () => listMyAttendance({ pageSize: 50 }),
+  })
+
+  const currentUser = todayInfoQuery.data
+  const weekHours = weekHoursQuery.data ?? []
+  const attendanceHistory = historyQuery.data?.items ?? []
 
   useEffect(() => {
     const refresh = () => setTick((t) => t + 1)
@@ -156,8 +171,8 @@ export function MyAttendancePage() {
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bv-surface card-hover p-5">
           <p className="text-label-sm text-on-surface-variant mb-1">Today</p>
-          <p className="text-headline-md font-bold text-on-background">{currentUser.todayLabel}</p>
-          <p className="text-[11px] text-on-surface-variant mt-1.5">Shift · {currentUser.shift}</p>
+          <p className="text-headline-md font-bold text-on-background">{currentUser?.todayLabel ?? '—'}</p>
+          <p className="text-[11px] text-on-surface-variant mt-1.5">Shift · {currentUser?.shift ?? '—'}</p>
         </div>
         <div className="bv-surface card-hover p-5">
           <p className="text-label-sm text-on-surface-variant mb-1">Check-in</p>
@@ -304,7 +319,7 @@ export function MyAttendancePage() {
                   <td className="px-6 py-4 text-label-md text-on-surface-variant">{row.totalHours ?? '—'}</td>
                   <td className="px-6 py-4">
                     <span
-                      className={`px-2.5 py-0.5 rounded-full text-label-sm font-semibold ${statusStyles[row.status]}`}
+                      className={`px-2.5 py-0.5 rounded-full text-label-sm font-semibold ${attendanceStatusStyles[row.status] ?? ''}`}
                     >
                       {row.status}
                     </span>

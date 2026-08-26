@@ -119,9 +119,26 @@ export async function logoutApi(revokeAll = false): Promise<void> {
 
 export async function refreshApi(refreshToken: string): Promise<AuthSession> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<AuthSession>('/auth/refresh', { refreshToken })
-    persistSession(data)
-    return data
+    try {
+      const { data } = await apiClient.post<AuthSession>('/auth/refresh', { refreshToken })
+      persistSession(data)
+      return data
+    } catch (err) {
+      // Only a definitive 401 means the refresh token is invalid.
+      // Network errors / 5xx / backend-down must NOT wipe the local session,
+      // otherwise users get logged out on every route change while offline.
+      const status =
+        typeof err === 'object' && err !== null && 'response' in err
+          ? (err as { response?: { status?: number } }).response?.status
+          : undefined
+      if (status === 401) {
+        persistSession(null)
+        throw new Error('SESSION_EXPIRED')
+      }
+      const current = loadStoredSession()
+      if (!current) throw new Error('SESSION_EXPIRED')
+      return current
+    }
   }
 
   await delay(150)

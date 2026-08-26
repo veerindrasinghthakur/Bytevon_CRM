@@ -11,6 +11,7 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Can } from '@/shared/rbac/Can.tsx'
 import { Action, ResourceName } from '@/shared/schema'
+import { myAdminRoutes } from '@/modules/admin/routes'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { uploadUserAvatar } from '@/modules/profile/api/profile'
@@ -160,7 +161,7 @@ export function UserDetailPage() {
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ['admin', 'users'] })
       await qc.invalidateQueries({ queryKey: ['admin', 'employments-without-login'] })
-      safeNavigate(navigate, { to: '/admin/users' })
+      safeNavigate(navigate, { to: myAdminRoutes.usersList })
     },
     onError: () => {
       // Side-effect free
@@ -232,7 +233,7 @@ export function UserDetailPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <BackButton to="/admin/users" label="Back to Users" />
+      <BackButton to={myAdminRoutes.usersList} label="Back to Users" />
 
       {isLocked && (
         <div
@@ -470,13 +471,13 @@ export function UserDetailPage() {
           </Card>
           <Card title="Quick Actions">
             <div className="flex flex-col gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="justify-start"
-                onClick={() => safeNavigate(navigate, { to: '/admin/audit' })}
-              >
-                Audit for user
+<Button
+              variant="outline"
+              size="sm"
+              className="justify-start"
+              onClick={() => safeNavigate(navigate, { to: myAdminRoutes.audit })}
+            >
+              Audit for user
               </Button>
             </div>
           </Card>

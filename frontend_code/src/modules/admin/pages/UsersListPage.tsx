@@ -18,21 +18,11 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { ResourceName } from '@/shared/schema'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { myAdminRoutes } from '../routes'
 import { useUsersList } from '../hooks/use-users-list'
 import type { AdminUserListItem } from '../types'
 import { cn } from '@/shared/lib/cn'
-
-const statusBadgeClass: Record<string, string> = {
-  Active: 'status-badge status-success',
-  Inactive: 'status-badge status-neutral',
-  Locked: 'status-badge status-error',
-}
-
-const statusDot: Record<string, string> = {
-  Active: 'bg-emerald-500',
-  Inactive: 'bg-slate-400',
-  Locked: 'bg-red-500',
-}
+import { statusBadgeClass, statusDot } from '../schemas/enums'
 
 const STATUS_OPTIONS = [
   { value: 'All', label: 'All Status' },
@@ -118,14 +108,10 @@ export function UsersListPage() {
     onRowPressCancel,
   } = useUsersList()
 
-  const goDetail = (u: AdminUserListItem) => {
-    safeNavigate(navigate, {
-      to: '/admin/users/$userId',
-      params: { userId: String(u.id) },
-    })
-  }
+  const goDetail = (u: AdminUserListItem) =>
+    safeNavigate(navigate, { to: myAdminRoutes.usersDetail(u.id), params: { userId: String(u.id) } })
 
-  const goNew = () => safeNavigate(navigate, { to: '/admin/users/new' })
+  const goNew = () => safeNavigate(navigate, { to: myAdminRoutes.usersNew })
 
   const openUserOverview = (u: AdminUserListItem) => {
     openPanel({
@@ -139,6 +125,7 @@ export function UsersListPage() {
       onOpenFull: () => goDetail(u),
       onEdit: () => goDetail(u),
       editLabel: 'Edit user',
+      onClick: () => goDetail(u),
       actions:
         u.status === 'Locked'
           ? [{ id: 'unlock', label: 'Unlock', icon: 'lock_open', onClick: () => goDetail(u) }]
@@ -156,7 +143,7 @@ export function UsersListPage() {
         title="Could not load users"
         description="User list failed to load. Retry or go back."
         onRetry={() => void refetch()}
-        onBack={() => safeNavigate(navigate, { to: '/admin/users' })}
+        onBack={() => safeNavigate(navigate, { to: myAdminRoutes.usersList })}
       />
     )
   }

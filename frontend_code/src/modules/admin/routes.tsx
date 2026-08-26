@@ -121,6 +121,18 @@ export function createAdminSettingsCoreRoutes<TParent extends AnyRoute>(
   return [...adminSettingsRoutes, ...organizationSettingsRoutes]
 }
 
+export const myAdminRoutes = {
+  usersList: '/admin/users',
+  usersNew: '/admin/users/new',
+  usersDetail: (userId: string) => `/admin/users/$userId`.replace('$userId', userId),
+  rolesList: '/admin/roles',
+  rolesNew: '/admin/roles/new',
+  rolesDetail: (roleId: string) => `/admin/roles/$roleId`.replace('$roleId', roleId),
+  rolesEdit: (roleId: string) => `/admin/roles/$roleId/edit`.replace('$roleId', roleId),
+  auditLogs: '/admin/audit',
+  security: '/admin/security',
+}
+
 export function createAdminRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   const attendanceLayout = createRoute({
     getParentRoute: () => appLayoutRoute,

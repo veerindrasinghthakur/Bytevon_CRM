@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { myAdminRoutes } from '@/modules/admin/routes'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
@@ -168,13 +169,13 @@ export function AttendanceSettingsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-            onClick={() => navigate({ to: '/admin/settings/shifts/new' })}
-          >
-            Create Shift
+<Button
+              variant="outline"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+              onClick={() => navigate({ to: myAdminRoutes.shiftsNew })}
+            >
+              Create Shift
           </Button>
           {isEditing ? (
             <div className="flex gap-2">
@@ -213,7 +214,7 @@ export function AttendanceSettingsPage() {
           title="No shifts configured"
           description="Create a shift to apply attendance rules per schedule. Until then, company defaults are shown."
           actionLabel="Create Shift"
-          onAction={() => navigate({ to: '/admin/settings/shifts/new' })}
+          onAction={() => navigate({ to: myAdminRoutes.shiftsNew })}
         />
       )}
 

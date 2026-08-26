@@ -1,12 +1,14 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { ExportButton } from '@/shared/components/export/ExportButton'
-import { myRequests } from '@/modules/approvals/data/mock'
+import { queryKeys } from '@/shared/lib/query-keys'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../routes'
 import { statusStyles } from '../schemas/enums'
+import { listMySubmittedRequests } from '../api/my-work'
 
 const filters = ['All Requests', 'In-Progress', 'Approved', 'Rejected'] as const
 
@@ -19,6 +21,12 @@ export function MyRequestsPage() {
   const navigate = useNavigate()
   const [filter, setFilter] = useState<(typeof filters)[number]>('All Requests')
 
+  const requestsQuery = useQuery({
+    queryKey: queryKeys.myWork.requests.list({}),
+    queryFn: () => listMySubmittedRequests({}),
+  })
+  const myRequests = requestsQuery.data?.items ?? []
+
   const stats = useMemo(() => {
     const total = myRequests.length
     const inProgress = myRequests.filter(
@@ -27,7 +35,7 @@ export function MyRequestsPage() {
     const approved = myRequests.filter((r) => r.status === 'Approved').length
     const rejected = myRequests.filter((r) => r.status === 'Rejected').length
     return { total, inProgress, approved, rejected }
-  }, [])
+  }, [myRequests])
 
   const visible =
     filter === 'All Requests'

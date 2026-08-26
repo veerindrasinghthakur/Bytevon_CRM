@@ -2,6 +2,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
+import { myAdminRoutes } from '@/modules/admin/routes'
 import { useRoleForm, type RoleFormMode } from '../hooks/use-role-form'
 import type { RolePermissionAction } from '../types'
 
@@ -54,10 +55,10 @@ export function RoleFormPage({ mode, roleId, duplicateFromId }: Props) {
 
   return (
     <div className="space-y-6 pb-28">
-      <BackButton
-        to={mode === 'create' ? '/admin/roles' : roleId ? `/admin/roles/${roleId}` : '/admin/roles'}
-        label={mode === 'create' ? 'Back to Roles & Permissions' : 'Back to Role Detail'}
-      />
+<BackButton
+          to={mode === 'create' ? myAdminRoutes.rolesList : roleId ? myAdminRoutes.rolesDetail(roleId) : myAdminRoutes.rolesList}
+          label={mode === 'create' ? 'Back to Roles & Permissions' : 'Back to Role Detail'}
+        />
 
       <PageHeader
         title={title}

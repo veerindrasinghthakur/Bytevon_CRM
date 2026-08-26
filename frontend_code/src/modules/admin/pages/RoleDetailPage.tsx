@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from '@tanstack/react-router'
+import { myAdminRoutes } from '@/modules/admin/routes'
 import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { BackButton } from '@/shared/components/layout/BackButton'
@@ -32,7 +33,7 @@ export function RoleDetailPage() {
         title="Could not load role"
         description={(roleQuery.error as Error)?.message ?? 'Role not found'}
         onRetry={() => void roleQuery.refetch()}
-        onBack={() => safeNavigate(navigate, { to: '/admin/roles' })}
+        onBack={() => safeNavigate(navigate, { to: myAdminRoutes.rolesList })}
       />
     )
   }
@@ -50,26 +51,17 @@ export function RoleDetailPage() {
     }) ?? []
 
   const goDuplicate = () =>
-    safeNavigate(navigate, {
-      to: '/admin/roles/new',
-      search: { duplicateFrom: role.id },
-    })
+    safeNavigate(navigate, { to: myAdminRoutes.rolesNew, search: { duplicateFrom: role.id } })
 
   const goEdit = () =>
-    safeNavigate(navigate, {
-      to: '/admin/roles/$roleId/edit',
-      params: { roleId: role.id },
-    })
+    safeNavigate(navigate, { to: myAdminRoutes.rolesDetail(role.id), params: { roleId: role.id } })
 
   const goUser = (userId: number) =>
-    safeNavigate(navigate, {
-      to: '/admin/users/$userId',
-      params: { userId: String(userId) },
-    })
+    safeNavigate(navigate, { to: myAdminRoutes.usersDetail(userId), params: { userId: String(userId) } })
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <BackButton to="/admin/roles" label="Back to Roles & Permissions" />
+      <BackButton to={myAdminRoutes.rolesList} label="Back to Roles & Permissions" />
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>

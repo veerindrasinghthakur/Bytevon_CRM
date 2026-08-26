@@ -59,14 +59,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!session) return
+    let inFlight = false
     const onFocus = () => {
-      void refreshApi(session.tokens.refreshToken).then(setSession).catch(() => {
-        markSessionExpired()
-      })
+      // Silent best-effort token refresh on window focus.
+      // NEVER clear the session on failure here — a backend blip or offline
+      // state must not log the user out; only an explicit logout/401 does that.
+      if (inFlight) return
+      inFlight = true
+      void refreshApi(session.tokens.refreshToken)
+        .then(setSession)
+        .catch(() => {
+          /* keep session — see comment above */
+        })
+        .finally(() => {
+          inFlight = false
+        })
     }
     window.addEventListener('focus', onFocus)
     return () => window.removeEventListener('focus', onFocus)
-  }, [session, markSessionExpired])
+  }, [session])
 
   const employmentId = session?.user.employmentId ?? getCurrentEmploymentId()
 

@@ -21,3 +21,12 @@ export const statusStyles: Record<string, string> = {
   Rejected: 'bg-red-50 text-red-700 border-red-200',
   Pending: 'bg-amber-50 text-amber-700 border-amber-200',
 }
+
+export const attendanceStatusStyles: Record<string, string> = {
+  Present: 'bg-emerald-50 text-emerald-700',
+  Absent: 'bg-red-50 text-red-700',
+  'Half Day': 'bg-amber-50 text-amber-800',
+  'On Leave': 'bg-blue-50 text-blue-700',
+  Holiday: 'bg-violet-50 text-violet-700',
+  Weekend: 'bg-surface-container text-on-surface-variant',
+}

@@ -148,6 +148,8 @@ export const queryKeys = {
     attendance: {
       all: ['my-work', 'attendance'] as const,
       list: (filters?: unknown) => [...queryKeys.myWork.attendance.all, 'list', filters ?? {}] as const,
+      todayInfo: () => [...queryKeys.myWork.attendance.all, 'today-info'] as const,
+      weekHours: () => [...queryKeys.myWork.attendance.all, 'week-hours'] as const,
     },
     leave: {
       all: ['my-work', 'leave'] as const,
@@ -175,6 +177,10 @@ export const queryKeys = {
     approvals: {
       all: ['my-work', 'approvals'] as const,
       list: (filters?: unknown) => [...queryKeys.myWork.approvals.all, 'list', filters ?? {}] as const,
+    },
+    requests: {
+      all: ['my-work', 'requests'] as const,
+      list: (filters?: unknown) => [...queryKeys.myWork.requests.all, 'list', filters ?? {}] as const,
     },
   },
 } as const

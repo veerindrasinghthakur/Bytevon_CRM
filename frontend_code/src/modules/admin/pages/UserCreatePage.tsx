@@ -1,4 +1,5 @@
 import { useNavigate } from '@tanstack/react-router'
+import { myAdminRoutes } from '@/modules/admin/routes'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
@@ -9,7 +10,7 @@ import { useUserCreate } from '../hooks/use-user-create'
 export function UserCreatePage() {
   const form = useUserCreate()
   const navigate = useNavigate()
-  const goUsers = () => safeNavigate(navigate, { to: '/admin/users' })
+  const goUsers = () => safeNavigate(navigate, { to: myAdminRoutes.usersList })
   const goNewEmployee = () => safeNavigate(navigate, { to: '/workforce/employees/new' })
 
   return (
