@@ -4,7 +4,7 @@ import { useListControls } from '@/shared/hooks/useListControls'
 import { listEmployments } from '../api/employment'
 import { listDepartments } from '../api/departments'
 import { queryKeys } from '@/shared/lib/query-keys'
-import { computeEmploymentListMetrics } from '@/shared/compute/workforce-metrics'
+import { employmentStateSchema } from '../schemas/employment'
 
 const FILTER_DEFAULTS = {
   dept: 'all',
@@ -12,14 +12,25 @@ const FILTER_DEFAULTS = {
   type: 'all',
 }
 
+/** Canonical employment states for filter Select (schema-driven). */
+const EMPLOYMENT_STATES = employmentStateSchema.options
+
+const EMPLOYMENT_TYPES = [
+  'FULL_TIME',
+  'PART_TIME',
+  'CONTRACT',
+  'INTERN',
+  'CONSULTANT',
+] as const
+
 export function useEmployeesList() {
   const controls = useListControls({
     filterDefaults: FILTER_DEFAULTS,
   })
 
   const listFilters = {
-    search: controls.debouncedSearch || undefined,
-    dept: controls.filters.dept !== 'all' ? controls.filters.dept : undefined,
+    search: controls.debouncedSearch.trim() || undefined,
+    department: controls.filters.dept !== 'all' ? controls.filters.dept : undefined,
     state: controls.filters.state !== 'all' ? controls.filters.state : undefined,
     type: controls.filters.type !== 'all' ? controls.filters.type : undefined,
     page: controls.page,
@@ -31,10 +42,11 @@ export function useEmployeesList() {
     queryFn: () =>
       listEmployments({
         search: listFilters.search,
-        // Server returns full set when page omitted; we still pass page for key stability.
-        // Client-side filters (dept/state/type) applied below until API supports them.
-        page: undefined,
-        pageSize: undefined,
+        department: listFilters.department,
+        state: listFilters.state,
+        type: listFilters.type,
+        page: listFilters.page,
+        pageSize: listFilters.pageSize,
       }),
   })
 
@@ -43,51 +55,24 @@ export function useEmployeesList() {
     queryFn: () => listDepartments({ includeArchived: false }),
   })
 
-  const items = employeesQuery.data?.items ?? []
+  const pageItems = employeesQuery.data?.items ?? []
+  const totalCount = employeesQuery.data?.total ?? 0
+  const metrics = employeesQuery.data?.metrics ?? { total: 0, active: 0, archived: 0 }
+
   const departments = useMemo(
     () => (departmentsQuery.data?.items ?? []).map((d) => ({ id: d.id, name: d.name })),
     [departmentsQuery.data],
   )
 
-  const metrics = useMemo(() => computeEmploymentListMetrics(items), [items])
-
-  const filtered = useMemo(() => {
-    const q = controls.debouncedSearch.toLowerCase().trim()
-    return items.filter((e) => {
-      if (q) {
-        const match =
-          e.fullName.toLowerCase().includes(q) ||
-          e.employee_code.toLowerCase().includes(q) ||
-          e.email.toLowerCase().includes(q) ||
-          e.departmentName.toLowerCase().includes(q) ||
-          e.positionName.toLowerCase().includes(q)
-        if (!match) return false
-      }
-      if (controls.filters.dept !== 'all' && e.departmentName !== controls.filters.dept) return false
-      if (controls.filters.state !== 'all' && e.current_state !== controls.filters.state) return false
-      if (controls.filters.type !== 'all' && e.employment_type !== controls.filters.type) return false
-      return true
-    })
-  }, [items, controls.debouncedSearch, controls.filters.dept, controls.filters.state, controls.filters.type])
-
-  const states = useMemo(
-    () => Array.from(new Set(items.map((e) => e.current_state))).sort(),
-    [items],
-  )
-  const types = useMemo(
-    () => Array.from(new Set(items.map((e) => e.employment_type))).sort(),
-    [items],
-  )
-
-  const pageItems = useMemo(() => controls.pageItems(filtered), [controls, filtered])
-
   return {
-    items,
-    filtered,
+    /** Current page rows (server-paginated) */
+    pageItems,
+    filtered: pageItems,
+    totalCount,
     metrics,
     departments,
-    states,
-    types,
+    states: [...EMPLOYMENT_STATES],
+    types: [...EMPLOYMENT_TYPES],
     loading: employeesQuery.isLoading,
     isLoading: employeesQuery.isLoading,
     error: employeesQuery.isError,
@@ -106,7 +91,6 @@ export function useEmployeesList() {
     page: controls.page,
     setPage: controls.setPage,
     pageSize: controls.pageSize,
-    pageItems,
     reload: () => void employeesQuery.refetch(),
     refetch: employeesQuery.refetch,
   }
