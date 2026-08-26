@@ -153,6 +153,9 @@ export const queryKeys = {
       all: ['my-work', 'leave'] as const,
       list: (filters?: unknown) => [...queryKeys.myWork.leave.all, 'list', filters ?? {}] as const,
       balances: () => [...queryKeys.myWork.leave.all, 'balances'] as const,
+      applyContext: () => [...queryKeys.myWork.leave.all, 'apply-context'] as const,
+      calculate: (params?: unknown) =>
+        [...queryKeys.myWork.leave.all, 'calculate', params ?? {}] as const,
     },
     tasks: {
       all: ['my-work', 'tasks'] as const,
