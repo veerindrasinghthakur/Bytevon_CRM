@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { listDepartments } from '../api/departments'
@@ -34,11 +35,22 @@ export function useDepartmentsList() {
   const totalCount = data?.total ?? 0
   const metrics = data?.metrics ?? { total: 0, active: 0, inactive: 0, staffing: 0 }
 
+  /**
+   * length === totalCount so Pagination / empty checks work without page rewrites.
+   * Iteration still walks the current page only.
+   */
+  const filtered = useMemo(() => {
+    return new Proxy(pageItems, {
+      get(target, prop, receiver) {
+        if (prop === 'length') return totalCount
+        return Reflect.get(target, prop, receiver)
+      },
+    }) as typeof pageItems
+  }, [pageItems, totalCount])
+
   return {
-    /** Current page rows (server-paginated) */
     pageItems,
-    /** Alias for empty-state checks against total filtered count */
-    filtered: pageItems,
+    filtered,
     totalCount,
     metrics,
     loading: isLoading,

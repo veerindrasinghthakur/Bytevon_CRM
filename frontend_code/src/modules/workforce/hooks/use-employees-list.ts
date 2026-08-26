@@ -64,10 +64,21 @@ export function useEmployeesList() {
     [departmentsQuery.data],
   )
 
+  /** length === totalCount for Pagination / empty; iteration is still current page */
+  const filtered = useMemo(() => {
+    return new Proxy(pageItems, {
+      get(target, prop, receiver) {
+        if (prop === 'length') return totalCount
+        return Reflect.get(target, prop, receiver)
+      },
+    }) as typeof pageItems
+  }, [pageItems, totalCount])
+
   return {
-    /** Current page rows (server-paginated) */
     pageItems,
-    filtered: pageItems,
+    filtered,
+    /** @deprecated use totalCount — kept so legacy "of {items.length}" footers stay correct */
+    items: { length: totalCount } as { length: number },
     totalCount,
     metrics,
     departments,
