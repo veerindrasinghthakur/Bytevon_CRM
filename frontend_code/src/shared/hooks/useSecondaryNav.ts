@@ -46,7 +46,10 @@ export function isSecondaryItemActive(pathname: string, to: string): boolean {
   if (to === '/admin/attendance-settings') {
     return pathname.startsWith('/admin/attendance-settings')
   }
+  // Dashboard home is exact; employee/payroll are distinct paths
   if (to === '/dashboard') return pathname === '/dashboard'
+  if (to === '/dashboard/employee') return pathname === '/dashboard/employee'
+  if (to === '/dashboard/payroll') return pathname === '/dashboard/payroll'
   if (to === '/payroll') return pathname === '/payroll'
   if (to === '/payroll/history') {
     return pathname === '/payroll/history'
