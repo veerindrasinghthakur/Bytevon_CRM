@@ -17,6 +17,8 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { useTeamsList } from '../hooks/use-teams-list'
 import type { Team } from '../types'
+import { workforceRoutes } from '../routes'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -34,11 +36,7 @@ function TeamQuickContent({ team }: { team: Team }) {
         <QuickStatGrid>
           <QuickStat icon="group" value={team.memberCount} label="Members" />
           <QuickStat icon="folder_open" value={team.projectCount} label="Projects" />
-          <QuickStat
-            icon="check_circle"
-            value={team.status}
-            label="Status"
-          />
+          <QuickStat icon="check_circle" value={team.status} label="Status" />
         </QuickStatGrid>
       </QuickSection>
 
@@ -94,6 +92,7 @@ export function TeamsListPage() {
   const {
     metrics,
     filtered,
+    pageItems,
     isLoading,
     isError,
     refetch,
@@ -119,6 +118,8 @@ export function TeamsListPage() {
     onRowPressCancel,
   } = useTeamsList()
 
+  const rows = pageItems.length > 0 ? pageItems : filtered
+
   const openTeamOverview = (t: Team) => {
     openPanel({
       title: t.name,
@@ -129,7 +130,10 @@ export function TeamsListPage() {
       content: <TeamQuickContent team={t} />,
       fullRecordLabel: 'View full team',
       onOpenFull: () =>
-        navigate({ to: '/workforce/teams/$teamId', params: { teamId: t.id } }),
+        safeNavigate(navigate, {
+          to: workforceRoutes.teamDetail(t.id),
+          params: { teamId: t.id },
+        }),
       widthClass: 'max-w-[520px]',
     })
   }
@@ -252,7 +256,7 @@ export function TeamsListPage() {
               title="Failed to load teams"
               description="We could not load the teams list. Check your connection and try again."
               onRetry={() => void refetch()}
-              showBack={false}
+              onBack={() => safeNavigate(navigate, { to: workforceRoutes.teams })}
             />
           </div>
         )}
@@ -283,7 +287,7 @@ export function TeamsListPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/20">
-                {filtered.map((t) => {
+                {rows.map((t) => {
                   const selected = isSelected(t.id)
                   return (
                     <tr
@@ -378,7 +382,8 @@ export function TeamsListPage() {
               </tbody>
             </table>
             <div className="px-6 py-3 border-t border-outline-variant/30 text-xs text-on-surface-variant">
-              Showing <span className="font-semibold text-on-surface">{filtered.length}</span> teams
+              Showing <span className="font-semibold text-on-surface">{rows.length}</span> of{' '}
+              <span className="font-semibold text-on-surface">{filtered.length}</span> teams
               {!selectionMode && (
                 <span className="ml-2 text-on-surface-variant/80">· Hold a row 3s to multi-select</span>
               )}

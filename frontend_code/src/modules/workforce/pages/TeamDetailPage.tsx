@@ -6,6 +6,8 @@ import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { TeamTopView } from '../components/TeamTopView'
 import { useTeamDetail } from '../hooks/use-team-detail'
+import { workforceRoutes } from '../routes'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -28,6 +30,7 @@ export function TeamDetailPage() {
         title="Could not load team"
         description="Team detail failed to load. Retry or go back to teams."
         onRetry={() => void refetch()}
+        onBack={() => safeNavigate(navigate, { to: workforceRoutes.teams })}
       />
     )
   }
@@ -35,10 +38,26 @@ export function TeamDetailPage() {
   const previewMembers = members.slice(0, 6)
   const activeProjects = projects.filter((p) => p.status === 'Active').slice(0, 2)
 
+  const goMembers = () =>
+    safeNavigate(navigate, {
+      to: workforceRoutes.teamMembers(team.id),
+      params: { teamId: team.id },
+    })
+  const goAddMember = () =>
+    safeNavigate(navigate, {
+      to: workforceRoutes.teamAddMember(team.id),
+      params: { teamId: team.id },
+    })
+  const goProjects = () =>
+    safeNavigate(navigate, {
+      to: workforceRoutes.teamProjects(team.id),
+      params: { teamId: team.id },
+    })
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <BackButton to="/workforce/teams" label="Back to Teams" />
+        <BackButton to={workforceRoutes.teams} label="Back to Teams" />
         <DynamicRouteCrumbs className="mt-2 mb-2" lastLabel={team.name} />
         <TeamTopView team={team} activeTab="overview" />
       </div>
@@ -64,25 +83,11 @@ export function TeamDetailPage() {
                   variant="outline"
                   size="sm"
                   leftIcon={<Icon name="person_add" />}
-                  onClick={() =>
-                    navigate({
-                      to: '/workforce/teams/$teamId/add-member',
-                      params: { teamId: team.id },
-                    })
-                  }
+                  onClick={goAddMember}
                 >
                   Add Member
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    navigate({
-                      to: '/workforce/teams/$teamId/members',
-                      params: { teamId: team.id },
-                    })
-                  }
-                >
+                <Button variant="outline" size="sm" onClick={goMembers}>
                   View all
                 </Button>
               </div>
@@ -155,12 +160,7 @@ export function TeamDetailPage() {
                 <button
                   type="button"
                   className="text-secondary text-label-md font-bold"
-                  onClick={() =>
-                    navigate({
-                      to: '/workforce/teams/$teamId/members',
-                      params: { teamId: team.id },
-                    })
-                  }
+                  onClick={goMembers}
                 >
                   View all {team.memberCount} members
                 </button>
@@ -173,16 +173,7 @@ export function TeamDetailPage() {
               <h2 className="text-headline-md font-semibold flex items-center gap-2">
                 <Icon name="account_tree" className="text-secondary" /> Active Projects
               </h2>
-              <button
-                type="button"
-                className="text-secondary text-label-md font-bold"
-                onClick={() =>
-                  navigate({
-                    to: '/workforce/teams/$teamId/projects',
-                    params: { teamId: team.id },
-                  })
-                }
-              >
+              <button type="button" className="text-secondary text-label-md font-bold" onClick={goProjects}>
                 View All
               </button>
             </div>
