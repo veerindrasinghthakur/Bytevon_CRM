@@ -1,8 +1,11 @@
 /**
- * Payroll module API — mock via data/mock compute helpers; real via Axios.
+ * Payroll module API — mock via shared/mock/data/payroll; real via Axios.
+ * List endpoints return paginated PayrollEmployeeListResponse.
  */
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
+import { delay } from '@/shared/mock/db'
+import { paginateItems, DEFAULT_LIST_PAGE, DEFAULT_LIST_PAGE_SIZE } from '@/shared/lib/list-params'
 import {
   computeKpis,
   computeMonthlySummary,
@@ -15,10 +18,11 @@ import {
   runPayrollChecks,
   salaryStructures,
   updateSalaryStructure,
-} from '../data/mock'
+} from '@/shared/mock/data/payroll'
 import type {
   MonthlyPayrollSummary,
   PayrollActivity,
+  PayrollEmployeeListResponse,
   PayrollEmployeeRow,
   PayrollHistoryRow,
   PayrollKpis,
@@ -28,15 +32,36 @@ import type {
   RunPayrollCheck,
   SalaryItem,
   SalaryStructure,
+  SaveSalaryStructureInput,
 } from '../types'
 
-function delay(ms = 200) {
-  return new Promise((r) => setTimeout(r, ms))
+export interface PayrollEmployeeListParams {
+  search?: string
+  status?: string
+  page?: number
+  pageSize?: number
+}
+
+function filterEmployees(params: PayrollEmployeeListParams = {}): PayrollEmployeeRow[] {
+  let items = payrollEmployees.map((r) => ({ ...r }))
+  if (params.search) {
+    const q = params.search.toLowerCase()
+    items = items.filter(
+      (e) =>
+        e.name.toLowerCase().includes(q) ||
+        e.code.toLowerCase().includes(q) ||
+        e.department.toLowerCase().includes(q),
+    )
+  }
+  if (params.status && params.status !== 'All') {
+    items = items.filter((e) => e.status === params.status)
+  }
+  return items
 }
 
 export async function getPayrollKpis(): Promise<PayrollKpis> {
   if (env.useMockApi) {
-    await delay()
+    await delay(200)
     return computeKpis()
   }
   const { data } = await apiClient.get<PayrollKpis>('/payroll/kpis')
@@ -45,41 +70,36 @@ export async function getPayrollKpis(): Promise<PayrollKpis> {
 
 export async function getPayrollPeriodMeta(): Promise<PayrollPeriodMeta> {
   if (env.useMockApi) {
-    await delay()
+    await delay(200)
     return { ...periodMeta }
   }
   const { data } = await apiClient.get<PayrollPeriodMeta>('/payroll/period')
   return data
 }
 
-export async function listPayrollEmployees(params?: {
-  search?: string
-  status?: string
-}): Promise<PayrollEmployeeRow[]> {
-  if (env.useMockApi) {
-    await delay()
-    let items = payrollEmployees.map((r) => ({ ...r }))
-    if (params?.search) {
-      const q = params.search.toLowerCase()
-      items = items.filter(
-        (e) =>
-          e.name.toLowerCase().includes(q) ||
-          e.code.toLowerCase().includes(q) ||
-          e.department.toLowerCase().includes(q),
-      )
-    }
-    if (params?.status && params.status !== 'All') {
-      items = items.filter((e) => e.status === params.status)
-    }
-    return items
+export async function listPayrollEmployees(
+  params: PayrollEmployeeListParams = {},
+): Promise<PayrollEmployeeListResponse> {
+  const page = params.page ?? DEFAULT_LIST_PAGE
+  const pageSize = params.pageSize ?? DEFAULT_LIST_PAGE_SIZE
+
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<PayrollEmployeeListResponse>('/payroll/employees', {
+      params: { ...params, page, pageSize },
+    })
+    return data
   }
-  const { data } = await apiClient.get<PayrollEmployeeRow[]>('/payroll/employees', { params })
-  return data
+
+  await delay(200)
+  const filtered = filterEmployees(params)
+  const metrics = computeMonthlySummary(filtered)
+  const { items, total } = paginateItems(filtered, page, pageSize)
+  return { items, total, page, pageSize, metrics }
 }
 
 export async function getPayrollEmployee(id: string): Promise<PayrollEmployeeRow | null> {
   if (env.useMockApi) {
-    await delay()
+    await delay(200)
     const row = payrollEmployees.find((e) => e.id === id) ?? null
     return row ? { ...row } : null
   }
@@ -93,7 +113,7 @@ export async function getPayrollEmployee(id: string): Promise<PayrollEmployeeRow
 
 export async function listPayrollActivity(): Promise<PayrollActivity[]> {
   if (env.useMockApi) {
-    await delay()
+    await delay(200)
     return recentActivity.map((a) => ({ ...a }))
   }
   const { data } = await apiClient.get<PayrollActivity[]>('/payroll/activity')
@@ -102,7 +122,7 @@ export async function listPayrollActivity(): Promise<PayrollActivity[]> {
 
 export async function getMonthlyPayrollSummary(): Promise<MonthlyPayrollSummary> {
   if (env.useMockApi) {
-    await delay()
+    await delay(200)
     return computeMonthlySummary()
   }
   const { data } = await apiClient.get<MonthlyPayrollSummary>('/payroll/monthly-summary')
@@ -111,7 +131,7 @@ export async function getMonthlyPayrollSummary(): Promise<MonthlyPayrollSummary>
 
 export async function getPayrollReview(employeeId: string): Promise<PayrollReviewDetail | null> {
   if (env.useMockApi) {
-    await delay()
+    await delay(200)
     return computeReview(employeeId)
   }
   try {
@@ -126,7 +146,7 @@ export async function getPayrollReview(employeeId: string): Promise<PayrollRevie
 
 export async function getPayslip(employeeId: string): Promise<PayslipDetail | null> {
   if (env.useMockApi) {
-    await delay()
+    await delay(200)
     return computePayslip(employeeId)
   }
   try {
@@ -141,7 +161,7 @@ export async function getPayslip(employeeId: string): Promise<PayslipDetail | nu
 
 export async function getSalaryStructure(employeeId: string): Promise<SalaryStructure | null> {
   if (env.useMockApi) {
-    await delay()
+    await delay(200)
     const s = salaryStructures[employeeId]
     if (!s) return null
     return { ...s, items: s.items.map((i) => ({ ...i })) }
@@ -158,7 +178,7 @@ export async function getSalaryStructure(employeeId: string): Promise<SalaryStru
 
 export async function saveSalaryStructure(
   employeeId: string,
-  input: { effectiveFrom: string; items: SalaryItem[] },
+  input: SaveSalaryStructureInput | { effectiveFrom: string; items: SalaryItem[] },
 ): Promise<SalaryStructure> {
   if (env.useMockApi) {
     await delay(400)
@@ -173,7 +193,7 @@ export async function saveSalaryStructure(
 
 export async function listEmployeePayrollHistory(employeeId: string): Promise<PayrollHistoryRow[]> {
   if (env.useMockApi) {
-    await delay()
+    await delay(200)
     return (historyByEmployee[employeeId] ?? []).map((r) => ({ ...r }))
   }
   const { data } = await apiClient.get<PayrollHistoryRow[]>(
@@ -184,7 +204,7 @@ export async function listEmployeePayrollHistory(employeeId: string): Promise<Pa
 
 export async function getRunPayrollChecks(): Promise<RunPayrollCheck[]> {
   if (env.useMockApi) {
-    await delay()
+    await delay(200)
     return runPayrollChecks.map((c) => ({ ...c }))
   }
   const { data } = await apiClient.get<RunPayrollCheck[]>('/payroll/run/checks')
@@ -193,7 +213,7 @@ export async function getRunPayrollChecks(): Promise<RunPayrollCheck[]> {
 
 export async function getRunPayrollPreview() {
   if (env.useMockApi) {
-    await delay()
+    await delay(200)
     const employees = payrollEmployees.map((r) => ({ ...r }))
     return {
       employees,

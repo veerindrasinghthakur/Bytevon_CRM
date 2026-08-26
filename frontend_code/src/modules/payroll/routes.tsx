@@ -25,6 +25,21 @@ const EmployeePayrollHistoryPage = lazyPage(
 )
 const PayrollHistoryPage = lazyPage(() => import('./pages/PayrollHistoryPage'), 'PayrollHistoryPage')
 
+/** Canonical path helpers — prefer these over hard-coded strings in pages. */
+export const payrollRoutes = {
+  root: '/payroll',
+  monthly: '/payroll/monthly',
+  run: '/payroll/run',
+  generating: '/payroll/generating',
+  review: (employeeId: string) => `/payroll/review/${employeeId}`,
+  payslip: (employeeId: string) => `/payroll/payslip/${employeeId}`,
+  salary: '/payroll/salary',
+  salaryDetail: (employeeId: string) => `/payroll/salary/${employeeId}`,
+  salaryRevise: (employeeId: string) => `/payroll/salary/${employeeId}/revise`,
+  history: '/payroll/history',
+  historyEmployee: (employeeId: string) => `/payroll/history/${employeeId}`,
+} as const
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createPayrollRoutes(appLayoutRoute: any) {
   return [
