@@ -1,14 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from '@/shared/lib/query-keys';
-
-// Fetch holidays from the mock backend (or API in the future)
-const fetchHolidays = async (): Promise<Record<string, string>> => {
-  const response = await fetch('http://localhost:8001/api/holidays');
-  if (!response.ok) {
-    throw new Error('Failed to fetch holidays');
-  }
-  return response.json();
-};
+import { fetchHolidays } from '../api/my-work';
 
 // Convert date components to ISO format (YYYY-MM-DD)
 function toISO(y: number, m: number, d: number): string {

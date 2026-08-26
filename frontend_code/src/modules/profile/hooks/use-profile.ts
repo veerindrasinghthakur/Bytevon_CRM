@@ -10,13 +10,8 @@ import {
   uploadAvatar,
 } from '../api/profile'
 import type { ProfileUpdateInput } from '../types'
-import type { ChangePasswordInput } from '@/modules/auth/schemas/auth'
-
-export const profileKeys = {
-  me: ['profile', 'me'] as const,
-  sessions: ['profile', 'sessions'] as const,
-  activity: ['profile', 'activity'] as const,
-}
+import { profileKeys } from './use-profile'
+import { useListControls } from '@/shared/hooks/useListControls'
 
 export function useMyProfile() {
   return useQuery({
@@ -81,6 +76,7 @@ export function useMyActivity() {
 
 export function useChangePassword() {
   return useMutation({
-    mutationFn: (input: ChangePasswordInput) => changeMyPassword(input),
+    mutationFn: (input: import('@/modules/auth/schemas/auth').ChangePasswordInput) =>
+      changeMyPassword(input),
   })
 }

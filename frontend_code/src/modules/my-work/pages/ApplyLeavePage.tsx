@@ -13,21 +13,13 @@ import { useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 
+import { useLeaveCalculations } from '../hooks/useLeaveCalculations'
 import {
   listLeaveTypeOptions,
   listMyLeaveBalances,
   submitLeaveRequest,
 } from '../api/my-work'
 import { emptyLeaveForm, leaveFormSchema, type LeaveFormValues } from '../types'
-
-export const HOLIDAYS_2026: Record<string, string> = {
-  '2026-01-26': 'Republic Day',
-  '2026-03-14': 'Holi',
-  '2026-08-15': 'Independence Day',
-  '2026-10-02': 'Gandhi Jayanti',
-  '2026-10-20': 'Diwali',
-  '2026-12-25': 'Christmas',
-}
 
 const leaveTypeIcons: Record<string, string> = {
   Casual: 'sunny',
@@ -37,36 +29,12 @@ const leaveTypeIcons: Record<string, string> = {
   'Comp Off': 'swap_horiz',
 }
 
-function toISO(y: number, m: number, d: number) {
-  return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-}
-
-function todayISO() {
-  const n = new Date()
-  return toISO(n.getFullYear(), n.getMonth(), n.getDate())
-}
-
-function countLeaveDays(from: string, to: string, halfDay: boolean) {
-  if (!from || !to) return halfDay ? 0.5 : 0
-  const a = new Date(from + 'T12:00:00')
-  const b = new Date(to + 'T12:00:00')
-  let days = 0
-  for (let d = new Date(a); d <= b; d.setDate(d.getDate() + 1)) {
-    const dow = d.getDay()
-    if (dow === 0 || dow === 6) continue
-    const iso = toISO(d.getFullYear(), d.getMonth(), d.getDate())
-    if (HOLIDAYS_2026[iso]) continue
-    days += 1
-  }
-  if (halfDay && days >= 1) return Math.max(0.5, days - 0.5)
-  return days
-}
-
 export function ApplyLeavePage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const [files, setFiles] = useState<File[]>([])
   const [showToast, setShowToast] = useState(false)
+  const { todayISO, countLeaveDays } = useLeaveCalculations()
   const today = useMemo(() => todayISO(), [])
   const [calendarMonth, setCalendarMonth] = useState(() => {
     const n = new Date()
@@ -325,9 +293,9 @@ export function ApplyLeavePage() {
                           'py-2 rounded-lg',
                           isPast && 'opacity-35',
                           inRange || start
-                            ? 'bg-sky-100 font-semibold'
+                            ? 'bg-primary-container font-semibold'
                             : dow === 0 || dow === 6
-                              ? 'bg-slate-50'
+                              ? 'bg-surface-container-low'
                               : 'hover:bg-surface-container',
                         )}
                       >
