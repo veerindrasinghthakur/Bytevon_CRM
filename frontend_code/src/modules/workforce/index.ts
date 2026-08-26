@@ -17,4 +17,34 @@ export { WorkforceAttendanceDetailPage } from './pages/WorkforceAttendanceDetail
 export { WorkforceRosterPage } from './pages/WorkforceRosterPage'
 export { AttendanceDayDetailPage } from './pages/AttendanceDayDetailPage'
 export { ChangeAssignmentPage } from './pages/ChangeAssignmentPage'
-export { createWorkforceRoutes } from './routes'
+
+export { createWorkforceRoutes, workforceRoutes } from './routes'
+
+export {
+  listDepartments,
+  getDepartment,
+  listDepartmentEmployees,
+  createDepartment,
+  updateDepartment,
+  assignEmployeeToDepartment,
+  removeEmployeeFromDepartment,
+  listEmploymentOptionsForPicker,
+  listEmployeesNotInDepartment,
+  listEmployeesOnShift,
+} from './api/departments'
+
+export {
+  listEmployments,
+  getEmployeeDetail,
+  createEmployment,
+  updateEmployment,
+  getOrgMastersForEmployeeForm,
+} from './api/employment'
+
+export { useEmployeesList } from './hooks/use-employees-list'
+export { useDepartmentsList } from './hooks/use-departments-list'
+export { useTeamsList } from './hooks/use-teams-list'
+export { useDepartmentDetail } from './hooks/use-department-detail'
+export { useTeamDetail } from './hooks/use-team-detail'
+
+export type * from './types'

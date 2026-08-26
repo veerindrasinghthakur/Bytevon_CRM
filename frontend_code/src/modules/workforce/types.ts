@@ -1,3 +1,27 @@
+/** Workforce domain types — UI shapes + schema re-exports */
+
+export type {
+  DepartmentListItemSchema as DepartmentListItemFromSchema,
+  DepartmentEmployeeSchema,
+  CreateDepartmentInput,
+  DepartmentFormInput,
+} from './schemas/department'
+
+export type {
+  CreateEmploymentSchemaInput,
+  EmploymentFormInput,
+} from './schemas/employment'
+
+export {
+  departmentFormSchema,
+  emptyDepartmentForm,
+} from './schemas/department-form'
+
+export {
+  employmentFormSchema,
+  emptyEmploymentForm,
+} from './schemas/employment-form'
+
 export type RecordStatus = 'Active' | 'Inactive'
 export type EmploymentType = 'Full-Time Regular' | 'Contractor' | 'Part-Time' | 'Intern'
 export type EmployeeStatus =

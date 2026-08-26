@@ -25,6 +25,26 @@ const TeamMembersPage = lazyPage(() => import('./pages/TeamMembersPage'), 'TeamM
 const TeamProjectsPage = lazyPage(() => import('./pages/TeamProjectsPage'), 'TeamProjectsPage')
 const AddMemberPage = lazyPage(() => import('./pages/AddMemberPage'), 'AddMemberPage')
 
+/** Canonical path helpers — prefer these over hard-coded strings in pages. */
+export const workforceRoutes = {
+  root: '/workforce',
+  employees: '/workforce/employees',
+  employeeNew: '/workforce/employees/new',
+  employeeDetail: (id: string | number) => `/workforce/employees/${id}`,
+  employeeAssignment: (id: string | number) => `/workforce/employees/${id}/assignment`,
+  departments: '/workforce/departments',
+  departmentNew: '/workforce/departments/new',
+  departmentDetail: (id: string | number) => `/workforce/departments/${id}`,
+  teams: '/workforce/teams',
+  teamNew: '/workforce/teams/new',
+  teamDetail: (id: string | number) => `/workforce/teams/${id}`,
+  teamMembers: (id: string | number) => `/workforce/teams/${id}/members`,
+  teamProjects: (id: string | number) => `/workforce/teams/${id}/projects`,
+  teamAddMember: (id: string | number) => `/workforce/teams/${id}/add-member`,
+  attendance: '/workforce/attendance',
+  attendanceDetail: (employmentId: string | number) => `/workforce/attendance/${employmentId}`,
+} as const
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createWorkforceRoutes(appLayoutRoute: any) {
   return [
@@ -32,7 +52,7 @@ export function createWorkforceRoutes(appLayoutRoute: any) {
       getParentRoute: () => appLayoutRoute,
       path: '/workforce',
       beforeLoad: () => {
-        throw redirect({ to: '/workforce/employees' })
+        throw redirect({ to: workforceRoutes.employees })
       },
     }),
     createRoute({
