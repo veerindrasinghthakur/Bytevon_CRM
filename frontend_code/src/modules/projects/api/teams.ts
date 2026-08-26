@@ -62,6 +62,9 @@ export function resolveProjectTeamId(projectId: number): number | null {
 
 export async function getTeams(params?: {
   search?: string
+  /** ACTIVE | INACTIVE or UI Active | Inactive */
+  status?: string
+  department?: string
   page?: number
   pageSize?: number
 }): Promise<{ items: Team[]; total: number }> {
@@ -81,6 +84,22 @@ export async function getTeams(params?: {
         t.department?.toLowerCase().includes(q) ||
         t.headName?.toLowerCase().includes(q),
     )
+  }
+  if (params?.status && params.status !== 'All') {
+    const wantActive =
+      params.status === 'Active' || params.status === 'ACTIVE'
+    const wantInactive =
+      params.status === 'Inactive' || params.status === 'INACTIVE'
+    items = items.filter((t) => {
+      const active = t.status === 'ACTIVE'
+      if (wantActive) return active
+      if (wantInactive) return !active
+      return true
+    })
+  }
+  if (params?.department && params.department !== 'All') {
+    const d = params.department.toLowerCase()
+    items = items.filter((t) => (t.department ?? '').toLowerCase() === d)
   }
   if (params?.page != null || params?.pageSize != null) {
     return paginateItems(items, params.page, params.pageSize)

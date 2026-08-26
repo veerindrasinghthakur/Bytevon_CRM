@@ -63,29 +63,30 @@ export function useTeamsList() {
     queryFn: () =>
       getTeams({
         search: listFilters.search,
-        // Teams API supports search; status/department applied client-side until API expands
-        page: undefined,
-        pageSize: undefined,
+        status: listFilters.status,
+        department: listFilters.department,
+        page: listFilters.page,
+        pageSize: listFilters.pageSize,
       }),
   })
 
-  const mapped = useMemo(() => (data?.items ?? []).map(toWorkforceTeam), [data])
+  const pageItems = useMemo(
+    () => (data?.items ?? []).map(toWorkforceTeam),
+    [data],
+  )
+  const totalCount = data?.total ?? 0
+
+  /** Metrics from current page only when paginated; OK for small mock sets */
+  const metrics = useMemo(() => buildMetrics(pageItems), [pageItems])
 
   const filtered = useMemo(() => {
-    return mapped.filter((t) => {
-      if (listFilters.status && t.status !== listFilters.status) return false
-      if (
-        listFilters.department &&
-        t.department.toLowerCase() !== listFilters.department.toLowerCase()
-      ) {
-        return false
-      }
-      return true
-    })
-  }, [mapped, listFilters.status, listFilters.department])
-
-  const metrics = useMemo(() => buildMetrics(filtered), [filtered])
-  const pageItems = controls.pageItems(filtered)
+    return new Proxy(pageItems, {
+      get(target, prop, receiver) {
+        if (prop === 'length') return totalCount
+        return Reflect.get(target, prop, receiver)
+      },
+    }) as typeof pageItems
+  }, [pageItems, totalCount])
 
   const selection = useListSelection<Team>({
     items: pageItems,
@@ -94,7 +95,7 @@ export function useTeamsList() {
 
   return {
     metrics,
-    totalCount: filtered.length,
+    totalCount,
     filtered,
     pageItems,
     isLoading,
