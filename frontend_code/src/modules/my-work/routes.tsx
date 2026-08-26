@@ -25,6 +25,26 @@ const MyApprovalDetailPage = lazyPage(() => import('./pages/MyApprovalDetailPage
 const MyRequestsPage = lazyPage(() => import('./pages/MyRequestsPage'), 'MyRequestsPage')
 const MyBankDetailsPage = lazyPage(() => import('./pages/MyBankDetailsPage'), 'MyBankDetailsPage')
 
+/** Canonical path helpers — prefer these over hard-coded strings in pages. */
+export const myWorkRoutes = {
+  root: '/my-work',
+  break: '/my-work/break',
+  attendance: '/my-work/attendance',
+  attendanceMark: '/my-work/attendance/mark',
+  attendanceCorrections: '/my-work/attendance/corrections',
+  attendanceDetail: (attendanceId: string) => `/my-work/attendance/${attendanceId}`,
+  leave: '/my-work/leave',
+  leaveApply: '/my-work/leave/apply',
+  leaveDetail: (leaveId: string) => `/my-work/leave/${leaveId}`,
+  tasks: '/my-work/tasks',
+  tasksNew: '/my-work/tasks/new',
+  taskDetail: (taskId: string) => `/my-work/tasks/${taskId}`,
+  approvals: '/my-work/approvals',
+  approvalDetail: (requestId: string) => `/my-work/approvals/${requestId}`,
+  requests: '/my-work/requests',
+  bankDetails: '/my-work/bank-details',
+} as const
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function createMyWorkRoutes(appLayoutRoute: any) {
   return [

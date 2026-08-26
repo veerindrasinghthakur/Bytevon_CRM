@@ -9,6 +9,7 @@ import { DEFAULT_LIST_PAGE, DEFAULT_LIST_PAGE_SIZE, paginateItems } from '@/shar
 import {
   attendanceHistory,
   currentUser,
+  holidaysSeed,
   leaveBalances,
   leaveRequests,
   myApprovals,
@@ -26,12 +27,15 @@ import {
 import type {
   ApprovalListResponse,
   ApprovalRequest,
+  ApplyLeaveContext,
   AttendanceListResponse,
   AttendanceRecord,
   CorrectionListResponse,
   AttendanceCorrectionRequest,
   CreateLeaveRequestInput,
   LeaveBalance,
+  LeaveCalculateInput,
+  LeaveCalculateResult,
   LeaveListResponse,
   LeaveRequest,
   LeaveTypeOption,
@@ -48,6 +52,32 @@ export interface MyWorkListParams {
   pageSize?: number
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
+}
+
+function toISO(y: number, m: number, d: number) {
+  return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+}
+
+/** Mock working-day count — mirrors backend LeavePublicService._working_days */
+function mockCountWorkingDays(
+  from: string,
+  to: string,
+  halfDay: boolean,
+  holidayDates: Set<string>,
+): number {
+  if (!from || !to) return halfDay ? 0.5 : 0
+  const a = new Date(from + 'T12:00:00')
+  const b = new Date(to + 'T12:00:00')
+  let days = 0
+  for (let d = new Date(a); d <= b; d.setDate(d.getDate() + 1)) {
+    const dow = d.getDay()
+    if (dow === 0 || dow === 6) continue
+    const iso = toISO(d.getFullYear(), d.getMonth(), d.getDate())
+    if (holidayDates.has(iso)) continue
+    days += 1
+  }
+  if (halfDay && days >= 1) return Math.max(0.5, days - 0.5)
+  return days
 }
 
 export async function getMyWorkOverview(): Promise<MyWorkOverview> {
@@ -113,6 +143,57 @@ export async function listLeaveTypeOptions(): Promise<LeaveTypeOption[]> {
     return leaveTypeOptions.map((o) => ({ ...o }))
   }
   const { data } = await apiClient.get<LeaveTypeOption[]>('/my-work/leave/types')
+  return data
+}
+
+/**
+ * Bootstrap Apply Leave page: holidays + types + balances in one call.
+ * Real path maps to Leave GET /leave/apply-context/{employmentId}.
+ */
+export async function getApplyLeaveContext(): Promise<ApplyLeaveContext> {
+  if (env.useMockApi) {
+    await delay()
+    return {
+      holidays: holidaysSeed.map((h) => ({ ...h })),
+      leaveTypes: leaveTypeOptions.map((o) => ({ ...o })),
+      balances: leaveBalances.map((b) => ({ ...b })),
+    }
+  }
+  const { data } = await apiClient.get<ApplyLeaveContext>('/my-work/leave/apply-context')
+  return data
+}
+
+/**
+ * Working-day cost + projected balance — calculated on the server (or mock).
+ * Real path maps to Leave POST /leave/calculate.
+ */
+export async function calculateLeaveDays(
+  input: LeaveCalculateInput,
+): Promise<LeaveCalculateResult> {
+  if (env.useMockApi) {
+    await delay(80)
+    const holidayDates = new Set(holidaysSeed.map((h) => h.date))
+    const dayCost = mockCountWorkingDays(
+      input.from,
+      input.to,
+      Boolean(input.halfDay),
+      holidayDates,
+    )
+    const bal = leaveBalances.find((b) => b.type === input.type)
+    const remaining = bal?.remaining ?? null
+    const estimated =
+      remaining == null ? null : Math.max(0, remaining - dayCost)
+    const holidaysInRange = holidaysSeed.filter(
+      (h) => h.date >= input.from && h.date <= input.to,
+    )
+    return {
+      dayCost,
+      balanceRemaining: remaining,
+      estimatedBalanceAfter: estimated,
+      holidaysInRange,
+    }
+  }
+  const { data } = await apiClient.post<LeaveCalculateResult>('/my-work/leave/calculate', input)
   return data
 }
 
@@ -256,12 +337,19 @@ export async function submitAttendanceCorrection(
 export async function submitLeaveRequest(input: CreateLeaveRequestInput): Promise<LeaveRequest> {
   if (env.useMockApi) {
     await delay(400)
+    const holidayDates = new Set(holidaysSeed.map((h) => h.date))
+    const days = mockCountWorkingDays(
+      input.from,
+      input.to,
+      Boolean(input.halfDay),
+      holidayDates,
+    )
     return {
       id: `LV-${Date.now()}`,
       type: input.type,
       from: input.from,
       to: input.to,
-      days: 1,
+      days,
       reason: input.reason,
       status: 'Pending',
       appliedOn: new Date().toISOString().slice(0, 10),
