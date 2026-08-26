@@ -1,19 +1,30 @@
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { myAdminRoutes } from '@/modules/admin/routes'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { getAdminRole } from '../api/roles'
+import { getAdminRole, deleteAdminRole } from '../api/roles'
 import { listAdminUsers } from '../api/users'
 import { cn } from '@/shared/lib/cn'
 
 export function RoleDetailPage() {
   const { roleId } = useParams({ strict: false }) as { roleId?: string }
   const navigate = useNavigate()
+  const qc = useQueryClient()
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteAdminRole(roleId as string),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['admin', 'roles'] })
+      void qc.invalidateQueries({ queryKey: ['admin', 'users'] })
+      safeNavigate(navigate, { to: myAdminRoutes.rolesList })
+    },
+  })
 
   const roleQuery = useQuery({
     queryKey: ['admin', 'roles', roleId],
@@ -54,10 +65,10 @@ export function RoleDetailPage() {
     safeNavigate(navigate, { to: myAdminRoutes.rolesNew, search: { duplicateFrom: role.id } })
 
   const goEdit = () =>
-    safeNavigate(navigate, { to: myAdminRoutes.rolesDetail(role.id), params: { roleId: role.id } })
+    safeNavigate(navigate, { to: myAdminRoutes.rolesEdit(role.id), params: { roleId: role.id } })
 
   const goUser = (userId: number) =>
-    safeNavigate(navigate, { to: myAdminRoutes.usersDetail(userId), params: { userId: String(userId) } })
+    safeNavigate(navigate, { to: myAdminRoutes.usersDetail(String(userId)), params: { userId: String(userId) } })
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -106,6 +117,13 @@ export function RoleDetailPage() {
           >
             Edit Role
           </Button>
+          <ArchiveButton
+            entityLabel={role.name}
+            mode="delete"
+            label="Delete"
+            isLoading={deleteMutation.isPending}
+            onConfirm={() => deleteMutation.mutateAsync()}
+          />
         </div>
       </div>
 

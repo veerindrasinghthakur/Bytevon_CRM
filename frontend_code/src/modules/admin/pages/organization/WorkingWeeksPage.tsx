@@ -1,10 +1,13 @@
 import { useMemo, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
+import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
+import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useWorkingWeeks } from '../../hooks/use-organization'
+import { deleteWorkingWeek } from '../../api/organization'
 import type { WorkingWeekRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 
@@ -51,6 +54,13 @@ export function WorkingWeeksPage() {
   const [editingId, setEditingId] = useState<number | null>(null)
   const [draftDays, setDraftDays] = useState<number[]>([])
 
+  const deleteMut = useMutation({
+    mutationFn: (id: number) => deleteWorkingWeek(id),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: WEEKS_QK })
+    },
+  })
+
   if (isLoading) return <PageLoadingSkeleton />
   if (isError) {
     return <ErrorState description={(error as Error).message} onRetry={() => void refetch()} />
@@ -88,6 +98,7 @@ export function WorkingWeeksPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      <BackButton to="/admin/settings" label="Back to settings" />
       <div>
         <h2 className="text-title-lg font-semibold text-on-background">Working weeks</h2>
         <p className="text-body-sm text-on-surface-variant mt-0.5">
@@ -127,7 +138,17 @@ export function WorkingWeeksPage() {
                     </Button>
                   </div>
                 ) : (
-                  <EditButton variant="outline" onClick={() => startEdit(w)} />
+                  <div className="flex gap-2">
+                    <EditButton variant="outline" onClick={() => startEdit(w)} />
+                    <ArchiveButton
+                      entityLabel={w.name}
+                      mode="delete"
+                      label="Delete"
+                      size="sm"
+                      isLoading={deleteMut.isPending}
+                      onConfirm={() => deleteMut.mutateAsync(w.id)}
+                    />
+                  </div>
                 )}
               </div>
               <div className="mt-4 flex flex-wrap gap-2">

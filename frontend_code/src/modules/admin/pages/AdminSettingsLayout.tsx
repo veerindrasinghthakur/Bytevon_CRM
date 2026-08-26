@@ -22,12 +22,18 @@ export function AdminSettingsLayout() {
         description="Organization identity, offices, shifts, holidays, and regional policies."
       />
 
-      <section className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MetricCard
           icon="apartment"
           label="Offices / Locations"
           value={String(metrics?.offices ?? '—')}
           hint="Active sites"
+        />
+        <MetricCard
+          icon="schedule"
+          label="Shifts"
+          value={String(metrics?.shifts ?? '—')}
+          hint="Active schedules"
         />
         <MetricCard
           icon="account_tree"

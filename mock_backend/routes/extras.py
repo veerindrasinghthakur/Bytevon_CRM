@@ -439,6 +439,19 @@ def list_working_weeks():
     return {"items": items, "total": len(items)}
 
 
+@router.delete("/organization/working-weeks/{week_id}")
+def delete_working_week(week_id: int):
+    _ensure()
+    items = list(get_collection("working_weeks") or [])
+    row = next((w for w in items if w.get("id") == week_id), None)
+    if not row:
+        raise HTTPException(status_code=404, detail="Working week not found")
+    items = [w for w in items if w.get("id") != week_id]
+    set_collection("working_weeks", items)
+    _append_audit("Working week deleted", row.get("name") or str(week_id), "Organization")
+    return {"ok": True, "id": week_id}
+
+
 # ---- Holiday calendars ----
 
 @router.get("/organization/holiday-calendars")
@@ -509,6 +522,19 @@ def list_holidays(calendarId: Optional[int] = None):
     if calendarId is not None:
         items = [h for h in items if h.get("holiday_calendar_id") == calendarId]
     return {"items": items, "total": len(items)}
+
+
+@router.delete("/organization/holidays/{holiday_id}")
+def delete_holiday(holiday_id: int):
+    _ensure()
+    items = list(get_collection("holidays") or [])
+    row = next((h for h in items if h.get("id") == holiday_id), None)
+    if not row:
+        raise HTTPException(status_code=404, detail="Holiday not found")
+    items = [h for h in items if h.get("id") != holiday_id]
+    set_collection("holidays", items)
+    _append_audit("Holiday deleted", row.get("name") or str(holiday_id), "Organization")
+    return {"ok": True, "id": holiday_id}
 
 
 @router.post("/organization/holidays")

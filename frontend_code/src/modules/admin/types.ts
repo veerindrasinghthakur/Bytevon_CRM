@@ -184,6 +184,7 @@ export interface AdminHubMetrics {
   offices: number
   departments: number
   employees: number
+  shifts?: number
   securityScore?: number
   mfaAdoption?: number
   openAlerts?: number

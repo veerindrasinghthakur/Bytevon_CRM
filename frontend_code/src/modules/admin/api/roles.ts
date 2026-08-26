@@ -222,3 +222,13 @@ export async function updateAdminRole(
   const { data } = await apiClient.patch<AdminRole>(`/rbac/roles/${roleId}`, payload)
   return data
 }
+
+export async function deleteAdminRole(roleId: string): Promise<void> {
+  if (env.useMockApi) {
+    await delay(300)
+    const idx = adminRoles.findIndex((r) => r.id === roleId)
+    if (idx >= 0) adminRoles.splice(idx, 1)
+    return
+  }
+  await apiClient.delete(`/rbac/roles/${roleId}`)
+}

@@ -171,6 +171,18 @@ export async function updateShift(id: number, patch: Partial<ShiftRow>): Promise
   return data
 }
 
+/** Archive a shift (soft delete — sets is_archived). */
+export async function archiveShift(id: number): Promise<void> {
+  if (env.useMockApi) {
+    await delay(300)
+    const row = getDb().shifts.find((s) => s.id === id)
+    if (!row) throw new Error('Shift not found')
+    row.is_archived = true
+    return
+  }
+  await apiClient.post(`/organization/shifts/${id}/archive`)
+}
+
 export async function getWorkingWeeks() {
   if (env.useMockApi) {
     await delay()
@@ -181,6 +193,19 @@ export async function getWorkingWeeks() {
     '/organization/working-weeks',
   )
   return data
+}
+
+/** Permanently remove a working week row. */
+export async function deleteWorkingWeek(id: number): Promise<void> {
+  if (env.useMockApi) {
+    await delay(300)
+    const list = getDb().working_weeks as WorkingWeekRow[]
+    const idx = list.findIndex((w) => w.id === id)
+    if (idx < 0) throw new Error('Working week not found')
+    list.splice(idx, 1)
+    return
+  }
+  await apiClient.delete(`/organization/working-weeks/${id}`)
 }
 
 export async function getHolidayCalendars() {
@@ -247,6 +272,11 @@ export async function updateHolidayCalendar(
   return data
 }
 
+/** Archive a holiday calendar (soft delete). */
+export async function archiveHolidayCalendar(id: number): Promise<void> {
+  return updateHolidayCalendar(id, { is_archived: true }).then(() => undefined)
+}
+
 export async function getHolidays(calendarId?: number) {
   if (env.useMockApi) {
     await delay()
@@ -285,6 +315,19 @@ export async function createHoliday(input: {
   }
   const { data } = await apiClient.post<HolidayRow>('/organization/holidays', input)
   return data
+}
+
+/** Permanently remove a holiday row. */
+export async function deleteHoliday(id: number): Promise<void> {
+  if (env.useMockApi) {
+    await delay(300)
+    const list = getDb().holidays as HolidayRow[]
+    const idx = list.findIndex((h) => h.id === id)
+    if (idx < 0) throw new Error('Holiday not found')
+    list.splice(idx, 1)
+    return
+  }
+  await apiClient.delete(`/organization/holidays/${id}`)
 }
 
 export async function getPositions(params?: { includeArchived?: boolean }) {
@@ -346,6 +389,11 @@ export async function updatePosition(
   }
   const { data } = await apiClient.patch<PositionRow>(`/organization/positions/${id}`, patch)
   return data
+}
+
+/** Archive a position (soft delete). */
+export async function archivePosition(id: number): Promise<void> {
+  return updatePosition(id, { is_archived: true }).then(() => undefined)
 }
 
 export async function getSchemaDepartments() {

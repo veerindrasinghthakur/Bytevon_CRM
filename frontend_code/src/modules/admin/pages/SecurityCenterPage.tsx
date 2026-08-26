@@ -5,7 +5,8 @@ import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { getSecurityKpis, listSecurityEvents } from '../api/security'
-import { cn, securityScoreDefault } from '@/modules/admin/schemas/enums'
+import { cn } from '@/shared/lib/cn'
+import { securityScoreDefault } from '@/modules/admin/schemas/enums'
 
 export function SecurityCenterPage() {
   const [score, setScore] = useState(1)

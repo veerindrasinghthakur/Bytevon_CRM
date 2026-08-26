@@ -22,14 +22,7 @@ import { myAdminRoutes } from '../routes'
 import { useUsersList } from '../hooks/use-users-list'
 import type { AdminUserListItem } from '../types'
 import { cn } from '@/shared/lib/cn'
-import { statusBadgeClass, statusDot } from '../schemas/enums'
-
-const STATUS_OPTIONS = [
-  { value: 'All', label: 'All Status' },
-  { value: 'Active', label: 'Active' },
-  { value: 'Inactive', label: 'Inactive' },
-  { value: 'Locked', label: 'Locked' },
-]
+import { statusBadgeClass, statusDot, userStatusOptions } from '../schemas/enums'
 
 function UserQuickContent({ user }: { user: AdminUserListItem }) {
   return (
@@ -109,7 +102,7 @@ export function UsersListPage() {
   } = useUsersList()
 
   const goDetail = (u: AdminUserListItem) =>
-    safeNavigate(navigate, { to: myAdminRoutes.usersDetail(u.id), params: { userId: String(u.id) } })
+    safeNavigate(navigate, { to: myAdminRoutes.usersDetail(String(u.id)), params: { userId: String(u.id) } })
 
   const goNew = () => safeNavigate(navigate, { to: myAdminRoutes.usersNew })
 
@@ -125,7 +118,6 @@ export function UsersListPage() {
       onOpenFull: () => goDetail(u),
       onEdit: () => goDetail(u),
       editLabel: 'Edit user',
-      onClick: () => goDetail(u),
       actions:
         u.status === 'Locked'
           ? [{ id: 'unlock', label: 'Unlock', icon: 'lock_open', onClick: () => goDetail(u) }]
@@ -200,7 +192,7 @@ export function UsersListPage() {
           onChange={(v) => setStatusFilter(v as typeof statusFilter)}
           placeholder="Status"
           aria-label="Filter by status"
-          options={STATUS_OPTIONS}
+          options={[...userStatusOptions]}
           minWidthClass="min-w-[130px]"
         />
         <Select
@@ -320,8 +312,12 @@ export function UsersListPage() {
                         />
                       ) : (
                         <span
-                          className="inline-block w-2 h-2 rounded-full bg-outline-variant"
-                          aria-hidden
+                          className={cn(
+                            'inline-block w-2 h-2 rounded-full',
+                            statusDot[u.status] ?? 'bg-outline-variant',
+                          )}
+                          title={u.status}
+                          aria-label={`Status: ${u.status}`}
                         />
                       )}
                     </td>

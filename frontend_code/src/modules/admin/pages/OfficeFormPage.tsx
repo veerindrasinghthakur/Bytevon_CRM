@@ -1,10 +1,26 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useForm, type UseFormRegister } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { cn } from '@/shared/lib/cn'
 import { createLocation, getLocation, updateLocation } from '../api/organization'
+import { officeFormSchema, type OfficeFormValues } from '../schemas/offices'
+
+const emptyOfficeForm = {
+  name: '',
+  country: '',
+  city: '',
+  state: '',
+  timezone: 'Asia/Kolkata',
+  currency: 'INR',
+  fiscalMonth: 4,
+  address: '',
+  postal: '',
+}
 
 export function OfficeFormPage() {
   const navigate = useNavigate()
@@ -21,24 +37,21 @@ export function OfficeFormPage() {
 
   const existing = officeQuery.data
 
-  const [form, setForm] = useState({
-    name: '',
-    country: '',
-    city: '',
-    state: '',
-    timezone: 'Asia/Kolkata',
-    currency: 'INR',
-    fiscalMonth: 4,
-    address: '',
-    postal: '',
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<OfficeFormValues>({
+    resolver: zodResolver(officeFormSchema),
+    defaultValues: emptyOfficeForm,
   })
-  const [error, setError] = useState<string | null>(null)
 
   const seededOfficeIdRef = useRef<number | null>(null)
   useEffect(() => {
     if (!existing || seededOfficeIdRef.current === existing.id) return
     seededOfficeIdRef.current = existing.id
-    setForm({
+    reset({
       name: existing.name,
       country: existing.country,
       city: existing.city,
@@ -49,43 +62,42 @@ export function OfficeFormPage() {
       address: existing.address,
       postal: '',
     })
-  }, [existing])
+  }, [existing, reset])
 
-  const set = (k: keyof typeof form, v: string | number) => setForm((p) => ({ ...p, [k]: v }))
+  const [error, setError] = useState<string | null>(null)
 
   const goLocations = () => safeNavigate(navigate, { to: '/admin/settings/locations' })
 
   const saveMutation = useMutation({
-    mutationFn: async () => {
-      if (!form.name.trim()) throw new Error('Office name is required')
+    mutationFn: async (values: OfficeFormValues) => {
       if (isEdit && Number.isFinite(numericId)) {
         return updateLocation(numericId, {
-          name: form.name.trim(),
-          country: form.country,
-          city: form.city,
-          state: form.state,
-          timezone: form.timezone,
-          currency: form.currency,
-          fiscal_year_start_month: Number(form.fiscalMonth),
-          address: form.address,
+          name: values.name.trim(),
+          country: values.country,
+          city: values.city,
+          state: values.state ?? '',
+          timezone: values.timezone,
+          currency: values.currency,
+          fiscal_year_start_month: Number(values.fiscalMonth),
+          address: values.address ?? '',
         })
       }
       return createLocation({
-        name: form.name.trim(),
-        timezone: form.timezone,
+        name: values.name.trim(),
+        timezone: values.timezone,
         working_week_id: 1,
         holiday_calendar_id: 1,
         latitude: 0,
         longitude: 0,
         attendance_radius_meters: 200,
         allowed_ip_cidrs: [],
-        country: form.country || 'India',
-        state: form.state || '',
-        city: form.city || '',
-        address: form.address || '',
-        payroll_region: form.state || null,
-        currency: form.currency || 'INR',
-        fiscal_year_start_month: Number(form.fiscalMonth) || 4,
+        country: values.country || 'India',
+        state: values.state || '',
+        city: values.city || '',
+        address: values.address || '',
+        payroll_region: values.state || null,
+        currency: values.currency || 'INR',
+        fiscal_year_start_month: Number(values.fiscalMonth) || 4,
       })
     },
     onSuccess: async () => {
@@ -93,7 +105,9 @@ export function OfficeFormPage() {
       await qc.invalidateQueries({ queryKey: ['admin', 'offices'] })
       goLocations()
     },
-    onError: (e: Error) => setError(e.message || 'Failed to save office'),
+    onError: (e: Error) => {
+      setError(e.message || 'Failed to save office')
+    },
   })
 
   if (isEdit && officeQuery.isLoading) {
@@ -129,10 +143,10 @@ export function OfficeFormPage() {
               variant="primary"
               size="sm"
               isLoading={saveMutation.isPending}
-              onClick={() => {
-                setError(null)
-                saveMutation.mutate()
-              }}
+              onClick={handleSubmit((values) => {
+                saveMutation.reset()
+                saveMutation.mutate(values)
+              })}
             >
               {isEdit ? 'Save Changes' : 'Create Office'}
             </Button>
@@ -152,28 +166,42 @@ export function OfficeFormPage() {
           Office Details
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Field
+          <TextField
             label="Office Name"
-            value={form.name}
-            onChange={(v) => set('name', v)}
+            error={errors.name?.message}
+            registration={register('name')}
             placeholder="e.g. Singapore Office"
           />
-          <Field label="Country" value={form.country} onChange={(v) => set('country', v)} placeholder="India" />
-          <Field label="State" value={form.state} onChange={(v) => set('state', v)} placeholder="Karnataka" />
-          <Field label="City" value={form.city} onChange={(v) => set('city', v)} placeholder="Bengaluru" />
+          <TextField
+            label="Country"
+            error={errors.country?.message}
+            registration={register('country')}
+            placeholder="India"
+          />
+          <TextField
+            label="State"
+            error={errors.state?.message}
+            registration={register('state')}
+            placeholder="Karnataka"
+          />
+          <TextField
+            label="City"
+            error={errors.city?.message}
+            registration={register('city')}
+            placeholder="Bengaluru"
+          />
           <div className="md:col-span-2">
-            <Field
+            <TextField
               label="Address"
-              value={form.address}
-              onChange={(v) => set('address', v)}
+              error={errors.address?.message}
+              registration={register('address')}
               placeholder="Street, building, suite"
             />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-bold text-on-surface-variant uppercase">Timezone</label>
             <select
-              value={form.timezone}
-              onChange={(e) => set('timezone', e.target.value)}
+              {...register('timezone')}
               className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
             >
               {['Asia/Kolkata', 'America/New_York', 'Europe/London', 'Asia/Singapore', 'UTC'].map((t) => (
@@ -182,12 +210,12 @@ export function OfficeFormPage() {
                 </option>
               ))}
             </select>
+            {errors.timezone && <p className="text-caption text-error">{errors.timezone.message}</p>}
           </div>
           <div className="space-y-1">
             <label className="text-xs font-bold text-on-surface-variant uppercase">Currency</label>
             <select
-              value={form.currency}
-              onChange={(e) => set('currency', e.target.value)}
+              {...register('currency')}
               className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
             >
               {['INR', 'USD', 'GBP', 'SGD', 'EUR'].map((c) => (
@@ -196,18 +224,19 @@ export function OfficeFormPage() {
                 </option>
               ))}
             </select>
+            {errors.currency && <p className="text-caption text-error">{errors.currency.message}</p>}
           </div>
           <div className="space-y-1">
             <label className="text-xs font-bold text-on-surface-variant uppercase">Fiscal Year Start Month</label>
             <select
-              value={String(form.fiscalMonth)}
-              onChange={(e) => set('fiscalMonth', Number(e.target.value))}
+              {...register('fiscalMonth')}
               className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
             >
               <option value={1}>January</option>
               <option value={4}>April</option>
               <option value={7}>July</option>
             </select>
+            {errors.fiscalMonth && <p className="text-caption text-error">{errors.fiscalMonth.message}</p>}
           </div>
         </div>
       </div>
@@ -215,26 +244,32 @@ export function OfficeFormPage() {
   )
 }
 
-function Field({
+function TextField({
   label,
-  value,
-  onChange,
+  error,
+  registration,
   placeholder,
 }: {
   label: string
-  value: string
-  onChange: (v: string) => void
+  error?: string
+  registration: UseFormRegister<OfficeFormValues> extends (name: infer _N) => infer R ? R : never
   placeholder?: string
 }) {
   return (
     <div className="space-y-1">
       <label className="text-xs font-bold text-on-surface-variant uppercase">{label}</label>
       <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+        {...registration}
         placeholder={placeholder}
-        className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
+        className={cn(
+          'w-full border rounded-lg px-3 py-2.5 text-sm outline-none transition-colors',
+          error
+            ? 'border-error focus:border-error focus:ring-2 focus:ring-error/30'
+            : 'border-outline-variant focus:border-secondary focus:ring-2 focus:ring-secondary/30',
+          'bg-white',
+        )}
       />
+      {error && <p className="text-caption text-error">{error}</p>}
     </div>
   )
 }

@@ -3,12 +3,14 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
+import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useHolidays } from '../../hooks/use-organization'
-import { createHoliday, getHolidayCalendar, getHolidays } from '../../api/organization'
+import { createHoliday, getHolidayCalendar, getHolidays, deleteHoliday } from '../../api/organization'
+import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 import type { HolidayRow } from '@/shared/schema'
 // Shared utilities for typed query keys and route constants
 import { queryKeys } from '@/shared/lib/query-keys'
@@ -87,6 +89,14 @@ export function HolidaysListPage() {
     onError: (e: Error) => setSaveError(e.message || 'Failed to save holiday'),
   })
 
+  const deleteMut = useMutation({
+    mutationFn: (holidayId: number) => deleteHoliday(holidayId),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: queryKeys.organization.holidays.all() })
+      await qc.invalidateQueries({ queryKey: queryKeys.organization.holidays.detail(id) })
+    },
+  })
+
   if (isLoading || calQuery.isLoading) return <PageLoadingSkeleton />
   if (isError) {
     return (
@@ -102,6 +112,7 @@ export function HolidaysListPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      <BackButton to="/admin/settings/holidays" label="Back to holiday calendars" />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-title-lg font-semibold text-on-background">{calName}</h2>
@@ -233,7 +244,7 @@ export function HolidaysListPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-surface-container-low border-b border-outline-variant">
-                {['Name', 'Date', 'Type', 'Recurring'].map((h) => (
+                {['Name', 'Date', 'Type', 'Recurring', ''].map((h) => (
                   <th key={h} className="px-5 py-3 text-label-sm uppercase text-on-surface-variant">
                     {h}
                   </th>
@@ -247,6 +258,16 @@ export function HolidaysListPage() {
                   <td className="px-5 py-3 text-body-sm">{h.date}</td>
                   <td className="px-5 py-3 text-body-sm">{h.holiday_type}</td>
                   <td className="px-5 py-3 text-body-sm">{h.recurring_flag ? 'Yes' : 'No'}</td>
+                  <td className="px-5 py-3 text-right">
+                    <ArchiveButton
+                      entityLabel={`${h.name} (${h.date})`}
+                      mode="delete"
+                      label="Delete"
+                      size="sm"
+                      isLoading={deleteMut.isPending}
+                      onConfirm={() => deleteMut.mutateAsync(h.id)}
+                    />
+                  </td>
                 </tr>
               ))}
             </tbody>

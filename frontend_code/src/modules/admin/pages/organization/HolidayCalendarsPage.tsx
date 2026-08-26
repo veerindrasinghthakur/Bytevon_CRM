@@ -2,11 +2,13 @@ import { useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
+import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useHolidayCalendars } from '../../hooks/use-organization'
-import { createHolidayCalendar } from '../../api/organization'
+import { createHolidayCalendar, archiveHolidayCalendar } from '../../api/organization'
+import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 import { cn } from '@/shared/lib/cn'
 
 export function HolidayCalendarsPage() {
@@ -33,6 +35,13 @@ export function HolidayCalendarsPage() {
     },
   })
 
+  const archiveMut = useMutation({
+    mutationFn: (id: number) => archiveHolidayCalendar(id),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['organization', 'holiday-calendars'] })
+    },
+  })
+
   if (isLoading) return <PageLoadingSkeleton />
   if (isError) {
     return <ErrorState description={(error as Error).message} onRetry={() => void refetch()} />
@@ -40,6 +49,7 @@ export function HolidayCalendarsPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      <BackButton to="/admin/settings" label="Back to settings" />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-title-lg font-semibold text-on-background">Calendars</h2>
@@ -111,6 +121,18 @@ export function HolidayCalendarsPage() {
               </span>
             </div>
             <p className="mt-3 text-body-sm text-on-surface-variant">View holidays inside this calendar →</p>
+            {!c.is_archived && (
+              <div className="mt-3 flex justify-end">
+                <ArchiveButton
+                  entityLabel={c.name}
+                  mode="archive"
+                  label="Archive"
+                  size="sm"
+                  isLoading={archiveMut.isPending}
+                  onConfirm={() => archiveMut.mutateAsync(c.id)}
+                />
+              </div>
+            )}
           </Link>
         ))}
       </div>

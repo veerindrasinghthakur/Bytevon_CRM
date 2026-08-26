@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useNavigate, useParams, useRouterState } from '@tanstack/react-router'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
+import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
@@ -15,6 +17,7 @@ import {
   useShiftStaff,
   useUpdateShift,
 } from '../../hooks/use-organization-shifts'
+import { archiveShift } from '../../api/organization'
 
 const emptyShift: ShiftRow = {
   id: 0,
@@ -51,6 +54,14 @@ export function ShiftDetailPage() {
   const staffQuery = useShiftStaff(id, !isNew)
   const createMut = useCreateShift()
   const updateMut = useUpdateShift(id)
+  const qc = useQueryClient()
+  const archiveMut = useMutation({
+    mutationFn: () => archiveShift(id),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['organization', 'shifts'] })
+      safeNavigate(navigate, { to: listTo })
+    },
+  })
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(isNew)
 
   const shift = isNew ? emptyShift : detailQuery.data ?? null
@@ -178,7 +189,18 @@ export function ShiftDetailPage() {
             </Button>
           </div>
         ) : (
-          canUpdate && <EditButton variant="primary" onClick={beginEdit} />
+          <div className="flex gap-2">
+            {canUpdate && <EditButton variant="primary" onClick={beginEdit} />}
+            {!isNew && shift && !shift.is_archived && (
+              <ArchiveButton
+                entityLabel={shift.name}
+                mode="archive"
+                label="Archive"
+                isLoading={archiveMut.isPending}
+                onConfirm={() => archiveMut.mutateAsync()}
+              />
+            )}
+          </div>
         )}
       </div>
 

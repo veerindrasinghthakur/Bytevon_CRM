@@ -9,3 +9,13 @@ export const userFormSchema = z.object({
 })
 
 export type UserFormInput = z.infer<typeof userFormSchema>
+
+/** Edit-user form (UserDetailPage) — string ids for SearchableSelect. */
+export const userEditFormSchema = z.object({
+  name: z.string().min(2, 'Name is required').max(120),
+  email: z.string().email('Enter a valid email'),
+  departmentId: z.string(),
+  roleId: z.string(),
+})
+
+export type UserEditFormValues = z.infer<typeof userEditFormSchema>

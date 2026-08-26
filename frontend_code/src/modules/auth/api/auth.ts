@@ -51,7 +51,13 @@ export function loadStoredSession(): AuthSession | null {
     const raw = sessionStorage.getItem(STORAGE_KEY) ?? localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
     const session = JSON.parse(raw) as AuthSession
-    if (session.user && session.user.employmentId == null) {
+    // Guard against stale/corrupt entries missing the user object.
+    if (!session || !session.user) {
+      sessionStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem(STORAGE_KEY)
+      return null
+    }
+    if (session.user.employmentId == null) {
       session.user.employmentId = 1
       session.user.personId = session.user.personId ?? 1
     }

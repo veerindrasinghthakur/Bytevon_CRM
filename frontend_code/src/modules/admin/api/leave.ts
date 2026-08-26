@@ -25,7 +25,7 @@ export async function listLeavePolicies(params?: {
   search?: string
   page?: number
   pageSize?: number
-}): Promise<{ items: LeavePolicyRow[]; total: number } | LeavePolicyRow[]> {
+}): Promise<LeavePolicyRow[]> {
   if (env.useMockApi) {
     await delay()
     let items = leavePolicies.map((r) => ({ ...r }))
@@ -38,25 +38,26 @@ export async function listLeavePolicies(params?: {
       )
     }
     if (params?.page != null || params?.pageSize != null) {
-      return paginateItems(items, params.page, params.pageSize)
+      return paginateItems(items, params.page, params.pageSize).items
     }
     return items
   }
   const { data } = await apiClient.get<
     LeavePolicyRow[] | { items: LeavePolicyRow[]; total: number }
   >('/admin/leave/policies', { params })
-  return data
+  // Normalize: backend may return a bare array or a paginated envelope.
+  return Array.isArray(data) ? data : data.items
 }
 
 export async function listLeaveLedger(
   employeeId?: string,
   params?: { page?: number; pageSize?: number },
-): Promise<{ items: LeaveLedgerRow[]; total: number } | LeaveLedgerRow[]> {
+): Promise<LeaveLedgerRow[]> {
   if (env.useMockApi) {
     await delay()
     const items = leaveLedger.map((r) => ({ ...r }))
     if (params?.page != null || params?.pageSize != null) {
-      return paginateItems(items, params.page, params.pageSize)
+      return paginateItems(items, params.page, params.pageSize).items
     }
     return items
   }
@@ -68,5 +69,6 @@ export async function listLeaveLedger(
       ...params,
     },
   })
-  return data
+  // Normalize: backend may return a bare array or a paginated envelope.
+  return Array.isArray(data) ? data : data.items
 }

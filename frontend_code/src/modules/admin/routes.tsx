@@ -130,7 +130,13 @@ export const myAdminRoutes = {
   rolesDetail: (roleId: string) => `/admin/roles/$roleId`.replace('$roleId', roleId),
   rolesEdit: (roleId: string) => `/admin/roles/$roleId/edit`.replace('$roleId', roleId),
   auditLogs: '/admin/audit',
+  audit: '/admin/audit',
   security: '/admin/security',
+  attendanceSettings: '/admin/attendance-settings',
+  leaveSettings: '/admin/leave-settings',
+  shiftsList: '/admin/settings/shifts',
+  shiftsNew: '/admin/settings/shifts/new',
+  shiftsDetail: (shiftId: string) => `/admin/settings/shifts/${shiftId}`,
 }
 
 export function createAdminRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {

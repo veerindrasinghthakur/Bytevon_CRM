@@ -4,18 +4,8 @@ import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
 import { myAdminRoutes } from '@/modules/admin/routes'
 import { useRoleForm, type RoleFormMode } from '../hooks/use-role-form'
+import { permissionActionLabels } from '../schemas/enums'
 import type { RolePermissionAction } from '../types'
-
-/** Human labels for backend Action enum (seeded permissions). */
-const ACTION_LABEL: Record<string, string> = {
-  VIEW: 'View',
-  CREATE: 'Create',
-  UPDATE: 'Edit',
-  DELETE: 'Delete',
-  APPROVE: 'Approve',
-  EXPORT: 'Export',
-  UNLOCK: 'Unlock',
-}
 
 type Props = {
   mode: RoleFormMode
@@ -210,7 +200,7 @@ export function RoleFormPage({ mode, roleId, duplicateFromId }: Props) {
                         key={a}
                         className="px-3 py-4 border-b border-outline-variant text-label-sm text-on-surface-variant text-center"
                       >
-                        {ACTION_LABEL[a] ?? a}
+                        {permissionActionLabels[a] ?? a}
                       </th>
                     ))}
                   </tr>

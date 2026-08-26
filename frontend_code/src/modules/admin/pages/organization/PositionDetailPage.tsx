@@ -8,7 +8,8 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { createPosition, getPosition, updatePosition } from '../../api/organization'
+import { createPosition, getPosition, updatePosition, archivePosition } from '../../api/organization'
+import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 import { cn } from '@/shared/lib/cn'
 
 export function PositionDetailPage() {
@@ -51,6 +52,14 @@ export function PositionDetailPage() {
     },
     onError: () => {
       // Errors surface via saveMut.error in the UI
+    },
+  })
+
+  const archiveMut = useMutation({
+    mutationFn: () => archivePosition(id),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: ['organization', 'positions'] })
+      safeNavigate(navigate, { to: '/admin/settings/positions' })
     },
   })
 
@@ -108,7 +117,18 @@ export function PositionDetailPage() {
             </Button>
           </div>
         ) : (
-          <EditButton variant="outline" onClick={startEditing} />
+          <div className="flex gap-2">
+            <EditButton variant="outline" onClick={startEditing} />
+            {!isNew && pos && !pos.is_archived && (
+              <ArchiveButton
+                entityLabel={pos.name}
+                mode="archive"
+                label="Archive"
+                isLoading={archiveMut.isPending}
+                onConfirm={() => archiveMut.mutateAsync()}
+              />
+            )}
+          </div>
         )}
       </div>
 

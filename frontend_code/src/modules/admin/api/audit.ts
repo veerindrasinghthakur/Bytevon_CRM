@@ -12,14 +12,52 @@ function delay(ms = 80) {
   return new Promise((r) => setTimeout(r, ms))
 }
 
-export async function listAuditLogs(params?: { limit?: number }): Promise<AuditLog[]> {
+export interface AuditListParams {
+  limit?: number
+  search?: string
+  action?: string
+  module?: string
+  dateFrom?: string
+  dateTo?: string
+  timeFrom?: string
+  timeTo?: string
+}
+
+export async function listAuditLogs(params?: AuditListParams): Promise<AuditLog[]> {
   if (env.useMockApi) {
     await delay()
     const limit = params?.limit ?? 500
-    return auditLogs.slice(0, limit).map((r) => ({ ...r }))
+    let items = auditLogs.map((r) => ({ ...r }))
+    // Mirror the backend contract so mock and real behave identically.
+    if (params?.search) {
+      const q = params.search.toLowerCase()
+      items = items.filter(
+        (l) =>
+          l.action.toLowerCase().includes(q) ||
+          l.actor.toLowerCase().includes(q) ||
+          l.target.toLowerCase().includes(q) ||
+          l.module.toLowerCase().includes(q),
+      )
+    }
+    if (params?.action && params.action !== 'All Actions') {
+      items = items.filter((l) => l.action.toLowerCase().includes(params.action!.toLowerCase()))
+    }
+    if (params?.module && params.module !== 'All Modules') {
+      items = items.filter((l) => l.module === params.module)
+    }
+    return items.slice(0, limit)
   }
   const { data } = await apiClient.get<AuditLog[]>('/admin/audit/logs', {
-    params: { limit: params?.limit ?? 500 },
+    params: {
+      limit: params?.limit ?? 500,
+      search: params?.search || undefined,
+      action: params?.action && params.action !== 'All Actions' ? params.action : undefined,
+      module: params?.module && params.module !== 'All Modules' ? params.module : undefined,
+      dateFrom: params?.dateFrom || undefined,
+      dateTo: params?.dateTo || undefined,
+      timeFrom: params?.timeFrom || undefined,
+      timeTo: params?.timeTo || undefined,
+    },
   })
   return Array.isArray(data) ? data : []
 }

@@ -17,7 +17,7 @@ from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from routes import admin, auth, dashboard, health, my_work, organization
+from routes import admin, auth, dashboard, health, my_work, organization, extras
 from store import STORE_PATH, load
 
 app = FastAPI(
@@ -52,7 +52,7 @@ class AuthBypassMiddleware(BaseHTTPMiddleware):
 app.add_middleware(AuthBypassMiddleware)
 
 # Mount under /api/v1 (matches real backend) and also without prefix for flexibility
-MODULE_ROUTERS = (health, auth, admin, organization, dashboard, my_work)
+MODULE_ROUTERS = (health, auth, admin, organization, dashboard, my_work, extras)
 
 for r in MODULE_ROUTERS:
     if r is health:

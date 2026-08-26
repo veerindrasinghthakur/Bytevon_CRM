@@ -14,8 +14,15 @@ export const officeLocationSchema = z.object({
 
 export type OfficeLocationSchema = z.infer<typeof officeLocationSchema>
 
-export const officeFormSchema = officeLocationSchema.omit({ id: true }).extend({
-  id: z.string().optional(),
-})
+export const officeFormSchema = officeLocationSchema
+  .omit({ id: true, fiscal: true })
+  .extend({
+    id: z.string().optional(),
+    state: z.string().max(120).optional().or(z.literal('')),
+    timezone: z.string().min(1),
+    currency: z.string().min(1),
+    fiscalMonth: z.union([z.string(), z.number()]).transform((v) => Number(v) || 4),
+  })
 
-export type OfficeFormInput = z.infer<typeof officeFormSchema>
+export type OfficeFormInput = z.input<typeof officeFormSchema>
+export type OfficeFormValues = z.output<typeof officeFormSchema>

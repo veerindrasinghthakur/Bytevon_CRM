@@ -28,6 +28,7 @@ export async function getAdminHubMetrics(): Promise<AdminHubMetrics> {
       offices: offices.length,
       departments: db.schema_departments?.length ?? 5,
       employees: db.employments?.length ?? 6,
+      shifts: db.shifts?.filter((s) => !s.is_archived).length ?? 0,
     }
   }
   const { data } = await apiClient.get<AdminHubMetrics>('/admin/metrics/hub')

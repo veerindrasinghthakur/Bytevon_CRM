@@ -1,6 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
@@ -12,224 +10,25 @@ import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Can } from '@/shared/rbac/Can.tsx'
 import { Action, ResourceName } from '@/shared/schema'
 import { myAdminRoutes } from '@/modules/admin/routes'
-import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { uploadUserAvatar } from '@/modules/profile/api/profile'
-import {
-  activateUser,
-  archiveUserCredentials,
-  deactivateUser,
-  getUserLogin,
-  listDepartments,
-  listRoles,
-  lockUser,
-  unlockUser,
-  updateUserLogin,
-} from '../api/users'
+import { useUserDetail } from '../hooks/use-user-detail'
 import { cn } from '@/shared/lib/cn'
 
 export function UserDetailPage() {
   const { userId } = useParams({ strict: false }) as { userId?: string }
-  const loginId = userId ? Number(userId) : NaN
   const navigate = useNavigate()
-  const qc = useQueryClient()
+  const d = useUserDetail(userId)
 
-  const detailQuery = useQuery({
-    queryKey: ['admin', 'users', 'detail', loginId],
-    queryFn: () => getUserLogin(loginId),
-    enabled: Number.isFinite(loginId),
-  })
-
-  const rolesQuery = useQuery({
-    queryKey: ['admin', 'roles', 'options'],
-    queryFn: listRoles,
-  })
-
-  const deptsQuery = useQuery({
-    queryKey: ['admin', 'departments', 'options'],
-    queryFn: listDepartments,
-  })
-
-  const display = detailQuery.data?.display
-  const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
-
-  const [status, setStatus] = useState<'Active' | 'Inactive' | 'Locked'>('Active')
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [department, setDepartment] = useState('')
-  const [departmentId, setDepartmentId] = useState('')
-  const [role, setRole] = useState('')
-  const [roleId, setRoleId] = useState('')
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
-  const [avatarUploading, setAvatarUploading] = useState(false)
-  const fileRef = useRef<HTMLInputElement>(null)
-
-  const [resetOpen, setResetOpen] = useState(false)
-  const [lockOpen, setLockOpen] = useState(false)
-  const [resetSent, setResetSent] = useState(false)
-  const [tempPassword, setTempPassword] = useState('')
-
-  useEffect(() => {
-    // Skip while editing so background refetches never wipe in-progress changes
-    if (!display || isEditing) return
-    setStatus(display.status)
-    setName(display.name)
-    setEmail(display.email)
-    setDepartment(display.department)
-    setRole(display.role)
-    const matchRole = rolesQuery.data?.find((r) => r.name === display.role)
-    setRoleId(matchRole ? String(matchRole.id) : '')
-    const deptId =
-      (display as { departmentId?: number | null }).departmentId != null
-        ? String((display as { departmentId?: number | null }).departmentId)
-        : deptsQuery.data?.find((d) => d.name === display.department)?.id != null
-          ? String(deptsQuery.data.find((d) => d.name === display.department)!.id)
-          : ''
-    setDepartmentId(deptId)
-  }, [display, isEditing, rolesQuery.data, deptsQuery.data])
-
-  const roleOptions =
-    rolesQuery.data?.map((r) => ({
-      value: String(r.id),
-      label: r.name,
-      meta: r.description ?? undefined,
-    })) ?? []
-
-  const deptOptions =
-    deptsQuery.data?.map((d) => ({
-      value: String(d.id),
-      label: d.name,
-    })) ?? []
-
-  const saveMutation = useMutation({
-    mutationFn: () =>
-      updateUserLogin(loginId, {
-        email,
-        name,
-        department: deptOptions.find((o) => o.value === departmentId)?.label ?? department,
-        departmentId: departmentId ? Number(departmentId) : undefined,
-        role: roleOptions.find((o) => o.value === roleId)?.label ?? role,
-      }),
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['admin', 'users'] })
-      finishEditing()
-    },
-    onError: () => {
-      // Consider adding a toast or error state if failures occur frequently
-    },
-  })
-
-  const lockMutation = useMutation({
-    mutationFn: async () => {
-      if (status === 'Locked') return unlockUser(loginId)
-      return lockUser(loginId)
-    },
-    onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['admin', 'users'] })
-      setStatus((s) => (s === 'Locked' ? 'Active' : 'Locked'))
-      setLockOpen(false)
-    },
-    onError: () => {
-      setLockOpen(false)
-    },
-  })
-
-  const deactivateMutation = useMutation({
-    mutationFn: () => deactivateUser(loginId),
-    onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: ['admin', 'users'] })
-      setStatus('Inactive')
-    },
-    onError: () => {
-      // Side-effect free
-    },
-  })
-
-  const activateMutation = useMutation({
-    mutationFn: () => activateUser(loginId),
-    onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: ['admin', 'users'] })
-      setStatus('Active')
-    },
-    onError: () => {
-      // Side-effect free
-    },
-  })
-
-  const hardArchiveMutation = useMutation({
-    mutationFn: () => archiveUserCredentials(loginId),
-    onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: ['admin', 'users'] })
-      await qc.invalidateQueries({ queryKey: ['admin', 'employments-without-login'] })
-      safeNavigate(navigate, { to: myAdminRoutes.usersList })
-    },
-    onError: () => {
-      // Side-effect free
-    },
-  })
-
-  const resetMutation = useMutation({
-    mutationFn: () =>
-      updateUserLogin(loginId, {
-        temporaryPassword: tempPassword || `Temp@${Date.now().toString().slice(-6)}`,
-      }),
-    onSuccess: () => {
-      setResetSent(true)
-      setTimeout(() => {
-        setResetOpen(false)
-        setResetSent(false)
-        setTempPassword('')
-      }, 1500)
-    },
-    onError: () => {
-      setResetOpen(false)
-    },
-  })
-
-  const handleCancelEdit = () => {
-    if (display) {
-      setName(display.name)
-      setEmail(display.email)
-      setDepartment(display.department)
-      setRole(display.role)
-      const matchRole = rolesQuery.data?.find((r) => r.name === display.role)
-      setRoleId(matchRole ? String(matchRole.id) : '')
-      const deptId =
-        (display as { departmentId?: number | null }).departmentId != null
-          ? String((display as { departmentId?: number | null }).departmentId)
-          : deptsQuery.data?.find((d) => d.name === display.department)?.id != null
-            ? String(deptsQuery.data.find((d) => d.name === display.department)!.id)
-            : ''
-      setDepartmentId(deptId)
-    }
-    cancelEditing()
+  if (d.isLoading) return <PageLoadingSkeleton />
+  if (d.isError || !d.display) {
+    return <ErrorState title="Could not load user" onRetry={d.refetch} />
   }
 
-  const onAvatarPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !userId) return
-    setAvatarUploading(true)
-    try {
-      const res = await uploadUserAvatar(userId, file)
-      setAvatarUrl(res.avatarUrl)
-    } catch {
-      /* optional */
-    } finally {
-      setAvatarUploading(false)
-      e.target.value = ''
-    }
-  }
-
-  if (detailQuery.isLoading) return <PageLoadingSkeleton />
-  if (detailQuery.isError || !display) {
-    return (
-      <ErrorState title="Could not load user" onRetry={() => void detailQuery.refetch()} />
-    )
-  }
-
-  const isLocked = status === 'Locked'
-  const isInactive = status === 'Inactive'
-  const initials = display.initials
+  const display = d.display
+  const isLocked = d.status === 'Locked'
+  const isInactive = d.status === 'Inactive'
+  const name = d.form.watch('name')
+  const email = d.form.watch('email')
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -246,7 +45,7 @@ export function UserDetailPage() {
             <p className="text-on-surface-variant">This user cannot sign in until the account is unlocked.</p>
           </div>
           <Can action={Action.UNLOCK} resource={ResourceName.USER}>
-            <Button variant="primary" size="sm" onClick={() => setLockOpen(true)}>
+            <Button variant="primary" size="sm" onClick={() => d.setLockOpen(true)}>
               Unlock
             </Button>
           </Can>
@@ -269,8 +68,8 @@ export function UserDetailPage() {
             <Button
               variant="primary"
               size="sm"
-              isLoading={activateMutation.isPending}
-              onClick={() => activateMutation.mutate()}
+              isLoading={d.activateMutation.isPending}
+              onClick={() => d.activateMutation.mutate()}
             >
               Activate
             </Button>
@@ -281,15 +80,15 @@ export function UserDetailPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div className="flex items-center gap-4">
           <div className="relative shrink-0">
-            {avatarUrl ? (
+            {d.avatarUrl ? (
               <img
-                src={avatarUrl}
+                src={d.avatarUrl}
                 alt=""
                 className="w-16 h-16 rounded-full object-cover border-2 border-secondary/30"
               />
             ) : (
               <div className="w-16 h-16 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-title-lg font-bold border-2 border-secondary/30">
-                {initials}
+                {display.initials}
               </div>
             )}
             <button
@@ -297,23 +96,23 @@ export function UserDetailPage() {
               className="absolute -bottom-1 -right-1 bg-secondary text-on-secondary p-1.5 rounded-full shadow hover:scale-105 transition-transform disabled:opacity-50"
               aria-label="Change photo"
               title="Change photo"
-              disabled={avatarUploading}
-              onClick={() => fileRef.current?.click()}
+              disabled={d.avatarUploading}
+              onClick={() => d.fileRef.current?.click()}
             >
               <span className="material-symbols-outlined text-[16px]">edit</span>
             </button>
             <input
-              ref={fileRef}
+              ref={d.fileRef}
               type="file"
               accept="image/*"
               className="hidden"
-              onChange={(e) => void onAvatarPick(e)}
+              onChange={(e) => void d.onAvatarPick(e)}
             />
           </div>
           <PageHeader title={name} description={email} />
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => setResetOpen(true)}>
+          <Button variant="outline" size="sm" onClick={() => d.setResetOpen(true)}>
             Reset Password
           </Button>
           {isLocked ? (
@@ -322,7 +121,7 @@ export function UserDetailPage() {
                 variant="outline"
                 size="sm"
                 className="border-secondary text-secondary hover:bg-secondary/10"
-                onClick={() => setLockOpen(true)}
+                onClick={() => d.setLockOpen(true)}
               >
                 Unlock Account
               </Button>
@@ -333,7 +132,7 @@ export function UserDetailPage() {
                 variant="outline"
                 size="sm"
                 className="border-error text-error hover:bg-error/10"
-                onClick={() => setLockOpen(true)}
+                onClick={() => d.setLockOpen(true)}
               >
                 Lock Account
               </Button>
@@ -346,8 +145,8 @@ export function UserDetailPage() {
                 variant="outline"
                 size="sm"
                 className="border-secondary text-secondary hover:bg-secondary/10"
-                isLoading={activateMutation.isPending}
-                onClick={() => activateMutation.mutate()}
+                isLoading={d.activateMutation.isPending}
+                onClick={() => d.activateMutation.mutate()}
               >
                 Activate
               </Button>
@@ -355,8 +154,8 @@ export function UserDetailPage() {
               <Button
                 variant="outline"
                 size="sm"
-                isLoading={deactivateMutation.isPending}
-                onClick={() => deactivateMutation.mutate()}
+                isLoading={d.deactivateMutation.isPending}
+                onClick={() => d.deactivateMutation.mutate()}
               >
                 Deactivate
               </Button>
@@ -368,27 +167,32 @@ export function UserDetailPage() {
               entityLabel={name}
               mode="archive"
               label="Archive"
-              isLoading={hardArchiveMutation.isPending}
-              onConfirm={() => hardArchiveMutation.mutateAsync()}
+              isLoading={d.hardArchiveMutation.isPending}
+              onConfirm={() => d.hardArchiveMutation.mutateAsync()}
             />
           </Can>
 
-          {isEditing ? (
+          {d.isEditing ? (
             <>
-              <Button variant="outline" size="sm" onClick={handleCancelEdit}>
+              <Button variant="outline" size="sm" onClick={d.handleCancelEdit}>
                 Cancel
               </Button>
               <Button
                 variant="primary"
                 size="sm"
-                disabled={saveMutation.isPending}
-                onClick={() => saveMutation.mutate()}
+                disabled={d.saveMutation.isPending}
+                onClick={() =>
+                  d.form.handleSubmit((values) => {
+                    d.saveMutation.reset()
+                    d.saveMutation.mutate(values)
+                  })()
+                }
               >
                 Save
               </Button>
             </>
           ) : (
-            <EditButton iconOnly onClick={startEditing} title="Edit user" />
+            <EditButton iconOnly onClick={d.startEditing} title="Edit user" />
           )}
         </div>
       </div>
@@ -397,51 +201,55 @@ export function UserDetailPage() {
         <div className="lg:col-span-2 space-y-4">
           <Card title="Profile">
             <Field label="User ID" value={String(display.id)} />
-            <EditableField label="Full Name" value={name} editing={isEditing} onChange={setName} />
-            <EditableField label="Email" value={email} editing={isEditing} onChange={setEmail} />
-            {isEditing ? (
+            <EditableField
+              label="Full Name"
+              value={name}
+              editing={d.isEditing}
+              registration={d.form.register('name')}
+              error={d.form.formState.errors.name?.message}
+            />
+            <EditableField
+              label="Email"
+              value={email}
+              editing={d.isEditing}
+              registration={d.form.register('email')}
+              error={d.form.formState.errors.email?.message}
+            />
+            {d.isEditing ? (
               <div className="mb-3">
                 <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">
                   Department
                 </p>
                 <SearchableSelect
-                  options={deptOptions}
-                  value={departmentId}
-                  onChange={(v) => {
-                    setDepartmentId(v)
-                    const opt = deptOptions.find((o) => o.value === v)
-                    if (opt) setDepartment(opt.label)
-                  }}
+                  options={d.deptOptions}
+                  value={d.form.watch('departmentId')}
+                  onChange={(v) => d.form.setValue('departmentId', v, { shouldValidate: true })}
                   placeholder="Search departments…"
                   emptyLabel="No departments match"
                 />
               </div>
             ) : (
-              <Field label="Department" value={department} />
+              <Field label="Department" value={display.department} />
             )}
             <Field label="Last Login" value={display.lastLogin} />
             <Field label="Employee code" value={display.employeeCode} />
           </Card>
           <Card title="Role Assignment">
-            {isEditing ? (
+            {d.isEditing ? (
               <div className="mb-3">
                 <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">
                   Primary Role
                 </p>
                 <SearchableSelect
-                  options={roleOptions}
-                  value={roleId}
-                  onChange={(v) => {
-                    setRoleId(v)
-                    const opt = roleOptions.find((o) => o.value === v)
-                    if (opt) setRole(opt.label)
-                  }}
+                  options={d.roleOptions}
+                  value={d.form.watch('roleId')}
+                  onChange={(v) => d.form.setValue('roleId', v, { shouldValidate: true })}
                   placeholder="Search roles…"
                   emptyLabel="No roles match"
                 />
               </div>
             ) : (
-              <Field label="Primary Role" value={role} />
+              <Field label="Primary Role" value={display.role} />
             )}
             <p className="text-body-sm text-on-surface-variant mt-2">
               Search and pick a role from the catalogue. Additional scoped roles can be assigned from Roles
@@ -454,13 +262,13 @@ export function UserDetailPage() {
             <span
               className={cn(
                 'inline-flex px-3 py-1 rounded-full text-label-sm font-medium border',
-                status === 'Active' && 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                status === 'Locked' && 'bg-red-50 text-red-700 border-red-200',
-                status === 'Inactive' &&
+                d.status === 'Active' && 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                d.status === 'Locked' && 'bg-red-50 text-red-700 border-red-200',
+                d.status === 'Inactive' &&
                   'bg-surface-container text-on-surface-variant border-outline-variant',
               )}
             >
-              {status}
+              {d.status}
             </span>
             <p className="text-body-sm text-on-surface-variant mt-3">
               <strong>Deactivate</strong> keeps credentials but blocks sign-in (reversible).
@@ -471,22 +279,22 @@ export function UserDetailPage() {
           </Card>
           <Card title="Quick Actions">
             <div className="flex flex-col gap-2">
-<Button
-              variant="outline"
-              size="sm"
-              className="justify-start"
-              onClick={() => safeNavigate(navigate, { to: myAdminRoutes.audit })}
-            >
-              Audit for user
+              <Button
+                variant="outline"
+                size="sm"
+                className="justify-start"
+                onClick={() => safeNavigate(navigate, { to: myAdminRoutes.audit })}
+              >
+                Audit for user
               </Button>
             </div>
           </Card>
         </div>
       </div>
 
-      {resetOpen && (
-        <Modal onClose={() => setResetOpen(false)} title="Reset password">
-          {resetSent ? (
+      {d.resetOpen && (
+        <Modal onClose={() => d.setResetOpen(false)} title="Reset password">
+          {d.resetSent ? (
             <p className="text-body-md text-secondary font-medium">Temporary password set for {email}.</p>
           ) : (
             <>
@@ -496,20 +304,20 @@ export function UserDetailPage() {
               </p>
               <input
                 type="text"
-                value={tempPassword}
-                onChange={(e) => setTempPassword(e.target.value)}
+                value={d.tempPassword}
+                onChange={(e) => d.setTempPassword(e.target.value)}
                 placeholder="Optional temporary password (min 8 chars)"
                 className="w-full mb-4 rounded-lg border border-outline-variant px-3 py-2 text-body-sm outline-none focus:border-secondary"
               />
               <div className="flex justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={() => setResetOpen(false)}>
+                <Button variant="outline" size="sm" onClick={() => d.setResetOpen(false)}>
                   Cancel
                 </Button>
                 <Button
                   variant="primary"
                   size="sm"
-                  disabled={resetMutation.isPending}
-                  onClick={() => resetMutation.mutate()}
+                  disabled={d.resetMutation.isPending}
+                  onClick={() => d.resetMutation.mutate()}
                 >
                   Set temporary password
                 </Button>
@@ -519,9 +327,9 @@ export function UserDetailPage() {
         </Modal>
       )}
 
-      {lockOpen && (
+      {d.lockOpen && (
         <Modal
-          onClose={() => setLockOpen(false)}
+          onClose={() => d.setLockOpen(false)}
           title={isLocked ? 'Unlock account?' : 'Lock account?'}
           danger={!isLocked}
         >
@@ -531,15 +339,15 @@ export function UserDetailPage() {
               : `Locking ${name} immediately ends active sessions and blocks new logins until unlocked.`}
           </p>
           <div className="flex justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={() => setLockOpen(false)}>
+            <Button variant="outline" size="sm" onClick={() => d.setLockOpen(false)}>
               Cancel
             </Button>
             <Button
               variant={isLocked ? 'primary' : 'outline'}
               size="sm"
               className={!isLocked ? 'border-error text-error' : undefined}
-              disabled={lockMutation.isPending}
-              onClick={() => lockMutation.mutate()}
+              disabled={d.lockMutation.isPending}
+              onClick={() => d.lockMutation.mutate()}
             >
               {isLocked ? 'Unlock' : 'Lock account'}
             </Button>
@@ -613,22 +421,32 @@ function EditableField({
   label,
   value,
   editing,
-  onChange,
+  registration,
+  error,
 }: {
   label: string
   value: string
   editing: boolean
-  onChange: (v: string) => void
+  registration: Record<string, unknown>
+  error?: string
 }) {
   return (
     <div className="mb-3 last:mb-0">
       <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-0.5">{label}</p>
       {editing ? (
-        <input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="w-full rounded-lg border border-outline-variant bg-white px-3 py-2 text-body-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors"
-        />
+        <>
+          <input
+            {...registration}
+            defaultValue={value}
+            className={cn(
+              'w-full rounded-lg border bg-white px-3 py-2 text-body-sm outline-none transition-colors',
+              error
+                ? 'border-error focus:border-error focus:ring-2 focus:ring-error/30'
+                : 'border-outline-variant focus:border-secondary focus:ring-2 focus:ring-secondary/30',
+            )}
+          />
+          {error && <p className="mt-1 text-caption text-error">{error}</p>}
+        </>
       ) : (
         <p className="text-body-md text-on-background">{value}</p>
       )}

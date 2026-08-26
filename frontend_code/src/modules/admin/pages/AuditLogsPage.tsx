@@ -1,8 +1,9 @@
-import { useMemo, useState, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { DateRangeFilter } from '@/shared/components/forms/DateRangeFilter'
@@ -21,50 +22,8 @@ import { ResourceName } from '@/shared/schema'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { listAuditLogs } from '../api/audit'
 import type { AuditLog } from '../types'
+import { auditActionBadge, auditActionDot, resolveAuditActionKey } from '../schemas/enums'
 import { cn } from '@/shared/lib/cn'
-
-const actionBadge: Record<string, string> = {
-  Create: 'status-badge status-success',
-  Update: 'status-badge status-info',
-  Delete: 'status-badge status-error',
-  Login: 'status-badge status-info',
-  Lock: 'status-badge status-warning',
-}
-
-const actionDot: Record<string, string> = {
-  Create: 'bg-emerald-500',
-  Update: 'bg-blue-500',
-  Delete: 'bg-red-500',
-  Login: 'bg-sky-500',
-  Lock: 'bg-amber-500',
-}
-
-function parseAuditTimestamp(ts: string): { dateKey: string; minutes: number } | null {
-  const m = ts.match(
-    /^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+(\d{1,2}),\s+(\d{4})\s+(\d{1,2}):(\d{2})$/,
-  )
-  if (!m) return null
-  const months: Record<string, string> = {
-    Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06',
-    Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12',
-  }
-  const mon = months[m[1]]
-  const day = m[2].padStart(2, '0')
-  const year = m[3]
-  const hour = Number(m[4])
-  const min = Number(m[5])
-  return { dateKey: `${year}-${mon}-${day}`, minutes: hour * 60 + min }
-}
-
-function timeToMinutes(t: string): number | null {
-  if (!t) return null
-  const parts = t.split(':')
-  if (parts.length < 2) return null
-  const h = Number(parts[0])
-  const mi = Number(parts[1])
-  if (Number.isNaN(h) || Number.isNaN(mi)) return null
-  return h * 60 + mi
-}
 
 function AuditQuickContent({ log }: { log: AuditLog }) {
   return (
@@ -79,15 +38,7 @@ function AuditQuickContent({ log }: { log: AuditLog }) {
             icon="bolt"
             label="Action"
             value={
-              <span
-                className={
-                  actionBadge[
-                    Object.keys(actionBadge).find((k) =>
-                      log.action.toLowerCase().includes(k.toLowerCase()),
-                    ) ?? 'Update'
-                  ] ?? 'status-badge status-neutral'
-                }
-              >
+              <span className={auditActionBadge[resolveAuditActionKey(log.action)] ?? 'status-badge status-neutral'}>
                 {log.action}
               </span>
             }
@@ -114,11 +65,30 @@ export function AuditLogsPage() {
   const [timeRange, setTimeRange] = useState({ from: '', to: '' })
 
   const logsQuery = useQuery({
-    queryKey: queryKeys.admin.audit.list(),
-    queryFn: () => listAuditLogs({ limit: 500 }),
+    queryKey: queryKeys.admin.audit.list({
+      search: search.trim() || undefined,
+      action: actionFilter !== 'All Actions' ? actionFilter : undefined,
+      module: moduleFilter !== 'All Modules' ? moduleFilter : undefined,
+      dateFrom: dateRange.from || undefined,
+      dateTo: dateRange.to || undefined,
+      timeFrom: timeRange.from || undefined,
+      timeTo: timeRange.to || undefined,
+    }),
+    queryFn: () =>
+      listAuditLogs({
+        limit: 500,
+        search: search.trim() || undefined,
+        action: actionFilter !== 'All Actions' ? actionFilter : undefined,
+        module: moduleFilter !== 'All Modules' ? moduleFilter : undefined,
+        dateFrom: dateRange.from || undefined,
+        dateTo: dateRange.to || undefined,
+        timeFrom: timeRange.from || undefined,
+        timeTo: timeRange.to || undefined,
+      }),
   })
 
   const auditLogs = logsQuery.data ?? []
+  const filtered = auditLogs
 
   const filtersActive =
     Boolean(search.trim()) ||
@@ -136,37 +106,6 @@ export function AuditLogsPage() {
     setDateRange({ from: '', to: '' })
     setTimeRange({ from: '', to: '' })
   }
-
-  const filtered = useMemo(() => {
-    const fromMin = timeToMinutes(timeRange.from)
-    const toMin = timeToMinutes(timeRange.to)
-    return auditLogs.filter((log) => {
-      if (search) {
-        const q = search.toLowerCase()
-        if (
-          !log.action.toLowerCase().includes(q) &&
-          !log.actor.toLowerCase().includes(q) &&
-          !log.target.toLowerCase().includes(q) &&
-          !log.module.toLowerCase().includes(q)
-        )
-          return false
-      }
-      if (actionFilter !== 'All Actions' && !log.action.toLowerCase().includes(actionFilter.toLowerCase()))
-        return false
-      if (moduleFilter !== 'All Modules' && log.module !== moduleFilter) return false
-
-      const parsed = parseAuditTimestamp(log.timestamp)
-      if (parsed) {
-        if (dateRange.from && parsed.dateKey < dateRange.from) return false
-        if (dateRange.to && parsed.dateKey > dateRange.to) return false
-        if (fromMin != null && parsed.minutes < fromMin) return false
-        if (toMin != null && parsed.minutes > toMin) return false
-      } else if (dateRange.from || dateRange.to || timeRange.from || timeRange.to) {
-        return false
-      }
-      return true
-    })
-  }, [auditLogs, search, actionFilter, moduleFilter, dateRange, timeRange])
 
   const parentRef = useRef<HTMLDivElement>(null)
 
@@ -189,14 +128,13 @@ export function AuditLogsPage() {
   })
 
   const openAuditOverview = (log: AuditLog) => {
-    const actionKey =
-      Object.keys(actionBadge).find((k) => log.action.toLowerCase().includes(k.toLowerCase())) ?? 'Update'
+    const actionKey = resolveAuditActionKey(log.action)
     openPanel({
       title: log.action,
       subtitle: log.timestamp,
       icon: 'history',
       status: log.module,
-      statusDotClass: actionDot[actionKey] ?? 'bg-outline',
+      statusDotClass: auditActionDot[actionKey] ?? 'bg-outline',
       content: <AuditQuickContent log={log} />,
       widthClass: 'max-w-[520px]',
     })
@@ -262,13 +200,13 @@ export function AuditLogsPage() {
         />
       </section>
 
-      <section className="bv-surface p-5 space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-          <div className="flex flex-col gap-1.5">
+      <section className="bv-surface p-5">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-col gap-1.5 flex-1 min-w-[200px] grow-[2]">
             <label className="text-label-md text-on-surface" htmlFor="audit-search">
               Global Search
             </label>
-            <div className="relative">
+            <div className="relative min-w-0">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
                 search
               </span>
@@ -281,52 +219,57 @@ export function AuditLogsPage() {
               />
             </div>
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 shrink-0">
             <label className="text-label-md text-on-surface" htmlFor="audit-action">
               Action
             </label>
-            <select
+            <Select
               id="audit-action"
               value={actionFilter}
-              onChange={(e) => setActionFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 bg-transparent transition-colors"
-            >
-              {['All Actions', 'Create', 'Update', 'Delete', 'Login', 'Lock'].map((a) => (
-                <option key={a}>{a}</option>
-              ))}
-            </select>
+              onChange={setActionFilter}
+              aria-label="Filter by action"
+              options={['All Actions', 'Create', 'Update', 'Delete', 'Login', 'Lock'].map((a) => ({
+                value: a,
+                label: a,
+              }))}
+              minWidthClass="min-w-0 w-[8rem] max-w-full"
+            />
           </div>
-          <div className="flex flex-col gap-1.5">
+          <div className="flex flex-col gap-1.5 shrink-0">
             <label className="text-label-md text-on-surface" htmlFor="audit-module">
               Module
             </label>
-            <select
+            <Select
               id="audit-module"
               value={moduleFilter}
-              onChange={(e) => setModuleFilter(e.target.value)}
-              className="w-full px-4 py-2 border border-outline-variant rounded-lg text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 bg-transparent transition-colors"
-            >
-              {['All Modules', 'Roles', 'Auth', 'Settings', 'Users'].map((m) => (
-                <option key={m}>{m}</option>
-              ))}
-            </select>
+              onChange={setModuleFilter}
+              aria-label="Filter by module"
+              options={['All Modules', 'Roles', 'Auth', 'Settings', 'Users'].map((m) => ({
+                value: m,
+                label: m,
+              }))}
+              minWidthClass="min-w-0 w-[8rem] max-w-full"
+            />
           </div>
-          <div className="flex flex-col gap-1.5 justify-end">
+          <div className="flex flex-col gap-1.5 shrink-0">
+            <label className="text-label-md text-on-surface">Date</label>
+            <DateRangeFilter value={dateRange} onChange={setDateRange} label="Date" placeholder="Date" />
+          </div>
+          <div className="flex flex-col gap-1.5 shrink-0">
+            <label className="text-label-md text-on-surface">Time</label>
+            <TimeRangeFilter value={timeRange} onChange={setTimeRange} label="Time" placeholder="Time" />
+          </div>
+          <div className="flex flex-col gap-1.5 shrink-0">
             <Button
               variant="outline"
               size="sm"
-              className="w-auto self-start min-w-[5.5rem]"
+              className="w-auto min-w-[5.5rem]"
               disabled={!filtersActive}
               onClick={clearFilters}
             >
               Clear
             </Button>
           </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 pt-1 border-t border-outline-variant/40">
-          <DateRangeFilter value={dateRange} onChange={setDateRange} label="Date" placeholder="Date" />
-          <TimeRangeFilter value={timeRange} onChange={setTimeRange} label="Time" placeholder="Time" />
         </div>
       </section>
 
@@ -379,9 +322,7 @@ export function AuditLogsPage() {
               )}
               {virtualRows.map((virtualRow) => {
                 const log = filtered[virtualRow.index]
-                const actionKey =
-                  Object.keys(actionBadge).find((k) => log.action.toLowerCase().includes(k.toLowerCase())) ??
-                  'Update'
+                const actionKey = resolveAuditActionKey(log.action)
                 const id = log.id
                 const selected = selection.isSelected(id)
                 return (
@@ -428,7 +369,7 @@ export function AuditLogsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={actionBadge[actionKey] ?? 'status-badge status-neutral'}>{log.action}</span>
+                      <span className={auditActionBadge[actionKey] ?? 'status-badge status-neutral'}>{log.action}</span>
                     </td>
                     <td className="px-6 py-4 text-body-sm text-on-surface max-w-[280px] truncate">{log.target}</td>
                     <td className="px-6 py-4 text-body-sm text-on-surface-variant">{log.module}</td>

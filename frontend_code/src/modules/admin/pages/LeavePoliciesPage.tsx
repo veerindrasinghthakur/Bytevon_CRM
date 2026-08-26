@@ -8,7 +8,7 @@ export function LeavePoliciesPage() {
   const [showHistorical, setShowHistorical] = useState(false)
   const { data: policies = [], isLoading } = useQuery({
     queryKey: ['admin', 'leave', 'policies'],
-    queryFn: listLeavePolicies,
+    queryFn: () => listLeavePolicies(),
   })
 
   const items = useMemo(

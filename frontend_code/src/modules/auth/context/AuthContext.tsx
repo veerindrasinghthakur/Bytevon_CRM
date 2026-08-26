@@ -57,8 +57,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null)
   }, [])
 
+  // Auto token refresh on window focus — DISABLED for now (enable later).
+  // Flip ENABLE_FOCUS_REFRESH to true to restore silent refresh-on-focus.
+  const ENABLE_FOCUS_REFRESH = false
+
   useEffect(() => {
-    if (!session) return
+    if (!ENABLE_FOCUS_REFRESH || !session) return
     let inFlight = false
     const onFocus = () => {
       // Silent best-effort token refresh on window focus.
@@ -79,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('focus', onFocus)
   }, [session])
 
-  const employmentId = session?.user.employmentId ?? getCurrentEmploymentId()
+  const employmentId = session?.user?.employmentId ?? getCurrentEmploymentId()
 
   const value = useMemo<AuthContextValue>(
     () => ({
