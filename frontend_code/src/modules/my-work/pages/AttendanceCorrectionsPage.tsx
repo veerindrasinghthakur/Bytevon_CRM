@@ -9,6 +9,7 @@ import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { cn } from '@/shared/lib/cn'
 import { useAttendanceCorrections } from '../hooks/use-attendance-corrections'
 import type { CorrectionStatus } from '../types'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 
 const STATUS_STYLES: Record<CorrectionStatus, string> = {
   Pending: 'bg-amber-100 text-amber-800',

@@ -3,10 +3,10 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { useMyLeave } from '../hooks/use-my-leave'
-import { useMyApprovals } from '../hooks/use-my-approvals'
 import { LeaveBalanceTab } from '../components/leave/LeaveBalanceTab'
 import { LeaveHistoryTab } from '../components/leave/LeaveHistoryTab'
 import { LeaveCalendarTab } from '../components/leave/LeaveCalendarTab'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 
 type Tab = 'balance' | 'history' | 'calendar'
 
@@ -52,7 +52,7 @@ export function MyLeavePage() {
           <Button
             variant="primary"
             leftIcon={<span className="material-symbols-outlined text-lg">event_available</span>}
-            onClick={() => navigate({ to: '/my-work/leave/apply' })}
+            onClick={() => safeNavigate(navigate,{ to: '/my-work/leave/apply' })}
           >
             Apply for Leave
           </Button>

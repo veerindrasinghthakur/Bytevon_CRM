@@ -7,6 +7,7 @@ import { Select } from '@/shared/components/ui/Select'
 import { useMyApprovals } from '../hooks/use-my-approvals'
 import type { ApprovalStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 
 const statusStyles: Record<ApprovalStatus, string> = {
   Pending: 'bg-amber-50 text-amber-800',
@@ -126,7 +127,7 @@ export function MyApprovalsPage() {
             key={item.id}
             type="button"
             onClick={() =>
-              navigate({ to: '/my-work/approvals/$requestId', params: { requestId: item.id } })
+              safeNavigate(navigate,{ to: '/my-work/approvals/$requestId', params: { requestId: item.id } })
             }
             className="w-full text-left bv-surface card-hover p-5 flex flex-col sm:flex-row sm:items-center gap-4"
           >

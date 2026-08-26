@@ -56,9 +56,3 @@ export const notificationTabSchema = z.object({
   label: z.string(),
 })
 export type NotificationTab = z.infer<typeof notificationTabSchema>
-
-/** Re-export list response from dedicated file (MODULE_STANDARDS §3.1) */
-export {
-  notificationListResponseSchema,
-  type NotificationListResponse,
-} from './notification-list-response'

@@ -3,6 +3,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { myApprovals, currentUser } from '../data/mock'
 import type { ApprovalStatus } from '../types'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 
 const statusStyles: Record<ApprovalStatus, string> = {
   Pending: 'bg-amber-50 text-amber-800',
@@ -129,14 +130,14 @@ export function MyApprovalDetailPage() {
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => navigate({ to: '/my-work/approvals' })}
+              onClick={() => safeNavigate(navigate,{ to: '/my-work/approvals' })}
             >
               All my approvals
             </Button>
             <Button
               variant="ghost"
               className="w-full"
-              onClick={() => navigate({ to: '/my-work/requests' })}
+              onClick={() => safeNavigate(navigate,{ to: '/my-work/requests' })}
             >
               Open full requests table
             </Button>

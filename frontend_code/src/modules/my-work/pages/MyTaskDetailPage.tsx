@@ -2,6 +2,7 @@ import { useParams, useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { myTasks, currentUser } from '../data/mock'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 
 const priorityClass: Record<string, string> = {
   Critical: 'bg-red-100 text-red-800',
@@ -120,14 +121,14 @@ export function MyTaskDetailPage() {
             <Button
               variant="primary"
               className="w-full"
-              onClick={() => navigate({ to: '/my-work/tasks/new' })}
+              onClick={() => safeNavigate(navigate,{ to: '/my-work/tasks/new' })}
             >
               Create task
             </Button>
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => navigate({ to: '/my-work/tasks' })}
+              onClick={() => safeNavigate(navigate,{ to: '/my-work/tasks' })}
             >
               All my tasks
             </Button>

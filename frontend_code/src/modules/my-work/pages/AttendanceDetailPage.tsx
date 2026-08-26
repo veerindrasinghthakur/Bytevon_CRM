@@ -4,6 +4,7 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { attendanceHistory, currentUser } from '../data/mock'
 import type { AttendanceStatus } from '../types'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 
 const statusStyles: Record<AttendanceStatus, string> = {
   Present: 'bg-emerald-50 text-emerald-700',
@@ -39,7 +40,7 @@ export function AttendanceDetailPage() {
           <Button
             variant="outline"
             leftIcon={<span className="material-symbols-outlined text-lg">edit_calendar</span>}
-            onClick={() => navigate({ to: '/my-work/attendance/corrections' })}
+            onClick={() => safeNavigate(navigate,{ to: '/my-work/attendance/corrections' })}
           >
             Request correction
           </Button>
@@ -124,7 +125,7 @@ export function AttendanceDetailPage() {
           </section>
 
           <section className="bv-surface p-4">
-            <Button variant="outline" className="w-full" onClick={() => navigate({ to: '/my-work/attendance' })}>
+            <Button variant="outline" className="w-full" onClick={() => safeNavigate(navigate,{ to: '/my-work/attendance' })}>
               View all attendance
             </Button>
           </section>

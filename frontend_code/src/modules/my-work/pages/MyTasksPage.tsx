@@ -7,6 +7,8 @@ import { Select } from '@/shared/components/ui/Select'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
+
 import {
   QuickSection,
   QuickStat,
@@ -101,7 +103,7 @@ export function MyTasksPage() {
       statusDotClass: statusDot[task.status] ?? 'bg-outline',
       content: <TaskQuickContent task={task} />,
       fullRecordLabel: 'Open full record',
-      onOpenFull: () => navigate({ to: '/my-work/tasks/$taskId', params: { taskId: task.id } }),
+      onOpenFull: () => safeNavigate(navigate,{ to: '/my-work/tasks/$taskId', params: { taskId: task.id } }),
       widthClass: 'max-w-[520px]',
     })
   }
@@ -125,7 +127,7 @@ export function MyTasksPage() {
           <Button
             variant="primary"
             leftIcon={<span className="material-symbols-outlined text-lg">add_task</span>}
-            onClick={() => navigate({ to: '/my-work/tasks/new' })}
+            onClick={() => safeNavigate(navigate,{ to: '/my-work/tasks/new' })}
           >
             Create task
           </Button>

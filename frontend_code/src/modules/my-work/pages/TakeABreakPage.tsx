@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
+
 import {
   formatDuration,
   getActiveBreak,
@@ -175,7 +177,7 @@ export function TakeABreakPage() {
       </div>
 
       <div className="flex justify-center">
-        <Button variant="ghost" onClick={() => navigate({ to: '/my-work' })}>
+        <Button variant="ghost" onClick={() => safeNavigate(navigate,{ to: '/my-work' })}>
           Back to My Work
         </Button>
       </div>

@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 
 const schema = z.object({
   name: z.string().min(2, 'Title must be at least 2 characters').max(200),
@@ -40,7 +41,7 @@ export function MyTaskCreatePage() {
 
   const onSubmit = async (_data: FormValues) => {
     await new Promise((r) => setTimeout(r, 500))
-    navigate({ to: '/my-work/tasks' })
+    safeNavigate(navigate,{ to: '/my-work/tasks' })
   }
 
   return (
@@ -142,7 +143,7 @@ export function MyTaskCreatePage() {
         </div>
 
         <div className="px-6 py-4 border-t border-outline-variant bg-surface flex items-center gap-3 justify-end">
-          <Button type="button" variant="ghost" onClick={() => navigate({ to: '/my-work/tasks' })}>
+          <Button type="button" variant="ghost" onClick={() => safeNavigate(navigate,{ to: '/my-work/tasks' })}>
             Cancel
           </Button>
           <Button type="submit" variant="primary" isLoading={isSubmitting}>

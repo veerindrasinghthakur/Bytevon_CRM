@@ -4,10 +4,10 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
-import { Select } from '@/shared/components/ui/Select'
 import { useBankDetails } from '../hooks/use-bank-details'
 import { cn } from '@/shared/lib/cn'
 import type { BankFormValues } from '../schemas/bank-form'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 
 function maskAccount(num: string) {
   if (!num || num.length < 4) return '\u2022\u2022\u2022\u2022'
@@ -22,7 +22,6 @@ export function MyBankDetailsPage() {
     register,
     handleSubmit,
     setValue,
-    watch,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<BankFormValues>({
@@ -78,7 +77,7 @@ export function MyBankDetailsPage() {
         <button
           type="button"
           className="hover:text-secondary transition-colors"
-          onClick={() => navigate({ to: '/my-work' })}
+          onClick={() => safeNavigate(navigate,{ to: '/my-work' })}
         >
           My Work
         </button>
@@ -105,7 +104,7 @@ export function MyBankDetailsPage() {
           <button
             type="button"
             className="text-on-surface-variant hover:text-secondary p-1 rounded-full hover:bg-surface-container transition-colors mt-0.5"
-            onClick={() => navigate({ to: '/my-work' })}
+            onClick={() => safeNavigate(navigate,{ to: '/my-work' })}
             aria-label="Back"
           >
             <span className="material-symbols-outlined">arrow_back</span>
@@ -142,7 +141,7 @@ export function MyBankDetailsPage() {
             </>
           )}
         </div>
-      </header>
+      </section>
 
       <section className="bv-surface p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -281,45 +280,23 @@ export function MyBankDetailsPage() {
               </Field>
 
               <Field label="Account type">
-                {isEditing ? (
-                  <Select
-                    {...register('accountType')}
-                    options={[
-                      { value: 'Salary', label: 'Salary' },
-                      { value: 'Savings', label: 'Savings' },
-                      { value: 'Current', label: 'Current' },
-                    ]}
-                    minWidthClass="w-full"
-                  />
-                ) : (
-                  <p className="text-body-md font-medium text-deep-navy">{saved?.accountType}</p>
-                )}
+                <p className="text-body-md font-medium text-deep-navy">Salary</p>
+                
               </Field>
 
               <Field label="Country">
                 {isEditing ? (
                   <input {...register('country')} className={fieldClass(false)} />
                 ) : (
-                  <p className="text-body-md font-medium text-deep-navy">{saved?.country}</p>
+                  <p className="text-body-md font-medium text-deep-white">{saved?.country}</p>
                 )}
               </Field>
 
               <Field label="Currency">
-                {isEditing ? (
-                  <Select
-                    {...register('currency')}
-                    options={[
-                      { value: 'INR', label: 'INR' },
-                      { value: 'USD', label: 'USD' },
-                      { value: 'EUR', label: 'EUR' },
-                      { value: 'GBP', label: 'GBP' },
-                    ]}
-                    minWidthClass="w-full"
-                  />
-                ) : (
-                  <p className="text-body-md font-medium text-deep-navy">{saved?.currency}</p>
-                )}
-              </Field>
+                <p className="text-body-md font-medium text-deep-navy">
+                  INR
+                </p>
+            </Field>
             </div>
 
             {!isEditing && saved && (

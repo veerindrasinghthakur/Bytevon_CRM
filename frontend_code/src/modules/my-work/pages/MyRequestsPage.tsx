@@ -4,6 +4,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { myRequests } from '@/modules/approvals/data/mock'
 import { cn } from '@/shared/lib/cn'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 
 const statusStyles: Record<string, string> = {
   'In-Progress': 'bg-amber-50 text-amber-700 border-amber-200',
@@ -115,7 +116,7 @@ export function MyRequestsPage() {
                   key={row.id}
                   className="zebra-row group cursor-pointer"
                   onClick={() =>
-                    navigate({
+                    safeNavigate(navigate,{
                       to: '/my-work/approvals/$requestId',
                       params: { requestId: row.id },
                     })

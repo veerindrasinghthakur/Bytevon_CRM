@@ -3,6 +3,8 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { cn } from '@/shared/lib/cn'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
+
 import {
   checkInNow,
   checkOutNow,
@@ -164,7 +166,7 @@ export function MarkAttendancePage() {
     setManualToast('Manual entry submitted for HR approval.')
     window.setTimeout(() => {
       setManualToast(null)
-      navigate({ to: '/my-work/attendance/corrections' })
+      safeNavigate(navigate,{ to: '/my-work/attendance/corrections' })
     }, 900)
   }
 
@@ -391,7 +393,7 @@ export function MarkAttendancePage() {
             <button
               type="button"
               className="w-full flex justify-between items-center text-left hover:opacity-90"
-              onClick={() => navigate({ to: '/my-work/attendance/corrections' })}
+              onClick={() => safeNavigate(navigate,{ to: '/my-work/attendance/corrections' })}
             >
               <span className="text-body-sm">Pending Corrections</span>
               <span className="px-2 py-0.5 bg-secondary text-white rounded text-[10px] font-bold">

@@ -11,6 +11,7 @@ import {
   myWorkQuickActions,
 } from '../data/mock'
 import type { MyTask } from '../types'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 
 const priorityClass: Record<string, string> = {
   Critical: 'bg-red-100 text-red-800',
@@ -80,7 +81,7 @@ export function MyWorkOverviewPage() {
             <button
               key={action.label}
               type="button"
-              onClick={() => navigate({ to: action.to })}
+              onClick={() => safeNavigate(navigate,{ to: action.to })}
               className="bv-action-tile group"
             >
               <span
@@ -128,7 +129,7 @@ export function MyWorkOverviewPage() {
             <h3 className="text-title-lg font-semibold text-on-background">Attendance Overview</h3>
             <button
               type="button"
-              onClick={() => navigate({ to: '/my-work/attendance' })}
+              onClick={() => safeNavigate(navigate,{ to: '/my-work/attendance' })}
               className="text-label-md font-semibold text-secondary hover:underline transition-colors duration-200 cursor-pointer"
             >
               Full Report
@@ -188,7 +189,7 @@ export function MyWorkOverviewPage() {
           ))}
           <button
             type="button"
-            onClick={() => navigate({ to: '/my-work/leave' })}
+            onClick={() => safeNavigate(navigate,{ to: '/my-work/leave' })}
             className="mt-auto w-full py-2.5 bg-deep-navy text-on-primary rounded-lg text-label-md font-medium hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer"
           >
             Manage Leave
@@ -201,7 +202,7 @@ export function MyWorkOverviewPage() {
           <h3 className="text-title-lg font-semibold text-on-background">Assigned Tasks</h3>
           <button
             type="button"
-            onClick={() => navigate({ to: '/my-work/tasks' })}
+            onClick={() => safeNavigate(navigate,{ to: '/my-work/tasks' })}
             className="px-3 py-1.5 text-label-sm bg-secondary text-on-secondary rounded-md hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer"
           >
             View All

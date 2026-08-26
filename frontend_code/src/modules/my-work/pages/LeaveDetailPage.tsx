@@ -3,6 +3,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { leaveRequests, currentUser, leaveBalances } from '../data/mock'
 import type { LeaveStatus } from '../types'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 
 const statusStyles: Record<LeaveStatus, string> = {
   Pending: 'bg-amber-100 text-amber-800 border border-amber-200',
@@ -317,7 +318,7 @@ export function LeaveDetailPage() {
               <Button
                 variant="primary"
                 className="w-full"
-                onClick={() => navigate({ to: '/my-work/leave/apply' })}
+                onClick={() => safeNavigate(navigate,{ to: '/my-work/leave/apply' })}
               >
                 Apply again
               </Button>
@@ -331,7 +332,7 @@ export function LeaveDetailPage() {
               <Button
                 variant="ghost"
                 className="w-full"
-                onClick={() => navigate({ to: '/my-work/leave' })}
+                onClick={() => safeNavigate(navigate,{ to: '/my-work/leave' })}
               >
                 All leave requests
               </Button>

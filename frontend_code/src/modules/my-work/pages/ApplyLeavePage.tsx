@@ -11,6 +11,8 @@ import { DocumentUpload } from '@/shared/components/forms/DocumentUpload'
 import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 import { useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/shared/lib/cn'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
+
 import {
   listLeaveTypeOptions,
   listMyLeaveBalances,
@@ -98,7 +100,7 @@ export function ApplyLeavePage() {
     mutationFn: submitLeaveRequest,
     onSuccess: () => {
       void invalidate.myWorkLeave(qc)
-      navigate({ to: '/my-work/leave' })
+      safeNavigate(navigate,{ to: '/my-work/leave' })
     },
   })
 
@@ -383,7 +385,7 @@ export function ApplyLeavePage() {
               {files.length > 0 && <> · {files.length} file(s)</>}
             </span>
             <div className="flex items-center gap-3">
-              <Button type="button" variant="ghost" onClick={() => navigate({ to: '/my-work/leave' })}>
+              <Button type="button" variant="ghost" onClick={() => safeNavigate(navigate,{ to: '/my-work/leave' })}>
                 Cancel
               </Button>
               <SaveDraftButton onClick={handleSaveDraft} />

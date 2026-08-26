@@ -5,10 +5,11 @@ export type {
   NotificationStatus,
   NotificationTabId,
   AppNotification,
-  NotificationListResponse,
   NotificationKpi,
   NotificationTab,
 } from './schemas/notification'
+
+export type { NotificationListResponse } from './schemas/notification-list-response'
 
 export type {
   DeliveryChannel,

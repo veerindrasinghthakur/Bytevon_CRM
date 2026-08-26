@@ -3,6 +3,8 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
+
 import {
   formatClockTime,
   formatHoursCompact,
@@ -134,14 +136,16 @@ export function MyAttendancePage() {
             <Button
               leftIcon={<span className="material-symbols-outlined text-lg">edit_calendar</span>}
               variant="outline"
-              onClick={() => navigate({ to: '/my-work/attendance/corrections' })}
+              onClick={() => safeNavigate(navigate,{ to: '/my-work/attendance/corrections' })}
             >
               Corrections
             </Button>
             <Button
               variant="primary"
               leftIcon={<span className="material-symbols-outlined text-lg">fingerprint</span>}
-              onClick={() => navigate({ to: '/my-work/attendance/mark' })}
+              onClick={() => safeNavigate(navigate,{ to: '/my-work/attendance/mark' })}
+              // onBack={() => safeNavigate(navigate, { to: '/admin/roles' })}
+              
             >
               Mark Attendance
             </Button>
@@ -224,7 +228,7 @@ export function MyAttendancePage() {
             variant="outline"
             size="sm"
             leftIcon={<span className="material-symbols-outlined text-[18px]">coffee</span>}
-            onClick={() => navigate({ to: '/my-work/break' })}
+            onClick={() => safeNavigate(navigate,{ to: '/my-work/break' })}
           >
             Take a break
           </Button>
@@ -288,7 +292,7 @@ export function MyAttendancePage() {
                   key={row.id}
                   className="zebra-row cursor-pointer"
                   onClick={() =>
-                    navigate({
+                    safeNavigate(navigate,{
                       to: '/my-work/attendance/$attendanceId',
                       params: { attendanceId: row.id },
                     })
