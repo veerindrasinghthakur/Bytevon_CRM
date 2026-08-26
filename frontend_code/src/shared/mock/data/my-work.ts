@@ -5,6 +5,7 @@ import type {
   AttendanceCorrectionRequest,
   AttendanceRecord,
   BankDetails,
+  HolidayItem,
   LeaveBalance,
   LeaveRequest,
   LeaveTypeOption,
@@ -47,6 +48,16 @@ export const weekHours: WeekHourBar[] = [
   { day: 'Fri', hours: 4.5, pct: 50, isToday: true, isWeekend: false, breakMarkers: [] },
   { day: 'Sat', hours: 0, pct: 0, isToday: false, isWeekend: true, breakMarkers: [] },
   { day: 'Sun', hours: 0, pct: 0, isToday: false, isWeekend: true, breakMarkers: [] },
+]
+
+/** Org holiday calendar seed — served via getApplyLeaveContext (not hardcoded in pages). */
+export const holidaysSeed: HolidayItem[] = [
+  { date: '2026-01-26', name: 'Republic Day', holidayType: 'NATIONAL' },
+  { date: '2026-03-14', name: 'Holi', holidayType: 'NATIONAL' },
+  { date: '2026-08-15', name: 'Independence Day', holidayType: 'NATIONAL' },
+  { date: '2026-10-02', name: 'Gandhi Jayanti', holidayType: 'NATIONAL' },
+  { date: '2026-10-20', name: 'Diwali', holidayType: 'NATIONAL' },
+  { date: '2026-12-25', name: 'Christmas', holidayType: 'NATIONAL' },
 ]
 
 export const leaveTypeOptions: LeaveTypeOption[] = [

@@ -102,7 +102,6 @@ export function useMonthlyPayroll() {
     page: controls.page,
     setPage: controls.setPage,
     pageSize: controls.pageSize,
-    setPageSize: controls.setPage,
     formatMoney,
     allCount: total,
     isLoading: employeesQuery.isLoading || summaryQuery.isLoading,

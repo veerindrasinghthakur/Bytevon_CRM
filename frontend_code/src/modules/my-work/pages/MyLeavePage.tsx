@@ -7,6 +7,7 @@ import { LeaveBalanceTab } from '../components/leave/LeaveBalanceTab'
 import { LeaveHistoryTab } from '../components/leave/LeaveHistoryTab'
 import { LeaveCalendarTab } from '../components/leave/LeaveCalendarTab'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { myWorkRoutes } from '../routes'
 
 type Tab = 'balance' | 'history' | 'calendar'
 
@@ -52,7 +53,7 @@ export function MyLeavePage() {
           <Button
             variant="primary"
             leftIcon={<span className="material-symbols-outlined text-lg">event_available</span>}
-            onClick={() => safeNavigate(navigate,{ to: '/my-work/leave/apply' })}
+            onClick={() => safeNavigate(navigate, { to: myWorkRoutes.leaveApply })}
           >
             Apply for Leave
           </Button>

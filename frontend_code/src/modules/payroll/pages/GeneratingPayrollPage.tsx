@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { payrollRoutes } from '../routes'
 import { cn } from '@/shared/lib/cn'
 
 const STEPS = [
@@ -126,7 +128,7 @@ export function GeneratingPayrollPage() {
         <button
           type="button"
           className="mt-8 text-label-md text-error hover:bg-error-container/50 px-4 py-2 rounded transition-colors"
-          onClick={() => navigate({ to: '/payroll' })}
+          onClick={() => safeNavigate(navigate, { to: payrollRoutes.root })}
         >
           Cancel Process
         </button>
