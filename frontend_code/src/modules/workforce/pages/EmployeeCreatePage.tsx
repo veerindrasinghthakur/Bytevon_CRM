@@ -9,6 +9,13 @@ import {
   listEmployments,
 } from '../api/employment'
 import { createUserLogin, listRoles } from '@/modules/admin/api/users'
+import {
+  emptyEmploymentForm,
+  toCreateEmploymentInput,
+  type EmploymentFormInput,
+} from '../types'
+import { workforceRoutes } from '../routes'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { can } from '@/shared/rbac'
 import { Action, ResourceName, EmploymentType } from '@/shared/schema'
 import type { RoleRow } from '@/shared/schema'
@@ -84,34 +91,19 @@ export function EmployeeCreatePage() {
   const [roles, setRoles] = useState<RoleRow[]>([])
   const [managerOptions, setManagerOptions] = useState<{ id: number; name: string }[]>([])
 
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [dob, setDob] = useState('')
+  const [form, setForm] = useState<EmploymentFormInput>(() => emptyEmploymentForm())
+  const setField = <K extends keyof EmploymentFormInput>(key: K, value: EmploymentFormInput[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }))
+  }
+
+  // UI-only fields not in CreateEmployment payload / form schema
   const [gender, setGender] = useState('')
   const [nationality, setNationality] = useState('')
-  const [personalEmail, setPersonalEmail] = useState('')
   const [workContactEmail, setWorkContactEmail] = useState('')
-  const [phone, setPhone] = useState('')
   const [altPhone, setAltPhone] = useState('')
-  const [street, setStreet] = useState('')
-  const [city, setCity] = useState('')
-  const [stateRegion, setStateRegion] = useState('')
-  const [zip, setZip] = useState('')
-  const [country, setCountry] = useState('')
   const [emergencyName, setEmergencyName] = useState('')
   const [emergencyRelation, setEmergencyRelation] = useState('')
   const [emergencyPhone, setEmergencyPhone] = useState('')
-  const [joiningDate, setJoiningDate] = useState('')
-  const [employmentType, setEmploymentType] = useState<string>(EmploymentType.FULL_TIME)
-  const [departmentId, setDepartmentId] = useState('')
-  const [positionId, setPositionId] = useState('')
-  const [locationId, setLocationId] = useState('')
-  const [shiftId, setShiftId] = useState('')
-  const [managerId, setManagerId] = useState('')
-  const [accountHolderName, setAccountHolderName] = useState('')
-  const [bankName, setBankName] = useState('')
-  const [accountNumber, setAccountNumber] = useState('')
-  const [ifsc, setIfsc] = useState('')
   const [docLabels, setDocLabels] = useState<string[]>([])
 
   const [workEmail, setWorkEmail] = useState('')
@@ -165,10 +157,13 @@ export function EmployeeCreatePage() {
         locations: m.locations.map((l) => ({ id: l.id, name: l.name })),
         shifts: m.shifts.map((s) => ({ id: s.id, name: s.name })),
       })
-      if (m.departments[0]) setDepartmentId(String(m.departments[0].id))
-      if (m.positions[0]) setPositionId(String(m.positions[0].id))
-      if (m.locations[0]) setLocationId(String(m.locations[0].id))
-      if (m.shifts[0]) setShiftId(String(m.shifts[0].id))
+      setForm((prev) => ({
+        ...prev,
+        departmentId: m.departments[0] ? String(m.departments[0].id) : prev.departmentId,
+        positionId: m.positions[0] ? String(m.positions[0].id) : prev.positionId,
+        locationId: m.locations[0] ? String(m.locations[0].id) : prev.locationId,
+        shiftId: m.shifts[0] ? String(m.shifts[0].id) : prev.shiftId,
+      }))
       const list = await listEmployments({})
       setManagerOptions(list.items.map((e) => ({ id: e.id, name: e.fullName })))
       if (canCreateUser) {
@@ -179,6 +174,8 @@ export function EmployeeCreatePage() {
       }
     })()
   }, [canCreateUser])
+
+  const goList = () => safeNavigate(navigate, { to: workforceRoutes.employees })
 
   const onPhotoChange = (file: File | null) => {
     if (!file) {
@@ -194,48 +191,24 @@ export function EmployeeCreatePage() {
     setDocLabels(Array.from(files).map((f) => f.name))
   }
 
-  const composedAddress = [street, city, stateRegion, zip, country].filter(Boolean).join(', ')
-
   const handleSaveEmployee = async () => {
     setError('')
-    if (!firstName.trim() || !lastName.trim()) {
+    if (!form.firstName.trim() || !form.lastName.trim()) {
       setError('First and last name are required.')
       return
     }
-    if (!joiningDate) {
+    if (!form.joiningDate) {
       setError('Joining date is required.')
       return
     }
-    if (!departmentId || !positionId || !locationId || !shiftId) {
+    if (!form.departmentId || !form.positionId || !form.locationId || !form.shiftId) {
       setError('Department, position, location, and shift are required.')
       return
     }
     setSaving(true)
     try {
-      const holder =
-        accountHolderName.trim() || `${firstName.trim()} ${lastName.trim()}`
-      const created = await createEmployment({
-        firstName,
-        lastName,
-        dateOfBirth: dob || null,
-        personalEmail: personalEmail || null,
-        personalPhone: phone || null,
-        address: composedAddress || null,
-        employmentType,
-        joiningDate,
-        departmentId: Number(departmentId),
-        positionId: Number(positionId),
-        locationId: Number(locationId),
-        shiftId: Number(shiftId),
-        bank: accountNumber
-          ? {
-              accountHolderName: holder,
-              bankName,
-              accountNumber,
-              ifscCode: ifsc,
-            }
-          : undefined,
-      })
+      const payload = toCreateEmploymentInput(form)
+      const created = await createEmployment(payload)
       setCreatedEmploymentId(created.id)
       setCreatedName(created.fullName)
       const slug = created.fullName.toLowerCase().replace(/\s+/g, '.')
@@ -295,15 +268,15 @@ export function EmployeeCreatePage() {
           {workEmail && tempPassword ? ' with login credentials' : ''}.
         </p>
         <div className="flex flex-wrap justify-center gap-3 pt-4">
-          <Button variant="outline" onClick={() => navigate({ to: '/workforce/employees' })}>
+          <Button variant="outline" onClick={goList}>
             Back to list
           </Button>
           {createdEmploymentId && (
             <Button
               variant="primary"
               onClick={() =>
-                navigate({
-                  to: '/workforce/employees/$employeeId',
+                safeNavigate(navigate, {
+                  to: workforceRoutes.employeeDetail(createdEmploymentId),
                   params: { employeeId: String(createdEmploymentId) },
                 })
               }
@@ -429,13 +402,26 @@ export function EmployeeCreatePage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <Field label="First Name" required>
-            <input className={inputClass} value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+            <input
+              className={inputClass}
+              value={form.firstName}
+              onChange={(e) => setField('firstName', e.target.value)}
+            />
           </Field>
           <Field label="Last Name" required>
-            <input className={inputClass} value={lastName} onChange={(e) => setLastName(e.target.value)} />
+            <input
+              className={inputClass}
+              value={form.lastName}
+              onChange={(e) => setField('lastName', e.target.value)}
+            />
           </Field>
           <Field label="Date of Birth">
-            <input className={inputClass} type="date" value={dob} onChange={(e) => setDob(e.target.value)} />
+            <input
+              className={inputClass}
+              type="date"
+              value={form.dateOfBirth ?? ''}
+              onChange={(e) => setField('dateOfBirth', e.target.value)}
+            />
           </Field>
           <Field label="Gender">
             <Select
@@ -468,8 +454,8 @@ export function EmployeeCreatePage() {
             <input
               className={inputClass}
               type="email"
-              value={personalEmail}
-              onChange={(e) => setPersonalEmail(e.target.value)}
+              value={form.personalEmail ?? ''}
+              onChange={(e) => setField('personalEmail', e.target.value)}
             />
           </Field>
           <Field label="Work Email (optional)">
@@ -482,7 +468,11 @@ export function EmployeeCreatePage() {
             />
           </Field>
           <Field label="Primary Phone">
-            <input className={inputClass} value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <input
+              className={inputClass}
+              value={form.personalPhone ?? ''}
+              onChange={(e) => setField('personalPhone', e.target.value)}
+            />
           </Field>
           <Field label="Alternate Phone">
             <input className={inputClass} value={altPhone} onChange={(e) => setAltPhone(e.target.value)} />
@@ -497,19 +487,39 @@ export function EmployeeCreatePage() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field label="Street">
-            <input className={inputClass} value={street} onChange={(e) => setStreet(e.target.value)} />
+            <input
+              className={inputClass}
+              value={form.street ?? ''}
+              onChange={(e) => setField('street', e.target.value)}
+            />
           </Field>
           <Field label="City">
-            <input className={inputClass} value={city} onChange={(e) => setCity(e.target.value)} />
+            <input
+              className={inputClass}
+              value={form.city ?? ''}
+              onChange={(e) => setField('city', e.target.value)}
+            />
           </Field>
           <Field label="State / Region">
-            <input className={inputClass} value={stateRegion} onChange={(e) => setStateRegion(e.target.value)} />
+            <input
+              className={inputClass}
+              value={form.stateRegion ?? ''}
+              onChange={(e) => setField('stateRegion', e.target.value)}
+            />
           </Field>
           <Field label="ZIP / Postal">
-            <input className={inputClass} value={zip} onChange={(e) => setZip(e.target.value)} />
+            <input
+              className={inputClass}
+              value={form.zip ?? ''}
+              onChange={(e) => setField('zip', e.target.value)}
+            />
           </Field>
           <Field label="Country">
-            <input className={inputClass} value={country} onChange={(e) => setCountry(e.target.value)} />
+            <input
+              className={inputClass}
+              value={form.country ?? ''}
+              onChange={(e) => setField('country', e.target.value)}
+            />
           </Field>
         </div>
       </section>
@@ -551,8 +561,8 @@ export function EmployeeCreatePage() {
           </Field>
           <Field label="Reporting Manager">
             <Select
-              value={managerId}
-              onChange={setManagerId}
+              value={form.managerId ?? ''}
+              onChange={(v) => setField('managerId', v)}
               options={managerSelectOptions}
               placeholder="Unassigned"
               minWidthClass="w-full"
@@ -560,12 +570,17 @@ export function EmployeeCreatePage() {
             />
           </Field>
           <Field label="Joining Date" required>
-            <input className={inputClass} type="date" value={joiningDate} onChange={(e) => setJoiningDate(e.target.value)} />
+            <input
+              className={inputClass}
+              type="date"
+              value={form.joiningDate}
+              onChange={(e) => setField('joiningDate', e.target.value)}
+            />
           </Field>
           <Field label="Employment Type" required>
             <Select
-              value={employmentType}
-              onChange={setEmploymentType}
+              value={form.employmentType}
+              onChange={(v) => setField('employmentType', v)}
               options={employmentTypeOptions}
               placeholder="Select type…"
               minWidthClass="w-full"
@@ -574,8 +589,8 @@ export function EmployeeCreatePage() {
           </Field>
           <Field label="Department" required>
             <Select
-              value={departmentId}
-              onChange={setDepartmentId}
+              value={form.departmentId}
+              onChange={(v) => setField('departmentId', v)}
               options={departmentOptions}
               placeholder="Select department…"
               minWidthClass="w-full"
@@ -584,8 +599,8 @@ export function EmployeeCreatePage() {
           </Field>
           <Field label="Position" required>
             <Select
-              value={positionId}
-              onChange={setPositionId}
+              value={form.positionId}
+              onChange={(v) => setField('positionId', v)}
               options={positionOptions}
               placeholder="Select position…"
               minWidthClass="w-full"
@@ -594,8 +609,8 @@ export function EmployeeCreatePage() {
           </Field>
           <Field label="Location" required>
             <Select
-              value={locationId}
-              onChange={setLocationId}
+              value={form.locationId}
+              onChange={(v) => setField('locationId', v)}
               options={locationOptions}
               placeholder="Select location…"
               minWidthClass="w-full"
@@ -604,8 +619,8 @@ export function EmployeeCreatePage() {
           </Field>
           <Field label="Shift" required>
             <Select
-              value={shiftId}
-              onChange={setShiftId}
+              value={form.shiftId}
+              onChange={(v) => setField('shiftId', v)}
               options={shiftOptions}
               placeholder="Select shift…"
               minWidthClass="w-full"
@@ -624,19 +639,31 @@ export function EmployeeCreatePage() {
           <Field label="Account Holder Name">
             <input
               className={inputClass}
-              value={accountHolderName}
-              onChange={(e) => setAccountHolderName(e.target.value)}
+              value={form.accountHolderName ?? ''}
+              onChange={(e) => setField('accountHolderName', e.target.value)}
               placeholder="Defaults to employee full name"
             />
           </Field>
           <Field label="Bank Name">
-            <input className={inputClass} value={bankName} onChange={(e) => setBankName(e.target.value)} />
+            <input
+              className={inputClass}
+              value={form.bankName ?? ''}
+              onChange={(e) => setField('bankName', e.target.value)}
+            />
           </Field>
           <Field label="Account Number">
-            <input className={inputClass} value={accountNumber} onChange={(e) => setAccountNumber(e.target.value)} />
+            <input
+              className={inputClass}
+              value={form.accountNumber ?? ''}
+              onChange={(e) => setField('accountNumber', e.target.value)}
+            />
           </Field>
           <Field label="IFSC">
-            <input className={inputClass} value={ifsc} onChange={(e) => setIfsc(e.target.value)} />
+            <input
+              className={inputClass}
+              value={form.ifsc ?? ''}
+              onChange={(e) => setField('ifsc', e.target.value)}
+            />
           </Field>
         </div>
       </section>
@@ -664,7 +691,7 @@ export function EmployeeCreatePage() {
       </section>
 
       <div className="fixed bottom-0 right-0 left-0 md:left-[var(--shell-left,0)] z-30 bg-surface-container-lowest/95 backdrop-blur-md border-t border-outline-variant px-6 py-4 flex justify-between items-center executive-shadow">
-        <Button variant="ghost" onClick={() => navigate({ to: '/workforce/employees' })}>
+        <Button variant="ghost" onClick={goList}>
           Cancel
         </Button>
         <Button variant="primary" isLoading={saving} onClick={handleSaveEmployee}>
