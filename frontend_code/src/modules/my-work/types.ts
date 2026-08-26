@@ -7,6 +7,10 @@ export type {
   LeaveTypeOption,
   LeaveRequest,
   CreateLeaveRequestInput,
+  HolidayItem,
+  ApplyLeaveContext,
+  LeaveCalculateInput,
+  LeaveCalculateResult,
 } from './schemas/leave'
 
 export type { LeaveListResponse } from './schemas/leave-list-response'

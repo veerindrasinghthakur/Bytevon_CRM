@@ -46,3 +46,38 @@ export const createLeaveRequestSchema = z.object({
   halfDay: z.boolean().optional(),
 })
 export type CreateLeaveRequestInput = z.infer<typeof createLeaveRequestSchema>
+
+/** Holiday row returned by apply-context / organization calendars */
+export const holidayItemSchema = z.object({
+  date: z.string(),
+  name: z.string(),
+  holidayType: z.string().optional(),
+})
+export type HolidayItem = z.infer<typeof holidayItemSchema>
+
+/**
+ * Single bootstrap payload for Apply Leave.
+ * Backend (or mock) owns holidays, types, balances — client does not hardcode calendars.
+ */
+export const applyLeaveContextSchema = z.object({
+  holidays: z.array(holidayItemSchema),
+  leaveTypes: z.array(leaveTypeOptionSchema),
+  balances: z.array(leaveBalanceSchema),
+})
+export type ApplyLeaveContext = z.infer<typeof applyLeaveContextSchema>
+
+export const leaveCalculateInputSchema = z.object({
+  type: leaveTypeSchema,
+  from: z.string().min(1),
+  to: z.string().min(1),
+  halfDay: z.boolean().optional(),
+})
+export type LeaveCalculateInput = z.infer<typeof leaveCalculateInputSchema>
+
+export const leaveCalculateResultSchema = z.object({
+  dayCost: z.number(),
+  balanceRemaining: z.number().nullable().optional(),
+  estimatedBalanceAfter: z.number().nullable().optional(),
+  holidaysInRange: z.array(holidayItemSchema).optional(),
+})
+export type LeaveCalculateResult = z.infer<typeof leaveCalculateResultSchema>
