@@ -1,7 +1,7 @@
 import { z } from 'zod'
-import { departmentStatusSchema } from './department'
+import { departmentStatusSchema, type CreateDepartmentInput } from './department'
 
-/** UI form — string ids for Select; map to CreateDepartmentInput on submit. */
+/** UI form — string ids for Select; map via toCreateDepartmentInput on submit. */
 export const departmentFormSchema = z.object({
   name: z.string().min(2, 'Department name is required'),
   description: z.string().optional().or(z.literal('')),
@@ -21,3 +21,13 @@ export const emptyDepartmentForm = (): DepartmentFormInput => ({
   colorTag: '#0058bc',
   parentHint: '',
 })
+
+/** Form → API create payload (string Select id → number | null). */
+export function toCreateDepartmentInput(form: DepartmentFormInput): CreateDepartmentInput {
+  const head = form.headEmploymentId.trim()
+  return {
+    name: form.name.trim(),
+    headEmploymentId: head ? Number(head) : null,
+    isArchived: form.status === 'Inactive',
+  }
+}

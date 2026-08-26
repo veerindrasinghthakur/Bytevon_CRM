@@ -30,20 +30,6 @@ export const employmentListItemSchema = z.object({
 
 export type EmploymentListItemSchema = z.infer<typeof employmentListItemSchema>
 
-export const employmentListResponseSchema = z.object({
-  items: z.array(employmentListItemSchema),
-  total: z.number(),
-  metrics: z
-    .object({
-      total: z.number(),
-      active: z.number(),
-      archived: z.number(),
-    })
-    .optional(),
-})
-
-export type EmploymentListResponse = z.infer<typeof employmentListResponseSchema>
-
 export const createEmploymentSchema = z.object({
   firstName: z.string().min(1, 'First name is required').max(80),
   lastName: z.string().min(1, 'Last name is required').max(80),
@@ -70,9 +56,14 @@ export const createEmploymentSchema = z.object({
 
 export type CreateEmploymentSchemaInput = z.infer<typeof createEmploymentSchema>
 
-/** Re-export form schema from dedicated file */
 export {
   employmentFormSchema,
   type EmploymentFormInput,
   emptyEmploymentForm,
+  toCreateEmploymentInput,
 } from './employment-form'
+
+export {
+  employmentListResponseSchema,
+  type EmploymentListResponse,
+} from './employment-list-response'

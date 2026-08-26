@@ -1,6 +1,7 @@
 import { z } from 'zod'
+import type { CreateEmploymentSchemaInput } from './employment'
 
-/** UI form — string fields for inputs/Selects; map to CreateEmploymentInput on submit. */
+/** UI form — string fields for inputs/Selects; map via toCreateEmploymentInput on submit. */
 export const employmentFormSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
@@ -50,3 +51,38 @@ export const emptyEmploymentForm = (): EmploymentFormInput => ({
   accountNumber: '',
   ifsc: '',
 })
+
+/** Form → API create payload (string Select ids → numbers; address/bank assembled). */
+export function toCreateEmploymentInput(form: EmploymentFormInput): CreateEmploymentSchemaInput {
+  const addressParts = [form.street, form.city, form.stateRegion, form.zip, form.country]
+    .map((p) => p.trim())
+    .filter(Boolean)
+  const address = addressParts.length ? addressParts.join(', ') : null
+
+  const bank =
+    form.accountNumber.trim().length > 0
+      ? {
+          accountHolderName:
+            form.accountHolderName.trim() || `${form.firstName} ${form.lastName}`.trim(),
+          bankName: form.bankName.trim(),
+          accountNumber: form.accountNumber.trim(),
+          ifscCode: form.ifsc.trim(),
+        }
+      : undefined
+
+  return {
+    firstName: form.firstName.trim(),
+    lastName: form.lastName.trim(),
+    dateOfBirth: form.dateOfBirth.trim() || null,
+    personalEmail: form.personalEmail.trim() || null,
+    personalPhone: form.personalPhone.trim() || null,
+    address,
+    employmentType: form.employmentType,
+    joiningDate: form.joiningDate,
+    departmentId: Number(form.departmentId),
+    positionId: Number(form.positionId),
+    locationId: Number(form.locationId),
+    shiftId: Number(form.shiftId),
+    bank,
+  }
+}
