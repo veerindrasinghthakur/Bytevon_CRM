@@ -6,12 +6,14 @@ import type { ListToolbarProps } from '@/shared/types'
 /**
  * Shared list filter bar.
  *
- * Layout (single row): [Search] · [filter controls] · [Refresh] · [Clear]
+ * Layout (single row): [Search] · [filter controls] · [actions] · [Refresh] · [Clear]
  * If the row is tight, search + filter boxes shrink (truncate) instead of wrapping.
  *
  * - **Clear** — resets filters only (does not reload data).
  * - **Refresh** — reloads rows (refetch / reload).
  * Do not put result counts ("Showing n of m") inside this bar.
+ *
+ * Filter slot uses overflow-visible so Select dropdown panels are not clipped.
  */
 export function ListToolbar({
   searchValue,
@@ -60,8 +62,8 @@ export function ListToolbar({
   return (
     <div
       className={cn(
-        // Single line always — boxes shrink when width is exceeded
-        'flex flex-nowrap items-center gap-2 bg-surface-container-low px-3 py-2.5 rounded-xl border border-outline-variant overflow-x-auto',
+        // Single line — allow horizontal scroll on narrow viewports; do not clip dropdowns
+        'flex flex-nowrap items-center gap-2 bg-surface-container-low px-3 py-2.5 rounded-xl border border-outline-variant',
         className,
       )}
     >
@@ -83,9 +85,9 @@ export function ListToolbar({
         />
       </div>
 
-      <div className="flex flex-nowrap items-center gap-1.5 min-w-0 flex-1 justify-end">
-        {/* Filter controls shrink; keep actions + refresh/clear from collapsing away */}
-        <div className="flex flex-nowrap items-center gap-1.5 min-w-0 overflow-hidden [&>*]:min-w-0 [&>*]:shrink [&>*]:max-w-[10rem]">
+      <div className="flex flex-nowrap items-center gap-1.5 min-w-0 flex-1 justify-end overflow-visible">
+        {/* overflow-visible so Select panels are not clipped under the toolbar */}
+        <div className="flex flex-nowrap items-center gap-1.5 min-w-0 overflow-visible [&>*]:shrink-0">
           {filters}
         </div>
         {actionsSlot ? (

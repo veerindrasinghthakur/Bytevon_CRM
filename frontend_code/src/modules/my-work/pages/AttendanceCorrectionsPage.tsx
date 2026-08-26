@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
@@ -7,10 +7,12 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { cn } from '@/shared/lib/cn'
-import { useAttendanceCorrections } from '../hooks/use-attendance-corrections'
-import type { CorrectionStatus } from '../types'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { useAttendanceCorrections } from '../hooks/use-attendance-corrections'
+import { myWorkRoutes } from '../routes'
+import type { CorrectionStatus } from '../types'
 
+/** Status badge colors kept as semantic status styles (not design-token pass). */
 const STATUS_STYLES: Record<CorrectionStatus, string> = {
   Pending: 'bg-amber-100 text-amber-800',
   Approved: 'bg-emerald-100 text-emerald-800',
@@ -18,12 +20,24 @@ const STATUS_STYLES: Record<CorrectionStatus, string> = {
   Draft: 'bg-surface-container-high text-on-surface-variant',
 }
 
+const STATUS_OPTIONS = [
+  { value: 'All', label: 'All statuses' },
+  { value: 'Pending', label: 'Pending' },
+  { value: 'Approved', label: 'Approved' },
+  { value: 'Rejected', label: 'Rejected' },
+  { value: 'Draft', label: 'Draft' },
+]
+
 export function AttendanceCorrectionsPage() {
+  const navigate = useNavigate()
   const c = useAttendanceCorrections()
+
+  const goAttendance = () => safeNavigate(navigate, { to: myWorkRoutes.attendance })
+  const goApprovals = () => safeNavigate(navigate, { to: myWorkRoutes.approvals })
 
   return (
     <div className="space-y-8 animate-fade-in">
-      <BackButton to="/my-work/attendance" label="Back to attendance" />
+      <BackButton to={myWorkRoutes.attendance} label="Back to attendance" />
       <PageHeader
         title="Attendance corrections"
         description="Request changes to past attendance records when punch times or status need adjustment."
@@ -45,10 +59,13 @@ export function AttendanceCorrectionsPage() {
         searchPlaceholder="Search by date, reason, or approver…"
         filtersActive={c.filtersActive}
         onResetFilters={c.resetFilters}
-        actions={
+        onRefresh={() => void c.refetch()}
+        actionsSlot={
           <ExportButton
             resource="ATTENDANCE_CORRECTION"
-            filters={{ status: c.statusFilter || undefined }}
+            filters={{
+              status: c.statusFilter !== 'All' ? c.statusFilter : undefined,
+            }}
             query={c.search || undefined}
             filenameStem="attendance-corrections"
           />
@@ -58,11 +75,9 @@ export function AttendanceCorrectionsPage() {
           value={c.statusFilter}
           onChange={c.setStatusFilter}
           placeholder="All statuses"
-          options={[
-            { value: 'Pending', label: 'Pending' },
-            { value: 'Approved', label: 'Approved' },
-            { value: 'Rejected', label: 'Rejected' },
-          ]}
+          aria-label="Filter by status"
+          options={STATUS_OPTIONS}
+          minWidthClass="min-w-[10rem] max-w-[14rem]"
         />
       </ListToolbar>
 
@@ -108,7 +123,9 @@ export function AttendanceCorrectionsPage() {
           <p className="p-6 text-on-surface-variant">Loading…</p>
         ) : c.visible.length === 0 ? (
           <div className="p-10 text-center">
-            <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-2">edit_calendar</span>
+            <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-2">
+              edit_calendar
+            </span>
             <p className="text-body-md text-on-surface-variant">No correction requests yet.</p>
             <Button className="mt-4" variant="primary" size="sm" onClick={() => c.openNew()}>
               New correction
@@ -118,7 +135,7 @@ export function AttendanceCorrectionsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[820px]">
               <thead>
-                <tr className="border-b border-outline-variant/30 bg-surface/50">
+                <tr className="border-b border-outline-variant/30 bg-surface-container-low/50">
                   <th className="py-3 px-5 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">
                     Date
                   </th>
@@ -164,7 +181,9 @@ export function AttendanceCorrectionsPage() {
                         {r.status}
                       </span>
                     </td>
-                    <td className="py-2 px-5 text-body-sm text-on-surface-variant text-right">{r.submittedOn}</td>
+                    <td className="py-2 px-5 text-body-sm text-on-surface-variant text-right">
+                      {r.submittedOn}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -175,17 +194,25 @@ export function AttendanceCorrectionsPage() {
 
       <p className="text-body-sm text-on-surface-variant">
         Related:{' '}
-        <Link to="/my-work/attendance" className="text-secondary hover:underline">
+        <button
+          type="button"
+          onClick={goAttendance}
+          className="text-secondary hover:underline font-medium"
+        >
           My attendance
-        </Link>
+        </button>
         {' · '}
-        <Link to="/my-work/approvals" className="text-secondary hover:underline">
+        <button
+          type="button"
+          onClick={goApprovals}
+          className="text-secondary hover:underline font-medium"
+        >
           My approvals
-        </Link>
+        </button>
       </p>
 
       {c.modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-deep-navy/40 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-background/40 backdrop-blur-sm">
           <div
             className="bv-surface w-full max-w-lg executive-shadow flex flex-col max-h-[90vh] overflow-hidden"
             role="dialog"
@@ -219,7 +246,7 @@ export function AttendanceCorrectionsPage() {
                   value: day.id,
                   label: `${day.date} · ${day.status}`,
                 }))}
-                minWidthClass="w-full"
+                minWidthClass="w-full max-w-none"
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -231,12 +258,15 @@ export function AttendanceCorrectionsPage() {
                     value={c.checkIn}
                     onChange={(e) => c.setCheckIn(e.target.value)}
                     onKeyDown={(e) => handleEnterAdvance(e)}
-                    className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
+                    className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
                     placeholder="09:00 AM"
                   />
                 </div>
                 <div>
-                  <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="corr-out">
+                  <label
+                    className="text-label-sm text-on-surface-variant block mb-1"
+                    htmlFor="corr-out"
+                  >
                     Requested check-out
                   </label>
                   <input
@@ -244,13 +274,16 @@ export function AttendanceCorrectionsPage() {
                     value={c.checkOut}
                     onChange={(e) => c.setCheckOut(e.target.value)}
                     onKeyDown={(e) => handleEnterAdvance(e)}
-                    className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
+                    className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
                     placeholder="06:00 PM"
                   />
                 </div>
               </div>
               <div>
-                <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="corr-approver-q">
+                <label
+                  className="text-label-sm text-on-surface-variant block mb-1"
+                  htmlFor="corr-approver-q"
+                >
                   Approver <span className="text-error">*</span>
                 </label>
                 <input
@@ -258,7 +291,7 @@ export function AttendanceCorrectionsPage() {
                   value={c.approverQuery}
                   onChange={(e) => c.setApproverQuery(e.target.value)}
                   placeholder="Search department head or upper hierarchy…"
-                  className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors mb-2"
+                  className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-md focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors mb-2"
                 />
                 <Select
                   value={c.approverId}
@@ -267,12 +300,15 @@ export function AttendanceCorrectionsPage() {
                     value: o.id,
                     label: `${o.name} (${o.title})`,
                   }))}
-                  minWidthClass="w-full"
+                  minWidthClass="w-full max-w-none"
                   placeholder="Select approver"
                 />
               </div>
               <div>
-                <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="corr-reason">
+                <label
+                  className="text-label-sm text-on-surface-variant block mb-1"
+                  htmlFor="corr-reason"
+                >
                   Reason <span className="text-error">*</span>
                 </label>
                 <textarea
@@ -281,7 +317,7 @@ export function AttendanceCorrectionsPage() {
                   value={c.reason}
                   onChange={(e) => c.setReason(e.target.value)}
                   onKeyDown={(e) => handleEnterAdvance(e)}
-                  className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface text-body-md resize-none focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
+                  className="w-full px-3 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-md resize-none focus:outline-none focus:ring-2 focus:ring-secondary/30 transition-colors"
                   placeholder="Explain why the record needs correction…"
                 />
               </div>

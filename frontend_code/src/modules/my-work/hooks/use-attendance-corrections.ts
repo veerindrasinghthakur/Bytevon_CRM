@@ -11,7 +11,7 @@ import {
 import type { AttendanceCorrectionRequest } from '../types'
 
 const FILTER_DEFAULTS = {
-  status: '',
+  status: 'All',
 }
 
 export function useAttendanceCorrections() {
@@ -30,14 +30,23 @@ export function useAttendanceCorrections() {
   const [approverQuery, setApproverQuery] = useState('')
   const [localExtra, setLocalExtra] = useState<AttendanceCorrectionRequest[]>([])
 
+  const statusParam =
+    controls.filters.status && controls.filters.status !== 'All'
+      ? controls.filters.status
+      : undefined
+
   const listParams = {
     search: controls.debouncedSearch || undefined,
-    status: controls.filters.status || undefined,
+    status: statusParam,
     page: controls.page,
     pageSize: controls.pageSize,
   }
 
-  const { data: listData, isLoading } = useQuery({
+  const {
+    data: listData,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: queryKeys.myWork.corrections.list(listParams),
     queryFn: () => listAttendanceCorrections(listParams),
     placeholderData: (prev) => prev,
@@ -124,6 +133,7 @@ export function useAttendanceCorrections() {
 
   return {
     isLoading,
+    refetch,
     visible,
     total: listData?.total ?? visible.length,
     candidates,
