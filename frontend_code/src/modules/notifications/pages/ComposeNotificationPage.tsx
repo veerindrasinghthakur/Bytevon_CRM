@@ -1,6 +1,8 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { SaveDraftButton } from '@/shared/components/ui/SaveDraftButton'
@@ -37,14 +39,15 @@ function wrapSelection(
   textarea: HTMLTextAreaElement,
   before: string,
   after: string,
-  setBody: (v: string) => void,
+  setValue: (name: string, value: string) => void,
+  getValue: () => string,
 ) {
   const start = textarea.selectionStart
   const end = textarea.selectionEnd
-  const val = textarea.value
+  const val = getValue()
   const selected = val.slice(start, end) || 'text'
   const next = val.slice(0, start) + before + selected + after + val.slice(end)
-  setBody(next)
+  setValue('body', next, { shouldDirty: true })
   requestAnimationFrame(() => {
     textarea.focus()
     const pos = start + before.length + selected.length + after.length
@@ -64,37 +67,38 @@ export function ComposeNotificationPage() {
   const bodyRef = useRef<HTMLTextAreaElement>(null)
 
   const empty = emptyComposeForm()
-  const [title, setTitle] = useState(empty.title)
-  const [body, setBody] = useState(empty.body)
-  const [priority, setPriority] = useState<NotificationPriority>(empty.priority)
-  const [broadcastAll, setBroadcastAll] = useState(empty.broadcastAll)
-  const [roles, setRoles] = useState(['Management', 'IT Support'])
-  const [roleQuery, setRoleQuery] = useState('')
-  const [channels, setChannels] = useState({ inApp: true, email: true, sms: false, push: false })
-  const [scheduleMode, setScheduleMode] = useState<'now' | 'later'>('now')
-  const [scheduleDate, setScheduleDate] = useState(defaultScheduleDate)
-  const [scheduleTime, setScheduleTime] = useState('09:00')
-  const [moduleCtx, setModuleCtx] = useState('General / System')
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors, isSubmitting },
+    reset,
+  } = useForm<ComposeNotificationForm>({
+    resolver: zodResolver(composeNotificationFormSchema),
+    defaultValues: {
+      title: empty.title,
+      body: empty.body,
+      priority: empty.priority,
+      moduleCtx: empty.moduleCtx,
+      broadcastAll: empty.broadcastAll,
+      roles: empty.roles,
+      channels: empty.channels,
+      scheduleMode: empty.scheduleMode,
+      scheduleAt: empty.scheduleAt,
+      attachmentNames: empty.attachmentNames,
+    },
+  })
+
+  const priority = watch('priority')
+  const broadcastAll = watch('broadcastAll')
+  const scheduleMode = watch('scheduleMode')
+  const channels = watch('channels')
+
   const [files, setFiles] = useState<File[]>([])
   const [toast, setToast] = useState<string | null>(null)
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({})
-
-  const roleMatches = ROLE_SUGGESTIONS.filter(
-    (r) => roleQuery && r.toLowerCase().includes(roleQuery.toLowerCase()) && !roles.includes(r),
-  )
-
-  const buildPayload = (): ComposeNotificationForm => ({
-    title: title.trim(),
-    body: body.trim(),
-    priority,
-    moduleCtx,
-    broadcastAll,
-    roles,
-    channels: { ...channels, sms: false },
-    scheduleMode,
-    scheduleAt: scheduleMode === 'later' ? `${scheduleDate}T${scheduleTime}` : undefined,
-    attachmentNames: files.map((f) => f.name),
-  })
+  const [roleQuery, setRoleQuery] = useState('')
 
   const sendMut = useMutation({
     mutationFn: sendNotification,
@@ -102,7 +106,7 @@ export function ComposeNotificationPage() {
       void invalidate.notifications(qc)
       setToast(
         scheduleMode === 'later'
-          ? `Scheduled for ${scheduleDate} ${scheduleTime} · ${res.queued} recipient(s).`
+          ? `Scheduled for ${watch('scheduleAt')?.slice(0, 16).replace('T', ' ')} · ${res.queued} recipient(s).`
           : `Queued to ${res.queued} recipient(s).`,
       )
       window.setTimeout(() => navigate({ to: '/notifications/sent' }), 900)
@@ -117,39 +121,17 @@ export function ComposeNotificationPage() {
     },
   })
 
-  const validateAndGet = (): ComposeNotificationForm | null => {
-    const raw = buildPayload()
-    const parsed = composeNotificationFormSchema.safeParse(raw)
-    if (!parsed.success) {
-      const errs: Record<string, string> = {}
-      for (const issue of parsed.error.issues) {
-        const key = String(issue.path[0] ?? 'form')
-        if (!errs[key]) errs[key] = issue.message
-      }
-      setFieldErrors(errs)
-      setToast(Object.values(errs)[0] ?? 'Please fix the form errors.')
-      return null
-    }
-    if (parsed.data.scheduleMode === 'later' && !parsed.data.scheduleAt) {
-      setFieldErrors({ scheduleAt: 'Choose a date and time for scheduled send.' })
-      setToast('Choose a date and time for scheduled send.')
-      return null
-    }
-    setFieldErrors({})
-    return parsed.data
-  }
-
-  const send = () => {
-    const data = validateAndGet()
-    if (!data) return
+  const onSubmit = (data: ComposeNotificationForm) => {
     sendMut.mutate(data)
   }
 
-  const saveDraft = () => {
-    const data = validateAndGet()
-    if (!data) return
+  const onSaveDraft = (data: ComposeNotificationForm) => {
     draftMut.mutate(data)
   }
+
+  const roleMatches = ROLE_SUGGESTIONS.filter(
+    (r) => roleQuery && r.toLowerCase().includes(roleQuery.toLowerCase()) && !watch('roles').includes(r),
+  )
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -166,13 +148,13 @@ export function ComposeNotificationPage() {
           <Button variant="outline" size="md" onClick={() => navigate({ to: '/notifications' })}>
             Discard
           </Button>
-          <SaveDraftButton isLoading={draftMut.isPending} onClick={saveDraft} />
+          <SaveDraftButton isLoading={draftMut.isPending} onClick={() => handleSubmit(onSaveDraft)()} />
           <Button
             variant="primary"
             size="md"
             leftIcon={<span className="material-symbols-outlined text-[20px]">send</span>}
-            isLoading={sendMut.isPending}
-            onClick={send}
+            isLoading={sendMut.isPending || isSubmitting}
+            onClick={() => handleSubmit(onSubmit)()}
           >
             {scheduleMode === 'later' ? 'Schedule Send' : 'Send Notification'}
           </Button>
@@ -185,305 +167,298 @@ export function ComposeNotificationPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        <div className="lg:col-span-8 space-y-6">
-          <section className="bv-surface p-6 space-y-6">
-            <h3 className="text-title-lg font-semibold text-deep-navy flex items-center gap-2">
-              <span className="material-symbols-outlined text-secondary">mail</span> Notification Content
-            </h3>
-            <div>
-              <label className="block text-label-md text-on-surface-variant mb-2">Notification Title</label>
-              <input
-                className={cn(
-                  'w-full h-12 bg-surface-container-lowest px-4 rounded-lg border outline-none text-body-md',
-                  fieldErrors.title ? 'border-error' : 'border-outline-variant focus:border-secondary',
-                )}
-                placeholder="e.g., Scheduled Maintenance Downtime"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-              {fieldErrors.title && <p className="text-label-sm text-error mt-1">{fieldErrors.title}</p>}
-            </div>
-            <div>
-              <label className="block text-label-md text-on-surface-variant mb-2">Priority Level</label>
-              <div className="flex gap-3 flex-wrap">
-                {PRIORITIES.map((p) => (
-                  <button
-                    key={p.id}
-                    type="button"
-                    onClick={() => setPriority(p.id)}
-                    className={cn(
-                      'flex-1 min-w-[100px] py-3 px-4 rounded-lg border flex items-center justify-center gap-2',
-                      priority === p.id
-                        ? 'border-2 border-secondary bg-secondary/5'
-                        : 'border-outline-variant',
-                    )}
-                  >
-                    <div className={cn('w-2.5 h-2.5 rounded-full', p.color)} />
-                    <span
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div className="lg:col-span-8 space-y-6">
+            <section className="bv-surface p-6 space-y-6">
+              <h3 className="text-title-lg font-semibold text-deep-navy flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary">mail</span> Notification Content
+              </h3>
+              <div>
+                <label className="block text-label-md text-on-surface-variant mb-2">Notification Title</label>
+                <input
+                  {...register('title')}
+                  className={cn(
+                    'w-full h-12 bg-surface-container-lowest px-4 rounded-lg border outline-none text-body-md',
+                    errors.title ? 'border-error' : 'border-outline-variant focus:border-secondary',
+                  )}
+                  placeholder="e.g., Scheduled Maintenance Downtime"
+                />
+                {errors.title && <p className="text-label-sm text-error mt-1">{errors.title.message}</p>}
+              </div>
+              <div>
+                <label className="block text-label-md text-on-surface-variant mb-2">Priority Level</label>
+                <div className="flex gap-3 flex-wrap">
+                  {PRIORITIES.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setValue('priority', p.id, { shouldValidate: true })}
                       className={cn(
-                        'text-label-md',
-                        priority === p.id ? 'text-deep-navy font-semibold' : 'text-on-surface-variant',
+                        'flex-1 min-w-[100px] py-3 px-4 rounded-lg border flex items-center justify-center gap-2',
+                        priority === p.id
+                          ? 'border-2 border-secondary bg-secondary/5'
+                          : 'border-outline-variant',
                       )}
                     >
-                      {p.id}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label className="block text-label-md text-on-surface-variant mb-2">Message Body</label>
-              <div
-                className={cn(
-                  'border rounded-lg overflow-hidden focus-within:border-secondary',
-                  fieldErrors.body ? 'border-error' : 'border-outline-variant',
-                )}
-              >
-                <div className="bg-surface-container-low border-b border-outline-variant p-2 flex items-center gap-1">
-                  <button
-                    type="button"
-                    className="p-1.5 rounded hover:bg-surface-container"
-                    title="Bold"
-                    onClick={() => bodyRef.current && wrapSelection(bodyRef.current, '**', '**', setBody)}
-                  >
-                    <span className="material-symbols-outlined text-[20px]">format_bold</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="p-1.5 rounded hover:bg-surface-container"
-                    title="Italic"
-                    onClick={() => bodyRef.current && wrapSelection(bodyRef.current, '_', '_', setBody)}
-                  >
-                    <span className="material-symbols-outlined text-[20px]">format_italic</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="p-1.5 rounded hover:bg-surface-container"
-                    title="List"
-                    onClick={() => bodyRef.current && wrapSelection(bodyRef.current, '\n- ', '', setBody)}
-                  >
-                    <span className="material-symbols-outlined text-[20px]">format_list_bulleted</span>
-                  </button>
-                  <button
-                    type="button"
-                    className="p-1.5 rounded hover:bg-surface-container"
-                    title="Link"
-                    onClick={() =>
-                      bodyRef.current && wrapSelection(bodyRef.current, '[', '](https://)', setBody)
-                    }
-                  >
-                    <span className="material-symbols-outlined text-[20px]">link</span>
-                  </button>
-                </div>
-                <textarea
-                  ref={bodyRef}
-                  className="w-full p-4 border-none outline-none text-body-md resize-none bg-surface-container-lowest"
-                  placeholder="Enter your notification message here..."
-                  rows={8}
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                />
-              </div>
-              {fieldErrors.body && <p className="text-label-sm text-error mt-1">{fieldErrors.body}</p>}
-            </div>
-            <div>
-              <label className="block text-label-md text-on-surface-variant mb-2">Attachments (Optional)</label>
-              <DocumentUpload files={files} onChange={setFiles} />
-            </div>
-            <div>
-              <label className="block text-label-md text-on-surface-variant mb-2">Related Module Context</label>
-              <Select
-                value={moduleCtx}
-                onChange={setModuleCtx}
-                options={[
-                  { value: 'General / System', label: 'General / System' },
-                  { value: 'Human Resources', label: 'Human Resources' },
-                  { value: 'Finance & Payroll', label: 'Finance & Payroll' },
-                  { value: 'Security & Compliance', label: 'Security & Compliance' },
-                  { value: 'Facility Management', label: 'Facility Management' },
-                ]}
-              />
-            </div>
-          </section>
-        </div>
-
-        <div className="lg:col-span-4 space-y-6">
-          <section className="bv-surface p-6">
-            <h3 className="text-title-lg font-semibold text-deep-navy mb-4 flex items-center gap-2">
-              <span className="material-symbols-outlined text-secondary">group_add</span> Recipients
-            </h3>
-            <div className="flex items-center justify-between p-3 bg-surface-container-low rounded-lg border border-outline-variant mb-4">
-              <div>
-                <span className="text-label-md text-deep-navy font-medium block">All Employees</span>
-                <span className="text-[11px] text-on-surface-variant">Broadcast to all users</span>
-              </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={broadcastAll}
-                onClick={() => setBroadcastAll((v) => !v)}
-                className={cn(
-                  'w-11 h-6 rounded-full relative transition-colors',
-                  broadcastAll ? 'bg-secondary' : 'bg-outline-variant',
-                )}
-              >
-                <span
-                  className={cn(
-                    'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform',
-                    broadcastAll && 'translate-x-5',
-                  )}
-                />
-              </button>
-            </div>
-            {!broadcastAll && (
-              <>
-                <label className="block text-label-sm text-on-surface-variant mb-2">Target Roles/Teams</label>
-                <div className="relative mb-2">
-                  <input
-                    className="w-full h-10 bg-surface-container-lowest px-4 pl-10 rounded-lg border border-outline-variant text-body-sm outline-none"
-                    placeholder="Search roles..."
-                    value={roleQuery}
-                    onChange={(e) => setRoleQuery(e.target.value)}
-                  />
-                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
-                    search
-                  </span>
-                  {roleMatches.length > 0 && (
-                    <ul className="absolute z-10 left-0 right-0 mt-1 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg max-h-40 overflow-y-auto">
-                      {roleMatches.map((r) => (
-                        <li key={r}>
-                          <button
-                            type="button"
-                            className="w-full text-left px-3 py-2 text-body-sm hover:bg-surface-container"
-                            onClick={() => {
-                              setRoles((p) => [...p, r])
-                              setRoleQuery('')
-                            }}
-                          >
-                            {r}
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {roles.map((r) => (
-                    <span
-                      key={r}
-                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-secondary-container text-on-secondary-container rounded-full text-[11px] font-bold"
-                    >
-                      {r}
-                      <button type="button" onClick={() => setRoles((p) => p.filter((x) => x !== r))}>
-                        <span className="material-symbols-outlined text-[14px]">close</span>
-                      </button>
-                    </span>
+                      <div className={cn('w-2.5 h-2.5 rounded-full', p.color)} />
+                      <span
+                        className={cn(
+                          'text-label-md',
+                          priority === p.id ? 'text-deep-navy font-semibold' : 'text-on-surface-variant',
+                        )}
+                      >
+                        {p.id}
+                      </span>
+                    </button>
                   ))}
                 </div>
-              </>
-            )}
-          </section>
+                <input type="hidden" {...register('priority')} />
+              </div>
+              <div>
+                <label className="block text-label-md text-on-surface-variant mb-2">Message Body</label>
+                <div
+                  className={cn(
+                    'border rounded-lg overflow-hidden focus-within:border-secondary',
+                    errors.body ? 'border-error' : 'border-outline-variant',
+                  )}
+                >
+                  <div className="bg-surface-container-low border-b border-outline-variant p-2 flex items-center gap-1">
+                    <button
+                      type="button"
+                      className="p-1.5 rounded hover:bg-surface-container"
+                      title="Bold"
+                      onClick={() => bodyRef.current && wrapSelection(bodyRef.current, '**', '**', (v) => setValue('body', v, { shouldDirty: true }), () => watch('body'))}
+                    >
+                      <span className="material-symbols-outlined text-[20px]">format_bold</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="p-1.5 rounded hover:bg-surface-container"
+                      title="Italic"
+                      onClick={() => bodyRef.current && wrapSelection(bodyRef.current, '_', '_', (v) => setValue('body', v, { shouldDirty: true }), () => watch('body'))}
+                    >
+                      <span className="material-symbols-outlined text-[20px]">format_italic</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="p-1.5 rounded hover:bg-surface-container"
+                      title="List"
+                      onClick={() => bodyRef.current && wrapSelection(bodyRef.current, '\n- ', '', (v) => setValue('body', v, { shouldDirty: true }), () => watch('body'))}
+                    >
+                      <span className="material-symbols-outlined text-[20px]">format_list_bulleted</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="p-1.5 rounded hover:bg-surface-container"
+                      title="Link"
+                      onClick={() => bodyRef.current && wrapSelection(bodyRef.current, '[', '](https://)', (v) => setValue('body', v, { shouldDirty: true }), () => watch('body'))}
+                    >
+                      <span className="material-symbols-outlined text-[20px]">link</span>
+                    </button>
+                  </div>
+                  <textarea
+                    ref={bodyRef}
+                    {...register('body')}
+                    className="w-full p-4 border-none outline-none text-body-md resize-none bg-surface-container-lowest"
+                    placeholder="Enter your notification message here..."
+                    rows={8}
+                  />
+                </div>
+                {errors.body && <p className="text-label-sm text-error mt-1">{errors.body.message}</p>}
+              </div>
+              <div>
+                <label className="block text-label-md text-on-surface-variant mb-2">Attachments (Optional)</label>
+                <DocumentUpload files={files} onChange={setFiles} />
+              </div>
+              <div>
+                <label className="block text-label-md text-on-surface-variant mb-2">Related Module Context</label>
+                <Select
+                  {...register('moduleCtx')}
+                  options={[
+                    { value: 'General / System', label: 'General / System' },
+                    { value: 'Human Resources', label: 'Human Resources' },
+                    { value: 'Finance & Payroll', label: 'Finance & Payroll' },
+                    { value: 'Security & Compliance', label: 'Security & Compliance' },
+                    { value: 'Facility Management', label: 'Facility Management' },
+                  ]}
+                />
+              </div>
+            </section>
+          </div>
 
-          <section className="bv-surface p-6">
-            <h3 className="text-title-lg font-semibold text-deep-navy mb-4 flex items-center gap-2">
-              <span className="material-symbols-outlined text-secondary">hub</span> Channels
-            </h3>
-            <p className="text-[11px] text-on-surface-variant mb-3">V1: In-App + Email. SMS disabled.</p>
-            <div className="space-y-2">
-              {(
-                [
+          <div className="lg:col-span-4 space-y-6">
+            <section className="bv-surface p-6">
+              <h3 className="text-title-lg font-semibold text-deep-navy mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary">group_add</span> Recipients
+              </h3>
+              <div className="flex items-center justify-between p-3 bg-surface-container-low rounded-lg border border-outline-variant mb-4">
+                <div>
+                  <span className="text-label-md text-deep-navy font-medium block">All Employees</span>
+                  <span className="text-[11px] text-on-surface-variant">Broadcast to all users</span>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={broadcastAll}
+                  onClick={() => setValue('broadcastAll', !broadcastAll, { shouldValidate: true })}
+                  className={cn(
+                    'w-11 h-6 rounded-full relative transition-colors',
+                    broadcastAll ? 'bg-secondary' : 'bg-outline-variant',
+                  )}
+                >
+                  <span
+                    className={cn(
+                      'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform',
+                      broadcastAll && 'translate-x-5',
+                    )}
+                  />
+                </button>
+              </div>
+              {!broadcastAll && (
+                <>
+                  <label className="block text-label-sm text-on-surface-variant mb-2">Target Roles/Teams</label>
+                  <div className="relative mb-2">
+                    <input
+                      className="w-full h-10 bg-surface-container-lowest px-4 pl-10 rounded-lg border border-outline-variant text-body-sm outline-none"
+                      placeholder="Search roles..."
+                      value={roleQuery}
+                      onChange={(e) => setRoleQuery(e.target.value)}
+                    />
+                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
+                      search
+                    </span>
+                    {roleMatches.length > 0 && (
+                      <ul className="absolute z-10 left-0 right-0 mt-1 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg max-h-40 overflow-y-auto">
+                        {roleMatches.map((r) => (
+                          <li key={r}>
+                            <button
+                              type="button"
+                              className="w-full text-left px-3 py-2 text-body-sm hover:bg-surface-container"
+                              onClick={() => {
+                                setValue('roles', [...watch('roles'), r], { shouldDirty: true })
+                                setRoleQuery('')
+                              }}
+                            >
+                              {r}
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {watch('roles').map((r) => (
+                      <span
+                        key={r}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 bg-secondary-container text-on-secondary-container rounded-full text-[11px] font-bold"
+                      >
+                        {r}
+                        <button type="button" onClick={() => setValue('roles', watch('roles').filter((x) => x !== r), { shouldDirty: true })}>
+                          <span className="material-symbols-outlined text-[14px]">close</span>
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                </>
+              )}
+            </section>
+
+            <section className="bv-surface p-6">
+              <h3 className="text-title-lg font-semibold text-deep-navy mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary">hub</span> Channels
+              </h3>
+              <p className="text-[11px] text-on-surface-variant mb-3">V1: In-App + Email. SMS disabled.</p>
+              <div className="space-y-2">
+                {([
                   { key: 'inApp' as const, icon: 'dashboard', label: 'In-App Dashboard', disabled: false },
                   { key: 'email' as const, icon: 'mail', label: 'Official Email', disabled: false },
                   { key: 'sms' as const, icon: 'sms', label: 'SMS Alert (disabled)', disabled: true },
                   { key: 'push' as const, icon: 'notifications_active', label: 'Mobile Push', disabled: false },
-                ] as const
-              ).map((c) => (
-                <label
-                  key={c.key}
-                  className={cn(
-                    'flex items-center gap-3 p-3 rounded-lg border border-transparent',
-                    c.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-surface-container-low cursor-pointer',
-                  )}
-                >
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 rounded border-outline-variant text-secondary"
-                    checked={channels[c.key]}
-                    disabled={c.disabled}
-                    onChange={() => {
-                      if (!c.disabled) setChannels((prev) => ({ ...prev, [c.key]: !prev[c.key] }))
-                    }}
-                  />
-                  <span className="material-symbols-outlined text-on-surface-variant">{c.icon}</span>
-                  <span className="text-label-md text-on-surface">{c.label}</span>
-                </label>
-              ))}
-            </div>
-          </section>
-
-          <section className="bv-surface p-6">
-            <h3 className="text-title-lg font-semibold text-deep-navy mb-4 flex items-center gap-2">
-              <span className="material-symbols-outlined text-secondary">schedule</span> Scheduling
-            </h3>
-            <div className="space-y-3">
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="schedule"
-                  checked={scheduleMode === 'now'}
-                  onChange={() => setScheduleMode('now')}
-                  className="text-secondary"
-                />
-                <span className="text-label-md text-deep-navy font-medium">Send Immediately</span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="radio"
-                  name="schedule"
-                  checked={scheduleMode === 'later'}
-                  onChange={() => setScheduleMode('later')}
-                  className="text-secondary"
-                />
-                <span className="text-label-md text-on-surface-variant">Schedule for later</span>
-              </label>
-            </div>
-
-            {scheduleMode === 'later' && (
-              <div className="mt-4 grid grid-cols-1 gap-3 p-4 rounded-lg bg-surface-container-low border border-outline-variant">
-                <p className="text-label-sm text-on-surface-variant">
-                  Pick the date and time the notification should go out.
-                </p>
-                <div>
-                  <label className="block text-label-md text-deep-navy mb-1.5" htmlFor="sched-date">
-                    Date
+                ] as const).map((c) => (
+                  <label
+                    key={c.key}
+                    className={cn(
+                      'flex items-center gap-3 p-3 rounded-lg border border-transparent',
+                      c.disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-surface-container-low cursor-pointer',
+                    )}
+                  >
+                    <input
+                      type="checkbox"
+                      {...register(`channels.${c.key}` as const)}
+                      disabled={c.disabled}
+                      className="w-4 h-4 rounded border-outline-variant text-secondary"
+                    />
+                    <span className="material-symbols-outlined text-on-surface-variant">{c.icon}</span>
+                    <span className="text-label-md text-on-surface">{c.label}</span>
                   </label>
-                  <input
-                    id="sched-date"
-                    type="date"
-                    min={new Date().toISOString().slice(0, 10)}
-                    value={scheduleDate}
-                    onChange={(e) => setScheduleDate(e.target.value)}
-                    className="w-full h-11 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20"
-                  />
-                </div>
-                <div>
-                  <label className="block text-label-md text-deep-navy mb-1.5" htmlFor="sched-time">
-                    Time
-                  </label>
-                  <input
-                    id="sched-time"
-                    type="time"
-                    value={scheduleTime}
-                    onChange={(e) => setScheduleTime(e.target.value)}
-                    className="w-full h-11 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20"
-                  />
-                </div>
+                ))}
               </div>
-            )}
-          </section>
+            </section>
+
+            <section className="bv-surface p-6">
+              <h3 className="text-title-lg font-semibold text-deep-navy mb-4 flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary">schedule</span> Scheduling
+              </h3>
+              <div className="space-y-3">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    {...register('scheduleMode')}
+                    value="now"
+                    className="text-secondary"
+                  />
+                  <span className="text-label-md text-deep-navy font-medium">Send Immediately</span>
+                </label>
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="radio"
+                    {...register('scheduleMode')}
+                    value="later"
+                    className="text-secondary"
+                  />
+                  <span className="text-label-md text-on-surface-variant">Schedule for later</span>
+                </label>
+              </div>
+
+              {scheduleMode === 'later' && (
+                <div className="mt-4 grid grid-cols-1 gap-3 p-4 rounded-lg bg-surface-container-low border border-outline-variant">
+                  <p className="text-label-sm text-on-surface-variant">
+                    Pick the date and time the notification should go out.
+                  </p>
+                  <div>
+                    <label className="block text-label-md text-deep-navy mb-1.5" htmlFor="sched-date">
+                      Date
+                    </label>
+                    <input
+                      id="sched-date"
+                      type="date"
+                      {...register('scheduleAt')}
+                      min={new Date().toISOString().slice(0, 10)}
+                      onChange={(e) => setValue('scheduleAt', e.target.value + 'T' + (watch('scheduleAt')?.slice(11, 16) || '09:00'), { shouldValidate: true })}
+                      className="w-full h-11 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-label-md text-deep-navy mb-1.5" htmlFor="sched-time">
+                      Time
+                    </label>
+                    <input
+                      id="sched-time"
+                      type="time"
+                      {...register('scheduleAt')}
+                      onChange={(e) => setValue('scheduleAt', (watch('scheduleAt')?.slice(0, 11) || defaultScheduleDate() + 'T') + e.target.value, { shouldValidate: true })}
+                      className="w-full h-11 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20"
+                    />
+                  </div>
+                </div>
+              )}
+            </section>
+          </div>
         </div>
-      </div>
+      </form>
     </div>
   )
 }
+
+import { useState } from 'react'

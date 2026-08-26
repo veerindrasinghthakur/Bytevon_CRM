@@ -127,7 +127,7 @@ export function DocumentsPage() {
         actions={
           <div className="flex flex-wrap gap-2">
             <RefreshButton onClick={() => void refetch()} isLoading={isFetching} iconOnly />
-            <ExportButton resource={ResourceName.DOCUMENT} query={search} filenameStem="documents" />
+            <ExportButton resource={ResourceName.DOCUMENT} query={search} selectedIds={[]} filenameStem="documents" />
             <UploadButton
               label="Upload"
               onFiles={(files) => void uploadMutation.mutateAsync(files)}

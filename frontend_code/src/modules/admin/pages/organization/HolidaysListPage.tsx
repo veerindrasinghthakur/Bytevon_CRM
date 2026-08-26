@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
@@ -103,7 +102,6 @@ export function HolidaysListPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <BackButton to="/admin/settings/holidays" label="Back to calendars" />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h2 className="text-title-lg font-semibold text-on-background">{calName}</h2>

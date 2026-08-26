@@ -1,6 +1,5 @@
 import { useParams } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
-import { BackButton } from '@/shared/components/layout/BackButton'
 import { cn } from '@/shared/lib/cn'
 import { listLeaveLedger } from '../api/leave'
 
@@ -14,10 +13,6 @@ export function LeaveLedgerPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <BackButton
-        to={employeeId ? `/workforce/employees/${employeeId}` : '/admin/leave-settings/policies'}
-        label="Back"
-      />
       <div>
         <h2 className="text-title-lg font-semibold text-on-background">Leave ledger</h2>
         <p className="text-body-sm text-on-surface-variant mt-0.5">
