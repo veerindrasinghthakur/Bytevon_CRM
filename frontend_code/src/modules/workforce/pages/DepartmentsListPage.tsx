@@ -7,6 +7,7 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import {
@@ -20,6 +21,8 @@ import {
 import { Can } from '@/shared/rbac'
 import { Action, ResourceName } from '@/shared/schema'
 import { useDepartmentsList } from '../hooks/use-departments-list'
+import { workforceRoutes } from '../routes'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -106,6 +109,7 @@ export function DepartmentsListPage() {
   const {
     items,
     filtered,
+    pageItems,
     metrics,
     loading,
     error,
@@ -113,22 +117,26 @@ export function DepartmentsListPage() {
     setSearch,
     status,
     setStatus,
+    page,
+    setPage,
     reload,
   } = useDepartmentsList()
 
   const selection = useListSelection({
-    items: filtered,
+    items: pageItems,
     getId: (d) => String(d.id),
   })
 
   const goDetail = (id: number) => {
-    navigate({
-      to: '/workforce/departments/$departmentId',
+    safeNavigate(navigate, {
+      to: workforceRoutes.departmentDetail(id),
       params: { departmentId: String(id) },
     })
   }
 
-  const openDeptOverview = (d: (typeof filtered)[number]) => {
+  const goNew = () => safeNavigate(navigate, { to: workforceRoutes.departmentNew })
+
+  const openDeptOverview = (d: (typeof pageItems)[number]) => {
     openPanel({
       title: d.name,
       subtitle: d.code,
@@ -157,6 +165,7 @@ export function DepartmentsListPage() {
         title="Could not load departments"
         description="Department data failed to load. Retry or go back."
         onRetry={() => void reload()}
+        onBack={() => safeNavigate(navigate, { to: workforceRoutes.departments })}
       />
     )
   }
@@ -176,11 +185,7 @@ export function DepartmentsListPage() {
               filenameStem="departments"
             />
             <Can action={Action.CREATE} resource={ResourceName.DEPARTMENT}>
-              <Button
-                variant="primary"
-                leftIcon={<Icon name="add" />}
-                onClick={() => navigate({ to: '/workforce/departments/new' })}
-              >
+              <Button variant="primary" leftIcon={<Icon name="add" />} onClick={goNew}>
                 Add Department
               </Button>
             </Can>
@@ -198,7 +203,7 @@ export function DepartmentsListPage() {
       {selection.selectionMode && (
         <BulkSelectionBar
           selectedCount={selection.selectedCount}
-          filteredCount={filtered.length}
+          filteredCount={pageItems.length}
           onCancel={selection.exitSelectionMode}
         >
           <ExportButton
@@ -272,7 +277,7 @@ export function DepartmentsListPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
-                {filtered.map((d) => {
+                {pageItems.map((d) => {
                   const sid = String(d.id)
                   const isSelected = selection.isSelected(sid)
                   return (
@@ -362,8 +367,15 @@ export function DepartmentsListPage() {
               </tbody>
             </table>
           </div>
+          <Pagination
+            page={page}
+            pageSize={DEFAULT_PAGE_SIZE}
+            total={filtered.length}
+            onPageChange={setPage}
+            itemLabel="departments"
+          />
           <div className="px-6 py-4 border-t border-outline-variant text-body-sm text-on-surface-variant">
-            Showing {filtered.length} of {items.length} departments
+            Showing {pageItems.length} of {filtered.length} departments
             {!selection.selectionMode && (
               <span className="ml-2 opacity-80">· Hold a row 3s to multi-select</span>
             )}
