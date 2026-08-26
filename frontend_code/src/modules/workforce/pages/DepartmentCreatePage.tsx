@@ -5,6 +5,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { createDepartment, listEmploymentOptionsForPicker } from '../api/departments'
+import { emptyDepartmentForm, toCreateDepartmentInput, type DepartmentFormInput } from '../types'
 import { workforceRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
@@ -22,18 +23,17 @@ const inputClass =
 
 export function DepartmentCreatePage() {
   const navigate = useNavigate()
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [colorTag, setColorTag] = useState('#0058bc')
-  const [status, setStatus] = useState<'Active' | 'Inactive'>('Active')
-  const [headId, setHeadId] = useState('')
-  const [parentHint, setParentHint] = useState('')
+  const [form, setForm] = useState<DepartmentFormInput>(() => emptyDepartmentForm())
   const [headOptions, setHeadOptions] = useState<{ value: string; label: string; meta?: string }[]>(
     [],
   )
   const [saving, setSaving] = useState(false)
   const [nameError, setNameError] = useState(false)
   const [error, setError] = useState('')
+
+  const setField = <K extends keyof DepartmentFormInput>(key: K, value: DepartmentFormInput[K]) => {
+    setForm((prev) => ({ ...prev, [key]: value }))
+  }
 
   useEffect(() => {
     listEmploymentOptionsForPicker().then(setHeadOptions)
@@ -42,7 +42,7 @@ export function DepartmentCreatePage() {
   const goList = () => safeNavigate(navigate, { to: workforceRoutes.departments })
 
   const handleSave = async () => {
-    if (!name.trim()) {
+    if (!form.name.trim()) {
       setNameError(true)
       return
     }
@@ -50,11 +50,8 @@ export function DepartmentCreatePage() {
     setError('')
     setSaving(true)
     try {
-      const created = await createDepartment({
-        name,
-        headEmploymentId: headId ? Number(headId) : null,
-        isArchived: status === 'Inactive',
-      })
+      const payload = toCreateDepartmentInput(form)
+      const created = await createDepartment(payload)
       safeNavigate(navigate, {
         to: workforceRoutes.departmentDetail(created.id),
         params: { departmentId: String(created.id) },
@@ -98,8 +95,8 @@ export function DepartmentCreatePage() {
             <input
               className={cn(inputClass, nameError && 'border-error bg-error-container/10')}
               placeholder="e.g. Engineering, Sales, Human Resources"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={form.name}
+              onChange={(e) => setField('name', e.target.value)}
             />
             {nameError && <p className="text-error text-xs">Department name is required</p>}
           </div>
@@ -109,8 +106,8 @@ export function DepartmentCreatePage() {
               className={cn(inputClass, 'resize-none')}
               rows={3}
               placeholder="Short mission or scope for this department…"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={form.description}
+              onChange={(e) => setField('description', e.target.value)}
             />
             <p className="text-xs text-on-surface-variant">UI field; persist when department schema supports description.</p>
           </div>
@@ -119,11 +116,15 @@ export function DepartmentCreatePage() {
             <div className="flex items-center gap-3">
               <input
                 type="color"
-                value={colorTag}
-                onChange={(e) => setColorTag(e.target.value)}
+                value={form.colorTag || '#0058bc'}
+                onChange={(e) => setField('colorTag', e.target.value)}
                 className="w-12 h-12 rounded-lg border border-outline-variant cursor-pointer"
               />
-              <input className={inputClass} value={colorTag} onChange={(e) => setColorTag(e.target.value)} />
+              <input
+                className={inputClass}
+                value={form.colorTag}
+                onChange={(e) => setField('colorTag', e.target.value)}
+              />
             </div>
           </div>
           <p className="text-body-sm text-on-surface-variant">
@@ -146,8 +147,8 @@ export function DepartmentCreatePage() {
               <label className="text-label-md">Department Head</label>
               <SearchableSelect
                 options={headOptions}
-                value={headId}
-                onChange={setHeadId}
+                value={form.headEmploymentId}
+                onChange={(v) => setField('headEmploymentId', v)}
                 placeholder="Type to search employees…"
               />
             </div>
@@ -155,8 +156,8 @@ export function DepartmentCreatePage() {
               <label className="text-label-md">Parent department (optional)</label>
               <input
                 className={inputClass}
-                value={parentHint}
-                onChange={(e) => setParentHint(e.target.value)}
+                value={form.parentHint}
+                onChange={(e) => setField('parentHint', e.target.value)}
                 placeholder="UI only until hierarchy is wired"
               />
             </div>
@@ -168,14 +169,14 @@ export function DepartmentCreatePage() {
                     key={s}
                     className={cn(
                       'flex items-center gap-3 cursor-pointer p-3 rounded-lg border transition-colors',
-                      status === s ? 'border-secondary bg-secondary/5' : 'border-outline-variant',
+                      form.status === s ? 'border-secondary bg-secondary/5' : 'border-outline-variant',
                     )}
                   >
                     <input
                       type="radio"
                       name="status"
-                      checked={status === s}
-                      onChange={() => setStatus(s)}
+                      checked={form.status === s}
+                      onChange={() => setField('status', s)}
                       className="w-4 h-4 text-secondary"
                     />
                     <span className="text-body-md">{s}</span>
