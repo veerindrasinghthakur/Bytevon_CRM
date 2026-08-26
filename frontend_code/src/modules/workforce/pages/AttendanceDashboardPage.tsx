@@ -4,14 +4,16 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { cn } from '@/shared/lib/cn'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
+import { workforceRoutes } from '../routes'
 import {
   attendanceKpis,
   weeklyAttendance,
   recentCheckIns,
   todayAttendance,
   corrections,
-} from '../data/attendanceMock'
+} from '@/shared/mock/data/workforce'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -67,7 +69,9 @@ export function AttendanceDashboardPage() {
           <Button
             variant="outline"
             leftIcon={<Icon name="groups" />}
-            onClick={() => navigate({ to: '/workforce/attendance/employees' })}
+            onClick={() =>
+              safeNavigate(navigate, { to: '/workforce/attendance/employees' })
+            }
           >
             All employees
           </Button>
@@ -212,7 +216,7 @@ export function AttendanceDashboardPage() {
                     key={r.id}
                     className="zebra-row cursor-pointer"
                     onClick={() =>
-                      navigate({
+                      safeNavigate(navigate, {
                         to: '/workforce/attendance/$attendanceId',
                         params: { attendanceId: r.id },
                       })
