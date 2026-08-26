@@ -1,2 +1,4 @@
-"""Route modules — `from routes import admin` needs admin.py present."""
-# Intentionally empty: Python loads routes.admin from admin.py as a submodule.
+"""Route modules — one file per frontend-aligned domain."""
+from . import admin, auth, dashboard, health, my_work, organization
+
+__all__ = ["admin", "auth", "dashboard", "health", "my_work", "organization"]
