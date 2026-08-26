@@ -22,6 +22,8 @@ import {
 import { Can } from '@/shared/rbac'
 import { Action, ResourceName } from '@/shared/schema'
 import { useEmployeesList } from '../hooks/use-employees-list'
+import { workforceRoutes } from '../routes'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
 const stateStyles: Record<string, string> = {
@@ -146,11 +148,13 @@ export function EmployeesListPage() {
   })
 
   const goDetail = (id: number) => {
-    navigate({
-      to: '/workforce/employees/$employeeId',
+    safeNavigate(navigate, {
+      to: workforceRoutes.employeeDetail(id),
       params: { employeeId: String(id) },
     })
   }
+
+  const goNew = () => safeNavigate(navigate, { to: workforceRoutes.employeeNew })
 
   const openEmployeeOverview = (emp: (typeof pageItems)[number]) => {
     openPanel({
@@ -180,6 +184,7 @@ export function EmployeesListPage() {
         title="Could not load employees"
         description="Employee directory failed to load. Retry or go back."
         onRetry={() => void reload()}
+        onBack={() => safeNavigate(navigate, { to: workforceRoutes.employees })}
       />
     )
   }
@@ -199,11 +204,7 @@ export function EmployeesListPage() {
               filenameStem="employees"
             />
             <Can action={Action.CREATE} resource={ResourceName.EMPLOYMENT}>
-              <Button
-                variant="primary"
-                leftIcon={<Icon name="add" />}
-                onClick={() => navigate({ to: '/workforce/employees/new' })}
-              >
+              <Button variant="primary" leftIcon={<Icon name="add" />} onClick={goNew}>
                 Add Employee
               </Button>
             </Can>
