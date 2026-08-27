@@ -5,5 +5,7 @@ from typing import Any
 import json
 
 def build_seed() -> dict[str, Any]:
-    p = Path(__file__).with_name("projects_data.json")
-    return json.loads(p.read_text(encoding="utf-8"))
+    base = Path(__file__).parent
+    a = json.loads((base / "projects_data_a.json").read_text(encoding="utf-8"))
+    b = json.loads((base / "projects_data_b.json").read_text(encoding="utf-8"))
+    return {**a, **b}
