@@ -1,10 +1,9 @@
-"""Load projects_seed.json seed."""
+"""Projects module seed."""
 from __future__ import annotations
-import json
 from pathlib import Path
 from typing import Any
-
-_JSON = Path(__file__).with_name("projects_seed.json")
+import json
 
 def build_seed() -> dict[str, Any]:
-    return json.loads(_JSON.read_text(encoding="utf-8"))
+    p = Path(__file__).with_name("projects_data.json")
+    return json.loads(p.read_text(encoding="utf-8"))
