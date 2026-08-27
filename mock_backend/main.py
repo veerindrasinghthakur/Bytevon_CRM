@@ -11,19 +11,17 @@ Run:
 
 from __future__ import annotations
 
-from pathlib import Path
-
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from routes import admin, auth, dashboard, health, my_work, organization, extras
+from routes import admin, auth, dashboard, health, my_work, organization, projects, sales
 from store import STORE_PATH, load
 
 app = FastAPI(
     title="ByteVon Mock Backend",
     description="Temporary JSON-backed API for frontend flow testing. No validation.",
-    version="0.2.0-demo",
+    version="0.3.0-demo",
 )
 
 app.add_middleware(
@@ -52,7 +50,7 @@ class AuthBypassMiddleware(BaseHTTPMiddleware):
 app.add_middleware(AuthBypassMiddleware)
 
 # Mount under /api/v1 (matches real backend) and also without prefix for flexibility
-MODULE_ROUTERS = (health, auth, admin, organization, dashboard, my_work, extras)
+MODULE_ROUTERS = (health, auth, admin, organization, dashboard, my_work, sales, projects)
 
 for r in MODULE_ROUTERS:
     if r is health:
@@ -78,6 +76,14 @@ def root():
     return {
         "service": "bytevon-mock-backend",
         "docs": "/docs",
-        "modules": ["auth", "admin", "organization", "dashboard", "my-work"],
+        "modules": [
+            "auth",
+            "admin",
+            "organization",
+            "dashboard",
+            "my-work",
+            "sales",
+            "projects",
+        ],
         "hint": "POST /api/v1/admin/_reset to re-seed",
     }
