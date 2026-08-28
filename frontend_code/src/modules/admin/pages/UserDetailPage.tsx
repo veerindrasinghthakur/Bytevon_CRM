@@ -13,6 +13,8 @@ import { myAdminRoutes } from '@/modules/admin/routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useUserDetail } from '../hooks/use-user-detail'
 import { cn } from '@/shared/lib/cn'
+import { Modal } from '@/shared/components/ui/Modal'
+import { Section, Field, EditableField } from '@/shared/components/ui/Section'
 
 export function UserDetailPage() {
   const { userId } = useParams({ strict: false }) as { userId?: string }
@@ -199,7 +201,7 @@ export function UserDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
-          <Card title="Profile">
+          <Section title="Profile">
             <Field label="User ID" value={String(display.id)} />
             <EditableField
               label="Full Name"
@@ -233,8 +235,8 @@ export function UserDetailPage() {
             )}
             <Field label="Last Login" value={display.lastLogin} />
             <Field label="Employee code" value={display.employeeCode} />
-          </Card>
-          <Card title="Role Assignment">
+          </Section>
+          <Section title="Role Assignment">
             {d.isEditing ? (
               <div className="mb-3">
                 <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">
@@ -255,15 +257,15 @@ export function UserDetailPage() {
               Search and pick a role from the catalogue. Additional scoped roles can be assigned from Roles
               & Permissions.
             </p>
-          </Card>
+          </Section>
         </div>
         <div className="space-y-4">
-          <Card title="Status">
+          <Section title="Status">
             <span
               className={cn(
                 'inline-flex px-3 py-1 rounded-full text-label-sm font-medium border',
-                d.status === 'Active' && 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                d.status === 'Locked' && 'bg-red-50 text-red-700 border-red-200',
+                d.status === 'Active' && 'bg-[var(--color-success-emerald)]/10 text-[var(--color-success-emerald)] border-[var(--color-success-emerald)]/30',
+                d.status === 'Locked' && 'bg-[var(--color-error-red)]/10 text-[var(--color-error-red)] border-[var(--color-error-red)]/30',
                 d.status === 'Inactive' &&
                   'bg-surface-container text-on-surface-variant border-outline-variant',
               )}
@@ -277,7 +279,7 @@ export function UserDetailPage() {
               without credentials.
             </p>
           </Card>
-          <Card title="Quick Actions">
+          <Section title="Quick Actions">
             <div className="flex flex-col gap-2">
               <Button
                 variant="outline"
@@ -353,102 +355,6 @@ export function UserDetailPage() {
             </Button>
           </div>
         </Modal>
-      )}
-    </div>
-  )
-}
-
-function Modal({
-  title,
-  children,
-  onClose,
-  danger,
-}: {
-  title: string
-  children: React.ReactNode
-  onClose: () => void
-  danger?: boolean
-}) {
-  return (
-    <>
-      <div className="fixed inset-0 bg-on-surface/20 backdrop-blur-sm z-40" onClick={onClose} />
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="bv-surface executive-shadow w-full max-w-md">
-          <div
-            className={cn(
-              'px-6 py-4 border-b border-outline-variant flex items-center justify-between',
-              danger && 'bg-error/5',
-            )}
-          >
-            <h3 className="text-title-lg font-semibold text-on-background flex items-center gap-2">
-              {danger && <span className="material-symbols-outlined text-error">warning</span>}
-              {title}
-            </h3>
-            <button
-              type="button"
-              className="p-1 rounded-lg hover:bg-surface-container transition-colors"
-              onClick={onClose}
-            >
-              <span className="material-symbols-outlined">close</span>
-            </button>
-          </div>
-          <div className="p-6">{children}</div>
-        </div>
-      </div>
-    </>
-  )
-}
-
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="bv-surface p-6">
-      <h3 className="text-title-lg font-semibold text-on-background mb-4">{title}</h3>
-      {children}
-    </div>
-  )
-}
-
-function Field({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="mb-3 last:mb-0">
-      <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-0.5">{label}</p>
-      <p className="text-body-md text-on-background">{value}</p>
-    </div>
-  )
-}
-
-function EditableField({
-  label,
-  value,
-  editing,
-  registration,
-  error,
-}: {
-  label: string
-  value: string
-  editing: boolean
-  registration: Record<string, unknown>
-  error?: string
-}) {
-  return (
-    <div className="mb-3 last:mb-0">
-      <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-0.5">{label}</p>
-      {editing ? (
-        <>
-          <input
-            {...registration}
-            defaultValue={value}
-            className={cn(
-              'w-full rounded-lg border bg-white px-3 py-2 text-body-sm outline-none transition-colors',
-              error
-                ? 'border-error focus:border-error focus:ring-2 focus:ring-error/30'
-                : 'border-outline-variant focus:border-secondary focus:ring-2 focus:ring-secondary/30',
-            )}
-          />
-          {error && <p className="mt-1 text-caption text-error">{error}</p>}
-        </>
-      ) : (
-        <p className="text-body-md text-on-background">{value}</p>
       )}
     </div>
   )

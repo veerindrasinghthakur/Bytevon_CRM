@@ -5,14 +5,21 @@ export const statusBadgeClass: Record<string, string> = {
 }
 
 export const statusDot: Record<string, string> = {
-  Active: 'bg-emerald-500',
-  Inactive: 'bg-slate-400',
-  Locked: 'bg-red-500',
+  Active: 'bg-[var(--color-success-emerald)]',
+  Inactive: 'bg-on-surface-variant',
+  Locked: 'bg-[var(--color-error-red)]',
 }
 
 export const categoryStyles: Record<string, string> = {
   'Core Role': 'bg-secondary/10 text-secondary',
   Operational: 'bg-primary/10 text-primary',
+  Financial: 'status-badge status-warning',
+  Standard: 'status-badge status-neutral',
+}
+
+export const categoryBadgeStyles: Record<string, string> = {
+  'Core Role': 'bg-[var(--color-secondary)]/10 text-[var(--color-secondary)]',
+  Operational: 'bg-[var(--color-primary)]/10 text-[var(--color-primary)]',
   Financial: 'status-badge status-warning',
   Standard: 'status-badge status-neutral',
 }
@@ -30,11 +37,11 @@ export const auditActionBadge: Record<string, string> = {
 
 /** Audit log action → dot color class (matched by substring against log.action). */
 export const auditActionDot: Record<string, string> = {
-  Create: 'bg-emerald-500',
-  Update: 'bg-blue-500',
-  Delete: 'bg-red-500',
-  Login: 'bg-sky-500',
-  Lock: 'bg-amber-500',
+  Create: 'bg-[var(--color-success-emerald)]',
+  Update: 'bg-[var(--color-primary-blue)]',
+  Delete: 'bg-[var(--color-error-red)]',
+  Login: 'bg-[var(--color-info-sky)]',
+  Lock: 'bg-[var(--color-warning-amber)]',
 }
 
 /** Resolve an audit action string to its badge/dot key ('Create' | 'Update' | ...). */

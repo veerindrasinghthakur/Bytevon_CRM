@@ -16,9 +16,7 @@ import { useShiftsList } from '../../hooks/use-organization-shifts'
 import { can } from '@/shared/rbac/can'
 import { Action, ResourceName } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ShiftRow = any
+import type { ShiftRow } from '@/shared/schema'
 
 function ShiftQuickContent({ s }: { s: ShiftRow }) {
   return (
@@ -56,7 +54,7 @@ export function ShiftsListPage() {
   const navigate = useNavigate()
   const { openPanel } = useQuickOverview()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
-  const base = pathname.startsWith('/workforce') ? '/workforce/shifts' : '/admin/settings/shifts'
+  const isWorkforce = pathname.startsWith('/workforce')
   const canCreate = can({ action: Action.CREATE, resource: ResourceName.SHIFT })
 
   const { data, isLoading, isError, error, refetch } = useShiftsList(true)
@@ -68,13 +66,12 @@ export function ShiftsListPage() {
       subtitle: `${String(s.start_time).slice(0, 5)} – ${String(s.end_time).slice(0, 5)}`,
       icon: 'schedule',
       status: s.is_archived ? 'Archived' : 'Active',
-      statusDotClass: s.is_archived ? 'bg-slate-400' : 'bg-emerald-500',
+      statusDotClass: s.is_archived ? 'bg-on-surface-variant' : 'bg-[var(--color-success-emerald)]',
       content: <ShiftQuickContent s={s} />,
       fullRecordLabel: 'Open full record',
       onOpenFull: () =>
         safeNavigate(navigate, {
-          to: `${base}/$shiftId`,
-          params: { shiftId: String(s.id) },
+          to: isWorkforce ? `/workforce/shifts/${s.id}` : `/admin/settings/shifts/${s.id}`,
         }),
       widthClass: 'max-w-[520px]',
     })
@@ -99,7 +96,7 @@ export function ShiftsListPage() {
             variant="primary"
             size="sm"
             leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
-            onClick={() => safeNavigate(navigate, { to: `${base}/new` })}
+            onClick={() => safeNavigate(navigate, { to: isWorkforce ? '/workforce/shifts/new' : '/admin/settings/shifts/new' })}
           >
             Add shift
           </Button>
@@ -108,7 +105,7 @@ export function ShiftsListPage() {
       {items.length === 0 ? (
         <EmptyState title="No shifts" description="Create a shift to assign employees.">
           {canCreate ? (
-            <Button variant="primary" onClick={() => safeNavigate(navigate, { to: `${base}/new` })}>
+            <Button variant="primary" onClick={() => safeNavigate(navigate, { to: isWorkforce ? '/workforce/shifts/new' : '/admin/settings/shifts/new' })}>
               Add shift
             </Button>
           ) : null}

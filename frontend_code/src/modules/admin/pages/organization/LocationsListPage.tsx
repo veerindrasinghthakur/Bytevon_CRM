@@ -19,6 +19,7 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useLocationsList } from '../../hooks/use-organization-locations'
 import type { LocationRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
+import { myAdminRoutes } from '../../routes'
 
 function LocationQuickContent({ loc }: { loc: LocationRow }) {
   return (
@@ -81,7 +82,7 @@ export function LocationsListPage() {
       subtitle: `${loc.city}, ${loc.country}`,
       icon: 'location_on',
       status: loc.is_archived ? 'Archived' : 'Active',
-      statusDotClass: loc.is_archived ? 'bg-slate-400' : 'bg-emerald-500',
+      statusDotClass: loc.is_archived ? 'bg-on-surface-variant' : 'bg-[var(--color-success-emerald)]',
       content: <LocationQuickContent loc={loc} />,
       fullRecordLabel: 'Open full record',
       onOpenFull: () => openLocation(loc),
@@ -105,7 +106,7 @@ export function LocationsListPage() {
         <Button
           variant="primary"
           leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
-          onClick={() => safeNavigate(navigate, { to: '/admin/settings/offices/new' })}
+          onClick={() => safeNavigate(navigate, { to: myAdminRoutes.officesNew })}
         >
           Add Location
         </Button>
@@ -139,7 +140,7 @@ export function LocationsListPage() {
           title="No locations"
           description="Add an office location to configure attendance radius, timezone, and payroll region."
           actionLabel="Add Location"
-          onAction={() => safeNavigate(navigate, { to: '/admin/settings/offices/new' })}
+          onAction={() => safeNavigate(navigate, { to: myAdminRoutes.officesNew })}
         />
       ) : (
         <div className="bv-surface overflow-hidden relative">

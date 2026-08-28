@@ -7,6 +7,7 @@ import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { LeaveSettingsNav } from '../components/LeaveSettingsNav'
 import { LeaveEditContext } from '../context/LeaveEditContext'
 import { getLeaveAdminMetrics } from '../api/metrics'
+import { queryKeys } from '@/shared/lib/query-keys'
 
 /** Layout for /admin/leave-settings/* — metrics above nav; Edit pencil moved to Accrual Policy section */
 export function LeaveSettingsLayout() {
@@ -15,7 +16,7 @@ export function LeaveSettingsLayout() {
   const isPolicies = pathname.includes('/policies') || pathname.includes('/ledger')
 
   const { data: metrics } = useQuery({
-    queryKey: ['admin', 'metrics', 'leave'],
+    queryKey: queryKeys.admin.leave.policies(),
     queryFn: getLeaveAdminMetrics,
   })
 

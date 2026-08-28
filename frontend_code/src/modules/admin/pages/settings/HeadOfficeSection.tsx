@@ -3,13 +3,14 @@ import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
 import { listHeadOfficeOptions } from '../../api/offices'
+import { queryKeys } from '@/shared/lib/query-keys'
 
 export function HeadOfficeSection() {
   const [pickerOpen, setPickerOpen] = useState(false)
   const [headId, setHeadId] = useState('ny')
 
   const { data: offices = [], isLoading } = useQuery({
-    queryKey: ['admin', 'offices', 'head-options'],
+    queryKey: queryKeys.admin.offices.headOptions(),
     queryFn: listHeadOfficeOptions,
   })
 

@@ -11,6 +11,7 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getAdminRole, deleteAdminRole } from '../api/roles'
 import { listAdminUsers } from '../api/users'
 import { cn } from '@/shared/lib/cn'
+import { queryKeys } from '@/shared/lib/query-keys'
 
 export function RoleDetailPage() {
   const { roleId } = useParams({ strict: false }) as { roleId?: string }
@@ -20,20 +21,20 @@ export function RoleDetailPage() {
   const deleteMutation = useMutation({
     mutationFn: () => deleteAdminRole(roleId as string),
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: ['admin', 'roles'] })
-      void qc.invalidateQueries({ queryKey: ['admin', 'users'] })
+      await qc.invalidateQueries({ queryKey: queryKeys.admin.roles.all })
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.users.all })
       safeNavigate(navigate, { to: myAdminRoutes.rolesList })
     },
   })
 
   const roleQuery = useQuery({
-    queryKey: ['admin', 'roles', roleId],
+    queryKey: queryKeys.admin.roles.detail(roleId as string),
     queryFn: () => getAdminRole(roleId as string),
     enabled: Boolean(roleId),
   })
 
   const usersQuery = useQuery({
-    queryKey: ['admin', 'users', 'list'],
+    queryKey: queryKeys.admin.users.list(),
     queryFn: () => listAdminUsers(),
   })
 

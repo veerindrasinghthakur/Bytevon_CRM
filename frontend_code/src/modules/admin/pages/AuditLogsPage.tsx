@@ -24,6 +24,7 @@ import { listAuditLogs } from '../api/audit'
 import type { AuditLog } from '../types'
 import { auditActionBadge, auditActionDot, resolveAuditActionKey } from '../schemas/enums'
 import { cn } from '@/shared/lib/cn'
+import { MetricCard } from '@/shared/components/ui/MetricCard'
 
 function AuditQuickContent({ log }: { log: AuditLog }) {
   return (
@@ -179,24 +180,24 @@ export function AuditLogsPage() {
       />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard icon="event_note" value={String(auditLogs.length)} title="Loaded events" subtitle="From audit API / store." />
-        <KpiCard
+        <MetricCard icon="event_note" label="Loaded Events" value={String(auditLogs.length)} hint="From audit API / store." />
+        <MetricCard
           icon="shield_person"
+          label="Login-related"
           value={String(auditLogs.filter((l) => /login/i.test(l.action)).length)}
-          title="Login-related"
-          subtitle="Successful login and logout style events."
+          hint="Successful login and logout style events."
         />
-        <KpiCard
+        <MetricCard
           icon="business_center"
+          label="Business Events"
           value={String(auditLogs.filter((l) => !/login|lock/i.test(l.action)).length)}
-          title="Business events"
-          subtitle="Roles, users, settings changes."
+          hint="Roles, users, settings changes."
         />
-        <KpiCard
+        <MetricCard
           icon="terminal"
+          label="System Events"
           value={String(auditLogs.filter((l) => l.actor === 'System').length)}
-          title="System events"
-          subtitle="Automated / system actor rows."
+          hint="Automated / system actor rows."
         />
       </section>
 
@@ -394,31 +395,6 @@ export function AuditLogsPage() {
           </div>
         )}
       </section>
-    </div>
-  )
-}
-
-function KpiCard({
-  icon,
-  value,
-  title,
-  subtitle,
-}: {
-  icon: string
-  value: string
-  title: string
-  subtitle: string
-}) {
-  return (
-    <div className="bv-surface card-hover p-6">
-      <div className="flex items-center justify-between mb-2">
-        <div className="w-10 h-10 rounded-lg bg-surface-container text-secondary flex items-center justify-center">
-          <span className="material-symbols-outlined">{icon}</span>
-        </div>
-        <span className="text-2xl font-bold text-primary">{value}</span>
-      </div>
-      <p className="text-title-lg font-semibold text-on-surface mb-1">{title}</p>
-      <p className="text-label-sm text-on-surface-variant">{subtitle}</p>
     </div>
   )
 }

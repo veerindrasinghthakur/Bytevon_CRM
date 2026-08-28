@@ -7,6 +7,7 @@ import { useLeaveEdit } from '../context/LeaveEditContext'
 import { listLeaveTypeSettings } from '../api/leave'
 import { getLeaveAccrualPolicy, updateLeaveAccrualPolicy } from '../api/settings'
 import type { LeaveAccrualPolicy } from '../types'
+import { queryKeys } from '@/shared/lib/query-keys'
 
 /** Content only — pencil Edit lives on Accrual Policy section */
 export function LeaveSettingsPage() {
@@ -17,12 +18,12 @@ export function LeaveSettingsPage() {
   const [accrual, setAccrual] = useState<LeaveAccrualPolicy | null>(null)
 
   const { data: leaveTypes = [], isLoading } = useQuery({
-    queryKey: ['admin', 'leave', 'types'],
+    queryKey: queryKeys.admin.leave.policies(),
     queryFn: listLeaveTypeSettings,
   })
 
   const { data: accrualData, isLoading: accrualLoading } = useQuery({
-    queryKey: ['admin', 'settings', 'leave-accrual'],
+    queryKey: queryKeys.admin.settings.leaveAccrual(),
     queryFn: getLeaveAccrualPolicy,
   })
 
@@ -33,7 +34,7 @@ export function LeaveSettingsPage() {
   const saveAccrual = useMutation({
     mutationFn: () => updateLeaveAccrualPolicy(accrual!),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin', 'settings', 'leave-accrual'] })
+      qc.invalidateQueries({ queryKey: queryKeys.admin.settings.leaveAccrual() })
     },
     onError: () => {
       // Errors surface via mutation state if needed

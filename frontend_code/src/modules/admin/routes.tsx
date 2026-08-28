@@ -160,7 +160,7 @@ export function createAdminRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
       getParentRoute: () => appLayoutRoute,
       path: '/admin',
       beforeLoad: () => {
-        throw redirect({ to: '/admin/users' } as any)
+        throw redirect({ to: myAdminRoutes.usersList })
       },
     }),
     createRoute({
@@ -202,7 +202,7 @@ export function createAdminRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
       getParentRoute: () => appLayoutRoute,
       path: '/admin/organization',
       beforeLoad: () => {
-        throw redirect({ to: '/admin/settings' } as any)
+        throw redirect({ to: myAdminRoutes.shiftsList })
       },
     }),
     attendanceLayout.addChildren([
@@ -233,7 +233,7 @@ export function createAdminRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
       getParentRoute: () => appLayoutRoute,
       path: '/admin/leave-policies',
       beforeLoad: () => {
-        throw redirect({ to: '/admin/leave-settings/policies' } as any)
+        throw redirect({ to: myAdminRoutes.leaveSettings + '/policies' })
       },
     }),
     createRoute({
@@ -241,9 +241,9 @@ export function createAdminRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
       path: '/admin/leave-ledger/$employeeId',
       beforeLoad: ({ params }) => {
         throw redirect({
-          to: '/admin/leave-settings/ledger/$employeeId',
+          to: myAdminRoutes.leaveSettings + '/ledger/' + params.employeeId,
           params: { employeeId: params.employeeId },
-        } as any)
+        })
       },
     }),
     createRoute({
@@ -260,7 +260,7 @@ export function createAdminRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
       getParentRoute: () => appLayoutRoute,
       path: '/admin/notifications',
       beforeLoad: () => {
-        throw redirect({ to: '/notifications/settings' } as any)
+        throw redirect({ to: '/notifications/settings' })
       },
     }),
   ]

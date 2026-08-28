@@ -33,7 +33,7 @@ export function BrandingSection() {
               <div className="w-8 h-8 rounded bg-primary border border-outline-variant" />
               <input
                 className="flex-1 text-xs border border-outline-variant rounded px-2 py-1.5 outline-none focus:border-secondary"
-                defaultValue="#000613"
+                defaultValue="var(--color-primary)"
               />
             </div>
           </div>
@@ -43,7 +43,7 @@ export function BrandingSection() {
               <div className="w-8 h-8 rounded bg-secondary border border-outline-variant" />
               <input
                 className="flex-1 text-xs border border-outline-variant rounded px-2 py-1.5 outline-none focus:border-secondary"
-                defaultValue="#0059bb"
+                defaultValue="var(--color-secondary)"
               />
             </div>
           </div>

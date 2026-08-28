@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { myAdminRoutes } from '../routes'
@@ -12,6 +14,7 @@ import {
   listPermissionCatalog,
   updateAdminRole,
 } from '../api/roles'
+import { roleFormSchema, type RoleFormInput } from '../schemas/role-form'
 
 export type RoleFormMode = 'create' | 'edit'
 
@@ -42,11 +45,21 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
   const role = roleQuery.data
   const sourceRole = sourceRoleQuery.data
 
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
-  const [hierarchy, setHierarchy] = useState('Select Level')
-  const [inherit, setInherit] = useState('None (Custom)')
-  const [active, setActive] = useState(true)
+  const form = useForm<RoleFormInput>({
+    resolver: zodResolver(roleFormSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      category: undefined,
+      status: undefined,
+      hierarchy: 'Select Level',
+      inherit: 'None (Custom)',
+      active: true,
+    },
+  })
+
+  const { watch, setValue, reset: resetForm } = form
+
   const [matrix, setMatrix] = useState<RolePermissionMatrix>({})
   const [seededFromDuplicate, setSeededFromDuplicate] = useState(false)
   const seededEditRoleIdRef = useRef<string | null>(null)
@@ -65,11 +78,17 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
     const roleKey = String(role.id)
     if (seededEditRoleIdRef.current === roleKey) return
     seededEditRoleIdRef.current = roleKey
-    setName(role.name)
-    setDescription(role.description)
-    setActive(role.status === 'Active')
+    resetForm({
+      name: role.name,
+      description: role.description ?? '',
+      category: role.category,
+      status: role.status,
+      hierarchy: undefined,
+      inherit: undefined,
+      active: role.status === 'Active',
+    })
     setMatrix(seedMatrix(role.permissions, modules, actions))
-  }, [mode, role, modules, actions])
+  }, [mode, role, modules, actions, resetForm])
 
   useEffect(() => {
     if (
@@ -79,13 +98,19 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
       actions.length &&
       !seededFromDuplicate
     ) {
-      setName(`${sourceRole.name} (Copy)`)
-      setDescription(sourceRole.description)
-      setActive(sourceRole.status === 'Active')
+      resetForm({
+        name: `${sourceRole.name} (Copy)`,
+        description: sourceRole.description ?? '',
+        category: sourceRole.category,
+        status: sourceRole.status,
+        hierarchy: undefined,
+        inherit: undefined,
+        active: sourceRole.status === 'Active',
+      })
       setMatrix(seedMatrix(sourceRole.permissions, modules, actions))
       setSeededFromDuplicate(true)
     }
-  }, [mode, sourceRole, modules, actions, seededFromDuplicate])
+  }, [mode, sourceRole, modules, actions, seededFromDuplicate, resetForm])
 
   const toggleCell = useCallback((mod: string, action: RolePermissionAction) => {
     setMatrix((prev) => ({
@@ -135,20 +160,20 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
   }, [modules, actions])
 
   const saveMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (values: RoleFormInput) => {
       const permissions = matrixToPermissions(matrix)
       if (mode === 'create') {
         return createAdminRole({
-          name,
-          description,
-          status: active ? 'Active' : 'Archived',
+          name: values.name,
+          description: values.description ?? '',
+          status: values.active ? 'Active' : 'Archived',
           permissions,
         })
       }
       return updateAdminRole(roleId as string, {
-        name,
-        description,
-        status: active ? 'Active' : 'Archived',
+        name: values.name,
+        description: values.description ?? '',
+        status: values.active ? 'Active' : 'Archived',
         permissions,
       })
     },
@@ -182,16 +207,7 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
     isDuplicate: Boolean(duplicateFromId),
     isLoadingRole: (mode === 'edit' && roleQuery.isLoading) || isLoadingSource,
     isLoadingCatalog: catalogQuery.isLoading,
-    name,
-    setName,
-    description,
-    setDescription,
-    hierarchy,
-    setHierarchy,
-    inherit,
-    setInherit,
-    active,
-    setActive,
+    form,
     matrix,
     toggleCell,
     toggleRowAll,
@@ -200,7 +216,7 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
     resetMatrix,
     actions,
     modules,
-    submit: () => saveMutation.mutate(),
+    submit: form.handleSubmit((values) => saveMutation.mutate(values)),
     isSubmitting: saveMutation.isPending,
     cancel,
   }

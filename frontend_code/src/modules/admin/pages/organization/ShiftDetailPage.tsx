@@ -18,6 +18,7 @@ import {
   useUpdateShift,
 } from '../../hooks/use-organization-shifts'
 import { archiveShift } from '../../api/organization'
+import { queryKeys } from '@/shared/lib/query-keys'
 
 const emptyShift: ShiftRow = {
   id: 0,
@@ -58,7 +59,7 @@ export function ShiftDetailPage() {
   const archiveMut = useMutation({
     mutationFn: () => archiveShift(id),
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: ['organization', 'shifts'] })
+      await qc.invalidateQueries({ queryKey: queryKeys.organization.shifts.all })
       safeNavigate(navigate, { to: listTo })
     },
   })

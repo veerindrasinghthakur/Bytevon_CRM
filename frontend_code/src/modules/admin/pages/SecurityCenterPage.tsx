@@ -8,6 +8,8 @@ import { queryKeys } from '@/shared/lib/query-keys'
 import { getSecurityKpis, listSecurityEvents } from '../api/security'
 import { cn } from '@/shared/lib/cn'
 import { securityScoreDefault } from '@/modules/admin/schemas/enums'
+import { MetricCard } from '@/shared/components/ui/MetricCard'
+import { UnavailableProtocol, ProtocolRow } from '../components/SecurityProtocols'
 
 export function SecurityCenterPage() {
   const [score, setScore] = useState(1)
@@ -86,7 +88,7 @@ export function SecurityCenterPage() {
           <div
             className="relative w-24 h-24 flex items-center justify-center rounded-full p-1"
             style={{
-              background: `conic-gradient(rgb(0, 112, 234) ${score}%, rgb(226, 232, 240) 0)`,
+              background: `conic-gradient(var(--color-primary-blue) ${score}%, rgb(226, 232, 240) 0)`,
             }}
           >
             <div className="w-full h-full bg-white rounded-full flex flex-col items-center justify-center">
@@ -118,34 +120,24 @@ export function SecurityCenterPage() {
           <p className="text-label-sm text-on-surface-variant mt-1">Multi-factor auth is not in product V1</p>
         </div>
 
-        <div className="bv-surface card-hover p-5">
-          <div className="flex justify-between items-start mb-3">
-            <span className="material-symbols-outlined p-2 bg-blue-100 text-blue-600 rounded-lg">hub</span>
-          </div>
-          <p className="text-on-surface-variant text-label-md">Active Sessions</p>
-          <h3 className="text-3xl font-black text-primary">{kpis.activeSessions.toLocaleString()}</h3>
-          <p className="text-label-sm text-on-surface-variant/60 mt-1">Refresh tokens hashed on sessions</p>
-        </div>
-
-        <div className="bv-surface card-hover p-5">
-          <div className="flex justify-between items-start mb-3">
-            <span className="material-symbols-outlined p-2 bg-green-100 text-green-600 rounded-lg">
-              check_circle
-            </span>
-          </div>
-          <p className="text-on-surface-variant text-label-md">Open Security Alerts</p>
-          <h3 className="text-3xl font-black text-green-600">{kpis.openAlerts}</h3>
-        </div>
-
-        <div className="bv-surface card-hover p-5">
-          <div className="flex justify-between items-start mb-3">
-            <span className="material-symbols-outlined p-2 bg-amber-100 text-amber-600 rounded-lg">
-              history
-            </span>
-          </div>
-          <p className="text-on-surface-variant text-label-md">Audit events today</p>
-          <h3 className="text-3xl font-black text-primary">{kpis.auditEventsToday}</h3>
-        </div>
+        <MetricCard
+          icon="hub"
+          label="Active Sessions"
+          value={String(kpis.activeSessions.toLocaleString())}
+          hint="Refresh tokens hashed on sessions"
+        />
+        <MetricCard
+          icon="check_circle"
+          label="Open Security Alerts"
+          value={String(kpis.openAlerts)}
+          hint="Requires attention"
+        />
+        <MetricCard
+          icon="history"
+          label="Audit Events Today"
+          value={String(kpis.auditEventsToday)}
+          hint="Tracked in audit log"
+        />
       </section>
 
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -226,9 +218,9 @@ export function SecurityCenterPage() {
                     <span
                       className={cn(
                         'inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-bold',
-                        ev.status === 'Success' && 'bg-green-100 text-green-700',
-                        ev.status === 'Blocked' && 'bg-red-100 text-red-700',
-                        ev.status === 'Warning' && 'bg-amber-100 text-amber-800',
+                        ev.status === 'Success' && 'bg-[var(--color-success-emerald)]/10 text-[var(--color-success-emerald)] border-[var(--color-success-emerald)]/30',
+                        ev.status === 'Blocked' && 'bg-[var(--color-error-red)]/10 text-[var(--color-error-red)] border-[var(--color-error-red)]/30',
+                        ev.status === 'Warning' && 'bg-[var(--color-warning-amber)]/10 text-[var(--color-warning-amber)] border-[var(--color-warning-amber)]/30',
                       )}
                     >
                       {ev.status}
@@ -247,80 +239,6 @@ export function SecurityCenterPage() {
           </table>
         </div>
       </section>
-    </div>
-  )
-}
-
-function UnavailableProtocol({
-  icon,
-  title,
-  description,
-}: {
-  icon: string
-  title: string
-  description: string
-}) {
-  return (
-    <div className="flex items-center justify-between p-4 bg-surface-container-low/50 border border-dashed border-outline-variant rounded-lg opacity-75">
-      <div className="flex gap-4 items-center">
-        <div className="p-3 rounded-lg bg-surface-container text-outline">
-          <span className="material-symbols-outlined">{icon}</span>
-        </div>
-        <div>
-          <p className="font-bold text-on-surface-variant">{title}</p>
-          <p className="text-body-sm text-on-surface-variant">{description}</p>
-        </div>
-      </div>
-      <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant bg-surface-container px-2 py-1 rounded shrink-0">
-        Not available
-      </span>
-    </div>
-  )
-}
-
-function ProtocolRow({
-  icon,
-  iconClass,
-  title,
-  description,
-  checked,
-  onChange,
-}: {
-  icon: string
-  iconClass: string
-  title: string
-  description: string
-  checked: boolean
-  onChange: (v: boolean) => void
-}) {
-  return (
-    <div className="flex items-center justify-between p-4 bg-surface-container-low border border-outline-variant rounded-lg">
-      <div className="flex gap-4 items-center">
-        <div className={cn('p-3 rounded-lg', iconClass)}>
-          <span className="material-symbols-outlined">{icon}</span>
-        </div>
-        <div>
-          <p className="font-bold text-primary">{title}</p>
-          <p className="text-body-sm text-on-surface-variant">{description}</p>
-        </div>
-      </div>
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        onClick={() => onChange(!checked)}
-        className={cn(
-          'relative w-11 h-6 rounded-full transition-colors',
-          checked ? 'bg-secondary' : 'bg-outline-variant',
-        )}
-      >
-        <span
-          className={cn(
-            'absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all',
-            checked ? 'left-[22px]' : 'left-0.5',
-          )}
-        />
-      </button>
     </div>
   )
 }

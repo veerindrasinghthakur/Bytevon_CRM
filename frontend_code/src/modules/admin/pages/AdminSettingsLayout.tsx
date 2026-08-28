@@ -4,6 +4,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { AdminSettingsNav } from '../components/AdminSettingsNav'
 import { getAdminHubMetrics } from '../api/metrics'
+import { queryKeys } from '@/shared/lib/query-keys'
 
 /**
  * Shared shell for /admin/settings/* — horizontal nav + content.
@@ -11,7 +12,7 @@ import { getAdminHubMetrics } from '../api/metrics'
  */
 export function AdminSettingsLayout() {
   const { data: metrics } = useQuery({
-    queryKey: ['admin', 'metrics', 'hub'],
+    queryKey: queryKeys.admin.roles.metrics(),
     queryFn: getAdminHubMetrics,
   })
 

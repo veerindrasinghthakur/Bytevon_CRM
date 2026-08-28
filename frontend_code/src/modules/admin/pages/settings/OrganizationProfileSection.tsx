@@ -5,6 +5,7 @@ import { useEditMode } from '@/shared/hooks/useEditMode'
 import { cn } from '@/shared/lib/cn'
 import { getOrganizationProfile, updateOrganizationProfile } from '../../api/settings'
 import type { OrganizationProfile } from '../../types'
+import { queryKeys } from '@/shared/lib/query-keys'
 
 const emptyForm: OrganizationProfile = {
   name: '',
@@ -20,7 +21,7 @@ const emptyForm: OrganizationProfile = {
 export function OrganizationProfileSection() {
   const qc = useQueryClient()
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'settings', 'organization-profile'],
+    queryKey: queryKeys.admin.settings.all,
     queryFn: getOrganizationProfile,
   })
 
@@ -34,7 +35,7 @@ export function OrganizationProfileSection() {
   const save = useMutation({
     mutationFn: () => updateOrganizationProfile(form),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin', 'settings', 'organization-profile'] })
+      qc.invalidateQueries({ queryKey: queryKeys.admin.settings.all })
       finishEditing()
     },
     onError: () => {

@@ -10,6 +10,7 @@ import { useHolidayCalendars } from '../../hooks/use-organization'
 import { createHolidayCalendar, archiveHolidayCalendar } from '../../api/organization'
 import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 import { cn } from '@/shared/lib/cn'
+import { queryKeys } from '@/shared/lib/query-keys'
 
 export function HolidayCalendarsPage() {
   const navigate = useNavigate()
@@ -22,7 +23,7 @@ export function HolidayCalendarsPage() {
   const createMut = useMutation({
     mutationFn: () => createHolidayCalendar({ name }),
     onSuccess: async (row) => {
-      await qc.invalidateQueries({ queryKey: ['organization', 'holiday-calendars'] })
+      await qc.invalidateQueries({ queryKey: queryKeys.organization.holidays.all() })
       setCreating(false)
       setName('')
       safeNavigate(navigate, {
@@ -38,7 +39,7 @@ export function HolidayCalendarsPage() {
   const archiveMut = useMutation({
     mutationFn: (id: number) => archiveHolidayCalendar(id),
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: ['organization', 'holiday-calendars'] })
+      await qc.invalidateQueries({ queryKey: queryKeys.organization.holidays.all() })
     },
   })
 

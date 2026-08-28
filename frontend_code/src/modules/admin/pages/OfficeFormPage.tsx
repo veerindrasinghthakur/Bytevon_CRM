@@ -9,6 +9,7 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 import { createLocation, getLocation, updateLocation } from '../api/organization'
 import { officeFormSchema, type OfficeFormValues } from '../schemas/offices'
+import { queryKeys } from '@/shared/lib/query-keys'
 
 const emptyOfficeForm = {
   name: '',
@@ -30,7 +31,7 @@ export function OfficeFormPage() {
   const numericId = isEdit ? Number(officeId) : NaN
 
   const officeQuery = useQuery({
-    queryKey: ['organization', 'locations', numericId],
+    queryKey: queryKeys.organization.locations.detail(numericId),
     queryFn: () => getLocation(numericId),
     enabled: isEdit && Number.isFinite(numericId),
   })
@@ -101,8 +102,8 @@ export function OfficeFormPage() {
       })
     },
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: ['organization', 'locations'] })
-      await qc.invalidateQueries({ queryKey: ['admin', 'offices'] })
+      await qc.invalidateQueries({ queryKey: queryKeys.organization.locations.all })
+      await qc.invalidateQueries({ queryKey: queryKeys.admin.roles.all })
       goLocations()
     },
     onError: (e: Error) => {

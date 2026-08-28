@@ -150,7 +150,7 @@ export function RolesListPage() {
       subtitle: role.category,
       icon: 'badge',
       status: role.status,
-      statusDotClass: role.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400',
+      statusDotClass: role.status === 'Active' ? 'bg-[var(--color-success-emerald)]' : 'bg-on-surface-variant',
       content: <RoleQuickContent role={role} />,
       fullRecordLabel: 'Open full record',
       onOpenFull: () => goDetail(role.id),

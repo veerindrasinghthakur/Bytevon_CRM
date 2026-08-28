@@ -6,6 +6,8 @@ export const userFormSchema = z.object({
   email: z.string().email('Enter a valid email'),
   temporaryPassword: z.string().min(6, 'At least 6 characters'),
   roleId: z.string().min(1, 'Select a role'),
+  deptFilter: z.string().optional(),
+  sendInvite: z.boolean().optional(),
 })
 
 export type UserFormInput = z.infer<typeof userFormSchema>

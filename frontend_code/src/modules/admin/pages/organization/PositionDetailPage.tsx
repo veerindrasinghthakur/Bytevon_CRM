@@ -11,6 +11,7 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { createPosition, getPosition, updatePosition, archivePosition } from '../../api/organization'
 import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 import { cn } from '@/shared/lib/cn'
+import { queryKeys } from '@/shared/lib/query-keys'
 
 export function PositionDetailPage() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
@@ -21,7 +22,7 @@ export function PositionDetailPage() {
   const qc = useQueryClient()
 
   const detailQuery = useQuery({
-    queryKey: ['organization', 'positions', id],
+    queryKey: queryKeys.organization.positions(true),
     queryFn: () => getPosition(id),
     enabled: !isNew && Number.isFinite(id),
   })
@@ -40,7 +41,7 @@ export function PositionDetailPage() {
       return updatePosition(id, { name: name.trim() })
     },
     onSuccess: async (row) => {
-      await qc.invalidateQueries({ queryKey: ['organization', 'positions'] })
+      await qc.invalidateQueries({ queryKey: queryKeys.organization.positions(true) })
       if (isNew) {
         safeNavigate(navigate, {
           to: '/admin/settings/positions/$positionId',
@@ -58,7 +59,7 @@ export function PositionDetailPage() {
   const archiveMut = useMutation({
     mutationFn: () => archivePosition(id),
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: ['organization', 'positions'] })
+      await qc.invalidateQueries({ queryKey: queryKeys.organization.positions(true) })
       safeNavigate(navigate, { to: '/admin/settings/positions' })
     },
   })
