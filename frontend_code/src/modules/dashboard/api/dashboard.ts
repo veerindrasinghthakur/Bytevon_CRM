@@ -15,6 +15,11 @@ import {
   executivePending,
   executiveQuickActions,
   employeeQuickActions,
+  payrollKpis,
+  payrollTrendData,
+  payrollDepartmentCosts,
+  payrollPendingApprovals,
+  payrollMeta,
 } from '../data/mock'
 
 function delay(ms = 200) {
@@ -35,6 +40,14 @@ export type EmployeeDashboardData = {
   leaveSummary: typeof employeeLeaveSummary
   meta: typeof employeeMeta
   quickActions: typeof employeeQuickActions
+}
+
+export type PayrollDashboardData = {
+  kpis: typeof payrollKpis
+  trendData: typeof payrollTrendData
+  departmentCosts: typeof payrollDepartmentCosts
+  pendingApprovals: typeof payrollPendingApprovals
+  meta: typeof payrollMeta
 }
 
 export async function getExecutiveDashboard(): Promise<ExecutiveDashboardData> {
@@ -69,5 +82,20 @@ export async function getEmployeeDashboard(): Promise<EmployeeDashboardData> {
     }
   }
   const { data } = await apiClient.get<EmployeeDashboardData>('/dashboard/employee')
+  return data
+}
+
+export async function getPayrollDashboard(): Promise<PayrollDashboardData> {
+  if (env.useMockApi) {
+    await delay()
+    return {
+      kpis: payrollKpis.map((k) => ({ ...k })),
+      trendData: payrollTrendData.map((t) => ({ ...t })),
+      departmentCosts: payrollDepartmentCosts.map((d) => ({ ...d })),
+      pendingApprovals: payrollPendingApprovals.map((p) => ({ ...p })),
+      meta: { ...payrollMeta },
+    }
+  }
+  const { data } = await apiClient.get<PayrollDashboardData>('/dashboard/payroll')
   return data
 }

@@ -1,17 +1,38 @@
 import { useNavigate } from '@tanstack/react-router'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 import { useEmployeeDashboard } from '../hooks/use-employee-dashboard'
+import { useWeekBars } from '../hooks/use-week-bars'
 
 const card = 'bv-surface card-hover'
 const WEEK_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
 
-type WeekBar =
+type BreakMarker = {
+  id: string
+  startPct: number
+  endPct?: number
+}
+
+type WeekBarData =
   | number
   | {
       pct: number
       isWeekend?: boolean
-      breakMarkers?: { id: string; startPct: number; endPct?: number }[]
+      breakMarkers?: BreakMarker[]
     }
+
+type EmployeeMeta = {
+  name: string
+  employeeId: string
+  department: string
+  todayLabel: string
+  shift: string
+  checkIn: string
+  checkInNote: string
+  totalHours: string
+  totalHoursNote: string
+  weekBars: WeekBarData[]
+}
 
 export function EmployeeDashboardPage() {
   const navigate = useNavigate()
@@ -23,9 +44,9 @@ export function EmployeeDashboardPage() {
     )
   }
 
-  const displayName =
-    'name' in meta ? (meta as { name: string }).name : (meta as { firstName?: string }).firstName ?? 'there'
-  const weekBars = meta.weekBars as WeekBar[]
+  const typedMeta = meta as EmployeeMeta
+  const displayName = typedMeta.name ?? 'there'
+  const { weekBarElements } = useWeekBars({ weekBars: typedMeta.weekBars, todayIndex: 4 })
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -35,13 +56,13 @@ export function EmployeeDashboardPage() {
             <h2 className="text-headline-lg font-bold mb-2">Good Morning, {displayName}</h2>
             <div className="flex flex-wrap gap-3 text-inverse-primary">
               <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full text-label-md">
-                <span className="material-symbols-outlined text-[18px]">badge</span> {meta.employeeId}
+                <span className="material-symbols-outlined text-[18px]">badge</span> {typedMeta.employeeId}
               </span>
               <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full text-label-md">
-                <span className="material-symbols-outlined text-[18px]">business_center</span> {meta.department}
+                <span className="material-symbols-outlined text-[18px]">business_center</span> {typedMeta.department}
               </span>
               <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full text-label-md">
-                <span className="material-symbols-outlined text-[18px]">calendar_month</span> {meta.todayLabel}
+                <span className="material-symbols-outlined text-[18px]">calendar_month</span> {typedMeta.todayLabel}
               </span>
             </div>
           </div>
@@ -51,7 +72,7 @@ export function EmployeeDashboardPage() {
             </div>
             <div>
               <span className="text-label-sm opacity-80 uppercase tracking-wider">Current Shift</span>
-              <p className="text-title-lg">{meta.shift}</p>
+              <p className="text-title-lg">{typedMeta.shift}</p>
             </div>
           </div>
         </div>
@@ -64,7 +85,7 @@ export function EmployeeDashboardPage() {
             <button
               key={q.label}
               type="button"
-              onClick={() => navigate({ to: q.to })}
+              onClick={() => safeNavigate(navigate, { to: q.to })}
               className="bv-action-tile group"
             >
               <span className="material-symbols-outlined text-[32px] text-secondary mb-3 bv-action-icon">
@@ -98,7 +119,7 @@ export function EmployeeDashboardPage() {
             <button
               type="button"
               className="text-secondary text-label-md font-bold hover:underline"
-              onClick={() => navigate({ to: '/my-work/attendance' })}
+              onClick={() => safeNavigate(navigate, { to: '/my-work/attendance' })}
             >
               Full Report
             </button>
@@ -106,65 +127,17 @@ export function EmployeeDashboardPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-surface-container-low p-4 rounded-lg">
               <span className="text-label-sm text-on-surface-variant">Check-in</span>
-              <p className="text-body-lg font-bold text-secondary">{meta.checkIn}</p>
-              <span className="text-[10px] text-on-surface-variant">{meta.checkInNote}</span>
+              <p className="text-body-lg font-bold text-secondary">{typedMeta.checkIn}</p>
+              <span className="text-[10px] text-on-surface-variant">{typedMeta.checkInNote}</span>
             </div>
             <div className="bg-surface-container-low p-4 rounded-lg">
               <span className="text-label-sm text-on-surface-variant">Total Hours</span>
-              <p className="text-body-lg font-bold text-on-background">{meta.totalHours}</p>
-              <span className="text-[10px] text-on-surface-variant">{meta.totalHoursNote}</span>
+              <p className="text-body-lg font-bold text-on-background">{typedMeta.totalHours}</p>
+              <span className="text-[10px] text-on-surface-variant">{typedMeta.totalHoursNote}</span>
             </div>
             <div className="md:col-span-2">
               <div className="h-28 flex items-end gap-2">
-                {weekBars.map((bar, i) => {
-                  const pct = typeof bar === 'number' ? bar : bar.pct
-                  const isWeekend = typeof bar === 'object' && Boolean(bar.isWeekend)
-                  const markers = typeof bar === 'object' ? (bar.breakMarkers ?? []) : []
-                  const isToday = i === 4
-                  const label = WEEK_LABELS[i] ?? `D${i + 1}`
-                  return (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1.5 h-full justify-end">
-                      <div
-                        className={cn(
-                          'relative w-full rounded-t-md transition-colors min-h-[4px] overflow-hidden',
-                          isWeekend
-                            ? 'bg-outline-variant/55'
-                            : isToday
-                              ? 'bg-secondary'
-                              : 'bg-secondary/25 hover:bg-secondary/40',
-                        )}
-                        style={{ height: `${Math.max(pct, 4)}%` }}
-                        title={`${label}${isWeekend ? ' (weekend)' : ''}: ${pct}%${markers.length ? ` · ${markers.length} break(s)` : ''}`}
-                      >
-                        {markers.map((m) => {
-                          const bottom = m.startPct
-                          const top = m.endPct ?? m.startPct + 2
-                          const h = Math.max(2, top - bottom)
-                          return (
-                            <span
-                              key={m.id}
-                              className="absolute left-0 right-0 bg-error/90 rounded-[1px] pointer-events-none"
-                              style={{
-                                bottom: `${bottom}%`,
-                                height: `${h}%`,
-                                minHeight: 3,
-                              }}
-                            />
-                          )
-                        })}
-                      </div>
-                      <span
-                        className={cn(
-                          'text-[10px] font-medium',
-                          isWeekend ? 'text-on-surface-variant/70' : 'text-on-surface-variant',
-                          isToday && 'text-secondary font-bold',
-                        )}
-                      >
-                        {label}
-                      </span>
-                    </div>
-                  )
-                })}
+                {weekBarElements}
               </div>
             </div>
           </div>
@@ -206,7 +179,7 @@ export function EmployeeDashboardPage() {
           <h3 className="text-title-lg text-on-background">Assigned Tasks</h3>
           <button
             type="button"
-            onClick={() => navigate({ to: '/my-work/tasks/new' })}
+            onClick={() => safeNavigate(navigate, { to: '/my-work/tasks/new' })}
             className="px-3 py-1.5 text-label-sm bg-secondary text-on-secondary rounded-md bv-pressable"
           >
             + New Task

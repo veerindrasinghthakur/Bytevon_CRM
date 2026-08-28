@@ -2,7 +2,7 @@
  * Dashboard module routes — spread into app router.
  * Paths: /dashboard (executive), /dashboard/employee, /dashboard/payroll
  */
-import { createRoute } from '@tanstack/react-router'
+import { createRoute, type AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 
 const ExecutiveDashboardPage = lazyPage(
@@ -26,8 +26,7 @@ export const dashboardRoutes = {
   payroll: '/dashboard/payroll',
 } as const
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createDashboardRoutes(appLayoutRoute: any) {
+export function createDashboardRoutes(appLayoutRoute: AnyRoute) {
   return [
     createRoute({
       getParentRoute: () => appLayoutRoute,

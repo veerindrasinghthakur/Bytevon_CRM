@@ -1,10 +1,16 @@
 import { useNavigate } from '@tanstack/react-router'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 import { ActivityFeed } from '@/shared/components/ui/ActivityFeed'
 import { useExecutiveDashboard } from '../hooks/use-executive-dashboard'
 
-/** Matches HTML executive dashboard: bv-surface + card-hover + executive-shadow */
 const card = 'bv-surface card-hover'
+
+const ATTENDANCE_TREND_PERIODS = ['Last 30 Days', 'Last Quarter', 'Year to Date'] as const
+
+const CALENDAR_DAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'] as const
+
+const CALENDAR_DAYS = [...Array.from({ length: 4 }, (_, i) => 28 + i), ...Array.from({ length: 27 }, (_, i) => i + 1)] as const
 
 export function ExecutiveDashboardPage() {
   const navigate = useNavigate()
@@ -43,7 +49,7 @@ export function ExecutiveDashboardPage() {
           <button
             key={a.label}
             type="button"
-            onClick={() => navigate({ to: a.to })}
+            onClick={() => safeNavigate(navigate, { to: a.to })}
             className="bv-action-tile group"
           >
             <div className="w-10 h-10 bg-secondary/10 text-secondary rounded-full flex items-center justify-center group-hover:bg-secondary group-hover:text-on-secondary transition-colors duration-200">
@@ -77,9 +83,9 @@ export function ExecutiveDashboardPage() {
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-title-lg font-semibold text-on-surface">Attendance Trend</h2>
             <select className="bg-surface border border-outline-variant text-label-sm rounded-lg px-3 py-1.5 outline-none focus:border-secondary transition-colors duration-200 cursor-pointer">
-              <option>Last 30 Days</option>
-              <option>Last Quarter</option>
-              <option>Year to Date</option>
+              {ATTENDANCE_TREND_PERIODS.map((p) => (
+                <option key={p}>{p}</option>
+              ))}
             </select>
           </div>
           <div className="min-h-[240px] flex items-end justify-between gap-2 px-2 pb-2">
@@ -158,7 +164,7 @@ export function ExecutiveDashboardPage() {
           </div>
           <button
             type="button"
-            onClick={() => navigate({ to: '/approvals/pending' })}
+            onClick={() => safeNavigate(navigate, { to: '/approvals/pending' })}
             className="mt-3 text-secondary text-label-md hover:underline w-full text-center py-2 transition-colors duration-200 cursor-pointer"
           >
             View all requests
@@ -182,7 +188,7 @@ export function ExecutiveDashboardPage() {
             <button
               type="button"
               className="text-label-sm text-secondary hover:underline cursor-pointer"
-              onClick={() => navigate({ to: '/dashboard' })}
+              onClick={() => safeNavigate(navigate, { to: '/dashboard' })}
             >
               View All
             </button>
@@ -197,15 +203,12 @@ export function ExecutiveDashboardPage() {
             </button>
           </div>
           <div className="grid grid-cols-7 gap-2 text-center text-label-sm text-on-surface-variant mb-2">
-            {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d) => (
+            {CALENDAR_DAY_LABELS.map((d) => (
               <span key={d}>{d}</span>
             ))}
           </div>
           <div className="grid grid-cols-7 gap-2 text-center text-label-md mb-6">
-            {[28, 29, 30, 31].map((d) => (
-              <span key={d} className="py-2 text-outline">{d}</span>
-            ))}
-            {Array.from({ length: 27 }, (_, i) => i + 1).map((d) => (
+            {CALENDAR_DAYS.map((d) => (
               <span
                 key={d}
                 className={cn(

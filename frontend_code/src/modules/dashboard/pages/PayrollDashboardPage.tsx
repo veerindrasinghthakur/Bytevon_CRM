@@ -1,4 +1,14 @@
+import { usePayrollDashboard } from '../hooks/use-payroll-dashboard'
+
 export function PayrollDashboardPage() {
+  const { kpis, trendData, departmentCosts, pendingApprovals, meta, isLoading } = usePayrollDashboard()
+
+  if (isLoading || !meta) {
+    return (
+      <div className="py-16 text-center text-body-sm text-on-surface-variant">Loading dashboard…</div>
+    )
+  }
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -33,13 +43,7 @@ export function PayrollDashboardPage() {
       </div>
 
       <section className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {[
-          { label: 'Total Processed', value: '$1.2M', note: '+4.2% vs last month' },
-          { label: 'Pending Payroll', value: '$245K', note: 'Due in 4 days' },
-          { label: 'Total Salary', value: '$850K', note: 'Monthly average' },
-          { label: 'Deductions', value: '$120K', note: 'Tax & Benefits' },
-          { label: 'Bonuses', value: '$85K', note: 'Q3 Incentives' },
-        ].map((c) => (
+        {kpis.map((c) => (
           <div key={c.label} className="bv-surface card-hover p-6">
             <p className="text-label-md text-on-surface-variant mb-2">{c.label}</p>
             <h3 className="text-title-lg text-on-surface mb-2">{c.value}</h3>
@@ -56,27 +60,21 @@ export function PayrollDashboardPage() {
               <p className="text-body-sm text-on-surface-variant">Expenditure over the last 6 months</p>
             </div>
             <select className="bg-surface-container-low border border-outline-variant rounded-lg text-label-md px-4 py-2 outline-none focus:border-secondary transition-colors">
-              <option>Last 6 Months</option>
-              <option>Current Year</option>
+              {meta.trendPeriods.map((p) => (
+                <option key={p}>{p}</option>
+              ))}
             </select>
           </div>
           <div className="h-[260px] flex items-end justify-between gap-4 px-2">
-            {[
-              { m: 'Apr', h: 60 },
-              { m: 'May', h: 55 },
-              { m: 'Jun', h: 70 },
-              { m: 'Jul', h: 65 },
-              { m: 'Aug', h: 80 },
-              { m: 'Sep', h: 75 },
-            ].map((b) => (
-              <div key={b.m} className="flex-1 flex flex-col items-center group cursor-pointer">
+            {trendData.map((b) => (
+              <div key={b.month} className="flex-1 flex flex-col items-center group cursor-pointer">
                 <div
                   className="w-full bg-secondary/20 rounded-t relative group-hover:bg-secondary/40 transition-colors"
-                  style={{ height: `${b.h}%` }}
+                  style={{ height: `${b.value}%` }}
                 >
                   <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-secondary rounded-full ring-4 ring-white" />
                 </div>
-                <span className="mt-3 text-label-sm text-on-surface-variant">{b.m}</span>
+                <span className="mt-3 text-label-sm text-on-surface-variant">{b.month}</span>
               </div>
             ))}
           </div>
@@ -87,26 +85,25 @@ export function PayrollDashboardPage() {
           <div className="flex items-center justify-center py-6">
             <div
               className="relative w-40 h-40 rounded-full border-[16px] border-secondary-container flex items-center justify-center"
-              style={{ borderRightColor: '#0059bb', borderBottomColor: '#0b1c30' }}
+              style={{
+                borderRightColor: 'var(--color-secondary)',
+                borderBottomColor: 'var(--color-surface-container)',
+              }}
             >
               <div className="text-center">
-                <p className="text-title-lg font-bold text-on-surface">$1.2M</p>
+                <p className="text-title-lg font-bold text-on-surface">{meta.totalCost}</p>
                 <p className="text-label-sm text-on-surface-variant">Total Cost</p>
               </div>
             </div>
           </div>
           <div className="space-y-3 mt-2">
-            {[
-              { name: 'Engineering', val: '$540K (45%)', color: 'bg-secondary-container' },
-              { name: 'Sales & Ops', val: '$360K (30%)', color: 'bg-secondary' },
-              { name: 'Marketing', val: '$300K (25%)', color: 'bg-primary' },
-            ].map((d) => (
+            {departmentCosts.map((d) => (
               <div key={d.name} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${d.color}`} />
+                  <div className={`w-3 h-3 rounded-full ${d.colorClass}`} />
                   <span className="text-label-md text-on-surface">{d.name}</span>
                 </div>
-                <span className="text-label-md font-bold text-on-surface">{d.val}</span>
+                <span className="text-label-md font-bold text-on-surface">{d.value}</span>
               </div>
             ))}
           </div>
@@ -131,11 +128,7 @@ export function PayrollDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
-              {[
-                { name: 'Jane Doe', role: 'Senior Engineer', dept: 'Engineering', amount: '$8,450', initials: 'JD' },
-                { name: 'Alex Smith', role: 'Marketing Lead', dept: 'Marketing', amount: '$7,200', initials: 'AS' },
-                { name: 'Michael Ross', role: 'Account Manager', dept: 'Sales', amount: '$6,800', initials: 'MR' },
-              ].map((r) => (
+              {pendingApprovals.map((r) => (
                 <tr key={r.name} className="zebra-row group">
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">

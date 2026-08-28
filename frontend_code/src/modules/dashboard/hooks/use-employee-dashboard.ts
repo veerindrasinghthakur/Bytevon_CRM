@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
+import { queryKeys } from '@/shared/lib/query-keys'
 import { getEmployeeDashboard } from '../api/dashboard'
 
 export function useEmployeeDashboard() {
   const query = useQuery({
-    queryKey: ['dashboard', 'employee'],
+    queryKey: queryKeys.dashboard.employee(),
     queryFn: getEmployeeDashboard,
   })
 
