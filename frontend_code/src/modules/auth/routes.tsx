@@ -1,4 +1,5 @@
 import { createRoute, redirect } from '@tanstack/react-router'
+import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 import { loadStoredSession } from './api/auth'
 
@@ -7,6 +8,7 @@ const ForgotPasswordPage = lazyPage(() => import('./pages/ForgotPasswordPage'), 
 const ResetPasswordPage = lazyPage(() => import('./pages/ResetPasswordPage'), 'ResetPasswordPage')
 const SessionExpiredPage = lazyPage(() => import('./pages/SessionExpiredPage'), 'SessionExpiredPage')
 const AccessDeniedPage = lazyPage(() => import('./pages/AccessDeniedPage'), 'AccessDeniedPage')
+const NotFoundPage = lazyPage(() => import('./pages/NotFoundPage'), 'NotFoundPage')
 
 /** Canonical path helpers — prefer these over hard-coded strings in pages. */
 export const authRoutes = {
@@ -15,6 +17,7 @@ export const authRoutes = {
   resetPassword: '/reset-password',
   sessionExpired: '/session-expired',
   accessDenied: '/access-denied',
+  notFound: '/not-found',
   dashboard: '/dashboard',
 } as const
 
@@ -29,8 +32,7 @@ function requireGuest() {
  * Public auth routes under AuthLayout (no AppShell).
  * Parent must be the auth layout route.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createAuthRoutes(authLayoutRoute: any) {
+export function createAuthRoutes<TParent extends AnyRoute>(authLayoutRoute: TParent) {
   return [
     createRoute({
       getParentRoute: () => authLayoutRoute,
@@ -68,6 +70,11 @@ export function createAuthRoutes(authLayoutRoute: any) {
       getParentRoute: () => authLayoutRoute,
       path: authRoutes.accessDenied,
       component: AccessDeniedPage,
+    }),
+    createRoute({
+      getParentRoute: () => authLayoutRoute,
+      path: authRoutes.notFound,
+      component: NotFoundPage,
     }),
   ]
 }

@@ -18,6 +18,12 @@ import type {
 import { MOCK_LOGIN_PASSWORD, MOCK_LOGIN_USERNAME } from '../schemas/auth'
 import { setCurrentEmploymentId } from '@/shared/rbac'
 
+interface AxiosErrorResponse {
+  response?: {
+    status?: number
+  }
+}
+
 // sessionStorage for auth session (tab-scoped); localStorage fallback for legacy reads.
 const STORAGE_KEY = 'bytevon_auth_session'
 const RESET_TOKENS_KEY = 'bytevon_reset_tokens'
@@ -135,7 +141,7 @@ export async function refreshApi(refreshToken: string): Promise<AuthSession> {
       // otherwise users get logged out on every route change while offline.
       const status =
         typeof err === 'object' && err !== null && 'response' in err
-          ? (err as { response?: { status?: number } }).response?.status
+          ? (err as AxiosErrorResponse).response?.status
           : undefined
       if (status === 401) {
         persistSession(null)

@@ -1,37 +1,21 @@
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { Link } from '@tanstack/react-router'
-import { forgotPasswordSchema, type ForgotPasswordInput } from '../schemas/auth'
-import { forgotPasswordApi } from '../api/auth'
-import { authRoutes } from '../routes'
 import { Button } from '@/shared/components/ui/Button'
 import { BrandLogo } from '@/shared/components/brand/BrandLogo'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
+import { authRoutes } from '../routes'
+import { useForgotPasswordForm } from '../hooks/useForgotPasswordForm'
 
 export function ForgotPasswordPage() {
-  const [sentTo, setSentTo] = useState<string | null>(null)
-  const [serverError, setServerError] = useState<string | null>(null)
-
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-  } = useForm<ForgotPasswordInput>({
-    resolver: zodResolver(forgotPasswordSchema),
-    defaultValues: { email: '' },
-  })
-
-  const onSubmit = async (data: ForgotPasswordInput) => {
-    setServerError(null)
-    try {
-      await forgotPasswordApi(data)
-      setSentTo(data.email)
-    } catch (e) {
-      setServerError(e instanceof Error ? e.message : 'Request failed.')
-    }
-  }
+    sentTo,
+    serverError,
+    onSubmit,
+    resetForm,
+  } = useForgotPasswordForm()
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -51,8 +35,8 @@ export function ForgotPasswordPage() {
           {!sentTo ? (
             <div className="space-y-8">
               <div className="text-center space-y-2">
-                <div className="mx-auto w-12 h-12 bg-electric-blue/10 flex items-center justify-center rounded-full mb-4">
-                  <span className="material-symbols-outlined text-electric-blue text-[28px]">lock_reset</span>
+                <div className="mx-auto w-12 h-12 bg-primary/10 flex items-center justify-center rounded-full mb-4">
+                  <span className="material-symbols-outlined text-primary text-[28px]">lock_reset</span>
                 </div>
                 <h1 className="text-headline-md text-on-background">Forgot Password?</h1>
                 <p className="text-body-md text-on-surface-variant">
@@ -74,7 +58,7 @@ export function ForgotPasswordPage() {
                     id="email"
                     type="email"
                     placeholder="name@company.com"
-                    className="w-full h-12 px-4 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-electric-blue"
+                    className="w-full h-12 px-4 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-primary"
                     {...register('email')}
                     onKeyDown={(e) => handleEnterAdvance(e)}
                   />
@@ -99,10 +83,7 @@ export function ForgotPasswordPage() {
           ) : (
             <div className="space-y-6 text-center">
               <div className="mx-auto w-16 h-16 bg-emerald-50 flex items-center justify-center rounded-full">
-                <span
-                  className="material-symbols-outlined text-emerald-600 text-[32px]"
-                  style={{ fontVariationSettings: "'FILL' 1" }}
-                >
+                <span className="material-symbols-outlined text-emerald-600 text-[32px] filled">
                   check_circle
                 </span>
               </div>
@@ -130,10 +111,7 @@ export function ForgotPasswordPage() {
                 <button
                   type="button"
                   className="text-on-surface-variant text-label-md hover:underline"
-                  onClick={() => {
-                    setSentTo(null)
-                    reset()
-                  }}
+                  onClick={resetForm}
                 >
                   Try another email address
                 </button>
