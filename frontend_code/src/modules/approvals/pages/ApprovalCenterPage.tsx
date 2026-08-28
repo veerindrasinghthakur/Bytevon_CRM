@@ -1,15 +1,32 @@
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
+import { KpiCard } from '@/shared/components/ui/KpiCard'
 import { useApprovalCenter } from '../hooks/use-approval-center'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
+import type { ApprovalPriority } from '../types'
 
-const priorityStyles: Record<string, string> = {
+const priorityStyles: Record<ApprovalPriority, string> = {
   High: 'bg-red-100 text-red-700',
   Medium: 'bg-amber-100 text-amber-700',
   Normal: 'bg-blue-50 text-blue-600',
   Low: 'bg-surface-container text-on-surface-variant',
 }
+
+const typeOptions = [
+  { value: 'All', label: 'All Request Types' },
+  { value: 'Leave Request', label: 'Leave Request' },
+  { value: 'Expense Claim', label: 'Expense Claim' },
+  { value: 'Purchase Order', label: 'Purchase Order' },
+]
+
+const statusOptions = [
+  { value: 'Pending', label: 'Status: Pending' },
+  { value: 'Approved', label: 'Approved' },
+  { value: 'Rejected', label: 'Rejected' },
+]
 
 export function ApprovalCenterPage() {
   const navigate = useNavigate()
@@ -34,7 +51,15 @@ export function ApprovalCenterPage() {
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <KpiCard icon="stacks" iconClass="bg-secondary/5 text-secondary" label="Total Approvals" value={kpis.total} trend="Stable" />
-        <KpiCard icon="pending_actions" iconClass="bg-secondary/15 text-secondary" label="Pending Approvals" value={kpis.pending} trend="12%" trendUp onClick={() => navigate({ to: '/approvals/pending' })} />
+        <KpiCard
+          icon="pending_actions"
+          iconClass="bg-secondary/15 text-secondary"
+          label="Pending Approvals"
+          value={kpis.pending}
+          trend="12%"
+          trendUp
+          onClick={() => safeNavigate(navigate, { to: '/approvals/pending' })}
+        />
         <KpiCard icon="task_alt" iconClass="bg-emerald-100 text-emerald-700" label="Approved Today" value={kpis.approvedToday} trend="8%" trendUp trendClass="text-emerald-600" />
         <KpiCard icon="cancel" iconClass="bg-red-100 text-red-700" label="Rejected Today" value={kpis.rejectedToday} trend="Stable" />
       </section>
@@ -42,17 +67,20 @@ export function ApprovalCenterPage() {
       <section className="bv-surface overflow-hidden">
         <div className="px-6 py-4 border-b border-outline-variant flex flex-wrap gap-4 items-center justify-between">
           <div className="flex flex-wrap gap-3 items-center">
-            <select className="pl-3 pr-8 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-secondary outline-none transition-colors">
-              <option>All Request Types</option>
-              <option>Leave Request</option>
-              <option>Expense Claim</option>
-              <option>Purchase Order</option>
-            </select>
-            <select className="pl-3 pr-8 py-2 bg-surface border border-outline-variant rounded-lg text-body-sm focus:ring-2 focus:ring-secondary outline-none transition-colors">
-              <option>Status: Pending</option>
-              <option>Approved</option>
-              <option>Rejected</option>
-            </select>
+            <Select
+              value="All"
+              onChange={() => {}}
+              placeholder="All Request Types"
+              options={typeOptions}
+              minWidthClass="min-w-[160px]"
+            />
+            <Select
+              value="Pending"
+              onChange={() => {}}
+              placeholder="Status: Pending"
+              options={statusOptions}
+              minWidthClass="min-w-[140px]"
+            />
             <button type="button" className="flex items-center gap-2 px-3 py-2 text-label-md text-secondary hover:bg-secondary/5 rounded-lg transition-colors">
               <span className="material-symbols-outlined text-[18px]">calendar_month</span>
               Last 30 Days
@@ -78,7 +106,7 @@ export function ApprovalCenterPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {rows.map((row) => (
-                <tr key={row.id} className="zebra-row cursor-pointer" onClick={() => navigate({ to: '/approvals/pending' })}>
+                <tr key={row.id} className="zebra-row cursor-pointer" onClick={() => safeNavigate(navigate, { to: '/approvals/pending' })}>
                   <td className="px-6 py-4 font-medium text-secondary">#{row.id}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
@@ -138,41 +166,5 @@ export function ApprovalCenterPage() {
         </div>
       </section>
     </div>
-  )
-}
-
-function KpiCard({
-  icon,
-  iconClass,
-  label,
-  value,
-  trend,
-  trendUp,
-  trendClass,
-  onClick,
-}: {
-  icon: string
-  iconClass: string
-  label: string
-  value: number
-  trend: string
-  trendUp?: boolean
-  trendClass?: string
-  onClick?: () => void
-}) {
-  return (
-    <button type="button" onClick={onClick} className="bv-surface card-hover p-4 text-left w-full">
-      <div className="flex justify-between items-start mb-2">
-        <span className={cn('p-2 rounded-lg', iconClass)}>
-          <span className="material-symbols-outlined">{icon}</span>
-        </span>
-        <div className={cn('flex items-center gap-1 text-label-sm', trendClass ?? 'text-on-surface-variant')}>
-          <span className="material-symbols-outlined text-[14px]">{trendUp ? 'trending_up' : 'trending_flat'}</span>
-          <span>{trend}</span>
-        </div>
-      </div>
-      <p className="text-label-sm text-on-surface-variant">{label}</p>
-      <h3 className="text-headline-md font-semibold text-on-background">{value}</h3>
-    </button>
   )
 }

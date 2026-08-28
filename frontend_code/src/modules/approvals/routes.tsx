@@ -4,14 +4,14 @@
  * /approvals/my-requests redirects to /my-work/requests
  */
 import { createRoute, redirect } from '@tanstack/react-router'
+import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 
 const ApprovalCenterPage = lazyPage(() => import('./pages/ApprovalCenterPage'), 'ApprovalCenterPage')
 const PendingApprovalsPage = lazyPage(() => import('./pages/PendingApprovalsPage'), 'PendingApprovalsPage')
 const ApprovalDetailPage = lazyPage(() => import('./pages/ApprovalDetailPage'), 'ApprovalDetailPage')
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createApprovalRoutes(appLayoutRoute: any) {
+export function createApprovalRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   const approvalsRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/approvals',

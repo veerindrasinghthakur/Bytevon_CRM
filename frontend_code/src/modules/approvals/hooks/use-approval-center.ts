@@ -1,14 +1,15 @@
 import { useQuery } from '@tanstack/react-query'
 import { getApprovalKpis, listPendingApprovals } from '../api/approvals'
+import { queryKeys } from '@/shared/lib/query-keys'
 
 export function useApprovalCenter() {
   const kpisQuery = useQuery({
-    queryKey: ['approvals', 'kpis'],
+    queryKey: queryKeys.approvals.all,
     queryFn: getApprovalKpis,
   })
 
   const pendingQuery = useQuery({
-    queryKey: ['approvals', 'pending', 'center'],
+    queryKey: queryKeys.approvals.pending({}),
     queryFn: () => listPendingApprovals(),
   })
 

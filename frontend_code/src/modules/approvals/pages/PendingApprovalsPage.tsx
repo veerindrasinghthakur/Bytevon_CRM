@@ -8,65 +8,26 @@ import { Select } from '@/shared/components/ui/Select'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { RowActions } from '@/shared/components/ui/RowActions'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
-import {
-  QuickSection,
-  QuickStat,
-  QuickStatGrid,
-  QuickMetaTile,
-  QuickPersonRow,
-  QuickRelatedRow,
-} from '@/shared/components/layout/QuickOverviewParts'
+import { ApprovalQuickContent } from '../components/ApprovalQuickContent'
 import { ResourceName } from '@/shared/schema'
 import { usePendingApprovals } from '../hooks/use-pending-approvals'
 import { useApprovalCenter } from '../hooks/use-approval-center'
-import type { ApprovalRow } from '../types'
+import type { ApprovalRow, ApprovalPriority } from '../types'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
-const priorityStyles: Record<string, string> = {
+const priorityStyles: Record<ApprovalPriority, string> = {
   High: 'status-badge status-error',
   Medium: 'status-badge status-warning',
   Normal: 'status-badge status-info',
   Low: 'status-badge status-neutral',
 }
 
-const priorityDot: Record<string, string> = {
+const priorityDot: Record<ApprovalPriority, string> = {
   High: 'bg-red-500',
   Medium: 'bg-amber-500',
   Normal: 'bg-blue-500',
   Low: 'bg-slate-400',
-}
-
-function ApprovalQuickContent({ row }: { row: ApprovalRow }) {
-  return (
-    <>
-      <QuickSection title="Request">
-        <QuickStatGrid>
-          <QuickStat icon={row.typeIcon} value={row.type} label="Type" />
-          <QuickStat icon="priority_high" value={row.priority} label="Priority" />
-          <QuickStat icon="event" value={row.date} label="Date" />
-        </QuickStatGrid>
-      </QuickSection>
-      <QuickSection title="Status">
-        <div className="grid grid-cols-2 gap-3">
-          <QuickMetaTile icon="info" label="Status" value={row.status} />
-          {row.stage && <QuickMetaTile icon="account_tree" label="Stage" value={row.stage} />}
-        </div>
-      </QuickSection>
-      <QuickSection title="People">
-        <QuickPersonRow
-          initials={row.requesterInitials}
-          roleLabel="Requester"
-          name={row.requester}
-        />
-        {row.approver && (
-          <QuickRelatedRow icon="how_to_reg" label="Approver" value={row.approver} />
-        )}
-      </QuickSection>
-      <QuickSection title="Identity">
-        <QuickRelatedRow icon="tag" label="ID" value={`#${row.id}`} />
-      </QuickSection>
-    </>
-  )
 }
 
 export function PendingApprovalsPage() {
@@ -98,7 +59,7 @@ export function PendingApprovalsPage() {
       statusDotClass: priorityDot[row.priority] ?? 'bg-secondary',
       content: <ApprovalQuickContent row={row} />,
       fullRecordLabel: 'Open full record',
-      onOpenFull: () => navigate({ to: '/approvals/$requestId', params: { requestId: row.id } }),
+      onOpenFull: () => safeNavigate(navigate, { to: '/approvals/$requestId', params: { requestId: row.id } }),
       widthClass: 'max-w-[520px]',
     })
   }
@@ -255,7 +216,7 @@ export function PendingApprovalsPage() {
                             label: 'View details',
                             icon: 'description',
                             onClick: () =>
-                              navigate({
+                              safeNavigate(navigate, {
                                 to: '/approvals/$requestId',
                                 params: { requestId: row.id },
                               }),

@@ -1,13 +1,16 @@
-import { useMemo, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { ResourceName } from '@/shared/schema'
-import { myRequests } from '../data/mock'
+import { useMyRequests } from '../hooks/use-my-requests'
 import { cn } from '@/shared/lib/cn'
+import type { ApprovalStatus } from '../types'
 
-const statusStyles: Record<string, string> = {
+const statusStyles: Record<ApprovalStatus, string> = {
   'In-Progress': 'bg-amber-50 text-amber-700 border-amber-200',
   Approved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
   Rejected: 'bg-red-50 text-red-700 border-red-200',
@@ -16,26 +19,54 @@ const statusStyles: Record<string, string> = {
 
 const filters = ['All Requests', 'In-Progress', 'Approved', 'Rejected'] as const
 
+const filterSchema = z.object({
+  filter: z.enum(filters),
+})
+
+type FilterFormData = z.infer<typeof filterSchema>
+
 export function MyRequestsPage() {
-  const [filter, setFilter] = useState<(typeof filters)[number]>('All Requests')
+  const {
+    items,
+    filtered,
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    isLoading,
+    refetch,
+  } = useMyRequests()
 
-  const visible = useMemo(
-    () =>
-      filter === 'All Requests'
-        ? myRequests
-        : myRequests.filter(
-            (r) => r.status === filter || (filter === 'In-Progress' && r.status === 'Pending'),
-          ),
-    [filter],
-  )
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { isSubmitting },
+  } = useForm<FilterFormData>({
+    resolver: zodResolver(filterSchema),
+    defaultValues: {
+      filter: 'All Requests',
+    },
+  })
 
-  const stats = useMemo(() => {
-    const total = myRequests.length
-    const inProgress = myRequests.filter((r) => r.status === 'In-Progress' || r.status === 'Pending').length
-    const approved = myRequests.filter((r) => r.status === 'Approved').length
-    const rejected = myRequests.filter((r) => r.status === 'Rejected').length
-    return { total, inProgress, approved, rejected }
-  }, [])
+  const filter = watch('filter')
+
+  const visible = filter === 'All Requests'
+    ? filtered
+    : filtered.filter(
+        (r) => r.status === filter || (filter === 'In-Progress' && r.status === 'Pending'),
+      )
+
+  const stats = {
+    total: items.length,
+    inProgress: items.filter((r) => r.status === 'In-Progress' || r.status === 'Pending').length,
+    approved: items.filter((r) => r.status === 'Approved').length,
+    rejected: items.filter((r) => r.status === 'Rejected').length,
+  }
+
+  const onFilterChange = (data: FilterFormData) => {
+    setStatusFilter(data.filter)
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -63,21 +94,24 @@ export function MyRequestsPage() {
       <section className="bv-surface overflow-hidden">
         <div className="p-4 border-b border-outline-variant flex items-center justify-between flex-wrap gap-3">
           <div className="flex gap-2 flex-wrap">
-            {filters.map((f) => (
-              <button
-                key={f}
-                type="button"
-                onClick={() => setFilter(f)}
-                className={cn(
-                  'px-4 py-1.5 rounded-full text-label-md font-medium transition-colors',
-                  filter === f
-                    ? 'bg-primary text-on-primary'
-                    : 'hover:bg-surface-container-low text-on-surface-variant'
-                )}
-              >
-                {f}
-              </button>
-            ))}
+            <form onSubmit={handleSubmit(onFilterChange)} className="flex gap-2 flex-wrap">
+              {filters.map((f) => (
+                <button
+                  key={f}
+                  type="submit"
+                  value={f}
+                  {...register('filter')}
+                  className={cn(
+                    'px-4 py-1.5 rounded-full text-label-md font-medium transition-colors',
+                    filter === f
+                      ? 'bg-primary text-on-primary'
+                      : 'hover:bg-surface-container-low text-on-surface-variant'
+                  )}
+                >
+                  {f}
+                </button>
+              ))}
+            </form>
           </div>
           <button type="button" className="text-secondary text-label-md flex items-center gap-1 hover:underline">
             View Archive <span className="material-symbols-outlined text-sm">arrow_forward</span>
@@ -111,8 +145,8 @@ export function MyRequestsPage() {
                           row.status === 'Approved'
                             ? 'bg-emerald-500'
                             : row.status === 'Rejected'
-                              ? 'bg-red-500'
-                              : 'bg-amber-500'
+                            ? 'bg-red-500'
+                            : 'bg-amber-500'
                         )}
                       />
                       {row.stage ?? '—'}

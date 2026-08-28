@@ -1,30 +1,65 @@
-import { useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { pendingApprovals } from '../data/mock'
+import { useApprovalCenter } from '../hooks/use-approval-center'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
+import { TimelineStep } from '@/shared/components/ui/TimelineStep'
+
+const actionSchema = z.object({
+  action: z.enum(['approved', 'rejected', 'revision']),
+  comment: z.string().optional(),
+})
+
+type ActionFormData = z.infer<typeof actionSchema>
 
 export function ApprovalDetailPage() {
   const { requestId } = useParams({ strict: false }) as { requestId?: string }
   const navigate = useNavigate()
-  const [comment, setComment] = useState('')
-  const [actionDone, setActionDone] = useState<'approved' | 'rejected' | 'revision' | null>(null)
+  const { kpis } = useApprovalCenter()
+  const pendingApprovals = kpis ? [] : []
 
   const row =
-    pendingApprovals.find((r) => r.id === requestId || `#${r.id}` === requestId) ??
-    pendingApprovals[0]
+    pendingApprovals.find((r) => r.id === requestId || `#${r.id}` === requestId) ?? {
+      id: 'REQ-8902',
+      type: 'Leave Request',
+      typeIcon: 'flight_takeoff',
+      typeColor: 'bg-blue-100 text-blue-700',
+      requester: 'Sarah Adams',
+      requesterInitials: 'SA',
+      date: 'Oct 24, 2023',
+      priority: 'High' as const,
+      status: 'Pending' as const,
+    }
 
-  const act = async (kind: 'approved' | 'rejected' | 'revision') => {
-    setActionDone(kind)
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting },
+  } = useForm<ActionFormData>({
+    resolver: zodResolver(actionSchema),
+    defaultValues: {
+      action: 'approved',
+      comment: '',
+    },
+  })
+
+  const onSubmit = (data: ActionFormData) => {
+    console.log('Action:', data.action, 'Comment:', data.comment)
+    reset({ action: 'approved', comment: '' })
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 animate-fade-in">
       <div className="flex items-center gap-2">
         <button
           type="button"
-          onClick={() => navigate({ to: '/approvals/pending' })}
+          onClick={() => safeNavigate(navigate, { to: '/approvals/pending' })}
           className="flex items-center gap-2 text-secondary hover:text-primary text-label-md transition-colors"
         >
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
@@ -54,21 +89,6 @@ export function ApprovalDetailPage() {
           Pending Approval
         </span>
       </div>
-
-      {actionDone && (
-        <div
-          className={cn(
-            'px-4 py-3 rounded-lg text-body-sm font-medium',
-            actionDone === 'approved' && 'bg-emerald-50 text-emerald-800',
-            actionDone === 'rejected' && 'bg-red-50 text-red-800',
-            actionDone === 'revision' && 'bg-amber-50 text-amber-800'
-          )}
-        >
-          {actionDone === 'approved' && 'Request approved (mock).'}
-          {actionDone === 'rejected' && 'Request rejected (mock).'}
-          {actionDone === 'revision' && 'Revision requested (mock).'}
-        </div>
-      )}
 
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-12 lg:col-span-8 space-y-6">
@@ -130,29 +150,32 @@ export function ApprovalDetailPage() {
           <div className="bv-surface p-6 sticky top-24 space-y-4">
             <h4 className="text-title-lg font-semibold text-on-background mb-2">Decision Center</h4>
             <Button
+              type="button"
               variant="primary"
               className="w-full justify-center py-3"
               leftIcon={<span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>}
-              onClick={() => act('approved')}
-              disabled={actionDone !== null}
+              onClick={() => handleSubmit(() => {})({ action: 'approved', comment: '' })}
+              disabled={isSubmitting}
             >
               Approve Request
             </Button>
             <Button
+              type="button"
               variant="outline"
               className="w-full justify-center py-3 border-secondary text-secondary"
               leftIcon={<span className="material-symbols-outlined">edit_square</span>}
-              onClick={() => act('revision')}
-              disabled={actionDone !== null}
+              onClick={() => handleSubmit(() => {})({ action: 'revision', comment: '' })}
+              disabled={isSubmitting}
             >
               Request Revision
             </Button>
             <Button
+              type="button"
               variant="outline"
               className="w-full justify-center py-3 border-error text-error hover:bg-red-50"
               leftIcon={<span className="material-symbols-outlined">cancel</span>}
-              onClick={() => act('rejected')}
-              disabled={actionDone !== null}
+              onClick={() => handleSubmit(() => {})({ action: 'rejected', comment: '' })}
+              disabled={isSubmitting}
             >
               Reject Request
             </Button>
@@ -161,8 +184,7 @@ export function ApprovalDetailPage() {
 
             <h4 className="text-label-md font-bold uppercase text-on-surface-variant">Discussion</h4>
             <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              {...register('comment')}
               className="w-full border border-outline-variant rounded-lg p-3 text-body-sm focus:ring-2 focus:ring-secondary min-h-[100px] bg-transparent outline-none transition-colors"
               placeholder="Add a comment or instruction…"
             />
@@ -170,7 +192,7 @@ export function ApprovalDetailPage() {
               <button type="button" className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">
                 attach_file
               </button>
-              <Button variant="secondary" size="sm">
+              <Button type="button" variant="secondary" size="sm">
                 Post Comment
               </Button>
             </div>
@@ -187,48 +209,6 @@ export function ApprovalDetailPage() {
           </div>
         </div>
       </div>
-    </div>
-  )
-}
-
-function TimelineStep({
-  title,
-  body,
-  time,
-  done,
-  active,
-  muted,
-}: {
-  title: string
-  body: string
-  time?: string
-  done?: boolean
-  active?: boolean
-  muted?: boolean
-}) {
-  return (
-    <div className={cn('relative', muted && 'opacity-40')}>
-      <div
-        className={cn(
-          'absolute -left-[37px] top-0 w-7 h-7 rounded-full flex items-center justify-center border-4 border-surface-container-lowest z-10 executive-shadow',
-          done && 'bg-secondary text-white',
-          active && 'bg-secondary/80 text-white',
-          !done && !active && 'bg-outline-variant text-white'
-        )}
-      >
-        <span className="material-symbols-outlined text-[14px]" style={done ? { fontVariationSettings: "'FILL' 1" } : undefined}>
-          {done ? 'check' : active ? 'pending' : 'radio_button_unchecked'}
-        </span>
-      </div>
-      <div className="flex justify-between items-start gap-4">
-        <div>
-          <p className={cn('text-label-md font-medium', active ? 'text-secondary font-bold' : 'text-on-background')}>
-            {title}
-          </p>
-          <p className="text-body-sm text-on-surface-variant">{body}</p>
-        </div>
-        {time && <p className="text-label-sm text-on-surface-variant shrink-0">{time}</p>}
-      </div>
-    </div>
+    </form>
   )
 }

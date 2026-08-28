@@ -1,17 +1,26 @@
-import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { listMyRequests } from '../api/approvals'
+import { useListControls } from '@/shared/hooks/useListControls'
+import { queryKeys } from '@/shared/lib/query-keys'
+
+const FILTER_DEFAULTS = {
+  status: 'All',
+}
 
 export function useMyRequests() {
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('All')
+  const controls = useListControls({
+    filterDefaults: FILTER_DEFAULTS,
+  })
 
   const query = useQuery({
-    queryKey: ['approvals', 'my-requests', search, statusFilter],
+    queryKey: queryKeys.approvals.myRequests({
+      search: controls.debouncedSearch,
+      status: controls.filters.status,
+    }),
     queryFn: () =>
       listMyRequests({
-        search: search || undefined,
-        status: statusFilter,
+        search: controls.debouncedSearch || undefined,
+        status: controls.filters.status,
       }),
   })
 
@@ -20,10 +29,10 @@ export function useMyRequests() {
   return {
     items,
     filtered: items,
-    search,
-    setSearch,
-    statusFilter,
-    setStatusFilter,
+    search: controls.search,
+    setSearch: controls.setSearch,
+    statusFilter: controls.filters.status,
+    setStatusFilter: (v: string) => controls.setFilter('status', v),
     isLoading: query.isLoading,
     isError: query.isError,
     refetch: query.refetch,
