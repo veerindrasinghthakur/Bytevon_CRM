@@ -6,6 +6,8 @@ from typing import Any
 from data.modules import admin as admin_mod
 from data.modules import my_work as my_work_mod
 from data.modules import organization as organization_mod
+from data.modules import projects as projects_mod
+from data.modules import sales as sales_mod
 
 
 def merge_module_seeds(data: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -14,6 +16,8 @@ def merge_module_seeds(data: dict[str, Any] | None = None) -> dict[str, Any]:
     out.update(admin_mod.build_seed())
     out.update(organization_mod.build_seed())
     out.update(my_work_mod.build_seed())
+    out.update(sales_mod.build_seed())
+    out.update(projects_mod.build_seed())
     return out
 
 

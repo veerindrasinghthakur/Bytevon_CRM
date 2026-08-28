@@ -29,6 +29,14 @@ def main() -> None:
         f"attendance={len(data.get('my_work_attendance', []))} "
         f"tasks={len(data.get('my_work_tasks', []))}"
     )
+    print(
+        f"  sales leads={len(data.get('leads', []))} clients={len(data.get('clients', []))} "
+        f"case_studies={len(data.get('case_studies', []))}"
+    )
+    print(
+        f"  projects={len(data.get('projects', []))} teams={len(data.get('teams', []))} "
+        f"tasks={len(data.get('tasks', []))}"
+    )
     print("  Login: admin@bytevon.local / ChangeMeAdmin!123")
 
 
