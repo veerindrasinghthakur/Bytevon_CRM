@@ -2,15 +2,20 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { myAdminRoutes } from '@/modules/admin/routes'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/shared/components/ui/Button'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { Select } from '@/shared/components/ui/Select'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
+import { queryKeys } from '@/shared/lib/query-keys'
 import { getAttendanceSettings, updateAttendanceSettings } from '../api/settings'
 import { getAttendanceAdminMetrics } from '../api/metrics'
 import { getShifts } from '../api/organization'
+import { attendanceSettingsSchema, type AttendanceSettingsInput } from '../schemas/settings'
 import type { AttendanceSettings } from '../types'
 import type { ShiftRow } from '@/shared/schema'
 
@@ -23,7 +28,7 @@ function Toggle({ on = false, disabled = false }: { on?: boolean; disabled?: boo
   )
 }
 
-function shiftToForm(s: ShiftRow): AttendanceSettings {
+function shiftToForm(s: ShiftRow): AttendanceSettingsInput {
   return {
     shiftStart: String(s.start_time).slice(0, 5),
     shiftEnd: String(s.end_time).slice(0, 5),
@@ -34,7 +39,7 @@ function shiftToForm(s: ShiftRow): AttendanceSettings {
   }
 }
 
-function aggregateShifts(shifts: ShiftRow[]): AttendanceSettings {
+function aggregateShifts(shifts: ShiftRow[]): AttendanceSettingsInput {
   if (!shifts.length) {
     return {
       shiftStart: '09:00',
@@ -57,17 +62,17 @@ export function AttendanceSettingsPage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
   const { data, isLoading } = useQuery({
-    queryKey: ['admin', 'settings', 'attendance'],
+    queryKey: queryKeys.admin.settings.attendance(),
     queryFn: getAttendanceSettings,
   })
 
   const { data: metrics } = useQuery({
-    queryKey: ['admin', 'metrics', 'attendance'],
+    queryKey: queryKeys.admin.metrics.attendance(),
     queryFn: getAttendanceAdminMetrics,
   })
 
   const shiftsQuery = useQuery({
-    queryKey: ['organization', 'shifts', { includeArchived: false }],
+    queryKey: queryKeys.organization.shifts.list({ includeArchived: false }),
     queryFn: () => getShifts({ includeArchived: false }),
   })
 
@@ -75,7 +80,18 @@ export function AttendanceSettingsPage() {
   const [selectedShiftId, setSelectedShiftId] = useState<string>('')
 
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
-  const [form, setForm] = useState<AttendanceSettings | null>(null)
+
+  const form = useForm<AttendanceSettingsInput>({
+    resolver: zodResolver(attendanceSettingsSchema),
+    defaultValues: {
+      shiftStart: '09:00',
+      shiftEnd: '18:00',
+      graceMinutes: 15,
+      earlyOutMinutes: 30,
+      otMinMinutes: 60,
+      allowRemoteCheckIn: true,
+    },
+  })
 
   const activeShift = useMemo(
     () => (selectedShiftId ? shifts.find((s) => String(s.id) === selectedShiftId) : null),
@@ -85,21 +101,21 @@ export function AttendanceSettingsPage() {
   useEffect(() => {
     if (isEditing) return
     if (selectedShiftId && activeShift) {
-      setForm(shiftToForm(activeShift))
+      form.reset(shiftToForm(activeShift))
       return
     }
     // No shift picked → aggregate / company defaults
     if (shifts.length) {
-      setForm(aggregateShifts(shifts))
+      form.reset(aggregateShifts(shifts))
     } else if (data) {
-      setForm({ ...data })
+      form.reset({ ...data })
     }
-  }, [isEditing, selectedShiftId, activeShift, shifts, data])
+  }, [isEditing, selectedShiftId, activeShift, shifts, data, form])
 
   const save = useMutation({
-    mutationFn: () => updateAttendanceSettings(form!),
+    mutationFn: () => updateAttendanceSettings(form.getValues()),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['admin', 'settings', 'attendance'] })
+      qc.invalidateQueries({ queryKey: queryKeys.admin.settings.attendance() })
       finishEditing()
     },
     onError: () => {
@@ -107,7 +123,7 @@ export function AttendanceSettingsPage() {
     },
   })
 
-  if (isLoading || shiftsQuery.isLoading || !form) {
+  if (isLoading || shiftsQuery.isLoading) {
     return (
       <div className="py-12 text-center text-on-surface-variant text-body-sm">Loading attendance settings…</div>
     )
@@ -120,6 +136,8 @@ export function AttendanceSettingsPage() {
       label: `${s.name} (${String(s.start_time).slice(0, 5)}–${String(s.end_time).slice(0, 5)})`,
     })),
   ]
+
+  const formValues = form.watch()
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -173,10 +191,10 @@ export function AttendanceSettingsPage() {
               variant="outline"
               size="sm"
               leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-              onClick={() => navigate({ to: myAdminRoutes.shiftsNew })}
+              onClick={() => safeNavigate(navigate, { to: myAdminRoutes.shiftsNew })}
             >
               Create Shift
-          </Button>
+            </Button>
           {isEditing ? (
             <div className="flex gap-2">
               <Button
@@ -214,7 +232,7 @@ export function AttendanceSettingsPage() {
           title="No shifts configured"
           description="Create a shift to apply attendance rules per schedule. Until then, company defaults are shown."
           actionLabel="Create Shift"
-          onAction={() => navigate({ to: myAdminRoutes.shiftsNew })}
+          onAction={() => safeNavigate(navigate, { to: myAdminRoutes.shiftsNew })}
         />
       )}
 
@@ -230,12 +248,11 @@ export function AttendanceSettingsPage() {
               {isEditing ? (
                 <input
                   type="time"
-                  value={form.shiftStart}
-                  onChange={(e) => setForm((p) => p && { ...p, shiftStart: e.target.value })}
+                  {...form.register('shiftStart')}
                   className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
                 />
               ) : (
-                <p className="text-body-md font-medium text-on-surface">{form.shiftStart}</p>
+                <p className="text-body-md font-medium text-on-surface">{formValues.shiftStart}</p>
               )}
             </div>
             <div>
@@ -243,12 +260,11 @@ export function AttendanceSettingsPage() {
               {isEditing ? (
                 <input
                   type="time"
-                  value={form.shiftEnd}
-                  onChange={(e) => setForm((p) => p && { ...p, shiftEnd: e.target.value })}
+                  {...form.register('shiftEnd')}
                   className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
                 />
               ) : (
-                <p className="text-body-md font-medium text-on-surface">{form.shiftEnd}</p>
+                <p className="text-body-md font-medium text-on-surface">{formValues.shiftEnd}</p>
               )}
             </div>
           </div>

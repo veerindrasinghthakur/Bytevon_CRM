@@ -2,12 +2,13 @@ import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { cn } from '@/shared/lib/cn'
+import { queryKeys } from '@/shared/lib/query-keys'
 import { listLeavePolicies } from '../api/leave'
 
 export function LeavePoliciesPage() {
   const [showHistorical, setShowHistorical] = useState(false)
   const { data: policies = [], isLoading } = useQuery({
-    queryKey: ['admin', 'leave', 'policies'],
+    queryKey: queryKeys.admin.leave.policies(),
     queryFn: () => listLeavePolicies(),
   })
 

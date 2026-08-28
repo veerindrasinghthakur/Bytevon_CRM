@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { queryKeys } from '@/shared/lib/query-keys'
+import { myAdminRoutes } from '../routes'
 import type { RolePermissionAction, RolePermissionMatrix } from '../types'
 import { emptyMatrix, matrixToPermissions, seedMatrix } from '../lib/role-matrix'
 import {
@@ -18,7 +20,7 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
   const queryClient = useQueryClient()
 
   const catalogQuery = useQuery({
-    queryKey: ['admin', 'rbac', 'permission-catalog'],
+    queryKey: queryKeys.admin.rbac.permissionCatalog(),
     queryFn: listPermissionCatalog,
   })
 
@@ -26,13 +28,13 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
   const actions = (catalogQuery.data?.actions ?? []) as RolePermissionAction[]
 
   const roleQuery = useQuery({
-    queryKey: ['admin', 'roles', roleId],
+    queryKey: queryKeys.admin.roles.detail(roleId as string),
     queryFn: () => getAdminRole(roleId as string),
     enabled: mode === 'edit' && Boolean(roleId),
   })
 
   const sourceRoleQuery = useQuery({
-    queryKey: ['admin', 'roles', duplicateFromId],
+    queryKey: queryKeys.admin.roles.detail(duplicateFromId as string),
     queryFn: () => getAdminRole(duplicateFromId as string),
     enabled: mode === 'create' && Boolean(duplicateFromId),
   })
@@ -151,9 +153,9 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
       })
     },
     onSuccess: (saved) => {
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'roles'] })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.admin.roles.all })
       safeNavigate(navigate, {
-        to: '/admin/roles/$roleId',
+        to: myAdminRoutes.rolesDetail(String(saved.id)),
         params: { roleId: String(saved.id) },
       })
     },
@@ -162,11 +164,11 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
   const cancel = useCallback(() => {
     if (mode === 'edit' && roleId) {
       safeNavigate(navigate, {
-        to: '/admin/roles/$roleId',
+        to: myAdminRoutes.rolesDetail(roleId),
         params: { roleId },
       })
     } else {
-      safeNavigate(navigate, { to: '/admin/roles' })
+      safeNavigate(navigate, { to: myAdminRoutes.rolesList })
     }
   }, [mode, roleId, navigate])
 

@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from '@/shared/lib/query-keys'
 import {
   getHolidayCalendars,
   getHolidays,
@@ -10,11 +11,9 @@ import {
 } from '../api/organization'
 import type { OrganizationSettings } from '@/shared/schema'
 
-const QK = ['organization'] as const
-
 export function useOrganizationSettings() {
   return useQuery({
-    queryKey: [...QK, 'settings'],
+    queryKey: queryKeys.organization.settings(),
     queryFn: () => getOrganizationSettings(),
   })
 }
@@ -35,8 +34,8 @@ export function useUpdateOrganizationSettings() {
       >,
     ) => updateOrganizationSettings(patch),
     onSuccess: (row) => {
-      qc.setQueryData([...QK, 'settings'], row)
-      qc.invalidateQueries({ queryKey: [...QK, 'settings'] })
+      qc.setQueryData(queryKeys.organization.settings(), row)
+      qc.invalidateQueries({ queryKey: queryKeys.organization.settings() })
     },
     onError: () => {
       // Handled by consumer
@@ -46,35 +45,35 @@ export function useUpdateOrganizationSettings() {
 
 export function useOrgLocationsForSelect() {
   return useQuery({
-    queryKey: [...QK, 'locations', 'select'],
+    queryKey: queryKeys.organization.locations.list({ includeArchived: false }),
     queryFn: () => getLocations({ includeArchived: false }),
   })
 }
 
 export function useWorkingWeeks() {
   return useQuery({
-    queryKey: [...QK, 'working-weeks'],
+    queryKey: queryKeys.organization.workingWeeks(),
     queryFn: getWorkingWeeks,
   })
 }
 
 export function useHolidayCalendars() {
   return useQuery({
-    queryKey: [...QK, 'holiday-calendars'],
+    queryKey: queryKeys.organization.holidays.list(),
     queryFn: getHolidayCalendars,
   })
 }
 
 export function useHolidays(calendarId?: number) {
   return useQuery({
-    queryKey: [...QK, 'holidays', { calendarId }],
+    queryKey: queryKeys.organization.holidays.detail(calendarId ?? 0),
     queryFn: () => getHolidays(calendarId),
   })
 }
 
 export function usePositions(includeArchived = true) {
   return useQuery({
-    queryKey: [...QK, 'positions', { includeArchived }],
+    queryKey: queryKeys.organization.positions({ includeArchived }),
     queryFn: () => getPositions({ includeArchived }),
   })
 }

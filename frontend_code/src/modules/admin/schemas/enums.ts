@@ -63,3 +63,37 @@ export const userStatusOptions = [
   { value: 'Inactive', label: 'Inactive' },
   { value: 'Locked', label: 'Locked' },
 ] as const
+
+/** Role status filter options (RolesListPage status Select). */
+export const roleStatusOptions = [
+  { value: 'All', label: 'All Status' },
+  { value: 'Active', label: 'Active' },
+  { value: 'Archived', label: 'Archived' },
+] as const
+
+/** Role category filter options (RolesListPage category Select). */
+export const roleCategoryOptions = [
+  { value: 'All', label: 'All Categories' },
+  { value: 'Core Role', label: 'Core Role' },
+  { value: 'Operational', label: 'Operational' },
+  { value: 'Financial', label: 'Financial' },
+  { value: 'Standard', label: 'Standard' },
+] as const
+
+/** Hierarchy level options for role creation. */
+export const hierarchyLevels = [
+  '1 (Entry)',
+  '2',
+  '3',
+  '4',
+  '5 (Management)',
+  '10 (Executive)',
+] as const
+
+/** Inherit permissions options for role creation. */
+export const inheritOptions = [
+  'None (Custom)',
+  'Basic Employee',
+  'Financial Analyst',
+  'HR Manager',
+] as const

@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { queryKeys } from '@/shared/lib/query-keys'
 import { myAdminRoutes } from '../routes'
 import { uploadUserAvatar } from '@/modules/profile/api/profile'
 import {
@@ -28,18 +29,18 @@ export function useUserDetail(userId?: string) {
   const qc = useQueryClient()
 
   const detailQuery = useQuery({
-    queryKey: ['admin', 'users', 'detail', loginId],
+    queryKey: queryKeys.admin.users.detail(loginId),
     queryFn: () => getUserLogin(loginId),
     enabled: Number.isFinite(loginId),
   })
 
   const rolesQuery = useQuery({
-    queryKey: ['admin', 'roles', 'options'],
+    queryKey: queryKeys.admin.roles.list(),
     queryFn: listRoles,
   })
 
   const deptsQuery = useQuery({
-    queryKey: ['admin', 'departments', 'options'],
+    queryKey: queryKeys.workforce.departments.list(),
     queryFn: listDepartments,
   })
 
@@ -107,7 +108,7 @@ export function useUserDetail(userId?: string) {
         role: roleOptions.find((o) => o.value === values.roleId)?.label ?? display?.role ?? '',
       }),
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['admin', 'users'] })
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.users.all })
       finishEditing()
     },
   })
@@ -118,7 +119,7 @@ export function useUserDetail(userId?: string) {
       return lockUser(loginId)
     },
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['admin', 'users'] })
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.users.all })
       setStatus((s) => (s === 'Locked' ? 'Active' : 'Locked'))
       setLockOpen(false)
     },
@@ -130,7 +131,7 @@ export function useUserDetail(userId?: string) {
   const deactivateMutation = useMutation({
     mutationFn: () => deactivateUser(loginId),
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: ['admin', 'users'] })
+      await qc.invalidateQueries({ queryKey: queryKeys.admin.users.all })
       setStatus('Inactive')
     },
   })
@@ -138,7 +139,7 @@ export function useUserDetail(userId?: string) {
   const activateMutation = useMutation({
     mutationFn: () => activateUser(loginId),
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: ['admin', 'users'] })
+      await qc.invalidateQueries({ queryKey: queryKeys.admin.users.all })
       setStatus('Active')
     },
   })
@@ -146,8 +147,8 @@ export function useUserDetail(userId?: string) {
   const hardArchiveMutation = useMutation({
     mutationFn: () => archiveUserCredentials(loginId),
     onSuccess: async () => {
-      await qc.invalidateQueries({ queryKey: ['admin', 'users'] })
-      await qc.invalidateQueries({ queryKey: ['admin', 'employments-without-login'] })
+      await qc.invalidateQueries({ queryKey: queryKeys.admin.users.all })
+      await qc.invalidateQueries({ queryKey: queryKeys.admin.users.withoutLogin() })
       safeNavigate(navigate, { to: myAdminRoutes.usersList })
     },
   })

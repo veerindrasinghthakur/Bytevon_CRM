@@ -137,6 +137,10 @@ export const myAdminRoutes = {
   shiftsList: '/admin/settings/shifts',
   shiftsNew: '/admin/settings/shifts/new',
   shiftsDetail: (shiftId: string) => `/admin/settings/shifts/${shiftId}`,
+  locationsList: '/admin/settings/locations',
+  locationsDetail: (locationId: string) => `/admin/settings/locations/${locationId}`,
+  officesNew: '/admin/settings/offices/new',
+  officesEdit: (officeId: string) => `/admin/settings/offices/${officeId}/edit`,
 }
 
 export function createAdminRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {

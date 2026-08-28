@@ -4,6 +4,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { queryKeys } from '@/shared/lib/query-keys'
 import { getSecurityKpis, listSecurityEvents } from '../api/security'
 import { cn } from '@/shared/lib/cn'
 import { securityScoreDefault } from '@/modules/admin/schemas/enums'
@@ -13,11 +14,11 @@ export function SecurityCenterPage() {
   const [sessionTimeout, setSessionTimeout] = useState(true)
 
   const kpisQuery = useQuery({
-    queryKey: ['admin', 'security', 'kpis'],
+    queryKey: queryKeys.admin.security.kpis(),
     queryFn: getSecurityKpis,
   })
   const eventsQuery = useQuery({
-    queryKey: ['admin', 'security', 'events'],
+    queryKey: queryKeys.admin.security.events(),
     queryFn: listSecurityEvents,
   })
 

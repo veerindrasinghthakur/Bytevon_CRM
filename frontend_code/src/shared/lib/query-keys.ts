@@ -8,11 +8,18 @@ export const queryKeys = {
     users: {
       all: ['admin', 'users'] as const,
       list: (filters?: unknown) => [...queryKeys.admin.users.all, 'list', filters ?? {}] as const,
+      detail: (id: number) => [...queryKeys.admin.users.all, 'detail', id] as const,
+      withoutLogin: () => [...queryKeys.admin.users.all, 'without-login'] as const,
     },
     roles: {
       all: ['admin', 'roles'] as const,
-      list: () => [...queryKeys.admin.roles.all, 'list'] as const,
+      list: (filters?: unknown) => [...queryKeys.admin.roles.all, 'list', filters ?? {}] as const,
+      detail: (id: string) => [...queryKeys.admin.roles.all, 'detail', id] as const,
       metrics: () => ['admin', 'metrics', 'roles'] as const,
+    },
+    rbac: {
+      all: ['admin', 'rbac'] as const,
+      permissionCatalog: () => [...queryKeys.admin.rbac.all, 'permission-catalog'] as const,
     },
     audit: {
       all: ['admin', 'audit'] as const,
@@ -22,6 +29,16 @@ export const queryKeys = {
       all: ['admin', 'leave'] as const,
       policies: () => [...queryKeys.admin.leave.all, 'policies'] as const,
       ledger: (filters?: unknown) => [...queryKeys.admin.leave.all, 'ledger', filters ?? {}] as const,
+    },
+    security: {
+      all: ['admin', 'security'] as const,
+      kpis: () => [...queryKeys.admin.security.all, 'kpis'] as const,
+      events: () => [...queryKeys.admin.security.all, 'events'] as const,
+    },
+    settings: {
+      all: ['admin', 'settings'] as const,
+      attendance: () => [...queryKeys.admin.settings.all, 'attendance'] as const,
+      leaveAccrual: () => [...queryKeys.admin.settings.all, 'leave-accrual'] as const,
     },
   },
   organization: {
@@ -43,6 +60,9 @@ export const queryKeys = {
       list: () => [...queryKeys.organization.holidays.all(), 'list'] as const,
       detail: (calendarId: number) => [...queryKeys.organization.holidays.all(), 'detail', calendarId] as const,
     },
+    settings: () => ['organization', 'settings'] as const,
+    workingWeeks: () => ['organization', 'working-weeks'] as const,
+    positions: (includeArchived?: boolean) => ['organization', 'positions', { includeArchived }] as const,
   },
   workforce: {
     departments: {
@@ -219,4 +239,7 @@ export const invalidate = {
   myWorkApprovals: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.approvals.all }),
   payroll: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.payroll.all }),
   payrollEmployees: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.payroll.employees.all }),
+  adminRbac: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.admin.rbac.all }),
+  adminSecurity: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.admin.security.all }),
+  adminLeave: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.admin.leave.all }),
 }

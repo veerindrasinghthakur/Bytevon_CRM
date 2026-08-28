@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearch } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { queryKeys } from '@/shared/lib/query-keys'
+import { myAdminRoutes } from '../routes'
 import {
   createUserLogin,
   listEmploymentsWithoutLogin,
@@ -24,15 +26,15 @@ export function useUserCreate() {
   const [error, setError] = useState('')
 
   const candidatesQuery = useQuery({
-    queryKey: ['admin', 'users', 'without-login'],
+    queryKey: queryKeys.admin.users.withoutLogin(),
     queryFn: listEmploymentsWithoutLogin,
   })
   const rolesQuery = useQuery({
-    queryKey: ['admin', 'roles', 'db'],
+    queryKey: queryKeys.admin.roles.list(),
     queryFn: listRoles,
   })
   const deptsQuery = useQuery({
-    queryKey: ['workforce', 'departments'],
+    queryKey: queryKeys.workforce.departments.list(),
     queryFn: () => listDepartments(),
   })
 
@@ -80,8 +82,8 @@ export function useUserCreate() {
   const createMutation = useMutation({
     mutationFn: createUserLogin,
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'users'] })
-      safeNavigate(navigate, { to: '/admin/users' })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.admin.users.all })
+      safeNavigate(navigate, { to: myAdminRoutes.usersList })
     },
     onError: (e) => {
       setError(e instanceof Error ? e.message : 'Failed to create user')
