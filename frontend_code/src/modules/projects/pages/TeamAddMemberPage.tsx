@@ -3,14 +3,11 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
+import { useQuery } from '@tanstack/react-query'
 import { useTeam } from '../hooks/use-teams'
+import { getTeamCandidates } from '../api/teams'
 import { cn } from '@/shared/lib/cn'
-
-const CANDIDATES = [
-  { id: 'c1', name: 'Alex Rivera', department: 'Engineering', years: 4, availability: 'Available' },
-  { id: 'c2', name: 'Maya Patel', department: 'Design', years: 3, availability: 'Available' },
-  { id: 'c3', name: 'Tom Peters', department: 'Engineering', years: 6, availability: 'Busy' },
-]
+import { projectRoutes } from '../routes'
 
 export function ProjectTeamAddMemberPage() {
   const params = useParams({ strict: false }) as { teamId?: string }
@@ -19,6 +16,12 @@ export function ProjectTeamAddMemberPage() {
   const { data: team, isLoading } = useTeam(Number.isFinite(id) ? id : undefined)
   const [roles, setRoles] = useState<Record<string, string>>({})
   const [toast, setToast] = useState(false)
+
+  const { data: candidates, isLoading: isCandidatesLoading } = useQuery({
+    queryKey: ['teams', id, 'candidates'],
+    queryFn: () => getTeamCandidates(id),
+    enabled: Number.isFinite(id) && !!team,
+  })
 
   if (isLoading || !team) {
     return (
@@ -35,72 +38,83 @@ export function ProjectTeamAddMemberPage() {
         title="Add Team Member"
         description={`Expand ${team.name} by onboarding company employees.`}
         showBack
-        backTo={`/projects/teams/${team.id}`}
+        backTo={projectRoutes.teamDetail(team.id)}
         backLabel="Back to team"
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {CANDIDATES.map((m) => (
-          <div
-            key={m.id}
-            className="bv-surface card-hover p-6"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-secondary/10 text-secondary flex items-center justify-center font-bold">
-                  {m.name
-                    .split(' ')
-                    .map((p) => p[0])
-                    .join('')
-                    .slice(0, 2)}
-                </div>
-                <div>
-                  <h3 className="text-title-md font-semibold">{m.name}</h3>
-                  <p className="text-label-sm text-on-surface-variant">{m.department}</p>
-                </div>
-              </div>
-              <span
-                className={cn(
-                  'px-2 py-1 rounded text-[10px] font-bold uppercase',
-                  m.availability === 'Available'
-                    ? 'bg-green-100 text-green-700'
-                    : 'bg-yellow-100 text-yellow-700',
-                )}
-              >
-                {m.availability}
-              </span>
+        {isCandidatesLoading ? (
+          Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="bv-surface card-hover p-6">
+              <Skeleton className="h-12 w-12 rounded-full" />
+              <Skeleton className="h-4 w-32 mt-2" />
+              <Skeleton className="h-3 w-24 mt-1" />
+              <Skeleton className="h-8 w-full mt-4" />
             </div>
-            <p className="text-label-sm text-on-surface-variant mb-2">{m.years} years experience</p>
-            <div className="flex flex-wrap gap-2 mb-3">
-              {['Lead', 'Senior', 'Junior'].map((r) => (
-                <button
-                  key={r}
-                  type="button"
-                  onClick={() => setRoles((prev) => ({ ...prev, [m.id]: r }))}
+          ))
+        ) : (
+          candidates?.map((m) => (
+            <div
+              key={m.id}
+              className="bv-surface card-hover p-6"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full bg-secondary/10 text-secondary flex items-center justify-center font-bold">
+                    {m.name
+                      .split(' ')
+                      .map((p) => p[0])
+                      .join('')
+                      .slice(0, 2)}
+                  </div>
+                  <div>
+                    <h3 className="text-title-md font-semibold">{m.name}</h3>
+                    <p className="text-label-sm text-on-surface-variant">{m.department}</p>
+                  </div>
+                </div>
+                <span
                   className={cn(
-                    'flex-1 py-2 px-3 border rounded-lg text-label-md transition-all',
-                    roles[m.id] === r
-                      ? 'bg-primary text-on-primary border-primary'
-                      : 'border-outline-variant text-on-surface-variant hover:border-primary',
+                    'px-2 py-1 rounded text-[10px] font-bold uppercase',
+                    m.availability === 'Available'
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-yellow-100 text-yellow-700',
                   )}
                 >
-                  {r}
-                </button>
-              ))}
+                  {m.availability}
+                </span>
+              </div>
+              <p className="text-label-sm text-on-surface-variant mb-2">{m.years} years experience</p>
+              <div className="flex flex-wrap gap-2 mb-3">
+                {['Lead', 'Senior', 'Junior'].map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setRoles((prev) => ({ ...prev, [m.id]: r }))}
+                    className={cn(
+                      'flex-1 py-2 px-3 border rounded-lg text-label-md transition-all',
+                      roles[m.id] === r
+                        ? 'bg-primary text-on-primary border-primary'
+                        : 'border-outline-variant text-on-surface-variant hover:border-primary',
+                    )}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+              <Button
+                variant="primary"
+                className="w-full"
+                leftIcon={<span className="material-symbols-outlined">add_circle</span>}
+                onClick={() => {
+                  setToast(true)
+                  setTimeout(() => setToast(false), 2500)
+                }}
+              >
+                Add to Team
+              </Button>
             </div>
-            <Button
-              variant="primary"
-              className="w-full"
-              leftIcon={<span className="material-symbols-outlined">add_circle</span>}
-              onClick={() => {
-                setToast(true)
-                setTimeout(() => setToast(false), 2500)
-              }}
-            >
-              Add to Team
-            </Button>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
       {toast && (

@@ -8,7 +8,7 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
 import { useCreateTask } from '../hooks/use-tasks'
 import { useProject } from '../hooks/use-projects'
-import { getDb } from '@/shared/mock/db'
+import { projectRoutes } from '../routes'
 
 const schema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters').max(200),
@@ -53,8 +53,8 @@ export function TaskCreatePage() {
   const priority = watch('priority')
   const backTo =
     projectId != null && Number.isFinite(projectId)
-      ? `/projects/${projectId}`
-      : '/projects/tasks'
+      ? projectRoutes.projectDetail(projectId)
+      : projectRoutes.tasks
 
   const onSubmit = async (data: FormValues) => {
     try {
@@ -65,9 +65,9 @@ export function TaskCreatePage() {
         assigneeName: assignee?.label,
       })
       if (projectId && Number.isFinite(projectId)) {
-        navigate({ to: '/projects/$projectId', params: { projectId: String(projectId) } })
+        navigate({ to: projectRoutes.projectDetail(projectId), params: { projectId: String(projectId) } })
       } else {
-        navigate({ to: '/projects/tasks' })
+        navigate({ to: projectRoutes.tasks })
       }
     } catch {
       // shown below

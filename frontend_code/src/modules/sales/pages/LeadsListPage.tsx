@@ -26,33 +26,7 @@ import { LeadMetricsRow } from '../components/LeadMetricsRow'
 import { salesRoutes } from '../routes'
 import type { PipelineStage, LeadPriority, RecordStatus, Lead } from '../types'
 import { cn } from '@/shared/lib/cn'
-
-const stageStyles: Record<PipelineStage, string> = {
-  New: 'bg-slate-100 text-slate-700',
-  Contacted: 'bg-blue-50 text-blue-700',
-  Qualified: 'bg-blue-100 text-blue-800',
-  Proposal: 'bg-orange-100 text-orange-700',
-  Negotiation: 'bg-amber-100 text-amber-800',
-  Won: 'bg-emerald-100 text-emerald-800',
-  Lost: 'bg-red-50 text-red-700',
-}
-
-const priorityStyles: Record<LeadPriority, string> = {
-  Critical: 'text-red-600',
-  High: 'text-orange-600',
-  Medium: 'text-amber-600',
-  Low: 'text-slate-500',
-}
-
-const stageDot: Record<PipelineStage, string> = {
-  New: 'bg-slate-400',
-  Contacted: 'bg-blue-500',
-  Qualified: 'bg-blue-600',
-  Proposal: 'bg-orange-500',
-  Negotiation: 'bg-amber-500',
-  Won: 'bg-emerald-500',
-  Lost: 'bg-red-500',
-}
+import { stageStyles, priorityStyles, stageDot } from '../schemas/cssTokens'
 
 function formatBudget(n: number) {
   return new Intl.NumberFormat('en-US', {
@@ -187,6 +161,7 @@ export function LeadsListPage() {
     setSourceFilter,
     stages,
     priorities,
+    sources,
     resetFilters,
     page,
     setPage,
@@ -345,10 +320,7 @@ export function LeadsListPage() {
           aria-label="Filter by source"
           options={[
             { value: 'All', label: 'All Sources' },
-            { value: 'LinkedIn', label: 'LinkedIn' },
-            { value: 'Referral', label: 'Referral' },
-            { value: 'Website', label: 'Website' },
-            { value: 'Direct Referral', label: 'Direct Referral' },
+            ...sources.map((s) => ({ value: s, label: s })),
           ]}
           minWidthClass="min-w-[140px]"
         />

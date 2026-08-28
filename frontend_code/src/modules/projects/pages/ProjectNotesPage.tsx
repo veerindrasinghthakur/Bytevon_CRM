@@ -3,6 +3,7 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { NotesPanel } from '@/shared/components/notes/NotesPanel'
 import { NoteReferenceType } from '@/shared/schema'
+import { projectRoutes } from '../routes'
 import { projectNotes } from '../data/notesMock'
 
 /**
@@ -16,7 +17,7 @@ export function ProjectNotesPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <BackButton to={`/projects/${projectId}`} label="Back to project" />
+      <BackButton to={projectRoutes.projectDetail(Number(projectId))} label="Back to project" />
       <PageHeader
         title="Project notes"
         description={`Notes linked to work under project #${projectId}`}

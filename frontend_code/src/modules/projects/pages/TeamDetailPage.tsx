@@ -236,7 +236,7 @@ export function TeamDetailPage() {
                     key={p.id}
                     className="px-5 py-3 flex items-center justify-between hover:bg-surface-container-low cursor-pointer"
                     onClick={() =>
-                      navigate({ to: '/projects/$projectId', params: { projectId: String(p.id) } })
+                      navigate({ to: projectRoutes.projectDetail(p.id), params: { projectId: String(p.id) } })
                     }
                   >
                     <div>

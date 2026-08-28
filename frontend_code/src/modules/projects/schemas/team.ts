@@ -1,6 +1,7 @@
 import { z } from 'zod'
+import { TeamStatus } from '../enums'
 
-export const teamStatusSchema = z.enum(['ACTIVE', 'INACTIVE'])
+export const teamStatusSchema = z.enum(TeamStatus)
 
 export const teamSchema = z.object({
   id: z.number(),

@@ -1,12 +1,7 @@
 import { z } from 'zod'
+import { ProjectStatus as ProjectStatusEnum } from '../enums'
 
-export const projectStatusSchema = z.enum([
-  'PLANNING',
-  'IN_PROGRESS',
-  'ON_HOLD',
-  'COMPLETED',
-  'CANCELLED',
-])
+export const projectStatusSchema = z.enum(ProjectStatusEnum)
 
 export type ProjectStatus = z.infer<typeof projectStatusSchema>
 

@@ -2,27 +2,10 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { useSalesDashboard } from '../hooks/use-sales-dashboard'
+import { salesRoutes } from '../routes'
 import type { PipelineStage, RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
-
-const stageStyles: Record<PipelineStage, string> = {
-  New: 'bg-slate-100 text-slate-700',
-  Contacted: 'bg-blue-50 text-blue-700',
-  Qualified: 'bg-blue-100 text-blue-800',
-  Proposal: 'bg-orange-100 text-orange-700',
-  Negotiation: 'bg-amber-100 text-amber-800',
-  Won: 'bg-emerald-100 text-emerald-800',
-  Lost: 'bg-red-50 text-red-700',
-}
-
-const stageColors: Record<string, string> = {
-  New: 'bg-slate-400',
-  Contacted: 'bg-blue-400',
-  Qualified: 'bg-blue-600',
-  Proposal: 'bg-orange-400',
-  Negotiation: 'bg-amber-500',
-  Won: 'bg-emerald-500',
-}
+import { stageStyles, stageColors, activityIcon } from '../schemas/cssTokens'
 
 function StatusDot({ status }: { status: RecordStatus }) {
   return (
@@ -74,7 +57,7 @@ export function SalesDashboardPage() {
             <Button variant="outline" leftIcon={<span className="material-symbols-outlined text-lg">person_search</span>} onClick={() => navigate({ to: '/sales' })}>
               View Leads
             </Button>
-            <Button variant="primary" leftIcon={<span className="material-symbols-outlined text-lg">add</span>} onClick={() => navigate({ to: '/sales/leads/new' })}>
+            <Button variant="primary" leftIcon={<span className="material-symbols-outlined text-lg">add</span>} onClick={() => navigate({ to: salesRoutes.leadNew })}>
               New Lead
             </Button>
           </div>
@@ -122,7 +105,7 @@ export function SalesDashboardPage() {
             </div>
             <div className="p-4 rounded-xl bg-surface-container-low">
               <p className="text-xs text-on-surface-variant font-medium">Est. revenue</p>
-              <p className="text-2xl font-bold mt-1 text-on-background">$4.2M</p>
+              <p className="text-2xl font-bold mt-1 text-on-background">{formatBudget(pipelineValue * 1.2)}</p>
               <p className="text-[11px] text-emerald-600 font-semibold mt-1">+12% vs prior period</p>
             </div>
             <div className="p-4 rounded-xl bg-surface-container-low">
@@ -204,7 +187,7 @@ export function SalesDashboardPage() {
         <div className="xl:col-span-2 bv-surface overflow-hidden">
           <div className="px-5 py-4 border-b border-outline-variant flex items-center justify-between">
             <h2 className="text-title-md font-semibold text-on-background">Recent Leads</h2>
-            <button type="button" className="text-label-sm text-secondary font-semibold hover:underline" onClick={() => navigate({ to: '/sales' })}>
+            <button type="button" className="text-label-sm text-secondary font-semibold hover:underline" onClick={() => navigate({ to: salesRoutes.root })}>
               View all
             </button>
           </div>
@@ -223,7 +206,7 @@ export function SalesDashboardPage() {
                   <tr
                     key={lead.id}
                     className="zebra-row cursor-pointer"
-                    onClick={() => navigate({ to: '/sales/leads/$leadId', params: { leadId: lead.id } })}
+                    onClick={() => navigate({ to: salesRoutes.leadDetail(lead.id), params: { leadId: lead.id } })}
                   >
                     <td className="px-4 py-3">
                       <p className="font-semibold text-on-surface">{lead.contactName}</p>
@@ -279,7 +262,7 @@ export function SalesDashboardPage() {
       <div className="bv-surface overflow-hidden">
         <div className="px-5 py-4 border-b border-outline-variant flex items-center justify-between">
           <h2 className="text-title-md font-semibold text-on-background">Top Clients</h2>
-          <button type="button" className="text-label-sm text-secondary font-semibold hover:underline" onClick={() => navigate({ to: '/sales/clients' })}>
+          <button type="button" className="text-label-sm text-secondary font-semibold hover:underline" onClick={() => navigate({ to: salesRoutes.clients })}>
             View all
           </button>
         </div>
@@ -288,7 +271,7 @@ export function SalesDashboardPage() {
             <div
               key={c.id}
               className="p-4 rounded-xl border border-outline-variant hover:border-secondary card-hover cursor-pointer"
-              onClick={() => navigate({ to: '/sales/clients/$clientId', params: { clientId: c.id } })}
+              onClick={() => navigate({ to: salesRoutes.clientDetail(c.id), params: { clientId: c.id } })}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center text-sm font-bold">

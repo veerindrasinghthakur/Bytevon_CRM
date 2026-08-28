@@ -8,6 +8,7 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
 import { useCreateTeam } from '../hooks/use-teams'
 import { useProject } from '../hooks/use-projects'
+import { projectRoutes } from '../routes'
 import { getDb } from '@/shared/mock/db'
 
 const schema = z.object({
@@ -54,8 +55,8 @@ export function TeamCreatePage() {
   const backTo =
     search.returnTo ||
     (projectId && Number.isFinite(projectId)
-      ? `/projects/${projectId}`
-      : '/projects/teams')
+      ? projectRoutes.projectDetail(projectId)
+      : projectRoutes.teams)
 
   const onSubmit = async (data: FormValues) => {
     try {
@@ -71,9 +72,9 @@ export function TeamCreatePage() {
       if (search.returnTo) {
         navigate({ to: search.returnTo as '/projects/new' })
       } else if (projectId && Number.isFinite(projectId)) {
-        navigate({ to: '/projects/$projectId', params: { projectId: String(projectId) } })
+        navigate({ to: projectRoutes.projectDetail(projectId), params: { projectId: String(projectId) } })
       } else {
-        navigate({ to: '/projects/teams' })
+        navigate({ to: projectRoutes.teams })
       }
     } catch {
       // mutation error UI

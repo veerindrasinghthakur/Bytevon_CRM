@@ -26,6 +26,7 @@ import { projectRoutes } from '../routes'
 import { CreateTeamModal } from '../components/CreateTeamModal'
 import type { Team } from '../types'
 import { cn } from '@/shared/lib/cn'
+import { TeamStatusOptions } from '../enums'
 
 function TeamQuickContent({ team }: { team: Team }) {
   return (
@@ -172,10 +173,7 @@ export function TeamsListPage() {
           }}
           placeholder="All Statuses"
           aria-label="Filter by team status"
-          options={[
-            { value: 'ACTIVE', label: 'Active' },
-            { value: 'INACTIVE', label: 'Inactive' },
-          ]}
+          options={TeamStatusOptions}
         />
         <Select
           value={department}

@@ -117,7 +117,7 @@ export function ProjectDetailPage() {
   const selectTab = (next: ProjectDetailTab) => {
     setTab(next)
     navigate({
-      to: '/projects/$projectId',
+      to: projectRoutes.projectDetail(project.id),
       params: { projectId: String(project.id) },
       search: { tab: next } as never,
       replace: true,
@@ -130,17 +130,17 @@ export function ProjectDetailPage() {
         title={isEditing ? draft.name || project.name : project.name}
         description={project.code}
         showBack
-        backTo="/projects"
-        backLabel="Back to projects"
-        breadcrumbs={
-          <nav className="text-body-sm text-on-surface-variant">
-            <Link to="/projects" className="hover:text-secondary">
-              Projects
-            </Link>
-            <span className="mx-2">/</span>
-            <span className="text-on-surface">{project.name}</span>
-          </nav>
-        }
+backTo={projectRoutes.list}
+backLabel="Back to projects"
+breadcrumbs={
+  <nav className="text-body-sm text-on-surface-variant">
+    <Link to={projectRoutes.list} className="hover:text-secondary">
+      Projects
+    </Link>
+    <span className="mx-2">/</span>
+    <span className="text-on-surface">{project.name}</span>
+  </nav>
+}
         actions={
           isEditing ? (
             <div className="flex gap-2">
@@ -258,10 +258,7 @@ export function ProjectDetailPage() {
                     variant="outline"
                     size="sm"
                     onClick={() =>
-                      navigate({
-                        to: '/projects/teams/$teamId',
-                        params: { teamId: String(linkedTeam.id) },
-                      })
+                      navigate({ to: projectRoutes.teamDetail(linkedTeam.id), params: { teamId: String(linkedTeam.id) } })
                     }
                   >
                     Team detail
@@ -354,7 +351,7 @@ export function ProjectDetailPage() {
                       key={task.id}
                       className="cursor-pointer hover:bg-surface-container-low"
                       onClick={() =>
-                        navigate({ to: '/projects/tasks/$taskId', params: { taskId: String(task.id) } })
+                        navigate({ to: projectRoutes.taskDetail(task.id), params: { taskId: String(task.id) } })
                       }
                     >
                       <td className="px-4 py-3 font-medium text-on-surface">{task.title}</td>

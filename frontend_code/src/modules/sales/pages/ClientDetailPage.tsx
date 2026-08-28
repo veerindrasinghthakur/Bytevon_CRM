@@ -11,12 +11,7 @@ import { useClient, useSalesActivities } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
 import type { ClientType } from '../types'
 import { cn } from '@/shared/lib/cn'
-
-const typeStyles: Record<ClientType, string> = {
-  Enterprise: 'bg-secondary/10 text-secondary',
-  SMB: 'bg-sky-100 text-sky-800',
-  Partner: 'bg-amber-100 text-amber-800',
-}
+import { typeStyles } from '../schemas/cssTokens'
 
 function formatMoney(n?: number) {
   if (n == null) return '—'
@@ -114,7 +109,7 @@ export function ClientDetailPage() {
               label="Edit Client"
               onClick={() =>
                 safeNavigate(navigate, {
-                  to: '/sales/clients/$clientId/edit',
+                  to: salesRoutes.clientEdit(client.id),
                   params: { clientId: client.id },
                 })
               }

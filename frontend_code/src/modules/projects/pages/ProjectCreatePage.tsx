@@ -12,6 +12,7 @@ import { useTeams } from '../hooks/use-teams'
 import { projectRoutes } from '../routes'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { createTeam } from '../api/teams'
+import { ProjectPhaseOptions, ProjectPriorityOptions } from '../enums'
 
 type AssignMode = 'existing' | 'new' | 'later'
 
@@ -248,10 +249,11 @@ export function ProjectCreatePage() {
                         className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue outline-none bg-surface-container-lowest text-on-background"
                         onKeyDown={(e) => handleEnterAdvance(e)}
                       >
-                        <option>Discovery</option>
-                        <option>Implementation</option>
-                        <option>QA & Testing</option>
-                        <option>Deployment</option>
+                        {ProjectPhaseOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     <div className="space-y-1.5">
@@ -260,10 +262,11 @@ export function ProjectCreatePage() {
                         className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue outline-none bg-surface-container-lowest text-on-background"
                         onKeyDown={(e) => handleEnterAdvance(e)}
                       >
-                        <option>Low</option>
-                        <option>Medium</option>
-                        <option>High</option>
-                        <option>Critical</option>
+                        {ProjectPriorityOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>

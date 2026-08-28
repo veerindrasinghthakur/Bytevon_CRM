@@ -29,6 +29,14 @@ export interface TeamProjectRow {
   role: string
 }
 
+export interface TeamCandidate {
+  id: string
+  name: string
+  department: string
+  years: number
+  availability: 'Available' | 'Busy'
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function asTeam(row: any): Team {
   return {
@@ -224,6 +232,54 @@ export async function getTeamProjects(teamId: number): Promise<TeamProjectRow[]>
       role: team.projectName === p.name ? 'Primary' : 'Support',
     }
   })
+}
+
+export async function getTeamCandidates(teamId: number): Promise<TeamCandidate[]> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<TeamCandidate[] | { items: TeamCandidate[] }>(
+      `/projects/teams/${teamId}/candidates`,
+    )
+    return Array.isArray(data) ? data : (data.items ?? [])
+  }
+  await delay()
+  const db = getDb()
+  const team = db.teams.find((t) => t.id === teamId)
+  if (!team) return []
+
+  const dept = (team.department ?? '').toLowerCase()
+  const currentMemberNames = new Set(
+    (db.employees as { fullName: string }[]).filter((e) => {
+      // In mock, we don't have direct team membership, so we filter by department
+      // In real API, this would check actual team membership
+      return (e.department ?? '').toLowerCase() === dept
+    }).map((e) => e.fullName.toLowerCase())
+  )
+
+  const candidates = db.employees
+    .filter((e) => (e.department ?? '').toLowerCase() === dept)
+    .filter((e) => !currentMemberNames.has(e.fullName.toLowerCase()))
+    .map((e) => ({
+      id: String(e.id),
+      name: e.fullName,
+      department: e.department ?? '—',
+      years: e.joiningDate ? Math.floor((Date.now() - new Date(e.joiningDate).getTime()) / (365 * 24 * 60 * 60 * 1000)) : 0,
+      availability: e.status === 'ON_LEAVE' ? 'Busy' : 'Available',
+    }))
+
+  // If no candidates in same department, return all employees not in team
+  if (candidates.length === 0) {
+    return db.employees
+      .filter((e) => !currentMemberNames.has(e.fullName.toLowerCase()))
+      .map((e) => ({
+        id: String(e.id),
+        name: e.fullName,
+        department: e.department ?? '—',
+        years: e.joiningDate ? Math.floor((Date.now() - new Date(e.joiningDate).getTime()) / (365 * 24 * 60 * 60 * 1000)) : 0,
+        availability: e.status === 'ON_LEAVE' ? 'Busy' : 'Available',
+      }))
+  }
+
+  return candidates
 }
 
 export async function updateTeam(

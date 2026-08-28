@@ -23,39 +23,12 @@ import { useProjectsList } from '../hooks/use-projects-list'
 import { projectRoutes } from '../routes'
 import type { ProjectStatus } from '../schemas/project'
 import { cn } from '@/shared/lib/cn'
-
-function PriorityBadge({ status }: { status: ProjectStatus }) {
-  if (status === 'IN_PROGRESS') {
-    return <span className="status-badge status-error">Critical</span>
-  }
-  if (status === 'ON_HOLD') {
-    return <span className="status-badge status-warning">High</span>
-  }
-  return <span className="status-badge status-warning">Medium</span>
-}
+import { projectStatusColors, ProjectStatusOptions } from '../cssTokens'
 
 function statusTrackLabel(status: ProjectStatus) {
-  switch (status) {
-    case 'IN_PROGRESS':
-      return { dot: 'bg-emerald-500', text: 'text-emerald-700', label: 'On Track' }
-    case 'PLANNING':
-      return { dot: 'bg-blue-500', text: 'text-blue-700', label: 'Planning' }
-    case 'ON_HOLD':
-      return { dot: 'bg-amber-500', text: 'text-amber-700', label: 'Delayed' }
-    case 'COMPLETED':
-      return { dot: 'bg-emerald-500', text: 'text-emerald-700', label: 'Completed' }
-    default:
-      return { dot: 'bg-gray-400', text: 'text-on-surface-variant', label: status }
-  }
+  const style = projectStatusColors[status]
+  return { dot: style.dot, text: style.text, label: style.label }
 }
-
-const STATUS_OPTIONS = [
-  { value: 'IN_PROGRESS', label: 'In Progress' },
-  { value: 'PLANNING', label: 'Planning' },
-  { value: 'ON_HOLD', label: 'On Hold' },
-  { value: 'COMPLETED', label: 'Completed' },
-  { value: 'CANCELLED', label: 'Cancelled' },
-]
 
 function ProjectQuickContent({
   clientName,
@@ -204,7 +177,7 @@ export function ProjectsListPage() {
           onChange={setStatus}
           placeholder="Project Status"
           aria-label="Filter by project status"
-          options={STATUS_OPTIONS}
+          options={ProjectStatusOptions}
         />
       </ListToolbar>
 

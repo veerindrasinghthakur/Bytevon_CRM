@@ -16,6 +16,7 @@ import {
   QuickPersonRow,
 } from '@/shared/components/layout/QuickOverviewParts'
 import { useTeamsList } from '../hooks/use-teams-list'
+import { useDepartmentsList } from '../hooks/use-departments-list'
 import type { Team } from '../types'
 import { workforceRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
@@ -117,6 +118,7 @@ export function TeamsListPage() {
     onRowPressEnd,
     onRowPressCancel,
   } = useTeamsList()
+  const { items: departments } = useDepartmentsList()
 
   const rows = pageItems.length > 0 ? pageItems : filtered
 
@@ -202,9 +204,7 @@ export function TeamsListPage() {
             placeholder="All Departments"
             options={[
               { value: 'All', label: 'All Departments' },
-              { value: 'Engineering', label: 'Engineering' },
-              { value: 'Design', label: 'Design' },
-              { value: 'Sales', label: 'Sales' },
+              ...departments.map((d) => ({ value: d.name, label: d.name })),
             ]}
             minWidthClass="min-w-[160px]"
           />

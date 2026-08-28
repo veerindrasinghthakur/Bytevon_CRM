@@ -26,14 +26,15 @@ import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadg
 import { CreateTaskModal } from '../components/CreateTaskModal'
 import type { Task } from '../types'
 import { cn } from '@/shared/lib/cn'
+import { taskStatusColors, TaskPriorityOptions, TaskStatusOptions } from '../cssTokens'
 
 const statusDot: Record<string, string> = {
-  TODO: 'bg-slate-400',
-  IN_PROGRESS: 'bg-blue-500',
-  IN_REVIEW: 'bg-violet-500',
-  DONE: 'bg-emerald-500',
-  BLOCKED: 'bg-red-500',
-  ON_HOLD: 'bg-amber-500',
+  TODO: taskStatusColors.TODO.className,
+  IN_PROGRESS: taskStatusColors.IN_PROGRESS.className,
+  IN_REVIEW: taskStatusColors.IN_REVIEW.className,
+  DONE: taskStatusColors.DONE.className,
+  BLOCKED: taskStatusColors.BLOCKED.className,
+  ON_HOLD: taskStatusColors.ON_HOLD.className,
 }
 
 function TaskQuickContent({ task }: { task: Task }) {
@@ -190,10 +191,8 @@ export function TasksListPage() {
           placeholder="Priority: All"
           aria-label="Filter by priority"
           options={[
-            { value: 'URGENT', label: 'Urgent' },
-            { value: 'HIGH', label: 'High' },
-            { value: 'MEDIUM', label: 'Medium' },
-            { value: 'LOW', label: 'Low' },
+            { value: '', label: 'Priority: All' },
+            ...TaskPriorityOptions,
           ]}
         />
         <Select
@@ -205,12 +204,8 @@ export function TasksListPage() {
           placeholder="Status: All"
           aria-label="Filter by status"
           options={[
-            { value: 'TODO', label: 'To do' },
-            { value: 'IN_PROGRESS', label: 'In progress' },
-            { value: 'IN_REVIEW', label: 'In review' },
-            { value: 'DONE', label: 'Done' },
-            { value: 'BLOCKED', label: 'Blocked' },
-            { value: 'ON_HOLD', label: 'On hold' },
+            { value: '', label: 'Status: All' },
+            ...TaskStatusOptions,
           ]}
         />
       </ListToolbar>

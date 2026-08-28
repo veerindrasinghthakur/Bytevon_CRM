@@ -122,6 +122,8 @@ export function ClientsListPage() {
     startLongPress,
     endLongPress,
     clearLongPress,
+  types,
+    statuses,
   } = useClientsList()
 
   const goDetail = (clientId: string) => {
@@ -238,8 +240,7 @@ export function ClientsListPage() {
           aria-label="Filter by status"
           options={[
             { value: 'All', label: 'All Status' },
-            { value: 'Active', label: 'Active' },
-            { value: 'Inactive', label: 'Inactive' },
+            ...statuses.map((s) => ({ value: s, label: s })),
           ]}
           minWidthClass="min-w-[140px]"
         />
@@ -250,9 +251,7 @@ export function ClientsListPage() {
           aria-label="Filter by type"
           options={[
             { value: 'All', label: 'All Types' },
-            { value: 'Enterprise', label: 'Enterprise' },
-            { value: 'SMB', label: 'SMB' },
-            { value: 'Partner', label: 'Partner' },
+            ...types.map((t) => ({ value: t, label: t })),
           ]}
           minWidthClass="min-w-[140px]"
         />

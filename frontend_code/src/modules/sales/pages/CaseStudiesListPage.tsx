@@ -16,18 +16,9 @@ import {
 import { useCaseStudiesList } from '../hooks/use-case-studies-list'
 import type { CaseStudy, CaseStudyStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
-
-const statusStyles: Record<CaseStudyStatus, string> = {
-  Published: 'status-badge status-success',
-  Draft: 'status-badge status-warning',
-  Archived: 'status-badge status-neutral',
-}
-
-const statusDot: Record<CaseStudyStatus, string> = {
-  Published: 'bg-emerald-500',
-  Draft: 'bg-amber-500',
-  Archived: 'bg-slate-400',
-}
+import { salesRoutes } from '../routes'
+import { caseStudyStatusStyles, caseStudyStatusDot } from '../schemas/cssTokens'
+import { CaseStudyStatusValues } from '../schemas/enums'
 
 function CaseStudyQuickContent({ cs }: { cs: CaseStudy }) {
   return (
@@ -88,7 +79,7 @@ export function CaseStudiesListPage() {
       subtitle: `${cs.customer} · ${cs.industry}`,
       icon: 'menu_book',
       status: cs.status,
-      statusDotClass: statusDot[cs.status],
+      statusDotClass: caseStudyStatusDot[cs.status],
       content: <CaseStudyQuickContent cs={cs} />,
       widthClass: 'max-w-[520px]',
     })
@@ -111,7 +102,7 @@ export function CaseStudiesListPage() {
         description="Published wins and drafts used in sales conversations."
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to="/sales" className="hover:text-secondary">
+            <Link to={salesRoutes.root} className="hover:text-secondary">
               Sales
             </Link>
             <span className="mx-2">/</span>
@@ -166,9 +157,7 @@ export function CaseStudiesListPage() {
           placeholder="All status"
           options={[
             { value: 'All', label: 'All status' },
-            { value: 'Published', label: 'Published' },
-            { value: 'Draft', label: 'Draft' },
-            { value: 'Archived', label: 'Archived' },
+            ...CaseStudyStatusValues.map((s) => ({ value: s, label: s })),
           ]}
           minWidthClass="min-w-[140px]"
         />
@@ -189,7 +178,7 @@ export function CaseStudiesListPage() {
             >
               <div className="flex items-start justify-between gap-2 mb-3">
                 <h3 className="font-semibold text-on-surface text-title-md leading-snug">{cs.title}</h3>
-                <span className={cn('shrink-0', statusStyles[cs.status])}>{cs.status}</span>
+                <span className={cn('shrink-0', caseStudyStatusStyles[cs.status])}>{cs.status}</span>
               </div>
               <p className="text-body-sm text-on-surface-variant mb-3">
                 {cs.customer} · {cs.industry}

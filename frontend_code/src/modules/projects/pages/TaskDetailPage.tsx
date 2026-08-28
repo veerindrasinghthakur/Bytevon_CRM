@@ -71,17 +71,17 @@ export function TaskDetailPage() {
         title={isEditing ? draft.title || task.title : task.title}
         description={task.projectName ?? 'Task'}
         showBack
-        backTo="/projects/tasks"
-        backLabel="Back to tasks"
-        breadcrumbs={
-          <nav className="text-body-sm text-on-surface-variant">
-            <Link to="/projects/tasks" className="hover:text-secondary">
-              Tasks
-            </Link>
-            <span className="mx-2">/</span>
-            <span className="text-on-surface">{task.title}</span>
-          </nav>
-        }
+backTo={projectRoutes.tasks}
+backLabel="Back to tasks"
+breadcrumbs={
+  <nav className="text-body-sm text-on-surface-variant">
+    <Link to={projectRoutes.tasks} className="hover:text-secondary">
+      Tasks
+    </Link>
+    <span className="mx-2">/</span>
+    <span className="text-on-surface">{task.title}</span>
+  </nav>
+}
         actions={
           isEditing ? (
             <div className="flex gap-2">
@@ -227,7 +227,7 @@ export function TaskDetailPage() {
               />
               {task.projectId ? (
                 <Link
-                  to="/projects/$projectId"
+                  to={projectRoutes.projectDetail(task.projectId)}
                   params={{ projectId: String(task.projectId) }}
                   className="block text-sm font-semibold text-secondary hover:underline"
                 >

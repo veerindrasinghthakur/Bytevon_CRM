@@ -8,6 +8,7 @@ import { useLead, useSalesActivities } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
 import type { PipelineStage, LeadPriority, RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
+import { stageStyles, priorityStyles, activityIcon } from '../schemas/cssTokens'
 
 const STAGES: PipelineStage[] = [
   'New',
@@ -18,23 +19,6 @@ const STAGES: PipelineStage[] = [
   'Won',
   'Lost',
 ]
-
-const stageStyles: Record<PipelineStage, string> = {
-  New: 'bg-slate-100 text-slate-700',
-  Contacted: 'bg-blue-50 text-blue-700',
-  Qualified: 'bg-blue-100 text-blue-800',
-  Proposal: 'bg-orange-100 text-orange-700',
-  Negotiation: 'bg-amber-100 text-amber-800',
-  Won: 'bg-emerald-100 text-emerald-800',
-  Lost: 'bg-red-50 text-red-700',
-}
-
-const priorityStyles: Record<LeadPriority, string> = {
-  Critical: 'text-red-600',
-  High: 'text-orange-600',
-  Medium: 'text-amber-600',
-  Low: 'text-slate-500',
-}
 
 function StatusDot({ status }: { status: RecordStatus }) {
   return (
@@ -61,18 +45,6 @@ function formatBudget(n: number) {
     currency: 'USD',
     maximumFractionDigits: 0,
   }).format(n)
-}
-
-const activityIcon: Record<string, string> = {
-  'Lead Created': 'person_add',
-  'Lead Won': 'emoji_events',
-  'Meeting Scheduled': 'event',
-  'Email Sent': 'mail',
-  Call: 'call',
-  'Document Viewed': 'description',
-  'System Alert': 'warning',
-  'Contract Renewed': 'autorenew',
-  'Proposal Sent': 'send',
 }
 
 export function LeadDetailPage() {
@@ -137,7 +109,7 @@ export function LeadDetailPage() {
               leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
               onClick={() =>
                 safeNavigate(navigate, {
-                  to: '/sales/leads/$leadId/edit',
+                  to: salesRoutes.leadEdit(lead.id),
                   params: { leadId: lead.id },
                 })
               }

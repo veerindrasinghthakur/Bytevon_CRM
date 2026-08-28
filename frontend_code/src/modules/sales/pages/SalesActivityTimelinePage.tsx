@@ -1,30 +1,46 @@
-import { Link } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
-import { salesActivities } from '../data/mock'
 import type { ActivityType } from '../types'
 import { cn } from '@/shared/lib/cn'
-
-const typeIcon: Record<ActivityType, string> = {
-  'Lead Created': 'person_add',
-  'Lead Won': 'emoji_events',
-  'Meeting Scheduled': 'event',
-  'Email Sent': 'mail',
-  Call: 'call',
-  'Document Viewed': 'description',
-  'System Alert': 'warning',
-  'Contract Renewed': 'autorenew',
-  'Proposal Sent': 'send',
-}
-
-const typeColor: Partial<Record<ActivityType, string>> = {
-  'Lead Won': 'bg-emerald-100 text-emerald-700',
-  'System Alert': 'bg-red-50 text-red-700',
-  'Meeting Scheduled': 'bg-blue-50 text-blue-700',
-  'Lead Created': 'bg-secondary/10 text-secondary',
-}
+import { salesRoutes } from '../routes'
+import { useSalesActivities } from '../hooks/use-sales'
 
 export function SalesActivityTimelinePage() {
-  const groups = salesActivities.reduce<Record<string, typeof salesActivities>>((acc, a) => {
+  const { data: activities, isLoading, isError } = useSalesActivities()
+
+  const typeIcon: Record<ActivityType, string> = {
+    'Lead Created': 'person_add',
+    'Lead Won': 'emoji_events',
+    'Meeting Scheduled': 'event',
+    'Email Sent': 'mail',
+    Call: 'call',
+    'Document Viewed': 'description',
+    'System Alert': 'warning',
+    'Contract Renewed': 'autorenew',
+    'Proposal Sent': 'send',
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <PageHeader title="Activity Timeline" showBack backTo={salesRoutes.root} backLabel="Back to sales" />
+        <div>Loading...</div>
+      </div>
+    )
+  }
+
+  if (isError) {
+    return (
+      <div className="animate-fade-in text-center py-16 space-y-4">
+        <PageHeader title="Error loading activity" showBack backTo={salesRoutes.root} backLabel="Back to sales" />
+        <Button variant="outline" onClick={() => window.location.reload()}>
+          Retry
+        </Button>
+      </div>
+    )
+  }
+
+  const groups = activities.reduce<Record<string, typeof activities>>((acc, a) => {
     ;(acc[a.dateGroup] ??= []).push(a)
     return acc
   }, {})
@@ -36,7 +52,7 @@ export function SalesActivityTimelinePage() {
         description="Chronological sales events across leads and clients."
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to="/sales" className="hover:text-secondary">
+            <Link to={salesRoutes.root} className="hover:text-secondary">
               Sales
             </Link>
             <span className="mx-2">/</span>

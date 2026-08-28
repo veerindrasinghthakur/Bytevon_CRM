@@ -16,6 +16,7 @@ import {
   type RecordStatus,
 } from '../types'
 import { cn } from '@/shared/lib/cn'
+import { ClientTypeValues, RecordStatusValues } from '../schemas/enums'
 
 const fieldClass =
   'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors'
@@ -193,21 +194,14 @@ export function ClientCreatePage() {
               label="Type"
               value={form.type}
               onChange={(v) => patchForm({ type: v as ClientType })}
-              options={[
-                { value: 'Enterprise', label: 'Enterprise' },
-                { value: 'SMB', label: 'SMB' },
-                { value: 'Partner', label: 'Partner' },
-              ]}
+              options={ClientTypeValues.map((t) => ({ value: t, label: t }))}
               minWidthClass="w-full"
             />
             <Select
               label="Status"
               value={form.status}
               onChange={(v) => patchForm({ status: v as RecordStatus })}
-              options={[
-                { value: 'Active', label: 'Active' },
-                { value: 'Inactive', label: 'Inactive' },
-              ]}
+              options={RecordStatusValues.map((s) => ({ value: s, label: s }))}
               minWidthClass="w-full"
             />
             <div>

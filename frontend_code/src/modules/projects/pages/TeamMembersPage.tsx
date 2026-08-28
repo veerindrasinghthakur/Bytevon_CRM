@@ -3,6 +3,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { useTeam } from '../hooks/use-teams'
+import { projectRoutes } from '../routes'
 
 const MOCK_MEMBERS = [
   { id: '1', name: 'Sarah Chen', role: 'Tech Lead', status: 'Active' },
@@ -32,7 +33,7 @@ export function ProjectTeamMembersPage() {
         title={`${team.name} · Members`}
         description="Team roster"
         showBack
-        backTo={`/projects/teams/${team.id}`}
+        backTo={projectRoutes.teamDetail(team.id)}
         backLabel="Back to team"
         actions={
           <Button
@@ -40,7 +41,7 @@ export function ProjectTeamMembersPage() {
             leftIcon={<span className="material-symbols-outlined">person_add</span>}
             onClick={() =>
               navigate({
-                to: '/projects/teams/$teamId/add-member',
+                to: projectRoutes.teamAddMember(team.id),
                 params: { teamId: String(team.id) },
               })
             }
@@ -93,7 +94,7 @@ export function ProjectTeamMembersPage() {
       </div>
 
       <p className="text-caption text-on-surface-variant">
-        <Link to="/projects/teams/$teamId" params={{ teamId: String(team.id) }} className="text-secondary hover:underline">
+        <Link to={projectRoutes.teamDetail(team.id)} params={{ teamId: String(team.id) }} className="text-secondary hover:underline">
           Back to team
         </Link>
       </p>
