@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from 'react'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
@@ -9,11 +10,7 @@ import type { BankFormValues } from '../types'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../routes'
-
-function maskAccount(num: string) {
-  if (!num || num.length < 4) return '\u2022\u2022\u2022\u2022'
-  return '\u2022\u2022\u2022\u2022 \u2022\u2022\u2022\u2022 ${num.slice(-4)}'
-}
+import { maskAccount } from '../lib/maskAccount'
 
 export function MyBankDetailsPage() {
   const navigate = useNavigate()

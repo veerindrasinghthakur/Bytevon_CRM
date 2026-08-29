@@ -1,21 +1,13 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { myWorkRoutes } from '../routes'
+import { myTaskFormSchema, type MyTaskFormValues } from '../schemas/task-form'
 
-const schema = z.object({
-  name: z.string().min(2, 'Title must be at least 2 characters').max(200),
-  project: z.string().max(120).optional(),
-  priority: z.enum(['Critical', 'High', 'Medium', 'Low']),
-  dueDate: z.string().optional(),
-  estimatedHours: z.string().max(20).optional(),
-  description: z.string().max(2000).optional(),
-})
-
-type FormValues = z.infer<typeof schema>
+type FormValues = MyTaskFormValues
 
 export function MyTaskCreatePage() {
   const navigate = useNavigate()
@@ -26,7 +18,7 @@ export function MyTaskCreatePage() {
     watch,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
-    resolver: zodResolver(schema),
+    resolver: zodResolver(myTaskFormSchema),
     defaultValues: {
       name: '',
       project: '',
@@ -41,7 +33,7 @@ export function MyTaskCreatePage() {
 
   const onSubmit = async (_data: FormValues) => {
     await new Promise((r) => setTimeout(r, 500))
-    safeNavigate(navigate,{ to: '/my-work/tasks' })
+    safeNavigate(navigate,{ to: myWorkRoutes.tasks })
   }
 
   return (
@@ -143,7 +135,7 @@ export function MyTaskCreatePage() {
         </div>
 
         <div className="px-6 py-4 border-t border-outline-variant bg-surface flex items-center gap-3 justify-end">
-          <Button type="button" variant="ghost" onClick={() => safeNavigate(navigate,{ to: '/my-work/tasks' })}>
+          <Button type="button" variant="ghost" onClick={() => safeNavigate(navigate,{ to: myWorkRoutes.tasks })}>
             Cancel
           </Button>
           <Button type="submit" variant="primary" isLoading={isSubmitting}>

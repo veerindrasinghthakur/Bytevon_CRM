@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
@@ -9,6 +9,7 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../routes'
 import { statusStyles } from '../schemas/enums'
 import { listMySubmittedRequests } from '../api/my-work'
+import { useRequestsPageFilter } from '../hooks/use-requests-page-filter'
 
 const filters = ['All Requests', 'In-Progress', 'Approved', 'Rejected'] as const
 
@@ -17,9 +18,31 @@ const filters = ['All Requests', 'In-Progress', 'Approved', 'Rejected'] as const
  * Distinct from MyApprovalsPage (`/my-work/approvals`) card summary of approval-tracked items.
  * Status: UI may show In-Progress; schema ApprovalStatus is PENDING | APPROVED | REJECTED.
  */
+function StatCard({
+  icon,
+  iconClass,
+  label,
+  value,
+}: {
+  icon: string
+  iconClass: string
+  label: string
+  value: number
+}) {
+  return (
+    <div className="p-6 bv-surface card-hover">
+      <div className="flex justify-between items-start mb-4">
+        <span className={cn('material-symbols-outlined p-2 rounded-lg', iconClass)}>{icon}</span>
+      </div>
+      <p className="text-label-md text-on-surface-variant uppercase tracking-wider mb-1">{label}</p>
+      <h3 className="text-3xl font-bold text-on-background">{value}</h3>
+    </div>
+  )
+}
+
 export function MyRequestsPage() {
   const navigate = useNavigate()
-  const [filter, setFilter] = useState<(typeof filters)[number]>('All Requests')
+  const { filter, setFilter } = useRequestsPageFilter()
 
   const requestsQuery = useQuery({
     queryKey: queryKeys.myWork.requests.list({}),
@@ -63,12 +86,12 @@ export function MyRequestsPage() {
         />
         <StatCard
           icon="pending_actions"
-          iconClass="bg-amber-100 text-amber-700"
+          iconClass="bg-amber-50 text-amber-700"
           label="In Progress"
           value={stats.inProgress}
         />
-        <StatCard icon="verified" iconClass="bg-blue-100 text-blue-700" label="Approved" value={stats.approved} />
-        <StatCard icon="cancel" iconClass="bg-red-100 text-red-700" label="Rejected" value={stats.rejected} />
+        <StatCard icon="verified" iconClass="bg-emerald-50 text-emerald-700" label="Approved" value={stats.approved} />
+        <StatCard icon="cancel" iconClass="bg-red-50 text-red-700" label="Rejected" value={stats.rejected} />
       </section>
 
       <section className="bv-surface overflow-hidden">
@@ -186,28 +209,6 @@ export function MyRequestsPage() {
           </p>
         </div>
       </section>
-    </div>
-  )
-}
-
-function StatCard({
-  icon,
-  iconClass,
-  label,
-  value,
-}: {
-  icon: string
-  iconClass: string
-  label: string
-  value: number
-}) {
-  return (
-    <div className="p-6 bv-surface card-hover">
-      <div className="flex justify-between items-start mb-4">
-        <span className={cn('material-symbols-outlined p-2 rounded-lg', iconClass)}>{icon}</span>
-      </div>
-      <p className="text-label-md text-on-surface-variant uppercase tracking-wider mb-1">{label}</p>
-      <h3 className="text-3xl font-bold text-on-background">{value}</h3>
     </div>
   )
 }

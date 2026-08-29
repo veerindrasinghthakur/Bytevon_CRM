@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
@@ -8,16 +7,13 @@ import { LeaveHistoryTab } from '../components/leave/LeaveHistoryTab'
 import { LeaveCalendarTab } from '../components/leave/LeaveCalendarTab'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../routes'
+import { useLeavePageState } from '../hooks/use-leave-page-state'
 
 type Tab = 'balance' | 'history' | 'calendar'
 
 export function MyLeavePage() {
   const navigate = useNavigate()
-  const [tab, setTab] = useState<Tab>('balance')
-  const [calMonth, setCalMonth] = useState(() => {
-    const n = new Date()
-    return new Date(n.getFullYear(), n.getMonth(), 1)
-  })
+  const { tab, setTab, calMonth, setCalMonth } = useLeavePageState()
 
   const {
     requests,

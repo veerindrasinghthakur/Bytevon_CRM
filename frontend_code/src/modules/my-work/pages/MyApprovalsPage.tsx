@@ -7,19 +7,8 @@ import { useMyApprovals } from '../hooks/use-my-approvals'
 import type { ApprovalStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-
-const statusStyles: Record<ApprovalStatus, string> = {
-  Pending: 'bg-amber-50 text-amber-800',
-  Approved: 'bg-emerald-50 text-emerald-700',
-  Rejected: 'bg-red-50 text-red-700',
-}
-
-const typeIcon: Record<string, string> = {
-  Leave: 'event_busy',
-  'Attendance Correction': 'edit_calendar',
-  Expense: 'payments',
-  Other: 'description',
-}
+import { myWorkRoutes } from '../routes'
+import { statusStyles, typeIcon } from '../schemas/enums'
 
 /**
  * Card view of approval-tracked items the employee submitted (leave, corrections, expense).
@@ -69,7 +58,7 @@ export function MyApprovalsPage() {
           onClick={() => setStatusFilter(statusFilter === 'Pending' ? 'All' : 'Pending')}
         >
           <p className="text-label-sm text-on-surface-variant mb-1">Pending</p>
-          <p className="text-headline-md font-bold text-amber-600">{pending}</p>
+          <p className="text-headline-md font-bold text-amber-700">{pending}</p>
           <p className="text-[11px] text-on-surface-variant mt-1">Awaiting decision</p>
         </button>
         <button
@@ -81,7 +70,7 @@ export function MyApprovalsPage() {
           onClick={() => setStatusFilter(statusFilter === 'Approved' ? 'All' : 'Approved')}
         >
           <p className="text-label-sm text-on-surface-variant mb-1">Approved</p>
-          <p className="text-headline-md font-bold text-emerald-600">{approved}</p>
+          <p className="text-headline-md font-bold text-emerald-700">{approved}</p>
           <p className="text-[11px] text-on-surface-variant mt-1">This period</p>
         </button>
       </section>
@@ -126,7 +115,7 @@ export function MyApprovalsPage() {
             key={item.id}
             type="button"
             onClick={() =>
-              safeNavigate(navigate,{ to: '/my-work/approvals/$requestId', params: { requestId: item.id } })
+              safeNavigate(navigate,{ to: myWorkRoutes.approvalDetail(item.id) })
             }
             className="w-full text-left bv-surface card-hover p-5 flex flex-col sm:flex-row sm:items-center gap-4"
           >

@@ -6,6 +6,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { myWorkRoutes } from '../routes'
 
 import {
   formatClockTime,
@@ -151,16 +152,14 @@ export function MyAttendancePage() {
             <Button
               leftIcon={<span className="material-symbols-outlined text-lg">edit_calendar</span>}
               variant="outline"
-              onClick={() => safeNavigate(navigate,{ to: '/my-work/attendance/corrections' })}
+              onClick={() => safeNavigate(navigate,{ to: myWorkRoutes.attendanceCorrections })}
             >
               Corrections
             </Button>
             <Button
               variant="primary"
               leftIcon={<span className="material-symbols-outlined text-lg">fingerprint</span>}
-              onClick={() => safeNavigate(navigate,{ to: '/my-work/attendance/mark' })}
-              // onBack={() => safeNavigate(navigate, { to: '/admin/roles' })}
-              
+              onClick={() => safeNavigate(navigate,{ to: myWorkRoutes.attendanceMark })}
             >
               Mark Attendance
             </Button>
@@ -200,7 +199,7 @@ export function MyAttendancePage() {
           <p
             className={cn(
               'text-headline-md font-bold',
-              session && !session.checkOutAt ? 'text-emerald-600' : 'text-on-background',
+              session && !session.checkOutAt ? 'text-emerald-700' : 'text-on-background',
             )}
           >
             {statusLabel}
@@ -243,7 +242,7 @@ export function MyAttendancePage() {
             variant="outline"
             size="sm"
             leftIcon={<span className="material-symbols-outlined text-[18px]">coffee</span>}
-            onClick={() => safeNavigate(navigate,{ to: '/my-work/break' })}
+            onClick={() => safeNavigate(navigate,{ to: myWorkRoutes.break })}
           >
             Take a break
           </Button>
@@ -308,8 +307,7 @@ export function MyAttendancePage() {
                   className="zebra-row cursor-pointer"
                   onClick={() =>
                     safeNavigate(navigate,{
-                      to: '/my-work/attendance/$attendanceId',
-                      params: { attendanceId: row.id },
+                      to: myWorkRoutes.attendanceDetail(row.id),
                     })
                   }
                 >

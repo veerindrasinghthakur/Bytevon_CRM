@@ -2,7 +2,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useMyWorkOverview } from '../hooks/use-my-work-overview'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../routes'
-import { priorityClass, statusDot } from '../schemas/enums'
+import { priorityClass, statusDot, attendanceStatusStyles } from '../schemas/enums'
 import type { MyTask } from '../types'
 
 export function MyWorkOverviewPage() {

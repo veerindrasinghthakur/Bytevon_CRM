@@ -2,8 +2,10 @@
  * Page hook for Mark Attendance — session, breaks, clock, log rows, manual entry.
  */
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { queryKeys } from '@/shared/lib/query-keys'
 import {
   checkInNow,
   checkOutNow,
@@ -19,6 +21,7 @@ import {
   getTodayBreaks,
   subscribeBreakChange,
 } from '../lib/break-session'
+import { getMyWorkTodayInfo } from '../api/my-work'
 import type { WorkLogRow } from '../components/attendance/WorkingHoursLog'
 import { myWorkRoutes } from '../routes'
 
@@ -48,6 +51,12 @@ export function useMarkAttendance() {
   const navigate = useNavigate()
   const [now, setNow] = useState(() => new Date())
   const [status, setStatus] = useState<WorkStatus>('Present')
+
+  const todayInfoQuery = useQuery({
+    queryKey: queryKeys.myWork.attendance.todayInfo(),
+    queryFn: getMyWorkTodayInfo,
+  })
+  const todayInfo = todayInfoQuery.data
   const [submitting, setSubmitting] = useState(false)
   const [tick, setTick] = useState(0)
   const [manualToast, setManualToast] = useState<string | null>(null)
@@ -203,5 +212,6 @@ export function useMarkAttendance() {
     formatClockTime,
     formatHoursCompact,
     attendanceBackTo: myWorkRoutes.attendance,
+    todayInfo,
   }
 }

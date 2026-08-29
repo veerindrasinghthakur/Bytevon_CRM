@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
@@ -12,6 +12,9 @@ import { useMyTasks } from '../hooks/use-my-tasks'
 import type { MyTask } from '../types'
 import { cn } from '@/shared/lib/cn'
 import { priorityClass, statusDot } from '../schemas/enums'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { myWorkRoutes } from '../routes'
+import { useTasksPageFilter } from '../hooks/use-tasks-page-filter'
 
 type TaskFilter = 'open' | 'inProgress' | 'high' | null
 
@@ -42,7 +45,7 @@ function TaskQuickContent({ task }: { task: MyTask }) {
 export function MyTasksPage() {
   const navigate = useNavigate()
   const { openPanel } = useQuickOverview()
-  const [cardFilter, setCardFilter] = useState<TaskFilter>(null)
+  const { cardFilter, setCardFilter } = useTasksPageFilter()
   const {
     tasks,
     search,
@@ -80,7 +83,7 @@ export function MyTasksPage() {
       statusDotClass: statusDot[task.status] ?? 'bg-outline',
       content: <TaskQuickContent task={task} />,
       fullRecordLabel: 'Open full record',
-      onOpenFull: () => safeNavigate(navigate,{ to: '/my-work/tasks/$taskId', params: { taskId: task.id } }),
+      onOpenFull: () => safeNavigate(navigate,{ to: myWorkRoutes.taskDetail(task.id) }),
       widthClass: 'max-w-[520px]',
     })
   }
@@ -104,7 +107,7 @@ export function MyTasksPage() {
           <Button
             variant="primary"
             leftIcon={<span className="material-symbols-outlined text-lg">add_task</span>}
-            onClick={() => safeNavigate(navigate,{ to: '/my-work/tasks/new' })}
+            onClick={() => safeNavigate(navigate,{ to: myWorkRoutes.tasksNew })}
           >
             Create task
           </Button>

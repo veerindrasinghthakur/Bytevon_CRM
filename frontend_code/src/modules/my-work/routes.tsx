@@ -45,8 +45,9 @@ export const myWorkRoutes = {
   bankDetails: '/my-work/bank-details',
 } as const
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createMyWorkRoutes(appLayoutRoute: any) {
+import type { AnyRoute } from '@tanstack/react-router'
+
+export function createMyWorkRoutes(appLayoutRoute: AnyRoute) {
   return [
     createRoute({
       getParentRoute: () => appLayoutRoute,

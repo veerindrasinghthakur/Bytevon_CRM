@@ -2,14 +2,10 @@ import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { ExportButton } from '@/shared/components/export/ExportButton'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { myWorkRoutes } from '../../routes'
+import { statusStyles } from '../../schemas/enums'
 import type { LeaveStatus } from '../../types'
-
-const statusStyles: Record<LeaveStatus, string> = {
-  Pending: 'bg-amber-50 text-amber-800 border border-amber-200',
-  Approved: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-  Rejected: 'bg-red-50 text-red-700 border border-red-200',
-  Cancelled: 'bg-surface-container text-on-surface-variant border border-outline-variant',
-}
 
 export type LeaveHistoryRow = {
   id: string
@@ -117,7 +113,7 @@ export function LeaveHistoryTab({
           <Button
             variant="primary"
             className="mt-2"
-            onClick={() => navigate({ to: '/my-work/leave/apply' })}
+            onClick={() => safeNavigate(navigate, { to: myWorkRoutes.leaveApply })}
           >
             Apply for Leave
           </Button>
@@ -143,7 +139,7 @@ export function LeaveHistoryTab({
                     key={req.id}
                     className="zebra-row cursor-pointer"
                     onClick={() =>
-                      navigate({ to: '/my-work/leave/$leaveId', params: { leaveId: req.id } })
+                      safeNavigate(navigate, { to: myWorkRoutes.leaveDetail(req.id) })
                     }
                   >
                     <td className="px-6 py-4 text-label-md font-semibold text-secondary">
