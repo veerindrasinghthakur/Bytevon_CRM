@@ -1,36 +1,31 @@
-import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { useTask, useUpdateTask } from './use-tasks'
 import type { TaskPriority, TaskStatus } from '../types'
-
-export interface TaskDetailDraft {
-  title: string
-  description: string
-  priority: TaskPriority
-  status: TaskStatus
-  assigneeName: string
-  dueDate: string
-}
-
-const empty: TaskDetailDraft = {
-  title: '',
-  description: '',
-  priority: 'MEDIUM',
-  status: 'TODO',
-  assigneeName: '',
-  dueDate: '',
-}
+import { taskDetailFormSchema, type TaskDetailFormInput } from '../schemas/task-detail-form'
 
 export function useTaskDetail(taskId: number | undefined) {
   const query = useTask(taskId)
   const updateMutation = useUpdateTask()
   const task = query.data ?? null
   const { isEditing, startEditing: setEditingTrue, cancelEditing, finishEditing } = useEditMode()
-  const [draft, setDraft] = useState<TaskDetailDraft>(empty)
+
+  const form = useForm<TaskDetailFormInput>({
+    resolver: zodResolver(taskDetailFormSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      priority: 'MEDIUM',
+      status: 'TODO',
+      assigneeName: '',
+      dueDate: '',
+    },
+  })
 
   const startEditing = () => {
     if (!task) return
-    setDraft({
+    form.reset({
       title: task.title,
       description: task.description ?? '',
       priority: task.priority,
@@ -43,7 +38,7 @@ export function useTaskDetail(taskId: number | undefined) {
 
   const cancelEdit = () => {
     if (task) {
-      setDraft({
+      form.reset({
         title: task.title,
         description: task.description ?? '',
         priority: task.priority,
@@ -57,15 +52,17 @@ export function useTaskDetail(taskId: number | undefined) {
 
   const save = async () => {
     if (!task) return
+    const data = await form.handleSubmit(async (values) => values)()
+    if (!data) return
     await updateMutation.mutateAsync({
       id: task.id,
       patch: {
-        title: draft.title,
-        description: draft.description,
-        priority: draft.priority,
-        status: draft.status,
-        assigneeName: draft.assigneeName || undefined,
-        dueDate: draft.dueDate || null,
+        title: data.title,
+        description: data.description,
+        priority: data.priority,
+        status: data.status,
+        assigneeName: data.assigneeName || undefined,
+        dueDate: data.dueDate || null,
       },
     })
     finishEditing()
@@ -78,8 +75,7 @@ export function useTaskDetail(taskId: number | undefined) {
     isError: query.isError,
     refetch: () => void query.refetch(),
     isEditing,
-    draft,
-    setDraft,
+    form,
     startEditing,
     cancelEdit,
     save,

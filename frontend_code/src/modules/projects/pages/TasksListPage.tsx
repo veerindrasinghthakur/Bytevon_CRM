@@ -212,9 +212,9 @@ export function TasksListPage() {
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Stat label="Total Tasks" value={String(total || '—')} icon="assignment" tone="bg-electric-blue/10 text-electric-blue" />
-        <Stat label="Pending" value={String(pending)} icon="pending_actions" tone="status-warning" />
-        <Stat label="Blocked / Overdue" value={String(blocked)} icon="block" tone="status-error" danger={blocked > 0} />
-        <Stat label="Completed" value={String(done)} icon="check_circle" tone="status-success" />
+        <Stat label="Pending" value={String(pending)} icon="pending_actions" tone="bg-warning-container text-on-warning" />
+        <Stat label="Blocked / Overdue" value={String(blocked)} icon="block" tone="bg-error-container text-error" danger={blocked > 0} />
+        <Stat label="Completed" value={String(done)} icon="check_circle" tone="bg-success-container text-on-success" />
       </section>
 
       {selection.selectionMode && (
@@ -399,10 +399,8 @@ function Stat({
   return (
     <div className="bv-surface card-hover p-5 flex flex-col justify-between h-[160px]">
       <div className="flex justify-between items-start">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${tone.includes('status-') ? tone : tone}`}>
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
-            {icon}
-          </span>
+        <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', tone)}>
+          <span className="material-symbols-outlined material-icons-filled">{icon}</span>
         </div>
         {danger && <span className="status-badge status-error text-xs font-bold">At risk</span>}
       </div>

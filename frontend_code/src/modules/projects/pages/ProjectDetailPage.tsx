@@ -62,8 +62,7 @@ export function ProjectDetailPage() {
     progress,
     daysToDeadline,
     isEditing,
-    draft,
-    setDraft,
+    form,
     startEditing,
     save,
     cancelEdit,
@@ -126,21 +125,21 @@ export function ProjectDetailPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <PageHeader
-        title={isEditing ? draft.name || project.name : project.name}
+<PageHeader
+        title={isEditing ? form.watch('name') || project.name : project.name}
         description={project.code}
         showBack
-backTo={projectRoutes.list}
-backLabel="Back to projects"
-breadcrumbs={
-  <nav className="text-body-sm text-on-surface-variant">
-    <Link to={projectRoutes.list} className="hover:text-secondary">
-      Projects
-    </Link>
-    <span className="mx-2">/</span>
-    <span className="text-on-surface">{project.name}</span>
-  </nav>
-}
+        backTo={projectRoutes.list}
+        backLabel="Back to projects"
+        breadcrumbs={
+          <nav className="text-body-sm text-on-surface-variant">
+            <Link to={projectRoutes.list} className="hover:text-secondary">
+              Projects
+            </Link>
+            <span className="mx-2">/</span>
+            <span className="text-on-surface">{project.name}</span>
+          </nav>
+        }
         actions={
           isEditing ? (
             <div className="flex gap-2">
@@ -220,8 +219,7 @@ breadcrumbs={
               {isEditing ? (
                 <textarea
                   rows={5}
-                  value={draft.description}
-                  onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
+                  {...form.register('description')}
                   onKeyDown={(e) => handleEnterAdvance(e)}
                   className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-secondary resize-none"
                 />
@@ -276,8 +274,7 @@ breadcrumbs={
               <p className="font-bold text-lg">{project.clientName ?? '—'}</p>
               {isEditing && (
                 <input
-                  value={draft.clientName}
-                  onChange={(e) => setDraft((d) => ({ ...d, clientName: e.target.value }))}
+                  {...form.register('clientName')}
                   className="mt-2 w-full px-2 py-1 rounded text-on-background text-sm"
                 />
               )}
@@ -488,8 +485,7 @@ breadcrumbs={
           <h3 className="text-title-md font-semibold">Repository</h3>
           {isEditing ? (
             <input
-              value={draft.repositoryUrl}
-              onChange={(e) => setDraft((d) => ({ ...d, repositoryUrl: e.target.value }))}
+              {...form.register('repositoryUrl')}
               className="w-full px-3 py-2 rounded-lg border border-outline-variant font-mono text-sm"
               placeholder="https://github.com/..."
             />

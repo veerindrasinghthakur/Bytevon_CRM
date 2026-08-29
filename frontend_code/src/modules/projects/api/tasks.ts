@@ -9,8 +9,20 @@ import type { Task, TaskPriority } from '../types'
 
 export type { Task, TaskPriority, TaskStatus } from '../types'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asTask(row: any): Task {
+interface TaskRow {
+  id: number
+  title: string
+  description?: string | null
+  priority: string
+  status: string
+  projectId: number
+  projectName?: string | null
+  assigneeName?: string | null
+  dueDate?: string | null
+  createdAt: string
+}
+
+function asTask(row: TaskRow): Task {
   return {
     id: row.id,
     title: row.title,

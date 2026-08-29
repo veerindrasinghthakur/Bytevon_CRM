@@ -96,7 +96,7 @@ export interface ProjectNote {
 }
 
 export interface ProjectTaskListItem {
-  id: number | string
+  id: number
   title: string
   status: string
   priority?: string

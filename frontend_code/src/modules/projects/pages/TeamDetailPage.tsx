@@ -7,7 +7,6 @@ import { Select } from '@/shared/components/ui/Select'
 import { RefreshButton } from '@/shared/components/ui/RefreshButton'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
-import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { useTeamDetail } from '../hooks/use-team-detail'
 import type { TeamStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
@@ -26,8 +25,7 @@ export function TeamDetailPage() {
     isError,
     refetch,
     isEditing,
-    draft,
-    setDraft,
+    form,
     startEditing,
     cancelEdit,
     save,
@@ -116,8 +114,8 @@ export function TeamDetailPage() {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard label="Total Members" value={String(members.length || team.memberCount)} icon="group" tone="bg-secondary/10 text-secondary" />
-        <StatCard label="Projects" value={String(team.projectCount)} icon="account_tree" tone="bg-purple-100 text-purple-700" />
-        <StatCard label="Status" value={team.status} icon="check_circle" tone="bg-emerald-100 text-emerald-700" />
+        <StatCard label="Projects" value={String(team.projectCount)} icon="account_tree" tone="bg-secondary-container text-secondary" />
+        <StatCard label="Status" value={team.status} icon="check_circle" tone="bg-success-container text-on-success" />
         <StatCard
           label="Created"
           value={new Date(team.createdAt).toLocaleDateString()}
@@ -135,7 +133,17 @@ export function TeamDetailPage() {
             </h3>
             {isEditing ? (
               <div className="space-y-4">
-                <FieldInput label="Name" id="team-name" value={draft.name} onChange={(v) => setDraft((d) => ({ ...d, name: v }))} />
+                <div>
+                  <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="team-name">
+                    Name
+                  </label>
+                  <input
+                    id="team-name"
+                    {...form.register('name')}
+                    onKeyDown={(e) => handleEnterAdvance(e)}
+                    className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-secondary"
+                  />
+                </div>
                 <div>
                   <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="team-desc">
                     Description
@@ -143,19 +151,47 @@ export function TeamDetailPage() {
                   <textarea
                     id="team-desc"
                     rows={3}
-                    value={draft.description}
-                    onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
+                    {...form.register('description')}
                     onKeyDown={(e) => handleEnterAdvance(e)}
                     className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-secondary resize-none"
                   />
                 </div>
-                <FieldInput label="Department" id="team-dept" value={draft.department} onChange={(v) => setDraft((d) => ({ ...d, department: v }))} />
-                <FieldInput label="Head name" id="team-head" value={draft.headName} onChange={(v) => setDraft((d) => ({ ...d, headName: v }))} />
-                <FieldInput label="Head role" id="team-role" value={draft.headRole} onChange={(v) => setDraft((d) => ({ ...d, headRole: v }))} />
+                <div>
+                  <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="team-dept">
+                    Department
+                  </label>
+                  <input
+                    id="team-dept"
+                    {...form.register('department')}
+                    onKeyDown={(e) => handleEnterAdvance(e)}
+                    className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-secondary"
+                  />
+                </div>
+                <div>
+                  <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="team-head">
+                    Head name
+                  </label>
+                  <input
+                    id="team-head"
+                    {...form.register('headName')}
+                    onKeyDown={(e) => handleEnterAdvance(e)}
+                    className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-secondary"
+                  />
+                </div>
+                <div>
+                  <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="team-role">
+                    Head role
+                  </label>
+                  <input
+                    id="team-role"
+                    {...form.register('headRole')}
+                    onKeyDown={(e) => handleEnterAdvance(e)}
+                    className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-secondary"
+                  />
+                </div>
                 <Select
                   label="Status"
-                  value={draft.status}
-                  onChange={(v) => setDraft((d) => ({ ...d, status: v as TeamStatus }))}
+                  {...form.register('status')}
                   options={statusOptions}
                 />
               </div>
@@ -306,7 +342,7 @@ function StatCard({
   label: string
   value: string
   icon: string
-  tone: string
+tone: string
 }) {
   return (
     <div className="bv-surface card-hover p-4">
@@ -315,33 +351,6 @@ function StatCard({
       </div>
       <p className="text-label-sm text-on-surface-variant">{label}</p>
       <p className="text-title-lg font-bold text-on-background">{value}</p>
-    </div>
-  )
-}
-
-function FieldInput({
-  label,
-  id,
-  value,
-  onChange,
-}: {
-  label: string
-  id: string
-  value: string
-  onChange: (v: string) => void
-}) {
-  return (
-    <div>
-      <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor={id}>
-        {label}
-      </label>
-      <input
-        id={id}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={(e) => handleEnterAdvance(e)}
-        className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-secondary"
-      />
     </div>
   )
 }

@@ -23,8 +23,7 @@ export function TaskDetailPage() {
     isError,
     refetch,
     isEditing,
-    draft,
-    setDraft,
+    form,
     startEditing,
     cancelEdit,
     save,
@@ -124,8 +123,7 @@ breadcrumbs={
                   </label>
                   <input
                     id="task-title"
-                    value={draft.title}
-                    onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
+                    {...form.register('title')}
                     onKeyDown={(e) => handleEnterAdvance(e)}
                     className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-secondary"
                   />
@@ -137,8 +135,7 @@ breadcrumbs={
                   <textarea
                     id="task-desc"
                     rows={6}
-                    value={draft.description}
-                    onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
+                    {...form.register('description')}
                     onKeyDown={(e) => handleEnterAdvance(e)}
                     className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-secondary resize-none"
                   />
@@ -146,21 +143,18 @@ breadcrumbs={
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Select
                     label="Priority"
-                    value={draft.priority}
-                    onChange={(v) => setDraft((d) => ({ ...d, priority: v as TaskPriority }))}
+                    {...form.register('priority')}
                     options={priorityOptions}
                   />
                   <Select
                     label="Status"
-                    value={draft.status}
-                    onChange={(v) => setDraft((d) => ({ ...d, status: v as TaskStatus }))}
+                    {...form.register('status')}
                     options={statusOptions}
                   />
                   <div>
                     <label className="text-label-sm text-on-surface-variant block mb-1">Assignee</label>
                     <input
-                      value={draft.assigneeName}
-                      onChange={(e) => setDraft((d) => ({ ...d, assigneeName: e.target.value }))}
+                      {...form.register('assigneeName')}
                       onKeyDown={(e) => handleEnterAdvance(e)}
                       className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface"
                     />
@@ -169,8 +163,7 @@ breadcrumbs={
                     <label className="text-label-sm text-on-surface-variant block mb-1">Due date</label>
                     <input
                       type="date"
-                      value={draft.dueDate}
-                      onChange={(e) => setDraft((d) => ({ ...d, dueDate: e.target.value }))}
+                      {...form.register('dueDate')}
                       className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface"
                     />
                   </div>

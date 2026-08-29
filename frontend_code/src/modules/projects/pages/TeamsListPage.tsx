@@ -193,9 +193,9 @@ export function TeamsListPage() {
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard label="Total Teams" value={String(total || '—')} trend="+12%" icon="groups" iconClass="bg-electric-blue/10 text-electric-blue" />
-        <MetricCard label="Active Members" value={String(activeMembers)} trend="+4%" icon="person" iconClass="bg-purple-100 text-purple-600" />
-        <MetricCard label="Total Projects" value={String(totalProjects)} sub="Active" icon="account_tree" iconClass="bg-emerald-100 text-emerald-700" />
-        <MetricCard label="Avg. Team Size" value={avgSize} sub="Members" icon="group_work" iconClass="bg-amber-100 text-amber-700" />
+        <MetricCard label="Active Members" value={String(activeMembers)} trend="+4%" icon="person" iconClass="bg-secondary-container text-secondary" />
+        <MetricCard label="Total Projects" value={String(totalProjects)} sub="Active" icon="account_tree" iconClass="bg-success-container text-on-success" />
+        <MetricCard label="Avg. Team Size" value={avgSize} sub="Members" icon="group_work" iconClass="bg-warning-container text-on-warning" />
       </section>
 
       {selection.selectionMode && (
@@ -412,9 +412,7 @@ function MetricCard({
     <div className="bv-surface card-hover p-5 flex flex-col justify-between h-[160px]">
       <div className="flex justify-between items-start">
         <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${iconClass}`}>
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
-            {icon}
-          </span>
+          <span className="material-symbols-outlined material-icons-filled">{icon}</span>
         </div>
         {trend && (
           <div className="status-badge status-success text-xs font-bold px-2 py-1">{trend}</div>

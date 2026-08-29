@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -9,11 +9,13 @@ import { EntitySearch, type EntityOption } from '@/shared/components/forms/Entit
 import { useCreateTask } from '../hooks/use-tasks'
 import { useProject } from '../hooks/use-projects'
 import { projectRoutes } from '../routes'
+import { getDb } from '@/shared/mock/db'
 
 const schema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters').max(200),
   description: z.string().max(2000).optional(),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
+  assignee: z.custom<EntityOption | null>().optional(),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -36,8 +38,6 @@ export function TaskCreatePage() {
     []
   )
 
-  const [assignee, setAssignee] = useState<EntityOption | null>(null)
-
   const createMutation = useCreateTask()
   const {
     register,
@@ -47,10 +47,12 @@ export function TaskCreatePage() {
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { title: '', description: '', priority: 'MEDIUM' },
+    defaultValues: { title: '', description: '', priority: 'MEDIUM', assignee: null },
   })
 
   const priority = watch('priority')
+  const assignee = watch('assignee')
+
   const backTo =
     projectId != null && Number.isFinite(projectId)
       ? projectRoutes.projectDetail(projectId)
@@ -62,7 +64,7 @@ export function TaskCreatePage() {
         ...data,
         projectId: projectId && Number.isFinite(projectId) ? projectId : undefined,
         projectName: project?.name,
-        assigneeName: assignee?.label,
+        assigneeName: data.assignee?.label,
       })
       if (projectId && Number.isFinite(projectId)) {
         navigate({ to: projectRoutes.projectDetail(projectId), params: { projectId: String(projectId) } })
@@ -72,6 +74,10 @@ export function TaskCreatePage() {
     } catch {
       // shown below
     }
+  }
+
+  const handleAssigneeChange = (value: EntityOption | null) => {
+    setValue('assignee', value)
   }
 
   return (
@@ -87,9 +93,7 @@ export function TaskCreatePage() {
         <div className="flex items-center justify-between px-5 py-4 border-b border-outline-variant bg-surface">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-electric-blue/10 flex items-center justify-center text-electric-blue">
-              <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
-                add_task
-              </span>
+              <span className="material-symbols-outlined material-icons-filled">add_task</span>
             </div>
             <div>
               <h2 className="text-headline-md font-bold text-on-surface">Create Task</h2>
@@ -155,7 +159,7 @@ export function TaskCreatePage() {
                 placeholder="Search employees by name or department…"
                 options={employeeOptions}
                 value={assignee}
-                onChange={setAssignee}
+                onChange={handleAssigneeChange}
                 emptyMessage="No employees match your search"
               />
               <p className="text-body-sm text-on-surface-variant">
@@ -208,7 +212,7 @@ export function TaskCreatePage() {
               variant="primary"
               isLoading={isSubmitting || createMutation.isPending}
               leftIcon={
-                <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>
+                <span className="material-symbols-outlined material-icons-filled text-sm">
                   check
                 </span>
               }

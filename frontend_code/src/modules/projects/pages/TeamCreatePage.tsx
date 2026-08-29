@@ -14,6 +14,8 @@ import { getDb } from '@/shared/mock/db'
 const schema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(120),
   description: z.string().max(500).optional(),
+  head: z.custom<EntityOption | null>().optional(),
+  members: z.array(z.custom<EntityOption>()).optional(),
 })
 
 type FormValues = z.infer<typeof schema>
@@ -39,18 +41,20 @@ export function TeamCreatePage() {
     []
   )
 
-  const [head, setHead] = useState<EntityOption | null>(null)
-  const [members, setMembers] = useState<EntityOption[]>([])
-
   const createMutation = useCreateTeam()
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', description: '' },
+    defaultValues: { name: '', description: '', head: null, members: [] },
   })
+
+  const head = watch('head')
+  const members = watch('members')
 
   const backTo =
     search.returnTo ||
@@ -63,9 +67,9 @@ export function TeamCreatePage() {
       await createMutation.mutateAsync({
         name: data.name,
         description: data.description,
-        headName: head?.label,
-        headRole: head?.sublabel?.split(' · ')[0],
-        memberNames: members.map((m) => m.label),
+        headName: data.head?.label,
+        headRole: data.head?.sublabel?.split(' · ')[0],
+        memberNames: data.members?.map((m) => m.label) ?? [],
         projectId: projectId && Number.isFinite(projectId) ? projectId : undefined,
         projectName: project?.name,
       })
@@ -79,6 +83,14 @@ export function TeamCreatePage() {
     } catch {
       // mutation error UI
     }
+  }
+
+  const handleHeadChange = (value: EntityOption | null) => {
+    setValue('head', value)
+  }
+
+  const handleMembersChange = (value: EntityOption[]) => {
+    setValue('members', value)
   }
 
   return (
@@ -154,7 +166,7 @@ export function TeamCreatePage() {
                   placeholder="Search employees by name or role…"
                   options={employeeOptions}
                   value={head}
-                  onChange={setHead}
+                  onChange={handleHeadChange}
                   emptyMessage="No employees match your search"
                 />
               </div>
@@ -172,7 +184,7 @@ export function TeamCreatePage() {
                   options={employeeOptions.filter((o) => String(o.id) !== String(head?.id ?? ''))}
                   multi
                   values={members}
-                  onChangeMulti={setMembers}
+                  onChangeMulti={handleMembersChange}
                   emptyMessage="No employees match your search"
                 />
               </div>

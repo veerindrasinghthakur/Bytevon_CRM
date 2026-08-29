@@ -1,11 +1,14 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { useProject, useUpdateProject } from './use-projects'
 import { useTasks } from './use-tasks'
 import { getTeamsForProject } from '../api/teams'
 import { auditLogs } from '@/modules/admin/data/mock'
 import type { ProjectDetail } from '../schemas/project'
+import { projectDetailFormSchema, type ProjectDetailFormInput } from '../schemas/project-detail-form'
 
 export type ProjectDetailTab =
   | 'overview'
@@ -15,29 +18,6 @@ export type ProjectDetailTab =
   | 'documents'
   | 'notes'
   | 'repository'
-
-export interface ProjectDetailDraft {
-  name: string
-  description: string
-  clientName: string
-  repositoryUrl: string
-}
-
-function toDraft(p: ProjectDetail): ProjectDetailDraft {
-  return {
-    name: p.name,
-    description: p.description ?? '',
-    clientName: p.clientName ?? '',
-    repositoryUrl: p.repositoryUrl ?? '',
-  }
-}
-
-const emptyDraft: ProjectDetailDraft = {
-  name: '',
-  description: '',
-  clientName: '',
-  repositoryUrl: '',
-}
 
 function activityFromAudit(projectName?: string) {
   const logs = auditLogs.slice(0, 8)
@@ -76,7 +56,16 @@ export function useProjectDetail(
   const [taskStatusFilter, setTaskStatusFilter] = useState('')
   const [taskSearch, setTaskSearch] = useState('')
   const [createTaskOpen, setCreateTaskOpen] = useState(false)
-  const [draft, setDraft] = useState<ProjectDetailDraft>(emptyDraft)
+
+  const form = useForm<ProjectDetailFormInput>({
+    resolver: zodResolver(projectDetailFormSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      clientName: '',
+      repositoryUrl: '',
+    },
+  })
 
   const project = query.data ?? null
   const linkedTeam = teamsQuery.data?.[0] ?? null
@@ -87,24 +76,38 @@ export function useProjectDetail(
 
   const startEditing = () => {
     if (!project) return
-    setDraft(toDraft(project))
+    form.reset({
+      name: project.name,
+      description: project.description ?? '',
+      clientName: project.clientName ?? '',
+      repositoryUrl: project.repositoryUrl ?? '',
+    })
     setEditingTrue()
   }
 
   const cancelEdit = () => {
-    if (project) setDraft(toDraft(project))
+    if (project) {
+      form.reset({
+        name: project.name,
+        description: project.description ?? '',
+        clientName: project.clientName ?? '',
+        repositoryUrl: project.repositoryUrl ?? '',
+      })
+    }
     cancelEditing()
   }
 
   const save = async () => {
     if (!project) return
+    const data = await form.handleSubmit(async (values) => values)()
+    if (!data) return
     await updateMutation.mutateAsync({
       id: project.id,
       patch: {
-        name: draft.name,
-        description: draft.description,
-        clientName: draft.clientName,
-        repositoryUrl: draft.repositoryUrl || null,
+        name: data.name,
+        description: data.description,
+        clientName: data.clientName,
+        repositoryUrl: data.repositoryUrl || null,
       },
     })
     finishEditing()
@@ -151,8 +154,7 @@ export function useProjectDetail(
     progress,
     daysToDeadline,
     isEditing,
-    draft,
-    setDraft,
+    form,
     startEditing,
     save,
     cancelEdit,

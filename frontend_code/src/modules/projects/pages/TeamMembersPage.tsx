@@ -83,7 +83,7 @@ export function ProjectTeamMembersPage() {
                 </td>
                 <td className="px-6 py-4 text-body-sm">{m.role}</td>
                 <td className="px-6 py-4">
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-success-container text-on-success">
                     {m.status}
                   </span>
                 </td>

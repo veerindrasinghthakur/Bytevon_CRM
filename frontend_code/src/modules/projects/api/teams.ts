@@ -37,8 +37,21 @@ export interface TeamCandidate {
   availability: 'Available' | 'Busy'
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asTeam(row: any): Team {
+interface TeamRow {
+  id: number
+  name: string
+  description?: string | null
+  department?: string | null
+  headName?: string | null
+  headRole?: string | null
+  projectName?: string | null
+  memberCount: number
+  projectCount: number
+  status: string
+  createdAt: string
+}
+
+function asTeam(row: TeamRow): Team {
   return {
     id: row.id,
     name: row.name,

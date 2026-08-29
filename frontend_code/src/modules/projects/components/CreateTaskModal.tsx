@@ -1,8 +1,19 @@
-import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { useCreateTask } from '../hooks/use-tasks'
 import type { TaskPriority } from '../types'
+
+const createTaskSchema = z.object({
+  title: z.string().min(2, 'Title must be at least 2 characters').max(200),
+  description: z.string().max(2000).optional(),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).default('MEDIUM'),
+  assigneeName: z.string().max(120).optional(),
+})
+
+type CreateTaskFormValues = z.infer<typeof createTaskSchema>
 
 export interface CreateTaskModalProps {
   open: boolean
@@ -20,27 +31,34 @@ export function CreateTaskModal({
   onCreated,
 }: CreateTaskModalProps) {
   const create = useCreateTask()
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [priority, setPriority] = useState<TaskPriority>('MEDIUM')
-  const [assigneeName, setAssigneeName] = useState('')
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<CreateTaskFormValues>({
+    resolver: zodResolver(createTaskSchema),
+    defaultValues: {
+      title: '',
+      description: '',
+      priority: 'MEDIUM',
+      assigneeName: '',
+    },
+  })
 
   if (!open) return null
 
-  const submit = async () => {
-    if (!title.trim()) return
+  const onSubmit = async (data: CreateTaskFormValues) => {
     await create.mutateAsync({
-      title: title.trim(),
-      description: description.trim() || undefined,
-      priority,
+      title: data.title.trim(),
+      description: data.description?.trim() || undefined,
+      priority: data.priority,
       projectId,
       projectName,
-      assigneeName: assigneeName.trim() || undefined,
+      assigneeName: data.assigneeName?.trim() || undefined,
     })
-    setTitle('')
-    setDescription('')
-    setPriority('MEDIUM')
-    setAssigneeName('')
+    reset()
     onCreated?.()
     onClose()
   }
@@ -64,54 +82,53 @@ export function CreateTaskModal({
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
-        <div className="p-6 space-y-4 overflow-y-auto flex-1">
-          <div>
-            <label className="text-label-sm block mb-1">Title <span className="text-error">*</span></label>
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-body-md focus:ring-2 focus:ring-secondary/30 outline-none"
-              placeholder="Task title"
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="p-6 space-y-4 overflow-y-auto flex-1">
+            <div>
+              <label className="text-label-sm block mb-1">Title <span className="text-error">*</span></label>
+              <input
+                {...register('title')}
+                className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-body-md focus:ring-2 focus:ring-secondary/30 outline-none"
+                placeholder="Task title"
+              />
+              {errors.title && <p className="mt-1 text-body-sm text-error">{errors.title.message}</p>}
+            </div>
+            <div>
+              <label className="text-label-sm block mb-1">Description</label>
+              <textarea
+                rows={3}
+                {...register('description')}
+                className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-body-md resize-none focus:ring-2 focus:ring-secondary/30 outline-none"
+              />
+            </div>
+            <Select
+              label="Priority"
+              {...register('priority')}
+              options={[
+                { value: 'LOW', label: 'Low' },
+                { value: 'MEDIUM', label: 'Medium' },
+                { value: 'HIGH', label: 'High' },
+                { value: 'URGENT', label: 'Urgent' },
+              ]}
             />
+            <div>
+              <label className="text-label-sm block mb-1">Assignee</label>
+              <input
+                {...register('assigneeName')}
+                className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-body-md focus:ring-2 focus:ring-secondary/30 outline-none"
+                placeholder="Name"
+              />
+            </div>
           </div>
-          <div>
-            <label className="text-label-sm block mb-1">Description</label>
-            <textarea
-              rows={3}
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-body-md resize-none focus:ring-2 focus:ring-secondary/30 outline-none"
-            />
+          <div className="px-6 py-4 border-t border-outline-variant flex justify-end gap-2 shrink-0">
+            <Button type="button" variant="outline" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" disabled={isSubmitting || create.isPending}>
+              Create task
+            </Button>
           </div>
-          <Select
-            label="Priority"
-            value={priority}
-            onChange={(v) => setPriority(v as TaskPriority)}
-            options={[
-              { value: 'LOW', label: 'Low' },
-              { value: 'MEDIUM', label: 'Medium' },
-              { value: 'HIGH', label: 'High' },
-              { value: 'URGENT', label: 'Urgent' },
-            ]}
-          />
-          <div>
-            <label className="text-label-sm block mb-1">Assignee</label>
-            <input
-              value={assigneeName}
-              onChange={(e) => setAssigneeName(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-body-md focus:ring-2 focus:ring-secondary/30 outline-none"
-              placeholder="Name"
-            />
-          </div>
-        </div>
-        <div className="px-6 py-4 border-t border-outline-variant flex justify-end gap-2 shrink-0">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button variant="primary" disabled={!title.trim() || create.isPending} onClick={() => void submit()}>
-            Create task
-          </Button>
-        </div>
+        </form>
       </div>
     </div>
   )

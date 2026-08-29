@@ -183,11 +183,11 @@ export function ProjectsListPage() {
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Metric label="Total Projects" value={String(total || '—')} trend="+12%" icon="folder_open" tone="bg-electric-blue/10 text-electric-blue" />
-        <Metric label="Active Projects" value={String(active)} trend="+4.2%" icon="trending_up" tone="bg-purple-100 text-purple-600" />
-        <Metric label="At Risk / Delayed" value={String(atRisk)} trend="-2.1%" trendDanger icon="warning" tone="bg-red-100 text-red-600" />
+        <Metric label="Active Projects" value={String(active)} trend="+4.2%" icon="trending_up" tone="bg-secondary-container text-secondary" />
+        <Metric label="At Risk / Delayed" value={String(atRisk)} trend="-2.1%" trendDanger icon="warning" tone="bg-error-container text-error" />
         <div className="bg-deep-navy border border-white/10 rounded-xl p-5 executive-shadow flex flex-col justify-between h-[160px]">
           <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white">
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
+            <span className="material-symbols-outlined material-icons-filled">account_balance_wallet</span>
           </div>
           <div>
             <p className="text-label-sm text-white/70 mb-1">Total Managed Budget</p>
@@ -418,9 +418,7 @@ function Metric({
     <div className="bv-surface card-hover p-5 flex flex-col justify-between h-[160px]">
       <div className="flex justify-between items-start">
         <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', tone)}>
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
-            {icon}
-          </span>
+          <span className="material-symbols-outlined material-icons-filled">{icon}</span>
         </div>
         {trend && (
           <div

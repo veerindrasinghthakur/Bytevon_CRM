@@ -1,9 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { useTeam, useUpdateTeam } from './use-teams'
 import { useProjects } from './use-projects'
 import { listEmployments } from '@/modules/workforce/api/employment'
 import type { TeamStatus } from '../types'
+import { teamDetailFormSchema, type TeamDetailFormInput } from '../schemas/team-detail-form'
 
 export interface TeamMemberRow {
   employmentId: number
@@ -13,31 +16,25 @@ export interface TeamMemberRow {
   isHead?: boolean
 }
 
-export interface TeamDetailDraft {
-  name: string
-  description: string
-  department: string
-  headName: string
-  headRole: string
-  status: TeamStatus
-}
-
-const empty: TeamDetailDraft = {
-  name: '',
-  description: '',
-  department: '',
-  headName: '',
-  headRole: '',
-  status: 'ACTIVE',
-}
-
 export function useTeamDetail(teamId: number | undefined) {
   const query = useTeam(teamId)
   const { data: projectsData } = useProjects({})
   const updateMutation = useUpdateTeam()
   const team = query.data ?? null
   const { isEditing, startEditing: setEditingTrue, cancelEditing, finishEditing } = useEditMode()
-  const [draft, setDraft] = useState<TeamDetailDraft>(empty)
+
+  const form = useForm<TeamDetailFormInput>({
+    resolver: zodResolver(teamDetailFormSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      department: '',
+      headName: '',
+      headRole: '',
+      status: 'ACTIVE' as TeamStatus,
+    },
+  })
+
   const [members, setMembers] = useState<TeamMemberRow[]>([])
   const [addMemberOpen, setAddMemberOpen] = useState(false)
   const [empOptions, setEmpOptions] = useState<{ value: string; label: string; meta?: string }[]>([])
@@ -47,7 +44,7 @@ export function useTeamDetail(teamId: number | undefined) {
 
   useEffect(() => {
     if (!team) return
-    setDraft({
+    form.reset({
       name: team.name,
       description: team.description ?? '',
       department: team.department ?? '',
@@ -91,7 +88,7 @@ export function useTeamDetail(teamId: number | undefined) {
 
   const startEditing = () => {
     if (!team) return
-    setDraft({
+    form.reset({
       name: team.name,
       description: team.description ?? '',
       department: team.department ?? '',
@@ -104,7 +101,7 @@ export function useTeamDetail(teamId: number | undefined) {
 
   const cancelEdit = () => {
     if (team) {
-      setDraft({
+      form.reset({
         name: team.name,
         description: team.description ?? '',
         department: team.department ?? '',
@@ -118,15 +115,17 @@ export function useTeamDetail(teamId: number | undefined) {
 
   const save = async () => {
     if (!team) return
+    const data = await form.handleSubmit(async (values) => values)()
+    if (!data) return
     await updateMutation.mutateAsync({
       id: team.id,
       patch: {
-        name: draft.name,
-        description: draft.description,
-        department: draft.department,
-        headName: draft.headName || undefined,
-        headRole: draft.headRole || undefined,
-        status: draft.status,
+        name: data.name,
+        description: data.description,
+        department: data.department,
+        headName: data.headName || undefined,
+        headRole: data.headRole || undefined,
+        status: data.status,
       },
     })
     finishEditing()
@@ -160,8 +159,7 @@ export function useTeamDetail(teamId: number | undefined) {
     isError: query.isError,
     refetch: () => void query.refetch(),
     isEditing,
-    draft,
-    setDraft,
+    form,
     startEditing,
     cancelEdit,
     save,

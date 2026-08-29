@@ -28,8 +28,17 @@ function iconForMime(type: string, name: string) {
   return 'attach_file'
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type DocRow = any
+interface DocRow {
+  id: string
+  name: string
+  type: string
+  sizeLabel: string
+  uploadedBy: string
+  uploadedAt: string
+  url?: string
+  referenceType?: string
+  referenceId?: number
+}
 
 function DocumentQuickContent({ d }: { d: DocRow }) {
   return (

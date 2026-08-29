@@ -1,4 +1,5 @@
 import { createRoute } from '@tanstack/react-router'
+import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 
 const ProjectsListPage = lazyPage(() => import('./pages/ProjectsListPage'), 'ProjectsListPage')
@@ -33,8 +34,7 @@ export const projectRoutes = {
   taskDetail: (id: string | number) => `/projects/tasks/${id}`,
 } as const
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createProjectsRoutes(appLayoutRoute: any) {
+export function createProjectsRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   return [
     createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects', component: ProjectsListPage }),
     createRoute({
