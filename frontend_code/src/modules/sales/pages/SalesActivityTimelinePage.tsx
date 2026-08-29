@@ -1,24 +1,14 @@
-import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
+import { Button } from '@/shared/components/ui/Button'
+import { Link } from '@tanstack/react-router'
 import type { ActivityType } from '../types'
 import { cn } from '@/shared/lib/cn'
 import { salesRoutes } from '../routes'
 import { useSalesActivities } from '../hooks/use-sales'
+import { typeIcon, typeColor } from '../schemas/cssTokens'
 
 export function SalesActivityTimelinePage() {
   const { data: activities, isLoading, isError } = useSalesActivities()
-
-  const typeIcon: Record<ActivityType, string> = {
-    'Lead Created': 'person_add',
-    'Lead Won': 'emoji_events',
-    'Meeting Scheduled': 'event',
-    'Email Sent': 'mail',
-    Call: 'call',
-    'Document Viewed': 'description',
-    'System Alert': 'warning',
-    'Contract Renewed': 'autorenew',
-    'Proposal Sent': 'send',
-  }
 
   if (isLoading) {
     return (

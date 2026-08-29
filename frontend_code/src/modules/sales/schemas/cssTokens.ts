@@ -59,3 +59,15 @@ export const caseStudyStatusDot: Record<string, string> = {
   Draft: 'bg-amber-500',
   Archived: 'bg-slate-400',
 }
+
+export const typeColor: Record<ActivityType, string> = {
+  'Lead Created': 'bg-blue-100 text-blue-600',
+  'Lead Won': 'bg-emerald-100 text-emerald-600',
+  'Meeting Scheduled': 'bg-purple-100 text-purple-600',
+  'Email Sent': 'bg-sky-100 text-sky-600',
+  Call: 'bg-orange-100 text-orange-600',
+  'Document Viewed': 'bg-amber-100 text-amber-600',
+  'System Alert': 'bg-red-100 text-red-600',
+  'Contract Renewed': 'bg-green-100 text-green-600',
+  'Proposal Sent': 'bg-indigo-100 text-indigo-600',
+}

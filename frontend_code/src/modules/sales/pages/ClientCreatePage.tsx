@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
+import { useForm, useFieldArray } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
@@ -7,14 +9,8 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useClient, useCreateClient, useUpdateClient } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
-import {
-  emptyClientContact,
-  emptyClientForm,
-  type ClientContactForm,
-  type ClientForm,
-  type ClientType,
-  type RecordStatus,
-} from '../types'
+import { clientFormSchema, type ClientFormSchemaInput } from '../schemas/client-form'
+import { emptyClientContact, type ClientContactForm } from '../types'
 import { cn } from '@/shared/lib/cn'
 import { ClientTypeValues, RecordStatusValues } from '../schemas/enums'
 
@@ -32,15 +28,36 @@ export function ClientCreatePage() {
   const updateMut = useUpdateClient()
   const existing = existingQuery.data
 
-  const [form, setForm] = useState<ClientForm>(emptyClientForm)
-  const [editingContactId, setEditingContactId] = useState<string | null>(null)
-  const [error, setError] = useState('')
+  const form = useForm<ClientFormSchemaInput>({
+    resolver: zodResolver(clientFormSchema),
+    defaultValues: {
+      name: '',
+      legalName: '',
+      type: 'SMB',
+      status: 'Active',
+      industry: '',
+      website: '',
+      country: '',
+      state: '',
+      city: '',
+      address: '',
+      taxId: '',
+      founded: '',
+      chatLink: '',
+      contacts: [emptyClientContact()],
+    },
+  })
 
-  const patchForm = (patch: Partial<ClientForm>) => setForm((prev) => ({ ...prev, ...patch }))
+  const { fields: contacts, append, remove, move } = useFieldArray({
+    control: form.control,
+    name: 'contacts',
+  })
+
+  const [editingContactId, setEditingContactId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!existing) return
-    setForm({
+    form.reset({
       name: existing.name ?? '',
       legalName: existing.legalName ?? '',
       type: existing.type ?? 'SMB',
@@ -64,45 +81,24 @@ export function ClientCreatePage() {
         },
       ],
     })
-  }, [existing])
-
-  const updateContact = (id: string, patch: Partial<ClientContactForm>) => {
-    setForm((prev) => ({
-      ...prev,
-      contacts: prev.contacts.map((c) => (c.id === id ? { ...c, ...patch } : c)),
-    }))
-  }
-
-  const removeContact = (id: string) => {
-    setForm((prev) => ({
-      ...prev,
-      contacts: prev.contacts.length <= 1 ? prev.contacts : prev.contacts.filter((c) => c.id !== id),
-    }))
-    if (editingContactId === id) setEditingContactId(null)
-  }
+  }, [existing, form])
 
   const saving = createMut.isPending || updateMut.isPending
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    if (!form.name.trim()) {
-      setError('Client name is required.')
-      return
-    }
-    const primary = form.contacts[0]
+  const onSubmit = async (data: ClientFormSchemaInput) => {
+    const primary = data.contacts[0]
     const payload = {
-      name: form.name.trim(),
-      legalName: form.legalName.trim() || undefined,
-      type: form.type,
-      status: form.status,
-      industry: form.industry.trim() || undefined,
-      website: form.website.trim() || undefined,
-      country: form.country.trim() || undefined,
-      address: form.address.trim() || undefined,
-      taxId: form.taxId.trim() || undefined,
-      founded: form.founded || undefined,
-      chatLink: form.chatLink.trim() || undefined,
+      name: data.name.trim(),
+      legalName: data.legalName.trim() || undefined,
+      type: data.type,
+      status: data.status,
+      industry: data.industry.trim() || undefined,
+      website: data.website.trim() || undefined,
+      country: data.country.trim() || undefined,
+      address: data.address.trim() || undefined,
+      taxId: data.taxId.trim() || undefined,
+      founded: data.founded || undefined,
+      chatLink: data.chatLink.trim() || undefined,
       primaryContact: primary?.name || undefined,
       email: primary?.email || undefined,
       phone: primary?.phone || undefined,
@@ -113,8 +109,8 @@ export function ClientCreatePage() {
           id: params.clientId,
           patch: {
             ...payload,
-            industry: form.industry.trim() || '—',
-            country: form.country.trim() || '—',
+            industry: data.industry.trim() || '—',
+            country: data.country.trim() || '—',
           },
         })
       } else {
@@ -122,8 +118,20 @@ export function ClientCreatePage() {
       }
       safeNavigate(navigate, { to: salesRoutes.clients })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Save failed')
+      form.setError('root', { message: err instanceof Error ? err.message : 'Save failed' })
     }
+  }
+
+  const addContact = () => {
+    const c = emptyClientContact()
+    append(c)
+    setEditingContactId(c.id)
+  }
+
+  const removeContact = (id: string) => {
+    if (contacts.length <= 1) return
+    remove((contact, index) => contact.id === id)
+    if (editingContactId === id) setEditingContactId(null)
   }
 
   if (isEdit && existingQuery.isLoading) return <PageLoadingSkeleton />
@@ -155,13 +163,7 @@ export function ClientCreatePage() {
         }
       />
 
-      {error && (
-        <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error" role="alert">
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5 max-w-3xl">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 max-w-3xl">
         <section className="bv-surface p-6 space-y-4">
           <h2 className="text-title-md font-semibold">Account</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -172,11 +174,13 @@ export function ClientCreatePage() {
               <input
                 id="name"
                 required
-                value={form.name}
-                onChange={(e) => patchForm({ name: e.target.value })}
+                {...form.register('name')}
                 className={fieldClass}
                 placeholder="Nexus Global Holdings"
               />
+              {form.formState.errors.name && (
+                <p className="text-[11px] text-error mt-1">{form.formState.errors.name.message}</p>
+              )}
             </div>
             <div className="md:col-span-2">
               <label className={labelClass} htmlFor="legalName">
@@ -184,23 +188,20 @@ export function ClientCreatePage() {
               </label>
               <input
                 id="legalName"
-                value={form.legalName}
-                onChange={(e) => patchForm({ legalName: e.target.value })}
+                {...form.register('legalName')}
                 className={fieldClass}
                 placeholder="Nexus Global Holdings, Inc."
               />
             </div>
             <Select
               label="Type"
-              value={form.type}
-              onChange={(v) => patchForm({ type: v as ClientType })}
+              {...form.register('type')}
               options={ClientTypeValues.map((t) => ({ value: t, label: t }))}
               minWidthClass="w-full"
             />
             <Select
               label="Status"
-              value={form.status}
-              onChange={(v) => patchForm({ status: v as RecordStatus })}
+              {...form.register('status')}
               options={RecordStatusValues.map((s) => ({ value: s, label: s }))}
               minWidthClass="w-full"
             />
@@ -210,8 +211,7 @@ export function ClientCreatePage() {
               </label>
               <input
                 id="industry"
-                value={form.industry}
-                onChange={(e) => patchForm({ industry: e.target.value })}
+                {...form.register('industry')}
                 className={fieldClass}
                 placeholder="Technology"
               />
@@ -222,8 +222,7 @@ export function ClientCreatePage() {
               </label>
               <input
                 id="website"
-                value={form.website}
-                onChange={(e) => patchForm({ website: e.target.value })}
+                {...form.register('website')}
                 className={fieldClass}
                 placeholder="nexusglobal.com"
               />
@@ -234,8 +233,7 @@ export function ClientCreatePage() {
               </label>
               <input
                 id="taxId"
-                value={form.taxId}
-                onChange={(e) => patchForm({ taxId: e.target.value })}
+                {...form.register('taxId')}
                 className={fieldClass}
               />
             </div>
@@ -246,8 +244,7 @@ export function ClientCreatePage() {
               <input
                 id="founded"
                 type="date"
-                value={form.founded}
-                onChange={(e) => patchForm({ founded: e.target.value })}
+                {...form.register('founded')}
                 className={fieldClass}
               />
             </div>
@@ -263,8 +260,7 @@ export function ClientCreatePage() {
               </label>
               <input
                 id="country"
-                value={form.country}
-                onChange={(e) => patchForm({ country: e.target.value })}
+                {...form.register('country')}
                 className={fieldClass}
                 placeholder="United States"
               />
@@ -275,8 +271,7 @@ export function ClientCreatePage() {
               </label>
               <input
                 id="state"
-                value={form.state}
-                onChange={(e) => patchForm({ state: e.target.value })}
+                {...form.register('state')}
                 className={fieldClass}
               />
             </div>
@@ -286,8 +281,7 @@ export function ClientCreatePage() {
               </label>
               <input
                 id="city"
-                value={form.city}
-                onChange={(e) => patchForm({ city: e.target.value })}
+                {...form.register('city')}
                 className={fieldClass}
               />
             </div>
@@ -298,8 +292,7 @@ export function ClientCreatePage() {
               <textarea
                 id="address"
                 rows={3}
-                value={form.address}
-                onChange={(e) => patchForm({ address: e.target.value })}
+                {...form.register('address')}
                 className={cn(fieldClass, 'resize-y')}
                 placeholder="Street, building, postal code…"
               />
@@ -315,11 +308,7 @@ export function ClientCreatePage() {
               variant="outline"
               size="sm"
               leftIcon={<span className="material-symbols-outlined text-[18px]">person_add</span>}
-              onClick={() => {
-                const c = emptyClientContact()
-                setForm((prev) => ({ ...prev, contacts: [...prev.contacts, c] }))
-                setEditingContactId(c.id)
-              }}
+              onClick={addContact}
             >
               Add contact
             </Button>
@@ -329,7 +318,7 @@ export function ClientCreatePage() {
           </p>
 
           <div className="space-y-3">
-            {form.contacts.map((c, index) => {
+            {contacts.map((c, index) => {
               const open = editingContactId === c.id
               return (
                 <div
@@ -376,11 +365,15 @@ export function ClientCreatePage() {
                         <input
                           id={`contact-name-${c.id}`}
                           required
-                          value={c.name}
-                          onChange={(e) => updateContact(c.id, { name: e.target.value })}
+                          {...form.register(`contacts.${index}.name`)}
                           className={fieldClass}
                           placeholder="Sarah Jenkins"
                         />
+                        {form.formState.errors.contacts?.[index]?.name && (
+                          <p className="text-[11px] text-error mt-1">
+                            {form.formState.errors.contacts[index].name.message}
+                          </p>
+                        )}
                       </div>
                       <div>
                         <label className={labelClass} htmlFor={`contact-desig-${c.id}`}>
@@ -388,8 +381,7 @@ export function ClientCreatePage() {
                         </label>
                         <input
                           id={`contact-desig-${c.id}`}
-                          value={c.designation}
-                          onChange={(e) => updateContact(c.id, { designation: e.target.value })}
+                          {...form.register(`contacts.${index}.designation`)}
                           className={fieldClass}
                           placeholder="Head of Procurement"
                         />
@@ -401,10 +393,14 @@ export function ClientCreatePage() {
                         <input
                           id={`contact-email-${c.id}`}
                           type="email"
-                          value={c.email}
-                          onChange={(e) => updateContact(c.id, { email: e.target.value })}
+                          {...form.register(`contacts.${index}.email`)}
                           className={fieldClass}
                         />
+                        {form.formState.errors.contacts?.[index]?.email && (
+                          <p className="text-[11px] text-error mt-1">
+                            {form.formState.errors.contacts[index].email.message}
+                          </p>
+                        )}
                       </div>
                       <div>
                         <label className={labelClass} htmlFor={`contact-phone-${c.id}`}>
@@ -412,12 +408,11 @@ export function ClientCreatePage() {
                         </label>
                         <input
                           id={`contact-phone-${c.id}`}
-                          value={c.phone}
-                          onChange={(e) => updateContact(c.id, { phone: e.target.value })}
+                          {...form.register(`contacts.${index}.phone`)}
                           className={fieldClass}
                         />
                       </div>
-                      {form.contacts.length > 1 && (
+                      {contacts.length > 1 && (
                         <div className="md:col-span-2 flex justify-end">
                           <Button type="button" variant="ghost" size="sm" onClick={() => removeContact(c.id)}>
                             Remove contact
@@ -440,8 +435,7 @@ export function ClientCreatePage() {
           <input
             id="chatLink"
             type="url"
-            value={form.chatLink}
-            onChange={(e) => patchForm({ chatLink: e.target.value })}
+            {...form.register('chatLink')}
             className={fieldClass}
             placeholder="https://chat.bytevon.app/c/..."
             aria-label="Chat link"

@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
@@ -16,6 +16,7 @@ import {
 import { useCaseStudiesList } from '../hooks/use-case-studies-list'
 import type { CaseStudy, CaseStudyStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { salesRoutes } from '../routes'
 import { caseStudyStatusStyles, caseStudyStatusDot } from '../schemas/cssTokens'
 import { CaseStudyStatusValues } from '../schemas/enums'
@@ -37,7 +38,7 @@ function CaseStudyQuickContent({ cs }: { cs: CaseStudy }) {
             icon="flag"
             label="Status"
             value={
-              <span className={statusStyles[cs.status]}>{cs.status}</span>
+              <span className={caseStudyStatusStyles[cs.status]}>{cs.status}</span>
             }
           />
         </div>
@@ -57,6 +58,7 @@ function CaseStudyQuickContent({ cs }: { cs: CaseStudy }) {
 }
 
 export function CaseStudiesListPage() {
+  const navigate = useNavigate()
   const { openPanel } = useQuickOverview()
   const {
     filtered,
@@ -216,6 +218,10 @@ export function CaseStudiesListPage() {
                   type="button"
                   className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-label-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors"
                   title="Edit case study"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    safeNavigate(navigate, { to: salesRoutes.caseStudies })
+                  }}
                 >
                   <span className="material-symbols-outlined text-[18px]">edit</span>
                   Edit
@@ -224,6 +230,10 @@ export function CaseStudiesListPage() {
                   type="button"
                   className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-label-sm font-medium text-on-surface-variant hover:bg-surface-container-low hover:text-secondary transition-colors ml-auto"
                   title="Share case study"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    navigator.share?.({ title: cs.title, text: cs.summary, url: window.location.href }).catch(() => {})
+                  }}
                 >
                   <span className="material-symbols-outlined text-[18px]">share</span>
                   Share

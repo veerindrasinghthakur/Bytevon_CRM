@@ -4,40 +4,13 @@ import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { StatusDot } from '@/shared/components/ui/StatusDot'
 import { useLead, useSalesActivities } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
 import type { PipelineStage, LeadPriority, RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 import { stageStyles, priorityStyles, activityIcon } from '../schemas/cssTokens'
-
-const STAGES: PipelineStage[] = [
-  'New',
-  'Contacted',
-  'Qualified',
-  'Proposal',
-  'Negotiation',
-  'Won',
-  'Lost',
-]
-
-function StatusDot({ status }: { status: RecordStatus }) {
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1.5 text-[11px] font-semibold',
-        status === 'Active' ? 'text-emerald-700' : 'text-slate-500',
-      )}
-    >
-      <span
-        className={cn(
-          'w-2.5 h-2.5 rounded-full',
-          status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400',
-        )}
-      />
-      {status}
-    </span>
-  )
-}
+import { PipelineStageValues } from '../schemas/enums'
 
 function formatBudget(n: number) {
   return new Intl.NumberFormat('en-US', {
@@ -68,7 +41,7 @@ export function LeadDetailPage() {
     )
   }
 
-  const currentIdx = STAGES.indexOf(lead.stage)
+  const currentIdx = PipelineStageValues.indexOf(lead.stage)
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -134,7 +107,7 @@ export function LeadDetailPage() {
       <div className="bv-surface p-5">
         <p className="text-[10px] font-bold uppercase text-on-surface-variant mb-4">Pipeline stage</p>
         <div className="flex flex-wrap items-center gap-2">
-          {STAGES.filter((s) => s !== 'Lost').map((stage, i) => {
+          {PipelineStageValues.filter((s) => s !== 'Lost').map((stage, i) => {
             const done = currentIdx >= i && lead.stage !== 'Lost'
             const active = lead.stage === stage
             return (
@@ -151,7 +124,7 @@ export function LeadDetailPage() {
                 >
                   {stage}
                 </span>
-                {i < STAGES.filter((s) => s !== 'Lost').length - 1 && (
+                {i < PipelineStageValues.filter((s) => s !== 'Lost').length - 1 && (
                   <span className="material-symbols-outlined text-on-surface-variant text-sm">
                     chevron_right
                   </span>

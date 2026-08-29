@@ -1,32 +1,15 @@
-import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
+import { Button } from '@/shared/components/ui/Button'
+import { Link } from '@tanstack/react-router'
 import type { PipelineStage } from '../types'
 import { cn } from '@/shared/lib/cn'
 import { salesRoutes } from '../routes'
 import { useSalesDashboardMetrics } from '../hooks/use-sales'
+import { PipelineStageValues } from '../schemas/enums'
+import { stageColors } from '../schemas/cssTokens'
 
 export function SalesAnalyticsPage() {
   const { data: metrics, isLoading, isError } = useSalesDashboardMetrics()
-
-  const stages: PipelineStage[] = [
-    'New',
-    'Contacted',
-    'Qualified',
-    'Proposal',
-    'Negotiation',
-    'Won',
-    'Lost',
-  ]
-
-  const stageColors: Record<PipelineStage, string> = {
-    New: 'bg-slate-400',
-    Contacted: 'bg-blue-400',
-    Qualified: 'bg-blue-600',
-    Proposal: 'bg-orange-400',
-    Negotiation: 'bg-amber-500',
-    Won: 'bg-emerald-500',
-    Lost: 'bg-red-400',
-  }
 
   if (isLoading) {
     return (
@@ -48,9 +31,9 @@ export function SalesAnalyticsPage() {
     )
   }
 
-  const pipelineValue = metrics?.find((m) => m.id === 'pipeline')?.value || '—'
-  const totalLeads = metrics?.find((m) => m.id === 'total-leads')?.value || '—'
-  const activeClients = metrics?.find((m) => m.id === 'active-clients')?.value || '—'
+  const pipelineValue = metrics?.find((m) => m.id === 'pipeline')?.value ?? '—'
+  const totalLeads = metrics?.find((m) => m.id === 'total-leads')?.value ?? '—'
+  const activeClients = metrics?.find((m) => m.id === 'active-clients')?.value ?? '—'
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -109,12 +92,12 @@ export function SalesAnalyticsPage() {
         <section className="bv-surface card-hover p-6">
           <h2 className="text-title-md font-semibold mb-5">Pipeline by stage</h2>
           <div className="space-y-3">
-            {stages.map((stage) => {
+            {PipelineStageValues.map((stage) => {
               const stageMetric = metrics?.find((m) => m.id === stage.toLowerCase().replace(/\s/g, '-'))
               const count = stageMetric ? parseInt(stageMetric.value) : 0
-              const maxCount = Math.max(...stages.map((s) => {
+              const maxCount = Math.max(...PipelineStageValues.map((s) => {
                 const m = metrics?.find((m) => m.id === s.toLowerCase().replace(/\s/g, '-'))
-                return parseInt(m?.value) || 0
+                return parseInt(m?.value ?? '0') || 0
               }), 1)
               return (
                 <div key={stage}>
@@ -124,7 +107,7 @@ export function SalesAnalyticsPage() {
                   </div>
                   <div className="h-2.5 rounded-full bg-surface-container overflow-hidden">
                     <div
-                      className={cn('h-full rounded-full transition-all', stageColors[stage])}
+                      className={cn('h-full rounded-full transition-all', stageColors[stage] ?? 'bg-secondary')}
                       style={{ width: `${(count / maxCount) * 100}%` }}
                     />
                   </div>

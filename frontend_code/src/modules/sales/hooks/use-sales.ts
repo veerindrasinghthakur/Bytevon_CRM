@@ -36,6 +36,13 @@ export type ClientListParams = {
   pageSize?: number
 }
 
+export type CaseStudyListParams = {
+  search?: string
+  status?: string
+  page?: number
+  pageSize?: number
+}
+
 function findLeadInCache(
   qc: ReturnType<typeof useQueryClient>,
   id: string,
@@ -140,8 +147,8 @@ export function useCreateLead() {
 
 export function useUpdateLead() {
   const qc = useQueryClient()
-  return useMutation({
-    mutationFn: ({ id, patch }: { id: string; patch: Partial<Lead> }) => updateLead(id, patch),
+  return useMutation<Lead, Error, { id: string; patch: Partial<Lead> }, { previousLead?: Lead }>({
+    mutationFn: ({ id, patch }) => updateLead(id, patch),
     onMutate: async ({ id, patch }) => {
       await qc.cancelQueries({ queryKey: queryKeys.sales.leads.all })
       const previousLead = qc.getQueryData<Lead>(queryKeys.sales.leads.detail(id))
@@ -206,8 +213,8 @@ export function useCreateClient() {
 
 export function useUpdateClient() {
   const qc = useQueryClient()
-  return useMutation({
-    mutationFn: ({ id, patch }: { id: string; patch: Partial<Client> }) => updateClient(id, patch),
+  return useMutation<Client, Error, { id: string; patch: Partial<Client> }, { previousClient?: Client }>({
+    mutationFn: ({ id, patch }) => updateClient(id, patch),
     onMutate: async ({ id, patch }) => {
       await qc.cancelQueries({ queryKey: queryKeys.sales.clients.all })
       const previousClient = qc.getQueryData<Client>(queryKeys.sales.clients.detail(id))
@@ -238,6 +245,22 @@ export function useCaseStudies() {
     queryFn: listCaseStudies,
     staleTime: 30_000,
     refetchOnWindowFocus: false,
+  })
+}
+
+export function useCaseStudiesQuery(filters?: CaseStudyListParams) {
+  const params: CaseStudyListParams = {
+    search: filters?.search || undefined,
+    status: filters?.status && filters.status !== 'All' ? filters.status : undefined,
+    page: filters?.page,
+    pageSize: filters?.pageSize,
+  }
+  return useQuery({
+    queryKey: queryKeys.sales.caseStudies.list(params),
+    queryFn: () => listCaseStudies(params),
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+    placeholderData: (prev) => prev,
   })
 }
 

@@ -1,27 +1,8 @@
 import type { PipelineStage, ActivityType } from '../types'
 import { useLeadsQuery } from './use-sales'
 import { useSalesActivities } from './use-sales'
-
-const funnelStages: PipelineStage[] = [
-  'New',
-  'Contacted',
-  'Qualified',
-  'Proposal',
-  'Negotiation',
-  'Won',
-]
-
-export const typeIcon: Record<ActivityType, string> = {
-  'Lead Created': 'person_add',
-  'Lead Won': 'emoji_events',
-  'Meeting Scheduled': 'event',
-  'Email Sent': 'mail',
-  Call: 'call',
-  'Document Viewed': 'description',
-  'System Alert': 'warning',
-  'Contract Renewed': 'autorenew',
-  'Proposal Sent': 'send',
-}
+import { PipelineStageValues } from '../schemas/enums'
+import { typeIcon } from '../schemas/cssTokens'
 
 export function useSalesDashboard() {
   const { data: leads = [] } = useLeadsQuery()

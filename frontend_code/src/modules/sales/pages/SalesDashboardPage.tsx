@@ -1,25 +1,13 @@
 import { useNavigate } from '@tanstack/react-router'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { StatusDot } from '@/shared/components/ui/StatusDot'
 import { useSalesDashboard } from '../hooks/use-sales-dashboard'
 import { salesRoutes } from '../routes'
-import type { PipelineStage, RecordStatus } from '../types'
+import type { RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
-import { stageStyles, stageColors, activityIcon } from '../schemas/cssTokens'
-
-function StatusDot({ status }: { status: RecordStatus }) {
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1.5 text-[11px] font-semibold',
-        status === 'Active' ? 'text-emerald-700' : 'text-slate-500'
-      )}
-    >
-      <span className={cn('w-2.5 h-2.5 rounded-full', status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400')} />
-      {status}
-    </span>
-  )
-}
+import { stageStyles, stageColors, typeIcon } from '../schemas/cssTokens'
 
 function formatBudget(n: number) {
   return new Intl.NumberFormat('en-US', {
@@ -44,7 +32,6 @@ export function SalesDashboardPage() {
     activityGroups,
     wonCount,
     avgDealSize,
-    typeIcon,
   } = useSalesDashboard()
 
   return (
@@ -54,10 +41,10 @@ export function SalesDashboardPage() {
         description="Pipeline health, revenue, funnel, activity, and top performers."
         actions={
           <div className="flex items-center gap-3 flex-wrap">
-            <Button variant="outline" leftIcon={<span className="material-symbols-outlined text-lg">person_search</span>} onClick={() => navigate({ to: '/sales' })}>
+            <Button variant="outline" leftIcon={<span className="material-symbols-outlined text-lg">person_search</span>} onClick={() => safeNavigate(navigate, { to: salesRoutes.leads })}>
               View Leads
             </Button>
-            <Button variant="primary" leftIcon={<span className="material-symbols-outlined text-lg">add</span>} onClick={() => navigate({ to: salesRoutes.leadNew })}>
+            <Button variant="primary" leftIcon={<span className="material-symbols-outlined text-lg">add</span>} onClick={() => safeNavigate(navigate, { to: salesRoutes.leadNew })}>
               New Lead
             </Button>
           </div>
@@ -76,9 +63,9 @@ export function SalesDashboardPage() {
                   className={cn(
                     'text-[10px] font-bold px-2 py-0.5 rounded',
                     m.changeType === 'positive'
-                      ? 'text-emerald-700 bg-emerald-50'
+                      ? 'text-emerald-600 bg-emerald-50'
                       : m.changeType === 'negative'
-                        ? 'text-red-700 bg-red-50'
+                        ? 'text-red-600 bg-red-50'
                         : 'text-on-surface-variant bg-surface-container'
                   )}
                 >
@@ -114,7 +101,7 @@ export function SalesDashboardPage() {
             </div>
             <div className="p-4 rounded-xl bg-surface-container-low">
               <p className="text-xs text-on-surface-variant font-medium">Won (sample)</p>
-              <p className="text-xl font-bold mt-1 text-emerald-700">{wonCount}</p>
+              <p className="text-xl font-bold mt-1 text-emerald-600">{wonCount}</p>
             </div>
           </div>
         </section>
@@ -187,7 +174,7 @@ export function SalesDashboardPage() {
         <div className="xl:col-span-2 bv-surface overflow-hidden">
           <div className="px-5 py-4 border-b border-outline-variant flex items-center justify-between">
             <h2 className="text-title-md font-semibold text-on-background">Recent Leads</h2>
-            <button type="button" className="text-label-sm text-secondary font-semibold hover:underline" onClick={() => navigate({ to: salesRoutes.root })}>
+            <button type="button" className="text-label-sm text-secondary font-semibold hover:underline" onClick={() => safeNavigate(navigate, { to: salesRoutes.root })}>
               View all
             </button>
           </div>
@@ -206,7 +193,7 @@ export function SalesDashboardPage() {
                   <tr
                     key={lead.id}
                     className="zebra-row cursor-pointer"
-                    onClick={() => navigate({ to: salesRoutes.leadDetail(lead.id), params: { leadId: lead.id } })}
+                    onClick={() => safeNavigate(navigate, { to: salesRoutes.leadDetail(lead.id), params: { leadId: lead.id } })}
                   >
                     <td className="px-4 py-3">
                       <p className="font-semibold text-on-surface">{lead.contactName}</p>
@@ -262,7 +249,7 @@ export function SalesDashboardPage() {
       <div className="bv-surface overflow-hidden">
         <div className="px-5 py-4 border-b border-outline-variant flex items-center justify-between">
           <h2 className="text-title-md font-semibold text-on-background">Top Clients</h2>
-          <button type="button" className="text-label-sm text-secondary font-semibold hover:underline" onClick={() => navigate({ to: salesRoutes.clients })}>
+          <button type="button" className="text-label-sm text-secondary font-semibold hover:underline" onClick={() => safeNavigate(navigate, { to: salesRoutes.clients })}>
             View all
           </button>
         </div>
@@ -271,7 +258,7 @@ export function SalesDashboardPage() {
             <div
               key={c.id}
               className="p-4 rounded-xl border border-outline-variant hover:border-secondary card-hover cursor-pointer"
-              onClick={() => navigate({ to: salesRoutes.clientDetail(c.id), params: { clientId: c.id } })}
+              onClick={() => safeNavigate(navigate, { to: salesRoutes.clientDetail(c.id), params: { clientId: c.id } })}
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center text-sm font-bold">

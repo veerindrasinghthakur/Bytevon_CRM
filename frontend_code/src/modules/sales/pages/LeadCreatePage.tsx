@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
@@ -10,13 +12,8 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getLeadFilterOptions, listSalesRepresentatives } from '../api/sales'
 import { useCreateLead, useLead, useUpdateLead } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
-import {
-  emptyLeadForm,
-  type LeadForm,
-  type LeadPriority,
-  type PipelineStage,
-  type RecordStatus,
-} from '../types'
+import { leadFormSchema, type LeadFormSchemaInput } from '../schemas/lead-form'
+import type { LeadPriority, PipelineStage, RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 
 const fieldClass =
@@ -45,14 +42,31 @@ export function LeadCreatePage() {
   const updateMut = useUpdateLead()
   const existing = existingQuery.data
 
-  const [form, setForm] = useState<LeadForm>(emptyLeadForm)
-  const [error, setError] = useState('')
-
-  const patchForm = (patch: Partial<LeadForm>) => setForm((prev) => ({ ...prev, ...patch }))
+  const form = useForm<LeadFormSchemaInput>({
+    resolver: zodResolver(leadFormSchema),
+    defaultValues: {
+      title: '',
+      contactName: '',
+      contactTitle: '',
+      company: '',
+      industry: '',
+      email: '',
+      phone: '',
+      source: 'LinkedIn',
+      priority: 'Medium' as LeadPriority,
+      status: 'Active' as RecordStatus,
+      stage: 'New' as PipelineStage,
+      budget: '',
+      date: '',
+      assignedEmploymentId: '',
+      notes: '',
+      chatLink: '',
+    },
+  })
 
   useEffect(() => {
     if (!existing) return
-    setForm({
+    form.reset({
       title: existing.title ?? '',
       contactName: existing.contactName ?? '',
       contactTitle: existing.contactTitle ?? '',
@@ -70,19 +84,17 @@ export function LeadCreatePage() {
       notes: existing.notes ?? '',
       chatLink: existing.chatLink ?? '',
     })
-  }, [existing])
+  }, [existing, form])
 
   useEffect(() => {
     if (!existing?.assignedTo || !repsQuery.data?.length) return
-    setForm((prev) => {
-      if (prev.assignedEmploymentId) return prev
-      const match = repsQuery.data!.find(
-        (r) => r.name.toLowerCase() === existing.assignedTo!.toLowerCase(),
-      )
-      if (!match) return prev
-      return { ...prev, assignedEmploymentId: String(match.employmentId) }
-    })
-  }, [existing, repsQuery.data])
+    const match = repsQuery.data!.find(
+      (r) => r.name.toLowerCase() === existing.assignedTo!.toLowerCase(),
+    )
+    if (match) {
+      form.setValue('assignedEmploymentId', String(match.employmentId))
+    }
+  }, [existing, repsQuery.data, form])
 
   const stages = filterOptionsQuery.data?.stages ?? []
   const priorities = filterOptionsQuery.data?.priorities ?? []
@@ -102,36 +114,30 @@ export function LeadCreatePage() {
 
   const saving = createMut.isPending || updateMut.isPending
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    if (!form.title.trim() || !form.contactName.trim()) {
-      setError('Title and contact name are required.')
-      return
-    }
+  const onSubmit = async (data: LeadFormSchemaInput) => {
     const selectedRep = (repsQuery.data ?? []).find(
-      (r) => String(r.employmentId) === form.assignedEmploymentId,
+      (r) => String(r.employmentId) === data.assignedEmploymentId,
     )
     const payload = {
-      title: form.title.trim(),
-      contactName: form.contactName.trim(),
-      contactTitle: form.contactTitle.trim() || undefined,
-      company: form.company.trim(),
-      industry: form.industry.trim() || undefined,
-      email: form.email.trim() || undefined,
-      phone: form.phone.trim() || undefined,
-      source: form.source,
-      priority: form.priority,
-      status: form.status,
-      stage: form.stage,
-      budget: form.budget ? Number(form.budget) : 0,
-      date: form.date || undefined,
-      assignedEmploymentId: form.assignedEmploymentId
-        ? Number(form.assignedEmploymentId)
+      title: data.title.trim(),
+      contactName: data.contactName.trim(),
+      contactTitle: data.contactTitle.trim() || undefined,
+      company: data.company.trim(),
+      industry: data.industry.trim() || undefined,
+      email: data.email.trim() || undefined,
+      phone: data.phone.trim() || undefined,
+      source: data.source,
+      priority: data.priority,
+      status: data.status,
+      stage: data.stage,
+      budget: data.budget ? Number(data.budget) : 0,
+      date: data.date || undefined,
+      assignedEmploymentId: data.assignedEmploymentId
+        ? Number(data.assignedEmploymentId)
         : null,
       assignedTo: selectedRep?.name,
-      notes: form.notes.trim() || undefined,
-      chatLink: form.chatLink.trim() || undefined,
+      notes: data.notes.trim() || undefined,
+      chatLink: data.chatLink.trim() || undefined,
     }
     try {
       if (isEdit && params.leadId) {
@@ -141,7 +147,7 @@ export function LeadCreatePage() {
       }
       safeNavigate(navigate, { to: salesRoutes.leads })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Save failed')
+      form.setError('root', { message: err instanceof Error ? err.message : 'Save failed' })
     }
   }
 
@@ -170,16 +176,7 @@ export function LeadCreatePage() {
         }
       />
 
-      {error && (
-        <div
-          className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error"
-          role="alert"
-        >
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5 max-w-4xl">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 max-w-4xl">
         <section className="bv-surface p-6 space-y-4">
           <h2 className="text-title-md font-semibold text-on-background flex items-center gap-2">
             <span className="material-symbols-outlined text-secondary">badge</span>
@@ -193,11 +190,13 @@ export function LeadCreatePage() {
               <input
                 id="title"
                 required
-                value={form.title}
-                onChange={(e) => patchForm({ title: e.target.value })}
+                {...form.register('title')}
                 className={fieldClass}
                 placeholder="e.g. TechNexus ERP Migration"
               />
+              {form.formState.errors.title && (
+                <p className="text-[11px] text-error mt-1">{form.formState.errors.title.message}</p>
+              )}
             </div>
             <div>
               <label className={labelClass} htmlFor="contactName">
@@ -206,11 +205,13 @@ export function LeadCreatePage() {
               <input
                 id="contactName"
                 required
-                value={form.contactName}
-                onChange={(e) => patchForm({ contactName: e.target.value })}
+                {...form.register('contactName')}
                 className={fieldClass}
                 placeholder="Sarah Miller"
               />
+              {form.formState.errors.contactName && (
+                <p className="text-[11px] text-error mt-1">{form.formState.errors.contactName.message}</p>
+              )}
             </div>
             <div>
               <label className={labelClass} htmlFor="contactTitle">
@@ -218,8 +219,7 @@ export function LeadCreatePage() {
               </label>
               <input
                 id="contactTitle"
-                value={form.contactTitle}
-                onChange={(e) => patchForm({ contactTitle: e.target.value })}
+                {...form.register('contactTitle')}
                 className={fieldClass}
                 placeholder="VP of Growth"
               />
@@ -230,8 +230,7 @@ export function LeadCreatePage() {
               </label>
               <input
                 id="company"
-                value={form.company}
-                onChange={(e) => patchForm({ company: e.target.value })}
+                {...form.register('company')}
                 className={fieldClass}
                 placeholder="TechNexus Corp. (optional — client created on WON)"
               />
@@ -245,8 +244,7 @@ export function LeadCreatePage() {
               </label>
               <input
                 id="industry"
-                value={form.industry}
-                onChange={(e) => patchForm({ industry: e.target.value })}
+                {...form.register('industry')}
                 className={fieldClass}
                 placeholder="SaaS / Technology"
               />
@@ -258,11 +256,13 @@ export function LeadCreatePage() {
               <input
                 id="email"
                 type="email"
-                value={form.email}
-                onChange={(e) => patchForm({ email: e.target.value })}
+                {...form.register('email')}
                 className={fieldClass}
                 placeholder="s.miller@technexus.com"
               />
+              {form.formState.errors.email && (
+                <p className="text-[11px] text-error mt-1">{form.formState.errors.email.message}</p>
+              )}
             </div>
             <div>
               <label className={labelClass} htmlFor="phone">
@@ -270,8 +270,7 @@ export function LeadCreatePage() {
               </label>
               <input
                 id="phone"
-                value={form.phone}
-                onChange={(e) => patchForm({ phone: e.target.value })}
+                {...form.register('phone')}
                 className={fieldClass}
                 placeholder="+1 (555) 012-3456"
               />
@@ -287,29 +286,25 @@ export function LeadCreatePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Select
               label="Stage"
-              value={form.stage}
-              onChange={(v) => patchForm({ stage: v as PipelineStage })}
+              {...form.register('stage')}
               options={stages.map((s) => ({ value: s, label: s }))}
               minWidthClass="w-full"
             />
             <Select
               label="Priority"
-              value={form.priority}
-              onChange={(v) => patchForm({ priority: v as LeadPriority })}
+              {...form.register('priority')}
               options={priorities.map((p) => ({ value: p, label: p }))}
               minWidthClass="w-full"
             />
             <Select
               label="Status"
-              value={form.status}
-              onChange={(v) => patchForm({ status: v as RecordStatus })}
+              {...form.register('status')}
               options={statuses.map((s) => ({ value: s, label: s }))}
               minWidthClass="w-full"
             />
             <Select
               label="Source"
-              value={form.source}
-              onChange={(v) => patchForm({ source: v })}
+              {...form.register('source')}
               options={sources.map((s) => ({ value: s, label: s }))}
               minWidthClass="w-full"
             />
@@ -330,8 +325,7 @@ export function LeadCreatePage() {
                 id="budget"
                 type="number"
                 min={0}
-                value={form.budget}
-                onChange={(e) => patchForm({ budget: e.target.value })}
+                {...form.register('budget')}
                 className={fieldClass}
                 placeholder="120000"
               />
@@ -343,16 +337,14 @@ export function LeadCreatePage() {
               <input
                 id="date"
                 type="date"
-                value={form.date}
-                onChange={(e) => patchForm({ date: e.target.value })}
+                {...form.register('date')}
                 className={fieldClass}
               />
             </div>
             <div>
               <Select
                 label="Assigned sales representative"
-                value={form.assignedEmploymentId}
-                onChange={(v) => patchForm({ assignedEmploymentId: v })}
+                {...form.register('assignedEmploymentId')}
                 placeholder="Select Sales employee"
                 options={repOptions}
                 minWidthClass="w-full"
@@ -376,8 +368,7 @@ export function LeadCreatePage() {
             <input
               id="chatLink"
               type="url"
-              value={form.chatLink}
-              onChange={(e) => patchForm({ chatLink: e.target.value })}
+              {...form.register('chatLink')}
               className={fieldClass}
               placeholder="https://chat.bytevon.app/c/..."
             />
@@ -392,8 +383,7 @@ export function LeadCreatePage() {
           <textarea
             id="notes"
             rows={5}
-            value={form.notes}
-            onChange={(e) => patchForm({ notes: e.target.value })}
+            {...form.register('notes')}
             className={cn(fieldClass, 'resize-y')}
             placeholder="Discovery notes, internal context, next steps..."
             aria-label="Notes"
