@@ -318,6 +318,27 @@ export interface MetricCardProps {
   className?: string
 }
 
+export interface KpiCardProps {
+  icon: string
+  iconClass: string
+  label: string
+  value: number | string
+  trend: string
+  trendUp?: boolean
+  trendClass?: string
+  onClick?: () => void
+  className?: string
+}
+
+export interface TimelineStepProps {
+  title: string
+  body: string
+  time?: string
+  done?: boolean
+  active?: boolean
+  muted?: boolean
+}
+
 export interface PaginationProps {
   page: number
   pageSize?: number

@@ -40,6 +40,10 @@ export const queryKeys = {
       attendance: () => [...queryKeys.admin.settings.all, 'attendance'] as const,
       leaveAccrual: () => [...queryKeys.admin.settings.all, 'leave-accrual'] as const,
     },
+    offices: {
+      all: ['admin', 'offices'] as const,
+      headOptions: () => [...queryKeys.admin.offices.all, 'head-options'] as const,
+    },
   },
   organization: {
     locations: {
@@ -164,6 +168,11 @@ export const queryKeys = {
     myRequests: (filters?: unknown) => ['approvals', 'my-requests', filters ?? {}] as const,
     detail: (id: number) => ['approvals', 'detail', id] as const,
   },
+  dashboard: {
+    executive: () => ['dashboard', 'executive'] as const,
+    employee: () => ['dashboard', 'employee'] as const,
+    payroll: () => ['dashboard', 'payroll'] as const,
+  },
   myWork: {
     attendance: {
       all: ['my-work', 'attendance'] as const,
@@ -242,4 +251,5 @@ export const invalidate = {
   adminRbac: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.admin.rbac.all }),
   adminSecurity: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.admin.security.all }),
   adminLeave: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.admin.leave.all }),
+  dashboard: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.dashboard.executive() }),
 }
