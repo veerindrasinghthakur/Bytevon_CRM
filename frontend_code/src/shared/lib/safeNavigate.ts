@@ -4,6 +4,7 @@
  * Typed `navigate({ to })` then fails with MakeRequiredSearchParams / ParamsReducerFn.
  *
  * Use this helper for path-only navigations so the whole module stays clean.
+ * Always injects `search: {}` unless the caller provides an explicit search object.
  */
 export type NavigateFn = (opts: never) => unknown
 
@@ -16,5 +17,5 @@ export type SafeNavigateOpts = {
 }
 
 export function safeNavigate(navigate: NavigateFn, opts: SafeNavigateOpts): void {
-  void navigate(opts as never)
+  void navigate({ search: {}, ...opts } as never)
 }
