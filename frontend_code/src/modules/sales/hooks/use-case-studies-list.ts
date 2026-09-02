@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useListControls } from '@/shared/hooks/useListControls'
-import { useCaseStudies } from './use-sales'
+import { useCaseStudiesQuery } from './use-sales'
 
 const FILTER_DEFAULTS = {
   status: 'All',
@@ -11,28 +11,23 @@ export function useCaseStudiesList() {
     filterDefaults: FILTER_DEFAULTS,
   })
 
-  const { data, isLoading, isFetching, isError, refetch } = useCaseStudies()
+  const { data, isLoading, isFetching, isError, refetch } = useCaseStudiesQuery({
+    search: controls.debouncedSearch.trim() || undefined,
+    status: controls.filters.status,
+    page: controls.page,
+    pageSize: controls.pageSize,
+  })
 
-  const items = data?.items ?? []
-  const metrics = data?.metrics ?? []
-
-  const filtered = useMemo(() => {
-    const q = controls.debouncedSearch.trim().toLowerCase()
-    return items.filter((cs) => {
-      const matchSearch =
-        !q ||
-        cs.title.toLowerCase().includes(q) ||
-        cs.customer.toLowerCase().includes(q) ||
-        cs.industry.toLowerCase().includes(q)
-      const matchStatus =
-        controls.filters.status === 'All' || cs.status === controls.filters.status
-      return matchSearch && matchStatus
-    })
-  }, [items, controls.debouncedSearch, controls.filters.status])
+  const pageItems = data?.items ?? []
+  const totalCount = data?.total ?? 0
+  const metrics = useMemo(() => data?.metrics ?? [], [data?.metrics])
 
   return {
-    items,
-    filtered,
+    items: pageItems,
+    /** Current page rows (server-filtered + paginated) */
+    filtered: pageItems,
+    pageItems,
+    totalCount,
     metrics,
     search: controls.search,
     setSearch: controls.setSearch,
@@ -40,6 +35,9 @@ export function useCaseStudiesList() {
     setStatusFilter: (v: string) => controls.setFilter('status', v),
     filtersActive: controls.anyActive,
     resetFilters: controls.resetAll,
+    page: controls.page,
+    setPage: controls.setPage,
+    pageSize: controls.pageSize,
     isLoading,
     isFetching,
     isError,
