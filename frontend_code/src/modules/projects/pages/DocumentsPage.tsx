@@ -6,18 +6,20 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { UploadButton } from '@/shared/components/forms/UploadButton'
 import { RefreshButton } from '@/shared/components/ui/RefreshButton'
 import { FilePreviewModal, type FilePreviewItem } from '@/shared/components/documents/FilePreviewModal'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import {
   QuickSection,
   QuickStat,
   QuickStatGrid,
-  QuickMetaTile,
   QuickRelatedRow,
   QuickPersonRow,
 } from '@/shared/components/layout/QuickOverviewParts'
 import { downloadFile } from '@/shared/lib/download-file'
 import { ResourceName } from '@/shared/schema'
 import { useDocuments, useUploadDocument } from '../hooks/use-documents'
+import type { ProjectDocument } from '../types'
 
 function iconForMime(type: string, name: string) {
   const t = type.toLowerCase()
@@ -28,19 +30,7 @@ function iconForMime(type: string, name: string) {
   return 'attach_file'
 }
 
-interface DocRow {
-  id: string
-  name: string
-  type: string
-  sizeLabel: string
-  uploadedBy: string
-  uploadedAt: string
-  url?: string
-  referenceType?: string
-  referenceId?: number
-}
-
-function DocumentQuickContent({ d }: { d: DocRow }) {
+function DocumentQuickContent({ d }: { d: ProjectDocument }) {
   return (
     <>
       <QuickSection title="File">
@@ -105,7 +95,7 @@ export function DocumentsPage() {
     })
   }
 
-  const openDocOverview = (d: DocRow) => {
+  const openDocOverview = (d: ProjectDocument) => {
     openPanel({
       title: d.name,
       subtitle: `${d.sizeLabel} · ${d.type}`,
@@ -162,6 +152,7 @@ export function DocumentsPage() {
           value={typeFilter}
           onChange={setTypeFilter}
           placeholder="All types"
+          aria-label="Filter by document type"
           options={[
             { value: '', label: 'All types' },
             { value: 'pdf', label: 'PDF' },
@@ -175,19 +166,22 @@ export function DocumentsPage() {
         <div className="bv-surface p-12 text-center text-on-surface-variant">Loading documents…</div>
       )}
       {isError && (
-        <div className="bv-surface p-8 text-center">
-          <p className="text-error mb-3">Failed to load documents.</p>
-          <Button variant="outline" onClick={() => void refetch()}>
-            Retry
-          </Button>
-        </div>
+        <ErrorState
+          title="Failed to load documents"
+          description="We could not load documents. Check your connection and try again."
+          onRetry={() => void refetch()}
+        />
       )}
       {!isLoading && !isError && items.length === 0 && (
-        <div className="bv-surface p-12 text-center space-y-2">
-          <span className="material-symbols-outlined text-4xl text-on-surface-variant">folder_off</span>
-          <p className="font-semibold">No documents</p>
-          <UploadButton label="Upload first file" onFiles={(files) => void uploadMutation.mutateAsync(files)} />
-        </div>
+        <EmptyState
+          icon="folder_off"
+          title="No documents"
+          description="Upload your first file to get started."
+          actionLabel="Upload"
+          onAction={() => {
+            /* UploadButton handles file pick elsewhere */
+          }}
+        />
       )}
 
       {!isLoading && items.length > 0 && (

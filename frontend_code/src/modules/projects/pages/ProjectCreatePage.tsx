@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate, Link } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
+import { Select } from '@/shared/components/ui/Select'
 import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { createProjectSchema, type CreateProjectInput } from '../schemas/project'
@@ -23,6 +24,8 @@ export function ProjectCreatePage() {
 
   const [assignMode, setAssignMode] = useState<AssignMode>('later')
   const [selectedTeam, setSelectedTeam] = useState<EntityOption | null>(null)
+  const [phase, setPhase] = useState(ProjectPhaseOptions[0]?.value ?? 'DISCOVERY')
+  const [priority, setPriority] = useState(ProjectPriorityOptions[1]?.value ?? 'MEDIUM')
 
   const teamOptions: EntityOption[] = useMemo(
     () =>
@@ -53,7 +56,7 @@ export function ProjectCreatePage() {
 
   const goProject = (id: number) =>
     safeNavigate(navigate, {
-      to: projectRoutes.projectDetail(id),
+      to: projectRoutes.projectDetailPath,
       params: { projectId: String(id) },
     })
 
@@ -129,7 +132,7 @@ export function ProjectCreatePage() {
                     id="name"
                     {...register('name')}
                     onKeyDown={(e) => handleEnterAdvance(e)}
-                    className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue focus:border-electric-blue outline-none bg-surface-container-lowest text-on-background"
+                    className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none bg-surface-container-lowest text-on-background"
                     placeholder="e.g., Nexus Platform Migration"
                   />
                   {errors.name && <p className="text-body-sm text-error">{errors.name.message}</p>}
@@ -146,7 +149,7 @@ export function ProjectCreatePage() {
                       id="clientName"
                       {...register('clientName')}
                       onKeyDown={(e) => handleEnterAdvance(e)}
-                      className="w-full pl-10 pr-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue focus:border-electric-blue outline-none bg-surface-container-lowest text-on-background"
+                      className="w-full pl-10 pr-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none bg-surface-container-lowest text-on-background"
                       placeholder="Search and select client..."
                     />
                   </div>
@@ -160,7 +163,7 @@ export function ProjectCreatePage() {
                     rows={3}
                     {...register('description')}
                     onKeyDown={(e) => handleEnterAdvance(e)}
-                    className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue focus:border-electric-blue outline-none bg-surface-container-lowest text-on-background resize-none"
+                    className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none bg-surface-container-lowest text-on-background resize-none"
                     placeholder="Brief overview of the project goals and scope..."
                   />
                 </div>
@@ -196,8 +199,8 @@ export function ProjectCreatePage() {
                       key={opt.id}
                       className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer bg-surface-container-lowest ${
                         assignMode === opt.id
-                          ? 'border-electric-blue bg-electric-blue/5'
-                          : 'border-outline-variant hover:border-electric-blue'
+                          ? 'border-secondary bg-secondary/5'
+                          : 'border-outline-variant hover:border-secondary'
                       }`}
                     >
                       <input
@@ -205,7 +208,7 @@ export function ProjectCreatePage() {
                         name="assignment"
                         checked={assignMode === opt.id}
                         onChange={() => setAssignMode(opt.id)}
-                        className="mt-0.5 w-4 h-4 text-electric-blue border-outline-variant focus:ring-electric-blue"
+                        className="mt-0.5 w-4 h-4 text-secondary border-outline-variant focus:ring-secondary"
                       />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-on-background">{opt.title}</p>
@@ -243,32 +246,20 @@ export function ProjectCreatePage() {
                     Initial Configuration
                   </h3>
                   <div className="space-y-4">
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-on-background">Phase</label>
-                      <select
-                        className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue outline-none bg-surface-container-lowest text-on-background"
-                        onKeyDown={(e) => handleEnterAdvance(e)}
-                      >
-                        {ProjectPhaseOptions.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="space-y-1.5">
-                      <label className="text-sm font-medium text-on-background">Priority</label>
-                      <select
-                        className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue outline-none bg-surface-container-lowest text-on-background"
-                        onKeyDown={(e) => handleEnterAdvance(e)}
-                      >
-                        {ProjectPriorityOptions.map((opt) => (
-                          <option key={opt.value} value={opt.value}>
-                            {opt.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                    <Select
+                      label="Phase"
+                      value={phase}
+                      onChange={setPhase}
+                      options={ProjectPhaseOptions}
+                      aria-label="Project phase"
+                    />
+                    <Select
+                      label="Priority"
+                      value={priority}
+                      onChange={setPriority}
+                      options={ProjectPriorityOptions}
+                      aria-label="Project priority"
+                    />
                   </div>
                 </section>
                 <section>
@@ -285,7 +276,7 @@ export function ProjectCreatePage() {
                         type="url"
                         {...register('repositoryUrl')}
                         onKeyDown={(e) => handleEnterAdvance(e)}
-                        className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue outline-none bg-surface-container-lowest text-on-background text-sm font-mono"
+                        className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary/30 outline-none bg-surface-container-lowest text-on-background text-sm font-mono"
                         placeholder="https://github.com/org/repo"
                       />
                       {errors.repositoryUrl && (
@@ -298,7 +289,7 @@ export function ProjectCreatePage() {
                         type="text"
                         defaultValue="main"
                         onKeyDown={(e) => handleEnterAdvance(e)}
-                        className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-electric-blue outline-none bg-surface-container-lowest text-on-background text-sm font-mono"
+                        className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary/30 outline-none bg-surface-container-lowest text-on-background text-sm font-mono"
                         placeholder="main"
                       />
                     </div>

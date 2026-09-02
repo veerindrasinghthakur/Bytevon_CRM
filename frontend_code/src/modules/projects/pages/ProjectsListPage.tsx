@@ -23,7 +23,8 @@ import { useProjectsList } from '../hooks/use-projects-list'
 import { projectRoutes } from '../routes'
 import type { ProjectStatus } from '../schemas/project'
 import { cn } from '@/shared/lib/cn'
-import { projectStatusColors, ProjectStatusOptions } from '../cssTokens'
+import { projectStatusColors } from '../cssTokens'
+import { ProjectStatusOptions } from '../enums'
 
 function statusTrackLabel(status: ProjectStatus) {
   const style = projectStatusColors[status]
@@ -96,7 +97,7 @@ export function ProjectsListPage() {
 
   const goDetail = (id: number, edit?: boolean) => {
     safeNavigate(navigate, {
-      to: projectRoutes.projectDetail(id),
+      to: projectRoutes.projectDetailPath,
       params: { projectId: String(id) },
       search: edit ? { edit: '1' } : undefined,
     })
@@ -177,21 +178,21 @@ export function ProjectsListPage() {
           onChange={setStatus}
           placeholder="Project Status"
           aria-label="Filter by project status"
-          options={ProjectStatusOptions}
+          options={[{ value: '', label: 'All statuses' }, ...ProjectStatusOptions]}
         />
       </ListToolbar>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Metric label="Total Projects" value={String(total || '—')} trend="+12%" icon="folder_open" tone="bg-electric-blue/10 text-electric-blue" />
-        <Metric label="Active Projects" value={String(active)} trend="+4.2%" icon="trending_up" tone="bg-secondary-container text-secondary" />
-        <Metric label="At Risk / Delayed" value={String(atRisk)} trend="-2.1%" trendDanger icon="warning" tone="bg-error-container text-error" />
-        <div className="bg-deep-navy border border-white/10 rounded-xl p-5 executive-shadow flex flex-col justify-between h-[160px]">
-          <div className="w-10 h-10 rounded-lg bg-white/10 flex items-center justify-center text-white">
+        <Metric label="Total Projects" value={String(total || '—')} trend="+12%" icon="folder_open" tone="bg-secondary/10 text-secondary" />
+        <Metric label="Active Projects" value={String(active)} trend="+4.2%" icon="trending_up" tone="bg-secondary/10 text-secondary" />
+        <Metric label="At Risk / Delayed" value={String(atRisk)} trend="-2.1%" trendDanger icon="warning" tone="bg-error/10 text-error" />
+        <div className="bv-surface border border-outline-variant rounded-xl p-5 flex flex-col justify-between h-[160px]">
+          <div className="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
             <span className="material-symbols-outlined material-icons-filled">account_balance_wallet</span>
           </div>
           <div>
-            <p className="text-label-sm text-white/70 mb-1">Total Managed Budget</p>
-            <h3 className="text-[32px] font-bold text-white leading-none">$12.4M</h3>
+            <p className="text-label-sm text-on-surface-variant mb-1">Total Managed Budget</p>
+            <h3 className="text-[32px] font-bold text-on-background leading-none">$12.4M</h3>
           </div>
         </div>
       </section>
@@ -312,7 +313,7 @@ export function ProjectsListPage() {
                       <td className="py-2 px-4 text-[11px] text-on-surface-variant">#{project.code}</td>
                       <td className="py-2 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold">
+                          <div className="w-8 h-8 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-xs font-bold">
                             {initials}
                           </div>
                           <div>
@@ -326,7 +327,7 @@ export function ProjectsListPage() {
                       </td>
                       <td className="py-2 px-4">
                         <div className="flex flex-col gap-1 items-start">
-                          <PriorityBadge status={project.status} />
+                          <span className="status-badge status-neutral text-[10px]">{project.status.replace('_', ' ')}</span>
                           <div className="flex items-center gap-1.5">
                             <span className={cn('w-1.5 h-1.5 rounded-full', track.dot)} />
                             <span className={cn('text-[11px] font-medium', track.text)}>{track.label}</span>
@@ -337,7 +338,7 @@ export function ProjectsListPage() {
                         <div className="flex items-center gap-2">
                           <div className="h-1.5 w-16 rounded-full bg-surface-container-high overflow-hidden">
                             <div
-                              className="h-full rounded-full bg-electric-blue"
+                              className="h-full rounded-full bg-secondary"
                               style={{ width: `${project.progress ?? 0}%` }}
                             />
                           </div>

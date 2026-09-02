@@ -1,7 +1,7 @@
 # Module Optimization Report: projects
 
 **Updated:** 2026-09-02  
-**Scope:** Tokens, route path helpers, Task/Project detail nav, TasksList controls. No new components.
+**Scope:** Tokens, list controls, route path helpers, types/enums. No new components.
 
 ---
 
@@ -9,21 +9,24 @@
 
 | Item | Change |
 |------|--------|
-| cssTokens palette (blue/emerald/amber/violet) | `status-badge` + semantic tokens |
-| `projectRoutes` *Path helpers | Added for detail/team/task/notes |
-| TaskDetailPage missing `projectRoutes` / `draft` | Import + `form.watch('title')` |
-| ProjectDetailPage missing import / hardcoded team path | `projectRoutes` + `safeNavigate` |
-| TasksListPage options from wrong module | `TaskStatusOptions` / `TaskPriorityOptions` from `enums` |
-| TasksList local filter state | `useTasksList` (+ priority filter) |
+| cssTokens palette | `status-badge` + semantic tokens |
+| `projectRoutes` *Path helpers | Pages use path variables |
+| TaskDetail / ProjectDetail nav | `safeNavigate` + route vars |
+| TasksListPage | `useTasksList` + enums options |
+| TeamsListPage list controls | `useTeamsList` (`useListControls`) + server filters |
+| TeamsList / ProjectsList palette | electric-blue / emerald / blue-100 → secondary / status tokens |
+| ProjectCreatePage | native `<select>` → shared `Select`; focus rings secondary |
+| DocumentsPage | `ProjectDocument` type; `ErrorState` / `EmptyState` |
+| types.ts | Task/Team status+priority re-exported from `enums` |
 
 ---
 
 ## Still deferred
 
-- TeamsList / Documents full `useListControls` migration
-- Native `<select>` → shared Select on create forms (where residual)
+- Documents full `useListControls` + server type filter
 - Consolidate local Metric/Stat to shared MetricCard (no new components this pass)
-- Full server-side priority on tasks API if not supported
+- Team/Task create residual RHF polish
+- Hardcoded budget KPI on Projects list
 - New shared components
 
 ---
