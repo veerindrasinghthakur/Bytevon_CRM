@@ -10,7 +10,7 @@ import { NotesPanel } from '@/shared/components/notes/NotesPanel'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { useTaskDetail } from '../hooks/use-task-detail'
 import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
-import type { TaskPriority, TaskStatus } from '../types'
+import { projectRoutes } from '../routes'
 import { cn } from '@/shared/lib/cn'
 
 export function TaskDetailPage() {
@@ -50,7 +50,7 @@ export function TaskDetailPage() {
     return (
       <div className="text-center py-16">
         <p className="text-body-md text-error mb-3">Task not found.</p>
-        <Link to="/projects/tasks">
+        <Link to={projectRoutes.tasks}>
           <Button variant="outline">Back to Tasks</Button>
         </Link>
       </div>
@@ -67,20 +67,20 @@ export function TaskDetailPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <PageHeader
-        title={isEditing ? draft.title || task.title : task.title}
+        title={isEditing ? form.watch('title') || task.title : task.title}
         description={task.projectName ?? 'Task'}
         showBack
-backTo={projectRoutes.tasks}
-backLabel="Back to tasks"
-breadcrumbs={
-  <nav className="text-body-sm text-on-surface-variant">
-    <Link to={projectRoutes.tasks} className="hover:text-secondary">
-      Tasks
-    </Link>
-    <span className="mx-2">/</span>
-    <span className="text-on-surface">{task.title}</span>
-  </nav>
-}
+        backTo={projectRoutes.tasks}
+        backLabel="Back to tasks"
+        breadcrumbs={
+          <nav className="text-body-sm text-on-surface-variant">
+            <Link to={projectRoutes.tasks} className="hover:text-secondary">
+              Tasks
+            </Link>
+            <span className="mx-2">/</span>
+            <span className="text-on-surface">{task.title}</span>
+          </nav>
+        }
         actions={
           isEditing ? (
             <div className="flex gap-2">
@@ -141,16 +141,8 @@ breadcrumbs={
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Select
-                    label="Priority"
-                    {...form.register('priority')}
-                    options={priorityOptions}
-                  />
-                  <Select
-                    label="Status"
-                    {...form.register('status')}
-                    options={statusOptions}
-                  />
+                  <Select label="Priority" {...form.register('priority')} options={priorityOptions} />
+                  <Select label="Status" {...form.register('status')} options={statusOptions} />
                   <div>
                     <label className="text-label-sm text-on-surface-variant block mb-1">Assignee</label>
                     <input
@@ -203,9 +195,7 @@ breadcrumbs={
                       {initials}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-on-surface">
-                        {task.assigneeName ?? 'Unassigned'}
-                      </p>
+                      <p className="text-sm font-semibold text-on-surface">{task.assigneeName ?? 'Unassigned'}</p>
                     </div>
                   </div>
                 </div>
@@ -220,7 +210,7 @@ breadcrumbs={
               />
               {task.projectId ? (
                 <Link
-                  to={projectRoutes.projectDetail(task.projectId)}
+                  to={projectRoutes.projectDetailPath}
                   params={{ projectId: String(task.projectId) }}
                   className="block text-sm font-semibold text-secondary hover:underline"
                 >
