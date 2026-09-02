@@ -6,6 +6,7 @@ import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { TeamTopView } from '../components/TeamTopView'
 import { useTeamDetail } from '../hooks/use-team-detail'
+import { workforceRoutes } from '../routes'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -42,7 +43,7 @@ export function TeamMembersPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <BackButton to={`/workforce/teams/${team.id}`} label="Back to team" />
+        <BackButton to={workforceRoutes.teamDetail(team.id)} label="Back to team" />
         <DynamicRouteCrumbs
           className="mt-2 mb-2"
           lastLabel="Members"
@@ -88,7 +89,7 @@ export function TeamMembersPage() {
               <tr key={m.id} className="zebra-row">
                 <td className="px-6 py-4">
                   <Link
-                    to="/workforce/employees/$employeeId"
+                    to={workforceRoutes.employeeDetailPath}
                     params={{ employeeId: String(m.id) }}
                     search={{}}
                     className="flex items-center gap-3 hover:opacity-90"
