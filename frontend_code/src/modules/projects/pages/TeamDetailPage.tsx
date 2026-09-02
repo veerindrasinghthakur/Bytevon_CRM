@@ -7,7 +7,9 @@ import { Select } from '@/shared/components/ui/Select'
 import { RefreshButton } from '@/shared/components/ui/RefreshButton'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
+import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { useTeamDetail } from '../hooks/use-team-detail'
+import { projectRoutes } from '../routes'
 import type { TeamStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 
@@ -60,7 +62,7 @@ export function TeamDetailPage() {
     return (
       <div className="text-center py-16">
         <p className="text-body-md text-error mb-3">Team not found.</p>
-        <Link to={teamsListTo}>
+        <Link to={teamsListTo} search={{}}>
           <Button variant="outline">Back to Teams</Button>
         </Link>
       </div>
@@ -70,14 +72,14 @@ export function TeamDetailPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <PageHeader
-        title={isEditing ? draft.name || team.name : team.name}
+        title={isEditing ? form.watch('name') || team.name : team.name}
         description={team.department ?? 'Team'}
         showBack
         backTo={teamsListTo}
         backLabel="Back to teams"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to={teamsListTo} className="hover:text-secondary">
+            <Link to={teamsListTo} search={{}} className="hover:text-secondary">
               Teams
             </Link>
             <span className="mx-2">/</span>
@@ -87,7 +89,6 @@ export function TeamDetailPage() {
         actions={
           isEditing ? (
             <div className="flex gap-2 flex-wrap">
-              {/* Single Add member control — header only while editing */}
               <Button
                 variant="outline"
                 size="sm"
@@ -191,7 +192,8 @@ export function TeamDetailPage() {
                 </div>
                 <Select
                   label="Status"
-                  {...form.register('status')}
+                  value={form.watch('status')}
+                  onChange={(v) => form.setValue('status', v as TeamStatus)}
                   options={statusOptions}
                 />
               </div>
@@ -207,7 +209,6 @@ export function TeamDetailPage() {
               <span className="material-symbols-outlined text-secondary">groups</span>
               Team members ({members.length})
             </h3>
-            {/* No second Add member button here — only header control */}
             {members.length === 0 ? (
               <p className="text-body-sm text-on-surface-variant">No members listed yet.</p>
             ) : (
@@ -259,7 +260,7 @@ export function TeamDetailPage() {
                 <span className="material-symbols-outlined text-secondary">folder_open</span>
                 Recent projects
               </h3>
-              <Link to="/projects" className="text-sm font-semibold text-secondary hover:underline">
+              <Link to="/projects" search={{}} className="text-sm font-semibold text-secondary hover:underline">
                 View all
               </Link>
             </div>
@@ -342,7 +343,7 @@ function StatCard({
   label: string
   value: string
   icon: string
-tone: string
+  tone: string
 }) {
   return (
     <div className="bv-surface card-hover p-4">
