@@ -7,6 +7,7 @@ import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { TeamTopView } from '../components/TeamTopView'
 import { useTeamDetail } from '../hooks/use-team-detail'
 import { workforceRoutes } from '../routes'
+import { projectRoutes } from '@/modules/projects/routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
@@ -115,7 +116,7 @@ export function TeamDetailPage() {
                   <tr key={m.id} className="zebra-row">
                     <td className="px-5 py-3">
                       <Link
-                        to="/workforce/employees/$employeeId"
+                        to={workforceRoutes.employeeDetailPath}
                         params={{ employeeId: String(m.id) }}
                         search={{}}
                         className="flex items-center gap-3"
@@ -148,7 +149,7 @@ export function TeamDetailPage() {
                     </td>
                     <td className="px-5 py-3 text-right">
                       <Link
-                        to="/workforce/employees/$employeeId"
+                        to={workforceRoutes.employeeDetailPath}
                         params={{ employeeId: String(m.id) }}
                         search={{}}
                         className="text-secondary text-label-md font-semibold hover:underline"
@@ -186,7 +187,7 @@ export function TeamDetailPage() {
               {activeProjects.map((p) => (
                 <Link
                   key={p.id}
-                  to="/projects/$projectId"
+                  to={projectRoutes.projectDetailPath}
                   params={{ projectId: String(p.id) }}
                   search={{}}
                   className="block border border-outline-variant rounded-lg p-4 hover:border-secondary transition-colors card-hover"
