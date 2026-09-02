@@ -9,6 +9,8 @@ import {
 } from '../hooks/use-notifications'
 import { archiveNotification } from '../api/notifications'
 import { invalidate } from '@/shared/lib/query-keys'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { notificationRoutes } from '../routes'
 import { cn } from '@/shared/lib/cn'
 
 export function NotificationDetailPage() {
@@ -25,7 +27,7 @@ export function NotificationDetailPage() {
     mutationFn: archiveNotification,
     onSuccess: () => {
       void invalidate.notifications(qc)
-      navigate({ to: '/notifications' })
+      safeNavigate(navigate, { to: notificationRoutes.center })
     },
   })
 
@@ -39,7 +41,7 @@ export function NotificationDetailPage() {
         title="Notification not found"
         description="This notification may have been archived or the link is invalid."
         onRetry={() => void refetch()}
-        onBack={() => navigate({ to: '/notifications' })}
+        onBack={() => safeNavigate(navigate, { to: notificationRoutes.center })}
       />
     )
   }
@@ -47,7 +49,7 @@ export function NotificationDetailPage() {
   return (
     <div className="space-y-6 max-w-6xl animate-fade-in">
       <div className="flex items-center gap-3 flex-wrap">
-        <BackButton to="/notifications" label="Back to inbox" />
+        <BackButton to={notificationRoutes.center} label="Back to inbox" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -56,7 +58,7 @@ export function NotificationDetailPage() {
             <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
               <div className="space-y-2">
                 <div className="flex items-center gap-3 flex-wrap">
-                  <h1 className="text-headline-md font-semibold text-deep-navy">{n.title}</h1>
+                  <h1 className="text-headline-md font-semibold text-on-background">{n.title}</h1>
                   {(n.priority === 'Critical' || n.priority === 'High') && (
                     <span className="bg-error-container text-on-error-container px-3 py-1 rounded-full text-label-sm uppercase flex items-center gap-1 font-semibold">
                       <span className="material-symbols-outlined text-[14px]">warning</span> {n.priority}
@@ -101,7 +103,7 @@ export function NotificationDetailPage() {
                     className="flex items-center justify-between text-label-md border-b border-dashed border-outline-variant pb-2"
                   >
                     <span className="text-on-surface-variant font-semibold">{m.label}</span>
-                    <span className="text-deep-navy font-medium">{m.value}</span>
+                    <span className="text-on-background font-medium">{m.value}</span>
                   </div>
                 ))}
               </div>
@@ -121,7 +123,7 @@ export function NotificationDetailPage() {
                           t.active ? 'border-secondary' : 'border-outline-variant',
                         )}
                       />
-                      <p className="text-body-md font-bold text-deep-navy">{t.title}</p>
+                      <p className="text-body-md font-bold text-on-background">{t.title}</p>
                       <p className="text-label-sm text-on-surface-variant">{t.time}</p>
                       <p className="text-body-sm mt-1 text-on-surface-variant">{t.detail}</p>
                     </div>
@@ -148,7 +150,7 @@ export function NotificationDetailPage() {
                 leftIcon={<span className="material-symbols-outlined text-[20px]">assignment_turned_in</span>}
                 disabled={!n.relatedHref}
                 onClick={() => {
-                  if (n.relatedHref) navigate({ to: n.relatedHref as never })
+                  if (n.relatedHref) safeNavigate(navigate, { to: n.relatedHref as never })
                 }}
               >
                 Open Related
@@ -169,14 +171,14 @@ export function NotificationDetailPage() {
         <div className="lg:col-span-4 space-y-6">
           <section className="bv-surface overflow-hidden">
             <div className="p-4 bg-surface-container-low border-b border-outline-variant">
-              <h2 className="text-title-lg font-semibold text-deep-navy">Delivery Information</h2>
+              <h2 className="text-title-lg font-semibold text-on-background">Delivery Information</h2>
             </div>
             <div className="p-4 space-y-4">
               <div>
                 <label className="text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1">
                   Sender
                 </label>
-                <div className="flex items-center gap-2 text-deep-navy">
+                <div className="flex items-center gap-2 text-on-background">
                   <span className="material-symbols-outlined text-secondary">memory</span>
                   <p className="text-body-md font-medium">System Engine</p>
                 </div>
@@ -185,13 +187,13 @@ export function NotificationDetailPage() {
                 <label className="text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1">
                   Priority
                 </label>
-                <p className="text-body-md font-medium text-deep-navy">{n.priority}</p>
+                <p className="text-body-md font-medium text-on-background">{n.priority}</p>
               </div>
               <div>
                 <label className="text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1">
                   Status
                 </label>
-                <p className="text-body-md font-medium text-deep-navy">{n.status}</p>
+                <p className="text-body-md font-medium text-on-background">{n.status}</p>
               </div>
               <div>
                 <label className="text-label-sm text-on-surface-variant uppercase tracking-wider block mb-1">

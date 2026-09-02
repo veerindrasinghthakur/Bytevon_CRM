@@ -3,7 +3,7 @@ export { NotificationDetailPage } from './pages/NotificationDetailPage'
 export { ComposeNotificationPage } from './pages/ComposeNotificationPage'
 export { SentNotificationsPage } from './pages/SentNotificationsPage'
 export { NotificationSettingsPage } from './pages/NotificationSettingsPage'
-export { createNotificationRoutes } from './routes'
+export { createNotificationRoutes, notificationRoutes } from './routes'
 
 export * from './api/notifications'
 export { useNotificationCenter } from './hooks/use-notification-center'

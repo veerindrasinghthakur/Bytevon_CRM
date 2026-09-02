@@ -8,6 +8,7 @@
  *   /notifications/$notificationId
  */
 import { createRoute } from '@tanstack/react-router'
+import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 
 const NotificationCenterPage = lazyPage(
@@ -31,8 +32,17 @@ const NotificationDetailPage = lazyPage(
   'NotificationDetailPage',
 )
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createNotificationRoutes(appLayoutRoute: any) {
+/** Canonical path helpers — prefer these over hard-coded strings in pages. */
+export const notificationRoutes = {
+  center: '/notifications',
+  compose: '/notifications/compose',
+  sent: '/notifications/sent',
+  settings: '/notifications/settings',
+  detailPath: '/notifications/$notificationId',
+  detail: (notificationId: string) => `/notifications/${notificationId}`,
+} as const
+
+export function createNotificationRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   const notificationsRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/notifications',
