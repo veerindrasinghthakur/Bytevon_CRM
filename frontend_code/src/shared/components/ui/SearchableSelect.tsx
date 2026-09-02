@@ -2,8 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { cn } from '@/shared/lib/cn'
 import { SearchableOption } from '@/shared/types'
 
-
-
 /**
  * Typeahead select — panel styling matches redesigned Select options panel.
  */
@@ -15,6 +13,7 @@ export function SearchableSelect({
   disabled,
   className,
   emptyLabel = 'No matches',
+  label,
 }: {
   options: SearchableOption[]
   value: string
@@ -23,6 +22,8 @@ export function SearchableSelect({
   disabled?: boolean
   className?: string
   emptyLabel?: string
+  /** Optional field label above the control */
+  label?: string
 }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -55,6 +56,9 @@ export function SearchableSelect({
 
   return (
     <div ref={rootRef} className={cn('relative', className)}>
+      {label ? (
+        <label className="block text-label-sm text-on-surface-variant mb-1.5">{label}</label>
+      ) : null}
       <div className="relative">
         <input
           type="text"
