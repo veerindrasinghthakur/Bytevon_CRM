@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { profileDetailSchema } from './profile'
+import { profileDetailSchema, type ProfileUpdateInput } from './profile'
 
 const profilePreferencesFormSchema = z.object({
   emailNotifications: z.boolean(),
@@ -10,24 +10,25 @@ const profilePreferencesFormSchema = z.object({
 
 // Form state uses strings for all inputs (controlled components)
 // Maps to ProfileUpdateInput on submit
-export const profileFormSchema = profileDetailSchema.extend({
-  // Override fields that need string representation in form
-  dateOfBirth: z.string().optional().or(z.literal('')),
-  timezone: z.string().optional().or(z.literal('')),
-  preferences: profilePreferencesFormSchema.optional(),
-}).transform((data) => ({
-  ...data,
-  dateOfBirth: data.dateOfBirth ? String(data.dateOfBirth) : undefined,
-  timezone: data.timezone ? String(data.timezone) : undefined,
-  preferences: data.preferences
-    ? {
-        emailNotifications: Boolean(data.preferences.emailNotifications),
-        desktopPush: Boolean(data.preferences.desktopPush),
-        language: data.preferences.language ?? 'en',
-        appearance: data.preferences.appearance ?? 'system',
-      }
-    : undefined,
-}))
+export const profileFormSchema = profileDetailSchema
+  .extend({
+    dateOfBirth: z.string().optional().or(z.literal('')),
+    timezone: z.string().optional().or(z.literal('')),
+    preferences: profilePreferencesFormSchema.optional(),
+  })
+  .transform((data) => ({
+    ...data,
+    dateOfBirth: data.dateOfBirth ? String(data.dateOfBirth) : undefined,
+    timezone: data.timezone ? String(data.timezone) : undefined,
+    preferences: data.preferences
+      ? {
+          emailNotifications: Boolean(data.preferences.emailNotifications),
+          desktopPush: Boolean(data.preferences.desktopPush),
+          language: data.preferences.language ?? 'en',
+          appearance: data.preferences.appearance ?? 'system',
+        }
+      : undefined,
+  }))
 
 export type ProfileFormInput = z.infer<typeof profileFormSchema>
 
@@ -78,5 +79,5 @@ export function toProfileUpdateInput(form: ProfileFormInput): ProfileUpdateInput
     dateOfBirth: form.dateOfBirth?.trim() || undefined,
     timezone: form.timezone?.trim() || undefined,
     preferences,
-  } as ProfileUpdateInput
+  }
 }

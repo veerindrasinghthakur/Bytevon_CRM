@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { ChangePasswordInput } from '@/modules/auth/schemas/auth'
 import {
   changeMyPassword,
   getMyProfile,
@@ -80,7 +81,6 @@ export function useMyActivity() {
 
 export function useChangePassword() {
   return useMutation({
-    mutationFn: (input: import('@/modules/auth/schemas/auth').ChangePasswordInput) =>
-      changeMyPassword(input),
+    mutationFn: (input: ChangePasswordInput) => changeMyPassword(input),
   })
 }

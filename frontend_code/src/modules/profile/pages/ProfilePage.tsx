@@ -8,6 +8,7 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { useTheme } from '@/shared/theme/ThemeProvider'
 import type { ThemePreference } from '@/shared/lib/theme'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 import {
   useMyActivity,
@@ -16,14 +17,9 @@ import {
   useUpdateProfile,
   useUploadAvatar,
 } from '../hooks/use-profile'
+import { PROFILE_LANG_OPTIONS, APPEARANCE_OPTIONS } from '../schemas/enums'
+import { profileRoutes } from '../routes'
 import type { ProfileDetail, ProfilePreferences } from '../types'
-
-const LANG_OPTIONS = [
-  { value: 'en', label: 'English (US)' },
-  { value: 'de', label: 'German (DE)' },
-  { value: 'fr', label: 'French (FR)' },
-  { value: 'es', label: 'Spanish (ES)' },
-]
 
 export function ProfilePage() {
   const navigate = useNavigate()
@@ -199,7 +195,7 @@ export function ProfilePage() {
           <div>
             <p className="text-label-md uppercase tracking-widest opacity-70 mb-3">Account Health</p>
             <h3 className="text-headline-md font-bold mb-4">V1 Secure</h3>
-            <div className="w-full bg-white/20 h-2 rounded-full mb-4">
+            <div className="w-full bg-on-primary/20 h-2 rounded-full mb-4">
               <div className="bg-secondary-container h-full rounded-full w-[88%]" />
             </div>
           </div>
@@ -225,12 +221,37 @@ export function ProfilePage() {
             Personal Information
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
-            <EditableInfo label="Full Name" value={draft.name} editing={isEditing} onChange={(v) => setDraft((d) => (d ? { ...d, name: v } : d))} />
+            <EditableInfo
+              label="Full Name"
+              value={draft.name}
+              editing={isEditing}
+              onChange={(v) => setDraft((d) => (d ? { ...d, name: v } : d))}
+            />
             <Info label="Email Address" value={draft.email} />
-            <EditableInfo label="Phone Number" value={draft.phone} editing={isEditing} onChange={(v) => setDraft((d) => (d ? { ...d, phone: v } : d))} />
-            <EditableInfo label="Location" value={draft.location} editing={isEditing} onChange={(v) => setDraft((d) => (d ? { ...d, location: v } : d))} />
-            <EditableInfo label="Date of Birth" value={draft.dateOfBirth} editing={isEditing} onChange={(v) => setDraft((d) => (d ? { ...d, dateOfBirth: v } : d))} />
-            <EditableInfo label="Timezone" value={draft.timezone} editing={isEditing} onChange={(v) => setDraft((d) => (d ? { ...d, timezone: v } : d))} />
+            <EditableInfo
+              label="Phone Number"
+              value={draft.phone}
+              editing={isEditing}
+              onChange={(v) => setDraft((d) => (d ? { ...d, phone: v } : d))}
+            />
+            <EditableInfo
+              label="Location"
+              value={draft.location}
+              editing={isEditing}
+              onChange={(v) => setDraft((d) => (d ? { ...d, location: v } : d))}
+            />
+            <EditableInfo
+              label="Date of Birth"
+              value={draft.dateOfBirth}
+              editing={isEditing}
+              onChange={(v) => setDraft((d) => (d ? { ...d, dateOfBirth: v } : d))}
+            />
+            <EditableInfo
+              label="Timezone"
+              value={draft.timezone}
+              editing={isEditing}
+              onChange={(v) => setDraft((d) => (d ? { ...d, timezone: v } : d))}
+            />
           </div>
         </section>
 
@@ -259,7 +280,7 @@ export function ProfilePage() {
               variant="primary"
               size="sm"
               leftIcon={<span className="material-symbols-outlined text-[18px]">lock_reset</span>}
-              onClick={() => navigate({ to: '/profile/change-password' })}
+              onClick={() => safeNavigate(navigate, { to: profileRoutes.changePassword })}
             >
               Change Password
             </Button>
@@ -279,7 +300,9 @@ export function ProfilePage() {
                     <p className="text-body-sm text-on-surface-variant">{currentSession.ip_address}</p>
                   </div>
                 </div>
-                <span className="text-secondary font-bold text-label-sm px-2 py-1 bg-secondary/10 rounded">CURRENT</span>
+                <span className="text-secondary font-bold text-label-sm px-2 py-1 bg-secondary/10 rounded">
+                  CURRENT
+                </span>
               </div>
             )}
             {otherSession && (
@@ -291,12 +314,20 @@ export function ProfilePage() {
                     <p className="text-body-sm text-on-surface-variant">{otherSession.ip_address}</p>
                   </div>
                 </div>
-                <Link to="/profile/sessions" className="text-error font-bold text-label-sm hover:underline">Manage</Link>
+                <Link
+                  to={profileRoutes.sessions}
+                  className="text-error font-bold text-label-sm hover:underline"
+                >
+                  Manage
+                </Link>
               </div>
             )}
           </div>
           <div className="mt-4">
-            <Link to="/profile/sessions" className="text-secondary text-label-md font-semibold hover:underline inline-flex items-center gap-1">
+            <Link
+              to={profileRoutes.sessions}
+              className="text-secondary text-label-md font-semibold hover:underline inline-flex items-center gap-1"
+            >
               View all sessions
               <span className="material-symbols-outlined text-[18px]">chevron_right</span>
             </Link>
@@ -309,16 +340,38 @@ export function ProfilePage() {
             Preferences & Notifications
           </h3>
           <div className="space-y-5">
-            <ToggleRow title="Email Notifications" description="Weekly summaries and direct messages" checked={draft.preferences.emailNotifications} disabled={!isEditing} onChange={(v) => setPref('emailNotifications', v)} />
-            <ToggleRow title="Desktop Push" description="Real-time alerts for urgent tasks" checked={draft.preferences.desktopPush} disabled={!isEditing} onChange={(v) => setPref('desktopPush', v)} />
+            <ToggleRow
+              title="Email Notifications"
+              description="Weekly summaries and direct messages"
+              checked={draft.preferences.emailNotifications}
+              disabled={!isEditing}
+              onChange={(v) => setPref('emailNotifications', v)}
+            />
+            <ToggleRow
+              title="Desktop Push"
+              description="Real-time alerts for urgent tasks"
+              checked={draft.preferences.desktopPush}
+              disabled={!isEditing}
+              onChange={(v) => setPref('desktopPush', v)}
+            />
             <div className="pt-4 border-t border-outline-variant">
-              <label className="text-label-md text-on-surface-variant block mb-2 uppercase tracking-wider">Interface Language</label>
-              <Select value={draft.preferences.language} onChange={(v) => setPref('language', v)} options={LANG_OPTIONS} disabled={!isEditing} minWidthClass="w-full" />
+              <label className="text-label-md text-on-surface-variant block mb-2 uppercase tracking-wider">
+                Interface Language
+              </label>
+              <Select
+                value={draft.preferences.language}
+                onChange={(v) => setPref('language', v)}
+                options={[...PROFILE_LANG_OPTIONS]}
+                disabled={!isEditing}
+                minWidthClass="w-full"
+              />
             </div>
             <div>
-              <label className="text-label-md text-on-surface-variant block mb-2 uppercase tracking-wider">Appearance</label>
+              <label className="text-label-md text-on-surface-variant block mb-2 uppercase tracking-wider">
+                Appearance
+              </label>
               <div className="grid grid-cols-3 gap-2">
-                {(['light', 'dark', 'system'] as const).map((mode) => (
+                {APPEARANCE_OPTIONS.map((mode) => (
                   <button
                     key={mode}
                     type="button"
@@ -353,7 +406,15 @@ export function ProfilePage() {
               <thead className="border-b border-outline-variant">
                 <tr>
                   {['Activity', 'Module', 'Timestamp', 'Status'].map((h) => (
-                    <th key={h} className={cn('pb-3 text-label-md text-on-surface-variant uppercase tracking-wider', h === 'Status' && 'text-right')}>{h}</th>
+                    <th
+                      key={h}
+                      className={cn(
+                        'pb-3 text-label-md text-on-surface-variant uppercase tracking-wider',
+                        h === 'Status' && 'text-right',
+                      )}
+                    >
+                      {h}
+                    </th>
                   ))}
                 </tr>
               </thead>
@@ -371,7 +432,14 @@ export function ProfilePage() {
                     <td className="py-4 text-body-sm">{row.module}</td>
                     <td className="py-4 text-body-sm text-on-surface-variant">{row.time}</td>
                     <td className="py-4 text-right">
-                      <span className={cn('font-bold text-label-sm', row.status === 'COMPLETED' ? 'text-secondary' : 'text-on-surface-variant')}>{row.status}</span>
+                      <span
+                        className={cn(
+                          'font-bold text-label-sm',
+                          row.status === 'COMPLETED' ? 'text-secondary' : 'text-on-surface-variant',
+                        )}
+                      >
+                        {row.status}
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -381,13 +449,24 @@ export function ProfilePage() {
         </section>
 
         <section className="lg:col-span-12 flex flex-col md:flex-row items-center justify-between gap-4 pt-2 border-t border-outline-variant">
-          <p className="text-body-sm text-on-surface-variant">Last login: {draft.lastLoginAt} from {draft.lastLoginIp}</p>
+          <p className="text-body-sm text-on-surface-variant">
+            Last login: {draft.lastLoginAt} from {draft.lastLoginIp}
+          </p>
           <div className="flex gap-3">
-            <Link to="/profile/sessions">
-              <Button variant="outline" size="sm" className="border-error text-error hover:bg-error/10">Logout from All Devices</Button>
+            <Link to={profileRoutes.sessions}>
+              <Button variant="outline" size="sm" className="border-error text-error hover:bg-error/10">
+                Logout from All Devices
+              </Button>
             </Link>
             {isEditing && (
-              <Button variant="primary" size="sm" isLoading={updateMut.isPending} onClick={() => void save()}>Save Changes</Button>
+              <Button
+                variant="primary"
+                size="sm"
+                isLoading={updateMut.isPending}
+                onClick={() => void save()}
+              >
+                Save Changes
+              </Button>
             )}
           </div>
         </section>
@@ -405,25 +484,67 @@ function Info({ label, value }: { label: string; value: string }) {
   )
 }
 
-function EditableInfo({ label, value, editing, onChange }: { label: string; value: string; editing: boolean; onChange: (v: string) => void }) {
+function EditableInfo({
+  label,
+  value,
+  editing,
+  onChange,
+}: {
+  label: string
+  value: string
+  editing: boolean
+  onChange: (v: string) => void
+}) {
   if (!editing) return <Info label={label} value={value} />
   return (
     <div>
       <p className="text-label-md text-on-surface-variant mb-0.5">{label}</p>
-      <input value={value} onChange={(e) => onChange(e.target.value)} className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30" />
+      <input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30"
+      />
     </div>
   )
 }
 
-function ToggleRow({ title, description, checked, onChange, disabled }: { title: string; description: string; checked: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
+function ToggleRow({
+  title,
+  description,
+  checked,
+  onChange,
+  disabled,
+}: {
+  title: string
+  description: string
+  checked: boolean
+  onChange: (v: boolean) => void
+  disabled?: boolean
+}) {
   return (
     <div className="flex items-center justify-between gap-4">
       <div>
         <p className="font-bold text-body-md">{title}</p>
         <p className="text-body-sm text-on-surface-variant">{description}</p>
       </div>
-      <button type="button" role="switch" aria-checked={checked} disabled={disabled} onClick={() => !disabled && onChange(!checked)} className={cn('relative w-11 h-6 rounded-full transition-colors shrink-0', checked ? 'bg-secondary' : 'bg-outline-variant', disabled && 'opacity-60 cursor-default')}>
-        <span className={cn('absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all', checked ? 'left-[22px]' : 'left-0.5')} />
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        disabled={disabled}
+        onClick={() => !disabled && onChange(!checked)}
+        className={cn(
+          'relative w-11 h-6 rounded-full transition-colors shrink-0',
+          checked ? 'bg-secondary' : 'bg-outline-variant',
+          disabled && 'opacity-60 cursor-default',
+        )}
+      >
+        <span
+          className={cn(
+            'absolute top-0.5 w-5 h-5 bg-surface-container-lowest rounded-full shadow transition-all',
+            checked ? 'left-[22px]' : 'left-0.5',
+          )}
+        />
       </button>
     </div>
   )

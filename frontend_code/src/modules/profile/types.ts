@@ -1,4 +1,4 @@
-/** Re-export domain types from Zod schemas — MODULE_STANDARDS (my-work pattern). */
+/** Re-export domain types from Zod schemas — MODULE_STANDARDS. */
 
 export type {
   AppearancePreference,
@@ -7,10 +7,20 @@ export type {
   ProfileSession,
   ProfileActivityItem,
   ProfileUpdateInput,
+  ProfileListResponse,
 } from './schemas/profile'
+
+export type { ProfileFormInput } from './schemas/profile-form'
 
 export {
   profileFormSchema,
   emptyProfileForm,
   toProfileUpdateInput,
 } from './schemas/profile-form'
+
+export {
+  PROFILE_LANG_OPTIONS,
+  APPEARANCE_OPTIONS,
+  sessionStatusStyles,
+  sessionStatusClass,
+} from './schemas/enums'

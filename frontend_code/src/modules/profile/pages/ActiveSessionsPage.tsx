@@ -9,6 +9,8 @@ import {
   useRevokeAllOtherSessions,
   useRevokeSession,
 } from '../hooks/use-profile'
+import { sessionStatusClass } from '../schemas/enums'
+import { profileRoutes } from '../routes'
 
 export function ActiveSessionsPage() {
   const { data: sessions = [], isLoading, isError, refetch } = useMySessions()
@@ -19,7 +21,7 @@ export function ActiveSessionsPage() {
   if (isError) {
     return (
       <div className="space-y-4">
-        <BackButton to="/profile" label="Back to profile" />
+        <BackButton to={profileRoutes.root} label="Back to profile" />
         <div className="rounded-lg border border-error/30 bg-error/5 p-6 text-center">
           <p className="text-body-md text-error mb-3">Failed to load sessions.</p>
           <Button variant="outline" onClick={() => void refetch()}>
@@ -32,7 +34,7 @@ export function ActiveSessionsPage() {
 
   return (
     <div className="space-y-6">
-      <BackButton to="/profile" label="Back to profile" />
+      <BackButton to={profileRoutes.root} label="Back to profile" />
       <PageHeader
         title="Active sessions"
         description="Manage signed-in devices. Revoking ends refresh tokens for that session. Sessions are stored server-side."
@@ -70,9 +72,7 @@ export function ActiveSessionsPage() {
                   <span
                     className={cn(
                       'px-2.5 py-0.5 rounded-full text-[10px] font-bold',
-                      s.status === SessionStatus.ACTIVE
-                        ? 'bg-secondary/15 text-secondary'
-                        : 'bg-surface-container text-on-surface-variant',
+                      sessionStatusClass(s.status, s.status === SessionStatus.ACTIVE),
                     )}
                   >
                     {s.status}

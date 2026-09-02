@@ -10,7 +10,9 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useChangePassword } from '../hooks/use-profile'
+import { profileRoutes } from '../routes'
 
 export function ChangePasswordPage() {
   const navigate = useNavigate()
@@ -45,7 +47,7 @@ export function ChangePasswordPage() {
 
   return (
     <div className="space-y-6 max-w-lg">
-      <BackButton to="/profile" label="Back to profile" />
+      <BackButton to={profileRoutes.root} label="Back to profile" />
       <PageHeader
         title="Change password"
         description="Update your account password. Optionally revoke all other sessions."
@@ -54,9 +56,9 @@ export function ChangePasswordPage() {
       <div className="bv-surface p-6 md:p-8">
         {done ? (
           <div className="text-center space-y-4">
-            <div className="mx-auto w-14 h-14 bg-emerald-50 flex items-center justify-center rounded-full">
+            <div className="mx-auto w-14 h-14 bg-secondary/15 flex items-center justify-center rounded-full">
               <span
-                className="material-symbols-outlined text-emerald-600 text-[28px]"
+                className="material-symbols-outlined text-secondary text-[28px]"
                 style={{ fontVariationSettings: "'FILL' 1" }}
               >
                 check_circle
@@ -66,7 +68,10 @@ export function ChangePasswordPage() {
             <p className="text-body-sm text-on-surface-variant">
               Your password has been changed successfully.
             </p>
-            <Button variant="primary" onClick={() => navigate({ to: '/profile' })}>
+            <Button
+              variant="primary"
+              onClick={() => safeNavigate(navigate, { to: profileRoutes.root })}
+            >
               Back to profile
             </Button>
           </div>
@@ -138,7 +143,11 @@ export function ChangePasswordPage() {
             </div>
 
             <label className="flex items-start gap-3 cursor-pointer">
-              <input type="checkbox" className="mt-1 rounded border-outline-variant text-secondary" {...register('revokeAllSessions')} />
+              <input
+                type="checkbox"
+                className="mt-1 rounded border-outline-variant text-secondary"
+                {...register('revokeAllSessions')}
+              />
               <span>
                 <span className="text-body-md font-medium block">Revoke all other sessions</span>
                 <span className="text-body-sm text-on-surface-variant">
@@ -148,7 +157,11 @@ export function ChangePasswordPage() {
             </label>
 
             <div className="flex gap-3 pt-2">
-              <Button type="button" variant="outline" onClick={() => navigate({ to: '/profile' })}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => safeNavigate(navigate, { to: profileRoutes.root })}
+              >
                 Cancel
               </Button>
               <Button type="submit" variant="primary" isLoading={isSubmitting || changeMut.isPending}>
