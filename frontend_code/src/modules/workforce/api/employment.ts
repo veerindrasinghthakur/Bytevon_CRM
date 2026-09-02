@@ -6,7 +6,7 @@
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
-import { paginateItems } from '@/shared/lib/list-params'
+import { paginateItems, type EntityListParams } from '@/shared/lib/list-params'
 import type {
   EmployeeDetailDto,
   EmploymentRow,
@@ -78,14 +78,15 @@ export async function listEmployments(
     const { data } = await apiClient.get<{
       items: EmploymentListItem[]
       total: number
+      metrics?: ReturnType<typeof buildMetrics>
     }>('/workforce/employments', { params: { page, pageSize, search, status } })
-    return { items: data.items, total: data.total }
+    return { items: data.items, total: data.total, metrics: data.metrics }
   }
 
   await delay()
   let items = getDb().employments.map((e) => enrichListRow(e))
   if (search) {
-    const q = search.toLowerCase()
+    const q = String(search).toLowerCase()
     items = items.filter(
       (e) =>
         e.employee_code.toLowerCase().includes(q) ||
@@ -98,11 +99,12 @@ export async function listEmployments(
   if (status) {
     items = items.filter((e) => e.current_state === status)
   }
+  const metrics = buildMetrics(items)
   if (page != null || pageSize != null) {
-    const pageResult = paginateItems(items, page, pageSize)
-    return { ...pageResult, metrics: buildMetrics(items) }
+    const pageResult = paginateItems(items, Number(page) || 1, Number(pageSize) || 20)
+    return { ...pageResult, metrics }
   }
-  return { items, total: items.length, metrics: buildMetrics(items) }
+  return { items, total: items.length, metrics }
 }
 
 export async function getEmployeeDetail(employmentId: number): Promise<EmployeeDetailDto | null> {
