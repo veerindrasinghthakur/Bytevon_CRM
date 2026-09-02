@@ -1,36 +1,21 @@
 # Module Optimization Report: workforce
 
 **Updated:** 2026-09-02  
-**Scope:** Tokens, RHF forms, route helpers. No new components.
+**Status:** Priority residues cleared for this optimization wave.
 
 ---
 
 ## Cleared
 
-| Item | Change |
-|------|--------|
-| EmployeesList stateStyles/stateDot | `employmentStateStyles` / `employmentStateDot` |
-| EmployeeDetail edit form | RHF + `employeeDetailEditSchema` |
-| EmployeeDetail / list palette | Semantic tokens |
-| ShiftCreatePage | RHF + Zod |
-| ChangeAssignmentPage | RHF + Zod + shared Select |
-| AssignProjectPage | RHF + Zod + shared Select |
-| DepartmentCreatePage | RHF + `departmentFormSchema` |
-| Route crumbs on assign flow | `workforceRoutes` variables |
+- Employment state tokens + EmployeeDetail RHF
+- ChangeAssignment / AssignProject / DepartmentCreate / ShiftCreate → RHF+Zod
+- List + detail palette / login styles
+- Route helpers on nav flows
 
----
+## Deferred
 
-## Verified / partial
-
-- **EmployeeCreatePage** — schema-aligned `EmploymentFormInput` + transforms; multi-step + UI-only fields — full RHF optional later
-- **RouteCrumbs** — path-driven `DynamicRouteCrumbs`; explicit crumbs use `workforceRoutes`
-
----
-
-## Still deferred
-
-- Attendance pages mock → API list
-- EmployeeCreate full multi-step RHF (optional)
+- Attendance pages mock → API
+- EmployeeCreate multi-step full RHF (schema-aligned today)
 - New shared components
 
 ---

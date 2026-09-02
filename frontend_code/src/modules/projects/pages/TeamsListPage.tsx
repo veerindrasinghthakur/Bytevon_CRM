@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
+import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
@@ -189,34 +190,10 @@ export function TeamsListPage() {
       </ListToolbar>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard
-          label="Total Teams"
-          value={String(total || '—')}
-          trend="+12%"
-          icon="groups"
-          iconClass="bg-secondary/10 text-secondary"
-        />
-        <MetricCard
-          label="Active Members"
-          value={String(activeMembers)}
-          trend="+4%"
-          icon="person"
-          iconClass="bg-secondary/10 text-secondary"
-        />
-        <MetricCard
-          label="Total Projects"
-          value={String(totalProjects)}
-          sub="Active"
-          icon="account_tree"
-          iconClass="bg-secondary/10 text-secondary"
-        />
-        <MetricCard
-          label="Avg. Team Size"
-          value={avgSize}
-          sub="Members"
-          icon="group_work"
-          iconClass="bg-[var(--color-warning-amber)]/10 text-[var(--color-warning-amber)]"
-        />
+        <MetricCard label="Total Teams" value={String(total || '—')} icon="groups" />
+        <MetricCard label="Active Members" value={String(activeMembers)} icon="person" />
+        <MetricCard label="Total Projects" value={String(totalProjects)} icon="account_tree" hint="Linked" />
+        <MetricCard label="Avg. Team Size" value={avgSize} icon="group_work" hint="Members" />
       </section>
 
       {selection.selectionMode && (
@@ -410,42 +387,6 @@ export function TeamsListPage() {
       )}
 
       <CreateTeamModal open={createOpen} onClose={() => setCreateOpen(false)} onCreated={() => void refetch()} />
-    </div>
-  )
-}
-
-function MetricCard({
-  label,
-  value,
-  trend,
-  sub,
-  icon,
-  iconClass,
-}: {
-  label: string
-  value: string
-  trend?: string
-  sub?: string
-  icon: string
-  iconClass: string
-}) {
-  return (
-    <div className="bv-surface card-hover p-5 flex flex-col justify-between h-[160px]">
-      <div className="flex justify-between items-start">
-        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${iconClass}`}>
-          <span className="material-symbols-outlined material-icons-filled">{icon}</span>
-        </div>
-        {trend && (
-          <div className="status-badge status-success text-xs font-bold px-2 py-1">{trend}</div>
-        )}
-      </div>
-      <div>
-        <p className="text-label-sm text-on-surface-variant mb-1">{label}</p>
-        <div className="flex items-end gap-2">
-          <h3 className="text-[32px] font-bold text-on-background leading-none">{value}</h3>
-          {sub && <span className="text-label-sm text-on-surface-variant mb-0.5">{sub}</span>}
-        </div>
-      </div>
     </div>
   )
 }
