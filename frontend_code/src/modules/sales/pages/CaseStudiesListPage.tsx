@@ -1,4 +1,4 @@
-import { Link, useNavigate } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
@@ -76,7 +76,6 @@ function CaseStudyQuickContent({ cs }: { cs: CaseStudy }) {
 }
 
 export function CaseStudiesListPage() {
-  const navigate = useNavigate()
   const { openPanel } = useQuickOverview()
   const {
     filtered,
@@ -133,17 +132,19 @@ export function CaseStudiesListPage() {
           <Button
             variant="primary"
             leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
-            onClick={() => openCaseStudyOverview({
-              id: 'new',
-              title: 'New case study',
-              customer: '—',
-              industry: '—',
-              status: 'Draft',
-              impact: '—',
-              revenue: '—',
-              tags: [],
-              summary: 'Create flow not wired yet — use overview for drafts.',
-            })}
+            onClick={() =>
+              openCaseStudyOverview({
+                id: 'new',
+                title: 'New case study',
+                customer: '—',
+                industry: '—',
+                status: 'Draft',
+                impact: '—',
+                revenue: '—',
+                tags: [],
+                summary: 'Create flow not wired yet — use overview for drafts.',
+              })
+            }
           >
             New case study
           </Button>
