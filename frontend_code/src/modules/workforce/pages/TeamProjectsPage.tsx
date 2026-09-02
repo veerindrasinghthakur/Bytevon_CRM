@@ -46,6 +46,7 @@ export function TeamProjectsPage() {
             key={p.id}
             to="/projects/$projectId"
             params={{ projectId: String(p.id) }}
+            search={{}}
             className="bv-surface card-hover p-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between"
           >
             <div className="min-w-0 flex-1">

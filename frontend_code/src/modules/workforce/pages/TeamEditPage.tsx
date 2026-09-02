@@ -27,7 +27,7 @@ export function TeamEditPage() {
   const [status, setStatus] = useState(t.status)
 
   const save = () => {
-    safeNavigate(navigate, { to: '/workforce/teams/$teamId', params: { teamId: t.id } })
+    safeNavigate(navigate, { to: '/workforce/teams/$teamId', params: { teamId: t.id }, search: {} })
   }
 
   return (
@@ -123,7 +123,11 @@ export function TeamEditPage() {
               size="sm"
               leftIcon={<Icon name="person_add" />}
               onClick={() =>
-                safeNavigate(navigate, { to: '/workforce/teams/$teamId/add-member', params: { teamId: t.id } })
+                safeNavigate(navigate, {
+                  to: '/workforce/teams/$teamId/add-member',
+                  params: { teamId: t.id },
+                  search: {},
+                })
               }
             >
               Add member
@@ -146,6 +150,7 @@ export function TeamEditPage() {
                 <Link
                   to="/workforce/employees/$employeeId"
                   params={{ employeeId: String(m.id) }}
+                  search={{}}
                   className="text-secondary text-label-sm font-semibold"
                 >
                   View
@@ -162,7 +167,13 @@ export function TeamEditPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => safeNavigate(navigate, { to: '/workforce/teams/$teamId', params: { teamId: t.id } })}
+            onClick={() =>
+              safeNavigate(navigate, {
+                to: '/workforce/teams/$teamId',
+                params: { teamId: t.id },
+                search: {},
+              })
+            }
           >
             Cancel
           </Button>

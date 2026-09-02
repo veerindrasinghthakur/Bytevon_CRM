@@ -30,7 +30,7 @@ export function TeamDetailPage() {
         title="Could not load team"
         description="Team detail failed to load. Retry or go back to teams."
         onRetry={() => void refetch()}
-        onBack={() => safeNavigate(navigate, { to: workforceRoutes.teams })}
+        onBack={() => safeNavigate(navigate, { to: workforceRoutes.teams, search: {} })}
       />
     )
   }
@@ -42,16 +42,19 @@ export function TeamDetailPage() {
     safeNavigate(navigate, {
       to: workforceRoutes.teamMembers(team.id),
       params: { teamId: team.id },
+      search: {},
     })
   const goAddMember = () =>
     safeNavigate(navigate, {
       to: workforceRoutes.teamAddMember(team.id),
       params: { teamId: team.id },
+      search: {},
     })
   const goProjects = () =>
     safeNavigate(navigate, {
       to: workforceRoutes.teamProjects(team.id),
       params: { teamId: team.id },
+      search: {},
     })
 
   return (
@@ -114,6 +117,7 @@ export function TeamDetailPage() {
                       <Link
                         to="/workforce/employees/$employeeId"
                         params={{ employeeId: String(m.id) }}
+                        search={{}}
                         className="flex items-center gap-3"
                       >
                         <div className="w-9 h-9 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
@@ -146,6 +150,7 @@ export function TeamDetailPage() {
                       <Link
                         to="/workforce/employees/$employeeId"
                         params={{ employeeId: String(m.id) }}
+                        search={{}}
                         className="text-secondary text-label-md font-semibold hover:underline"
                       >
                         View
@@ -183,6 +188,7 @@ export function TeamDetailPage() {
                   key={p.id}
                   to="/projects/$projectId"
                   params={{ projectId: String(p.id) }}
+                  search={{}}
                   className="block border border-outline-variant rounded-lg p-4 hover:border-secondary transition-colors card-hover"
                 >
                   <div className="flex justify-between mb-2">

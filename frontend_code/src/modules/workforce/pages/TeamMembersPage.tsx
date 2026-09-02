@@ -90,6 +90,7 @@ export function TeamMembersPage() {
                   <Link
                     to="/workforce/employees/$employeeId"
                     params={{ employeeId: String(m.id) }}
+                    search={{}}
                     className="flex items-center gap-3 hover:opacity-90"
                   >
                     <div className="w-9 h-9 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
