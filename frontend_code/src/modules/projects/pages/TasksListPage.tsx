@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
+import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { ResourceName } from '@/shared/schema'
 import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
@@ -172,10 +173,16 @@ export function TasksListPage() {
       </ListToolbar>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Stat label="Total Tasks" value={String(total || '—')} icon="assignment" tone="bg-secondary/10 text-secondary" />
-        <Stat label="Pending" value={String(pending)} icon="pending_actions" tone="bg-secondary/10 text-secondary" />
-        <Stat label="Blocked / Overdue" value={String(blocked)} icon="block" tone="bg-error/10 text-error" danger={blocked > 0} />
-        <Stat label="Completed" value={String(done)} icon="check_circle" tone="bg-secondary/10 text-secondary" />
+        <MetricCard label="Total Tasks" value={String(total || '—')} icon="assignment" />
+        <MetricCard label="Pending" value={String(pending)} icon="pending_actions" />
+        <MetricCard
+          label="Blocked / Overdue"
+          value={String(blocked)}
+          icon="block"
+          valueClassName={blocked > 0 ? 'text-error' : undefined}
+          hint={blocked > 0 ? 'At risk' : undefined}
+        />
+        <MetricCard label="Completed" value={String(done)} icon="check_circle" valueClassName="text-secondary" />
       </section>
 
       {selection.selectionMode && (
@@ -330,35 +337,6 @@ export function TasksListPage() {
       )}
 
       <CreateTaskModal open={createOpen} onClose={() => setCreateOpen(false)} onCreated={() => void refetch()} />
-    </div>
-  )
-}
-
-function Stat({
-  label,
-  value,
-  icon,
-  tone,
-  danger,
-}: {
-  label: string
-  value: string
-  icon: string
-  tone: string
-  danger?: boolean
-}) {
-  return (
-    <div className="bv-surface card-hover p-5 flex flex-col justify-between h-[160px]">
-      <div className="flex justify-between items-start">
-        <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', tone)}>
-          <span className="material-symbols-outlined material-icons-filled">{icon}</span>
-        </div>
-        {danger && <span className="status-badge status-error text-xs font-bold">At risk</span>}
-      </div>
-      <div>
-        <p className="text-label-sm text-on-surface-variant mb-1">{label}</p>
-        <h3 className="text-[32px] font-bold text-on-background leading-none">{value}</h3>
-      </div>
     </div>
   )
 }
