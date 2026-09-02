@@ -5,6 +5,8 @@ import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { TeamTopView } from '../components/TeamTopView'
 import { useTeamDetail } from '../hooks/use-team-detail'
+import { workforceRoutes } from '../routes'
+import { projectRoutes } from '@/modules/projects/routes'
 import { cn } from '@/shared/lib/cn'
 
 const statusClass: Record<string, string> = {
@@ -31,7 +33,7 @@ export function TeamProjectsPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <BackButton to={`/workforce/teams/${team.id}`} label="Back to team" />
+        <BackButton to={workforceRoutes.teamDetail(team.id)} label="Back to team" />
         <DynamicRouteCrumbs
           className="mt-2 mb-2"
           lastLabel="Project History"
@@ -44,7 +46,7 @@ export function TeamProjectsPage() {
         {projects.map((p) => (
           <Link
             key={p.id}
-            to="/projects/$projectId"
+            to={projectRoutes.projectDetailPath}
             params={{ projectId: String(p.id) }}
             search={{}}
             className="bv-surface card-hover p-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between"
