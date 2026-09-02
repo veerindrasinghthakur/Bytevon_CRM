@@ -50,7 +50,7 @@ export function TaskDetailPage() {
     return (
       <div className="text-center py-16">
         <p className="text-body-md text-error mb-3">Task not found.</p>
-        <Link to={projectRoutes.tasks}>
+        <Link to={projectRoutes.tasks} search={{}}>
           <Button variant="outline">Back to Tasks</Button>
         </Link>
       </div>
@@ -74,7 +74,7 @@ export function TaskDetailPage() {
         backLabel="Back to tasks"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to={projectRoutes.tasks} className="hover:text-secondary">
+            <Link to={projectRoutes.tasks} search={{}} className="hover:text-secondary">
               Tasks
             </Link>
             <span className="mx-2">/</span>
@@ -141,8 +141,18 @@ export function TaskDetailPage() {
                   />
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Select label="Priority" {...form.register('priority')} options={priorityOptions} />
-                  <Select label="Status" {...form.register('status')} options={statusOptions} />
+                  <Select
+                    label="Priority"
+                    value={form.watch('priority')}
+                    onChange={(v) => form.setValue('priority', v)}
+                    options={priorityOptions}
+                  />
+                  <Select
+                    label="Status"
+                    value={form.watch('status')}
+                    onChange={(v) => form.setValue('status', v)}
+                    options={statusOptions}
+                  />
                   <div>
                     <label className="text-label-sm text-on-surface-variant block mb-1">Assignee</label>
                     <input
@@ -212,6 +222,7 @@ export function TaskDetailPage() {
                 <Link
                   to={projectRoutes.projectDetailPath}
                   params={{ projectId: String(task.projectId) }}
+                  search={{}}
                   className="block text-sm font-semibold text-secondary hover:underline"
                 >
                   Open project →
