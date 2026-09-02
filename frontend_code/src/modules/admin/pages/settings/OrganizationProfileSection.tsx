@@ -3,10 +3,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/shared/components/ui/Button'
+import { EditButton } from '@/shared/components/ui/EditButton'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { cn } from '@/shared/lib/cn'
 import { getOrganizationProfile, updateOrganizationProfile } from '../../api/settings'
-import type { OrganizationProfile } from '../../types'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { organizationProfileSchema, type OrganizationProfileInput } from '../../schemas/settings'
 
@@ -88,15 +88,7 @@ export function OrganizationProfileSection() {
             </Button>
           </div>
         ) : (
-          <button
-            type="button"
-            onClick={startEditing}
-            className="p-2 rounded-lg border border-outline-variant text-on-surface-variant hover:text-secondary hover:border-secondary transition-colors duration-200 cursor-pointer"
-            aria-label="Edit organization"
-            title="Edit"
-          >
-            <span className="material-symbols-outlined text-[22px]">edit</span>
-          </button>
+          <EditButton iconOnly onClick={startEditing} title="Edit organization" aria-label="Edit organization" />
         )}
       </div>
 

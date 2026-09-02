@@ -8,10 +8,24 @@ import { cn } from '@/shared/lib/cn'
 import { useUserCreate } from '../hooks/use-user-create'
 
 export function UserCreatePage() {
-  const form = useUserCreate()
+  const {
+    loading,
+    form,
+    candidates,
+    roles,
+    deptOptions,
+    employeeOptions,
+    selected,
+    onSelectEmployee,
+    submit,
+    isSubmitting,
+  } = useUserCreate()
   const navigate = useNavigate()
   const goUsers = () => safeNavigate(navigate, { to: myAdminRoutes.usersList })
   const goNewEmployee = () => safeNavigate(navigate, { to: '/workforce/employees/new' })
+
+  const values = form.watch()
+  const sendInvite = values.sendInvite ?? true
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -37,26 +51,26 @@ export function UserCreatePage() {
             <Button
               variant="primary"
               size="sm"
-              isLoading={form.saving}
+              isLoading={isSubmitting}
               leftIcon={<span className="material-symbols-outlined text-[18px]">person_add</span>}
-              onClick={form.handleCreate}
+              onClick={submit}
             >
-              {form.sendInvite ? 'Create & Invite' : 'Create User'}
+              {sendInvite ? 'Create & Invite' : 'Create User'}
             </Button>
           </div>
         }
       />
 
-      {form.error && (
+      {form.formState.errors.root?.message && (
         <div className="rounded-lg border border-error/30 bg-error/5 px-4 py-3 text-body-sm text-error flex items-center gap-2">
           <span className="material-symbols-outlined text-[18px]">error</span>
-          {form.error}
+          {form.formState.errors.root.message}
         </div>
       )}
 
-      {form.loading ? (
+      {loading ? (
         <div className="p-12 text-center text-on-surface-variant">Loading…</div>
-      ) : form.candidates.length === 0 ? (
+      ) : candidates.length === 0 ? (
         <div className="bv-surface p-10 text-center space-y-3">
           <span className="material-symbols-outlined text-4xl text-on-surface-variant">person_check</span>
           <h3 className="text-title-lg font-semibold">All employees have logins</h3>
@@ -78,11 +92,11 @@ export function UserCreatePage() {
                   Filter by department
                 </label>
                 <SearchableSelect
-                  options={form.deptOptions}
-                  value={form.deptFilter}
+                  options={deptOptions}
+                  value={values.deptFilter ?? ''}
                   onChange={(v) => {
-                    form.setDeptFilter(v)
-                    form.onSelectEmployee('')
+                    form.setValue('deptFilter', v, { shouldValidate: true })
+                    onSelectEmployee('')
                   }}
                   placeholder="Type department name…"
                 />
@@ -93,19 +107,22 @@ export function UserCreatePage() {
                   Employee
                 </label>
                 <SearchableSelect
-                  options={form.employeeOptions}
-                  value={form.employmentId}
-                  onChange={form.onSelectEmployee}
+                  options={employeeOptions}
+                  value={values.employmentId}
+                  onChange={onSelectEmployee}
                   placeholder="Type name or code…"
                 />
+                {form.formState.errors.employmentId && (
+                  <p className="text-caption text-error mt-1">{form.formState.errors.employmentId.message}</p>
+                )}
               </div>
 
-              {form.selected && (
+              {selected && (
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 rounded-lg bg-surface-container-low border border-outline-variant">
-                  <ReadOnly label="Code" value={form.selected.employeeCode} />
-                  <ReadOnly label="Department" value={form.selected.department} />
-                  <ReadOnly label="Position" value={form.selected.position} />
-                  <ReadOnly label="Joined" value={form.selected.joiningDate} />
+                  <ReadOnly label="Code" value={selected.employeeCode} />
+                  <ReadOnly label="Department" value={selected.department} />
+                  <ReadOnly label="Position" value={selected.position} />
+                  <ReadOnly label="Joined" value={selected.joiningDate} />
                 </div>
               )}
             </div>
@@ -116,13 +133,35 @@ export function UserCreatePage() {
                 Login Credentials
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Work Email" value={form.email} onChange={form.setEmail} type="email" />
-                <Field
-                  label="Temporary Password"
-                  value={form.tempPassword}
-                  onChange={form.setTempPassword}
-                  placeholder="Min. 8 characters"
-                />
+                <div>
+                  <label className="block text-label-sm font-bold text-on-surface-variant uppercase mb-1">
+                    Work Email
+                  </label>
+                  <input
+                    type="email"
+                    {...form.register('email')}
+                    className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-body-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-transparent transition-colors"
+                  />
+                  {form.formState.errors.email && (
+                    <p className="text-caption text-error mt-1">{form.formState.errors.email.message}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-label-sm font-bold text-on-surface-variant uppercase mb-1">
+                    Temporary Password
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Min. 8 characters"
+                    {...form.register('temporaryPassword')}
+                    className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-body-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-transparent transition-colors"
+                  />
+                  {form.formState.errors.temporaryPassword && (
+                    <p className="text-caption text-error mt-1">
+                      {form.formState.errors.temporaryPassword.message}
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -136,15 +175,18 @@ export function UserCreatePage() {
                   Primary Role
                 </label>
                 <SearchableSelect
-                  options={form.roles.map((r) => ({
+                  options={roles.map((r) => ({
                     value: String(r.id),
                     label: r.name,
                     meta: r.description ?? undefined,
                   }))}
-                  value={form.roleId}
-                  onChange={form.setRoleId}
+                  value={values.roleId}
+                  onChange={(v) => form.setValue('roleId', v, { shouldValidate: true })}
                   placeholder="Type role name…"
                 />
+                {form.formState.errors.roleId && (
+                  <p className="text-caption text-error mt-1">{form.formState.errors.roleId.message}</p>
+                )}
               </div>
             </div>
           </div>
@@ -155,8 +197,8 @@ export function UserCreatePage() {
               <label className="flex items-start gap-3 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={form.sendInvite}
-                  onChange={(e) => form.setSendInvite(e.target.checked)}
+                  checked={sendInvite}
+                  onChange={(e) => form.setValue('sendInvite', e.target.checked)}
                   className="mt-1 rounded border-outline-variant text-secondary"
                 />
                 <div>
@@ -168,33 +210,6 @@ export function UserCreatePage() {
           </div>
         </div>
       )}
-    </div>
-  )
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  placeholder,
-  type = 'text',
-}: {
-  label: string
-  value: string
-  onChange: (v: string) => void
-  placeholder?: string
-  type?: string
-}) {
-  return (
-    <div>
-      <label className="block text-label-sm font-bold text-on-surface-variant uppercase mb-1">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-body-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-transparent transition-colors"
-      />
     </div>
   )
 }

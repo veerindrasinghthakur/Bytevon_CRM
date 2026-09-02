@@ -2,7 +2,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Select } from '@/shared/components/ui/Select'
-import { Button } from '@/shared/components/ui/Button'
 
 const brandingSchema = z.object({
   primaryColor: z.string().default('var(--color-primary)'),
@@ -72,11 +71,12 @@ export function BrandingSection() {
             <label className="text-xs font-bold text-on-surface-variant uppercase">Primary Color</label>
             <div className="flex items-center gap-2">
               <div
-                className="w-8 h-8 rounded border border-outline-variant"
+                className="w-8 h-8 rounded border border-outline-variant shrink-0"
                 style={{ backgroundColor: getColorPreview(values.primaryColor) }}
               />
               <Select
-                {...form.register('primaryColor')}
+                value={values.primaryColor}
+                onChange={(v) => form.setValue('primaryColor', v, { shouldValidate: true })}
                 options={colorOptions}
                 placeholder="Select primary color"
                 className="flex-1"
@@ -87,11 +87,12 @@ export function BrandingSection() {
             <label className="text-xs font-bold text-on-surface-variant uppercase">Secondary Color</label>
             <div className="flex items-center gap-2">
               <div
-                className="w-8 h-8 rounded border border-outline-variant"
+                className="w-8 h-8 rounded border border-outline-variant shrink-0"
                 style={{ backgroundColor: getColorPreview(values.secondaryColor) }}
               />
               <Select
-                {...form.register('secondaryColor')}
+                value={values.secondaryColor}
+                onChange={(v) => form.setValue('secondaryColor', v, { shouldValidate: true })}
                 options={colorOptions}
                 placeholder="Select secondary color"
                 className="flex-1"
