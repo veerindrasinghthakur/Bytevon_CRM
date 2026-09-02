@@ -89,7 +89,7 @@ export function TeamMembersPage() {
                 <td className="px-6 py-4">
                   <Link
                     to="/workforce/employees/$employeeId"
-                    params={{ employeeId: m.id }}
+                    params={{ employeeId: String(m.id) }}
                     className="flex items-center gap-3 hover:opacity-90"
                   >
                     <div className="w-9 h-9 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">

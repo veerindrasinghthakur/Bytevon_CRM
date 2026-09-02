@@ -158,6 +158,144 @@ export function employeesOnShift(shiftId: string): ShiftEmployee[] {
 
 export const canCreateShift = true
 
+// --- Canonical workforce data re-exports (MODULE_STANDARDS §7) ---
+export const teams: Record<
+  string,
+  {
+    id: string
+    name: string
+    description?: string
+    departmentId: string
+    department: string
+    headId?: string
+    headName: string
+    headTitle?: string
+    memberCount: number
+    projectCount: number
+    status: 'Active' | 'Inactive'
+    velocity?: number
+    allocationPct?: number
+    createdOn?: string
+    mission?: string
+    icon?: string
+  }
+> = {
+  t1: {
+    id: 't1',
+    name: 'Engineering',
+    description: 'Product and platform engineering organization.',
+    departmentId: 'd1',
+    department: 'Engineering',
+    headId: 'e1',
+    headName: 'Sarah Jenkins',
+    headTitle: 'Senior Lead',
+    memberCount: 32,
+    projectCount: 18,
+    status: 'Active',
+    velocity: 94,
+    allocationPct: 72,
+    createdOn: '2023-01-12',
+    mission: 'Build resilient, user-first digital products for enterprise customers.',
+    icon: 'engineering',
+  },
+  t2: {
+    id: 't2',
+    name: 'Design',
+    description: 'Design systems and product experience team.',
+    departmentId: 'd2',
+    department: 'Design',
+    headId: 'e2',
+    headName: 'Michael Ross',
+    headTitle: 'Design Director',
+    memberCount: 14,
+    projectCount: 9,
+    status: 'Active',
+    velocity: 88,
+    allocationPct: 61,
+    createdOn: '2022-11-03',
+    mission: 'Deliver consistent and delightful experiences across product surfaces.',
+    icon: 'palette',
+  },
+  t3: {
+    id: 't3',
+    name: 'HR',
+    description: 'People operations and talent programs.',
+    departmentId: 'd3',
+    department: 'HR',
+    headId: 'e3',
+    headName: 'Emily Chen',
+    headTitle: 'HR Manager',
+    memberCount: 9,
+    projectCount: 5,
+    status: 'Active',
+    velocity: 82,
+    allocationPct: 54,
+    createdOn: '2021-08-14',
+    mission: 'Support a healthy, high-performing workforce and culture.',
+    icon: 'groups',
+  },
+  t4: {
+    id: 't4',
+    name: 'Sales',
+    description: 'Revenue operations and client success.',
+    departmentId: 'd4',
+    department: 'Sales',
+    headId: 'e4',
+    headName: 'Robert Chen',
+    headTitle: 'Sales Director',
+    memberCount: 18,
+    projectCount: 12,
+    status: 'Active',
+    velocity: 91,
+    allocationPct: 67,
+    createdOn: '2020-09-22',
+    mission: 'Expand strategic customer growth and improve account retention.',
+    icon: 'sell',
+  },
+  t5: {
+    id: 't5',
+    name: 'Finance',
+    description: 'Planning, reporting, and financial governance.',
+    departmentId: 'd5',
+    department: 'Finance',
+    headId: 'e5',
+    headName: 'David Kim',
+    headTitle: 'Financial Analyst',
+    memberCount: 11,
+    projectCount: 7,
+    status: 'Inactive',
+    velocity: 76,
+    allocationPct: 48,
+    createdOn: '2019-12-01',
+    mission: 'Maintain financial health, forecasting accuracy, and operational control.',
+    icon: 'account_balance',
+  },
+}
+
+export const departments: Record<string, { id: string; name: string; code?: string }> = {
+  d1: { id: 'd1', name: 'Engineering', code: 'ENG' },
+  d2: { id: 'd2', name: 'Design', code: 'DSN' },
+  d3: { id: 'd3', name: 'HR', code: 'HR' },
+  d4: { id: 'd4', name: 'Sales', code: 'SLS' },
+  d5: { id: 'd5', name: 'Finance', code: 'FIN' },
+}
+
+export const employees: Record<string, { id: string; name: string; title?: string; department?: string }> = {
+  e1: { id: 'e1', name: 'Sarah Jenkins', title: 'Senior Lead', department: 'Engineering' },
+  e2: { id: 'e2', name: 'Michael Ross', title: 'Sales Director', department: 'Sales' },
+  e3: { id: 'e3', name: 'Emily Chen', title: 'HR Manager', department: 'HR' },
+  e4: { id: 'e4', name: 'Robert Chen', title: 'Senior Engineer', department: 'Engineering' },
+  e5: { id: 'e5', name: 'David Kim', title: 'Financial Analyst', department: 'Finance' },
+}
+
+export const candidateMembers: Array<{ id: string; name: string; title?: string; department?: string; availability?: string }> = [
+  { id: 'm1', name: 'David Chen', title: 'Senior Backend Engineer', department: 'Engineering', availability: 'Available' },
+  { id: 'm2', name: 'Sarah Jenkins', title: 'Senior Lead', department: 'Engineering', availability: 'Available' },
+  { id: 'm3', name: 'Michael Ross', title: 'Sales Director', department: 'Sales', availability: 'Available' },
+  { id: 'm4', name: 'Emily Chen', title: 'HR Manager', department: 'HR', availability: 'Available' },
+  { id: 'm5', name: 'Robert Chen', title: 'Senior Engineer', department: 'Engineering', availability: 'Available' },
+]
+
 // --- Deprecated team extras (prefer projects API) ---
 export const teamMembersByTeam: Record<
   string,

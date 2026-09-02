@@ -5,11 +5,11 @@ import {
   useMemo,
   type ReactNode,
 } from 'react'
-import type { AuthSession, AuthUser, LoginInput } from '../schemas/auth'
+import type { AuthUser, LoginInput } from '../schemas/auth'
 import { loginApi, logoutApi, persistSession } from '../api/auth'
 import { can as rbacCan, getCurrentEmploymentId } from '@/shared/rbac'
 import type { Action, ResourceName, ScopeName } from '@/shared/schema'
-import { useAuthBootstrap } from './hooks/useAuthBootstrap'
+import { useAuthBootstrap } from '../hooks/useAuthBootstrap'
 
 interface AuthContextValue {
   user: AuthUser | null

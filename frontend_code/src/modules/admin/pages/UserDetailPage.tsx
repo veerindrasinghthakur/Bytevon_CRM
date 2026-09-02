@@ -278,7 +278,7 @@ export function UserDetailPage() {
               <strong>Archive</strong> removes login credentials; the employment appears under users
               without credentials.
             </p>
-          </Card>
+          </Section>
           <Section title="Quick Actions">
             <div className="flex flex-col gap-2">
               <Button
@@ -290,7 +290,7 @@ export function UserDetailPage() {
                 Audit for user
               </Button>
             </div>
-          </Card>
+          </Section>
         </div>
       </div>
 

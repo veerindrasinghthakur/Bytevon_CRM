@@ -9,6 +9,7 @@ export interface UseListPaginationOptions {
 export interface UseListPaginationResult {
   page: number
   setPage: (page: number) => void
+  setPageSize: (pageSize: number) => void
   pageSize: number
   resetPage: () => void
   /** Slice items for the current page */
@@ -26,11 +27,16 @@ export interface UseListPaginationResult {
 export function useListPagination(
   options: UseListPaginationOptions = {},
 ): UseListPaginationResult {
-  const pageSize = options.pageSize ?? DEFAULT_PAGE_SIZE
+  const [pageSize, setPageSizeState] = useState(options.pageSize ?? DEFAULT_PAGE_SIZE)
   const [page, setPageState] = useState(options.initialPage ?? 1)
 
   const setPage = useCallback((p: number) => {
     setPageState(Math.max(1, p))
+  }, [])
+
+  const setPageSize = useCallback((nextPageSize: number) => {
+    setPageSizeState(Math.max(1, nextPageSize))
+    setPageState(1)
   }, [])
 
   const resetPage = useCallback(() => {
@@ -55,6 +61,7 @@ export function useListPagination(
   return {
     page,
     setPage,
+    setPageSize,
     pageSize,
     resetPage,
     pageItems,

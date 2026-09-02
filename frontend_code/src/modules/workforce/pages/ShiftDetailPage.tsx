@@ -154,7 +154,7 @@ export function ShiftDetailPage() {
                 <td className="px-4 py-3 text-right">
                   <Link
                     to="/workforce/employees/$employeeId"
-                    params={{ employeeId: m.id }}
+                    params={{ employeeId: String(m.id) }}
                     className="text-secondary text-label-md font-semibold hover:underline"
                   >
                     View

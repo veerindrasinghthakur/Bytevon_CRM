@@ -3,7 +3,8 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { candidateMembers, departments, employees, teams } from '../data/mock'
+import { teams, departments, employees, candidateMembers } from '@/shared/mock/data/workforce'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import type { DepartmentRole } from '../types'
 import { RouteCrumbs } from '../components/RouteCrumbs'
 import { cn } from '@/shared/lib/cn'
@@ -18,6 +19,16 @@ function Icon({ name, className }: { name: string; className?: string }) {
 
 type Mode = 'choose' | 'existing' | 'new'
 
+type CandidateMember = {
+  id: string
+  name: string
+  title?: string
+  department?: string
+  experienceYears?: number
+  joinedLabel?: string
+  availability: string
+}
+
 /**
  * Add member flow. Prefer bottom-sheet presentation when opened as overlay
  * from team/department detail; full page still works via route.
@@ -25,8 +36,10 @@ type Mode = 'choose' | 'existing' | 'new'
 export function AddMemberPage() {
   const params = useParams({ strict: false }) as { departmentId?: string; teamId?: string }
   const navigate = useNavigate()
-  const dept = departments.find((d) => d.id === params.departmentId) ?? departments[0]
-  const team = teams.find((t) => t.id === params.teamId)
+  const departmentList = Object.values(departments)
+  const teamList = Object.values(teams)
+  const dept = departmentList.find((d) => d.id === params.departmentId) ?? departmentList[0]
+  const team = teamList.find((t) => t.id === params.teamId)
   const contextLabel = team ? team.name : dept.name
   const backTo = params.teamId
     ? `/workforce/teams/${params.teamId}`
@@ -40,23 +53,23 @@ export function AddMemberPage() {
   const [sheetOpen, setSheetOpen] = useState(true)
 
   const pool = useMemo(() => {
-    const fromCandidates = candidateMembers.map((m) => ({
-      id: m.employeeId || m.id,
+    const fromCandidates: CandidateMember[] = candidateMembers.map((m) => ({
+      id: m.id,
       name: m.name,
       title: m.title,
       department: m.department,
-      experienceYears: m.experienceYears,
-      joinedLabel: m.joinedLabel,
+      experienceYears: undefined,
+      joinedLabel: undefined,
       availability: m.availability ?? 'Available',
     }))
-    const fromEmployees = employees.map((e) => ({
+    const fromEmployees: CandidateMember[] = Object.values(employees).map((e) => ({
       id: e.id,
       name: e.name,
       title: e.title,
       department: e.department,
-      experienceYears: undefined as number | undefined,
-      joinedLabel: e.joiningDate,
-      availability: 'Available' as const,
+      experienceYears: undefined,
+      joinedLabel: undefined,
+      availability: 'Available',
     }))
     const seen = new Set<string>()
     const merged = [...fromCandidates, ...fromEmployees].filter((m) => {
@@ -65,13 +78,16 @@ export function AddMemberPage() {
       return true
     })
     const q = search.toLowerCase()
-    return merged.filter(
-      (m) =>
-        !q ||
+    return merged.filter((m) => {
+      if (!q) return true
+      const title = m.title ?? ''
+      const department = m.department ?? ''
+      return (
         m.name.toLowerCase().includes(q) ||
-        m.title.toLowerCase().includes(q) ||
-        m.department.toLowerCase().includes(q),
-    )
+        title.toLowerCase().includes(q) ||
+        department.toLowerCase().includes(q)
+      )
+    })
   }, [search])
 
   const setRole = (id: string, role: DepartmentRole) => {
@@ -80,7 +96,7 @@ export function AddMemberPage() {
 
   const close = () => {
     setSheetOpen(false)
-    setTimeout(() => navigate({ to: backTo as never }), 200)
+    setTimeout(() => safeNavigate(navigate, { to: backTo }), 200)
   }
 
   const addMember = () => {
@@ -92,12 +108,12 @@ export function AddMemberPage() {
   }
 
   const goCreateNew = () => {
-    navigate({
+    safeNavigate(navigate, {
       to: '/workforce/employees/new',
       search: {
         departmentId: params.departmentId ?? dept.id,
         teamId: params.teamId,
-      } as never,
+      },
     })
   }
 

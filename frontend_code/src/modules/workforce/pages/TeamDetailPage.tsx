@@ -113,7 +113,7 @@ export function TeamDetailPage() {
                     <td className="px-5 py-3">
                       <Link
                         to="/workforce/employees/$employeeId"
-                        params={{ employeeId: m.id }}
+                        params={{ employeeId: String(m.id) }}
                         className="flex items-center gap-3"
                       >
                         <div className="w-9 h-9 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
@@ -145,7 +145,7 @@ export function TeamDetailPage() {
                     <td className="px-5 py-3 text-right">
                       <Link
                         to="/workforce/employees/$employeeId"
-                        params={{ employeeId: m.id }}
+                        params={{ employeeId: String(m.id) }}
                         className="text-secondary text-label-md font-semibold hover:underline"
                       >
                         View

@@ -55,27 +55,31 @@ export const emptyEmploymentForm = (): EmploymentFormInput => ({
 /** Form → API create payload (string Select ids → numbers; address/bank assembled). */
 export function toCreateEmploymentInput(form: EmploymentFormInput): CreateEmploymentSchemaInput {
   const addressParts = [form.street, form.city, form.stateRegion, form.zip, form.country]
-    .map((p) => p.trim())
+    .map((p) => (p ?? '').trim())
     .filter(Boolean)
   const address = addressParts.length ? addressParts.join(', ') : null
 
+  const safeAccountNumber = form.accountNumber?.trim?.() ?? ''
+  const safeAccountHolderName = form.accountHolderName?.trim?.() ?? ''
+  const safeBankName = form.bankName?.trim?.() ?? ''
+  const safeIfsc = form.ifsc?.trim?.() ?? ''
+
   const bank =
-    form.accountNumber.trim().length > 0
+    safeAccountNumber.length > 0
       ? {
-          accountHolderName:
-            form.accountHolderName.trim() || `${form.firstName} ${form.lastName}`.trim(),
-          bankName: form.bankName.trim(),
-          accountNumber: form.accountNumber.trim(),
-          ifscCode: form.ifsc.trim(),
+          accountHolderName: safeAccountHolderName || `${form.firstName} ${form.lastName}`.trim(),
+          bankName: safeBankName,
+          accountNumber: safeAccountNumber,
+          ifscCode: safeIfsc,
         }
       : undefined
 
   return {
     firstName: form.firstName.trim(),
     lastName: form.lastName.trim(),
-    dateOfBirth: form.dateOfBirth.trim() || null,
-    personalEmail: form.personalEmail.trim() || null,
-    personalPhone: form.personalPhone.trim() || null,
+    dateOfBirth: form.dateOfBirth?.trim?.() || null,
+    personalEmail: form.personalEmail?.trim?.() || null,
+    personalPhone: form.personalPhone?.trim?.() || null,
     address,
     employmentType: form.employmentType,
     joiningDate: form.joiningDate,

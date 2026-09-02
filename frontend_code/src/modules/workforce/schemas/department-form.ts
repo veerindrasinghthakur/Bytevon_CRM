@@ -24,7 +24,7 @@ export const emptyDepartmentForm = (): DepartmentFormInput => ({
 
 /** Form → API create payload (string Select id → number | null). */
 export function toCreateDepartmentInput(form: DepartmentFormInput): CreateDepartmentInput {
-  const head = form.headEmploymentId.trim()
+  const head = form.headEmploymentId?.trim?.() ?? ''
   return {
     name: form.name.trim(),
     headEmploymentId: head ? Number(head) : null,

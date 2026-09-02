@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
@@ -7,12 +7,12 @@ import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { getSecurityKpis, listSecurityEvents } from '../api/security'
 import { cn } from '@/shared/lib/cn'
-import { securityScoreDefault } from '@/modules/admin/schemas/enums'
+import { securityScoreDefault } from '../schemas/enums'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { UnavailableProtocol, ProtocolRow } from '../components/SecurityProtocols'
+import { useSecurityScoreAnimation } from '../hooks/use-security-score'
 
 export function SecurityCenterPage() {
-  const [score, setScore] = useState(1)
   const [sessionTimeout, setSessionTimeout] = useState(true)
 
   const kpisQuery = useQuery({
@@ -25,19 +25,7 @@ export function SecurityCenterPage() {
   })
 
   const targetScore = kpisQuery.data?.securityScore ?? securityScoreDefault
-
-  useEffect(() => {
-    if (!kpisQuery.data) return
-    let frame = 0
-    setScore(1)
-    const id = window.setInterval(() => {
-      frame += 1
-      const next = Math.min(targetScore, Math.round((frame / 30) * targetScore))
-      setScore(next)
-      if (next >= targetScore) window.clearInterval(id)
-    }, 20)
-    return () => window.clearInterval(id)
-  }, [kpisQuery.data, targetScore])
+  const score = useSecurityScoreAnimation(targetScore, kpisQuery.isLoading)
 
   if (kpisQuery.isLoading || eventsQuery.isLoading) {
     return <PageLoadingSkeleton />
@@ -66,7 +54,7 @@ export function SecurityCenterPage() {
         actions={
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 px-3 py-1 bg-surface-container-low rounded-full border border-outline-variant/30">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-[var(--color-success-emerald)] animate-pulse" />
               <span className="text-label-md text-on-surface">System Live</span>
             </div>
             <Button
@@ -88,7 +76,7 @@ export function SecurityCenterPage() {
           <div
             className="relative w-24 h-24 flex items-center justify-center rounded-full p-1"
             style={{
-              background: `conic-gradient(var(--color-primary-blue) ${score}%, rgb(226, 232, 240) 0)`,
+              background: `conic-gradient(var(--color-primary-blue) ${score}%, var(--color-outline-variant) 0)`,
             }}
           >
             <div className="w-full h-full bg-white rounded-full flex flex-col items-center justify-center">

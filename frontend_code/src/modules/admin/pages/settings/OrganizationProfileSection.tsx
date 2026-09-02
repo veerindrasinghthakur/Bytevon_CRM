@@ -1,22 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/shared/components/ui/Button'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { cn } from '@/shared/lib/cn'
 import { getOrganizationProfile, updateOrganizationProfile } from '../../api/settings'
 import type { OrganizationProfile } from '../../types'
 import { queryKeys } from '@/shared/lib/query-keys'
-
-const emptyForm: OrganizationProfile = {
-  name: '',
-  legal: '',
-  email: '',
-  phone: '',
-  website: '',
-  tax: '',
-  reg: '',
-  description: '',
-}
+import { organizationProfileSchema, type OrganizationProfileInput } from '../../schemas/settings'
 
 export function OrganizationProfileSection() {
   const qc = useQueryClient()
@@ -26,14 +18,29 @@ export function OrganizationProfileSection() {
   })
 
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
-  const [form, setForm] = useState<OrganizationProfile>(emptyForm)
+
+  const form = useForm<OrganizationProfileInput>({
+    resolver: zodResolver(organizationProfileSchema),
+    defaultValues: {
+      name: '',
+      legal: '',
+      email: '',
+      phone: '',
+      website: '',
+      tax: '',
+      reg: '',
+      description: '',
+    },
+  })
 
   useEffect(() => {
-    if (data && !isEditing) setForm({ ...data })
-  }, [data, isEditing])
+    if (data && !isEditing) {
+      form.reset({ ...data })
+    }
+  }, [data, isEditing, form])
 
   const save = useMutation({
-    mutationFn: () => updateOrganizationProfile(form),
+    mutationFn: () => updateOrganizationProfile(form.getValues()),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.admin.settings.all })
       finishEditing()
@@ -43,7 +50,7 @@ export function OrganizationProfileSection() {
     },
   })
 
-  const set = (k: keyof OrganizationProfile, v: string) => setForm((p) => ({ ...p, [k]: v }))
+  const formValues = form.watch()
 
   if (isLoading) {
     return <p className="text-body-sm text-on-surface-variant">Loading organization profile…</p>
@@ -64,7 +71,7 @@ export function OrganizationProfileSection() {
               variant="outline"
               size="sm"
               onClick={() => {
-                if (data) setForm({ ...data })
+                if (data) form.reset({ ...data })
                 cancelEditing()
               }}
               disabled={save.isPending}
@@ -109,23 +116,57 @@ export function OrganizationProfileSection() {
           </div>
 
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
-            <Field label="Organization Name" value={form.name} editing={isEditing} onChange={(v) => set('name', v)} />
-            <Field label="Legal Name" value={form.legal} editing={isEditing} onChange={(v) => set('legal', v)} />
-            <Field label="Email" value={form.email} editing={isEditing} onChange={(v) => set('email', v)} />
-            <Field label="Phone" value={form.phone} editing={isEditing} onChange={(v) => set('phone', v)} />
-            <Field label="Website" value={form.website} editing={isEditing} onChange={(v) => set('website', v)} />
-            <Field label="Tax ID" value={form.tax} editing={isEditing} onChange={(v) => set('tax', v)} />
-            <Field label="Registration No." value={form.reg} editing={isEditing} onChange={(v) => set('reg', v)} />
+            <Field
+              label="Organization Name"
+              editing={isEditing}
+              register={form.register('name')}
+              value={formValues.name}
+            />
+            <Field
+              label="Legal Name"
+              editing={isEditing}
+              register={form.register('legal')}
+              value={formValues.legal}
+            />
+            <Field
+              label="Email"
+              editing={isEditing}
+              register={form.register('email')}
+              value={formValues.email}
+            />
+            <Field
+              label="Phone"
+              editing={isEditing}
+              register={form.register('phone')}
+              value={formValues.phone}
+            />
+            <Field
+              label="Website"
+              editing={isEditing}
+              register={form.register('website')}
+              value={formValues.website}
+            />
+            <Field
+              label="Tax ID"
+              editing={isEditing}
+              register={form.register('tax')}
+              value={formValues.tax}
+            />
+            <Field
+              label="Registration No."
+              editing={isEditing}
+              register={form.register('reg')}
+              value={formValues.reg}
+            />
             <div className="sm:col-span-2">
               <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Description</p>
               {isEditing ? (
                 <textarea
-                  value={form.description}
-                  onChange={(e) => set('description', e.target.value)}
+                  {...form.register('description')}
                   className="w-full min-h-[88px] rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm outline-none focus:border-secondary"
                 />
               ) : (
-                <p className="text-body-md text-on-background">{form.description}</p>
+                <p className="text-body-md text-on-background">{formValues.description || '—'}</p>
               )}
             </div>
           </div>
@@ -137,22 +178,21 @@ export function OrganizationProfileSection() {
 
 function Field({
   label,
-  value,
   editing,
-  onChange,
+  register,
+  value,
 }: {
   label: string
-  value: string
   editing: boolean
-  onChange: (v: string) => void
+  register: ReturnType<typeof import('react-hook-form').useForm<OrganizationProfileInput>['register']>
+  value: string
 }) {
   return (
     <div>
       <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">{label}</p>
       {editing ? (
         <input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
+          {...register}
           className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm outline-none focus:border-secondary"
         />
       ) : (

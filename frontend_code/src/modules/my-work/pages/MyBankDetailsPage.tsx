@@ -324,8 +324,6 @@ export function MyBankDetailsPage() {
   )
 }
 
-import { useState } from 'react'
-
 function Field({
   label,
   required,

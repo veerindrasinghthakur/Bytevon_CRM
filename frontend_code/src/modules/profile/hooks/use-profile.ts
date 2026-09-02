@@ -10,8 +10,12 @@ import {
   uploadAvatar,
 } from '../api/profile'
 import type { ProfileUpdateInput } from '../types'
-import { profileKeys } from './use-profile'
-import { useListControls } from '@/shared/hooks/useListControls'
+
+export const profileKeys = {
+  me: ['profile', 'me'] as const,
+  sessions: ['profile', 'sessions'] as const,
+  activity: ['profile', 'activity'] as const,
+} as const
 
 export function useMyProfile() {
   return useQuery({

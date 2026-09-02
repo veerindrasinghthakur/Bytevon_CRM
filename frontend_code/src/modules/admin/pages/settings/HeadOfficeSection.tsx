@@ -1,20 +1,17 @@
-import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
 import { listHeadOfficeOptions } from '../../api/offices'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { useHeadOfficePicker } from '../../hooks/use-head-office'
 
 export function HeadOfficeSection() {
-  const [pickerOpen, setPickerOpen] = useState(false)
-  const [headId, setHeadId] = useState('ny')
-
   const { data: offices = [], isLoading } = useQuery({
     queryKey: queryKeys.admin.offices.headOptions(),
     queryFn: listHeadOfficeOptions,
   })
 
-  const head = offices.find((o) => o.id === headId) ?? offices[0]
+  const { pickerOpen, head, openPicker, closePicker, selectOffice } = useHeadOfficePicker(offices)
 
   return (
     <>
@@ -26,7 +23,7 @@ export function HeadOfficeSection() {
               Configure the organization&apos;s default headquarters.
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={() => setPickerOpen(true)} disabled={isLoading || !head}>
+          <Button variant="outline" size="sm" onClick={openPicker} disabled={isLoading || !head}>
             Change Head Office
           </Button>
         </div>
@@ -57,7 +54,7 @@ export function HeadOfficeSection() {
 
       {pickerOpen && (
         <>
-          <div className="fixed inset-0 bg-primary/20 backdrop-blur-sm z-40" onClick={() => setPickerOpen(false)} />
+          <div className="fixed inset-0 bg-primary/20 backdrop-blur-sm z-40" onClick={closePicker} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
               <div className="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
@@ -65,7 +62,7 @@ export function HeadOfficeSection() {
                 <button
                   type="button"
                   className="p-1 rounded-lg hover:bg-surface-container"
-                  onClick={() => setPickerOpen(false)}
+                  onClick={closePicker}
                 >
                   <span className="material-symbols-outlined">close</span>
                 </button>
@@ -75,13 +72,10 @@ export function HeadOfficeSection() {
                   <button
                     key={o.id}
                     type="button"
-                    onClick={() => {
-                      setHeadId(o.id)
-                      setPickerOpen(false)
-                    }}
+                    onClick={() => selectOffice(o.id)}
                     className={cn(
                       'w-full text-left px-4 py-3 rounded-lg border transition-all',
-                      o.id === headId
+                      String(o.id) === String(head.id)
                         ? 'border-secondary bg-secondary/10 ring-1 ring-secondary/30'
                         : 'border-outline-variant hover:bg-surface-container-low',
                     )}
@@ -93,7 +87,7 @@ export function HeadOfficeSection() {
                           {o.city}, {o.country} · {o.timezone}
                         </p>
                       </div>
-                      {o.id === headId && (
+                      {String(o.id) === String(head.id) && (
                         <span className="material-symbols-outlined text-secondary">check_circle</span>
                       )}
                     </div>

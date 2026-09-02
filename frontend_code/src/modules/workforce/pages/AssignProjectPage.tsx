@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
-import { teams } from '../data/mock'
-import { assignableProjects } from '../data/teamExtraMock'
+import { teams, assignableProjects } from '@/shared/mock/data/workforce'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { RouteCrumbs } from '../components/RouteCrumbs'
 import { cn } from '@/shared/lib/cn'
 
@@ -18,13 +18,14 @@ function Icon({ name, className }: { name: string; className?: string }) {
 export function AssignProjectPage() {
   const { teamId } = useParams({ strict: false }) as { teamId: string }
   const navigate = useNavigate()
-  const t = teams.find((x) => x.id === teamId) ?? teams[0]
+  const teamList = Object.values(teams)
+  const t = teamList.find((x) => x.id === teamId) ?? teamList[0]
   const [selected, setSelected] = useState<string | null>(null)
   const [role, setRole] = useState('Primary')
   const [notes, setNotes] = useState('')
 
   const submit = () => {
-    navigate({ to: '/workforce/teams/$teamId/projects', params: { teamId: t.id } })
+    safeNavigate(navigate, { to: '/workforce/teams/$teamId/projects', params: { teamId: t.id } })
   }
 
   return (
@@ -109,7 +110,7 @@ export function AssignProjectPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate({ to: '/workforce/teams/$teamId', params: { teamId: t.id } })}
+            onClick={() => safeNavigate(navigate, { to: '/workforce/teams/$teamId', params: { teamId: t.id } })}
           >
             Cancel
           </Button>

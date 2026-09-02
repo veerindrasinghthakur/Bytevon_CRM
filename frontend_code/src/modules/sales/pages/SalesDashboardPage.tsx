@@ -34,6 +34,14 @@ export function SalesDashboardPage() {
     avgDealSize,
   } = useSalesDashboard()
 
+  const safeMetrics = metrics ?? []
+  const safeRecentLeads = recentLeads ?? []
+  const safeTopClients = topClients ?? []
+  const safeStageCounts = stageCounts ?? []
+  const safeMonthlyGrowth = monthlyGrowth ?? []
+  const safeTopPerformers = topPerformers ?? []
+  const safeActivityGroups = activityGroups ?? {}
+
   return (
     <div className="space-y-6 animate-fade-in">
       <PageHeader
@@ -52,7 +60,7 @@ export function SalesDashboardPage() {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {metrics.map((m) => (
+        {safeMetrics.map((m) => (
           <div key={m.id} className="bv-surface card-hover p-5">
             <div className="flex justify-between items-start mb-2">
               <span className="p-2 rounded-lg bg-secondary/10 text-secondary">
@@ -110,7 +118,7 @@ export function SalesDashboardPage() {
           <h2 className="text-title-md font-semibold mb-1">Monthly lead growth</h2>
           <p className="text-body-sm text-on-surface-variant mb-5">New leads by month (last 6)</p>
           <div className="flex items-end gap-3 h-36">
-            {monthlyGrowth.map((m) => (
+            {safeMonthlyGrowth.map((m) => (
               <div key={m.month} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
                 <span className="text-[10px] font-semibold text-on-surface-variant">{m.leads}</span>
                 <div
@@ -129,7 +137,7 @@ export function SalesDashboardPage() {
         <section className="bv-surface card-hover p-6">
           <h2 className="text-title-md font-semibold mb-5">Sales funnel</h2>
           <div className="space-y-3">
-            {stageCounts.map(({ stage, count }) => (
+            {safeStageCounts.map(({ stage, count }) => (
               <div key={stage}>
                 <div className="flex items-center justify-between text-sm mb-1">
                   <span className="font-medium text-on-surface">{stage}</span>
@@ -149,7 +157,7 @@ export function SalesDashboardPage() {
         <section className="bv-surface card-hover p-6">
           <h2 className="text-title-md font-semibold mb-5">Top performers</h2>
           <ul className="space-y-3">
-            {topPerformers.map((p, i) => (
+            {safeTopPerformers.map((p, i) => (
               <li key={p.name} className="flex items-center gap-3 p-3 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors">
                 <span className="w-8 h-8 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-sm font-bold shrink-0">
                   {i + 1}
@@ -189,7 +197,7 @@ export function SalesDashboardPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
-                {recentLeads.map((lead) => (
+                {safeRecentLeads.map((lead) => (
                   <tr
                     key={lead.id}
                     className="zebra-row cursor-pointer"
@@ -221,7 +229,7 @@ export function SalesDashboardPage() {
             <p className="text-xs text-on-surface-variant mt-0.5">Merged from Sales Activity</p>
           </div>
           <div className="max-h-[420px] overflow-y-auto scrollbar-thin p-4 space-y-6">
-            {Object.entries(activityGroups).map(([dateGroup, items]) => (
+            {Object.entries(safeActivityGroups).map(([dateGroup, items]) => (
               <section key={dateGroup}>
                 <h3 className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-3">{dateGroup}</h3>
                 <ul className="space-y-3">
@@ -254,7 +262,7 @@ export function SalesDashboardPage() {
           </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-5">
-          {topClients.map((c) => (
+          {safeTopClients.map((c) => (
             <div
               key={c.id}
               className="p-4 rounded-xl border border-outline-variant hover:border-secondary card-hover cursor-pointer"

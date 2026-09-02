@@ -10,6 +10,16 @@ export const stageStyles = {
   Lost: 'bg-red-600 text-white',
 }
 
+export const stageDot = {
+  New: 'bg-blue-500',
+  Contacted: 'bg-green-500',
+  Qualified: 'bg-yellow-500',
+  Proposal: 'bg-purple-500',
+  Negotiation: 'bg-orange-500',
+  Won: 'bg-emerald-500',
+  Lost: 'bg-red-500',
+}
+
 export const priorityStyles = {
   Critical: 'bg-red-100 text-red-800',
   High: 'bg-orange-100 text-orange-800',

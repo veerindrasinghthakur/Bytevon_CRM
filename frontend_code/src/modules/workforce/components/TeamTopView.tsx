@@ -1,6 +1,8 @@
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
+import { workforceRoutes } from '../routes'
 import type { Team } from '../types'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -25,9 +27,9 @@ export function TeamTopView({
   const t = team
 
   const tabs: { id: Tab; label: string; to: string }[] = [
-    { id: 'overview', label: 'Overview', to: `/workforce/teams/${t.id}` },
-    { id: 'members', label: 'Members', to: `/workforce/teams/${t.id}/members` },
-    { id: 'projects', label: 'Project History', to: `/workforce/teams/${t.id}/projects` },
+    { id: 'overview', label: 'Overview', to: workforceRoutes.teamDetail(t.id) },
+    { id: 'members', label: 'Members', to: workforceRoutes.teamMembers(t.id) },
+    { id: 'projects', label: 'Project History', to: workforceRoutes.teamProjects(t.id) },
   ]
 
   return (
@@ -58,25 +60,21 @@ export function TeamTopView({
           <Button
             variant="outline"
             leftIcon={<Icon name="edit" />}
-            onClick={() => navigate({ to: '/workforce/teams/$teamId/edit', params: { teamId: t.id } })}
+            onClick={() => safeNavigate(navigate, { to: workforceRoutes.teamEdit(t.id), params: { teamId: t.id } })}
           >
             Edit Team
           </Button>
           <Button
             variant="outline"
             leftIcon={<Icon name="person_add" />}
-            onClick={() =>
-              navigate({ to: '/workforce/teams/$teamId/add-member', params: { teamId: t.id } })
-            }
+            onClick={() => safeNavigate(navigate, { to: workforceRoutes.teamAddMember(t.id), params: { teamId: t.id } })}
           >
             Add Member
           </Button>
           <Button
             variant="outline"
             leftIcon={<Icon name="assignment_add" />}
-            onClick={() =>
-              navigate({ to: '/workforce/teams/$teamId/assign-project', params: { teamId: t.id } })
-            }
+            onClick={() => safeNavigate(navigate, { to: workforceRoutes.teamAssignProject(t.id), params: { teamId: t.id } })}
           >
             Assign to Project
           </Button>

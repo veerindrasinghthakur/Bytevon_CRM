@@ -40,6 +40,11 @@ export const queryKeys = {
       attendance: () => [...queryKeys.admin.settings.all, 'attendance'] as const,
       leaveAccrual: () => [...queryKeys.admin.settings.all, 'leave-accrual'] as const,
     },
+    metrics: {
+      all: ['admin', 'metrics'] as const,
+      attendance: () => [...queryKeys.admin.metrics.all, 'attendance'] as const,
+      roles: () => [...queryKeys.admin.metrics.all, 'roles'] as const,
+    },
     offices: {
       all: ['admin', 'offices'] as const,
       headOptions: () => [...queryKeys.admin.offices.all, 'head-options'] as const,

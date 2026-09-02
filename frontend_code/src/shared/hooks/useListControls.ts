@@ -48,6 +48,7 @@ export function useListControls<T extends FilterValues>(options: UseListControls
     page: pagination.page,
     setPage: pagination.setPage,
     pageSize: pagination.pageSize,
+    setPageSize: pagination.setPageSize,
     resetPage: pagination.resetPage,
     pageItems: pagination.pageItems,
     range: pagination.range,

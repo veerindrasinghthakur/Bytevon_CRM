@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { payrollEmployees, formatMoney } from '../data/mock'
+import { payrollEmployees, formatMoney } from '@/shared/mock/data/payroll'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
 /** Org-wide paid salary / payroll run history (read-only). */
@@ -155,7 +156,7 @@ export function PayrollHistoryPage() {
                         type="button"
                         className="text-primary hover:text-secondary text-label-md transition-colors"
                         onClick={() =>
-                          navigate({
+                          safeNavigate(navigate, {
                             to: '/payroll/payslip/$employeeId',
                             params: { employeeId: r.employeeId },
                           })
@@ -167,7 +168,7 @@ export function PayrollHistoryPage() {
                         type="button"
                         className="text-on-surface-variant hover:text-secondary text-label-md transition-colors"
                         onClick={() =>
-                          navigate({
+                          safeNavigate(navigate, {
                             to: '/payroll/history/$employeeId',
                             params: { employeeId: r.employeeId },
                           })

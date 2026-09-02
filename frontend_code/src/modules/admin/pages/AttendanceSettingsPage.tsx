@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { myAdminRoutes } from '@/modules/admin/routes'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -18,45 +18,7 @@ import { getShifts } from '../api/organization'
 import { attendanceSettingsSchema, type AttendanceSettingsInput } from '../schemas/settings'
 import type { AttendanceSettings } from '../types'
 import type { ShiftRow } from '@/shared/schema'
-
-function Toggle({ on = false, disabled = false }: { on?: boolean; disabled?: boolean }) {
-  return (
-    <div className={cn('relative inline-block w-10 h-6 shrink-0', disabled && 'opacity-70')}>
-      <div className={cn('w-full h-full rounded-full transition-all', on ? 'bg-secondary' : 'bg-outline-variant')} />
-      <div className={cn('absolute top-1 w-4 h-4 bg-white rounded-full transition-all', on ? 'left-5' : 'left-1')} />
-    </div>
-  )
-}
-
-function shiftToForm(s: ShiftRow): AttendanceSettingsInput {
-  return {
-    shiftStart: String(s.start_time).slice(0, 5),
-    shiftEnd: String(s.end_time).slice(0, 5),
-    graceMinutes: s.grace_late_minutes ?? 15,
-    earlyOutMinutes: 30,
-    otMinMinutes: 60,
-    allowRemoteCheckIn: true,
-  }
-}
-
-function aggregateShifts(shifts: ShiftRow[]): AttendanceSettingsInput {
-  if (!shifts.length) {
-    return {
-      shiftStart: '09:00',
-      shiftEnd: '18:00',
-      graceMinutes: 15,
-      earlyOutMinutes: 30,
-      otMinMinutes: 60,
-      allowRemoteCheckIn: true,
-    }
-  }
-  // Show first shift times as representative when "all shifts"
-  const s = shifts[0]
-  return {
-    ...shiftToForm(s),
-    graceMinutes: Math.max(...shifts.map((x) => x.grace_late_minutes ?? 15)),
-  }
-}
+import { useShiftFormData } from '../hooks/use-attendance-settings'
 
 export function AttendanceSettingsPage() {
   const navigate = useNavigate()
@@ -81,36 +43,17 @@ export function AttendanceSettingsPage() {
 
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
 
+  const { activeShift, getFormValues } = useShiftFormData(shifts, selectedShiftId)
+
   const form = useForm<AttendanceSettingsInput>({
     resolver: zodResolver(attendanceSettingsSchema),
-    defaultValues: {
-      shiftStart: '09:00',
-      shiftEnd: '18:00',
-      graceMinutes: 15,
-      earlyOutMinutes: 30,
-      otMinMinutes: 60,
-      allowRemoteCheckIn: true,
-    },
+    defaultValues: getFormValues(),
   })
-
-  const activeShift = useMemo(
-    () => (selectedShiftId ? shifts.find((s) => String(s.id) === selectedShiftId) : null),
-    [selectedShiftId, shifts],
-  )
 
   useEffect(() => {
     if (isEditing) return
-    if (selectedShiftId && activeShift) {
-      form.reset(shiftToForm(activeShift))
-      return
-    }
-    // No shift picked → aggregate / company defaults
-    if (shifts.length) {
-      form.reset(aggregateShifts(shifts))
-    } else if (data) {
-      form.reset({ ...data })
-    }
-  }, [isEditing, selectedShiftId, activeShift, shifts, data, form])
+    form.reset(getFormValues())
+  }, [isEditing, selectedShiftId, shifts, data, form, getFormValues])
 
   const save = useMutation({
     mutationFn: () => updateAttendanceSettings(form.getValues()),
@@ -201,9 +144,7 @@ export function AttendanceSettingsPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  if (selectedShiftId && activeShift) setForm(shiftToForm(activeShift))
-                  else if (shifts.length) setForm(aggregateShifts(shifts))
-                  else if (data) setForm({ ...data })
+                  form.reset(getFormValues())
                   cancelEditing()
                 }}
                 disabled={save.isPending}
@@ -297,12 +238,11 @@ export function AttendanceSettingsPage() {
               {isEditing ? (
                 <input
                   type="number"
-                  value={form.graceMinutes}
-                  onChange={(e) => setForm((p) => p && { ...p, graceMinutes: Number(e.target.value) })}
+                  {...form.register('graceMinutes', { valueAsNumber: true })}
                   className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
                 />
               ) : (
-                <p className="text-body-md font-medium text-on-surface">{form.graceMinutes} min</p>
+                <p className="text-body-md font-medium text-on-surface">{form.watch('graceMinutes')} min</p>
               )}
             </div>
             <div>
@@ -310,12 +250,11 @@ export function AttendanceSettingsPage() {
               {isEditing ? (
                 <input
                   type="number"
-                  value={form.earlyOutMinutes}
-                  onChange={(e) => setForm((p) => p && { ...p, earlyOutMinutes: Number(e.target.value) })}
+                  {...form.register('earlyOutMinutes', { valueAsNumber: true })}
                   className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
                 />
               ) : (
-                <p className="text-body-md font-medium text-on-surface">{form.earlyOutMinutes} min</p>
+                <p className="text-body-md font-medium text-on-surface">{form.watch('earlyOutMinutes')} min</p>
               )}
             </div>
             <div className="flex items-center justify-between p-3 bg-surface rounded-lg">
@@ -323,13 +262,18 @@ export function AttendanceSettingsPage() {
               <button
                 type="button"
                 disabled={!isEditing}
-                onClick={() =>
-                  isEditing && setForm((p) => p && { ...p, allowRemoteCheckIn: !p.allowRemoteCheckIn })
-                }
+                onClick={() => form.setValue('allowRemoteCheckIn', !form.getValues().allowRemoteCheckIn, { shouldValidate: true })}
                 className="disabled:cursor-default cursor-pointer"
                 aria-label="Toggle remote check-in"
               >
-                <Toggle on={form.allowRemoteCheckIn} disabled={!isEditing} />
+                <input
+                  type="checkbox"
+                  role="switch"
+                  checked={form.watch('allowRemoteCheckIn')}
+                  disabled={!isEditing}
+                  className="w-10 h-6 appearance-none rounded-full bg-outline-variant checked:bg-secondary relative after:absolute after:top-1 after:left-1 after:w-4 after:h-4 after:bg-white after:rounded-full after:transition-all checked:after:left-5 focus:outline-none focus:ring-2 focus:ring-secondary/30"
+                  aria-label="Toggle remote check-in"
+                />
               </button>
             </div>
           </div>
@@ -345,12 +289,11 @@ export function AttendanceSettingsPage() {
             {isEditing ? (
               <input
                 type="number"
-                value={form.otMinMinutes}
-                onChange={(e) => setForm((p) => p && { ...p, otMinMinutes: Number(e.target.value) })}
+                {...form.register('otMinMinutes', { valueAsNumber: true })}
                 className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
               />
             ) : (
-              <p className="text-body-md font-medium text-on-surface">{form.otMinMinutes} min</p>
+              <p className="text-body-md font-medium text-on-surface">{form.watch('otMinMinutes')} min</p>
             )}
           </div>
         </div>

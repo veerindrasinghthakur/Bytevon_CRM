@@ -10,7 +10,25 @@ const FILTER_DEFAULTS = {
   dept: 'all',
   state: 'all',
   type: 'all',
-}
+} as const
+
+const EMPLOYMENT_STATES = Object.values({
+  ONBOARDING: 'ONBOARDING',
+  PROBATION: 'PROBATION',
+  CONFIRMED: 'CONFIRMED',
+  SERVING_NOTICE: 'SERVING_NOTICE',
+  RESIGNED: 'RESIGNED',
+  TERMINATED: 'TERMINATED',
+  ALUMNI: 'ALUMNI',
+})
+
+const EMPLOYMENT_TYPES = Object.values({
+  FULL_TIME: 'FULL_TIME',
+  PART_TIME: 'PART_TIME',
+  INTERN: 'INTERN',
+  CONTRACTOR: 'CONTRACTOR',
+  CONSULTANT: 'CONSULTANT',
+})
 
 export function useEmployeesList() {
   const controls = useListControls({
@@ -50,10 +68,15 @@ export function useEmployeesList() {
     [departmentsQuery.data],
   )
 
-  const metrics = useMemo(() => computeEmploymentListMetrics(items), [items])
+  const metrics = useMemo(
+    () => (items ? computeEmploymentListMetrics(items) : { total: 0, active: 0, archived: 0 }),
+    [items],
+  )
 
   return {
     items,
+    filtered: items,
+    pageItems: items,
     metrics,
     departments,
     states: [...EMPLOYMENT_STATES],
