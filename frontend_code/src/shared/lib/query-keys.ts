@@ -91,6 +91,16 @@ export const queryKeys = {
       all: ['workforce', 'shifts'] as const,
       list: (filters?: unknown) => [...queryKeys.workforce.shifts.all, 'list', filters ?? {}] as const,
     },
+    attendance: {
+      all: ['workforce', 'attendance'] as const,
+      dashboard: () => [...queryKeys.workforce.attendance.all, 'dashboard'] as const,
+      today: (filters?: unknown) =>
+        [...queryKeys.workforce.attendance.all, 'today', filters ?? {}] as const,
+      detail: (id: string) => [...queryKeys.workforce.attendance.all, 'detail', id] as const,
+      day: (employmentId: string, date: string) =>
+        [...queryKeys.workforce.attendance.all, 'day', employmentId, date] as const,
+      corrections: () => [...queryKeys.workforce.attendance.all, 'corrections'] as const,
+    },
   },
   teams: {
     all: ['projects', 'teams'] as const,
@@ -234,6 +244,8 @@ export const invalidate = {
   tasks: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.tasks.all }),
   documents: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.documents.all }),
   employees: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.workforce.employees.all }),
+  workforceAttendance: (qc: Qc) =>
+    void qc.invalidateQueries({ queryKey: queryKeys.workforce.attendance.all }),
   users: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.admin.users.all }),
   roles: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.admin.roles.all }),
   audit: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.admin.audit.all }),
