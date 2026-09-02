@@ -22,16 +22,22 @@ export const projectRoutes = {
   list: '/projects',
   projectNew: '/projects/new',
   projectDetail: (id: string | number) => `/projects/${id}`,
+  projectDetailPath: '/projects/$projectId',
   projectNotes: (id: string | number) => `/projects/${id}/notes`,
+  projectNotesPath: '/projects/$projectId/notes',
   documents: '/projects/documents',
   teams: '/projects/teams',
   teamNew: '/projects/teams/new',
   teamDetail: (id: string | number) => `/projects/teams/${id}`,
+  teamDetailPath: '/projects/teams/$teamId',
   teamMembers: (id: string | number) => `/projects/teams/${id}/members`,
+  teamMembersPath: '/projects/teams/$teamId/members',
   teamAddMember: (id: string | number) => `/projects/teams/${id}/members/add`,
+  teamAddMemberPath: '/projects/teams/$teamId/members/add',
   tasks: '/projects/tasks',
   taskNew: '/projects/tasks/new',
   taskDetail: (id: string | number) => `/projects/tasks/${id}`,
+  taskDetailPath: '/projects/tasks/$taskId',
 } as const
 
 export function createProjectsRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {

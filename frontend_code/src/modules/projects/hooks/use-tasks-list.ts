@@ -1,7 +1,7 @@
 import { useListControls } from '@/shared/hooks/useListControls'
 import { useTasks } from './use-tasks'
 
-const FILTER_DEFAULTS = { status: '' }
+const FILTER_DEFAULTS = { status: '', priority: '' }
 
 export function useTasksList(projectId?: number) {
   const controls = useListControls({
@@ -12,6 +12,7 @@ export function useTasksList(projectId?: number) {
     ...(projectId != null ? { projectId } : {}),
     search: controls.search || undefined,
     status: controls.filters.status || undefined,
+    priority: controls.filters.priority || undefined,
     page: controls.page,
     pageSize: controls.pageSize,
   }
@@ -30,6 +31,8 @@ export function useTasksList(projectId?: number) {
     setSearch: controls.setSearch,
     status: controls.filters.status,
     setStatus: (v: string) => controls.setFilter('status', v),
+    priority: controls.filters.priority,
+    setPriority: (v: string) => controls.setFilter('priority', v),
     filtersActive: controls.anyActive,
     resetFilters: controls.resetAll,
     page: controls.page,

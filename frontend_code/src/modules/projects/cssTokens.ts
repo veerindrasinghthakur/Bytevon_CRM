@@ -1,60 +1,56 @@
 import type { ProjectStatus, TaskStatus, TaskPriority, TeamStatus } from './enums'
 
+/** Semantic status tokens only — no raw Tailwind palette colors. */
+
 export const projectStatusColors: Record<
   ProjectStatus,
   { dot: string; text: string; label: string; badge: string }
 > = {
   PLANNING: {
-    dot: 'bg-blue-500',
-    text: 'text-blue-700',
+    dot: 'bg-secondary',
+    text: 'text-secondary',
     label: 'Planning',
-    badge: 'bg-surface-container-high text-on-surface-variant',
+    badge: 'status-badge status-neutral',
   },
   IN_PROGRESS: {
-    dot: 'bg-emerald-500',
-    text: 'text-emerald-700',
+    dot: 'bg-secondary',
+    text: 'text-secondary',
     label: 'On Track',
-    badge: 'bg-electric-blue/10 text-electric-blue',
+    badge: 'status-badge status-info',
   },
   ON_HOLD: {
-    dot: 'bg-amber-500',
-    text: 'text-amber-700',
+    dot: 'bg-[var(--color-warning-amber)]',
+    text: 'text-[var(--color-warning-amber)]',
     label: 'Delayed',
-    badge: 'bg-amber-100 text-amber-800',
+    badge: 'status-badge status-warning',
   },
   COMPLETED: {
-    dot: 'bg-emerald-500',
-    text: 'text-emerald-700',
+    dot: 'bg-secondary',
+    text: 'text-secondary',
     label: 'Completed',
-    badge: 'bg-emerald-100 text-emerald-800',
+    badge: 'status-badge status-success',
   },
   CANCELLED: {
-    dot: 'bg-gray-400',
+    dot: 'bg-outline',
     text: 'text-on-surface-variant',
     label: 'Cancelled',
-    badge: 'bg-error/10 text-error',
+    badge: 'status-badge status-error',
   },
 }
 
-export const taskStatusColors: Record<
-  TaskStatus,
-  { label: string; className: string }
-> = {
-  TODO: { label: 'To Do', className: 'bg-surface-container-high text-on-surface-variant' },
-  IN_PROGRESS: { label: 'In Progress', className: 'bg-electric-blue/10 text-electric-blue' },
-  IN_REVIEW: { label: 'In Review', className: 'bg-violet-100 text-violet-800' },
-  DONE: { label: 'Done', className: 'bg-emerald-100 text-emerald-800' },
-  BLOCKED: { label: 'Blocked', className: 'bg-error/10 text-error' },
-  ON_HOLD: { label: 'On Hold', className: 'bg-amber-100 text-amber-800' },
+export const taskStatusColors: Record<TaskStatus, { label: string; className: string; dot: string }> = {
+  TODO: { label: 'To Do', className: 'status-badge status-neutral', dot: 'bg-outline' },
+  IN_PROGRESS: { label: 'In Progress', className: 'status-badge status-info', dot: 'bg-secondary' },
+  IN_REVIEW: { label: 'In Review', className: 'status-badge status-warning', dot: 'bg-[var(--color-warning-amber)]' },
+  DONE: { label: 'Done', className: 'status-badge status-success', dot: 'bg-secondary' },
+  BLOCKED: { label: 'Blocked', className: 'status-badge status-error', dot: 'bg-error' },
+  ON_HOLD: { label: 'On Hold', className: 'status-badge status-warning', dot: 'bg-[var(--color-warning-amber)]' },
 }
 
-export const taskPriorityColors: Record<
-  TaskPriority,
-  { label: string; className: string }
-> = {
+export const taskPriorityColors: Record<TaskPriority, { label: string; className: string }> = {
   LOW: { label: 'Low', className: 'text-on-surface-variant' },
   MEDIUM: { label: 'Medium', className: 'text-on-surface' },
-  HIGH: { label: 'High', className: 'text-amber-700' },
+  HIGH: { label: 'High', className: 'text-[var(--color-warning-amber)]' },
   URGENT: { label: 'Urgent', className: 'text-error font-semibold' },
 }
 
@@ -62,9 +58,13 @@ export const teamStatusColors: Record<
   TeamStatus,
   { label: string; className: string; dot: string }
 > = {
-  ACTIVE: { label: 'Active', className: 'bg-emerald-100 text-emerald-800', dot: 'bg-emerald-500' },
-  INACTIVE: { label: 'Inactive', className: 'bg-slate-100 text-slate-800', dot: 'bg-slate-400' },
+  ACTIVE: { label: 'Active', className: 'status-badge status-success', dot: 'bg-secondary' },
+  INACTIVE: { label: 'Inactive', className: 'status-badge status-neutral', dot: 'bg-outline' },
 }
 
-export const FALLBACK_STATUS = { label: 'Unknown', className: 'bg-surface-container text-on-surface-variant' }
+export const FALLBACK_STATUS = {
+  label: 'Unknown',
+  className: 'status-badge status-neutral',
+  dot: 'bg-outline',
+}
 export const FALLBACK_PRIORITY = { label: '—', className: 'text-on-surface-variant' }
