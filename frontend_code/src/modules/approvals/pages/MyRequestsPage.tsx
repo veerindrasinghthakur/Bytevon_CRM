@@ -1,8 +1,4 @@
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
-import { Button } from '@/shared/components/ui/Button'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { ResourceName } from '@/shared/schema'
@@ -10,62 +6,48 @@ import { useMyRequests } from '../hooks/use-my-requests'
 import { cn } from '@/shared/lib/cn'
 import type { ApprovalStatus } from '../types'
 
+/** Status pills — semantic status-badge tokens only (no raw palette classes). */
 const statusStyles: Record<ApprovalStatus, string> = {
-  'In-Progress': 'bg-amber-50 text-amber-700 border-amber-200',
-  Approved: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  Rejected: 'bg-red-50 text-red-700 border-red-200',
-  Pending: 'bg-amber-50 text-amber-700 border-amber-200',
+  'In-Progress': 'status-badge status-warning',
+  Approved: 'status-badge status-success',
+  Rejected: 'status-badge status-error',
+  Pending: 'status-badge status-warning',
+}
+
+const statusDot: Record<ApprovalStatus, string> = {
+  'In-Progress': 'bg-[var(--color-warning-amber)]',
+  Approved: 'bg-secondary',
+  Rejected: 'bg-error',
+  Pending: 'bg-[var(--color-warning-amber)]',
 }
 
 const filters = ['All Requests', 'In-Progress', 'Approved', 'Rejected'] as const
-
-const filterSchema = z.object({
-  filter: z.enum(filters),
-})
-
-type FilterFormData = z.infer<typeof filterSchema>
 
 export function MyRequestsPage() {
   const {
     items,
     filtered,
-    search,
-    setSearch,
     statusFilter,
     setStatusFilter,
-    isLoading,
-    refetch,
   } = useMyRequests()
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { isSubmitting },
-  } = useForm<FilterFormData>({
-    resolver: zodResolver(filterSchema),
-    defaultValues: {
-      filter: 'All Requests',
-    },
-  })
+  const filter =
+    statusFilter === 'All' || !statusFilter
+      ? 'All Requests'
+      : (statusFilter as (typeof filters)[number])
 
-  const filter = watch('filter')
-
-  const visible = filter === 'All Requests'
-    ? filtered
-    : filtered.filter(
-        (r) => r.status === filter || (filter === 'In-Progress' && r.status === 'Pending'),
-      )
+  const visible =
+    filter === 'All Requests'
+      ? filtered
+      : filtered.filter(
+          (r) => r.status === filter || (filter === 'In-Progress' && r.status === 'Pending'),
+        )
 
   const stats = {
     total: items.length,
     inProgress: items.filter((r) => r.status === 'In-Progress' || r.status === 'Pending').length,
     approved: items.filter((r) => r.status === 'Approved').length,
     rejected: items.filter((r) => r.status === 'Rejected').length,
-  }
-
-  const onFilterChange = (data: FilterFormData) => {
-    setStatusFilter(data.filter)
   }
 
   return (
@@ -94,26 +76,26 @@ export function MyRequestsPage() {
       <section className="bv-surface overflow-hidden">
         <div className="p-4 border-b border-outline-variant flex items-center justify-between flex-wrap gap-3">
           <div className="flex gap-2 flex-wrap">
-            <form onSubmit={handleSubmit(onFilterChange)} className="flex gap-2 flex-wrap">
-              {filters.map((f) => (
-                <button
-                  key={f}
-                  type="submit"
-                  value={f}
-                  {...register('filter')}
-                  className={cn(
-                    'px-4 py-1.5 rounded-full text-label-md font-medium transition-colors',
-                    filter === f
-                      ? 'bg-primary text-on-primary'
-                      : 'hover:bg-surface-container-low text-on-surface-variant'
-                  )}
-                >
-                  {f}
-                </button>
-              ))}
-            </form>
+            {filters.map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => setStatusFilter(f === 'All Requests' ? 'All' : f)}
+                className={cn(
+                  'px-4 py-1.5 rounded-full text-label-md font-medium transition-colors',
+                  filter === f
+                    ? 'bg-primary text-on-primary'
+                    : 'hover:bg-surface-container-low text-on-surface-variant',
+                )}
+              >
+                {f}
+              </button>
+            ))}
           </div>
-          <button type="button" className="text-secondary text-label-md flex items-center gap-1 hover:underline">
+          <button
+            type="button"
+            className="text-secondary text-label-md flex items-center gap-1 hover:underline"
+          >
             View Archive <span className="material-symbols-outlined text-sm">arrow_forward</span>
           </button>
         </div>
@@ -142,11 +124,7 @@ export function MyRequestsPage() {
                       <span
                         className={cn(
                           'w-2 h-2 rounded-full',
-                          row.status === 'Approved'
-                            ? 'bg-emerald-500'
-                            : row.status === 'Rejected'
-                            ? 'bg-red-500'
-                            : 'bg-amber-500'
+                          statusDot[row.status] ?? statusDot.Pending,
                         )}
                       />
                       {row.stage ?? '—'}
@@ -165,12 +143,7 @@ export function MyRequestsPage() {
                     </div>
                   </td>
                   <td className="px-6 py-5">
-                    <span
-                      className={cn(
-                        'px-3 py-1 rounded-full text-label-sm font-medium border',
-                        statusStyles[row.status] ?? statusStyles.Pending
-                      )}
-                    >
+                    <span className={cn(statusStyles[row.status] ?? statusStyles.Pending)}>
                       {row.status}
                     </span>
                   </td>
@@ -199,10 +172,16 @@ export function MyRequestsPage() {
             <span className="w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-on-primary text-label-md">
               1
             </span>
-            <button type="button" className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-low text-label-md transition-colors">
+            <button
+              type="button"
+              className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant hover:bg-surface-container-low text-label-md transition-colors"
+            >
               2
             </button>
-            <button type="button" className="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors">
+            <button
+              type="button"
+              className="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-low transition-colors"
+            >
               <span className="material-symbols-outlined">chevron_right</span>
             </button>
           </div>

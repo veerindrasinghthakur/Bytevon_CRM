@@ -1,14 +1,14 @@
-import { useEffect } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { useApprovalCenter } from '../hooks/use-approval-center'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { cn } from '@/shared/lib/cn'
 import { TimelineStep } from '@/shared/components/ui/TimelineStep'
+import { usePendingApprovals } from '../hooks/use-pending-approvals'
+import { approvalRoutes } from '../routes'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
+import type { ApprovalPriority } from '../types'
 
 const actionSchema = z.object({
   action: z.enum(['approved', 'rejected', 'revision']),
@@ -17,28 +17,33 @@ const actionSchema = z.object({
 
 type ActionFormData = z.infer<typeof actionSchema>
 
+const FALLBACK_ROW = {
+  id: '—',
+  type: 'Request',
+  typeIcon: 'pending_actions',
+  typeColor: 'bg-secondary/10 text-secondary',
+  requester: 'Unknown',
+  requesterInitials: '?',
+  date: '—',
+  priority: 'Normal' as ApprovalPriority,
+  status: 'Pending' as const,
+}
+
 export function ApprovalDetailPage() {
   const { requestId } = useParams({ strict: false }) as { requestId?: string }
   const navigate = useNavigate()
-  const { kpis } = useApprovalCenter()
-  const pendingApprovals = kpis ? [] : []
+  const { filtered, isLoading } = usePendingApprovals()
 
   const row =
-    pendingApprovals.find((r) => r.id === requestId || `#${r.id}` === requestId) ?? {
-      id: 'REQ-8902',
-      type: 'Leave Request',
-      typeIcon: 'flight_takeoff',
-      typeColor: 'bg-blue-100 text-blue-700',
-      requester: 'Sarah Adams',
-      requesterInitials: 'SA',
-      date: 'Oct 24, 2023',
-      priority: 'High' as const,
-      status: 'Pending' as const,
+    filtered.find((r) => r.id === requestId || `#${r.id}` === requestId) ?? {
+      ...FALLBACK_ROW,
+      id: requestId ?? FALLBACK_ROW.id,
     }
 
   const {
     register,
     handleSubmit,
+    setValue,
     reset,
     formState: { isSubmitting },
   } = useForm<ActionFormData>({
@@ -49,9 +54,23 @@ export function ApprovalDetailPage() {
     },
   })
 
+  const goPending = () => safeNavigate(navigate, { to: approvalRoutes.pending })
+
   const onSubmit = (data: ActionFormData) => {
+    // Decision mutations wired when API is ready; form validates action + comment.
     console.log('Action:', data.action, 'Comment:', data.comment)
     reset({ action: 'approved', comment: '' })
+  }
+
+  const runAction = (action: ActionFormData['action']) => {
+    setValue('action', action, { shouldValidate: true })
+    void handleSubmit(onSubmit)()
+  }
+
+  if (isLoading) {
+    return (
+      <div className="py-12 text-center text-body-sm text-on-surface-variant">Loading request…</div>
+    )
   }
 
   return (
@@ -59,7 +78,7 @@ export function ApprovalDetailPage() {
       <div className="flex items-center gap-2">
         <button
           type="button"
-          onClick={() => safeNavigate(navigate, { to: '/approvals/pending' })}
+          onClick={goPending}
           className="flex items-center gap-2 text-secondary hover:text-primary text-label-md transition-colors"
         >
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
@@ -153,8 +172,12 @@ export function ApprovalDetailPage() {
               type="button"
               variant="primary"
               className="w-full justify-center py-3"
-              leftIcon={<span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>}
-              onClick={() => handleSubmit(() => {})({ action: 'approved', comment: '' })}
+              leftIcon={
+                <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  check_circle
+                </span>
+              }
+              onClick={() => runAction('approved')}
               disabled={isSubmitting}
             >
               Approve Request
@@ -164,7 +187,7 @@ export function ApprovalDetailPage() {
               variant="outline"
               className="w-full justify-center py-3 border-secondary text-secondary"
               leftIcon={<span className="material-symbols-outlined">edit_square</span>}
-              onClick={() => handleSubmit(() => {})({ action: 'revision', comment: '' })}
+              onClick={() => runAction('revision')}
               disabled={isSubmitting}
             >
               Request Revision
@@ -172,9 +195,9 @@ export function ApprovalDetailPage() {
             <Button
               type="button"
               variant="outline"
-              className="w-full justify-center py-3 border-error text-error hover:bg-red-50"
+              className="w-full justify-center py-3 border-error text-error hover:bg-error/10"
               leftIcon={<span className="material-symbols-outlined">cancel</span>}
-              onClick={() => handleSubmit(() => {})({ action: 'rejected', comment: '' })}
+              onClick={() => runAction('rejected')}
               disabled={isSubmitting}
             >
               Reject Request
@@ -189,7 +212,10 @@ export function ApprovalDetailPage() {
               placeholder="Add a comment or instruction…"
             />
             <div className="flex justify-between items-center">
-              <button type="button" className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors">
+              <button
+                type="button"
+                className="material-symbols-outlined text-on-surface-variant hover:text-primary transition-colors"
+              >
                 attach_file
               </button>
               <Button type="button" variant="secondary" size="sm">
