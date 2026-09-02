@@ -4,13 +4,13 @@ import { BrandLogo } from '@/shared/components/brand/BrandLogo'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { authRoutes } from '../routes'
 import { useForgotPasswordForm } from '../hooks/useForgotPasswordForm'
+import { AUTH_COPYRIGHT_YEAR, AUTH_DEMO_RESET_TOKEN } from '../schemas/auth'
 
 export function ForgotPasswordPage() {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    reset,
     sentTo,
     serverError,
     onSubmit,
@@ -82,10 +82,8 @@ export function ForgotPasswordPage() {
             </div>
           ) : (
             <div className="space-y-6 text-center">
-              <div className="mx-auto w-16 h-16 bg-emerald-50 flex items-center justify-center rounded-full">
-                <span className="material-symbols-outlined text-emerald-600 text-[32px] filled">
-                  check_circle
-                </span>
+              <div className="mx-auto w-16 h-16 bg-secondary/10 flex items-center justify-center rounded-full">
+                <span className="material-symbols-outlined text-secondary text-[32px]">check_circle</span>
               </div>
               <div className="space-y-2">
                 <h2 className="text-headline-md text-on-background">Check your email</h2>
@@ -103,7 +101,7 @@ export function ForgotPasswordPage() {
               <div className="flex flex-col gap-2">
                 <Link
                   to={authRoutes.resetPassword}
-                  search={{ token: 'demo' }}
+                  search={{ token: AUTH_DEMO_RESET_TOKEN }}
                   className="text-secondary text-label-md font-medium hover:underline"
                 >
                   Continue to reset form (dev)
@@ -122,7 +120,7 @@ export function ForgotPasswordPage() {
       </main>
 
       <footer className="py-6 text-center text-label-sm text-on-surface-variant">
-        © {new Date().getFullYear()} Bytevon Systems
+        © {AUTH_COPYRIGHT_YEAR} Bytevon Systems
       </footer>
     </div>
   )

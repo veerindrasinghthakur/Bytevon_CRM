@@ -1,11 +1,15 @@
 import { useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link, useNavigate, useSearch } from '@tanstack/react-router'
-import { resetPasswordSchema, type ResetPasswordInput } from '../schemas/auth'
+import { useMutation } from '@tanstack/react-query'
+import { useNavigate, useSearch } from '@tanstack/react-router'
+import {
+  resetPasswordSchema,
+  type ResetPasswordInput,
+  AUTH_DEMO_RESET_TOKEN,
+} from '../schemas/auth'
 import { resetPasswordApi } from '../api/auth'
 import { authRoutes } from '../routes'
-import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 
 export interface UseResetPasswordFormReturn {
@@ -34,10 +38,21 @@ export function useResetPasswordForm(): UseResetPasswordFormReturn {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<ResetPasswordInput>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: { password: '', confirmPassword: '' },
+  })
+
+  const mutation = useMutation({
+    mutationFn: (data: ResetPasswordInput) => resetPasswordApi(token, data),
+    onSuccess: () => {
+      setServerError(null)
+      setDone(true)
+    },
+    onError: (e) => {
+      setServerError(e instanceof Error ? e.message : 'Reset failed.')
+    },
   })
 
   const toggleShowPassword = useCallback(() => {
@@ -51,19 +66,15 @@ export function useResetPasswordForm(): UseResetPasswordFormReturn {
         setServerError('Missing reset token. Open the link from your email.')
         return
       }
-      try {
-        if (token === 'demo') {
-          await new Promise((r) => setTimeout(r, 500))
-          setDone(true)
-          return
-        }
-        await resetPasswordApi(token, data)
+      // Dev shortcut: demo token skips stored map
+      if (token === AUTH_DEMO_RESET_TOKEN) {
+        await new Promise((r) => setTimeout(r, 500))
         setDone(true)
-      } catch (e) {
-        setServerError(e instanceof Error ? e.message : 'Reset failed.')
+        return
       }
+      await mutation.mutateAsync(data)
     },
-    [token]
+    [token, mutation],
   )
 
   const goToLogin = useCallback(() => {
@@ -73,7 +84,7 @@ export function useResetPasswordForm(): UseResetPasswordFormReturn {
   return {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting: mutation.isPending },
     serverError,
     done,
     showPassword,

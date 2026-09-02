@@ -1,11 +1,9 @@
 import { useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Link } from '@tanstack/react-router'
+import { useMutation } from '@tanstack/react-query'
 import { forgotPasswordSchema, type ForgotPasswordInput } from '../schemas/auth'
 import { forgotPasswordApi } from '../api/auth'
-import { authRoutes } from '../routes'
-import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 
 export interface UseForgotPasswordFormReturn {
   register: ReturnType<typeof useForm<ForgotPasswordInput>>['register']
@@ -28,24 +26,30 @@ export function useForgotPasswordForm(): UseForgotPasswordFormReturn {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
     reset,
   } = useForm<ForgotPasswordInput>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: '' },
   })
 
+  const mutation = useMutation({
+    mutationFn: forgotPasswordApi,
+    onSuccess: (_data, variables) => {
+      setServerError(null)
+      setSentTo(variables.email)
+    },
+    onError: (e) => {
+      setServerError(e instanceof Error ? e.message : 'Request failed.')
+    },
+  })
+
   const onSubmit = useCallback(
     async (data: ForgotPasswordInput) => {
       setServerError(null)
-      try {
-        await forgotPasswordApi(data)
-        setSentTo(data.email)
-      } catch (e) {
-        setServerError(e instanceof Error ? e.message : 'Request failed.')
-      }
+      await mutation.mutateAsync(data)
     },
-    []
+    [mutation],
   )
 
   const resetForm = useCallback(() => {
@@ -57,7 +61,7 @@ export function useForgotPasswordForm(): UseForgotPasswordFormReturn {
   return {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting: mutation.isPending },
     reset,
     sentTo,
     serverError,

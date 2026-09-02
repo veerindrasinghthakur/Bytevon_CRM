@@ -1,15 +1,12 @@
-import { Link, useNavigate, useSearch } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { authRoutes } from '../routes'
 import { Button } from '@/shared/components/ui/Button'
 import { BrandLogo, BrandMark } from '@/shared/components/brand/BrandLogo'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useLoginForm } from '../hooks/useLoginForm'
+import { AUTH_COPYRIGHT_YEAR } from '../schemas/auth'
 
 export function LoginPage() {
-  const navigate = useNavigate()
-  const search = useSearch({ strict: false }) as { redirect?: string }
-
   const {
     register,
     handleSubmit,
@@ -45,7 +42,7 @@ export function LoginPage() {
           </div>
         </div>
         <p className="z-10 text-label-sm text-on-surface-variant opacity-70">
-          © {new Date().getFullYear()} Bytevon Enterprise. All rights reserved.
+          © {AUTH_COPYRIGHT_YEAR} Bytevon Enterprise. All rights reserved.
         </p>
         <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-primary/10 rounded-full opacity-5" />
       </section>

@@ -1,9 +1,5 @@
 import { z } from 'zod'
 
-/** Temporary mock credentials (UI + API). */
-export const MOCK_LOGIN_USERNAME = 'admin'
-export const MOCK_LOGIN_PASSWORD = '123'
-
 /** UI / API form schemas for auth flows */
 
 export const loginSchema = z.object({

@@ -1,6 +1,11 @@
-/** Auth entity types + mock credentials. Form schemas live in auth-form.ts. */
+/** Auth entity types + form schema re-exports. Constants live in enums.ts. */
 
-export { MOCK_LOGIN_USERNAME, MOCK_LOGIN_PASSWORD } from './auth-form'
+export {
+  MOCK_LOGIN_USERNAME,
+  MOCK_LOGIN_PASSWORD,
+  AUTH_COPYRIGHT_YEAR,
+  AUTH_DEMO_RESET_TOKEN,
+} from './enums'
 
 export {
   loginSchema,

@@ -2,10 +2,14 @@ import { useCallback, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import { loginSchema, type LoginInput, MOCK_LOGIN_PASSWORD, MOCK_LOGIN_USERNAME } from '../schemas/auth'
+import {
+  loginSchema,
+  type LoginInput,
+  MOCK_LOGIN_PASSWORD,
+  MOCK_LOGIN_USERNAME,
+} from '../schemas/auth'
 import { authRoutes } from '../routes'
 import { useAuth } from '../context/AuthContext'
-import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 
 export interface UseLoginFormReturn {
@@ -20,6 +24,18 @@ export interface UseLoginFormReturn {
   toggleShowPassword: () => void
   onSubmit: (data: LoginInput) => Promise<void>
   mockCredentials: { username: string; password: string }
+}
+
+function resolvePostLoginPath(redirect: string | undefined): string {
+  if (
+    redirect &&
+    redirect.startsWith('/') &&
+    !redirect.startsWith(authRoutes.login) &&
+    !redirect.startsWith('/profile')
+  ) {
+    return redirect
+  }
+  return authRoutes.dashboard
 }
 
 export function useLoginForm(): UseLoginFormReturn {
@@ -47,19 +63,12 @@ export function useLoginForm(): UseLoginFormReturn {
       setServerError(null)
       try {
         await login(data)
-        const target =
-          search.redirect &&
-          search.redirect.startsWith('/') &&
-          !search.redirect.startsWith(authRoutes.login) &&
-          !search.redirect.startsWith('/profile')
-            ? search.redirect
-            : authRoutes.dashboard
-        safeNavigate(navigate, { to: target })
+        safeNavigate(navigate, { to: resolvePostLoginPath(search.redirect) })
       } catch (e) {
         setServerError(e instanceof Error ? e.message : 'Login failed. Please try again.')
       }
     },
-    [login, navigate, search.redirect]
+    [login, navigate, search.redirect],
   )
 
   return {

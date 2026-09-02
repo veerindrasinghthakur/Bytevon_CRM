@@ -1,4 +1,4 @@
-import { Link, useNavigate, useSearch } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { BrandLogo } from '@/shared/components/brand/BrandLogo'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
@@ -6,9 +6,6 @@ import { authRoutes } from '../routes'
 import { useResetPasswordForm } from '../hooks/useResetPasswordForm'
 
 export function ResetPasswordPage() {
-  const navigate = useNavigate()
-  const search = useSearch({ strict: false }) as { token?: string }
-
   const {
     register,
     handleSubmit,
@@ -37,10 +34,8 @@ export function ResetPasswordPage() {
         <div className="w-full max-w-[440px] bg-surface-container-lowest border border-outline-variant p-10 rounded-xl shadow-sm">
           {done ? (
             <div className="text-center space-y-6">
-              <div className="mx-auto w-16 h-16 bg-emerald-50 flex items-center justify-center rounded-full">
-                <span className="material-symbols-outlined text-emerald-600 text-[32px] filled">
-                  check_circle
-                </span>
+              <div className="mx-auto w-16 h-16 bg-secondary/10 flex items-center justify-center rounded-full">
+                <span className="material-symbols-outlined text-secondary text-[32px]">check_circle</span>
               </div>
               <h1 className="text-headline-md text-on-background">Password updated</h1>
               <p className="text-body-md text-on-surface-variant">
@@ -85,6 +80,7 @@ export function ResetPasswordPage() {
                       type="button"
                       className="absolute inset-y-0 right-0 pr-3 text-outline"
                       onClick={toggleShowPassword}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
                     >
                       <span className="material-symbols-outlined text-[20px]">
                         {showPassword ? 'visibility_off' : 'visibility'}
