@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
+import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { ResourceName } from '@/shared/schema'
 import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
@@ -138,7 +139,7 @@ export function ProjectsListPage() {
             Project Management
           </h2>
           <p className="text-body-md text-on-surface-variant mt-1">
-            Manage projects, assign teams, track milestones and monitor budget burn rates.
+            Manage projects, assign teams, track milestones and monitor progress.
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
@@ -183,18 +184,21 @@ export function ProjectsListPage() {
       </ListToolbar>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Metric label="Total Projects" value={String(total || '—')} trend="+12%" icon="folder_open" tone="bg-secondary/10 text-secondary" />
-        <Metric label="Active Projects" value={String(active)} trend="+4.2%" icon="trending_up" tone="bg-secondary/10 text-secondary" />
-        <Metric label="At Risk / Delayed" value={String(atRisk)} trend="-2.1%" trendDanger icon="warning" tone="bg-error/10 text-error" />
-        <div className="bv-surface border border-outline-variant rounded-xl p-5 flex flex-col justify-between h-[160px]">
-          <div className="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
-            <span className="material-symbols-outlined material-icons-filled">account_balance_wallet</span>
-          </div>
-          <div>
-            <p className="text-label-sm text-on-surface-variant mb-1">Total Managed Budget</p>
-            <h3 className="text-[32px] font-bold text-on-background leading-none">$12.4M</h3>
-          </div>
-        </div>
+        <MetricCard label="Total Projects" value={String(total || '—')} icon="folder_open" hint="All" />
+        <MetricCard label="Active Projects" value={String(active)} icon="trending_up" valueClassName="text-secondary" />
+        <MetricCard
+          label="At Risk / Delayed"
+          value={String(atRisk)}
+          icon="warning"
+          valueClassName={atRisk > 0 ? 'text-error' : undefined}
+          hint={atRisk > 0 ? 'Review' : undefined}
+        />
+        <MetricCard
+          label="Completion rate"
+          value={total > 0 ? `${Math.round(((total - atRisk - active) / total) * 100)}%` : '—'}
+          icon="percent"
+          hint="Filtered set"
+        />
       </section>
 
       {selection.selectionMode && (
@@ -396,46 +400,6 @@ export function ProjectsListPage() {
           )}
         </section>
       )}
-    </div>
-  )
-}
-
-function Metric({
-  label,
-  value,
-  trend,
-  trendDanger,
-  icon,
-  tone,
-}: {
-  label: string
-  value: string
-  trend?: string
-  trendDanger?: boolean
-  icon: string
-  tone: string
-}) {
-  return (
-    <div className="bv-surface card-hover p-5 flex flex-col justify-between h-[160px]">
-      <div className="flex justify-between items-start">
-        <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center', tone)}>
-          <span className="material-symbols-outlined material-icons-filled">{icon}</span>
-        </div>
-        {trend && (
-          <div
-            className={cn(
-              'text-xs font-bold px-2 py-1 rounded',
-              trendDanger ? 'status-badge status-error' : 'status-badge status-success',
-            )}
-          >
-            {trend}
-          </div>
-        )}
-      </div>
-      <div>
-        <p className="text-label-sm text-on-surface-variant mb-1">{label}</p>
-        <h3 className="text-[32px] font-bold text-on-background leading-none">{value}</h3>
-      </div>
     </div>
   )
 }
