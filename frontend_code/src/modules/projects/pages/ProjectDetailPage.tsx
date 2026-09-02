@@ -10,11 +10,14 @@ import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { NotesPanel } from '@/shared/components/notes/NotesPanel'
 import { UploadButton } from '@/shared/components/forms/UploadButton'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useProjectDetail, type ProjectDetailTab } from '../hooks/use-project-detail'
 import { useDocuments, useUploadDocument } from '../hooks/use-documents'
 import { ProjectStatusBadge } from '../components/ProjectStatusBadge'
 import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
 import { CreateTaskModal } from '../components/CreateTaskModal'
+import { projectRoutes } from '../routes'
+import { ProjectStatus as ProjectStatusValues } from '../enums'
 import type { ProjectStatus } from '../schemas/project'
 import { cn } from '@/shared/lib/cn'
 
@@ -28,13 +31,7 @@ const TABS: { id: ProjectDetailTab; label: string }[] = [
   { id: 'repository', label: 'Repository' },
 ]
 
-const STATUS_TIMELINE: ProjectStatus[] = [
-  'PLANNING',
-  'IN_PROGRESS',
-  'ON_HOLD',
-  'COMPLETED',
-  'CANCELLED',
-]
+const STATUS_TIMELINE: ProjectStatus[] = [...ProjectStatusValues]
 
 export function ProjectDetailPage() {
   const navigate = useNavigate()
@@ -106,7 +103,7 @@ export function ProjectDetailPage() {
       <div className="text-center py-16">
         <span className="material-symbols-outlined text-5xl text-on-surface-variant mb-4">folder_off</span>
         <h2 className="text-title-lg text-on-background mb-2">Project not found</h2>
-        <Link to="/projects">
+        <Link to={projectRoutes.list}>
           <Button variant="outline">Back to Projects</Button>
         </Link>
       </div>
@@ -115,8 +112,8 @@ export function ProjectDetailPage() {
 
   const selectTab = (next: ProjectDetailTab) => {
     setTab(next)
-    navigate({
-      to: projectRoutes.projectDetail(project.id),
+    safeNavigate(navigate, {
+      to: projectRoutes.projectDetailPath,
       params: { projectId: String(project.id) },
       search: { tab: next } as never,
       replace: true,
@@ -125,7 +122,7 @@ export function ProjectDetailPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-<PageHeader
+      <PageHeader
         title={isEditing ? form.watch('name') || project.name : project.name}
         description={project.code}
         showBack
@@ -256,7 +253,10 @@ export function ProjectDetailPage() {
                     variant="outline"
                     size="sm"
                     onClick={() =>
-                      navigate({ to: projectRoutes.teamDetail(linkedTeam.id), params: { teamId: String(linkedTeam.id) } })
+                      safeNavigate(navigate, {
+                        to: projectRoutes.teamDetailPath,
+                        params: { teamId: String(linkedTeam.id) },
+                      })
                     }
                   >
                     Team detail
@@ -269,8 +269,8 @@ export function ProjectDetailPage() {
           </div>
 
           <div className="space-y-4">
-            <div className="rounded-xl bg-on-background text-white p-5">
-              <h4 className="text-[10px] font-bold uppercase tracking-wider text-white/60 mb-3">Client</h4>
+            <div className="rounded-xl bg-primary text-on-primary p-5">
+              <h4 className="text-[10px] font-bold uppercase tracking-wider text-on-primary/60 mb-3">Client</h4>
               <p className="font-bold text-lg">{project.clientName ?? '—'}</p>
               {isEditing && (
                 <input
@@ -348,7 +348,10 @@ export function ProjectDetailPage() {
                       key={task.id}
                       className="cursor-pointer hover:bg-surface-container-low"
                       onClick={() =>
-                        navigate({ to: projectRoutes.taskDetail(task.id), params: { taskId: String(task.id) } })
+                        safeNavigate(navigate, {
+                          to: projectRoutes.taskDetailPath,
+                          params: { taskId: String(task.id) },
+                        })
                       }
                     >
                       <td className="px-4 py-3 font-medium text-on-surface">{task.title}</td>
@@ -391,8 +394,8 @@ export function ProjectDetailPage() {
                   variant="primary"
                   size="sm"
                   onClick={() =>
-                    navigate({
-                      to: '/projects/teams/$teamId',
+                    safeNavigate(navigate, {
+                      to: projectRoutes.teamDetailPath,
                       params: { teamId: String(linkedTeam.id) },
                     })
                   }
@@ -420,7 +423,7 @@ export function ProjectDetailPage() {
                     className={cn(
                       'absolute -left-[1.9rem] top-0 w-8 h-8 rounded-full flex items-center justify-center',
                       active
-                        ? 'bg-secondary text-white'
+                        ? 'bg-secondary text-on-primary'
                         : reached
                           ? 'bg-secondary/20 text-secondary'
                           : 'bg-surface-container text-on-surface-variant',
@@ -472,12 +475,7 @@ export function ProjectDetailPage() {
       )}
 
       {tab === 'notes' && (
-        <NotesPanel
-          className="max-w-3xl"
-          referenceType="PROJECT"
-          referenceId={project.id}
-          title="Project notes"
-        />
+        <NotesPanel className="max-w-3xl" referenceType="PROJECT" referenceId={project.id} title="Project notes" />
       )}
 
       {tab === 'repository' && (
@@ -490,9 +488,7 @@ export function ProjectDetailPage() {
               placeholder="https://github.com/..."
             />
           ) : (
-            <p className="font-mono text-sm text-on-surface">
-              {project.repositoryUrl || 'No repository URL set.'}
-            </p>
+            <p className="font-mono text-sm text-on-surface">{project.repositoryUrl || 'No repository URL set.'}</p>
           )}
         </section>
       )}
