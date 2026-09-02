@@ -57,6 +57,9 @@ export const typeIcon: Record<ActivityType, string> = {
   'Proposal Sent': 'send',
 }
 
+/** Alias used by LeadDetail / SalesActivityTimeline */
+export const activityIcon: Record<string, string> = typeIcon
+
 export const caseStudyStatusStyles: Record<string, string> = {
   Published: 'status-badge status-success',
   Draft: 'status-badge status-warning',
