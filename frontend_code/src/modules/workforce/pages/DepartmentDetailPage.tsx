@@ -12,6 +12,7 @@ import { Action, ResourceName } from '@/shared/schema'
 import type { DepartmentEmployee } from '../api/departments'
 import { useDepartmentDetail } from '../hooks/use-department-detail'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
+import { workforceRoutes } from '../routes'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -147,12 +148,12 @@ export function DepartmentDetailPage() {
   if (!d) {
     return (
       <div className="space-y-4 animate-fade-in">
-        <BackButton to="/workforce/departments" label="Back to departments" />
+        <BackButton to={workforceRoutes.departments} label="Back to departments" />
         <ErrorState
           title="Department not found"
           description="This department may have been archived or the link is invalid."
           showBack={false}
-          onBack={() => navigate({ to: '/workforce/departments' })}
+          onBack={() => navigate({ to: workforceRoutes.departments, search: {} })}
         />
       </div>
     )
@@ -172,7 +173,7 @@ export function DepartmentDetailPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <BackButton to="/workforce/departments" label="Back to departments" />
+        <BackButton to={workforceRoutes.departments} label="Back to departments" />
         <DynamicRouteCrumbs className="mt-2 mb-3" lastLabel={d.name} />
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="flex items-center gap-3 flex-wrap">
@@ -300,8 +301,9 @@ export function DepartmentDetailPage() {
               size="sm"
               onClick={() =>
                 navigate({
-                  to: '/workforce/employees/$employeeId',
+                  to: workforceRoutes.employeeDetailPath,
                   params: { employeeId: String(headEmployee.employmentId) },
+                  search: {},
                 })
               }
             >
@@ -366,8 +368,9 @@ export function DepartmentDetailPage() {
                     onClick={() => {
                       if (isEditing) return
                       navigate({
-                        to: '/workforce/employees/$employeeId',
+                        to: workforceRoutes.employeeDetailPath,
                         params: { employeeId: String(e.employmentId) },
+                        search: {},
                       })
                     }}
                   >
@@ -433,7 +436,7 @@ export function DepartmentDetailPage() {
                   className="text-left p-4 rounded-xl border border-outline-variant hover:border-secondary"
                   onClick={() =>
                     navigate({
-                      to: '/workforce/employees/new',
+                      to: workforceRoutes.employeeNew,
                       search: { departmentId: String(id) } as never,
                     })
                   }
