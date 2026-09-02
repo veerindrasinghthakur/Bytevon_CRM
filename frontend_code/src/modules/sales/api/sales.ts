@@ -165,7 +165,6 @@ export async function listLeads(params?: {
   if (params?.priority && params.priority !== 'All')
     items = items.filter((l) => l.priority === params.priority)
   if (params?.source && params.source !== 'All') items = items.filter((l) => l.source === params.source)
-  // When page/pageSize omitted, return full filtered set (client-side list hooks)
   if (params?.page != null || params?.pageSize != null) {
     const page = paginateItems(items, params.page, params.pageSize)
     return { items: page.items, total: page.total, metrics: salesMetrics }
@@ -329,15 +328,42 @@ export async function updateClient(id: string, patch: Partial<Client>): Promise<
   return list[idx]
 }
 
-export async function listCaseStudies(): Promise<{ items: CaseStudy[]; metrics: SalesMetric[] }> {
+export async function listCaseStudies(params?: {
+  search?: string
+  status?: string
+  page?: number
+  pageSize?: number
+}): Promise<{ items: CaseStudy[]; total: number; metrics: SalesMetric[] }> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<{ items: CaseStudy[]; metrics: SalesMetric[] }>(
+    const { data } = await apiClient.get<{ items: CaseStudy[]; total?: number; metrics: SalesMetric[] }>(
       '/sales/case-studies',
+      { params },
     )
-    return data
+    return {
+      items: data.items ?? [],
+      total: data.total ?? data.items?.length ?? 0,
+      metrics: data.metrics ?? [],
+    }
   }
   await delay()
-  return { items: seedCaseStudies, metrics: caseStudyMetrics }
+  let items = [...seedCaseStudies]
+  if (params?.search) {
+    const q = params.search.toLowerCase()
+    items = items.filter(
+      (cs) =>
+        cs.title.toLowerCase().includes(q) ||
+        cs.customer.toLowerCase().includes(q) ||
+        cs.industry.toLowerCase().includes(q),
+    )
+  }
+  if (params?.status && params.status !== 'All') {
+    items = items.filter((cs) => cs.status === params.status)
+  }
+  if (params?.page != null || params?.pageSize != null) {
+    const page = paginateItems(items, params.page, params.pageSize)
+    return { items: page.items, total: page.total, metrics: caseStudyMetrics }
+  }
+  return { items, total: items.length, metrics: caseStudyMetrics }
 }
 
 export async function listSalesActivities(): Promise<SalesActivity[]> {
