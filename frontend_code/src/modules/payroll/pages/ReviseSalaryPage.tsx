@@ -1,29 +1,55 @@
+import { useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { useForm, useFieldArray } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Select } from '@/shared/components/ui/Select'
 import { useReviseSalary } from '../hooks/use-payroll'
 import { SALARY_ITEM_TYPE_OPTIONS } from '../schemas/enums'
+import {
+  salaryFormSchema,
+  type SalaryFormInput,
+  emptySalaryItemForm,
+  salaryItemsToForm,
+  toSaveSalaryInput,
+} from '../schemas/salary-form'
 import { payrollRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 
 export function ReviseSalaryPage() {
   const navigate = useNavigate()
-  const {
-    emp,
-    rows,
-    effectiveFrom,
-    setEffectiveFrom,
-    totalEarnings,
-    totalDeductions,
-    net,
-    formatMoney,
-    addRow,
-    removeRow,
-    updateRow,
-    saveMut,
-    isLoading,
-  } = useReviseSalary()
+  const { emp, structure, formatMoney, saveMut, isLoading } = useReviseSalary()
+
+  const form = useForm<SalaryFormInput>({
+    resolver: zodResolver(salaryFormSchema),
+    defaultValues: {
+      effectiveFrom: '',
+      items: [emptySalaryItemForm()],
+    },
+  })
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: 'items',
+  })
+
+  useEffect(() => {
+    if (!structure) return
+    form.reset({
+      effectiveFrom: structure.effectiveFrom,
+      items: salaryItemsToForm(structure.items),
+    })
+  }, [structure, form])
+
+  const watched = form.watch()
+  const totalEarnings = (watched.items ?? [])
+    .filter((r) => r.type === 'EARNING')
+    .reduce((s, r) => s + (Number(r.amount) || 0), 0)
+  const totalDeductions = (watched.items ?? [])
+    .filter((r) => r.type === 'DEDUCTION')
+    .reduce((s, r) => s + (Number(r.amount) || 0), 0)
+  const net = totalEarnings - totalDeductions
 
   if (isLoading) {
     return <div className="p-8 text-body-md text-on-surface-variant">Loading salary structure…</div>
@@ -43,11 +69,12 @@ export function ReviseSalaryPage() {
       params: { employeeId: emp.id },
     })
 
-  const handleSave = () => {
-    saveMut.mutate(undefined, {
+  const onSubmit = form.handleSubmit((data) => {
+    const payload = toSaveSalaryInput(data)
+    saveMut.mutate(payload, {
       onSuccess: () => backToDetail(),
     })
-  }
+  })
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -92,14 +119,14 @@ export function ReviseSalaryPage() {
             <Button variant="outline" size="sm" onClick={backToDetail} disabled={saveMut.isPending}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm" onClick={handleSave} disabled={saveMut.isPending}>
+            <Button variant="primary" size="sm" onClick={() => void onSubmit()} disabled={saveMut.isPending}>
               {saveMut.isPending ? 'Saving…' : 'Save Salary'}
             </Button>
           </div>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <form onSubmit={onSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8 flex flex-col gap-8">
           <section className="bv-surface p-6 flex items-start gap-6">
             <div className="w-20 h-20 rounded-full bg-secondary-container flex items-center justify-center text-primary font-bold text-xl border border-outline-variant">
@@ -144,22 +171,25 @@ export function ReviseSalaryPage() {
                 <div className="col-span-1 text-center">Act</div>
               </div>
               <div className="flex flex-col gap-3">
-                {rows.map((row) => (
+                {fields.map((field, index) => (
                   <div
-                    key={row.id}
+                    key={field.id}
                     className="grid grid-cols-12 gap-4 items-center bg-surface-container p-2 rounded-lg border border-outline-variant"
                   >
                     <div className="col-span-5">
                       <input
                         className="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-3 py-2 text-body-sm focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
-                        value={row.name}
-                        onChange={(e) => updateRow(row.id, { name: e.target.value })}
+                        {...form.register(`items.${index}.name`)}
                       />
                     </div>
                     <div className="col-span-3">
                       <Select
-                        value={row.type}
-                        onChange={(v) => updateRow(row.id, { type: v as 'EARNING' | 'DEDUCTION' })}
+                        value={form.watch(`items.${index}.type`)}
+                        onChange={(v) =>
+                          form.setValue(`items.${index}.type`, v as 'EARNING' | 'DEDUCTION', {
+                            shouldValidate: true,
+                          })
+                        }
                         options={[...SALARY_ITEM_TYPE_OPTIONS]}
                         minWidthClass="min-w-0"
                         className="w-full"
@@ -172,17 +202,16 @@ export function ReviseSalaryPage() {
                       <input
                         type="number"
                         className={`w-full bg-surface-container-lowest border border-outline-variant rounded-md pl-7 pr-3 py-2 text-body-sm focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none text-right font-medium transition-colors ${
-                          row.type === 'DEDUCTION' ? 'text-error' : ''
+                          form.watch(`items.${index}.type`) === 'DEDUCTION' ? 'text-error' : ''
                         }`}
-                        value={row.amount}
-                        onChange={(e) => updateRow(row.id, { amount: Number(e.target.value) || 0 })}
+                        {...form.register(`items.${index}.amount`)}
                       />
                     </div>
                     <div className="col-span-1 flex justify-center">
                       <button
                         type="button"
                         className="p-1.5 text-outline hover:text-error hover:bg-error-container rounded-md transition-colors"
-                        onClick={() => removeRow(row.id)}
+                        onClick={() => remove(index)}
                         title="Remove Item"
                       >
                         <span className="material-symbols-outlined text-[20px]">delete</span>
@@ -191,9 +220,12 @@ export function ReviseSalaryPage() {
                   </div>
                 ))}
               </div>
+              {form.formState.errors.items?.message && (
+                <p className="text-body-sm text-error mt-2">{form.formState.errors.items.message}</p>
+              )}
               <button
                 type="button"
-                onClick={addRow}
+                onClick={() => append(emptySalaryItemForm())}
                 className="mt-4 flex items-center gap-2 text-label-md text-primary hover:text-secondary px-3 py-2 rounded-lg hover:bg-primary-fixed transition-colors border border-dashed border-primary w-full justify-center"
               >
                 <span className="material-symbols-outlined text-[20px]">add</span>
@@ -216,10 +248,12 @@ export function ReviseSalaryPage() {
                 </label>
                 <input
                   type="date"
-                  value={effectiveFrom}
-                  onChange={(e) => setEffectiveFrom(e.target.value)}
+                  {...form.register('effectiveFrom')}
                   className="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-3 py-2 text-body-sm focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
                 />
+                {form.formState.errors.effectiveFrom && (
+                  <p className="text-body-sm text-error mt-1">{form.formState.errors.effectiveFrom.message}</p>
+                )}
               </div>
               <div>
                 <label className="block text-label-md text-on-background mb-1">Effective To</label>
@@ -266,7 +300,7 @@ export function ReviseSalaryPage() {
             </div>
           </section>
         </div>
-      </div>
+      </form>
     </div>
   )
 }
