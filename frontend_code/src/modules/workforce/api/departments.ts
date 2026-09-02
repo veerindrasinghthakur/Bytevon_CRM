@@ -6,11 +6,10 @@
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
-import { paginateItems } from '@/shared/lib/list-params'
+import { paginateItems, type EntityListParams } from '@/shared/lib/list-params'
 import type { DepartmentRow } from '@/shared/schema'
 import { WorkMode } from '@/shared/schema'
 import type { DepartmentListItem, DepartmentEmployee } from '../types'
-import type { EntityListParams } from '@/shared/lib/list-params'
 
 export type { DepartmentListItem, DepartmentEmployee }
 
@@ -47,23 +46,37 @@ function toListItem(d: DepartmentRow): DepartmentListItem {
   }
 }
 
+function buildDeptMetrics(rows: DepartmentListItem[]) {
+  return {
+    total: rows.length,
+    active: rows.filter((d) => d.status === 'Active').length,
+    inactive: rows.filter((d) => d.status === 'Inactive').length,
+    staffing: rows.reduce((s, d) => s + d.staffCount, 0),
+  }
+}
+
 export async function listDepartments(
   params: { includeArchived?: boolean } & EntityListParams = {},
 ) {
   const { page = 1, pageSize = 20, search, status } = params
 
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<{ items: DepartmentListItem[]; total: number }>(
-      '/workforce/departments',
-      { params: { page, pageSize, search, status } },
-    )
-    return { items: data.items, total: data.total }
+    const { data } = await apiClient.get<{
+      items: DepartmentListItem[]
+      total: number
+      metrics?: ReturnType<typeof buildDeptMetrics>
+    }>('/workforce/departments', { params: { page, pageSize, search, status } })
+    return {
+      items: data.items,
+      total: data.total,
+      metrics: data.metrics ?? buildDeptMetrics(data.items),
+    }
   }
 
   await delay()
   let rows = getDb().schema_departments.map((d) => toListItem(d))
   if (search) {
-    const q = search.toLowerCase()
+    const q = String(search).toLowerCase()
     rows = rows.filter(
       (d) =>
         d.name.toLowerCase().includes(q) ||
@@ -77,10 +90,11 @@ export async function listDepartments(
   if (!params.includeArchived) {
     rows = rows.filter((d) => !d.isArchived)
   }
+  const metrics = buildDeptMetrics(rows)
   if (page != null || pageSize != null) {
-    return paginateItems(rows, page, pageSize)
+    return { ...paginateItems(rows, Number(page) || 1, Number(pageSize) || 20), metrics }
   }
-  return { items: rows, total: rows.length }
+  return { items: rows, total: rows.length, metrics }
 }
 
 export async function getDepartment(id: number) {
