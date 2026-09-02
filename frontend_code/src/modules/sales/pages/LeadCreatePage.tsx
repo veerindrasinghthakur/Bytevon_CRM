@@ -145,7 +145,7 @@ export function LeadCreatePage() {
       } else {
         await createMut.mutateAsync(payload)
       }
-      safeNavigate(navigate, { to: salesRoutes.leads })
+      safeNavigate(navigate, { to: salesRoutes.leads, search: {} })
     } catch (err) {
       form.setError('root', { message: err instanceof Error ? err.message : 'Save failed' })
     }
@@ -167,7 +167,7 @@ export function LeadCreatePage() {
         backLabel="Back to leads"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to={salesRoutes.root} className="hover:text-secondary">
+            <Link to={salesRoutes.root} search={{}} className="hover:text-secondary">
               Sales
             </Link>
             <span className="mx-2">/</span>
@@ -286,25 +286,29 @@ export function LeadCreatePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Select
               label="Stage"
-              {...form.register('stage')}
+              value={form.watch('stage')}
+              onChange={(v) => form.setValue('stage', v as PipelineStage)}
               options={stages.map((s) => ({ value: s, label: s }))}
               minWidthClass="w-full"
             />
             <Select
               label="Priority"
-              {...form.register('priority')}
+              value={form.watch('priority')}
+              onChange={(v) => form.setValue('priority', v as LeadPriority)}
               options={priorities.map((p) => ({ value: p, label: p }))}
               minWidthClass="w-full"
             />
             <Select
               label="Status"
-              {...form.register('status')}
+              value={form.watch('status')}
+              onChange={(v) => form.setValue('status', v as RecordStatus)}
               options={statuses.map((s) => ({ value: s, label: s }))}
               minWidthClass="w-full"
             />
             <Select
               label="Source"
-              {...form.register('source')}
+              value={form.watch('source')}
+              onChange={(v) => form.setValue('source', v)}
               options={sources.map((s) => ({ value: s, label: s }))}
               minWidthClass="w-full"
             />
@@ -344,7 +348,8 @@ export function LeadCreatePage() {
             <div>
               <Select
                 label="Assigned sales representative"
-                {...form.register('assignedEmploymentId')}
+                value={form.watch('assignedEmploymentId')}
+                onChange={(v) => form.setValue('assignedEmploymentId', v)}
                 placeholder="Select Sales employee"
                 options={repOptions}
                 minWidthClass="w-full"
@@ -397,7 +402,7 @@ export function LeadCreatePage() {
           <Button
             type="button"
             variant="ghost"
-            onClick={() => safeNavigate(navigate, { to: salesRoutes.leads })}
+            onClick={() => safeNavigate(navigate, { to: salesRoutes.leads, search: {} })}
           >
             Cancel
           </Button>
