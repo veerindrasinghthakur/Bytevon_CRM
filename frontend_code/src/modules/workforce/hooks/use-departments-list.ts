@@ -5,6 +5,9 @@ import { queryKeys } from '@/shared/lib/query-keys'
 
 const FILTER_DEFAULTS = { status: 'All' }
 
+/** Query key factory used by use-department-detail invalidation. */
+export const DEPARTMENTS_LIST_KEY = queryKeys.workforce.departments.all
+
 export function useDepartmentsList() {
   const controls = useListControls({
     filterDefaults: FILTER_DEFAULTS,
