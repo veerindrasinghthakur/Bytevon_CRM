@@ -5,13 +5,10 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { Select } from '@/shared/components/ui/Select'
 import { ResourceName } from '@/shared/schema'
 import { useEmployeePayrollHistory } from '../hooks/use-payroll'
+import { payrollHistoryStatusStyles } from '../schemas/enums'
+import { payrollRoutes } from '../routes'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
-
-const statusStyle: Record<string, string> = {
-  PAID: 'bg-[#e6f4ea] text-[#137333] border border-[#ceead6]',
-  APPROVED: 'bg-[#e8f0fe] text-[#1967d2] border border-[#d2e3fc]',
-  CALCULATED: 'bg-secondary-container text-on-secondary-container border border-outline-variant',
-}
 
 export function EmployeePayrollHistoryPage() {
   const navigate = useNavigate()
@@ -27,7 +24,7 @@ export function EmployeePayrollHistoryPage() {
     return (
       <div className="p-8 space-y-4">
         <p className="text-body-md text-error">Employee not found.</p>
-        <BackButton to="/payroll/salary" />
+        <BackButton to={payrollRoutes.salary} />
       </div>
     )
   }
@@ -42,34 +39,43 @@ export function EmployeePayrollHistoryPage() {
     <div className="space-y-8 animate-fade-in">
       <header className="flex flex-col gap-3">
         <div className="flex items-center gap-2 text-on-surface-variant text-label-md flex-wrap">
-          <button type="button" className="hover:text-secondary transition-colors" onClick={() => navigate({ to: '/payroll' })}>
+          <button
+            type="button"
+            className="hover:text-secondary transition-colors"
+            onClick={() => safeNavigate(navigate, { to: payrollRoutes.root })}
+          >
             Payroll
           </button>
           <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-          <button type="button" className="hover:text-secondary transition-colors" onClick={() => navigate({ to: '/payroll/salary' })}>
+          <button
+            type="button"
+            className="hover:text-secondary transition-colors"
+            onClick={() => safeNavigate(navigate, { to: payrollRoutes.salary })}
+          >
             Salary Management
           </button>
           <span className="material-symbols-outlined text-[16px]">chevron_right</span>
           <button
             type="button"
             className="hover:text-secondary transition-colors"
-            onClick={() => navigate({ to: '/payroll/salary/$employeeId', params: { employeeId: emp.id } })}
+            onClick={() =>
+              safeNavigate(navigate, {
+                to: payrollRoutes.salaryDetailPath,
+                params: { employeeId: emp.id },
+              })
+            }
           >
             {emp.name}
           </button>
           <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-          <span className="text-deep-navy font-medium">Payroll History</span>
+          <span className="text-on-background font-medium">Payroll History</span>
         </div>
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="flex items-start gap-3">
-            <BackButton
-              to={`/payroll/salary/${emp.id}`}
-              label=""
-              className="!px-1 mt-1"
-            />
+            <BackButton to={payrollRoutes.salaryDetail(emp.id)} label="" className="!px-1 mt-1" />
             <div>
-              <h1 className="text-headline-lg font-semibold text-deep-navy">Payroll History</h1>
+              <h1 className="text-headline-lg font-semibold text-on-background">Payroll History</h1>
               <p className="text-body-md text-on-surface-variant mt-1">
                 Manage and view historical payroll records for the employee.
               </p>
@@ -80,7 +86,7 @@ export function EmployeePayrollHistoryPage() {
               {emp.initials}
             </div>
             <div>
-              <h2 className="text-title-lg font-semibold text-deep-navy">{emp.name}</h2>
+              <h2 className="text-title-lg font-semibold text-on-background">{emp.name}</h2>
               <div className="flex items-center gap-3 text-on-surface-variant text-body-sm mt-1 flex-wrap">
                 <span className="flex items-center gap-1">
                   <span className="material-symbols-outlined text-[16px]">badge</span> {emp.code}
@@ -110,7 +116,7 @@ export function EmployeePayrollHistoryPage() {
                 <span className="material-symbols-outlined text-outline">{card.icon}</span> {card.label}
               </span>
             </div>
-            <div className="text-headline-lg font-semibold text-deep-navy mt-1 relative z-10">{card.value}</div>
+            <div className="text-headline-lg font-semibold text-on-background mt-1 relative z-10">{card.value}</div>
             <div className="text-body-sm text-on-surface-variant mt-auto relative z-10">{card.subtitle}</div>
           </div>
         ))}
@@ -167,10 +173,10 @@ export function EmployeePayrollHistoryPage() {
             <tbody className="text-body-sm divide-y divide-outline-variant">
               {filtered.map((r) => (
                 <tr key={r.id} className="zebra-row group">
-                  <td className="p-4 text-deep-navy font-medium">{r.month}</td>
+                  <td className="p-4 text-on-background font-medium">{r.month}</td>
                   <td className="p-4 text-on-surface-variant">{formatMoney(r.gross)}</td>
-                  <td className="p-4 text-[#137333] font-medium">{formatMoney(r.earnings)}</td>
-                  <td className="p-4 text-[#c5221f]">{formatMoney(r.deductions)}</td>
+                  <td className="p-4 text-secondary font-medium">{formatMoney(r.earnings)}</td>
+                  <td className="p-4 text-error">{formatMoney(r.deductions)}</td>
                   <td
                     className={cn(
                       'p-4',
@@ -180,13 +186,13 @@ export function EmployeePayrollHistoryPage() {
                     {r.adjustments >= 0 ? '+' : ''}
                     {formatMoney(r.adjustments)}
                   </td>
-                  <td className="p-4 text-deep-navy font-semibold">{formatMoney(r.net)}</td>
+                  <td className="p-4 text-on-background font-semibold">{formatMoney(r.net)}</td>
                   <td className="p-4 text-on-surface-variant">{r.paymentDate ?? '—'}</td>
                   <td className="p-4">
                     <span
                       className={cn(
                         'inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium',
-                        statusStyle[r.status],
+                        payrollHistoryStatusStyles[r.status] ?? 'status-badge status-neutral',
                       )}
                     >
                       {r.status}
@@ -200,7 +206,10 @@ export function EmployeePayrollHistoryPage() {
                           className="text-on-surface-variant hover:text-on-surface text-label-md inline-flex items-center gap-1 transition-colors"
                           title="View Payslip"
                           onClick={() =>
-                            navigate({ to: '/payroll/payslip/$employeeId', params: { employeeId: emp.id } })
+                            safeNavigate(navigate, {
+                              to: payrollRoutes.payslipPath,
+                              params: { employeeId: emp.id },
+                            })
                           }
                         >
                           <span className="material-symbols-outlined text-[18px]">receipt_long</span>
@@ -210,7 +219,10 @@ export function EmployeePayrollHistoryPage() {
                         type="button"
                         className="text-primary hover:text-secondary text-label-md inline-flex items-center gap-1 transition-colors"
                         onClick={() =>
-                          navigate({ to: '/payroll/payslip/$employeeId', params: { employeeId: emp.id } })
+                          safeNavigate(navigate, {
+                            to: payrollRoutes.payslipPath,
+                            params: { employeeId: emp.id },
+                          })
                         }
                       >
                         <span className="material-symbols-outlined text-[18px]">visibility</span>

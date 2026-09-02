@@ -3,6 +3,9 @@ import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Select } from '@/shared/components/ui/Select'
 import { useReviseSalary } from '../hooks/use-payroll'
+import { SALARY_ITEM_TYPE_OPTIONS } from '../schemas/enums'
+import { payrollRoutes } from '../routes'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 
 export function ReviseSalaryPage() {
   const navigate = useNavigate()
@@ -29,13 +32,16 @@ export function ReviseSalaryPage() {
     return (
       <div className="p-8 space-y-4">
         <p className="text-body-md text-error">Employee not found.</p>
-        <BackButton to="/payroll/salary" />
+        <BackButton to={payrollRoutes.salary} />
       </div>
     )
   }
 
   const backToDetail = () =>
-    navigate({ to: '/payroll/salary/$employeeId', params: { employeeId: emp.id } })
+    safeNavigate(navigate, {
+      to: payrollRoutes.salaryDetailPath,
+      params: { employeeId: emp.id },
+    })
 
   const handleSave = () => {
     saveMut.mutate(undefined, {
@@ -47,11 +53,19 @@ export function ReviseSalaryPage() {
     <div className="space-y-8 animate-fade-in">
       <header className="flex flex-col gap-3">
         <div className="flex items-center gap-2 text-on-surface-variant text-label-md flex-wrap">
-          <button type="button" className="hover:text-secondary transition-colors" onClick={() => navigate({ to: '/payroll' })}>
+          <button
+            type="button"
+            className="hover:text-secondary transition-colors"
+            onClick={() => safeNavigate(navigate, { to: payrollRoutes.root })}
+          >
             Payroll
           </button>
           <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-          <button type="button" className="hover:text-secondary transition-colors" onClick={() => navigate({ to: '/payroll/salary' })}>
+          <button
+            type="button"
+            className="hover:text-secondary transition-colors"
+            onClick={() => safeNavigate(navigate, { to: payrollRoutes.salary })}
+          >
             Salary Management
           </button>
           <span className="material-symbols-outlined text-[16px]">chevron_right</span>
@@ -59,13 +73,13 @@ export function ReviseSalaryPage() {
             {emp.name}
           </button>
           <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-          <span className="text-deep-navy font-medium">Revise Salary</span>
+          <span className="text-on-background font-medium">Revise Salary</span>
         </div>
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <BackButton to={`/payroll/salary/${emp.id}`} label="" className="!px-1" />
+            <BackButton to={payrollRoutes.salaryDetail(emp.id)} label="" className="!px-1" />
             <div>
-              <h1 className="text-headline-lg font-semibold text-deep-navy flex items-center gap-2">
+              <h1 className="text-headline-lg font-semibold text-on-background flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">payments</span>
                 Revise Salary
               </h1>
@@ -92,18 +106,18 @@ export function ReviseSalaryPage() {
               {emp.initials}
             </div>
             <div className="flex-1">
-              <h2 className="text-title-lg font-semibold text-deep-navy">{emp.name}</h2>
+              <h2 className="text-title-lg font-semibold text-on-background">{emp.name}</h2>
               <p className="text-body-sm text-on-surface-variant flex items-center gap-2 mt-1">
                 <span className="text-label-md text-primary bg-primary-fixed px-2 py-0.5 rounded">{emp.code}</span>
               </p>
               <div className="grid grid-cols-2 gap-4 mt-4 pt-2 border-t border-outline-variant">
                 <div>
                   <p className="text-label-sm text-on-surface-variant uppercase tracking-wide">Department</p>
-                  <p className="text-body-md text-deep-navy font-medium mt-1">{emp.department}</p>
+                  <p className="text-body-md text-on-background font-medium mt-1">{emp.department}</p>
                 </div>
                 <div>
                   <p className="text-label-sm text-on-surface-variant uppercase tracking-wide">Position</p>
-                  <p className="text-body-md text-deep-navy font-medium mt-1">{emp.role}</p>
+                  <p className="text-body-md text-on-background font-medium mt-1">{emp.role}</p>
                 </div>
               </div>
             </div>
@@ -111,7 +125,7 @@ export function ReviseSalaryPage() {
 
           <section className="bv-surface overflow-hidden">
             <div className="p-6 border-b border-outline-variant bg-surface-bright">
-              <h3 className="text-title-lg font-semibold text-deep-navy flex items-center gap-2">
+              <h3 className="text-title-lg font-semibold text-on-background flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary">tune</span>
                 Salary Items Configuration
               </h3>
@@ -146,10 +160,7 @@ export function ReviseSalaryPage() {
                       <Select
                         value={row.type}
                         onChange={(v) => updateRow(row.id, { type: v as 'EARNING' | 'DEDUCTION' })}
-                        options={[
-                          { value: 'EARNING', label: 'EARNING' },
-                          { value: 'DEDUCTION', label: 'DEDUCTION' },
-                        ]}
+                        options={[...SALARY_ITEM_TYPE_OPTIONS]}
                         minWidthClass="min-w-0"
                         className="w-full"
                       />
@@ -194,13 +205,13 @@ export function ReviseSalaryPage() {
 
         <div className="lg:col-span-4 flex flex-col gap-8">
           <section className="bv-surface p-6">
-            <h3 className="text-title-lg font-semibold text-deep-navy flex items-center gap-2 mb-4">
+            <h3 className="text-title-lg font-semibold text-on-background flex items-center gap-2 mb-4">
               <span className="material-symbols-outlined text-secondary">calendar_month</span>
               Effective Period
             </h3>
             <div className="space-y-4">
               <div>
-                <label className="block text-label-md text-deep-navy mb-1">
+                <label className="block text-label-md text-on-background mb-1">
                   Effective From <span className="text-error">*</span>
                 </label>
                 <input
@@ -211,7 +222,7 @@ export function ReviseSalaryPage() {
                 />
               </div>
               <div>
-                <label className="block text-label-md text-deep-navy mb-1">Effective To</label>
+                <label className="block text-label-md text-on-background mb-1">Effective To</label>
                 <input
                   type="date"
                   disabled
@@ -227,7 +238,7 @@ export function ReviseSalaryPage() {
             </div>
           </section>
 
-          <section className="bg-deep-navy text-on-primary rounded-xl p-6 executive-shadow relative overflow-hidden">
+          <section className="bg-primary text-on-primary rounded-xl p-6 executive-shadow relative overflow-hidden">
             <div className="absolute -right-10 -top-10 opacity-10">
               <span className="material-symbols-outlined text-[120px]">account_balance</span>
             </div>
@@ -236,11 +247,11 @@ export function ReviseSalaryPage() {
               Calculation Summary
             </h3>
             <div className="space-y-4 relative z-10">
-              <div className="flex justify-between items-center pb-3 border-b border-white/10">
+              <div className="flex justify-between items-center pb-3 border-b border-on-primary/10">
                 <span className="text-body-md text-inverse-primary">Total Earnings</span>
                 <span className="text-label-md text-on-primary tracking-wider">{formatMoney(totalEarnings)}</span>
               </div>
-              <div className="flex justify-between items-center pb-3 border-b border-white/10">
+              <div className="flex justify-between items-center pb-3 border-b border-on-primary/10">
                 <span className="text-body-md text-inverse-primary">Total Deductions</span>
                 <span className="text-label-md text-error-container tracking-wider">
                   -{formatMoney(totalDeductions)}
