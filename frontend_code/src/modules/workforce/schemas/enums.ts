@@ -21,14 +21,41 @@ export const WORKFORCE_ATTENDANCE_STATUS_OPTIONS = [
   { value: 'ON_LEAVE', label: 'On leave' },
 ] as const
 
-export const employeeStatusStyles: Record<string, string> = {
+/** Employment lifecycle state badges (list + detail). */
+export const employmentStateStyles: Record<string, string> = {
+  CONFIRMED: 'status-badge status-success',
+  ONBOARDING: 'status-badge status-info',
+  PROBATION: 'status-badge status-warning',
+  SERVING_NOTICE: 'status-badge status-warning',
+  RESIGNED: 'status-badge status-neutral',
+  TERMINATED: 'status-badge status-error',
+  ALUMNI: 'status-badge status-neutral',
   ACTIVE: 'status-badge status-success',
   INACTIVE: 'status-badge status-neutral',
   ON_LEAVE: 'status-badge status-info',
-  TERMINATED: 'status-badge status-error',
 }
+
+/** Dot classes for QuickOverview / status indicators — semantic only. */
+export const employmentStateDot: Record<string, string> = {
+  CONFIRMED: 'bg-secondary',
+  ONBOARDING: 'bg-secondary',
+  PROBATION: 'bg-[var(--color-warning-amber)]',
+  SERVING_NOTICE: 'bg-[var(--color-warning-amber)]',
+  RESIGNED: 'bg-outline',
+  TERMINATED: 'bg-error',
+  ALUMNI: 'bg-outline',
+  ACTIVE: 'bg-secondary',
+  INACTIVE: 'bg-outline',
+  ON_LEAVE: 'bg-secondary',
+}
+
+/** @deprecated Prefer employmentStateStyles — kept for compatibility */
+export const employeeStatusStyles = employmentStateStyles
 
 export const departmentStatusStyles: Record<string, string> = {
   ACTIVE: 'status-badge status-success',
   ARCHIVED: 'status-badge status-neutral',
 }
+
+export const loginEnabledClass = 'text-label-sm text-secondary font-medium'
+export const loginDisabledClass = 'text-label-sm text-on-surface-variant font-medium'

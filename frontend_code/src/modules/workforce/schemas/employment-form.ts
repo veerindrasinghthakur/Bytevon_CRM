@@ -52,6 +52,18 @@ export const emptyEmploymentForm = (): EmploymentFormInput => ({
   ifsc: '',
 })
 
+/** Profile fields editable on Employee detail. */
+export const employeeDetailEditSchema = z.object({
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
+  dateOfBirth: z.string().optional().or(z.literal('')),
+  personalEmail: z.string().email('Invalid email').optional().or(z.literal('')),
+  personalPhone: z.string().optional().or(z.literal('')),
+  address: z.string().optional().or(z.literal('')),
+})
+
+export type EmployeeDetailEditInput = z.infer<typeof employeeDetailEditSchema>
+
 /** Form → API create payload (string Select ids → numbers; address/bank assembled). */
 export function toCreateEmploymentInput(form: EmploymentFormInput): CreateEmploymentSchemaInput {
   const addressParts = [form.street, form.city, form.stateRegion, form.zip, form.country]
