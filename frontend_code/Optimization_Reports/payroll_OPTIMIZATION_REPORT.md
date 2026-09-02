@@ -8,17 +8,16 @@
 
 | Item | Change |
 |------|--------|
-| Monthly/Run/Review/Payslip/Salary nav | `safeNavigate` + `payrollRoutes` |
-| Monthly statusBadge | `payrollStatusStyles` |
-| Tokens deep-navy / palette | semantic tokens |
+| Nav + status tokens | Prior |
+| Org History API | `listOrgPayrollHistory` + query on History page |
+| ReviseSalary RHF | `salaryFormSchema` + `useFieldArray` + `toSaveSalaryInput` |
+| useReviseSalary | Accepts `SaveSalaryStructureInput` |
 
 ---
 
 ## Still deferred
 
-- ReviseSalary full RHF (`salaryFormSchema` exists; page still uses draft row state)
-- RecordPaymentModal RHF
-- History org list API-backed
+- RecordPaymentModal full RHF (paymentRef still local state; functional)
 - New shared components
 
 ---

@@ -1,32 +1,24 @@
 # Module Optimization Report: sales
 
-**Updated:** 2026-09-02  
-**Scope:** Tokens, route helpers, form/type alignment. No new components.
+**Updated:** 2026-09-02
 
 ---
 
-## Cleared this pass
+## Cleared
 
 | Item | Change |
 |------|--------|
-| Palette stage/priority/type/activity styles in cssTokens | → `status-badge` + semantic tokens |
-| Emoji activity icons | → material symbol names |
-| `createSalesRoutes` `any` | `AnyRoute` generic |
-| Path templates | `leadDetailPath`, `clientDetailPath`, edit paths |
-| Dashboard/Analytics emerald/red change chips | `changeTypeStyles` |
-| Dashboard nav to detail | `*Path` + params |
-| Lead/Client create forms | Already RHF + Zod (prior) |
-| Activity / Analytics hooks | Already on `useSalesActivities` / `useSalesDashboardMetrics` |
+| Semantic tokens / path helpers | Prior |
+| Orphan LeadFiltersBar | Removed |
+| Case study Edit | Opens quick overview |
+| Case study Share | Web Share API + clipboard fallback |
+| Lead/Client RHF | Already in place |
 
 ---
 
 ## Still deferred
 
-- CaseStudies Edit/Share button handlers
-- Orphan `LeadFiltersBar` removal
-- use-sales cache helper typing polish
+- Dedicated case-study create/edit route (no route yet)
 - New shared components
 
 ---
-
-*Cleared items removed from action lists.*

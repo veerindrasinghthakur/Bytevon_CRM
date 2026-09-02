@@ -14,12 +14,32 @@ import {
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
 import { useCaseStudiesList } from '../hooks/use-case-studies-list'
-import type { CaseStudy, CaseStudyStatus } from '../types'
+import type { CaseStudy } from '../types'
 import { cn } from '@/shared/lib/cn'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { salesRoutes } from '../routes'
 import { caseStudyStatusStyles, caseStudyStatusDot } from '../schemas/cssTokens'
 import { CaseStudyStatusValues } from '../schemas/enums'
+
+async function shareCaseStudy(cs: CaseStudy) {
+  const payload = {
+    title: cs.title,
+    text: cs.summary ?? `${cs.customer} · ${cs.industry}`,
+    url: typeof window !== 'undefined' ? window.location.href : '',
+  }
+  try {
+    if (typeof navigator !== 'undefined' && navigator.share) {
+      await navigator.share(payload)
+      return
+    }
+  } catch {
+    /* fall through to clipboard */
+  }
+  try {
+    await navigator.clipboard.writeText(`${payload.title}\n${payload.text}\n${payload.url}`)
+  } catch {
+    /* ignore */
+  }
+}
 
 function CaseStudyQuickContent({ cs }: { cs: CaseStudy }) {
   return (
@@ -37,9 +57,7 @@ function CaseStudyQuickContent({ cs }: { cs: CaseStudy }) {
           <QuickMetaTile
             icon="flag"
             label="Status"
-            value={
-              <span className={caseStudyStatusStyles[cs.status]}>{cs.status}</span>
-            }
+            value={<span className={caseStudyStatusStyles[cs.status]}>{cs.status}</span>}
           />
         </div>
       </QuickSection>
@@ -112,7 +130,21 @@ export function CaseStudiesListPage() {
           </nav>
         }
         actions={
-          <Button variant="primary" leftIcon={<span className="material-symbols-outlined text-lg">add</span>}>
+          <Button
+            variant="primary"
+            leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
+            onClick={() => openCaseStudyOverview({
+              id: 'new',
+              title: 'New case study',
+              customer: '—',
+              industry: '—',
+              status: 'Draft',
+              impact: '—',
+              revenue: '—',
+              tags: [],
+              summary: 'Create flow not wired yet — use overview for drafts.',
+            })}
+          >
             New case study
           </Button>
         }
@@ -220,7 +252,7 @@ export function CaseStudiesListPage() {
                   title="Edit case study"
                   onClick={(e) => {
                     e.stopPropagation()
-                    safeNavigate(navigate, { to: salesRoutes.caseStudies })
+                    openCaseStudyOverview(cs)
                   }}
                 >
                   <span className="material-symbols-outlined text-[18px]">edit</span>
@@ -232,7 +264,7 @@ export function CaseStudiesListPage() {
                   title="Share case study"
                   onClick={(e) => {
                     e.stopPropagation()
-                    navigator.share?.({ title: cs.title, text: cs.summary, url: window.location.href }).catch(() => {})
+                    void shareCaseStudy(cs)
                   }}
                 >
                   <span className="material-symbols-outlined text-[18px]">share</span>

@@ -25,7 +25,7 @@ import {
   saveSalaryStructure,
 } from '../api/payroll'
 import { formatMoney, formatMoneyShort, structureGross } from '@/shared/mock/data/payroll'
-import type { SalaryItem } from '../types'
+import type { SaveSalaryStructureInput } from '../types'
 
 export function usePayrollDashboard() {
   const kpisQuery = useQuery({ queryKey: queryKeys.payroll.kpis(), queryFn: getPayrollKpis })
@@ -253,6 +253,7 @@ export function useSalaryDetail() {
   }
 }
 
+/** Load structure + save mutation; form state lives on ReviseSalaryPage (RHF). */
 export function useReviseSalary() {
   const { employeeId } = useParams({ strict: false }) as { employeeId?: string }
   const id = employeeId ?? ''
@@ -269,57 +270,18 @@ export function useReviseSalary() {
     enabled: Boolean(id),
   })
 
-  const structure = structureQuery.data
-  const [rows, setRows] = useState<SalaryItem[] | null>(null)
-  const [effectiveFrom, setEffectiveFrom] = useState('')
-
-  if (structure && rows === null) {
-    setRows(structure.items.map((i) => ({ ...i })))
-    setEffectiveFrom(structure.effectiveFrom)
-  }
-
-  const draft = rows ?? []
-  const totalEarnings = draft.filter((r) => r.type === 'EARNING').reduce((s, r) => s + r.amount, 0)
-  const totalDeductions = draft.filter((r) => r.type === 'DEDUCTION').reduce((s, r) => s + r.amount, 0)
-  const net = totalEarnings - totalDeductions
-
   const saveMut = useMutation({
-    mutationFn: () =>
-      saveSalaryStructure(id, {
-        effectiveFrom: effectiveFrom || new Date().toISOString().slice(0, 10),
-        items: draft,
-      }),
+    mutationFn: (input: SaveSalaryStructureInput) => saveSalaryStructure(id, input),
     onSuccess: (saved) => {
       qc.setQueryData(queryKeys.payroll.salary(id), saved)
       invalidate.payrollEmployees(qc)
     },
   })
 
-  const addRow = () => {
-    setRows((prev) => [
-      ...(prev ?? []),
-      { id: `new-${Date.now()}`, name: '', type: 'EARNING', amount: 0 },
-    ])
-  }
-
-  const removeRow = (rowId: string) => setRows((prev) => (prev ?? []).filter((r) => r.id !== rowId))
-
-  const updateRow = (rowId: string, patch: Partial<SalaryItem>) => {
-    setRows((prev) => (prev ?? []).map((r) => (r.id === rowId ? { ...r, ...patch } : r)))
-  }
-
   return {
     emp: empQuery.data ?? null,
-    rows: draft,
-    effectiveFrom,
-    setEffectiveFrom,
-    totalEarnings,
-    totalDeductions,
-    net,
+    structure: structureQuery.data ?? null,
     formatMoney,
-    addRow,
-    removeRow,
-    updateRow,
     saveMut,
     isLoading: empQuery.isLoading || structureQuery.isLoading,
   }
@@ -408,7 +370,7 @@ export function useRunPayroll() {
         {
           label: 'Total Additions',
           value: `+${formatMoney(preview.totalEarnings)}`,
-          valueClass: 'text-success-emerald',
+          valueClass: 'text-secondary',
         },
         {
           label: 'Total Deductions',
