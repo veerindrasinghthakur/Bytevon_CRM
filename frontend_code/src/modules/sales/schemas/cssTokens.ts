@@ -1,61 +1,60 @@
 import type { ActivityType } from './enums'
 
-export const stageStyles = {
-  New: 'bg-blue-100 text-blue-800',
-  Contacted: 'bg-green-100 text-green-800',
-  Qualified: 'bg-yellow-100 text-yellow-800',
-  Proposal: 'bg-purple-100 text-purple-800',
-  Negotiation: 'bg-orange-100 text-orange-800',
-  Won: 'bg-green-600 text-white',
-  Lost: 'bg-red-600 text-white',
+/** Pipeline stage pills — semantic status-badge tokens only */
+export const stageStyles: Record<string, string> = {
+  New: 'status-badge status-info',
+  Contacted: 'status-badge status-success',
+  Qualified: 'status-badge status-warning',
+  Proposal: 'status-badge status-info',
+  Negotiation: 'status-badge status-warning',
+  Won: 'status-badge status-success',
+  Lost: 'status-badge status-error',
 }
 
-export const stageDot = {
-  New: 'bg-blue-500',
-  Contacted: 'bg-green-500',
-  Qualified: 'bg-yellow-500',
-  Proposal: 'bg-purple-500',
-  Negotiation: 'bg-orange-500',
-  Won: 'bg-emerald-500',
-  Lost: 'bg-red-500',
+export const stageDot: Record<string, string> = {
+  New: 'bg-secondary',
+  Contacted: 'bg-secondary',
+  Qualified: 'bg-[var(--color-warning-amber)]',
+  Proposal: 'bg-secondary',
+  Negotiation: 'bg-[var(--color-warning-amber)]',
+  Won: 'bg-secondary',
+  Lost: 'bg-error',
 }
 
-export const priorityStyles = {
-  Critical: 'bg-red-100 text-red-800',
-  High: 'bg-orange-100 text-orange-800',
-  Medium: 'bg-yellow-100 text-yellow-800',
-  Low: 'bg-blue-100 text-blue-800',
+export const priorityStyles: Record<string, string> = {
+  Critical: 'status-badge status-error',
+  High: 'status-badge status-error',
+  Medium: 'status-badge status-warning',
+  Low: 'status-badge status-neutral',
 }
 
-export const typeStyles = {
-  Enterprise: 'bg-blue-100 text-blue-800',
-  SMB: 'bg-green-100 text-green-800',
-  Partner: 'bg-purple-100 text-purple-800',
+export const typeStyles: Record<string, string> = {
+  Enterprise: 'status-badge status-info',
+  SMB: 'status-badge status-success',
+  Partner: 'status-badge status-neutral',
 }
 
-export const stageColors = {
-  New: 'from-blue-500 to-blue-400',
-  Contacted: 'from-green-500 to-green-400',
-  Qualified: 'from-yellow-500 to-yellow-400',
-  Proposal: 'from-purple-500 to-purple-400',
-  Negotiation: 'from-orange-500 to-orange-400',
-  Won: 'from-green-600 to-green-500',
-  Lost: 'from-red-600 to-red-500',
+/** Funnel bar colors (solid utility on secondary / error scale) */
+export const stageColors: Record<string, string> = {
+  New: 'bg-secondary',
+  Contacted: 'bg-secondary/80',
+  Qualified: 'bg-[var(--color-warning-amber)]',
+  Proposal: 'bg-primary',
+  Negotiation: 'bg-primary/80',
+  Won: 'bg-secondary',
+  Lost: 'bg-error',
 }
 
-export const typeIcon: Record<
-  ActivityType,
-  string
-> = {
-  'Lead Created': '📝',
-  'Lead Won': '🏆',
-  'Meeting Scheduled': '📅',
-  'Email Sent': '📧',
-  Call: '📞',
-  'Document Viewed': '📄',
-  'System Alert': '⚠️',
-  'Contract Renewed': '🔄',
-  'Proposal Sent': '📋',
+export const typeIcon: Record<ActivityType, string> = {
+  'Lead Created': 'note_add',
+  'Lead Won': 'emoji_events',
+  'Meeting Scheduled': 'event',
+  'Email Sent': 'mail',
+  Call: 'call',
+  'Document Viewed': 'description',
+  'System Alert': 'warning',
+  'Contract Renewed': 'autorenew',
+  'Proposal Sent': 'send',
 }
 
 export const caseStudyStatusStyles: Record<string, string> = {
@@ -65,19 +64,26 @@ export const caseStudyStatusStyles: Record<string, string> = {
 }
 
 export const caseStudyStatusDot: Record<string, string> = {
-  Published: 'bg-emerald-500',
-  Draft: 'bg-amber-500',
-  Archived: 'bg-slate-400',
+  Published: 'bg-secondary',
+  Draft: 'bg-[var(--color-warning-amber)]',
+  Archived: 'bg-outline',
 }
 
 export const typeColor: Record<ActivityType, string> = {
-  'Lead Created': 'bg-blue-100 text-blue-600',
-  'Lead Won': 'bg-emerald-100 text-emerald-600',
-  'Meeting Scheduled': 'bg-purple-100 text-purple-600',
-  'Email Sent': 'bg-sky-100 text-sky-600',
-  Call: 'bg-orange-100 text-orange-600',
-  'Document Viewed': 'bg-amber-100 text-amber-600',
-  'System Alert': 'bg-red-100 text-red-600',
-  'Contract Renewed': 'bg-green-100 text-green-600',
-  'Proposal Sent': 'bg-indigo-100 text-indigo-600',
+  'Lead Created': 'bg-secondary/15 text-secondary',
+  'Lead Won': 'bg-secondary/15 text-secondary',
+  'Meeting Scheduled': 'bg-primary/15 text-primary',
+  'Email Sent': 'bg-secondary/15 text-secondary',
+  Call: 'bg-[var(--color-warning-amber)]/15 text-[var(--color-warning-amber)]',
+  'Document Viewed': 'bg-surface-container text-on-surface-variant',
+  'System Alert': 'bg-error/15 text-error',
+  'Contract Renewed': 'bg-secondary/15 text-secondary',
+  'Proposal Sent': 'bg-primary/15 text-primary',
+}
+
+/** Metric delta chips */
+export const changeTypeStyles: Record<string, string> = {
+  positive: 'text-secondary bg-secondary/10',
+  negative: 'text-error bg-error/10',
+  neutral: 'text-on-surface-variant bg-surface-container',
 }

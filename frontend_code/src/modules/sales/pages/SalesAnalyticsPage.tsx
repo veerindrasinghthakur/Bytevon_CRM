@@ -1,12 +1,11 @@
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Link } from '@tanstack/react-router'
-import type { PipelineStage } from '../types'
 import { cn } from '@/shared/lib/cn'
 import { salesRoutes } from '../routes'
 import { useSalesDashboardMetrics } from '../hooks/use-sales'
 import { PipelineStageValues } from '../schemas/enums'
-import { stageColors } from '../schemas/cssTokens'
+import { stageColors, changeTypeStyles } from '../schemas/cssTokens'
 
 export function SalesAnalyticsPage() {
   const { data: metrics, isLoading, isError } = useSalesDashboardMetrics()
@@ -31,7 +30,6 @@ export function SalesAnalyticsPage() {
     )
   }
 
-  const pipelineValue = metrics?.find((m) => m.id === 'pipeline')?.value ?? '—'
   const totalLeads = metrics?.find((m) => m.id === 'total-leads')?.value ?? '—'
   const activeClients = metrics?.find((m) => m.id === 'active-clients')?.value ?? '—'
 
@@ -58,14 +56,19 @@ export function SalesAnalyticsPage() {
             className={cn(
               'p-5 rounded-xl border border-outline-variant executive-shadow card-hover',
               m.id === 'pipeline'
-                ? 'bg-primary-container text-white border-primary-container'
-                : 'bg-surface-container-lowest'
+                ? 'bg-primary text-on-primary border-primary'
+                : 'bg-surface-container-lowest',
             )}
           >
-            <p className={cn('text-label-md', m.id === 'pipeline' ? 'text-white/70' : 'text-on-surface-variant')}>
+            <p className={cn('text-label-md', m.id === 'pipeline' ? 'text-on-primary/70' : 'text-on-surface-variant')}>
               {m.label}
             </p>
-            <h3 className={cn('text-headline-md font-bold mt-1', m.id === 'pipeline' ? 'text-white' : 'text-on-background')}>
+            <h3
+              className={cn(
+                'text-headline-md font-bold mt-1',
+                m.id === 'pipeline' ? 'text-on-primary' : 'text-on-background',
+              )}
+            >
               {m.value}
             </h3>
             {m.change && (
@@ -73,12 +76,8 @@ export function SalesAnalyticsPage() {
                 className={cn(
                   'text-[11px] mt-1 font-semibold',
                   m.id === 'pipeline'
-                    ? 'text-white/60'
-                    : m.changeType === 'positive'
-                      ? 'text-emerald-600'
-                      : m.changeType === 'negative'
-                        ? 'text-red-600'
-                        : 'text-on-surface-variant'
+                    ? 'text-on-primary/60'
+                    : changeTypeStyles[m.changeType ?? 'neutral'] ?? changeTypeStyles.neutral,
                 )}
               >
                 {m.change}
@@ -95,10 +94,13 @@ export function SalesAnalyticsPage() {
             {PipelineStageValues.map((stage) => {
               const stageMetric = metrics?.find((m) => m.id === stage.toLowerCase().replace(/\s/g, '-'))
               const count = stageMetric ? parseInt(stageMetric.value) : 0
-              const maxCount = Math.max(...PipelineStageValues.map((s) => {
-                const m = metrics?.find((m) => m.id === s.toLowerCase().replace(/\s/g, '-'))
-                return parseInt(m?.value ?? '0') || 0
-              }), 1)
+              const maxCount = Math.max(
+                ...PipelineStageValues.map((s) => {
+                  const m = metrics?.find((mm) => mm.id === s.toLowerCase().replace(/\s/g, '-'))
+                  return parseInt(m?.value ?? '0') || 0
+                }),
+                1,
+              )
               return (
                 <div key={stage}>
                   <div className="flex items-center justify-between text-sm mb-1">

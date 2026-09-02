@@ -1,4 +1,5 @@
 import { createRoute, redirect } from '@tanstack/react-router'
+import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 
 const SalesDashboardPage = lazyPage(() => import('./pages/SalesDashboardPage'), 'SalesDashboardPage')
@@ -22,18 +23,21 @@ export const salesRoutes = {
   leads: '/sales',
   leadNew: '/sales/leads/new',
   leadDetail: (id: string) => `/sales/leads/${id}`,
+  leadDetailPath: '/sales/leads/$leadId',
   leadEdit: (id: string) => `/sales/leads/${id}/edit`,
+  leadEditPath: '/sales/leads/$leadId/edit',
   clients: '/sales/clients',
   clientNew: '/sales/clients/new',
   clientDetail: (id: string) => `/sales/clients/${id}`,
+  clientDetailPath: '/sales/clients/$clientId',
   clientEdit: (id: string) => `/sales/clients/${id}/edit`,
+  clientEditPath: '/sales/clients/$clientId/edit',
   analytics: '/sales/analytics',
   activity: '/sales/activity',
   caseStudies: '/sales/case-studies',
 } as const
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createSalesRoutes(appLayoutRoute: any) {
+export function createSalesRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   return [
     createRoute({ getParentRoute: () => appLayoutRoute, path: '/sales', component: LeadsListPage }),
     createRoute({
@@ -45,7 +49,7 @@ export function createSalesRoutes(appLayoutRoute: any) {
       getParentRoute: () => appLayoutRoute,
       path: '/sales/leads',
       beforeLoad: () => {
-        throw redirect({ to: '/sales' })
+        throw redirect({ to: salesRoutes.leads })
       },
     }),
     createRoute({

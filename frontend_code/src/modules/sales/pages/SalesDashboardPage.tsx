@@ -5,9 +5,8 @@ import { Button } from '@/shared/components/ui/Button'
 import { StatusDot } from '@/shared/components/ui/StatusDot'
 import { useSalesDashboard } from '../hooks/use-sales-dashboard'
 import { salesRoutes } from '../routes'
-import type { RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
-import { stageStyles, stageColors, typeIcon } from '../schemas/cssTokens'
+import { stageStyles, stageColors, typeIcon, changeTypeStyles } from '../schemas/cssTokens'
 
 function formatBudget(n: number) {
   return new Intl.NumberFormat('en-US', {
@@ -49,10 +48,18 @@ export function SalesDashboardPage() {
         description="Pipeline health, revenue, funnel, activity, and top performers."
         actions={
           <div className="flex items-center gap-3 flex-wrap">
-            <Button variant="outline" leftIcon={<span className="material-symbols-outlined text-lg">person_search</span>} onClick={() => safeNavigate(navigate, { to: salesRoutes.leads })}>
+            <Button
+              variant="outline"
+              leftIcon={<span className="material-symbols-outlined text-lg">person_search</span>}
+              onClick={() => safeNavigate(navigate, { to: salesRoutes.leads })}
+            >
               View Leads
             </Button>
-            <Button variant="primary" leftIcon={<span className="material-symbols-outlined text-lg">add</span>} onClick={() => safeNavigate(navigate, { to: salesRoutes.leadNew })}>
+            <Button
+              variant="primary"
+              leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
+              onClick={() => safeNavigate(navigate, { to: salesRoutes.leadNew })}
+            >
               New Lead
             </Button>
           </div>
@@ -70,11 +77,7 @@ export function SalesDashboardPage() {
                 <span
                   className={cn(
                     'text-[10px] font-bold px-2 py-0.5 rounded',
-                    m.changeType === 'positive'
-                      ? 'text-emerald-600 bg-emerald-50'
-                      : m.changeType === 'negative'
-                        ? 'text-red-600 bg-red-50'
-                        : 'text-on-surface-variant bg-surface-container'
+                    changeTypeStyles[m.changeType ?? 'neutral'] ?? changeTypeStyles.neutral,
                   )}
                 >
                   {m.change}
@@ -93,15 +96,15 @@ export function SalesDashboardPage() {
           <h2 className="text-title-md font-semibold mb-1">Revenue overview</h2>
           <p className="text-body-sm text-on-surface-variant mb-5">Estimated pipeline and closed value</p>
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 rounded-xl bg-primary-container text-white">
-              <p className="text-xs text-white/70 font-medium">Pipeline value</p>
+            <div className="p-4 rounded-xl bg-primary text-on-primary">
+              <p className="text-xs text-on-primary/70 font-medium">Pipeline value</p>
               <p className="text-2xl font-bold mt-1">{formatBudget(pipelineValue)}</p>
-              <p className="text-[11px] text-white/60 mt-1">From active leads</p>
+              <p className="text-[11px] text-on-primary/60 mt-1">From active leads</p>
             </div>
             <div className="p-4 rounded-xl bg-surface-container-low">
               <p className="text-xs text-on-surface-variant font-medium">Est. revenue</p>
               <p className="text-2xl font-bold mt-1 text-on-background">{formatBudget(pipelineValue * 1.2)}</p>
-              <p className="text-[11px] text-emerald-600 font-semibold mt-1">+12% vs prior period</p>
+              <p className="text-[11px] text-secondary font-semibold mt-1">+12% vs prior period</p>
             </div>
             <div className="p-4 rounded-xl bg-surface-container-low">
               <p className="text-xs text-on-surface-variant font-medium">Avg. deal size</p>
@@ -109,7 +112,7 @@ export function SalesDashboardPage() {
             </div>
             <div className="p-4 rounded-xl bg-surface-container-low">
               <p className="text-xs text-on-surface-variant font-medium">Won (sample)</p>
-              <p className="text-xl font-bold mt-1 text-emerald-600">{wonCount}</p>
+              <p className="text-xl font-bold mt-1 text-secondary">{wonCount}</p>
             </div>
           </div>
         </section>
@@ -158,7 +161,10 @@ export function SalesDashboardPage() {
           <h2 className="text-title-md font-semibold mb-5">Top performers</h2>
           <ul className="space-y-3">
             {safeTopPerformers.map((p, i) => (
-              <li key={p.name} className="flex items-center gap-3 p-3 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors">
+              <li
+                key={p.name}
+                className="flex items-center gap-3 p-3 rounded-xl bg-surface-container-low hover:bg-surface-container transition-colors"
+              >
                 <span className="w-8 h-8 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-sm font-bold shrink-0">
                   {i + 1}
                 </span>
@@ -182,7 +188,11 @@ export function SalesDashboardPage() {
         <div className="xl:col-span-2 bv-surface overflow-hidden">
           <div className="px-5 py-4 border-b border-outline-variant flex items-center justify-between">
             <h2 className="text-title-md font-semibold text-on-background">Recent Leads</h2>
-            <button type="button" className="text-label-sm text-secondary font-semibold hover:underline" onClick={() => safeNavigate(navigate, { to: salesRoutes.root })}>
+            <button
+              type="button"
+              className="text-label-sm text-secondary font-semibold hover:underline"
+              onClick={() => safeNavigate(navigate, { to: salesRoutes.root })}
+            >
               View all
             </button>
           </div>
@@ -190,10 +200,18 @@ export function SalesDashboardPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-outline-variant bg-surface-container-low/50">
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Lead</th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Stage</th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Value</th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-right">Status</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                    Lead
+                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                    Stage
+                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                    Value
+                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-right">
+                    Status
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
@@ -201,14 +219,24 @@ export function SalesDashboardPage() {
                   <tr
                     key={lead.id}
                     className="zebra-row cursor-pointer"
-                    onClick={() => safeNavigate(navigate, { to: salesRoutes.leadDetail(lead.id), params: { leadId: lead.id } })}
+                    onClick={() =>
+                      safeNavigate(navigate, {
+                        to: salesRoutes.leadDetailPath,
+                        params: { leadId: lead.id },
+                      })
+                    }
                   >
                     <td className="px-4 py-3">
                       <p className="font-semibold text-on-surface">{lead.contactName}</p>
                       <p className="text-xs text-on-surface-variant">{lead.company}</p>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={cn('px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase', stageStyles[lead.stage])}>
+                      <span
+                        className={cn(
+                          'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase',
+                          stageStyles[lead.stage],
+                        )}
+                      >
                         {lead.stage}
                       </span>
                     </td>
@@ -231,7 +259,9 @@ export function SalesDashboardPage() {
           <div className="max-h-[420px] overflow-y-auto scrollbar-thin p-4 space-y-6">
             {Object.entries(safeActivityGroups).map(([dateGroup, items]) => (
               <section key={dateGroup}>
-                <h3 className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-3">{dateGroup}</h3>
+                <h3 className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-3">
+                  {dateGroup}
+                </h3>
                 <ul className="space-y-3">
                   {items.map((a) => (
                     <li key={a.id} className="flex items-start gap-3">
@@ -257,7 +287,11 @@ export function SalesDashboardPage() {
       <div className="bv-surface overflow-hidden">
         <div className="px-5 py-4 border-b border-outline-variant flex items-center justify-between">
           <h2 className="text-title-md font-semibold text-on-background">Top Clients</h2>
-          <button type="button" className="text-label-sm text-secondary font-semibold hover:underline" onClick={() => safeNavigate(navigate, { to: salesRoutes.clients })}>
+          <button
+            type="button"
+            className="text-label-sm text-secondary font-semibold hover:underline"
+            onClick={() => safeNavigate(navigate, { to: salesRoutes.clients })}
+          >
             View all
           </button>
         </div>
@@ -266,7 +300,12 @@ export function SalesDashboardPage() {
             <div
               key={c.id}
               className="p-4 rounded-xl border border-outline-variant hover:border-secondary card-hover cursor-pointer"
-              onClick={() => safeNavigate(navigate, { to: salesRoutes.clientDetail(c.id), params: { clientId: c.id } })}
+              onClick={() =>
+                safeNavigate(navigate, {
+                  to: salesRoutes.clientDetailPath,
+                  params: { clientId: c.id },
+                })
+              }
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center text-sm font-bold">

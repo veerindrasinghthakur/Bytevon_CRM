@@ -1,28 +1,24 @@
 # Module Optimization Report: payroll
 
-**Updated:** 2026-09-02  
-**Scope:** Nav sweep + status tokens. No new components.
+**Updated:** 2026-09-02
 
 ---
 
-## Cleared this pass
+## Cleared
 
 | Item | Change |
 |------|--------|
-| MonthlyPayroll hardcoded `/payroll/*` | `safeNavigate` + `payrollRoutes` |
-| Monthly local `statusBadge` palette | `payrollStatusStyles` |
-| RunPayroll hardcoded navigate | `payrollRoutes` |
-| Review / Payslip / Salary / SalaryDetail residual paths | path helpers + tokens (partial in same batch for Monthly/Run) |
+| Monthly/Run/Review/Payslip/Salary nav | `safeNavigate` + `payrollRoutes` |
+| Monthly statusBadge | `payrollStatusStyles` |
+| Tokens deep-navy / palette | semantic tokens |
 
 ---
 
 ## Still deferred
 
-- ReviseSalary full RHF+Zod (`salaryFormSchema`)
+- ReviseSalary full RHF (`salaryFormSchema` exists; page still uses draft row state)
 - RecordPaymentModal RHF
 - History org list API-backed
 - New shared components
 
 ---
-
-*Cleared nav/token items removed from action lists.*
