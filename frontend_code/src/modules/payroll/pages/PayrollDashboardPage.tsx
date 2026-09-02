@@ -3,13 +3,10 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { usePayrollDashboard } from '../hooks/use-payroll'
+import { payrollStatusStyles } from '../schemas/enums'
+import { payrollRoutes } from '../routes'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
-
-const statusStyles: Record<string, string> = {
-  Approved: 'bg-warning-amber/10 text-warning-amber',
-  Calculated: 'bg-surface-variant text-primary',
-  Paid: 'bg-success-emerald/10 text-success-emerald',
-}
 
 export function PayrollDashboardPage() {
   const navigate = useNavigate()
@@ -35,14 +32,18 @@ export function PayrollDashboardPage() {
         description="Manage monthly salary processing, approvals and payments."
         actions={
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" onClick={() => navigate({ to: '/payroll/salary' })}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => safeNavigate(navigate, { to: payrollRoutes.salary })}
+            >
               Salary Management
             </Button>
             <Button
               variant="primary"
               size="sm"
               leftIcon={<span className="material-symbols-outlined text-[18px]">play_arrow</span>}
-              onClick={() => navigate({ to: '/payroll/run' })}
+              onClick={() => safeNavigate(navigate, { to: payrollRoutes.run })}
             >
               Run Payroll
             </Button>
@@ -55,11 +56,11 @@ export function PayrollDashboardPage() {
           <section className="bv-surface p-5">
             <div className="flex justify-between items-start mb-6 border-b border-outline-variant pb-4">
               <div>
-                <h2 className="text-headline-md font-semibold text-deep-navy">{period.label}</h2>
+                <h2 className="text-headline-md font-semibold text-on-background">{period.label}</h2>
                 <p className="text-caption text-on-surface-variant mt-1">Processing cycle currently active</p>
               </div>
               <div className="bg-surface-container px-3 py-1 rounded-full flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-electric-blue animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
                 <span className="text-caption text-primary">{period.status}</span>
               </div>
             </div>
@@ -71,15 +72,15 @@ export function PayrollDashboardPage() {
                   label: 'CALCULATED',
                   count: period.calculated,
                   icon: 'check',
-                  tone: 'bg-success-emerald text-on-success',
-                  text: 'text-success-emerald',
+                  tone: 'bg-secondary text-on-secondary',
+                  text: 'text-secondary',
                 },
                 {
                   label: 'APPROVED',
                   count: period.approved,
                   icon: 'more_horiz',
-                  tone: 'bg-warning-amber text-on-warning',
-                  text: 'text-warning-amber',
+                  tone: 'bg-[var(--color-warning-amber)] text-on-background',
+                  text: 'text-[var(--color-warning-amber)]',
                 },
                 {
                   label: 'PAID',
@@ -111,7 +112,7 @@ export function PayrollDashboardPage() {
               label="Total Payroll"
               value={formatMoneyShort(kpis.totalPayroll)}
               hint={
-                <span className="text-success-emerald flex items-center gap-0.5">
+                <span className="text-secondary flex items-center gap-0.5">
                   <span className="material-symbols-outlined text-[12px]">trending_up</span>+{kpis.trendPct}% vs
                   last month
                 </span>
@@ -122,8 +123,8 @@ export function PayrollDashboardPage() {
               icon="pending_actions"
               label="Pending Approval"
               value={String(kpis.pendingApproval)}
-              valueClass="text-warning-amber"
-              accent="border-l-4 border-l-warning-amber"
+              valueClass="text-[var(--color-warning-amber)]"
+              accent="border-l-4 border-l-[var(--color-warning-amber)]"
             />
             <KpiCard
               icon="payments"
@@ -137,31 +138,31 @@ export function PayrollDashboardPage() {
 
         <div className="flex flex-col gap-6">
           <section className="bv-surface p-5">
-            <h3 className="text-headline-md font-semibold text-deep-navy mb-4">Quick Actions</h3>
+            <h3 className="text-headline-md font-semibold text-on-background mb-4">Quick Actions</h3>
             <div className="flex flex-col gap-3">
               <QuickAction
                 icon="play_arrow"
                 iconTone="bg-primary-fixed text-primary group-hover:bg-primary group-hover:text-on-primary"
                 label="Run Monthly Payroll"
-                onClick={() => navigate({ to: '/payroll/run' })}
+                onClick={() => safeNavigate(navigate, { to: payrollRoutes.run })}
               />
               <QuickAction
                 icon="manage_accounts"
                 iconTone="bg-secondary-container text-on-secondary-container"
                 label="Manage Salaries"
-                onClick={() => navigate({ to: '/payroll/salary' })}
+                onClick={() => safeNavigate(navigate, { to: payrollRoutes.salary })}
               />
               <QuickAction
                 icon="history"
                 iconTone="bg-secondary-container text-on-secondary-container"
                 label="View Payroll History"
-                onClick={() => navigate({ to: '/payroll/monthly' })}
+                onClick={() => safeNavigate(navigate, { to: payrollRoutes.monthly })}
               />
             </div>
           </section>
 
           <section className="bv-surface p-5 flex-1">
-            <h3 className="text-headline-md font-semibold text-deep-navy mb-4">Recent Activity</h3>
+            <h3 className="text-headline-md font-semibold text-on-background mb-4">Recent Activity</h3>
             <div className="relative pl-4 border-l border-outline-variant space-y-6">
               {activity.map((a) => (
                 <div key={a.id} className="relative">
@@ -171,7 +172,7 @@ export function PayrollDashboardPage() {
                       a.primary ? 'bg-primary' : 'bg-outline-variant',
                     )}
                   />
-                  <p className="text-body-md text-deep-navy">{a.text}</p>
+                  <p className="text-body-md text-on-background">{a.text}</p>
                   <p className="text-caption text-on-surface-variant mt-1">{a.time}</p>
                 </div>
               ))}
@@ -182,7 +183,7 @@ export function PayrollDashboardPage() {
 
       <section className="bv-surface overflow-hidden">
         <div className="p-5 border-b border-outline-variant flex justify-between items-center bg-surface-bright">
-          <h3 className="text-headline-md font-semibold text-deep-navy">Payroll Summary</h3>
+          <h3 className="text-headline-md font-semibold text-on-background">Payroll Summary</h3>
           <div className="relative w-64">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
               search
@@ -206,7 +207,7 @@ export function PayrollDashboardPage() {
                 <th className="p-4 text-right font-normal">Gross</th>
                 <th className="p-4 text-right font-normal">Earnings</th>
                 <th className="p-4 text-right font-normal">Deductions</th>
-                <th className="p-4 text-right font-normal text-deep-navy font-semibold">Net</th>
+                <th className="p-4 text-right font-normal text-on-background font-semibold">Net</th>
                 <th className="p-4 font-normal text-center">Status</th>
                 <th className="p-4 pr-6 font-normal text-right">Action</th>
               </tr>
@@ -220,22 +221,22 @@ export function PayrollDashboardPage() {
                         {r.initials}
                       </div>
                       <div>
-                        <div className="text-body-md font-semibold text-deep-navy">{r.name}</div>
+                        <div className="text-body-md font-semibold text-on-background">{r.name}</div>
                         <div className="text-caption text-on-surface-variant">{r.role}</div>
                       </div>
                     </div>
                   </td>
                   <td className="p-4 text-caption text-on-surface-variant">{r.code}</td>
-                  <td className="p-4 text-body-md text-deep-navy">{r.department}</td>
-                  <td className="p-4 text-body-md text-deep-navy text-right">{formatMoney(r.gross)}</td>
-                  <td className="p-4 text-body-md text-success-emerald text-right">+{formatMoney(r.earnings)}</td>
+                  <td className="p-4 text-body-md text-on-background">{r.department}</td>
+                  <td className="p-4 text-body-md text-on-background text-right">{formatMoney(r.gross)}</td>
+                  <td className="p-4 text-body-md text-secondary text-right">+{formatMoney(r.earnings)}</td>
                   <td className="p-4 text-body-md text-error text-right">-{formatMoney(r.deductions)}</td>
-                  <td className="p-4 text-body-md font-bold text-deep-navy text-right">{formatMoney(r.net)}</td>
+                  <td className="p-4 text-body-md font-bold text-on-background text-right">{formatMoney(r.net)}</td>
                   <td className="p-4 text-center">
                     <span
                       className={cn(
                         'inline-flex items-center px-2 py-1 rounded text-[9px] font-bold uppercase tracking-wide',
-                        statusStyles[r.status],
+                        payrollStatusStyles[r.status] ?? 'status-badge status-neutral',
                       )}
                     >
                       {r.status}
@@ -245,7 +246,7 @@ export function PayrollDashboardPage() {
                     <button
                       type="button"
                       className="text-primary text-label-sm hover:underline"
-                      onClick={() => navigate({ to: '/payroll/monthly' })}
+                      onClick={() => safeNavigate(navigate, { to: payrollRoutes.monthly })}
                     >
                       View in Monthly
                     </button>
@@ -270,7 +271,7 @@ export function PayrollDashboardPage() {
             <button
               type="button"
               className="p-1 rounded hover:bg-surface-container border border-outline-variant"
-              onClick={() => navigate({ to: '/payroll/monthly' })}
+              onClick={() => safeNavigate(navigate, { to: payrollRoutes.monthly })}
             >
               <span className="material-symbols-outlined text-[18px]">chevron_right</span>
             </button>
@@ -303,7 +304,7 @@ function KpiCard({
         <span className="text-label-sm">{label}</span>
       </div>
       <div>
-        <div className={cn('text-headline-lg font-semibold text-deep-navy', valueClass)}>{value}</div>
+        <div className={cn('text-headline-lg font-semibold text-on-background', valueClass)}>{value}</div>
         {hint && <div className="text-caption mt-1">{hint}</div>}
       </div>
     </div>
@@ -331,7 +332,7 @@ function QuickAction({
         <div className={cn('p-2 rounded-md transition-colors', iconTone)}>
           <span className="material-symbols-outlined text-[20px]">{icon}</span>
         </div>
-        <span className="text-label-sm text-deep-navy">{label}</span>
+        <span className="text-label-sm text-on-background">{label}</span>
       </div>
       <span className="material-symbols-outlined text-outline-variant group-hover:text-primary">chevron_right</span>
     </button>

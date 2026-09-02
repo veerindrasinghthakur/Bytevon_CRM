@@ -3,6 +3,8 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { payrollEmployees, formatMoney } from '@/shared/mock/data/payroll'
+import { payrollHistoryStatusStyles } from '../schemas/enums'
+import { payrollRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
@@ -126,25 +128,25 @@ export function PayrollHistoryPage() {
             <tbody className="divide-y divide-outline-variant">
               {rows.map((r) => (
                 <tr key={r.id} className="zebra-row h-[64px]">
-                  <td className="p-4 pl-6 text-body-md font-medium text-deep-navy">{r.period}</td>
+                  <td className="p-4 pl-6 text-body-md font-medium text-on-background">{r.period}</td>
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center font-bold text-primary text-label-sm">
                         {r.emp?.initials ?? '?'}
                       </div>
-                      <span className="text-body-md font-semibold text-deep-navy">{r.emp?.name ?? '—'}</span>
+                      <span className="text-body-md font-semibold text-on-background">{r.emp?.name ?? '—'}</span>
                     </div>
                   </td>
                   <td className="p-4 text-caption text-on-surface-variant">{r.emp?.code ?? '—'}</td>
-                  <td className="p-4 text-right text-deep-navy">{formatMoney(r.gross)}</td>
-                  <td className="p-4 text-right font-semibold text-deep-navy">{formatMoney(r.net)}</td>
+                  <td className="p-4 text-right text-on-background">{formatMoney(r.gross)}</td>
+                  <td className="p-4 text-right font-semibold text-on-background">{formatMoney(r.net)}</td>
                   <td className="p-4 text-on-surface-variant">{r.paidOn}</td>
                   <td className="p-4 text-caption font-mono text-on-surface-variant">{r.ref}</td>
                   <td className="p-4 text-center">
                     <span
                       className={cn(
                         'inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold',
-                        'bg-success-emerald/10 text-success-emerald border border-success-emerald/20'
+                        payrollHistoryStatusStyles.PAID,
                       )}
                     >
                       PAID
@@ -157,7 +159,7 @@ export function PayrollHistoryPage() {
                         className="text-primary hover:text-secondary text-label-md transition-colors"
                         onClick={() =>
                           safeNavigate(navigate, {
-                            to: '/payroll/payslip/$employeeId',
+                            to: payrollRoutes.payslipPath,
                             params: { employeeId: r.employeeId },
                           })
                         }
@@ -169,7 +171,7 @@ export function PayrollHistoryPage() {
                         className="text-on-surface-variant hover:text-secondary text-label-md transition-colors"
                         onClick={() =>
                           safeNavigate(navigate, {
-                            to: '/payroll/history/$employeeId',
+                            to: payrollRoutes.historyEmployeePath,
                             params: { employeeId: r.employeeId },
                           })
                         }

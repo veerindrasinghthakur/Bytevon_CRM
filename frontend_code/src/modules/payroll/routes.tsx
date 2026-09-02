@@ -1,4 +1,5 @@
 import { createRoute } from '@tanstack/react-router'
+import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 
 const PayrollDashboardPage = lazyPage(() => import('./pages/PayrollDashboardPage'), 'PayrollDashboardPage')
@@ -32,16 +33,20 @@ export const payrollRoutes = {
   run: '/payroll/run',
   generating: '/payroll/generating',
   review: (employeeId: string) => `/payroll/review/${employeeId}`,
+  reviewPath: '/payroll/review/$employeeId',
   payslip: (employeeId: string) => `/payroll/payslip/${employeeId}`,
+  payslipPath: '/payroll/payslip/$employeeId',
   salary: '/payroll/salary',
   salaryDetail: (employeeId: string) => `/payroll/salary/${employeeId}`,
+  salaryDetailPath: '/payroll/salary/$employeeId',
   salaryRevise: (employeeId: string) => `/payroll/salary/${employeeId}/revise`,
+  salaryRevisePath: '/payroll/salary/$employeeId/revise',
   history: '/payroll/history',
   historyEmployee: (employeeId: string) => `/payroll/history/${employeeId}`,
+  historyEmployeePath: '/payroll/history/$employeeId',
 } as const
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createPayrollRoutes(appLayoutRoute: any) {
+export function createPayrollRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   return [
     createRoute({ getParentRoute: () => appLayoutRoute, path: '/payroll', component: PayrollDashboardPage }),
     createRoute({
