@@ -82,7 +82,7 @@ export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: 
       getParentRoute: () => appLayoutRoute,
       path: '/workforce',
       beforeLoad: () => {
-        throw redirect({ to: workforceRoutes.employees })
+        throw redirect({ to: workforceRoutes.employees, search: {} })
       },
     }),
     createRoute({
