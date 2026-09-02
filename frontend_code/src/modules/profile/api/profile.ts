@@ -4,8 +4,16 @@
  */
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
-import { delay } from '@/shared/lib/lazyPage'
-import { getProfileStore, setProfileStore, mockActivity, mockSessions, replaceMockSessions } from '@/shared/mock/data/profile'
+import { SessionStatus } from '@/shared/schema'
+import type { ChangePasswordInput } from '@/modules/auth/schemas/auth'
+import { changePassword as authChangePassword } from '@/modules/auth/api/auth'
+import {
+  getProfileStore,
+  setProfileStore,
+  mockActivity,
+  mockSessions,
+  replaceMockSessions,
+} from '@/shared/mock/data/profile'
 import type {
   ProfileActivityItem,
   ProfileDetail,
@@ -57,25 +65,6 @@ export async function uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
   const { data } = await apiClient.post<{ avatarUrl: string }>('/profile/me/avatar', form, {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
-  return data
-}
-
-/** Admin: update another user's avatar */
-export async function uploadUserAvatar(
-  userId: string,
-  file: File,
-): Promise<{ avatarUrl: string }> {
-  if (env.useMockApi) {
-    await delay(400)
-    return { avatarUrl: URL.createObjectURL(file) }
-  }
-  const form = new FormData()
-  form.append('file', file)
-  const { data } = await apiClient.post<{ avatarUrl: string }>(
-    `/admin/users/${userId}/avatar`,
-    form,
-    { headers: { 'Content-Type': 'multipart/form-data' } },
-  )
   return data
 }
 
