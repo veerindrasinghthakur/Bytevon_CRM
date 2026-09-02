@@ -4,7 +4,11 @@ import { Select } from '@/shared/components/ui/Select'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { ResourceName } from '@/shared/schema'
 import { useSentNotifications } from '../hooks/use-sent-notifications'
+import { deliveryStatusStyles } from '../schemas/enums'
+import { notificationRoutes } from '../routes'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
+import type { DeliveryStatus } from '../types'
 
 export function SentNotificationsPage() {
   const navigate = useNavigate()
@@ -18,7 +22,7 @@ export function SentNotificationsPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
-          <h1 className="text-headline-lg font-semibold text-deep-navy tracking-tight">Sent Notifications</h1>
+          <h1 className="text-headline-lg font-semibold text-on-background tracking-tight">Sent Notifications</h1>
           <p className="text-on-surface-variant text-body-md mt-1">
             Monitor delivery performance and engagement for outgoing communications.
           </p>
@@ -35,7 +39,7 @@ export function SentNotificationsPage() {
             variant="primary"
             size="md"
             leftIcon={<span className="material-symbols-outlined">add_circle</span>}
-            onClick={() => navigate({ to: '/notifications/compose' })}
+            onClick={() => safeNavigate(navigate, { to: notificationRoutes.compose })}
           >
             Compose Notification
           </Button>
@@ -59,7 +63,7 @@ export function SentNotificationsPage() {
             <h3
               className={cn(
                 'text-headline-lg font-bold mt-4 tracking-tight',
-                k.danger ? 'text-error' : 'text-deep-navy',
+                k.danger ? 'text-error' : 'text-on-background',
               )}
             >
               {k.value}
@@ -210,13 +214,13 @@ export function SentNotificationsPage() {
                             {r.initials ?? r.recipientName.slice(0, 2).toUpperCase()}
                           </div>
                           <div>
-                            <p className="text-label-md font-bold text-deep-navy">{r.recipientName}</p>
+                            <p className="text-label-md font-bold text-on-background">{r.recipientName}</p>
                             <p className="text-label-sm text-on-surface-variant">{r.recipientContact}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="text-label-md text-deep-navy font-medium">{r.title}</p>
+                        <p className="text-label-md text-on-background font-medium">{r.title}</p>
                         <p className="text-on-surface-variant text-[11px] truncate max-w-[220px]">{r.preview}</p>
                       </td>
                       <td className="px-6 py-4">
@@ -254,17 +258,12 @@ export function SentNotificationsPage() {
   )
 }
 
-function StatusPill({ status }: { status: string }) {
-  const cls =
-    status === 'Delivered'
-      ? 'bg-green-100 text-green-800'
-      : status === 'Failed'
-        ? 'bg-error-container text-error'
-        : 'bg-blue-100 text-blue-800'
-  const dot = status === 'Delivered' ? 'bg-green-600' : status === 'Failed' ? 'bg-error' : 'bg-blue-600'
+function StatusPill({ status }: { status: DeliveryStatus | string }) {
+  const styles =
+    deliveryStatusStyles[status as DeliveryStatus] ?? deliveryStatusStyles.Pending
   return (
-    <span className={cn('inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold', cls)}>
-      <span className={cn('w-1.5 h-1.5 rounded-full mr-1.5', dot)} />
+    <span className={cn('inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold', styles.pill)}>
+      <span className={cn('w-1.5 h-1.5 rounded-full mr-1.5', styles.dot)} />
       {status}
     </span>
   )
