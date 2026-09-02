@@ -1,26 +1,35 @@
 import { useParams, useNavigate } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
-import { attendanceHistory, currentUser } from '../data/mock'
-import type { AttendanceStatus } from '../types'
+import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { queryKeys } from '@/shared/lib/query-keys'
+import { listMyAttendance, getMyWorkOverview } from '../api/my-work'
+import { attendanceStatusStyles } from '../schemas/enums'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../routes'
-
-/** Status badge colors — left as semantic status styles (not design-token pass). */
-const statusStyles: Record<AttendanceStatus, string> = {
-  Present: 'bg-emerald-50 text-emerald-700',
-  Absent: 'bg-red-50 text-red-700',
-  'Half Day': 'bg-amber-50 text-amber-800',
-  'On Leave': 'bg-blue-50 text-blue-700',
-  Holiday: 'bg-violet-50 text-violet-700',
-  Weekend: 'bg-surface-container text-on-surface-variant',
-}
+import { cn } from '@/shared/lib/cn'
 
 export function AttendanceDetailPage() {
   const { attendanceId } = useParams({ strict: false }) as { attendanceId: string }
   const navigate = useNavigate()
-  const record = attendanceHistory.find((r) => r.id === attendanceId) ?? attendanceHistory[0]
+
+  const listQuery = useQuery({
+    queryKey: queryKeys.myWork.attendance.list({ pageSize: 100 }),
+    queryFn: () => listMyAttendance({ pageSize: 100 }),
+  })
+
+  const overviewQuery = useQuery({
+    queryKey: queryKeys.myWork.overview(),
+    queryFn: getMyWorkOverview,
+  })
+
+  if (listQuery.isLoading) return <PageLoadingSkeleton />
+
+  const record =
+    listQuery.data?.items.find((r) => r.id === attendanceId) ?? listQuery.data?.items[0]
+  const user = overviewQuery.data?.user
 
   if (!record) {
     return (
@@ -37,7 +46,7 @@ export function AttendanceDetailPage() {
       <BackButton to={myWorkRoutes.attendance} label="Back to attendance" />
       <PageHeader
         title={`Attendance · ${record.date}`}
-        description={`${currentUser.name} · ${currentUser.employeeId}`}
+        description={user ? `${user.name} · ${user.employeeId}` : undefined}
         actions={
           <Button
             variant="outline"
@@ -101,7 +110,10 @@ export function AttendanceDetailPage() {
           <section className="bv-surface p-6">
             <h3 className="text-label-md text-on-surface-variant uppercase tracking-wider mb-3">Status</h3>
             <span
-              className={`inline-flex px-2.5 py-1 rounded-full text-label-sm font-semibold ${statusStyles[record.status]}`}
+              className={cn(
+                'inline-flex px-2.5 py-1 rounded-full text-label-sm font-semibold',
+                attendanceStatusStyles[record.status] ?? 'status-badge status-neutral',
+              )}
             >
               {record.status}
             </span>
@@ -118,7 +130,7 @@ export function AttendanceDetailPage() {
             </div>
             <div>
               <p className="text-label-sm text-on-surface-variant">Employee</p>
-              <p className="text-body-md text-on-surface mt-0.5">{currentUser.name}</p>
+              <p className="text-body-md text-on-surface mt-0.5">{user?.name ?? '—'}</p>
             </div>
             <div>
               <p className="text-label-sm text-on-surface-variant">Note</p>

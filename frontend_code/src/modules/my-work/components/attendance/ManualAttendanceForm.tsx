@@ -1,13 +1,9 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
-
-const MANUAL_REASONS = [
-  { value: 'Client Meeting', label: 'Client Meeting' },
-  { value: 'System Issue', label: 'System Issue' },
-  { value: 'Forgot to Log', label: 'Forgot to Log' },
-  { value: 'Travel', label: 'Travel' },
-] as const
+import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { myWorkRoutes } from '../../routes'
+import { MANUAL_ATTENDANCE_REASONS } from '../../schemas/enums'
 
 export function ManualAttendanceForm({
   manualDate,
@@ -63,7 +59,11 @@ export function ManualAttendanceForm({
         </div>
         <div className="space-y-1">
           <label className="block text-label-md font-medium text-on-surface-variant">Reason Category</label>
-          <Select value={manualReason} onChange={setManualReason} options={[...MANUAL_REASONS]} />
+          <Select
+            value={manualReason}
+            onChange={setManualReason}
+            options={[...MANUAL_ATTENDANCE_REASONS]}
+          />
         </div>
         <div className="space-y-1">
           <label className="block text-label-md font-medium text-on-surface-variant" htmlFor="manual-in">
@@ -107,7 +107,7 @@ export function ManualAttendanceForm({
             variant="outline"
             onClick={() => {
               onReset()
-              navigate({ to: '/my-work/attendance' })
+              safeNavigate(navigate, { to: myWorkRoutes.attendance })
             }}
           >
             Discard

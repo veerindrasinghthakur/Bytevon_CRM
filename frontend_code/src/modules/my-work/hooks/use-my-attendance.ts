@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { queryKeys } from '@/shared/lib/query-keys'
-import { listMyAttendance } from '../api/my-work'
+import { getMyWeekHours, getMyWorkTodayInfo, listMyAttendance } from '../api/my-work'
 
 const FILTER_DEFAULTS = {
   status: 'All',
@@ -26,9 +26,21 @@ export function useMyAttendance() {
     placeholderData: (prev) => prev,
   })
 
+  const todayInfoQuery = useQuery({
+    queryKey: [...queryKeys.myWork.attendance.all, 'today-info'] as const,
+    queryFn: getMyWorkTodayInfo,
+  })
+
+  const weekHoursQuery = useQuery({
+    queryKey: [...queryKeys.myWork.attendance.all, 'week-hours'] as const,
+    queryFn: getMyWeekHours,
+  })
+
   return {
     records: query.data?.items ?? [],
     total: query.data?.total ?? 0,
+    todayInfo: todayInfoQuery.data,
+    weekHours: weekHoursQuery.data ?? [],
     search: controls.search,
     setSearch: controls.setSearch,
     statusFilter: controls.filters.status,
@@ -43,5 +55,7 @@ export function useMyAttendance() {
     isFetching: query.isFetching,
     isError: query.isError,
     refetch: query.refetch,
+    isTodayLoading: todayInfoQuery.isLoading,
+    isWeekLoading: weekHoursQuery.isLoading,
   }
 }
