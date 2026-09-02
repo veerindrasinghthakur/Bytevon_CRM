@@ -1,14 +1,14 @@
-import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { ResourceName } from '@/shared/schema'
 import { exportAndDownload } from '@/shared/api/export'
 import { usePayslip } from '../hooks/use-payroll'
+import { payrollStatusStyles } from '../schemas/enums'
+import { payrollRoutes } from '../routes'
 import { cn } from '@/shared/lib/cn'
 
 export function PayslipViewPage() {
-  const navigate = useNavigate()
   const { payslip, emp, formatMoney, isLoading, isError } = usePayslip()
 
   if (isLoading) {
@@ -18,7 +18,7 @@ export function PayslipViewPage() {
     return (
       <div className="p-8 space-y-4">
         <p className="text-body-md text-error">Payslip not found.</p>
-        <BackButton to="/payroll/monthly" />
+        <BackButton to={payrollRoutes.monthly} />
       </div>
     )
   }
@@ -37,14 +37,12 @@ export function PayslipViewPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <BackButton to="/payroll/monthly" label="" className="!px-1" />
-            <h1 className="text-headline-lg font-bold text-deep-navy">Payslip</h1>
+            <BackButton to={payrollRoutes.monthly} label="" className="!px-1" />
+            <h1 className="text-headline-lg font-bold text-on-background">Payslip</h1>
             <span
               className={cn(
                 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                emp.status === 'Paid'
-                  ? 'bg-success-emerald/10 text-success-emerald'
-                  : 'bg-secondary-container text-on-secondary-container',
+                payrollStatusStyles[emp.status] ?? 'status-badge status-neutral',
               )}
             >
               {emp.status.toUpperCase()}
@@ -81,18 +79,18 @@ export function PayslipViewPage() {
       <div className="bv-surface p-6 flex flex-col sm:flex-row gap-6 sm:gap-12">
         <div>
           <p className="text-[10px] text-on-surface-variant uppercase tracking-wider mb-1">Payment Date</p>
-          <p className="text-label-md font-semibold text-deep-navy">{payslip.paymentDate}</p>
+          <p className="text-label-md font-semibold text-on-background">{payslip.paymentDate}</p>
         </div>
         <div>
           <p className="text-[10px] text-on-surface-variant uppercase tracking-wider mb-1">Payment Method</p>
-          <p className="text-label-md font-semibold text-deep-navy flex items-center">
+          <p className="text-label-md font-semibold text-on-background flex items-center">
             <span className="material-symbols-outlined text-sm mr-1 text-secondary">account_balance</span>
             {payslip.paymentMethod}
           </p>
         </div>
         <div>
           <p className="text-[10px] text-on-surface-variant uppercase tracking-wider mb-1">Reference Number</p>
-          <p className="text-label-md font-semibold text-deep-navy font-mono text-sm">{payslip.referenceNumber}</p>
+          <p className="text-label-md font-semibold text-on-background font-mono text-sm">{payslip.referenceNumber}</p>
         </div>
       </div>
 
@@ -105,7 +103,7 @@ export function PayslipViewPage() {
           value={`${payslip.netAdjustments >= 0 ? '+' : ''}${formatMoney(payslip.netAdjustments)}`}
           accent="border-l-4 border-l-primary"
         />
-        <div className="bg-deep-navy text-on-primary rounded-xl p-5 executive-shadow flex flex-col justify-center">
+        <div className="bg-primary text-on-primary rounded-xl p-5 executive-shadow flex flex-col justify-center">
           <p className="text-label-sm text-inverse-primary mb-1 opacity-80">Net Salary</p>
           <p className="text-headline-md font-bold text-on-primary">{formatMoney(payslip.net)}</p>
         </div>
@@ -114,7 +112,7 @@ export function PayslipViewPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div className="bv-surface overflow-hidden">
           <div className="bg-surface-container-low px-6 py-4 border-b border-outline-variant flex justify-between items-center">
-            <h3 className="text-title-lg font-semibold text-deep-navy flex items-center">
+            <h3 className="text-title-lg font-semibold text-on-background flex items-center">
               <span className="material-symbols-outlined mr-2 text-secondary">add_circle</span>
               Earnings
             </h3>
@@ -127,7 +125,7 @@ export function PayslipViewPage() {
                 <th className="py-3 px-6 text-label-sm text-on-surface-variant font-medium uppercase tracking-wider text-right w-1/3">Amount</th>
               </tr>
             </thead>
-            <tbody className="text-body-md text-deep-navy">
+            <tbody className="text-body-md text-on-background">
               {payslip.earnings.map((e) => (
                 <tr key={e.name} className="border-b border-outline-variant zebra-row">
                   <td className="py-4 px-6">{e.name}</td>
@@ -141,7 +139,7 @@ export function PayslipViewPage() {
         <div className="space-y-6">
           <div className="bv-surface overflow-hidden">
             <div className="bg-surface-container-low px-6 py-4 border-b border-outline-variant flex justify-between items-center">
-              <h3 className="text-title-lg font-semibold text-deep-navy flex items-center">
+              <h3 className="text-title-lg font-semibold text-on-background flex items-center">
                 <span className="material-symbols-outlined mr-2 text-error">remove_circle</span>
                 Deductions
               </h3>
@@ -154,7 +152,7 @@ export function PayslipViewPage() {
                   <th className="py-3 px-6 text-label-sm text-on-surface-variant font-medium uppercase tracking-wider text-right w-1/3">Amount</th>
                 </tr>
               </thead>
-              <tbody className="text-body-md text-deep-navy">
+              <tbody className="text-body-md text-on-background">
                 {payslip.deductions.map((d) => (
                   <tr key={d.name} className="border-b border-outline-variant zebra-row">
                     <td className="py-4 px-6">{d.name}</td>
@@ -167,7 +165,7 @@ export function PayslipViewPage() {
 
           <div className="bv-surface overflow-hidden">
             <div className="bg-surface-container-low px-6 py-4 border-b border-outline-variant flex justify-between items-center">
-              <h3 className="text-title-lg font-semibold text-deep-navy flex items-center">
+              <h3 className="text-title-lg font-semibold text-on-background flex items-center">
                 <span className="material-symbols-outlined mr-2 text-secondary">tune</span>
                 Adjustments
               </h3>
@@ -183,7 +181,7 @@ export function PayslipViewPage() {
                   <th className="py-3 px-6 text-label-sm text-on-surface-variant font-medium uppercase tracking-wider text-right w-1/3">Amount</th>
                 </tr>
               </thead>
-              <tbody className="text-body-md text-deep-navy">
+              <tbody className="text-body-md text-on-background">
                 {payslip.adjustments.length === 0 ? (
                   <tr>
                     <td className="py-4 px-6 text-on-surface-variant" colSpan={2}>
@@ -200,7 +198,7 @@ export function PayslipViewPage() {
                       <td
                         className={cn(
                           'py-4 px-6 text-right font-medium',
-                          adj.amount >= 0 ? 'text-success-emerald' : 'text-error',
+                          adj.amount >= 0 ? 'text-secondary' : 'text-error',
                         )}
                       >
                         {adj.amount >= 0 ? '+' : ''}
@@ -222,7 +220,7 @@ function SumCard({ label, value, accent }: { label: string; value: string; accen
   return (
     <div className={`bv-surface card-hover p-5 ${accent ?? ''}`}>
       <p className="text-label-sm text-on-surface-variant mb-2">{label}</p>
-      <p className="text-title-lg font-semibold text-deep-navy">{value}</p>
+      <p className="text-title-lg font-semibold text-on-background">{value}</p>
     </div>
   )
 }

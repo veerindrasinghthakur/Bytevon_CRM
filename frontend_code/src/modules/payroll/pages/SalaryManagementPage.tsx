@@ -91,7 +91,7 @@ export function SalaryManagementPage() {
                   className="zebra-row cursor-pointer h-[72px]"
                   onClick={() =>
                     safeNavigate(navigate, {
-                      to: '/payroll/salary/$employeeId',
+                      to: payrollRoutes.salaryDetailPath,
                       params: { employeeId: r.id },
                     })
                   }
@@ -101,19 +101,19 @@ export function SalaryManagementPage() {
                       <div className="w-9 h-9 rounded-full bg-secondary-container flex items-center justify-center font-bold text-primary text-label-sm">
                         {r.initials}
                       </div>
-                      <span className="text-body-md font-semibold text-deep-navy">{r.name}</span>
+                      <span className="text-body-md font-semibold text-on-background">{r.name}</span>
                     </div>
                   </td>
                   <td className="p-4 text-caption text-on-surface-variant">{r.code}</td>
-                  <td className="p-4 text-body-md text-deep-navy">{r.department}</td>
+                  <td className="p-4 text-body-md text-on-background">{r.department}</td>
                   <td className="p-4 text-body-md text-on-surface-variant">{r.role}</td>
-                  <td className="p-4 text-right text-body-md font-semibold text-deep-navy">
+                  <td className="p-4 text-right text-body-md font-semibold text-on-background">
                     {formatMoney(r.gross)}
                     <span className="text-caption text-on-surface-variant font-normal">/mo</span>
                   </td>
                   <td className="p-4 text-body-sm text-on-surface-variant">{r.effectiveFrom ?? '—'}</td>
                   <td className="p-4 text-center">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-success-emerald/10 text-success-emerald border border-success-emerald/20">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold status-badge status-success">
                       {r.salaryStatus ?? 'ACTIVE'}
                     </span>
                   </td>
@@ -124,7 +124,7 @@ export function SalaryManagementPage() {
                       onClick={(e) => {
                         e.stopPropagation()
                         safeNavigate(navigate, {
-                          to: '/payroll/salary/$employeeId',
+                          to: payrollRoutes.salaryDetailPath,
                           params: { employeeId: r.id },
                         })
                       }}

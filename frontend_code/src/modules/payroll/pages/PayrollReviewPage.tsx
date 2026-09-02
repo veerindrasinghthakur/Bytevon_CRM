@@ -6,6 +6,8 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { Select } from '@/shared/components/ui/Select'
 import { ResourceName } from '@/shared/schema'
 import { usePayrollReview } from '../hooks/use-payroll'
+import { payrollRoutes } from '../routes'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
 export function PayrollReviewPage() {
@@ -40,7 +42,7 @@ export function PayrollReviewPage() {
     return (
       <div className="p-8 space-y-4">
         <p className="text-body-md text-error">Payroll review not found.</p>
-        <BackButton to="/payroll/monthly" />
+        <BackButton to={payrollRoutes.monthly} />
       </div>
     )
   }
@@ -50,7 +52,7 @@ export function PayrollReviewPage() {
       <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <BackButton to="/payroll/monthly" label="" className="!px-2" />
+            <BackButton to={payrollRoutes.monthly} label="" className="!px-2" />
             <h1 className="text-headline-lg font-semibold text-on-surface m-0">Payroll Review</h1>
             <div className="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-label-sm flex items-center gap-1 ml-2">
               <span className="material-symbols-outlined text-[16px]">pending_actions</span>
@@ -90,12 +92,12 @@ export function PayrollReviewPage() {
           title="Total Earnings"
           value={formatMoney(totalEarnings)}
           hint={
-            <span className="text-[#166534] flex items-center gap-1">
+            <span className="text-secondary flex items-center gap-1">
               <span className="material-symbols-outlined text-[16px]">arrow_upward</span> Includes allowances
             </span>
           }
           icon="trending_up"
-          iconBg="bg-[#dcfce7] text-[#166534]"
+          iconBg="bg-secondary/15 text-secondary"
         />
         <MetricCard
           title="Total Deductions"
@@ -104,16 +106,16 @@ export function PayrollReviewPage() {
           icon="trending_down"
           iconBg="bg-error-container text-on-error-container"
         />
-        <div className="bg-deep-navy border border-deep-navy rounded-lg p-6 executive-shadow flex flex-col justify-between relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl" />
+        <div className="bg-primary border border-primary rounded-lg p-6 executive-shadow flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 bg-on-primary opacity-5 rounded-full blur-2xl" />
           <div className="flex items-start justify-between mb-4 relative z-10">
             <h3 className="text-body-sm text-inverse-primary">Net Payable</h3>
-            <div className="p-2 bg-white/10 rounded-lg text-white">
+            <div className="p-2 bg-on-primary/10 rounded-lg text-on-primary">
               <span className="material-symbols-outlined">account_balance</span>
             </div>
           </div>
           <div className="relative z-10">
-            <div className="text-headline-lg font-semibold text-white">{formatMoney(netPayable)}</div>
+            <div className="text-headline-lg font-semibold text-on-primary">{formatMoney(netPayable)}</div>
             <div className="text-body-sm text-inverse-primary mt-1">Final transfer amount</div>
           </div>
         </div>
@@ -199,7 +201,7 @@ export function PayrollReviewPage() {
                     <div
                       className={
                         adj.amount >= 0
-                          ? 'font-medium text-body-md text-[#166534] bg-[#dcfce7] px-2 py-1 rounded'
+                          ? 'font-medium text-body-md text-secondary bg-secondary/15 px-2 py-1 rounded'
                           : 'font-medium text-body-md text-on-error-container bg-error-container px-2 py-1 rounded'
                       }
                     >
@@ -250,7 +252,7 @@ export function PayrollReviewPage() {
             <div className="p-6 bg-surface-bright border-t border-outline-variant flex flex-col gap-3">
               <button
                 type="button"
-                className="w-full bg-deep-navy text-white font-medium py-3 px-4 rounded-lg hover:opacity-90 transition-colors flex items-center justify-center gap-2 executive-shadow disabled:opacity-50"
+                className="w-full bg-primary text-on-primary font-medium py-3 px-4 rounded-lg hover:opacity-90 transition-colors flex items-center justify-center gap-2 executive-shadow disabled:opacity-50"
                 disabled={approveMut.isPending || emp.status === 'Approved' || emp.status === 'Paid'}
                 onClick={() => approveMut.mutate()}
               >
@@ -287,12 +289,16 @@ export function PayrollReviewPage() {
           paymentRef={paymentRef}
           setPaymentRef={setPaymentRef}
           isPending={payMut.isPending}
+          formatMoney={formatMoney}
           onClose={() => setShowPayModal(false)}
           onConfirm={() => {
             payMut.mutate(paymentRef || undefined, {
               onSuccess: () => {
                 setShowPayModal(false)
-                navigate({ to: '/payroll/payslip/$employeeId', params: { employeeId: emp.id } })
+                safeNavigate(navigate, {
+                  to: payrollRoutes.payslipPath,
+                  params: { employeeId: emp.id },
+                })
               },
             })
           }}
@@ -339,6 +345,7 @@ function RecordPaymentModal({
   paymentRef,
   setPaymentRef,
   isPending,
+  formatMoney,
   onClose,
   onConfirm,
 }: {
@@ -349,6 +356,7 @@ function RecordPaymentModal({
   paymentRef: string
   setPaymentRef: (v: string) => void
   isPending: boolean
+  formatMoney: (n: number) => string
   onClose: () => void
   onConfirm: () => void
 }) {
@@ -424,7 +432,7 @@ function RecordPaymentModal({
           <div className="mt-8 pt-6 border-t border-outline-variant">
             <div className="bg-surface-container-low border border-outline-variant rounded-lg p-5 flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-start gap-3">
-                <span className="material-symbols-outlined text-electric-blue mt-0.5">info</span>
+                <span className="material-symbols-outlined text-secondary mt-0.5">info</span>
                 <div>
                   <p className="text-label-md text-on-surface mb-1">Verify payment details</p>
                   <p className="text-body-sm text-on-surface-variant">
@@ -450,7 +458,7 @@ function RecordPaymentModal({
           </button>
           <button
             type="button"
-            className="px-5 py-2.5 rounded font-medium text-on-primary bg-electric-blue hover:bg-secondary transition-colors flex items-center gap-2 executive-shadow disabled:opacity-50"
+            className="px-5 py-2.5 rounded font-medium text-on-primary bg-secondary hover:opacity-90 transition-colors flex items-center gap-2 executive-shadow disabled:opacity-50"
             onClick={onConfirm}
             disabled={isPending}
           >
