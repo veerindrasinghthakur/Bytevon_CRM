@@ -126,7 +126,7 @@ export function CaseStudiesListPage() {
         description="Published wins and drafts used in sales conversations."
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to={salesRoutes.root} className="hover:text-secondary">
+            <Link to={salesRoutes.root} search={{}} className="hover:text-secondary">
               Sales
             </Link>
             <span className="mx-2">/</span>
