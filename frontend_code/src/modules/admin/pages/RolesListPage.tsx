@@ -4,6 +4,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { ExportButton } from '@/shared/components/export/ExportButton'
+import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
@@ -251,29 +252,18 @@ export function RolesListPage() {
       </ListToolbar>
 
       {selectionMode && (
-        <div className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl border border-secondary/30 bg-secondary/5">
-          <label className="flex items-center gap-2 text-body-sm font-semibold text-on-surface cursor-pointer">
-            <input
-              type="checkbox"
-              className="rounded border-outline-variant text-secondary"
-              checked={allFilteredSelected}
-              onChange={toggleSelectAllFiltered}
-              aria-label="Select all filtered roles"
-            />
-            {selectedCount} selected
-            <span className="text-on-surface-variant font-normal"> (of {filtered.length} shown)</span>
-          </label>
-          <div className="flex-1" />
-          <Button variant="outline" size="sm" onClick={exitSelectionMode}>
-            Cancel
-          </Button>
+        <BulkSelectionBar
+          selectedCount={selectedCount}
+          filteredCount={filtered.length}
+          onCancel={exitSelectionMode}
+        >
           <ExportButton
             resource={ResourceName.ROLE}
             selectedIds={Array.from(selectedIds)}
             filenameStem="roles-selected"
             label="Export selected"
           />
-        </div>
+        </BulkSelectionBar>
       )}
 
       {isLoading && <TableSkeleton rows={6} />}

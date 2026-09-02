@@ -2,6 +2,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
+import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
@@ -173,10 +174,26 @@ export function UsersListPage() {
       />
 
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Metric icon="group" label="Total (filtered)" value={String(totalCount)} hint="Matching filters" />
-        <Metric icon="bolt" label="Active" value={String(active)} hint="All accounts" />
-        <Metric icon="lock_person" label="Locked" value={String(locked)} hint="Action required" valueClass="text-error" />
-        <Metric icon="person_off" label="This page" value={String(pageItems.length)} hint="Current page" />
+        <MetricCard
+          icon="group"
+          label="Total (filtered)"
+          value={String(totalCount)}
+          hint="Matching filters"
+        />
+        <MetricCard icon="bolt" label="Active" value={String(active)} hint="All accounts" />
+        <MetricCard
+          icon="lock_person"
+          label="Locked"
+          value={String(locked)}
+          hint="Action required"
+          valueClassName="text-error"
+        />
+        <MetricCard
+          icon="person_off"
+          label="This page"
+          value={String(pageItems.length)}
+          hint="Current page"
+        />
       </section>
 
       <ListToolbar
@@ -366,33 +383,6 @@ export function UsersListPage() {
           itemLabel="users"
         />
       </section>
-    </div>
-  )
-}
-
-function Metric({
-  icon,
-  label,
-  value,
-  hint,
-  valueClass,
-}: {
-  icon: string
-  label: string
-  value: string
-  hint: string
-  valueClass?: string
-}) {
-  return (
-    <div className="bv-surface card-hover p-5">
-      <div className="flex justify-between items-start mb-3">
-        <div className="p-2 rounded-lg bg-secondary/15 text-secondary">
-          <span className="material-symbols-outlined">{icon}</span>
-        </div>
-        <span className="text-xs font-bold text-on-surface-variant">{hint}</span>
-      </div>
-      <p className="text-label-md text-on-surface-variant uppercase tracking-widest">{label}</p>
-      <h3 className={cn('text-2xl font-black text-on-surface mt-1', valueClass)}>{value}</h3>
     </div>
   )
 }
