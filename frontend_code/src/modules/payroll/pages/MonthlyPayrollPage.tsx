@@ -8,16 +8,13 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { Select } from '@/shared/components/ui/Select'
 import { ResourceName } from '@/shared/schema'
 import { useMonthlyPayroll } from '../hooks/use-payroll'
+import { payrollStatusStyles } from '../schemas/enums'
+import { payrollRoutes } from '../routes'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
 /** Demo view modes matching Stitch monthly payroll variants */
 type RunView = 'ready' | 'empty' | 'error' | 'locked'
-
-const statusBadge: Record<string, string> = {
-  Calculated: 'bg-secondary-container text-on-secondary-container',
-  Approved: 'bg-primary-fixed text-primary',
-  Paid: 'bg-success-emerald/10 text-success-emerald',
-}
 
 export function MonthlyPayrollPage() {
   const navigate = useNavigate()
@@ -47,10 +44,10 @@ export function MonthlyPayrollPage() {
     return [
       { label: 'Total Employees', value: String(summary.totalEmployees) },
       { label: 'Gross Salary', value: formatMoney(summary.grossSalary) },
-      { label: 'Earnings', value: formatMoney(summary.earnings), valueClass: 'text-success-emerald' },
+      { label: 'Earnings', value: formatMoney(summary.earnings), valueClass: 'text-secondary' },
       { label: 'Deductions', value: formatMoney(summary.deductions), valueClass: 'text-error' },
       { label: 'Net Payroll', value: formatMoney(summary.netPayroll), valueClass: 'text-primary font-bold', highlight: true },
-      { label: 'Pending Approval', value: String(summary.pendingApproval), valueClass: 'text-warning-amber' },
+      { label: 'Pending Approval', value: String(summary.pendingApproval), valueClass: 'text-[var(--color-warning-amber)]' },
       { label: 'Pending Payment', value: String(summary.pendingPayment), valueClass: 'text-primary' },
     ]
   }, [summary, formatMoney])
@@ -84,9 +81,13 @@ export function MonthlyPayrollPage() {
           title="No payroll run for this period"
           description="Generate monthly payroll to calculate gross, earnings, deductions, and net pay for active employees."
           actionLabel="Run payroll"
-          onAction={() => navigate({ to: '/payroll/run' })}
+          onAction={() => safeNavigate(navigate, { to: payrollRoutes.run })}
         >
-          <Button variant="outline" className="mt-3" onClick={() => navigate({ to: '/payroll' })}>
+          <Button
+            variant="outline"
+            className="mt-3"
+            onClick={() => safeNavigate(navigate, { to: payrollRoutes.root })}
+          >
             Back to overview
           </Button>
         </EmptyState>
@@ -101,7 +102,7 @@ export function MonthlyPayrollPage() {
               setView('ready')
               void refetch()
             }}
-            onBack={() => navigate({ to: '/payroll' })}
+            onBack={() => safeNavigate(navigate, { to: payrollRoutes.root })}
           />
           <div className="mt-4 border-t border-outline-variant pt-4">
             <button
@@ -240,22 +241,22 @@ export function MonthlyPayrollPage() {
                             {r.initials}
                           </div>
                           <div>
-                            <p className="font-semibold text-deep-navy">{r.name}</p>
+                            <p className="font-semibold text-on-background">{r.name}</p>
                             <p className="text-caption text-on-surface-variant">{r.role}</p>
                           </div>
                         </div>
                       </td>
                       <td className="p-4 text-on-surface-variant">{r.code}</td>
                       <td className="p-4 text-on-surface-variant">{r.department}</td>
-                      <td className="p-4 text-right text-deep-navy">{formatMoney(r.gross)}</td>
-                      <td className="p-4 text-right text-success-emerald">+{formatMoney(r.earnings)}</td>
+                      <td className="p-4 text-right text-on-background">{formatMoney(r.gross)}</td>
+                      <td className="p-4 text-right text-secondary">+{formatMoney(r.earnings)}</td>
                       <td className="p-4 text-right text-error">-{formatMoney(r.deductions)}</td>
-                      <td className="p-4 text-right font-bold text-deep-navy">{formatMoney(r.net)}</td>
+                      <td className="p-4 text-right font-bold text-on-background">{formatMoney(r.net)}</td>
                       <td className="p-4">
                         <span
                           className={cn(
                             'inline-flex items-center px-2 py-1 rounded text-label-sm font-medium',
-                            statusBadge[r.status],
+                            payrollStatusStyles[r.status] ?? 'status-badge status-neutral',
                           )}
                         >
                           {r.status}
@@ -270,8 +271,8 @@ export function MonthlyPayrollPage() {
                                 type="button"
                                 className="text-on-surface-variant hover:text-secondary text-sm font-medium transition-colors"
                                 onClick={() =>
-                                  navigate({
-                                    to: '/payroll/payslip/$employeeId',
+                                  safeNavigate(navigate, {
+                                    to: payrollRoutes.payslipPath,
                                     params: { employeeId: r.id },
                                   })
                                 }
@@ -283,8 +284,8 @@ export function MonthlyPayrollPage() {
                                 className="text-on-surface-variant hover:text-secondary transition-colors"
                                 title="Payslip"
                                 onClick={() =>
-                                  navigate({
-                                    to: '/payroll/payslip/$employeeId',
+                                  safeNavigate(navigate, {
+                                    to: payrollRoutes.payslipPath,
                                     params: { employeeId: r.id },
                                   })
                                 }
@@ -298,8 +299,8 @@ export function MonthlyPayrollPage() {
                                 type="button"
                                 className="text-on-surface-variant hover:text-secondary text-sm font-medium transition-colors"
                                 onClick={() =>
-                                  navigate({
-                                    to: '/payroll/review/$employeeId',
+                                  safeNavigate(navigate, {
+                                    to: payrollRoutes.reviewPath,
                                     params: { employeeId: r.id },
                                   })
                                 }
@@ -308,10 +309,10 @@ export function MonthlyPayrollPage() {
                               </button>
                               <button
                                 type="button"
-                                className="bg-deep-navy text-on-primary px-3 py-1.5 rounded text-label-sm hover:opacity-90 transition-all"
+                                className="bg-primary text-on-primary px-3 py-1.5 rounded text-label-sm hover:opacity-90 transition-all"
                                 onClick={() =>
-                                  navigate({
-                                    to: '/payroll/review/$employeeId',
+                                  safeNavigate(navigate, {
+                                    to: payrollRoutes.reviewPath,
                                     params: { employeeId: r.id },
                                   })
                                 }
@@ -325,8 +326,8 @@ export function MonthlyPayrollPage() {
                                 type="button"
                                 className="text-on-surface-variant hover:text-secondary text-sm font-medium transition-colors"
                                 onClick={() =>
-                                  navigate({
-                                    to: '/payroll/review/$employeeId',
+                                  safeNavigate(navigate, {
+                                    to: payrollRoutes.reviewPath,
                                     params: { employeeId: r.id },
                                   })
                                 }
@@ -337,8 +338,8 @@ export function MonthlyPayrollPage() {
                                 type="button"
                                 className="border border-primary text-primary px-3 py-1.5 rounded text-label-sm hover:bg-surface-container-low transition-colors"
                                 onClick={() =>
-                                  navigate({
-                                    to: '/payroll/review/$employeeId',
+                                  safeNavigate(navigate, {
+                                    to: payrollRoutes.reviewPath,
                                     params: { employeeId: r.id },
                                   })
                                 }
@@ -387,7 +388,7 @@ function SummaryCard({
       >
         {label}
       </p>
-      <p className={cn('text-headline-lg font-semibold text-deep-navy', valueClass)}>{value}</p>
+      <p className={cn('text-headline-lg font-semibold text-on-background', valueClass)}>{value}</p>
     </div>
   )
 }

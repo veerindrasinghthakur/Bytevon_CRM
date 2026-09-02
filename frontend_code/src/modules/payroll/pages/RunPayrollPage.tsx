@@ -2,6 +2,8 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { useRunPayroll } from '../hooks/use-run-payroll'
+import { payrollRoutes } from '../routes'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
 export function RunPayrollPage() {
@@ -12,11 +14,15 @@ export function RunPayrollPage() {
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex items-center gap-2 text-on-surface-variant text-label-md">
-        <button type="button" className="hover:text-secondary transition-colors" onClick={() => navigate({ to: '/payroll' })}>
+        <button
+          type="button"
+          className="hover:text-secondary transition-colors"
+          onClick={() => safeNavigate(navigate, { to: payrollRoutes.root })}
+        >
           Payroll
         </button>
         <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-        <span className="text-deep-navy font-medium">Run Monthly Payroll</span>
+        <span className="text-on-background font-medium">Run Monthly Payroll</span>
       </div>
 
       <PageHeader
@@ -28,7 +34,7 @@ export function RunPayrollPage() {
               variant="outline"
               size="sm"
               leftIcon={<span className="material-symbols-outlined text-[18px]">arrow_back</span>}
-              onClick={() => navigate({ to: '/payroll' })}
+              onClick={() => safeNavigate(navigate, { to: payrollRoutes.root })}
             >
               Back
             </Button>
@@ -36,7 +42,7 @@ export function RunPayrollPage() {
               variant="outline"
               size="sm"
               leftIcon={<span className="material-symbols-outlined text-[18px]">history</span>}
-              onClick={() => navigate({ to: '/payroll/monthly' })}
+              onClick={() => safeNavigate(navigate, { to: payrollRoutes.monthly })}
             >
               Past Payrolls
             </Button>
@@ -49,7 +55,7 @@ export function RunPayrollPage() {
           <section className="bv-surface p-5">
             <div className="flex items-center gap-2 mb-4">
               <span className="material-symbols-outlined text-primary">calendar_month</span>
-              <h2 className="text-headline-md font-semibold text-deep-navy">Payroll Period</h2>
+              <h2 className="text-headline-md font-semibold text-on-background">Payroll Period</h2>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
@@ -74,9 +80,9 @@ export function RunPayrollPage() {
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">fact_check</span>
-                <h2 className="text-headline-md font-semibold text-deep-navy">Validation Checks</h2>
+                <h2 className="text-headline-md font-semibold text-on-background">Validation Checks</h2>
               </div>
-              <span className="bg-success-emerald/10 text-success-emerald font-bold text-[12px] px-2 py-1 rounded-full flex items-center gap-1">
+              <span className="bg-secondary/15 text-secondary font-bold text-[12px] px-2 py-1 rounded-full flex items-center gap-1">
                 <span className="material-symbols-outlined text-[14px]">check_circle</span>
                 Ready
               </span>
@@ -88,13 +94,13 @@ export function RunPayrollPage() {
                   className="flex items-start gap-3 p-3 rounded-lg border bg-surface-container-lowest border-outline-variant"
                 >
                   <span
-                    className="material-symbols-outlined mt-0.5 text-success-emerald"
+                    className="material-symbols-outlined mt-0.5 text-secondary"
                     style={{ fontVariationSettings: "'FILL' 1" }}
                   >
                     check_circle
                   </span>
                   <div>
-                    <p className="text-body-md font-medium text-deep-navy">{c.title}</p>
+                    <p className="text-body-md font-medium text-on-background">{c.title}</p>
                     <p className="text-caption text-on-surface-variant">{c.detail}</p>
                   </div>
                 </li>
@@ -108,7 +114,7 @@ export function RunPayrollPage() {
             <div className="p-5 border-b border-outline-variant flex justify-between items-center bg-surface-bright">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">analytics</span>
-                <h2 className="text-headline-md font-semibold text-deep-navy">Preview & Metrics</h2>
+                <h2 className="text-headline-md font-semibold text-on-background">Preview & Metrics</h2>
               </div>
             </div>
 
@@ -119,7 +125,7 @@ export function RunPayrollPage() {
                   className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant card-hover"
                 >
                   <p className="text-label-bold text-on-surface-variant uppercase mb-1">{m.label}</p>
-                  <p className={cn('text-headline-lg font-semibold text-deep-navy', m.valueClass)}>{m.value}</p>
+                  <p className={cn('text-headline-lg font-semibold text-on-background', m.valueClass)}>{m.value}</p>
                 </div>
               ))}
             </div>
@@ -145,15 +151,15 @@ export function RunPayrollPage() {
                             {r.initials}
                           </div>
                           <div>
-                            <p className="text-body-md font-bold text-deep-navy">{r.name}</p>
+                            <p className="text-body-md font-bold text-on-background">{r.name}</p>
                             <p className="text-caption text-on-surface-variant">{r.role}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="p-4 text-right text-deep-navy">{formatMoney(r.gross)}</td>
-                      <td className="p-4 text-right text-success-emerald">+{formatMoney(r.earnings)}</td>
+                      <td className="p-4 text-right text-on-background">{formatMoney(r.gross)}</td>
+                      <td className="p-4 text-right text-secondary">+{formatMoney(r.earnings)}</td>
                       <td className="p-4 text-right text-error">-{formatMoney(r.deductions)}</td>
-                      <td className="p-4 text-right font-bold text-deep-navy">{formatMoney(r.net)}</td>
+                      <td className="p-4 text-right font-bold text-on-background">{formatMoney(r.net)}</td>
                       <td className="p-4 text-center">
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary-container text-on-secondary-container">
                           Ready
@@ -183,8 +189,8 @@ export function RunPayrollPage() {
             </div>
             <button
               type="button"
-              onClick={() => navigate({ to: '/payroll/generating' })}
-              className="w-full md:w-auto flex items-center justify-center gap-2 font-semibold text-body-md px-8 py-4 rounded-xl bg-deep-navy text-on-primary hover:opacity-90 executive-shadow transition-all"
+              onClick={() => safeNavigate(navigate, { to: payrollRoutes.generating })}
+              className="w-full md:w-auto flex items-center justify-center gap-2 font-semibold text-body-md px-8 py-4 rounded-xl bg-primary text-on-primary hover:opacity-90 executive-shadow transition-all"
             >
               <span className="material-symbols-outlined">play_arrow</span>
               Generate Payroll
