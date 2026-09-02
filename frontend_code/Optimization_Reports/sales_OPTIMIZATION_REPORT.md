@@ -4,13 +4,14 @@
 
 ---
 
-## Cleared this pass
+## Cleared
 
 | Item | Change |
 |------|--------|
-| `use-sales` hardcoded keys / weak optimistic types | `hooks/sales-cache.ts` + `queryKeys.sales.*` only; `mergeLead`/`mergeClient` |
-| `use-sales-dashboard` local compute | `lib/dashboard-compute.ts` pure helpers |
-| `use-case-studies-list` client filter, no page | `listCaseStudies` server filter+page; list hook + Pagination UI |
+| `use-sales` hardcoded keys / weak optimistic types | `hooks/sales-cache.ts` + `queryKeys.sales.*` only; `mergeLead`/`mergeClient` (no `any`) |
+| `use-sales-dashboard` local compute / hardcodes | `lib/dashboard-compute.ts` pure helpers; `PipelineStageValues` + `typeIcon` from schemas |
+| `use-case-studies-list` client filter, no page | `listCaseStudies` server filter+page; list hook passes params; Pagination + `pageSize` on page |
+| LeadsList status dot palette | `bg-emerald-500`/`bg-slate-400` → `bg-secondary`/`bg-outline` |
 
 ---
 
@@ -18,5 +19,3 @@
 
 - Dedicated case-study create/edit route
 - New shared components
-
----

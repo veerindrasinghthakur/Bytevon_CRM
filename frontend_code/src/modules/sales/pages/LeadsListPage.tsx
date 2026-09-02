@@ -51,7 +51,7 @@ function StatusDotOnly({ status }: { status: RecordStatus }) {
     <span
       className={cn(
         'inline-block w-2.5 h-2.5 rounded-full shrink-0',
-        status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400',
+        status === 'Active' ? 'bg-secondary' : 'bg-outline',
       )}
       title={status}
       aria-label={status}
