@@ -12,9 +12,10 @@ export type { TaskSchema, CreateTaskSchemaInput, TaskFormInput } from './schemas
 export type { TeamSchema, CreateTeamSchemaInput, TeamFormInput } from './schemas/team'
 export type { ProjectNoteSchema, NoteFormInput } from './schemas/note'
 
-/** Task API priority / status (uppercase enum style) */
-export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
-export type TaskStatus = 'TODO' | 'IN_PROGRESS' | 'IN_REVIEW' | 'DONE' | 'BLOCKED' | 'ON_HOLD'
+/** Re-export enum types from single source */
+export type { TaskPriority, TaskStatus, TeamStatus } from './enums'
+
+import type { TaskPriority, TaskStatus, TeamStatus } from './enums'
 
 /** Tasks are sub-parts of a project (always owned by projectId). */
 export interface Task {
@@ -29,8 +30,6 @@ export interface Task {
   dueDate?: string | null
   createdAt: string
 }
-
-export type TeamStatus = 'ACTIVE' | 'INACTIVE'
 
 export interface Team {
   id: number

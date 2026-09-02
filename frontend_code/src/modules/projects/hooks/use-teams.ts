@@ -12,7 +12,13 @@ function isTeamListCache(value: unknown): value is TeamListCache {
   )
 }
 
-export function useTeams(filters?: { search?: string }) {
+export function useTeams(filters?: {
+  search?: string
+  status?: string
+  department?: string
+  page?: number
+  pageSize?: number
+}) {
   return useQuery({
     queryKey: queryKeys.teams.list(filters ?? {}),
     queryFn: () => getTeams(filters),
