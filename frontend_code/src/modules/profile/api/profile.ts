@@ -6,7 +6,7 @@ import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { SessionStatus } from '@/shared/schema'
 import type { ChangePasswordInput } from '@/modules/auth/schemas/auth'
-import { changePassword as authChangePassword } from '@/modules/auth/api/auth'
+import { changePasswordApi } from '@/modules/auth/api/auth'
 import {
   getProfileStore,
   setProfileStore,
@@ -111,9 +111,5 @@ export async function listMyActivity(): Promise<ProfileActivityItem[]> {
 }
 
 export async function changeMyPassword(input: ChangePasswordInput): Promise<{ message: string }> {
-  if (env.useMockApi) {
-    return authChangePassword(input)
-  }
-  const { data } = await apiClient.post<{ message: string }>('/auth/change-password', input)
-  return data
+  return changePasswordApi(input)
 }
