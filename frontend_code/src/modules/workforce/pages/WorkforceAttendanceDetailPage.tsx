@@ -1,16 +1,33 @@
-import { useParams } from '@tanstack/react-router'
+import { useParams, useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { BackButton } from '@/shared/components/layout/BackButton'
+import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { cn } from '@/shared/lib/cn'
-import { todayAttendance, attendanceLogs } from '@/shared/mock/data/workforce'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { workforceAttendanceStatusStyles } from '../schemas/enums'
 import { workforceRoutes } from '../routes'
+import { useAttendanceDetail } from '../hooks/use-attendance'
 
 export function WorkforceAttendanceDetailPage() {
+  const navigate = useNavigate()
   const params = useParams({ strict: false }) as { attendanceId?: string }
   const attendanceId = params.attendanceId
-  const row = todayAttendance.find((r) => r.id === attendanceId) ?? todayAttendance[0]
+  const { data, isLoading, isError, error, refetch } = useAttendanceDetail(attendanceId)
+
+  if (isLoading) return <PageLoadingSkeleton />
+  if (isError || !data) {
+    return (
+      <ErrorState
+        description={error instanceof Error ? error.message : 'Attendance record not found'}
+        onRetry={() => refetch()}
+        onBack={() => safeNavigate(navigate, { to: workforceRoutes.attendance })}
+      />
+    )
+  }
+
+  const { row, logs } = data
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -51,7 +68,7 @@ export function WorkforceAttendanceDetailPage() {
       <section className="bv-surface p-5">
         <h2 className="text-title-md font-semibold mb-3">Punch log</h2>
         <ul className="divide-y divide-outline-variant/20">
-          {attendanceLogs.map((l, i) => (
+          {logs.map((l, i) => (
             <li key={i} className="flex justify-between gap-2 py-3 text-body-sm">
               <div>
                 <p className="font-medium">{l.action}</p>

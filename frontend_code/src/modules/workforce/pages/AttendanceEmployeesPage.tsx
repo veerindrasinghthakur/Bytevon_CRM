@@ -1,12 +1,18 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
+import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Select } from '@/shared/components/ui/Select'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { todayAttendance } from '@/shared/mock/data/workforce'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { workforceRoutes } from '../routes'
+import {
+  workforceAttendanceStatusStyles,
+  WORKFORCE_ATTENDANCE_STATUS_OPTIONS,
+} from '../schemas/enums'
+import { useTodayAttendance } from '../hooks/use-attendance'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -16,40 +22,27 @@ function Icon({ name, className }: { name: string; className?: string }) {
   )
 }
 
-const statusClass: Record<string, string> = {
-  PRESENT: 'bg-emerald-100 text-emerald-800',
-  LATE: 'bg-amber-100 text-amber-800',
-  ABSENT: 'bg-rose-100 text-rose-800',
-  WFH: 'bg-violet-100 text-violet-800',
-  ON_LEAVE: 'bg-sky-100 text-sky-800',
-}
-
-const STATUS_OPTIONS = [
-  { value: 'all', label: 'All statuses' },
-  { value: 'PRESENT', label: 'Present' },
-  { value: 'LATE', label: 'Late' },
-  { value: 'ABSENT', label: 'Absent' },
-  { value: 'WFH', label: 'WFH' },
-  { value: 'ON_LEAVE', label: 'On leave' },
-]
-
 export function AttendanceEmployeesPage() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
-  const [status, setStatus] = useState('all')
+  const [status, setStatus] = useState('ALL')
+  const { data, isLoading, isError, error, refetch } = useTodayAttendance({
+    search: query || undefined,
+    status: status === 'ALL' ? undefined : status,
+  })
 
-  const filtered = useMemo(
-    () =>
-      todayAttendance.filter((r) => {
-        const q =
-          !query ||
-          r.name.toLowerCase().includes(query.toLowerCase()) ||
-          r.department.toLowerCase().includes(query.toLowerCase())
-        const s = status === 'all' || r.status === status
-        return q && s
-      }),
-    [query, status],
-  )
+  const filtered = useMemo(() => data?.items ?? [], [data?.items])
+
+  if (isLoading) return <PageLoadingSkeleton />
+  if (isError) {
+    return (
+      <ErrorState
+        description={error instanceof Error ? error.message : 'Failed to load attendance'}
+        onRetry={() => refetch()}
+        onBack={() => safeNavigate(navigate, { to: workforceRoutes.attendance })}
+      />
+    )
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -81,7 +74,7 @@ export function AttendanceEmployeesPage() {
           <Select
             value={status}
             onChange={setStatus}
-            options={STATUS_OPTIONS}
+            options={[...WORKFORCE_ATTENDANCE_STATUS_OPTIONS]}
             minWidthClass="min-w-[140px]"
             aria-label="Filter by status"
           />
@@ -104,7 +97,7 @@ export function AttendanceEmployeesPage() {
                 className="zebra-row cursor-pointer"
                 onClick={() =>
                   safeNavigate(navigate, {
-                    to: '/workforce/attendance/$attendanceId',
+                    to: workforceRoutes.attendanceRecordPath,
                     params: { attendanceId: r.id },
                   })
                 }
@@ -121,7 +114,12 @@ export function AttendanceEmployeesPage() {
                 <td className="px-6 py-4 text-body-sm text-on-surface-variant">{r.checkIn}</td>
                 <td className="px-6 py-4 text-body-sm text-on-surface-variant hidden md:table-cell">{r.checkOut}</td>
                 <td className="px-6 py-4">
-                  <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-bold', statusClass[r.status])}>
+                  <span
+                    className={cn(
+                      'rounded-full px-2 py-0.5 text-[10px] font-bold',
+                      workforceAttendanceStatusStyles[r.status] ?? 'status-badge status-neutral',
+                    )}
+                  >
                     {r.status.replace('_', ' ')}
                   </span>
                 </td>

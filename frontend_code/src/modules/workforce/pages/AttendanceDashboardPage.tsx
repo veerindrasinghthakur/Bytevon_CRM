@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
+import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { cn } from '@/shared/lib/cn'
@@ -11,13 +13,7 @@ import {
   WORKFORCE_ATTENDANCE_STATUS_OPTIONS,
 } from '../schemas/enums'
 import { workforceRoutes } from '../routes'
-import {
-  attendanceKpis,
-  weeklyAttendance,
-  recentCheckIns,
-  todayAttendance,
-  corrections,
-} from '@/shared/mock/data/workforce'
+import { useAttendanceDashboard } from '../hooks/use-attendance'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -29,19 +25,36 @@ function Icon({ name, className }: { name: string; className?: string }) {
 
 export function AttendanceDashboardPage() {
   const navigate = useNavigate()
+  const { data, isLoading, isError, error, refetch } = useAttendanceDashboard()
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
+
+  const weeklyAttendance = data?.weekly ?? []
   const maxBar = Math.max(...weeklyAttendance.map((d) => Math.max(d.thisWeek, d.lastWeek)), 1)
 
   const rows = useMemo(() => {
+    const today = data?.today ?? []
     const q = query.toLowerCase()
-    return todayAttendance.filter((r) => {
+    return today.filter((r) => {
       const matchesSearch =
         !q || r.name.toLowerCase().includes(q) || r.department.toLowerCase().includes(q)
       const matchesStatus = statusFilter === 'ALL' || r.status === statusFilter
       return matchesSearch && matchesStatus
     })
-  }, [query, statusFilter])
+  }, [data?.today, query, statusFilter])
+
+  if (isLoading) return <PageLoadingSkeleton />
+  if (isError || !data) {
+    return (
+      <ErrorState
+        description={error instanceof Error ? error.message : 'Failed to load attendance'}
+        onRetry={() => refetch()}
+        onBack={() => window.history.back()}
+      />
+    )
+  }
+
+  const { kpis, recentCheckIns, corrections } = data
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -70,7 +83,7 @@ export function AttendanceDashboardPage() {
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {attendanceKpis.map((k) => (
+        {kpis.map((k) => (
           <div key={k.key} className="bv-surface card-hover p-5">
             <div className="flex justify-between mb-2">
               <span className="text-label-sm text-on-surface-variant uppercase tracking-wider">{k.label}</span>
