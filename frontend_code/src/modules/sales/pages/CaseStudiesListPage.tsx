@@ -90,6 +90,7 @@ export function CaseStudiesListPage() {
     resetFilters,
     page,
     setPage,
+    pageSize,
     isLoading,
     isFetching,
     isError,
@@ -281,6 +282,7 @@ export function CaseStudiesListPage() {
         </div>
         <Pagination
           page={page}
+          pageSize={pageSize}
           total={totalCount}
           onPageChange={setPage}
           itemLabel="case studies"
