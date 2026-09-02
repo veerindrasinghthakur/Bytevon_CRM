@@ -14,6 +14,9 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { useNotificationCenter } from '../hooks/use-notification-center'
 import type { AppNotification } from '../types'
+import { notificationStatusDotClass } from '../schemas/enums'
+import { notificationRoutes } from '../routes'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
 function NotificationQuickContent({ n }: { n: AppNotification }) {
@@ -65,6 +68,12 @@ export function NotificationCenterPage() {
   const { openPanel } = useQuickOverview()
   const c = useNotificationCenter()
 
+  const goDetail = (id: string) =>
+    safeNavigate(navigate, {
+      to: notificationRoutes.detailPath,
+      params: { notificationId: id },
+    })
+
   const openNotificationOverview = (n: AppNotification) => {
     c.selectNotification(n.id)
     openPanel({
@@ -72,16 +81,10 @@ export function NotificationCenterPage() {
       subtitle: [n.module, n.timeAgo].filter(Boolean).join(' · '),
       icon: n.icon || 'notifications',
       status: n.status,
-      statusDotClass:
-        n.priority === 'Critical' || n.priority === 'High'
-          ? 'bg-red-500'
-          : n.status === 'Unread'
-            ? 'bg-secondary'
-            : 'bg-slate-400',
+      statusDotClass: notificationStatusDotClass(n.priority, n.status),
       content: <NotificationQuickContent n={n} />,
       fullRecordLabel: 'Open full detail',
-      onOpenFull: () =>
-        navigate({ to: '/notifications/$notificationId', params: { notificationId: n.id } }),
+      onOpenFull: () => goDetail(n.id),
       secondaryLabel: n.status === 'Unread' ? 'Mark as read' : undefined,
       onSecondary: n.status === 'Unread' ? () => c.markRead(n.id) : undefined,
       widthClass: 'max-w-[520px]',
@@ -96,7 +99,9 @@ export function NotificationCenterPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-headline-lg font-semibold text-deep-navy tracking-tight">Notification Center</h1>
+          <h1 className="text-headline-lg font-semibold text-on-background tracking-tight">
+            Notification Center
+          </h1>
           <p className="text-body-md text-on-surface-variant mt-1">
             View, manage and respond to notifications across the organization.
           </p>
@@ -126,7 +131,7 @@ export function NotificationCenterPage() {
             variant="outline"
             size="sm"
             leftIcon={<span className="material-symbols-outlined text-[18px]">settings</span>}
-            onClick={() => navigate({ to: '/notifications/settings' })}
+            onClick={() => safeNavigate(navigate, { to: notificationRoutes.settings })}
           >
             Preferences
           </Button>
@@ -142,7 +147,7 @@ export function NotificationCenterPage() {
             variant="primary"
             size="sm"
             leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-            onClick={() => navigate({ to: '/notifications/compose' })}
+            onClick={() => safeNavigate(navigate, { to: notificationRoutes.compose })}
           >
             Compose
           </Button>
@@ -163,11 +168,11 @@ export function NotificationCenterPage() {
                 {k.icon}
               </span>
             </div>
-            <p className="text-headline-md font-semibold text-deep-navy">{k.value}</p>
+            <p className="text-headline-md font-semibold text-on-background">{k.value}</p>
             <p
               className={cn(
                 'text-[11px] font-bold mt-1',
-                k.hintTone === 'positive' && 'text-success-emerald',
+                k.hintTone === 'positive' && 'text-secondary',
                 k.hintTone === 'danger' && 'text-error',
                 k.hintTone === 'neutral' && 'text-on-surface-variant',
               )}
@@ -189,7 +194,7 @@ export function NotificationCenterPage() {
                 'px-5 py-3 text-label-md whitespace-nowrap transition-colors border-b-2',
                 c.tab === t.id
                   ? 'border-secondary text-secondary font-bold'
-                  : 'border-transparent text-on-surface-variant hover:text-deep-navy',
+                  : 'border-transparent text-on-surface-variant hover:text-on-background',
               )}
             >
               {t.label}
@@ -282,9 +287,7 @@ export function NotificationCenterPage() {
               onPressCancel={c.onRowPressCancel}
               onArchive={() => c.archiveOne(n.id)}
               onMarkRead={() => c.markRead(n.id)}
-              onFullDetail={() =>
-                navigate({ to: '/notifications/$notificationId', params: { notificationId: n.id } })
-              }
+              onFullDetail={() => goDetail(n.id)}
               menuOpen={c.menuOpenId === n.id}
               onMenuToggle={() => c.setMenuOpenId(c.menuOpenId === n.id ? null : n.id)}
             />
@@ -313,10 +316,10 @@ export function NotificationCenterPage() {
                     </span>
                   </div>
                   <div className="min-w-0">
-                    <h2 className="text-headline-md font-semibold text-deep-navy">{c.selected.title}</h2>
+                    <h2 className="text-headline-md font-semibold text-on-background">{c.selected.title}</h2>
                     <p className="text-label-md text-on-surface-variant mt-1">
                       {c.selected.actor && (
-                        <span className="font-semibold text-deep-navy">{c.selected.actor}</span>
+                        <span className="font-semibold text-on-background">{c.selected.actor}</span>
                       )}
                       {c.selected.employeeId && <> · {c.selected.employeeId}</>}
                       {' · '}
@@ -332,7 +335,7 @@ export function NotificationCenterPage() {
                     className="flex items-center justify-between text-label-md border-b border-dashed border-outline-variant pb-2"
                   >
                     <span className="text-on-surface-variant font-semibold">{m.label}</span>
-                    <span className="text-deep-navy font-medium">{m.value}</span>
+                    <span className="text-on-background font-medium">{m.value}</span>
                   </div>
                 ))}
                 <p className="text-body-md text-on-surface leading-relaxed">{c.selected.body}</p>
@@ -350,7 +353,8 @@ export function NotificationCenterPage() {
                   className="flex-1 min-w-[140px]"
                   disabled={!c.selected.relatedHref}
                   onClick={() => {
-                    if (c.selected?.relatedHref) navigate({ to: c.selected.relatedHref as never })
+                    if (c.selected?.relatedHref)
+                      safeNavigate(navigate, { to: c.selected.relatedHref as never })
                   }}
                 >
                   Open Related Record
@@ -445,7 +449,7 @@ function NotificationCard({
               'w-12 h-12 rounded-full flex items-center justify-center shrink-0',
               active
                 ? 'bg-secondary-container text-on-secondary'
-                : 'bg-surface-container-highest text-deep-navy',
+                : 'bg-surface-container-highest text-on-background',
             )}
           >
             <span className="material-symbols-outlined text-2xl">{n.icon}</span>
@@ -457,7 +461,7 @@ function NotificationCard({
               </span>
               <span className="text-[11px] text-on-surface-variant shrink-0">{n.timeAgo}</span>
             </div>
-            <h4 className="text-title-lg font-semibold text-deep-navy line-clamp-1">{n.title}</h4>
+            <h4 className="text-title-lg font-semibold text-on-background line-clamp-1">{n.title}</h4>
             <p className="text-body-sm text-on-surface-variant line-clamp-2 mt-1">{n.body}</p>
             <div className="flex items-center gap-2 mt-3 flex-wrap">
               <span
