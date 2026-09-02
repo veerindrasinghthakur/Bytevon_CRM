@@ -12,6 +12,7 @@ import {
 import { HEADER_HEIGHT_PX } from '@/shared/components/layout/Header'
 import { getActiveModule } from './useSecondaryNav'
 import { useAuth } from '@/modules/auth'
+import { authRoutes } from '@/modules/auth/routes'
 
 export function useAppShell() {
   const [isRailExpanded, setIsRailExpanded] = useState(false)
@@ -50,7 +51,7 @@ export function useAppShell() {
 
   const handleLogout = async () => {
     await logout()
-    await navigate({ to: '/login' })
+    await navigate({ to: authRoutes.login, search: {} as const })
   }
 
   return {

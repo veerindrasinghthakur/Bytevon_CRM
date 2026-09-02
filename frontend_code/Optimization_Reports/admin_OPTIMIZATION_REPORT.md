@@ -10,12 +10,11 @@
 
 | Item | Change |
 |------|--------|
-| UsersListPage inline `Metric` | → shared `MetricCard` |
-| RolesListPage custom selection chrome | → shared `BulkSelectionBar` |
-| UserCreatePage vs `useUserCreate` API mismatch | Page now uses RHF `register` / `watch` / `setValue` / `submit` from hook |
-| OrganizationProfileSection raw edit control | → shared `EditButton` |
-| BrandingSection Select bound via `{...register}` | → controlled `value` / `onChange` + `setValue` |
-| AttendanceSettings / OfficeForm / Org profile / Role form identity / Security metrics | Already RHF+Zod or MetricCard on main (confirmed) |
+| LeaveSettingsPage accrual + add-type modal | → RHF+Zod with `leaveAccrualPolicySchema` / `leavePolicyFormSchema` |
+| AuditLogsPage filter `useState` | → `useListControls` + `useListFilters` hook |
+| SecurityCenterPage event status pills | → shared `securityEventBadge` utility from enums |
+| OrganizationSettingsPage manual draft `useState` + local `Field` | → RHF+Zod with `organizationSettingsSchema` |
+| use-roles-list client-side re-filter | → removed; API already handles server-side filters |
 
 ---
 
@@ -23,20 +22,15 @@
 
 ### Pages
 
-- **LeaveSettingsPage** — accrual + add-type modal still `useState` (no new form schema this pass)
-- **AuditLogsPage** — filter `useState`, inline quick content, virtualizer setup
-- **SecurityCenterPage** — event status pill colors; session toggle local state (UI)
-- **HeadOfficeSection** — picker UI state + local `Readonly`
-- **RegionalSection** — static UI / native selects
-- **OrganizationSettingsPage** — manual draft `useState` + local `Field`
+- **SecurityCenterPage** — session toggle local state (UI)
+- **HeadOfficeSection** — picker UI state + local `Readonly` (no shared alternative)
 - **RoleFormPage** — permission matrix local state (grid UI; not domain form)
 - **UsersListPage / RolesListPage** — badge color utilities; long-press handlers (pattern OK)
 
 ### Hooks
 
-- **use-roles-list** — client-side filter options (server-side later)
-- **use-role-form** — matrix `useState` remains
-- **use-user-detail** — modal flags remain UI state
+- **use-role-form** — matrix `useState` remains (grid UI; not domain form)
+- **use-user-detail** — modal flags remain UI state (no shared modal hook)
 
 ### Orphans / cleanup (confirm before delete)
 

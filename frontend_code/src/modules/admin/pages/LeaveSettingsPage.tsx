@@ -1,21 +1,23 @@
 import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/shared/components/ui/Button'
 import { IconButton } from '@/shared/components/ui/IconButton'
+import { Modal } from '@/shared/components/ui/Modal'
 import { cn } from '@/shared/lib/cn'
 import { useLeaveEdit } from '../context/LeaveEditContext'
 import { listLeaveTypeSettings } from '../api/leave'
 import { getLeaveAccrualPolicy, updateLeaveAccrualPolicy } from '../api/settings'
 import type { LeaveAccrualPolicy } from '../types'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { leaveAccrualPolicySchema, type LeaveAccrualPolicyInput } from '../schemas/leave'
+import { leavePolicyFormSchema, type LeavePolicyFormInput } from '../schemas/leave-form'
 
 /** Content only — pencil Edit lives on Accrual Policy section */
 export function LeaveSettingsPage() {
   const { editing, setEditing } = useLeaveEdit()
   const qc = useQueryClient()
-  const [modalOpen, setModalOpen] = useState(false)
-  const [newType, setNewType] = useState({ name: '', days: '10', eligibility: 'All Employees' })
-  const [accrual, setAccrual] = useState<LeaveAccrualPolicy | null>(null)
 
   const { data: leaveTypes = [], isLoading } = useQuery({
     queryKey: queryKeys.admin.leave.policies(),
@@ -27,12 +29,24 @@ export function LeaveSettingsPage() {
     queryFn: getLeaveAccrualPolicy,
   })
 
+  const accrualForm = useForm<LeaveAccrualPolicyInput>({
+    resolver: zodResolver(leaveAccrualPolicySchema),
+    defaultValues: { maxCarryOverDays: 0, minimumNoticeDays: 0 },
+  })
+
+  const modalForm = useForm<LeavePolicyFormInput>({
+    resolver: zodResolver(leavePolicyFormSchema),
+    defaultValues: { name: '', leave_type: '', annual_entitlement: 10, carry_forward_limit: 0, effective_from: '', effective_to: '' },
+  })
+
   useEffect(() => {
-    if (accrualData && !editing) setAccrual({ ...accrualData })
-  }, [accrualData, editing])
+    if (accrualData && !editing) {
+      accrualForm.reset({ maxCarryOverDays: accrualData.maxCarryOverDays, minimumNoticeDays: accrualData.minimumNoticeDays })
+    }
+  }, [accrualData, editing, accrualForm])
 
   const saveAccrual = useMutation({
-    mutationFn: () => updateLeaveAccrualPolicy(accrual!),
+    mutationFn: () => updateLeaveAccrualPolicy(accrualForm.getValues()),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.admin.settings.leaveAccrual() })
     },
@@ -42,14 +56,20 @@ export function LeaveSettingsPage() {
   })
 
   useEffect(() => {
-    if (!editing && accrual && accrualData) {
-      const dirty =
-        accrual.maxCarryOverDays !== accrualData.maxCarryOverDays ||
-        accrual.minimumNoticeDays !== accrualData.minimumNoticeDays
-      if (dirty) saveAccrual.mutate()
+    if (!editing && accrualForm.formState.isDirty) {
+      saveAccrual.mutate()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only when edit flag drops
   }, [editing])
+
+  const [modalOpen, setModalOpen] = useState(false)
+
+  const onModalSubmit = (values: LeavePolicyFormInput) => {
+    // TODO: call create leave type API
+    console.log('Create leave type:', values)
+    setModalOpen(false)
+    modalForm.reset()
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -122,7 +142,7 @@ export function LeaveSettingsPage() {
               </IconButton>
             )}
           </div>
-          {accrualLoading || !accrual ? (
+          {accrualLoading ? (
             <p className="text-body-sm text-on-surface-variant">Loading policy…</p>
           ) : (
             <div className="space-y-4">
@@ -131,14 +151,14 @@ export function LeaveSettingsPage() {
                 {editing ? (
                   <input
                     type="number"
-                    value={accrual.maxCarryOverDays}
-                    onChange={(e) =>
-                      setAccrual((p) => p && { ...p, maxCarryOverDays: Number(e.target.value) })
-                    }
+                    {...accrualForm.register('maxCarryOverDays', { valueAsNumber: true })}
                     className="w-full px-4 py-2.5 rounded-lg bg-white border border-outline-variant focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none text-body-md transition-colors"
                   />
                 ) : (
-                  <p className="text-body-md font-medium text-on-surface">{accrual.maxCarryOverDays} days</p>
+                  <p className="text-body-md font-medium text-on-surface">{accrualForm.watch('maxCarryOverDays')} days</p>
+                )}
+                {accrualForm.formState.errors.maxCarryOverDays && (
+                  <p className="text-caption text-error mt-1">{accrualForm.formState.errors.maxCarryOverDays.message}</p>
                 )}
               </div>
               <div>
@@ -146,14 +166,14 @@ export function LeaveSettingsPage() {
                 {editing ? (
                   <input
                     type="number"
-                    value={accrual.minimumNoticeDays}
-                    onChange={(e) =>
-                      setAccrual((p) => p && { ...p, minimumNoticeDays: Number(e.target.value) })
-                    }
+                    {...accrualForm.register('minimumNoticeDays', { valueAsNumber: true })}
                     className="w-full px-4 py-2.5 rounded-lg bg-white border border-outline-variant focus:border-secondary focus:ring-2 focus:ring-secondary/30 outline-none text-body-md transition-colors"
                   />
                 ) : (
-                  <p className="text-body-md font-medium text-on-surface">{accrual.minimumNoticeDays} days</p>
+                  <p className="text-body-md font-medium text-on-surface">{accrualForm.watch('minimumNoticeDays')} days</p>
+                )}
+                {accrualForm.formState.errors.minimumNoticeDays && (
+                  <p className="text-caption text-error mt-1">{accrualForm.formState.errors.minimumNoticeDays.message}</p>
                 )}
               </div>
             </div>
@@ -161,37 +181,69 @@ export function LeaveSettingsPage() {
         </section>
       </div>
 
-      {modalOpen && (
-        <>
-          <div className="fixed inset-0 bg-on-surface/20 backdrop-blur-sm z-40" onClick={() => setModalOpen(false)} />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="bv-surface executive-shadow w-full max-w-md">
-              <div className="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
-                <h3 className="text-title-lg font-semibold">Add Leave Type</h3>
-                <button type="button" onClick={() => setModalOpen(false)} className="hover:bg-surface-container rounded-lg p-1 transition-colors">
-                  <span className="material-symbols-outlined">close</span>
-                </button>
-              </div>
-              <div className="p-6">
-                <input
-                  value={newType.name}
-                  onChange={(e) => setNewType((p) => ({ ...p, name: e.target.value }))}
-                  placeholder="Leave type name"
-                  className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
-                />
-              </div>
-              <div className="px-6 py-4 border-t flex justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={() => setModalOpen(false)}>
-                  Cancel
-                </Button>
-                <Button variant="primary" size="sm" onClick={() => setModalOpen(false)}>
-                  Create
-                </Button>
-              </div>
+      <Modal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Add Leave Type"
+        widthClass="max-w-md"
+      >
+        <form onSubmit={modalForm.handleSubmit(onModalSubmit)} className="space-y-4 p-6">
+          <div>
+            <label className="block text-label-sm font-bold text-on-surface-variant uppercase mb-1">Leave Type Name</label>
+            <input
+              {...modalForm.register('name')}
+              placeholder="Leave type name"
+              className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
+            />
+            {modalForm.formState.errors.name && (
+              <p className="text-caption text-error mt-1">{modalForm.formState.errors.name.message}</p>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-label-sm font-bold text-on-surface-variant uppercase mb-1">Annual Entitlement</label>
+              <input
+                type="number"
+                {...modalForm.register('annual_entitlement', { valueAsNumber: true })}
+                className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
+              />
+              {modalForm.formState.errors.annual_entitlement && (
+                <p className="text-caption text-error mt-1">{modalForm.formState.errors.annual_entitlement.message}</p>
+              )}
+            </div>
+            <div>
+              <label className="block text-label-sm font-bold text-on-surface-variant uppercase mb-1">Carry Forward Limit</label>
+              <input
+                type="number"
+                {...modalForm.register('carry_forward_limit', { valueAsNumber: true })}
+                className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
+              />
+              {modalForm.formState.errors.carry_forward_limit && (
+                <p className="text-caption text-error mt-1">{modalForm.formState.errors.carry_forward_limit.message}</p>
+              )}
             </div>
           </div>
-        </>
-      )}
+          <div>
+            <label className="block text-label-sm font-bold text-on-surface-variant uppercase mb-1">Effective From</label>
+            <input
+              type="date"
+              {...modalForm.register('effective_from')}
+              className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
+            />
+            {modalForm.formState.errors.effective_from && (
+              <p className="text-caption text-error mt-1">{modalForm.formState.errors.effective_from.message}</p>
+            )}
+          </div>
+          <div className="flex justify-end gap-2 pt-4 border-t border-outline-variant">
+            <Button type="button" variant="outline" size="sm" onClick={() => setModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" size="sm">
+              Create
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   )
 }

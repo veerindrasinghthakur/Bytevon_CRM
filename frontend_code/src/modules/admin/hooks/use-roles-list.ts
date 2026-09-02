@@ -24,7 +24,7 @@ export function useRolesList() {
   })
 
   const listParams = {
-    search: controls.search || undefined,
+    search: controls.debouncedSearch || undefined,
     status: controls.filters.status !== 'All' ? controls.filters.status : undefined,
     category: controls.filters.category !== 'All' ? controls.filters.category : undefined,
   }
@@ -44,27 +44,14 @@ export function useRolesList() {
 
   const roles = rolesQuery.data ?? []
 
-  const filtered = useMemo(() => {
-    // Client-side re-filter when API returns full list without server filters applied
-    return roles.filter((r) => {
-      if (controls.search) {
-        const q = controls.search.toLowerCase()
-        if (!r.name.toLowerCase().includes(q) && !r.description.toLowerCase().includes(q)) return false
-      }
-      if (controls.filters.status !== 'All' && r.status !== controls.filters.status) return false
-      if (controls.filters.category !== 'All' && r.category !== controls.filters.category) return false
-      return true
-    })
-  }, [roles, controls.search, controls.filters.status, controls.filters.category])
-
   const selection = useListSelection<AdminRole>({
-    items: filtered,
+    items: roles,
     getId: (r) => r.id,
   })
 
   return {
     roles,
-    filtered,
+    filtered: roles,
     totalCount: roles.length,
     isLoading: rolesQuery.isLoading,
     isError: rolesQuery.isError,
@@ -83,7 +70,7 @@ export function useRolesList() {
     page: controls.page,
     setPage: controls.setPage,
     pageSize: controls.pageSize,
-    pageItems: controls.pageItems(filtered),
+    pageItems: controls.pageItems(roles),
     selectionMode: selection.selectionMode,
     selectedIds: selection.selectedIds,
     selectedCount: selection.selectedCount,

@@ -3,6 +3,8 @@ import { cn } from '@/shared/lib/cn'
 import { HeaderBreakChip } from './HeaderBreakChip'
 import { HeaderAttendanceSummary } from './HeaderAttendanceSummary'
 import { HeaderProps } from '@/shared/types'
+import { notificationRoutes } from '@/modules/notifications/routes'
+import { profileRoutes } from '@/modules/profile/routes'
 
 export const HEADER_HEIGHT_PX = 56
 
@@ -55,7 +57,8 @@ export function Header({ title, className, style }: HeaderProps) {
         <HeaderAttendanceSummary />
 
         <Link
-          to="/notifications"
+          to={notificationRoutes.center}
+          search={{}}
           aria-label="My notifications"
           title="Notifications"
           className={cn(
@@ -80,7 +83,8 @@ export function Header({ title, className, style }: HeaderProps) {
         </Link>
 
         <Link
-          to="/profile"
+          to={profileRoutes.root}
+          search={{} as const}
           className={cn(
             'flex items-center gap-2.5 pl-3 ml-1 py-1 pr-1.5 rounded-md',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue',

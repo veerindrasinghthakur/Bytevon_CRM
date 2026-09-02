@@ -11,6 +11,7 @@ import { securityScoreDefault } from '../schemas/enums'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { UnavailableProtocol, ProtocolRow } from '../components/SecurityProtocols'
 import { useSecurityScoreAnimation } from '../hooks/use-security-score'
+import { securityEventBadge } from '../schemas/enums'
 
 export function SecurityCenterPage() {
   const [sessionTimeout, setSessionTimeout] = useState(true)
@@ -203,14 +204,7 @@ export function SecurityCenterPage() {
                   <td className="px-6 py-4 text-body-sm text-on-surface-variant">{ev.source}</td>
                   <td className="px-6 py-4 text-body-sm text-on-surface-variant">{ev.timestamp}</td>
                   <td className="px-6 py-4">
-                    <span
-                      className={cn(
-                        'inline-flex px-2.5 py-0.5 rounded-full text-[11px] font-bold',
-                        ev.status === 'Success' && 'bg-[var(--color-success-emerald)]/10 text-[var(--color-success-emerald)] border-[var(--color-success-emerald)]/30',
-                        ev.status === 'Blocked' && 'bg-[var(--color-error-red)]/10 text-[var(--color-error-red)] border-[var(--color-error-red)]/30',
-                        ev.status === 'Warning' && 'bg-[var(--color-warning-amber)]/10 text-[var(--color-warning-amber)] border-[var(--color-warning-amber)]/30',
-                      )}
-                    >
+                    <span className={securityEventBadge[ev.status] ?? 'status-badge status-neutral'}>
                       {ev.status}
                     </span>
                   </td>

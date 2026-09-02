@@ -44,6 +44,20 @@ export const auditActionDot: Record<string, string> = {
   Lock: 'bg-[var(--color-warning-amber)]',
 }
 
+/** Security event status → badge class. */
+export const securityEventBadge: Record<string, string> = {
+  Success: 'status-badge status-success',
+  Blocked: 'status-badge status-error',
+  Warning: 'status-badge status-warning',
+}
+
+/** Security event status → dot color class. */
+export const securityEventDot: Record<string, string> = {
+  Success: 'bg-[var(--color-success-emerald)]',
+  Blocked: 'bg-[var(--color-error-red)]',
+  Warning: 'bg-[var(--color-warning-amber)]',
+}
+
 /** Resolve an audit action string to its badge/dot key ('Create' | 'Update' | ...). */
 export function resolveAuditActionKey(action: string): string {
   return (

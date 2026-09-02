@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useRef, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
@@ -18,6 +18,7 @@ import {
   QuickPersonRow,
 } from '@/shared/components/layout/QuickOverviewParts'
 import { useListSelection } from '@/shared/hooks/useListSelection'
+import { useListControls } from '@/shared/hooks/useListControls'
 import { ResourceName } from '@/shared/schema'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { listAuditLogs } from '../api/audit'
@@ -25,6 +26,27 @@ import type { AuditLog } from '../types'
 import { auditActionBadge, auditActionDot, resolveAuditActionKey } from '../schemas/enums'
 import { cn } from '@/shared/lib/cn'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
+
+type AuditFilters = {
+  action: string
+  module: string
+  dateFrom: string
+  dateTo: string
+  timeFrom: string
+  timeTo: string
+}
+
+const FILTER_DEFAULTS: AuditFilters = {
+  action: 'All Actions',
+  module: 'All Modules',
+  dateFrom: '',
+  dateTo: '',
+  timeFrom: '',
+  timeTo: '',
+}
+
+const ACTION_OPTIONS = ['All Actions', 'Create', 'Update', 'Delete', 'Login', 'Lock']
+const MODULE_OPTIONS = ['All Modules', 'Roles', 'Auth', 'Settings', 'Users']
 
 function AuditQuickContent({ log }: { log: AuditLog }) {
   return (
@@ -59,54 +81,31 @@ function AuditQuickContent({ log }: { log: AuditLog }) {
 
 export function AuditLogsPage() {
   const { openPanel } = useQuickOverview()
-  const [search, setSearch] = useState('')
-  const [actionFilter, setActionFilter] = useState('All Actions')
-  const [moduleFilter, setModuleFilter] = useState('All Modules')
-  const [dateRange, setDateRange] = useState({ from: '', to: '' })
-  const [timeRange, setTimeRange] = useState({ from: '', to: '' })
+
+  const controls = useListControls<AuditFilters>({
+    filterDefaults: FILTER_DEFAULTS,
+  })
+
+  const listParams = useMemo(
+    () => ({
+      search: controls.debouncedSearch || undefined,
+      action: controls.filters.action !== 'All Actions' ? controls.filters.action : undefined,
+      module: controls.filters.module !== 'All Modules' ? controls.filters.module : undefined,
+      dateFrom: controls.filters.dateFrom || undefined,
+      dateTo: controls.filters.dateTo || undefined,
+      timeFrom: controls.filters.timeFrom || undefined,
+      timeTo: controls.filters.timeTo || undefined,
+    }),
+    [controls.debouncedSearch, controls.filters],
+  )
 
   const logsQuery = useQuery({
-    queryKey: queryKeys.admin.audit.list({
-      search: search.trim() || undefined,
-      action: actionFilter !== 'All Actions' ? actionFilter : undefined,
-      module: moduleFilter !== 'All Modules' ? moduleFilter : undefined,
-      dateFrom: dateRange.from || undefined,
-      dateTo: dateRange.to || undefined,
-      timeFrom: timeRange.from || undefined,
-      timeTo: timeRange.to || undefined,
-    }),
-    queryFn: () =>
-      listAuditLogs({
-        limit: 500,
-        search: search.trim() || undefined,
-        action: actionFilter !== 'All Actions' ? actionFilter : undefined,
-        module: moduleFilter !== 'All Modules' ? moduleFilter : undefined,
-        dateFrom: dateRange.from || undefined,
-        dateTo: dateRange.to || undefined,
-        timeFrom: timeRange.from || undefined,
-        timeTo: timeRange.to || undefined,
-      }),
+    queryKey: queryKeys.admin.audit.list(listParams),
+    queryFn: () => listAuditLogs({ limit: 500, ...listParams }),
   })
 
   const auditLogs = logsQuery.data ?? []
   const filtered = auditLogs
-
-  const filtersActive =
-    Boolean(search.trim()) ||
-    actionFilter !== 'All Actions' ||
-    moduleFilter !== 'All Modules' ||
-    Boolean(dateRange.from) ||
-    Boolean(dateRange.to) ||
-    Boolean(timeRange.from) ||
-    Boolean(timeRange.to)
-
-  const clearFilters = () => {
-    setSearch('')
-    setActionFilter('All Actions')
-    setModuleFilter('All Modules')
-    setDateRange({ from: '', to: '' })
-    setTimeRange({ from: '', to: '' })
-  }
 
   const parentRef = useRef<HTMLDivElement>(null)
 
@@ -163,14 +162,14 @@ export function AuditLogsPage() {
             </Button>
             <ExportButton
               resource={ResourceName.AUDIT}
-              query={search.trim() || undefined}
+              query={controls.debouncedSearch || undefined}
               filters={{
-                action: actionFilter !== 'All Actions' ? actionFilter : undefined,
-                module: moduleFilter !== 'All Modules' ? moduleFilter : undefined,
-                dateFrom: dateRange.from || undefined,
-                dateTo: dateRange.to || undefined,
-                timeFrom: timeRange.from || undefined,
-                timeTo: timeRange.to || undefined,
+                action: controls.filters.action !== 'All Actions' ? controls.filters.action : undefined,
+                module: controls.filters.module !== 'All Modules' ? controls.filters.module : undefined,
+                dateFrom: controls.filters.dateFrom || undefined,
+                dateTo: controls.filters.dateTo || undefined,
+                timeFrom: controls.filters.timeFrom || undefined,
+                timeTo: controls.filters.timeTo || undefined,
               }}
               selectedIds={selection.selectionMode ? Array.from(selection.selectedIds) : undefined}
               filenameStem="audit-logs"
@@ -213,8 +212,8 @@ export function AuditLogsPage() {
               </span>
               <input
                 id="audit-search"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={controls.search}
+                onChange={(e) => controls.setSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none text-body-sm bg-transparent transition-colors"
                 placeholder="Search description, employee, ID..."
               />
@@ -226,13 +225,10 @@ export function AuditLogsPage() {
             </label>
             <Select
               id="audit-action"
-              value={actionFilter}
-              onChange={setActionFilter}
+              value={controls.filters.action}
+              onChange={(v) => controls.setFilter('action', v as AuditFilters['action'])}
               aria-label="Filter by action"
-              options={['All Actions', 'Create', 'Update', 'Delete', 'Login', 'Lock'].map((a) => ({
-                value: a,
-                label: a,
-              }))}
+              options={ACTION_OPTIONS.map((a) => ({ value: a, label: a }))}
               minWidthClass="min-w-0 w-[8rem] max-w-full"
             />
           </div>
@@ -242,31 +238,44 @@ export function AuditLogsPage() {
             </label>
             <Select
               id="audit-module"
-              value={moduleFilter}
-              onChange={setModuleFilter}
+              value={controls.filters.module}
+              onChange={(v) => controls.setFilter('module', v as AuditFilters['module'])}
               aria-label="Filter by module"
-              options={['All Modules', 'Roles', 'Auth', 'Settings', 'Users'].map((m) => ({
-                value: m,
-                label: m,
-              }))}
+              options={MODULE_OPTIONS.map((m) => ({ value: m, label: m }))}
               minWidthClass="min-w-0 w-[8rem] max-w-full"
             />
           </div>
           <div className="flex flex-col gap-1.5 shrink-0">
             <label className="text-label-md text-on-surface">Date</label>
-            <DateRangeFilter value={dateRange} onChange={setDateRange} label="Date" placeholder="Date" />
+            <DateRangeFilter
+              value={{ from: controls.filters.dateFrom, to: controls.filters.dateTo }}
+              onChange={({ from, to }) => {
+                controls.setFilter('dateFrom', from)
+                controls.setFilter('dateTo', to)
+              }}
+              label="Date"
+              placeholder="Date"
+            />
           </div>
           <div className="flex flex-col gap-1.5 shrink-0">
             <label className="text-label-md text-on-surface">Time</label>
-            <TimeRangeFilter value={timeRange} onChange={setTimeRange} label="Time" placeholder="Time" />
+            <TimeRangeFilter
+              value={{ from: controls.filters.timeFrom, to: controls.filters.timeTo }}
+              onChange={({ from, to }) => {
+                controls.setFilter('timeFrom', from)
+                controls.setFilter('timeTo', to)
+              }}
+              label="Time"
+              placeholder="Time"
+            />
           </div>
           <div className="flex flex-col gap-1.5 shrink-0">
             <Button
               variant="outline"
               size="sm"
               className="w-auto min-w-[5.5rem]"
-              disabled={!filtersActive}
-              onClick={clearFilters}
+              disabled={!controls.anyActive}
+              onClick={controls.resetAll}
             >
               Clear
             </Button>

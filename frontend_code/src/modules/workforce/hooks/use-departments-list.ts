@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { listDepartments } from '../api/departments'
@@ -34,9 +33,13 @@ export function useDepartmentsList() {
   const items = data?.items ?? []
   const totalCount = data?.total ?? 0
   const metrics = data?.metrics ?? { total: 0, active: 0, inactive: 0, staffing: 0 }
+  const filtered = items
+  const pageItems = items
 
   return {
     items,
+    filtered,
+    pageItems,
     totalCount,
     metrics,
     loading: isLoading,

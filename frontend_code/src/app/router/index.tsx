@@ -11,7 +11,7 @@ import { loadStoredSession } from '@/modules/auth/api/auth'
 import { NotFoundPage } from '@/modules/auth'
 import { createAuthRoutes, authRoutes } from '@/modules/auth/routes'
 
-import { createDashboardRoutes } from '@/modules/dashboard/routes'
+import { createDashboardRoutes, dashboardRoutes } from '@/modules/dashboard/routes'
 import { createProfileRoutes } from '@/modules/profile/routes'
 import { createNotificationRoutes } from '@/modules/notifications/routes'
 import { createMyWorkRoutes } from '@/modules/my-work/routes'
@@ -32,7 +32,7 @@ function requireAuth() {
   if (!session) {
     throw redirect({
       to: authRoutes.login,
-      search: { redirect: window.location.pathname },
+      search: { redirect: window.location.pathname } as const,
     })
   }
 }
@@ -62,7 +62,7 @@ const indexRoute = createRoute({
   path: '/',
   beforeLoad: () => {
     const session = loadStoredSession()
-    throw redirect({ to: session ? authRoutes.dashboard : authRoutes.login })
+    throw redirect({ to: dashboardRoutes.root, search: {} })
   },
 })
 

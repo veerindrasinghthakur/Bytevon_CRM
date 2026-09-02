@@ -1,7 +1,11 @@
-import { useState } from 'react'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
+import { Select } from '@/shared/components/ui/Select'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
@@ -11,17 +15,46 @@ import {
   useUpdateOrganizationSettings,
 } from '../../hooks/use-organization'
 import type { OrganizationSettings } from '@/shared/schema'
+import { cn } from '@/shared/lib/cn'
+
+const organizationSettingsSchema = z.object({
+  company_name: z.string().min(2, 'Company name is required'),
+  head_office_location_id: z.number().int().positive('Select a head office location'),
+  default_timezone: z.string().min(1, 'Timezone is required'),
+  default_currency: z.string().min(1, 'Currency is required'),
+})
+
+type OrganizationSettingsForm = z.infer<typeof organizationSettingsSchema>
 
 export function OrganizationSettingsPage() {
   const settingsQ = useOrganizationSettings()
   const locationsQ = useOrgLocationsForSelect()
   const updateMut = useUpdateOrganizationSettings()
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
-  // Client form draft only — set on beginEdit, cleared on cancel/save. Server data stays in Query.
-  const [draft, setDraft] = useState<Partial<OrganizationSettings>>({})
 
   const settings = settingsQ.data
   const locations = locationsQ.data?.items ?? []
+
+  const form = useForm<OrganizationSettingsForm>({
+    resolver: zodResolver(organizationSettingsSchema),
+    defaultValues: {
+      company_name: '',
+      head_office_location_id: 0,
+      default_timezone: '',
+      default_currency: '',
+    },
+  })
+
+  useEffect(() => {
+    if (settings && !isEditing) {
+      form.reset({
+        company_name: settings.company_name,
+        head_office_location_id: settings.head_office_location_id,
+        default_timezone: settings.default_timezone,
+        default_currency: settings.default_currency,
+      })
+    }
+  }, [settings, isEditing, form])
 
   if (settingsQ.isLoading || locationsQ.isLoading) return <PageLoadingSkeleton />
   if (settingsQ.isError || !settings) {
@@ -34,12 +67,18 @@ export function OrganizationSettingsPage() {
   }
 
   const beginEdit = () => {
-    setDraft({ ...settings })
     startEditing()
   }
 
   const onCancel = () => {
-    setDraft({})
+    if (settings) {
+      form.reset({
+        company_name: settings.company_name,
+        head_office_location_id: settings.head_office_location_id,
+        default_timezone: settings.default_timezone,
+        default_currency: settings.default_currency,
+      })
+    }
     cancelEditing()
   }
 
@@ -47,22 +86,25 @@ export function OrganizationSettingsPage() {
     locations.find((l) => l.id === settings.head_office_location_id)?.name ??
     `Location #${settings.head_office_location_id}`
 
-  const save = () => {
+  const onSubmit = (values: OrganizationSettingsForm) => {
     updateMut.mutate(
       {
-        company_name: draft.company_name,
-        head_office_location_id: draft.head_office_location_id,
-        default_timezone: draft.default_timezone,
-        default_currency: draft.default_currency,
+        company_name: values.company_name,
+        head_office_location_id: values.head_office_location_id,
+        default_timezone: values.default_timezone,
+        default_currency: values.default_currency,
       },
       {
         onSuccess: () => {
-          setDraft({})
           finishEditing()
         },
       },
     )
   }
+
+  const locationOptions = locations.map((l) => ({ value: String(l.id), label: l.name }))
+
+  const formValues = form.watch()
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -75,7 +117,11 @@ export function OrganizationSettingsPage() {
               <Button variant="outline" onClick={onCancel}>
                 Cancel
               </Button>
-              <Button variant="primary" onClick={save} isLoading={updateMut.isPending}>
+              <Button
+                variant="primary"
+                isLoading={updateMut.isPending}
+                onClick={form.handleSubmit(onSubmit)}
+              >
                 Save
               </Button>
             </div>
@@ -89,78 +135,78 @@ export function OrganizationSettingsPage() {
         <p className="text-body-sm text-error">{(updateMut.error as Error).message}</p>
       )}
 
-      <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm space-y-5 max-w-2xl card-hover">
-        <Field
-          label="Company name"
-          editing={isEditing}
-          value={String(draft.company_name ?? settings.company_name ?? '')}
-          display={settings.company_name}
-          onChange={(v) => setDraft((d) => ({ ...d, company_name: v }))}
-        />
-        <div>
-          <p className="text-label-sm text-on-surface-variant mb-1">Head office</p>
-          {isEditing ? (
-            <select
-              className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm"
-              value={draft.head_office_location_id ?? settings.head_office_location_id ?? ''}
-              onChange={(e) =>
-                setDraft((d) => ({ ...d, head_office_location_id: Number(e.target.value) }))
-              }
-            >
-              {locations.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.name}
-                </option>
-              ))}
-            </select>
-          ) : (
-            <p className="font-medium">{head}</p>
-          )}
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+        <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm space-y-5 max-w-2xl card-hover">
+          <div>
+            <label className="block text-label-sm text-on-surface-variant mb-1">Company name</label>
+            {isEditing ? (
+              <input
+                {...form.register('company_name')}
+                className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm outline-none focus:border-secondary"
+              />
+            ) : (
+              <p className="font-medium text-on-background">{formValues.company_name || settings.company_name}</p>
+            )}
+            {form.formState.errors.company_name && isEditing && (
+              <p className="text-caption text-error mt-1">{form.formState.errors.company_name.message}</p>
+            )}
+          </div>
+          <div>
+            <p className="text-label-sm text-on-surface-variant mb-1">Head office</p>
+            {isEditing ? (
+              <Select
+                {...form.register('head_office_location_id', { valueAsNumber: true })}
+                options={[{ value: '', label: 'Select location' }, ...locationOptions]}
+                placeholder="Select head office"
+              />
+            ) : (
+              <p className="font-medium">{head}</p>
+            )}
+            {form.formState.errors.head_office_location_id && isEditing && (
+              <p className="text-caption text-error mt-1">{form.formState.errors.head_office_location_id.message}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-label-sm text-on-surface-variant mb-1">Default timezone</label>
+            {isEditing ? (
+              <input
+                {...form.register('default_timezone')}
+                className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm outline-none focus:border-secondary"
+              />
+            ) : (
+              <p className="font-medium text-on-background">{formValues.default_timezone || settings.default_timezone}</p>
+            )}
+            {form.formState.errors.default_timezone && isEditing && (
+              <p className="text-caption text-error mt-1">{form.formState.errors.default_timezone.message}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-label-sm text-on-surface-variant mb-1">Default currency</label>
+            {isEditing ? (
+              <input
+                {...form.register('default_currency')}
+                className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm outline-none focus:border-secondary"
+              />
+            ) : (
+              <p className="font-medium text-on-background">{formValues.default_currency || settings.default_currency}</p>
+            )}
+            {form.formState.errors.default_currency && isEditing && (
+              <p className="text-caption text-error mt-1">{form.formState.errors.default_currency.message}</p>
+            )}
+          </div>
         </div>
-        <Field
-          label="Default timezone"
-          editing={isEditing}
-          value={String(draft.default_timezone ?? settings.default_timezone ?? '')}
-          display={settings.default_timezone}
-          onChange={(v) => setDraft((d) => ({ ...d, default_timezone: v }))}
-        />
-        <Field
-          label="Default currency"
-          editing={isEditing}
-          value={String(draft.default_currency ?? settings.default_currency ?? '')}
-          display={settings.default_currency}
-          onChange={(v) => setDraft((d) => ({ ...d, default_currency: v }))}
-        />
-      </div>
-    </div>
-  )
-}
 
-function Field({
-  label,
-  editing,
-  value,
-  display,
-  onChange,
-}: {
-  label: string
-  editing: boolean
-  value: string
-  display: string
-  onChange: (v: string) => void
-}) {
-  return (
-    <div>
-      <p className="text-label-sm text-on-surface-variant mb-1">{label}</p>
-      {editing ? (
-        <input
-          className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-        />
-      ) : (
-        <p className="font-medium text-on-background">{display}</p>
-      )}
+        {isEditing && (
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" isLoading={updateMut.isPending}>
+              Save
+            </Button>
+          </div>
+        )}
+      </form>
     </div>
   )
 }
