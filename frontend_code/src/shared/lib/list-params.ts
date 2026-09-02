@@ -6,6 +6,15 @@ export interface ListPaginationParams {
   search?: string
 }
 
+/** Extended list params used by workforce/sales/admin list APIs. */
+export type EntityListParams = {
+  search?: string
+  page?: number
+  pageSize?: number
+  status?: string
+  [key: string]: unknown
+}
+
 export interface ListResponse<T> {
   items: T[]
   total: number
