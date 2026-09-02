@@ -42,6 +42,17 @@ export interface PayrollEmployeeListParams {
   pageSize?: number
 }
 
+/** Org-wide paid history row (history list page). */
+export interface OrgPayrollHistoryRecord {
+  id: string
+  period: string
+  employeeId: string
+  paidOn: string
+  gross: number
+  net: number
+  ref: string
+}
+
 function filterEmployees(params: PayrollEmployeeListParams = {}): PayrollEmployeeRow[] {
   let items = payrollEmployees.map((r) => ({ ...r }))
   if (params.search) {
@@ -57,6 +68,41 @@ function filterEmployees(params: PayrollEmployeeListParams = {}): PayrollEmploye
     items = items.filter((e) => e.status === params.status)
   }
   return items
+}
+
+function buildOrgPaidHistory(): OrgPayrollHistoryRecord[] {
+  const fromHistory: OrgPayrollHistoryRecord[] = []
+  for (const [employeeId, rows] of Object.entries(historyByEmployee)) {
+    for (const r of rows) {
+      if (r.status !== 'PAID') continue
+      fromHistory.push({
+        id: r.id,
+        period: r.month,
+        employeeId,
+        paidOn: r.paymentDate,
+        gross: r.gross,
+        net: r.net,
+        ref: `TRX-${r.id.toUpperCase()}`,
+      })
+    }
+  }
+  // Current-period paid employees not already in history seed
+  for (const e of payrollEmployees) {
+    if (e.status !== 'Paid') continue
+    if (fromHistory.some((h) => h.employeeId === e.id && h.period.includes(String(periodMeta.year)))) {
+      continue
+    }
+    fromHistory.push({
+      id: `paid-${e.id}`,
+      period: periodMeta.label,
+      employeeId: e.id,
+      paidOn: '2026-08-31',
+      gross: e.gross,
+      net: e.net,
+      ref: e.paymentRef ?? `TRX-${e.code}`,
+    })
+  }
+  return fromHistory
 }
 
 export async function getPayrollKpis(): Promise<PayrollKpis> {
@@ -200,6 +246,31 @@ export async function listEmployeePayrollHistory(employeeId: string): Promise<Pa
     `/payroll/employees/${encodeURIComponent(employeeId)}/history`,
   )
   return data
+}
+
+/** Org-wide paid payroll history (mock aggregates historyByEmployee + current Paid rows). */
+export async function listOrgPayrollHistory(search?: string): Promise<OrgPayrollHistoryRecord[]> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<OrgPayrollHistoryRecord[]>('/payroll/history', {
+      params: search ? { search } : undefined,
+    })
+    return data
+  }
+  await delay(200)
+  let rows = buildOrgPaidHistory()
+  if (search?.trim()) {
+    const q = search.toLowerCase()
+    rows = rows.filter((r) => {
+      const emp = payrollEmployees.find((e) => e.id === r.employeeId)
+      return (
+        r.period.toLowerCase().includes(q) ||
+        r.ref.toLowerCase().includes(q) ||
+        emp?.name.toLowerCase().includes(q) ||
+        emp?.code.toLowerCase().includes(q)
+      )
+    })
+  }
+  return rows
 }
 
 export async function getRunPayrollChecks(): Promise<RunPayrollCheck[]> {
