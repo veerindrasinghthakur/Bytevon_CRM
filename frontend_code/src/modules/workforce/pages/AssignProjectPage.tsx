@@ -5,6 +5,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { teams, assignableProjects } from '@/shared/mock/data/workforce'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { RouteCrumbs } from '../components/RouteCrumbs'
+import { workforceRoutes } from '../routes'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -25,19 +26,22 @@ export function AssignProjectPage() {
   const [notes, setNotes] = useState('')
 
   const submit = () => {
-    safeNavigate(navigate, { to: '/workforce/teams/$teamId/projects', params: { teamId: t.id } })
+    safeNavigate(navigate, {
+      to: workforceRoutes.teamProjectsPath,
+      params: { teamId: t.id },
+    })
   }
 
   return (
     <div className="space-y-6 max-w-3xl animate-fade-in">
       <div>
-        <BackButton to={`/workforce/teams/${t.id}`} label="Back to team" />
+        <BackButton to={workforceRoutes.teamDetail(t.id)} label="Back to team" />
         <RouteCrumbs
           className="mt-2 mb-2"
           items={[
-            { label: 'Workforce', to: '/workforce/employees' },
-            { label: 'Teams', to: '/workforce/teams' },
-            { label: t.name, to: `/workforce/teams/${t.id}` },
+            { label: 'Workforce', to: workforceRoutes.employees },
+            { label: 'Teams', to: workforceRoutes.teams },
+            { label: t.name, to: workforceRoutes.teamDetail(t.id) },
             { label: 'Assign project' },
           ]}
         />
@@ -110,7 +114,12 @@ export function AssignProjectPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => safeNavigate(navigate, { to: '/workforce/teams/$teamId', params: { teamId: t.id } })}
+            onClick={() =>
+              safeNavigate(navigate, {
+                to: workforceRoutes.teamDetailPath,
+                params: { teamId: t.id },
+              })
+            }
           >
             Cancel
           </Button>

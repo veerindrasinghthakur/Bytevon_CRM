@@ -5,6 +5,8 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { getSchemaDepartments, getLocations, getPositions, getShifts } from '@/modules/admin'
 import { WorkMode } from '@/shared/schema'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { workforceRoutes } from '../routes'
 
 export function ChangeAssignmentPage() {
   const { employeeId } = useParams({ strict: false }) as { employeeId: string }
@@ -39,7 +41,10 @@ export function ChangeAssignmentPage() {
     setSaving(true)
     await new Promise((r) => setTimeout(r, 400))
     setSaving(false)
-    navigate({ to: '/workforce/employees/$employeeId', params: { employeeId } })
+    safeNavigate(navigate, {
+      to: workforceRoutes.employeeDetailPath,
+      params: { employeeId },
+    })
   }
 
   const select = (
@@ -65,7 +70,7 @@ export function ChangeAssignmentPage() {
 
   return (
     <div className="space-y-6 max-w-xl animate-fade-in">
-      <BackButton to={`/workforce/employees/${employeeId}`} label="Back to employee" />
+      <BackButton to={workforceRoutes.employeeDetail(employeeId)} label="Back to employee" />
       <PageHeader
         title="Change assignment"
         description="Creates a new employment_assignments row and closes the previous effective_to"

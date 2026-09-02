@@ -45,3 +45,10 @@ export type {
   EmploymentType,
   EmployeeStatus,
 } from './schemas/team'
+
+export {
+  workforceAttendanceStatusStyles,
+  WORKFORCE_ATTENDANCE_STATUS_OPTIONS,
+  employeeStatusStyles,
+  departmentStatusStyles,
+} from './schemas/enums'

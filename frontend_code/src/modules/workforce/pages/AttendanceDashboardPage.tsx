@@ -6,6 +6,10 @@ import { Select } from '@/shared/components/ui/Select'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
+import {
+  workforceAttendanceStatusStyles,
+  WORKFORCE_ATTENDANCE_STATUS_OPTIONS,
+} from '../schemas/enums'
 import { workforceRoutes } from '../routes'
 import {
   attendanceKpis,
@@ -22,26 +26,6 @@ function Icon({ name, className }: { name: string; className?: string }) {
     </span>
   )
 }
-
-const statusClass: Record<string, string> = {
-  PRESENT: 'bg-emerald-100 text-emerald-800',
-  LATE: 'bg-amber-100 text-amber-800',
-  ABSENT: 'bg-rose-100 text-rose-800',
-  WFH: 'bg-violet-100 text-violet-800',
-  ON_LEAVE: 'bg-sky-100 text-sky-800',
-  'On Time': 'bg-emerald-100 text-emerald-800',
-  Late: 'bg-amber-100 text-amber-800',
-  Remote: 'bg-violet-100 text-violet-800',
-}
-
-const STATUS_OPTIONS = [
-  { value: 'ALL', label: 'All statuses' },
-  { value: 'PRESENT', label: 'Present' },
-  { value: 'LATE', label: 'Late' },
-  { value: 'ABSENT', label: 'Absent' },
-  { value: 'WFH', label: 'WFH' },
-  { value: 'ON_LEAVE', label: 'On leave' },
-]
 
 export function AttendanceDashboardPage() {
   const navigate = useNavigate()
@@ -154,7 +138,12 @@ export function AttendanceDashboardPage() {
                     {c.team} · {c.time}
                   </p>
                 </div>
-                <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-bold', statusClass[c.status])}>
+                <span
+                  className={cn(
+                    'rounded-full px-2 py-0.5 text-[10px] font-bold',
+                    workforceAttendanceStatusStyles[c.status] ?? 'status-badge status-neutral',
+                  )}
+                >
                   {c.status}
                 </span>
               </li>
@@ -183,7 +172,7 @@ export function AttendanceDashboardPage() {
               <Select
                 value={statusFilter}
                 onChange={setStatusFilter}
-                options={STATUS_OPTIONS}
+                options={[...WORKFORCE_ATTENDANCE_STATUS_OPTIONS]}
                 minWidthClass="min-w-[140px]"
                 aria-label="Filter by status"
               />
@@ -224,7 +213,7 @@ export function AttendanceDashboardPage() {
                     className="zebra-row cursor-pointer"
                     onClick={() =>
                       safeNavigate(navigate, {
-                        to: '/workforce/attendance/$attendanceId',
+                        to: workforceRoutes.attendanceRecordPath,
                         params: { attendanceId: r.id },
                       })
                     }
@@ -240,7 +229,12 @@ export function AttendanceDashboardPage() {
                     <td className="px-4 py-3 text-body-sm text-on-surface-variant hidden sm:table-cell">{r.department}</td>
                     <td className="px-4 py-3 text-body-sm text-on-surface-variant">{r.checkIn}</td>
                     <td className="px-4 py-3">
-                      <span className={cn('rounded-full px-2 py-0.5 text-[10px] font-bold', statusClass[r.status])}>
+                      <span
+                        className={cn(
+                          'rounded-full px-2 py-0.5 text-[10px] font-bold',
+                          workforceAttendanceStatusStyles[r.status] ?? 'status-badge status-neutral',
+                        )}
+                      >
                         {r.status.replace('_', ' ')}
                       </span>
                     </td>
@@ -254,7 +248,7 @@ export function AttendanceDashboardPage() {
         <section className="bv-surface p-5">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-title-md font-semibold">Corrections</h2>
-            <span className="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-[10px] font-bold">
+            <span className="rounded-full status-badge status-warning px-2 py-0.5 text-[10px] font-bold">
               {corrections.length} pending
             </span>
           </div>

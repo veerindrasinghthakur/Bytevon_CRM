@@ -4,6 +4,7 @@
  * Heavy pages lazy-loaded via shared lazyPage helper.
  */
 import { createRoute, redirect } from '@tanstack/react-router'
+import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 
 const EmployeesListPage = lazyPage(() => import('./pages/EmployeesListPage'), 'EmployeesListPage')
@@ -45,30 +46,37 @@ export const workforceRoutes = {
   employees: '/workforce/employees',
   employeeNew: '/workforce/employees/new',
   employeeDetail: (id: string | number) => `/workforce/employees/${id}`,
+  employeeDetailPath: '/workforce/employees/$employeeId',
   employeeAssignment: (id: string | number) => `/workforce/employees/${id}/assignment`,
+  employeeAssignmentPath: '/workforce/employees/$employeeId/assignment',
   departments: '/workforce/departments',
   departmentNew: '/workforce/departments/new',
   departmentDetail: (id: string | number) => `/workforce/departments/${id}`,
+  departmentDetailPath: '/workforce/departments/$departmentId',
   teams: '/workforce/teams',
   teamNew: '/workforce/teams/new',
   teamDetail: (id: string | number) => `/workforce/teams/${id}`,
+  teamDetailPath: '/workforce/teams/$teamId',
   teamEdit: (id: string | number) => `/workforce/teams/${id}/edit`,
+  teamEditPath: '/workforce/teams/$teamId/edit',
   teamMembers: (id: string | number) => `/workforce/teams/${id}/members`,
+  teamMembersPath: '/workforce/teams/$teamId/members',
   teamProjects: (id: string | number) => `/workforce/teams/${id}/projects`,
+  teamProjectsPath: '/workforce/teams/$teamId/projects',
   teamAssignProject: (id: string | number) => `/workforce/teams/${id}/assign-project`,
+  teamAssignProjectPath: '/workforce/teams/$teamId/assign-project',
   teamAddMember: (id: string | number) => `/workforce/teams/${id}/add-member`,
-  /** Org attendance dashboard (primary secondary-nav entry). */
+  teamAddMemberPath: '/workforce/teams/$teamId/add-member',
   attendance: '/workforce/attendance',
   attendanceEmployees: '/workforce/attendance/employees',
   attendanceRoster: '/workforce/attendance/roster',
-  /** Mock record detail (todayAttendance row id). */
   attendanceRecord: (attendanceId: string | number) => `/workforce/attendance/${attendanceId}`,
-  /** Employment day detail (punches/breaks) with optional ?date=. */
+  attendanceRecordPath: '/workforce/attendance/$attendanceId',
   attendanceDay: (employmentId: string | number) => `/workforce/attendance/day/${employmentId}`,
+  attendanceDayPath: '/workforce/attendance/day/$employmentId',
 } as const
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function createWorkforceRoutes(appLayoutRoute: any) {
+export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   return [
     createRoute({
       getParentRoute: () => appLayoutRoute,
@@ -152,7 +160,6 @@ export function createWorkforceRoutes(appLayoutRoute: any) {
       path: '/workforce/teams/$teamId/add-member',
       component: AddMemberPage,
     }),
-    // Attendance — static segments before $attendanceId
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/attendance',
