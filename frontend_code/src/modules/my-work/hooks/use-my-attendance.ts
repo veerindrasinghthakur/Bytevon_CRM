@@ -27,12 +27,12 @@ export function useMyAttendance() {
   })
 
   const todayInfoQuery = useQuery({
-    queryKey: [...queryKeys.myWork.attendance.all, 'today-info'] as const,
+    queryKey: queryKeys.myWork.attendance.todayInfo(),
     queryFn: getMyWorkTodayInfo,
   })
 
   const weekHoursQuery = useQuery({
-    queryKey: [...queryKeys.myWork.attendance.all, 'week-hours'] as const,
+    queryKey: queryKeys.myWork.attendance.weekHours(),
     queryFn: getMyWeekHours,
   })
 
