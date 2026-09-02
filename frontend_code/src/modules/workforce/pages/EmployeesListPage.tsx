@@ -25,26 +25,12 @@ import { useEmployeesList } from '../hooks/use-employees-list'
 import { workforceRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
-
-const stateStyles: Record<string, string> = {
-  CONFIRMED: 'status-badge status-success',
-  ONBOARDING: 'status-badge status-info',
-  PROBATION: 'status-badge status-warning',
-  SERVING_NOTICE: 'status-badge status-warning',
-  RESIGNED: 'status-badge status-neutral',
-  TERMINATED: 'status-badge status-error',
-  ALUMNI: 'status-badge status-neutral',
-}
-
-const stateDot: Record<string, string> = {
-  CONFIRMED: 'bg-emerald-500',
-  ONBOARDING: 'bg-blue-500',
-  PROBATION: 'bg-amber-500',
-  SERVING_NOTICE: 'bg-yellow-500',
-  RESIGNED: 'bg-slate-400',
-  TERMINATED: 'bg-red-500',
-  ALUMNI: 'bg-slate-400',
-}
+import {
+  employmentStateStyles,
+  employmentStateDot,
+  loginEnabledClass,
+  loginDisabledClass,
+} from '../schemas/enums'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -149,7 +135,7 @@ export function EmployeesListPage() {
 
   const goDetail = (id: number) => {
     safeNavigate(navigate, {
-      to: workforceRoutes.employeeDetail(id),
+      to: workforceRoutes.employeeDetailPath,
       params: { employeeId: String(id) },
     })
   }
@@ -162,7 +148,7 @@ export function EmployeesListPage() {
       subtitle: [emp.employee_code, emp.email].filter(Boolean).join(' · '),
       icon: 'person',
       status: emp.current_state.replace(/_/g, ' '),
-      statusDotClass: stateDot[emp.current_state] ?? 'bg-outline',
+      statusDotClass: employmentStateDot[emp.current_state] ?? 'bg-outline',
       content: (
         <EmployeeQuickContent
           departmentName={emp.departmentName}
@@ -379,15 +365,15 @@ export function EmployeesListPage() {
                       <td className="px-4 py-4 text-body-md">{emp.positionName}</td>
                       <td className="px-4 py-4 text-body-md">{emp.employment_type.replace(/_/g, ' ')}</td>
                       <td className="px-4 py-4">
-                        <span className={stateStyles[emp.current_state] ?? 'status-badge status-neutral'}>
+                        <span className={employmentStateStyles[emp.current_state] ?? 'status-badge status-neutral'}>
                           {emp.current_state.replace(/_/g, ' ')}
                         </span>
                       </td>
                       <td className="px-4 py-4">
                         {emp.hasLogin ? (
-                          <span className="text-label-sm text-emerald-700 font-medium">Yes</span>
+                          <span className={loginEnabledClass}>Yes</span>
                         ) : (
-                          <span className="text-label-sm text-amber-700 font-medium">No login</span>
+                          <span className={loginDisabledClass}>No login</span>
                         )}
                       </td>
                       <td
