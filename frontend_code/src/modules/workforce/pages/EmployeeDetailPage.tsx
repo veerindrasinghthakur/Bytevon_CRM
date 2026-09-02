@@ -1,14 +1,23 @@
 import { useEffect, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { cn } from '@/shared/lib/cn'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getEmployeeDetail, updateEmployment } from '../api/employment'
 import type { EmployeeDetailDto } from '@/shared/schema'
 import { Can } from '@/shared/rbac'
 import { Action, ResourceName } from '@/shared/schema'
+import { workforceRoutes } from '../routes'
+import {
+  employeeDetailEditSchema,
+  type EmployeeDetailEditInput,
+} from '../schemas/employment-form'
+import { employmentStateStyles, loginEnabledClass } from '../schemas/enums'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -40,12 +49,17 @@ export function EmployeeDetailPage() {
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
 
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [personalEmail, setPersonalEmail] = useState('')
-  const [phone, setPhone] = useState('')
-  const [address, setAddress] = useState('')
-  const [dob, setDob] = useState('')
+  const form = useForm<EmployeeDetailEditInput>({
+    resolver: zodResolver(employeeDetailEditSchema),
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      personalEmail: '',
+      personalPhone: '',
+      address: '',
+      dateOfBirth: '',
+    },
+  })
 
   const load = async () => {
     setLoading(true)
@@ -57,12 +71,14 @@ export function EmployeeDetailPage() {
         setData(null)
       } else {
         setData(dto)
-        setFirstName(dto.person.first_name)
-        setLastName(dto.person.last_name)
-        setPersonalEmail(dto.person.personal_email ?? '')
-        setPhone(dto.person.personal_phone ?? '')
-        setAddress(dto.person.address ?? '')
-        setDob(dto.person.date_of_birth ?? '')
+        form.reset({
+          firstName: dto.person.first_name,
+          lastName: dto.person.last_name,
+          personalEmail: dto.person.personal_email ?? '',
+          personalPhone: dto.person.personal_phone ?? '',
+          address: dto.person.address ?? '',
+          dateOfBirth: dto.person.date_of_birth ?? '',
+        })
       }
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to load')
@@ -73,41 +89,46 @@ export function EmployeeDetailPage() {
 
   useEffect(() => {
     void load()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
   const startEdit = () => {
     if (!data) return
-    setFirstName(data.person.first_name)
-    setLastName(data.person.last_name)
-    setPersonalEmail(data.person.personal_email ?? '')
-    setPhone(data.person.personal_phone ?? '')
-    setAddress(data.person.address ?? '')
-    setDob(data.person.date_of_birth ?? '')
+    form.reset({
+      firstName: data.person.first_name,
+      lastName: data.person.last_name,
+      personalEmail: data.person.personal_email ?? '',
+      personalPhone: data.person.personal_phone ?? '',
+      address: data.person.address ?? '',
+      dateOfBirth: data.person.date_of_birth ?? '',
+    })
     setEditing(true)
   }
 
   const cancelEdit = () => {
     setEditing(false)
     if (data) {
-      setFirstName(data.person.first_name)
-      setLastName(data.person.last_name)
-      setPersonalEmail(data.person.personal_email ?? '')
-      setPhone(data.person.personal_phone ?? '')
-      setAddress(data.person.address ?? '')
-      setDob(data.person.date_of_birth ?? '')
+      form.reset({
+        firstName: data.person.first_name,
+        lastName: data.person.last_name,
+        personalEmail: data.person.personal_email ?? '',
+        personalPhone: data.person.personal_phone ?? '',
+        address: data.person.address ?? '',
+        dateOfBirth: data.person.date_of_birth ?? '',
+      })
     }
   }
 
-  const saveEdit = async () => {
+  const saveEdit = form.handleSubmit(async (values) => {
     setSaving(true)
     try {
       await updateEmployment(id, {
-        firstName,
-        lastName,
-        personalEmail: personalEmail || null,
-        personalPhone: phone || null,
-        address: address || null,
-        dateOfBirth: dob || null,
+        firstName: values.firstName,
+        lastName: values.lastName,
+        personalEmail: values.personalEmail || null,
+        personalPhone: values.personalPhone || null,
+        address: values.address || null,
+        dateOfBirth: values.dateOfBirth || null,
       })
       setEditing(false)
       await load()
@@ -116,7 +137,7 @@ export function EmployeeDetailPage() {
     } finally {
       setSaving(false)
     }
-  }
+  })
 
   const deactivate = async () => {
     if (!confirm('Deactivate this employment record?')) return
@@ -158,6 +179,8 @@ export function EmployeeDetailPage() {
     URL.revokeObjectURL(url)
   }
 
+  const goList = () => safeNavigate(navigate, { to: workforceRoutes.employees })
+
   if (loading) {
     return (
       <div className="space-y-4 animate-pulse">
@@ -170,11 +193,11 @@ export function EmployeeDetailPage() {
   if (error || !data) {
     return (
       <div className="space-y-4 animate-fade-in">
-        <BackButton to="/workforce/employees" label="Back to employees" />
+        <BackButton to={workforceRoutes.employees} label="Back to employees" />
         <div className="bv-surface p-8 text-center">
           <Icon name="person_off" className="text-4xl text-on-surface-variant" />
           <p className="mt-2 text-title-md font-semibold">{error ?? 'Employee not found'}</p>
-          <Button className="mt-4" variant="outline" onClick={() => navigate({ to: '/workforce/employees' })}>
+          <Button className="mt-4" variant="outline" onClick={goList}>
             Return to list
           </Button>
         </div>
@@ -184,11 +207,13 @@ export function EmployeeDetailPage() {
 
   const fullName = `${data.person.first_name} ${data.person.last_name}`
   const initials = `${data.person.first_name[0] ?? ''}${data.person.last_name[0] ?? ''}`.toUpperCase()
+  const stateClass =
+    employmentStateStyles[data.employment.current_state] ?? 'status-badge status-neutral'
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
-        <BackButton to="/workforce/employees" label="Back to employees" />
+        <BackButton to={workforceRoutes.employees} label="Back to employees" />
         <DynamicRouteCrumbs className="mt-2 mb-2" lastLabel={fullName} />
       </div>
 
@@ -206,7 +231,7 @@ export function EmployeeDetailPage() {
                   <Button variant="outline" size="sm" onClick={cancelEdit}>
                     Cancel
                   </Button>
-                  <Button variant="primary" size="sm" isLoading={saving} onClick={saveEdit}>
+                  <Button variant="primary" size="sm" isLoading={saving} onClick={() => void saveEdit()}>
                     Save
                   </Button>
                 </>
@@ -233,14 +258,12 @@ export function EmployeeDetailPage() {
       />
 
       <div className="flex flex-wrap items-center gap-2">
-        <span className="px-3 py-1 bg-secondary/15 text-secondary text-xs font-bold rounded-full border border-secondary/20">
-          {data.employment.current_state}
-        </span>
+        <span className={stateClass}>{data.employment.current_state.replace(/_/g, ' ')}</span>
         <span className="px-3 py-1 bg-surface-container text-on-surface-variant text-xs font-bold rounded-full">
           {data.employment.employment_type}
         </span>
         <span className="text-label-sm text-on-surface-variant">Emp code: {data.employment.employee_code}</span>
-        {data.hasLogin && <span className="text-label-sm text-emerald-700">Login: {data.loginEmail}</span>}
+        {data.hasLogin && <span className={loginEnabledClass}>Login: {data.loginEmail}</span>}
       </div>
 
       {editing && (
@@ -250,28 +273,37 @@ export function EmployeeDetailPage() {
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
-              <label className="text-label-sm text-on-surface-variant">First name</label>
-              <input className={inputClass} value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+              <label className="text-label-sm text-on-surface-variant" htmlFor="emp-first">First name</label>
+              <input id="emp-first" className={inputClass} {...form.register('firstName')} />
+              {form.formState.errors.firstName && (
+                <p className="text-xs text-error mt-1">{form.formState.errors.firstName.message}</p>
+              )}
             </div>
             <div>
-              <label className="text-label-sm text-on-surface-variant">Last name</label>
-              <input className={inputClass} value={lastName} onChange={(e) => setLastName(e.target.value)} />
+              <label className="text-label-sm text-on-surface-variant" htmlFor="emp-last">Last name</label>
+              <input id="emp-last" className={inputClass} {...form.register('lastName')} />
+              {form.formState.errors.lastName && (
+                <p className="text-xs text-error mt-1">{form.formState.errors.lastName.message}</p>
+              )}
             </div>
             <div>
-              <label className="text-label-sm text-on-surface-variant">Date of birth</label>
-              <input className={inputClass} type="date" value={dob} onChange={(e) => setDob(e.target.value)} />
+              <label className="text-label-sm text-on-surface-variant" htmlFor="emp-dob">Date of birth</label>
+              <input id="emp-dob" className={inputClass} type="date" {...form.register('dateOfBirth')} />
             </div>
             <div>
-              <label className="text-label-sm text-on-surface-variant">Personal email</label>
-              <input className={inputClass} type="email" value={personalEmail} onChange={(e) => setPersonalEmail(e.target.value)} />
+              <label className="text-label-sm text-on-surface-variant" htmlFor="emp-email">Personal email</label>
+              <input id="emp-email" className={inputClass} type="email" {...form.register('personalEmail')} />
+              {form.formState.errors.personalEmail && (
+                <p className="text-xs text-error mt-1">{form.formState.errors.personalEmail.message}</p>
+              )}
             </div>
             <div>
-              <label className="text-label-sm text-on-surface-variant">Phone</label>
-              <input className={inputClass} value={phone} onChange={(e) => setPhone(e.target.value)} />
+              <label className="text-label-sm text-on-surface-variant" htmlFor="emp-phone">Phone</label>
+              <input id="emp-phone" className={inputClass} {...form.register('personalPhone')} />
             </div>
             <div>
-              <label className="text-label-sm text-on-surface-variant">Address</label>
-              <input className={inputClass} value={address} onChange={(e) => setAddress(e.target.value)} />
+              <label className="text-label-sm text-on-surface-variant" htmlFor="emp-addr">Address</label>
+              <input id="emp-addr" className={inputClass} {...form.register('address')} />
             </div>
           </div>
         </div>
@@ -342,7 +374,6 @@ export function EmployeeDetailPage() {
             </div>
           </div>
 
-          {/* Reporting manager */}
           <div className="bv-surface p-5 card-hover">
             <p className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-3">
               Reporting manager
@@ -403,7 +434,6 @@ export function EmployeeDetailPage() {
                   </div>
                 </div>
 
-                {/* Attendance & leave snapshot (UI mock metrics) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-5 rounded-xl border border-outline-variant bg-surface-container-low/40 card-hover">
                     <div className="flex items-center gap-2 mb-3">
@@ -416,7 +446,7 @@ export function EmployeeDetailPage() {
                         <p className="text-[10px] uppercase text-on-surface-variant">Present</p>
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-amber-600">1</p>
+                        <p className="text-2xl font-bold text-[var(--color-warning-amber)]">1</p>
                         <p className="text-[10px] uppercase text-on-surface-variant">Late</p>
                       </div>
                       <div>
@@ -441,7 +471,7 @@ export function EmployeeDetailPage() {
                         <p className="text-[10px] uppercase text-on-surface-variant">Pending</p>
                       </div>
                       <div>
-                        <p className="text-2xl font-bold text-emerald-600">5</p>
+                        <p className="text-2xl font-bold text-secondary">5</p>
                         <p className="text-[10px] uppercase text-on-surface-variant">Used YTD</p>
                       </div>
                     </div>
