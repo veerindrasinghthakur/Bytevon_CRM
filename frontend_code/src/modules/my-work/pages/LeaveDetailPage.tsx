@@ -1,33 +1,49 @@
 import { useParams, useNavigate } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
+import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
-import { leaveRequests, currentUser, leaveBalances } from '../data/mock'
-import type { LeaveStatus } from '../types'
+import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { queryKeys } from '@/shared/lib/query-keys'
+import { listMyLeaveRequests, listMyLeaveBalances, getMyWorkOverview } from '../api/my-work'
+import { statusStyles } from '../schemas/enums'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../routes'
-
-/** Status badge colors — left as semantic status styles (not design-token pass). */
-const statusStyles: Record<LeaveStatus, string> = {
-  Pending: 'bg-amber-100 text-amber-800 border border-amber-200',
-  Approved: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-  Rejected: 'bg-red-50 text-red-700 border border-red-200',
-  Cancelled: 'bg-surface-container text-on-surface-variant border border-outline-variant',
-}
+import { cn } from '@/shared/lib/cn'
 
 export function LeaveDetailPage() {
   const { leaveId } = useParams({ strict: false }) as { leaveId: string }
   const navigate = useNavigate()
-  const req = leaveRequests.find((r) => r.id === leaveId) ?? leaveRequests[0]
+
+  const listQuery = useQuery({
+    queryKey: queryKeys.myWork.leave.list({ pageSize: 100 }),
+    queryFn: () => listMyLeaveRequests({ pageSize: 100 }),
+  })
+
+  const balancesQuery = useQuery({
+    queryKey: queryKeys.myWork.leave.balances(),
+    queryFn: listMyLeaveBalances,
+  })
+
+  const overviewQuery = useQuery({
+    queryKey: queryKeys.myWork.overview(),
+    queryFn: getMyWorkOverview,
+  })
+
+  if (listQuery.isLoading || balancesQuery.isLoading) {
+    return <PageLoadingSkeleton />
+  }
+
+  const req =
+    listQuery.data?.items.find((r) => r.id === leaveId) ?? listQuery.data?.items[0]
+  const leaveBalances = balancesQuery.data ?? []
+  const currentUser = overviewQuery.data?.user
 
   if (!req) {
     return (
-      <div className="animate-fade-in">
-        <PageHeader
-          title="Leave details"
-          showBack
-          backTo={myWorkRoutes.leave}
-          backLabel="Back to My Leave"
-        />
+      <div className="animate-fade-in space-y-4">
+        <BackButton to={myWorkRoutes.leave} label="Back to My Leave" />
+        <PageHeader title="Leave details" />
         <p className="text-body-md text-on-surface-variant">Request not found.</p>
       </div>
     )
@@ -40,21 +56,20 @@ export function LeaveDetailPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
+      <BackButton to={myWorkRoutes.leave} label="Back to My Leave" />
       <PageHeader
         title={`Leave Request #${req.id.toUpperCase()}`}
         description={`${req.type} · ${req.from} → ${req.to} · ${req.days} day(s)`}
-        showBack
-        backTo={myWorkRoutes.leave}
-        backLabel="Back to My Leave"
         actions={
           <div className="flex items-center gap-2">
             <span
-              className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-label-sm font-semibold ${
-                statusStyles[req.status]
-              }`}
+              className={cn(
+                'inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-label-sm font-semibold',
+                statusStyles[req.status] ?? 'status-badge status-neutral',
+              )}
             >
               {req.status === 'Pending' && (
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                <span className="w-2 h-2 rounded-full bg-[var(--color-warning-amber)] animate-pulse" />
               )}
               {req.status}
             </span>
@@ -79,19 +94,27 @@ export function LeaveDetailPage() {
               <span className="material-symbols-outlined text-3xl">person</span>
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-title-lg font-semibold text-on-background">{currentUser.name}</h3>
+              <h3 className="text-title-lg font-semibold text-on-background">
+                {currentUser?.name ?? '—'}
+              </h3>
               <div className="flex flex-wrap gap-x-6 gap-y-2 mt-2">
                 <div>
                   <p className="text-label-sm text-on-surface-variant">Department</p>
-                  <p className="text-label-md font-medium text-on-surface">{currentUser.department}</p>
+                  <p className="text-label-md font-medium text-on-surface">
+                    {currentUser?.department ?? '—'}
+                  </p>
                 </div>
                 <div>
                   <p className="text-label-sm text-on-surface-variant">Role</p>
-                  <p className="text-label-md font-medium text-on-surface">{currentUser.role}</p>
+                  <p className="text-label-md font-medium text-on-surface">
+                    {currentUser?.role ?? '—'}
+                  </p>
                 </div>
                 <div>
                   <p className="text-label-sm text-on-surface-variant">Employee ID</p>
-                  <p className="text-label-md font-medium text-on-surface">{currentUser.employeeId}</p>
+                  <p className="text-label-md font-medium text-on-surface">
+                    {currentUser?.employeeId ?? '—'}
+                  </p>
                 </div>
               </div>
             </div>
@@ -230,7 +253,8 @@ export function LeaveDetailPage() {
                   <p className="text-label-md font-bold text-on-surface">Request Submitted</p>
                   <p className="text-label-sm text-on-surface-variant">{req.appliedOn}</p>
                   <p className="text-body-sm text-on-surface-variant mt-0.5">
-                    Submitted by <span className="font-medium text-on-surface">{currentUser.name}</span>
+                    Submitted by{' '}
+                    <span className="font-medium text-on-surface">{currentUser?.name ?? '—'}</span>
                   </p>
                 </div>
               </div>
@@ -238,11 +262,12 @@ export function LeaveDetailPage() {
               {req.status !== 'Pending' && req.approver && (
                 <div className="relative flex items-start pl-8">
                   <div
-                    className={`absolute left-0 top-0.5 w-6 h-6 rounded-full flex items-center justify-center z-10 border-2 border-surface-container-lowest executive-shadow ${
+                    className={cn(
+                      'absolute left-0 top-0.5 w-6 h-6 rounded-full flex items-center justify-center z-10 border-2 border-surface-container-lowest executive-shadow',
                       req.status === 'Approved'
                         ? 'bg-secondary text-on-secondary'
-                        : 'bg-error text-on-error'
-                    }`}
+                        : 'bg-error text-on-error',
+                    )}
                   >
                     <span className="material-symbols-outlined text-sm">
                       {req.status === 'Approved' ? 'check' : 'close'}
