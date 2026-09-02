@@ -49,7 +49,7 @@ export function createSalesRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
       getParentRoute: () => appLayoutRoute,
       path: '/sales/leads',
       beforeLoad: () => {
-        throw redirect({ to: salesRoutes.leads })
+        throw redirect({ to: salesRoutes.leads, search: {} })
       },
     }),
     createRoute({
