@@ -10,11 +10,13 @@ export type {
   ProfileListResponse,
 } from './schemas/profile'
 
-export type { ProfileFormInput } from './schemas/profile-form'
+export type { ProfileFormInput, ProfileEditFormInput } from './schemas/profile-form'
 
 export {
   profileFormSchema,
+  profileEditFormSchema,
   emptyProfileForm,
+  profileToFormValues,
   toProfileUpdateInput,
 } from './schemas/profile-form'
 

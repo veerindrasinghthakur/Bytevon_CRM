@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
@@ -17,9 +19,16 @@ import {
   useUpdateProfile,
   useUploadAvatar,
 } from '../hooks/use-profile'
-import { PROFILE_LANG_OPTIONS, APPEARANCE_OPTIONS } from '../schemas/enums'
+import {
+  PROFILE_LANG_OPTIONS,
+  APPEARANCE_OPTIONS,
+  profileEditFormSchema,
+  emptyProfileForm,
+  profileToFormValues,
+  toProfileUpdateInput,
+  type ProfileEditFormInput,
+} from '../types'
 import { profileRoutes } from '../routes'
-import type { ProfileDetail, ProfilePreferences } from '../types'
 
 export function ProfilePage() {
   const navigate = useNavigate()
@@ -32,39 +41,46 @@ export function ProfilePage() {
   const { preference, setPreference } = useTheme()
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const [draft, setDraft] = useState<ProfileDetail | null>(null)
+  const form = useForm<ProfileEditFormInput>({
+    resolver: zodResolver(profileEditFormSchema),
+    defaultValues: emptyProfileForm(),
+  })
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors },
+  } = form
 
   useEffect(() => {
-    if (profile && !isEditing) setDraft(profile)
-  }, [profile, isEditing])
+    if (profile && !isEditing) {
+      reset(profileToFormValues(profile))
+    }
+  }, [profile, isEditing, reset])
 
   const startEdit = () => {
-    if (profile) setDraft(structuredClone(profile))
+    if (profile) reset(profileToFormValues(profile))
     startEditing()
   }
 
   const cancel = () => {
-    if (profile) setDraft(profile)
+    if (profile) reset(profileToFormValues(profile))
     cancelEditing()
   }
 
-  const save = async () => {
-    if (!draft) return
+  const onSave = handleSubmit(async (values) => {
     try {
-      await updateMut.mutateAsync({
-        name: draft.name,
-        phone: draft.phone,
-        location: draft.location,
-        dateOfBirth: draft.dateOfBirth,
-        timezone: draft.timezone,
-        preferences: draft.preferences,
-      })
-      setPreference(draft.preferences.appearance)
+      const payload = toProfileUpdateInput(values)
+      await updateMut.mutateAsync(payload)
+      setPreference(values.preferences.appearance)
       finishEditing()
     } catch {
-      /* mutation error */
+      /* mutation error surfaced by react-query */
     }
-  }
+  })
 
   const onAvatarPick = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -73,18 +89,7 @@ export function ProfilePage() {
     e.target.value = ''
   }
 
-  const setPref = <K extends keyof ProfilePreferences>(key: K, value: ProfilePreferences[K]) => {
-    setDraft((d) =>
-      d
-        ? {
-            ...d,
-            preferences: { ...d.preferences, [key]: value },
-          }
-        : d,
-    )
-  }
-
-  if (isLoading || !draft) return <PageLoadingSkeleton />
+  if (isLoading || !profile) return <PageLoadingSkeleton />
   if (isError) {
     return (
       <div className="rounded-lg border border-error/30 bg-error/5 p-6 text-center">
@@ -96,8 +101,9 @@ export function ProfilePage() {
     )
   }
 
+  const displayName = isEditing ? watch('name') : profile.name
   const initials =
-    draft.name
+    (displayName || profile.name)
       .split(' ')
       .map((p) => p[0])
       .join('')
@@ -108,7 +114,8 @@ export function ProfilePage() {
   const currentSession = activeSessions.find((s) => s.current)
   const otherSession = activeSessions.find((s) => !s.current)
 
-  const appearanceValue = isEditing ? draft.preferences.appearance : preference
+  const prefs = watch('preferences')
+  const appearanceValue = isEditing ? prefs?.appearance : preference
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -125,7 +132,7 @@ export function ProfilePage() {
                 variant="primary"
                 size="sm"
                 isLoading={updateMut.isPending}
-                onClick={() => void save()}
+                onClick={() => void onSave()}
               >
                 Save Changes
               </Button>
@@ -139,9 +146,9 @@ export function ProfilePage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <section className="lg:col-span-8 bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col md:flex-row items-center gap-6 card-hover">
           <div className="relative shrink-0">
-            {draft.avatarUrl ? (
+            {profile.avatarUrl ? (
               <img
-                src={draft.avatarUrl}
+                src={profile.avatarUrl}
                 alt=""
                 className="w-28 h-28 rounded-full object-cover border-4 border-surface-container"
               />
@@ -169,23 +176,23 @@ export function ProfilePage() {
           </div>
           <div className="flex-1 text-center md:text-left min-w-0">
             <div className="flex items-center justify-center md:justify-start gap-3 mb-2 flex-wrap">
-              <h2 className="text-headline-md font-semibold text-on-background">{draft.name}</h2>
+              <h2 className="text-headline-md font-semibold text-on-background">{displayName}</h2>
               <span className="bg-secondary/10 text-secondary px-3 py-1 rounded-full text-label-sm font-bold inline-flex items-center gap-1">
                 <span className="w-2 h-2 bg-secondary rounded-full animate-pulse" />
                 Active Now
               </span>
             </div>
             <p className="text-title-lg text-on-surface-variant mb-3">
-              {draft.role} · Bytevon Corporate
+              {profile.role} · Bytevon Corporate
             </p>
             <div className="flex flex-wrap justify-center md:justify-start gap-4 text-on-surface-variant">
               <span className="inline-flex items-center gap-1.5 text-label-md">
                 <span className="material-symbols-outlined text-[20px]">mail</span>
-                {draft.email}
+                {profile.email}
               </span>
               <span className="inline-flex items-center gap-1.5 text-label-md">
                 <span className="material-symbols-outlined text-[20px]">badge</span>
-                Emp {draft.employmentId}
+                Emp {profile.employmentId}
               </span>
             </div>
           </div>
@@ -223,34 +230,35 @@ export function ProfilePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
             <EditableInfo
               label="Full Name"
-              value={draft.name}
+              value={profile.name}
               editing={isEditing}
-              onChange={(v) => setDraft((d) => (d ? { ...d, name: v } : d))}
+              error={errors.name?.message}
+              registerProps={register('name')}
             />
-            <Info label="Email Address" value={draft.email} />
+            <Info label="Email Address" value={profile.email} />
             <EditableInfo
               label="Phone Number"
-              value={draft.phone}
+              value={profile.phone}
               editing={isEditing}
-              onChange={(v) => setDraft((d) => (d ? { ...d, phone: v } : d))}
+              registerProps={register('phone')}
             />
             <EditableInfo
               label="Location"
-              value={draft.location}
+              value={profile.location}
               editing={isEditing}
-              onChange={(v) => setDraft((d) => (d ? { ...d, location: v } : d))}
+              registerProps={register('location')}
             />
             <EditableInfo
               label="Date of Birth"
-              value={draft.dateOfBirth}
+              value={profile.dateOfBirth}
               editing={isEditing}
-              onChange={(v) => setDraft((d) => (d ? { ...d, dateOfBirth: v } : d))}
+              registerProps={register('dateOfBirth')}
             />
             <EditableInfo
               label="Timezone"
-              value={draft.timezone}
+              value={profile.timezone}
               editing={isEditing}
-              onChange={(v) => setDraft((d) => (d ? { ...d, timezone: v } : d))}
+              registerProps={register('timezone')}
             />
           </div>
         </section>
@@ -261,12 +269,12 @@ export function ProfilePage() {
             Employment Information
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
-            <Info label="Org mail" value={draft.orgMail} />
-            <Info label="Department" value={draft.department} />
-            <Info label="Job Title" value={draft.jobTitle} />
-            <Info label="Reporting Manager" value={draft.reportingManager} />
-            <Info label="Joining Date" value={draft.joiningDate} />
-            <Info label="Work Type" value={draft.workType} />
+            <Info label="Org mail" value={profile.orgMail} />
+            <Info label="Department" value={profile.department} />
+            <Info label="Job Title" value={profile.jobTitle} />
+            <Info label="Reporting Manager" value={profile.reportingManager} />
+            <Info label="Joining Date" value={profile.joiningDate} />
+            <Info label="Work Type" value={profile.workType} />
           </div>
         </section>
 
@@ -343,24 +351,24 @@ export function ProfilePage() {
             <ToggleRow
               title="Email Notifications"
               description="Weekly summaries and direct messages"
-              checked={draft.preferences.emailNotifications}
+              checked={isEditing ? !!prefs?.emailNotifications : profile.preferences.emailNotifications}
               disabled={!isEditing}
-              onChange={(v) => setPref('emailNotifications', v)}
+              onChange={(v) => setValue('preferences.emailNotifications', v)}
             />
             <ToggleRow
               title="Desktop Push"
               description="Real-time alerts for urgent tasks"
-              checked={draft.preferences.desktopPush}
+              checked={isEditing ? !!prefs?.desktopPush : profile.preferences.desktopPush}
               disabled={!isEditing}
-              onChange={(v) => setPref('desktopPush', v)}
+              onChange={(v) => setValue('preferences.desktopPush', v)}
             />
             <div className="pt-4 border-t border-outline-variant">
               <label className="text-label-md text-on-surface-variant block mb-2 uppercase tracking-wider">
                 Interface Language
               </label>
               <Select
-                value={draft.preferences.language}
-                onChange={(v) => setPref('language', v)}
+                value={isEditing ? prefs?.language ?? 'en' : profile.preferences.language}
+                onChange={(v) => setValue('preferences.language', v)}
                 options={[...PROFILE_LANG_OPTIONS]}
                 disabled={!isEditing}
                 minWidthClass="w-full"
@@ -377,7 +385,7 @@ export function ProfilePage() {
                     type="button"
                     disabled={!isEditing}
                     onClick={() => {
-                      setPref('appearance', mode)
+                      setValue('preferences.appearance', mode)
                       setPreference(mode as ThemePreference)
                     }}
                     className={cn(
@@ -450,7 +458,7 @@ export function ProfilePage() {
 
         <section className="lg:col-span-12 flex flex-col md:flex-row items-center justify-between gap-4 pt-2 border-t border-outline-variant">
           <p className="text-body-sm text-on-surface-variant">
-            Last login: {draft.lastLoginAt} from {draft.lastLoginIp}
+            Last login: {profile.lastLoginAt} from {profile.lastLoginIp}
           </p>
           <div className="flex gap-3">
             <Link to={profileRoutes.sessions}>
@@ -463,7 +471,7 @@ export function ProfilePage() {
                 variant="primary"
                 size="sm"
                 isLoading={updateMut.isPending}
-                onClick={() => void save()}
+                onClick={() => void onSave()}
               >
                 Save Changes
               </Button>
@@ -488,22 +496,27 @@ function EditableInfo({
   label,
   value,
   editing,
-  onChange,
+  error,
+  registerProps,
 }: {
   label: string
   value: string
   editing: boolean
-  onChange: (v: string) => void
+  error?: string
+  registerProps: ReturnType<ReturnType<typeof useForm<ProfileEditFormInput>>['register']>
 }) {
   if (!editing) return <Info label={label} value={value} />
   return (
     <div>
       <p className="text-label-md text-on-surface-variant mb-0.5">{label}</p>
       <input
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30"
+        {...registerProps}
+        className={cn(
+          'w-full rounded-lg border bg-surface-container-lowest px-3 py-2 text-body-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30',
+          error ? 'border-error' : 'border-outline-variant',
+        )}
       />
+      {error && <p className="text-xs text-error mt-1">{error}</p>}
     </div>
   )
 }

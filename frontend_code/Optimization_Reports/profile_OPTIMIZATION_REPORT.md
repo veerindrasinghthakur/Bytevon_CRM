@@ -12,12 +12,12 @@
 | Local `profileKeys` in hook | Uses central factory |
 | Orphan `uploadUserAvatar` | Removed from API surface (self avatar via `uploadAvatar` remains) |
 | Nav / tokens / enums | Prior pass |
+| ProfilePage full RHF | `profileEditFormSchema` + `useForm`/`zodResolver`; `profileToFormValues` / `toProfileUpdateInput`; `useEditMode` kept |
 
 ---
 
 ## Deferred
 
-- ProfilePage full RHF + `profileFormSchema` (still draft `useState` + `useEditMode`)
-- New shared components
+- New shared components only if requested
 
 ---
