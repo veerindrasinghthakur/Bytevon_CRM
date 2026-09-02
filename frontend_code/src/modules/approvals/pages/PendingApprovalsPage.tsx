@@ -1,10 +1,10 @@
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
-import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { Select } from '@/shared/components/ui/Select'
+import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { RowActions } from '@/shared/components/ui/RowActions'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
@@ -13,6 +13,7 @@ import { ResourceName } from '@/shared/schema'
 import { usePendingApprovals } from '../hooks/use-pending-approvals'
 import { useApprovalCenter } from '../hooks/use-approval-center'
 import type { ApprovalRow, ApprovalPriority } from '../types'
+import { approvalRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
@@ -23,11 +24,12 @@ const priorityStyles: Record<ApprovalPriority, string> = {
   Low: 'status-badge status-neutral',
 }
 
+/** Dot classes use semantic tokens / CSS variables only. */
 const priorityDot: Record<ApprovalPriority, string> = {
-  High: 'bg-red-500',
-  Medium: 'bg-amber-500',
-  Normal: 'bg-blue-500',
-  Low: 'bg-slate-400',
+  High: 'bg-error',
+  Medium: 'bg-[var(--color-warning-amber)]',
+  Normal: 'bg-secondary',
+  Low: 'bg-outline',
 }
 
 export function PendingApprovalsPage() {
@@ -50,6 +52,12 @@ export function PendingApprovalsPage() {
   } = usePendingApprovals()
   const { kpis } = useApprovalCenter()
 
+  const goDetail = (requestId: string) =>
+    safeNavigate(navigate, {
+      to: approvalRoutes.detailPath,
+      params: { requestId },
+    })
+
   const openApprovalOverview = (row: ApprovalRow) => {
     openPanel({
       title: row.type,
@@ -59,14 +67,14 @@ export function PendingApprovalsPage() {
       statusDotClass: priorityDot[row.priority] ?? 'bg-secondary',
       content: <ApprovalQuickContent row={row} />,
       fullRecordLabel: 'Open full record',
-      onOpenFull: () => safeNavigate(navigate, { to: '/approvals/$requestId', params: { requestId: row.id } }),
+      onOpenFull: () => goDetail(row.id),
       widthClass: 'max-w-[520px]',
     })
   }
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <BackButton to="/approvals" label="Back to Approval Center" />
+      <BackButton to={approvalRoutes.center} label="Back to Approval Center" />
 
       <PageHeader
         title="Pending Requests"
@@ -79,40 +87,27 @@ export function PendingApprovalsPage() {
       />
 
       <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bv-surface card-hover p-4">
-          <div className="flex justify-between items-start mb-2">
-            <span className="p-2 bg-surface-container text-secondary rounded-lg material-symbols-outlined">
-              pending_actions
-            </span>
-          </div>
-          <p className="text-label-md text-on-surface-variant">Pending</p>
-          <h3 className="text-headline-lg font-semibold text-on-background mt-1">{kpis.pending}</h3>
-        </div>
-        <div className="bv-surface card-hover p-4">
-          <div className="flex justify-between items-start mb-2">
-            <span className="p-2 bg-emerald-50 text-emerald-700 rounded-lg material-symbols-outlined">
-              check_circle
-            </span>
-            <span className="text-label-sm text-on-surface-variant">Today</span>
-          </div>
-          <p className="text-label-md text-on-surface-variant">Approved Today</p>
-          <h3 className="text-headline-lg font-semibold text-on-background mt-1">{kpis.approvedToday}</h3>
-        </div>
-        <div className="bv-surface card-hover p-4">
-          <div className="flex justify-between items-start mb-2">
-            <span className="p-2 bg-red-50 text-error rounded-lg material-symbols-outlined">cancel</span>
-            <span className="text-label-sm text-on-surface-variant">Today</span>
-          </div>
-          <p className="text-label-md text-on-surface-variant">Rejected Today</p>
-          <h3 className="text-headline-lg font-semibold text-on-background mt-1">{kpis.rejectedToday}</h3>
-        </div>
-        <div className="bg-secondary p-4 rounded-xl border border-outline-variant executive-shadow text-white card-hover">
-          <div className="flex justify-between items-start mb-2">
-            <span className="p-2 bg-white/20 rounded-lg material-symbols-outlined">priority_high</span>
-          </div>
-          <p className="text-label-md opacity-80">Action Required</p>
-          <h3 className="text-headline-lg font-semibold mt-1">{String(kpis.overdue).padStart(2, '0')}</h3>
-        </div>
+        <MetricCard icon="pending_actions" label="Pending" value={String(kpis.pending)} />
+        <MetricCard
+          icon="check_circle"
+          label="Approved Today"
+          value={String(kpis.approvedToday)}
+          hint="Today"
+          valueClassName="text-secondary"
+        />
+        <MetricCard
+          icon="cancel"
+          label="Rejected Today"
+          value={String(kpis.rejectedToday)}
+          hint="Today"
+          valueClassName="text-error"
+        />
+        <MetricCard
+          icon="priority_high"
+          label="Action Required"
+          value={String(kpis.overdue).padStart(2, '0')}
+          className="bg-secondary text-on-secondary border-secondary"
+        />
       </section>
 
       <ListToolbar
@@ -177,7 +172,7 @@ export function PendingApprovalsPage() {
                   <td className="px-6 py-4 text-body-sm font-medium">#{row.id}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <span className={cn('p-1.5 rounded-md material-symbols-outlined text-[18px]', row.typeColor)}>
+                      <span className={cn('p-1.5 rounded-md material-symbols-outlined text-[18px] bg-secondary/10 text-secondary')}>
                         {row.typeIcon}
                       </span>
                       <span className="text-body-sm">{row.type}</span>
@@ -215,11 +210,7 @@ export function PendingApprovalsPage() {
                             id: 'details',
                             label: 'View details',
                             icon: 'description',
-                            onClick: () =>
-                              safeNavigate(navigate, {
-                                to: '/approvals/$requestId',
-                                params: { requestId: row.id },
-                              }),
+                            onClick: () => goDetail(row.id),
                           },
                         ]}
                       />

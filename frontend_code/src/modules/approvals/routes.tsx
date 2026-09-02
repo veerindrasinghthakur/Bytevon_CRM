@@ -11,6 +11,16 @@ const ApprovalCenterPage = lazyPage(() => import('./pages/ApprovalCenterPage'), 
 const PendingApprovalsPage = lazyPage(() => import('./pages/PendingApprovalsPage'), 'PendingApprovalsPage')
 const ApprovalDetailPage = lazyPage(() => import('./pages/ApprovalDetailPage'), 'ApprovalDetailPage')
 
+/** Path helpers — always navigate via these + safeNavigate (no string literals in pages). */
+export const approvalRoutes = {
+  center: '/approvals',
+  pending: '/approvals/pending',
+  detail: (requestId: string) => `/approvals/${requestId}`,
+  detailPath: '/approvals/$requestId',
+  myRequestsRedirect: '/approvals/my-requests',
+  myWorkRequests: '/my-work/requests',
+} as const
+
 export function createApprovalRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   const approvalsRoute = createRoute({
     getParentRoute: () => appLayoutRoute,
@@ -31,7 +41,7 @@ export function createApprovalRoutes<TParent extends AnyRoute>(appLayoutRoute: T
     getParentRoute: () => appLayoutRoute,
     path: '/approvals/my-requests',
     beforeLoad: () => {
-      throw redirect({ to: '/my-work/requests' })
+      throw redirect({ to: approvalRoutes.myWorkRequests })
     },
   })
   return [approvalsRoute, approvalsPendingRoute, approvalsDetailRoute, approvalsMyRequestsRedirectRoute]

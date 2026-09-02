@@ -4,15 +4,17 @@ import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { KpiCard } from '@/shared/components/ui/KpiCard'
 import { useApprovalCenter } from '../hooks/use-approval-center'
+import { approvalRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 import type { ApprovalPriority } from '../types'
 
+/** Semantic status tokens only — no raw Tailwind palette colors. */
 const priorityStyles: Record<ApprovalPriority, string> = {
-  High: 'bg-red-100 text-red-700',
-  Medium: 'bg-amber-100 text-amber-700',
-  Normal: 'bg-blue-50 text-blue-600',
-  Low: 'bg-surface-container text-on-surface-variant',
+  High: 'status-badge status-error',
+  Medium: 'status-badge status-warning',
+  Normal: 'status-badge status-info',
+  Low: 'status-badge status-neutral',
 }
 
 const typeOptions = [
@@ -32,6 +34,8 @@ export function ApprovalCenterPage() {
   const navigate = useNavigate()
   const { kpis, rows, showingCount, pendingTotal } = useApprovalCenter()
 
+  const goPending = () => safeNavigate(navigate, { to: approvalRoutes.pending })
+
   return (
     <div className="space-y-6 animate-fade-in">
       <PageHeader
@@ -50,7 +54,13 @@ export function ApprovalCenterPage() {
       />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KpiCard icon="stacks" iconClass="bg-secondary/5 text-secondary" label="Total Approvals" value={kpis.total} trend="Stable" />
+        <KpiCard
+          icon="stacks"
+          iconClass="bg-secondary/5 text-secondary"
+          label="Total Approvals"
+          value={kpis.total}
+          trend="Stable"
+        />
         <KpiCard
           icon="pending_actions"
           iconClass="bg-secondary/15 text-secondary"
@@ -58,10 +68,24 @@ export function ApprovalCenterPage() {
           value={kpis.pending}
           trend="12%"
           trendUp
-          onClick={() => safeNavigate(navigate, { to: '/approvals/pending' })}
+          onClick={goPending}
         />
-        <KpiCard icon="task_alt" iconClass="bg-emerald-100 text-emerald-700" label="Approved Today" value={kpis.approvedToday} trend="8%" trendUp trendClass="text-emerald-600" />
-        <KpiCard icon="cancel" iconClass="bg-red-100 text-red-700" label="Rejected Today" value={kpis.rejectedToday} trend="Stable" />
+        <KpiCard
+          icon="task_alt"
+          iconClass="bg-secondary/15 text-secondary"
+          label="Approved Today"
+          value={kpis.approvedToday}
+          trend="8%"
+          trendUp
+          trendClass="text-secondary"
+        />
+        <KpiCard
+          icon="cancel"
+          iconClass="bg-error/10 text-error"
+          label="Rejected Today"
+          value={kpis.rejectedToday}
+          trend="Stable"
+        />
       </section>
 
       <section className="bv-surface overflow-hidden">
@@ -81,7 +105,10 @@ export function ApprovalCenterPage() {
               options={statusOptions}
               minWidthClass="min-w-[140px]"
             />
-            <button type="button" className="flex items-center gap-2 px-3 py-2 text-label-md text-secondary hover:bg-secondary/5 rounded-lg transition-colors">
+            <button
+              type="button"
+              className="flex items-center gap-2 px-3 py-2 text-label-md text-secondary hover:bg-secondary/5 rounded-lg transition-colors"
+            >
               <span className="material-symbols-outlined text-[18px]">calendar_month</span>
               Last 30 Days
             </button>
@@ -106,11 +133,15 @@ export function ApprovalCenterPage() {
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {rows.map((row) => (
-                <tr key={row.id} className="zebra-row cursor-pointer" onClick={() => safeNavigate(navigate, { to: '/approvals/pending' })}>
+                <tr
+                  key={row.id}
+                  className="zebra-row cursor-pointer"
+                  onClick={goPending}
+                >
                   <td className="px-6 py-4 font-medium text-secondary">#{row.id}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
-                      <span className={cn('p-1.5 rounded-md', row.typeColor)}>
+                      <span className={cn('p-1.5 rounded-md bg-secondary/10 text-secondary')}>
                         <span className="material-symbols-outlined text-[16px]">{row.typeIcon}</span>
                       </span>
                       <span className="text-body-sm font-medium">{row.type}</span>
@@ -131,20 +162,33 @@ export function ApprovalCenterPage() {
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-1.5 text-amber-700 font-bold text-label-sm">
+                    <div className="flex items-center gap-1.5 text-on-surface-variant font-bold text-label-sm">
                       <span className="material-symbols-outlined text-[18px]">hourglass_empty</span>
                       Pending
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
-                      <button type="button" className="p-2 hover:bg-emerald-100 text-emerald-700 rounded-lg transition-colors" title="Quick Approve">
+                      <button
+                        type="button"
+                        className="p-2 hover:bg-secondary/10 text-secondary rounded-lg transition-colors"
+                        title="Quick Approve"
+                      >
                         <span className="material-symbols-outlined">check_circle</span>
                       </button>
-                      <button type="button" className="p-2 hover:bg-red-100 text-red-700 rounded-lg transition-colors" title="Quick Reject">
+                      <button
+                        type="button"
+                        className="p-2 hover:bg-error/10 text-error rounded-lg transition-colors"
+                        title="Quick Reject"
+                      >
                         <span className="material-symbols-outlined">cancel</span>
                       </button>
-                      <button type="button" className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors" title="View">
+                      <button
+                        type="button"
+                        className="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors"
+                        title="View"
+                        onClick={goPending}
+                      >
                         <span className="material-symbols-outlined">visibility</span>
                       </button>
                     </div>
@@ -158,7 +202,7 @@ export function ApprovalCenterPage() {
         <div className="px-6 py-4 border-t border-outline-variant flex items-center justify-between">
           <Button variant="outline" size="sm">Previous</Button>
           <div className="flex gap-2">
-            <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary text-white font-bold text-sm">1</span>
+            <span className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary text-on-secondary font-bold text-sm">1</span>
             <button type="button" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-sm transition-colors">2</button>
             <button type="button" className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container text-sm transition-colors">3</button>
           </div>
