@@ -4,7 +4,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { ResourceName } from '@/shared/schema'
-import { Pagination, paginate, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
+import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
@@ -20,33 +20,21 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { useTasks } from '../hooks/use-tasks'
+import { useTasksList } from '../hooks/use-tasks-list'
 import { projectRoutes } from '../routes'
 import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
 import { CreateTaskModal } from '../components/CreateTaskModal'
 import type { Task } from '../types'
 import { cn } from '@/shared/lib/cn'
-import { taskStatusColors, TaskPriorityOptions, TaskStatusOptions } from '../cssTokens'
-
-const statusDot: Record<string, string> = {
-  TODO: taskStatusColors.TODO.className,
-  IN_PROGRESS: taskStatusColors.IN_PROGRESS.className,
-  IN_REVIEW: taskStatusColors.IN_REVIEW.className,
-  DONE: taskStatusColors.DONE.className,
-  BLOCKED: taskStatusColors.BLOCKED.className,
-  ON_HOLD: taskStatusColors.ON_HOLD.className,
-}
+import { taskStatusColors } from '../cssTokens'
+import { TaskPriorityOptions, TaskStatusOptions } from '../enums'
 
 function TaskQuickContent({ task }: { task: Task }) {
   return (
     <>
       <QuickSection title="General Info">
         <div className="grid grid-cols-2 gap-3">
-          <QuickMetaTile
-            icon="flag"
-            label="Status"
-            value={<TaskStatusBadge status={task.status} />}
-          />
+          <QuickMetaTile icon="flag" label="Status" value={<TaskStatusBadge status={task.status} />} />
           <QuickMetaTile
             icon="priority_high"
             label="Priority"
@@ -56,7 +44,6 @@ function TaskQuickContent({ task }: { task: Task }) {
           <QuickMetaTile icon="folder_open" label="Project" value={task.projectName ?? '—'} />
         </div>
       </QuickSection>
-
       <QuickSection title="Assignment">
         {task.assigneeName ? (
           <QuickPersonRow
@@ -72,7 +59,6 @@ function TaskQuickContent({ task }: { task: Task }) {
           <QuickRelatedRow icon="person_off" label="Assignee" value="Unassigned" />
         )}
       </QuickSection>
-
       <QuickSection title="Related">
         <QuickRelatedRow icon="folder_open" label="Project" value={task.projectName ?? '—'} />
         <QuickRelatedRow icon="event" label="Due" value={task.dueDate ?? '—'} />
@@ -85,47 +71,42 @@ function TaskQuickContent({ task }: { task: Task }) {
 export function TasksListPage() {
   const navigate = useNavigate()
   const { openPanel } = useQuickOverview()
-  const [search, setSearch] = useState('')
-  const [status, setStatus] = useState('')
-  const [priority, setPriority] = useState('')
-  const [page, setPage] = useState(1)
   const [createOpen, setCreateOpen] = useState(false)
 
-  const { data, isLoading, isError, refetch } = useTasks({
-    search: search || undefined,
-    status: status || undefined,
-  })
-
-  const filtersActive = Boolean(search || status || priority)
-
-  const resetFilters = () => {
-    setSearch('')
-    setStatus('')
-    setPriority('')
-    setPage(1)
-  }
-
-  const filtered = useMemo(() => {
-    let list = data?.items ?? []
-    if (priority) list = list.filter((t) => t.priority === priority)
-    return list
-  }, [data, priority])
-
-  const total = filtered.length
-  const pageItems = useMemo(() => paginate(filtered, page, DEFAULT_PAGE_SIZE), [filtered, page])
+  const {
+    filtered,
+    pageItems,
+    totalCount: total,
+    search,
+    setSearch,
+    status,
+    setStatus,
+    priority,
+    setPriority,
+    filtersActive,
+    resetFilters,
+    page,
+    setPage,
+    isLoading,
+    isError,
+    refetch,
+  } = useTasksList()
 
   const selection = useListSelection({
     items: pageItems,
     getId: (t) => String(t.id),
   })
 
-  const pending = filtered.filter((t) => t.status === 'TODO' || t.status === 'IN_PROGRESS').length
-  const done = filtered.filter((t) => t.status === 'DONE').length
-  const blocked = filtered.filter((t) => t.status === 'BLOCKED').length
+  const pending = useMemo(
+    () => filtered.filter((t) => t.status === 'TODO' || t.status === 'IN_PROGRESS').length,
+    [filtered],
+  )
+  const done = useMemo(() => filtered.filter((t) => t.status === 'DONE').length, [filtered])
+  const blocked = useMemo(() => filtered.filter((t) => t.status === 'BLOCKED').length, [filtered])
 
   const goTask = (taskId: number, edit?: boolean) =>
     safeNavigate(navigate, {
-      to: projectRoutes.taskDetail(taskId),
+      to: projectRoutes.taskDetailPath,
       params: { taskId: String(taskId) },
       search: edit ? { edit: '1' } : undefined,
     })
@@ -136,7 +117,7 @@ export function TasksListPage() {
       subtitle: task.projectName ?? 'No project',
       icon: 'assignment',
       status: task.status.replace(/_/g, ' '),
-      statusDotClass: statusDot[task.status] ?? 'bg-outline',
+      statusDotClass: taskStatusColors[task.status as keyof typeof taskStatusColors]?.dot ?? 'bg-outline',
       content: <TaskQuickContent task={task} />,
       fullRecordLabel: 'Open full record',
       onOpenFull: () => goTask(task.id),
@@ -154,12 +135,7 @@ export function TasksListPage() {
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <ExportButton
-            resource={ResourceName.TASK}
-            query={search}
-            filters={{ status, priority }}
-            filenameStem="tasks"
-          />
+          <ExportButton resource={ResourceName.TASK} query={search} filters={{ status, priority }} filenameStem="tasks" />
           <Button
             variant="primary"
             size="sm"
@@ -173,10 +149,7 @@ export function TasksListPage() {
 
       <ListToolbar
         search={search}
-        onSearchChange={(v) => {
-          setSearch(v)
-          setPage(1)
-        }}
+        onSearchChange={setSearch}
         searchPlaceholder="Search task name..."
         filtersActive={filtersActive}
         onResetFilters={resetFilters}
@@ -184,37 +157,25 @@ export function TasksListPage() {
       >
         <Select
           value={priority}
-          onChange={(v) => {
-            setPriority(v)
-            setPage(1)
-          }}
+          onChange={setPriority}
           placeholder="Priority: All"
           aria-label="Filter by priority"
-          options={[
-            { value: '', label: 'Priority: All' },
-            ...TaskPriorityOptions,
-          ]}
+          options={[{ value: '', label: 'Priority: All' }, ...TaskPriorityOptions]}
         />
         <Select
           value={status}
-          onChange={(v) => {
-            setStatus(v)
-            setPage(1)
-          }}
+          onChange={setStatus}
           placeholder="Status: All"
           aria-label="Filter by status"
-          options={[
-            { value: '', label: 'Status: All' },
-            ...TaskStatusOptions,
-          ]}
+          options={[{ value: '', label: 'Status: All' }, ...TaskStatusOptions]}
         />
       </ListToolbar>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Stat label="Total Tasks" value={String(total || '—')} icon="assignment" tone="bg-electric-blue/10 text-electric-blue" />
-        <Stat label="Pending" value={String(pending)} icon="pending_actions" tone="bg-warning-container text-on-warning" />
-        <Stat label="Blocked / Overdue" value={String(blocked)} icon="block" tone="bg-error-container text-error" danger={blocked > 0} />
-        <Stat label="Completed" value={String(done)} icon="check_circle" tone="bg-success-container text-on-success" />
+        <Stat label="Total Tasks" value={String(total || '—')} icon="assignment" tone="bg-secondary/10 text-secondary" />
+        <Stat label="Pending" value={String(pending)} icon="pending_actions" tone="bg-secondary/10 text-secondary" />
+        <Stat label="Blocked / Overdue" value={String(blocked)} icon="block" tone="bg-error/10 text-error" danger={blocked > 0} />
+        <Stat label="Completed" value={String(done)} icon="check_circle" tone="bg-secondary/10 text-secondary" />
       </section>
 
       {selection.selectionMode && (
@@ -283,14 +244,10 @@ export function TasksListPage() {
                 {pageItems.map((task) => {
                   const id = String(task.id)
                   const isSelected = selection.isSelected(id)
-
                   return (
                     <tr
                       key={task.id}
-                      className={cn(
-                        'h-[72px] cursor-pointer select-none',
-                        isSelected ? 'bg-secondary/10' : 'zebra-row',
-                      )}
+                      className={cn('h-[72px] cursor-pointer select-none', isSelected ? 'bg-secondary/10' : 'zebra-row')}
                       onMouseDown={() => selection.onRowPressStart(id)}
                       onMouseUp={() => selection.onRowPressEnd(id, () => openTaskOverview(task))}
                       onMouseLeave={selection.onRowPressCancel}
@@ -323,9 +280,7 @@ export function TasksListPage() {
                         <p
                           className={cn(
                             'text-body-md font-semibold',
-                            task.status === 'DONE'
-                              ? 'text-on-surface-variant line-through'
-                              : 'text-on-background',
+                            task.status === 'DONE' ? 'text-on-surface-variant line-through' : 'text-on-background',
                           )}
                         >
                           {task.title}
@@ -340,17 +295,16 @@ export function TasksListPage() {
                         <TaskStatusBadge status={task.status} />
                       </td>
                       <td className="py-2 px-4 text-body-md text-on-background">{task.dueDate ?? '—'}</td>
-                      <td className="py-2 px-6 text-right" onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+                      <td
+                        className="py-2 px-6 text-right"
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <div className="flex justify-end">
                           <RowActions
                             label={`Actions for ${task.title}`}
                             actions={[
-                              {
-                                id: 'overview',
-                                label: 'Quick view',
-                                icon: 'visibility',
-                                onClick: () => openTaskOverview(task),
-                              },
+                              { id: 'overview', label: 'Quick view', icon: 'visibility', onClick: () => openTaskOverview(task) },
                               { id: 'view', label: 'View', icon: 'description', onClick: () => goTask(task.id) },
                               { id: 'edit', label: 'Edit', icon: 'edit', onClick: () => goTask(task.id, true) },
                             ]}
@@ -369,9 +323,6 @@ export function TasksListPage() {
               <p className="text-[11px] text-on-surface-variant">
                 Showing <span className="font-semibold text-on-background">1-{total}</span> of{' '}
                 <span className="font-semibold text-on-background">{total}</span> Tasks
-                {!selection.selectionMode && (
-                  <span className="ml-2 opacity-80">· Hold a row 3s to multi-select</span>
-                )}
               </p>
             </div>
           )}
