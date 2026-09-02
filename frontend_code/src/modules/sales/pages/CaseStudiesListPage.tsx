@@ -3,6 +3,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { Select } from '@/shared/components/ui/Select'
+import { Pagination } from '@/shared/components/ui/Pagination'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
@@ -79,6 +80,7 @@ export function CaseStudiesListPage() {
   const { openPanel } = useQuickOverview()
   const {
     filtered,
+    totalCount,
     metrics,
     search,
     setSearch,
@@ -86,6 +88,8 @@ export function CaseStudiesListPage() {
     setStatusFilter,
     filtersActive,
     resetFilters,
+    page,
+    setPage,
     isLoading,
     isFetching,
     isError,
@@ -275,6 +279,12 @@ export function CaseStudiesListPage() {
             </article>
           ))}
         </div>
+        <Pagination
+          page={page}
+          total={totalCount}
+          onPageChange={setPage}
+          itemLabel="case studies"
+        />
       </div>
     </div>
   )
