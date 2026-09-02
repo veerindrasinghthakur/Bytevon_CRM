@@ -1,5 +1,9 @@
 import { DeviceType, SessionStatus } from '@/shared/schema'
-import type { ProfileActivityItem, ProfileDetail, ProfileSession } from '../types'
+import type {
+  ProfileActivityItem,
+  ProfileDetail,
+  ProfileSession,
+} from '@/modules/profile/types'
 
 export const mockProfile: ProfileDetail = {
   id: 1,
