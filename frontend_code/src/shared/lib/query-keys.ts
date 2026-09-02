@@ -178,6 +178,12 @@ export const queryKeys = {
     employee: () => ['dashboard', 'employee'] as const,
     payroll: () => ['dashboard', 'payroll'] as const,
   },
+  profile: {
+    all: ['profile'] as const,
+    me: () => ['profile', 'me'] as const,
+    sessions: () => ['profile', 'sessions'] as const,
+    activity: () => ['profile', 'activity'] as const,
+  },
   myWork: {
     attendance: {
       all: ['my-work', 'attendance'] as const,
@@ -257,4 +263,5 @@ export const invalidate = {
   adminSecurity: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.admin.security.all }),
   adminLeave: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.admin.leave.all }),
   dashboard: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.dashboard.executive() }),
+  profile: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.profile.all }),
 }
