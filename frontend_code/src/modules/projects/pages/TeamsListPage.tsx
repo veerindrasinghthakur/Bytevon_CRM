@@ -3,7 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { ExportButton } from '@/shared/components/export/ExportButton'
-import { Pagination, paginate, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
+import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
@@ -21,11 +21,12 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { useTeams } from '../hooks/use-teams'
+import { useTeamsList } from '../hooks/use-teams-list'
 import { projectRoutes } from '../routes'
 import { CreateTeamModal } from '../components/CreateTeamModal'
 import type { Team } from '../types'
 import { cn } from '@/shared/lib/cn'
+import { teamStatusColors } from '../cssTokens'
 import { TeamStatusOptions } from '../enums'
 
 function TeamQuickContent({ team }: { team: Team }) {
@@ -66,58 +67,62 @@ function TeamQuickContent({ team }: { team: Team }) {
 export function TeamsListPage() {
   const navigate = useNavigate()
   const { openPanel } = useQuickOverview()
-  const [search, setSearch] = useState('')
-  const [status, setStatus] = useState('')
-  const [department, setDepartment] = useState('')
-  const [page, setPage] = useState(1)
   const [createOpen, setCreateOpen] = useState(false)
 
-  const { data, isLoading, isFetching, isError, refetch } = useTeams({
-    search: search || undefined,
-  })
-
-  const filtersActive = Boolean(search || status || department)
-
-  const resetFilters = () => {
-    setSearch('')
-    setStatus('')
-    setDepartment('')
-    setPage(1)
-  }
-
-  const filtered = useMemo(() => {
-    let list = data?.items ?? []
-    if (status) list = list.filter((t) => t.status === status)
-    if (department) list = list.filter((t) => (t.department ?? '').toLowerCase() === department.toLowerCase())
-    return list
-  }, [data, status, department])
-
-  const total = filtered.length
-  const pageItems = useMemo(() => paginate(filtered, page, DEFAULT_PAGE_SIZE), [filtered, page])
+  const {
+    filtered,
+    pageItems,
+    totalCount: total,
+    search,
+    setSearch,
+    status,
+    setStatus,
+    department,
+    setDepartment,
+    filtersActive,
+    resetFilters,
+    page,
+    setPage,
+    isLoading,
+    isFetching,
+    isError,
+    refetch,
+  } = useTeamsList()
 
   const selection = useListSelection({
     items: pageItems,
     getId: (t) => String(t.id),
   })
 
-  const activeMembers = filtered.reduce((s, t) => s + t.memberCount, 0)
-  const totalProjects = filtered.reduce((s, t) => s + t.projectCount, 0)
+  const activeMembers = useMemo(
+    () => filtered.reduce((s, t) => s + t.memberCount, 0),
+    [filtered],
+  )
+  const totalProjects = useMemo(
+    () => filtered.reduce((s, t) => s + t.projectCount, 0),
+    [filtered],
+  )
   const avgSize = total > 0 ? (activeMembers / total).toFixed(1) : '0'
 
   const goTeam = (teamId: number, edit?: boolean) =>
     safeNavigate(navigate, {
-      to: projectRoutes.teamDetail(teamId),
+      to: projectRoutes.teamDetailPath,
       params: { teamId: String(teamId) },
       search: edit ? { edit: '1' } : undefined,
     })
 
   const openTeamOverview = (team: Team) => {
+    const statusStyle = teamStatusColors[team.status] ?? {
+      label: team.status,
+      className: 'status-badge status-neutral',
+      dot: 'bg-outline',
+    }
     openPanel({
       title: team.name,
       subtitle: team.department ?? undefined,
       icon: 'groups',
-      status: team.status,
-      statusDotClass: team.status === 'ACTIVE' ? 'bg-emerald-500' : 'bg-slate-400',
+      status: statusStyle.label,
+      statusDotClass: statusStyle.dot,
       content: <TeamQuickContent team={team} />,
       fullRecordLabel: 'Open full record',
       onOpenFull: () => goTeam(team.id),
@@ -156,10 +161,7 @@ export function TeamsListPage() {
 
       <ListToolbar
         search={search}
-        onSearchChange={(v) => {
-          setSearch(v)
-          setPage(1)
-        }}
+        onSearchChange={setSearch}
         searchPlaceholder="Search teams..."
         filtersActive={filtersActive}
         onResetFilters={resetFilters}
@@ -167,23 +169,18 @@ export function TeamsListPage() {
       >
         <Select
           value={status}
-          onChange={(v) => {
-            setStatus(v)
-            setPage(1)
-          }}
+          onChange={setStatus}
           placeholder="All Statuses"
           aria-label="Filter by team status"
-          options={TeamStatusOptions}
+          options={[{ value: '', label: 'All Statuses' }, ...TeamStatusOptions]}
         />
         <Select
           value={department}
-          onChange={(v) => {
-            setDepartment(v)
-            setPage(1)
-          }}
+          onChange={setDepartment}
           placeholder="All Departments"
           aria-label="Filter by department"
           options={[
+            { value: '', label: 'All Departments' },
             { value: 'Engineering', label: 'Engineering' },
             { value: 'Design', label: 'Design' },
             { value: 'Sales', label: 'Sales' },
@@ -192,10 +189,34 @@ export function TeamsListPage() {
       </ListToolbar>
 
       <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard label="Total Teams" value={String(total || '—')} trend="+12%" icon="groups" iconClass="bg-electric-blue/10 text-electric-blue" />
-        <MetricCard label="Active Members" value={String(activeMembers)} trend="+4%" icon="person" iconClass="bg-secondary-container text-secondary" />
-        <MetricCard label="Total Projects" value={String(totalProjects)} sub="Active" icon="account_tree" iconClass="bg-success-container text-on-success" />
-        <MetricCard label="Avg. Team Size" value={avgSize} sub="Members" icon="group_work" iconClass="bg-warning-container text-on-warning" />
+        <MetricCard
+          label="Total Teams"
+          value={String(total || '—')}
+          trend="+12%"
+          icon="groups"
+          iconClass="bg-secondary/10 text-secondary"
+        />
+        <MetricCard
+          label="Active Members"
+          value={String(activeMembers)}
+          trend="+4%"
+          icon="person"
+          iconClass="bg-secondary/10 text-secondary"
+        />
+        <MetricCard
+          label="Total Projects"
+          value={String(totalProjects)}
+          sub="Active"
+          icon="account_tree"
+          iconClass="bg-secondary/10 text-secondary"
+        />
+        <MetricCard
+          label="Avg. Team Size"
+          value={avgSize}
+          sub="Members"
+          icon="group_work"
+          iconClass="bg-[var(--color-warning-amber)]/10 text-[var(--color-warning-amber)]"
+        />
       </section>
 
       {selection.selectionMode && (
@@ -305,7 +326,7 @@ export function TeamsListPage() {
                       </td>
                       <td className="py-2 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600">
+                          <div className="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
                             <span className="material-symbols-outlined">groups</span>
                           </div>
                           <div>
