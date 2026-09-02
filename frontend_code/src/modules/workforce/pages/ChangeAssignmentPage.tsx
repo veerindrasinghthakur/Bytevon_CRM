@@ -1,12 +1,28 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
 import { getSchemaDepartments, getLocations, getPositions, getShifts } from '@/modules/admin'
 import { WorkMode } from '@/shared/schema'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { workforceRoutes } from '../routes'
+
+const changeAssignmentSchema = z.object({
+  department_id: z.string().min(1, 'Department is required'),
+  position_id: z.string().min(1, 'Position is required'),
+  location_id: z.string().min(1, 'Location is required'),
+  shift_id: z.string().min(1, 'Shift is required'),
+  work_mode: z.string().min(1),
+  effective_from: z.string().min(1, 'Effective date is required'),
+  change_reason: z.string().min(1, 'Change reason is required'),
+})
+
+type ChangeAssignmentForm = z.infer<typeof changeAssignmentSchema>
 
 export function ChangeAssignmentPage() {
   const { employeeId } = useParams({ strict: false }) as { employeeId: string }
@@ -15,16 +31,20 @@ export function ChangeAssignmentPage() {
   const [positions, setPositions] = useState<{ id: number; name: string }[]>([])
   const [locations, setLocations] = useState<{ id: number; name: string }[]>([])
   const [shifts, setShifts] = useState<{ id: number; name: string }[]>([])
-  const [form, setForm] = useState({
-    department_id: 1,
-    position_id: 1,
-    location_id: 1,
-    shift_id: 1,
-    work_mode: WorkMode.OFFICE as string,
-    effective_from: new Date().toISOString().slice(0, 10),
-    change_reason: '',
-  })
   const [saving, setSaving] = useState(false)
+
+  const form = useForm<ChangeAssignmentForm>({
+    resolver: zodResolver(changeAssignmentSchema),
+    defaultValues: {
+      department_id: '',
+      position_id: '',
+      location_id: '',
+      shift_id: '',
+      work_mode: WorkMode.OFFICE,
+      effective_from: new Date().toISOString().slice(0, 10),
+      change_reason: '',
+    },
+  })
 
   useEffect(() => {
     void Promise.all([getSchemaDepartments(), getPositions(), getLocations(), getShifts()]).then(
@@ -33,11 +53,38 @@ export function ChangeAssignmentPage() {
         setPositions(p.items)
         setLocations(l.items)
         setShifts(s.items)
+        form.reset({
+          department_id: d.items[0] ? String(d.items[0].id) : '',
+          position_id: p.items[0] ? String(p.items[0].id) : '',
+          location_id: l.items[0] ? String(l.items[0].id) : '',
+          shift_id: s.items[0] ? String(s.items[0].id) : '',
+          work_mode: WorkMode.OFFICE,
+          effective_from: new Date().toISOString().slice(0, 10),
+          change_reason: '',
+        })
       },
     )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const submit = async () => {
+  const deptOptions = useMemo(
+    () => departments.map((o) => ({ value: String(o.id), label: o.name })),
+    [departments],
+  )
+  const posOptions = useMemo(
+    () => positions.map((o) => ({ value: String(o.id), label: o.name })),
+    [positions],
+  )
+  const locOptions = useMemo(
+    () => locations.map((o) => ({ value: String(o.id), label: o.name })),
+    [locations],
+  )
+  const shiftOptions = useMemo(
+    () => shifts.map((o) => ({ value: String(o.id), label: o.name })),
+    [shifts],
+  )
+
+  const onSubmit = form.handleSubmit(async () => {
     setSaving(true)
     await new Promise((r) => setTimeout(r, 400))
     setSaving(false)
@@ -45,28 +92,7 @@ export function ChangeAssignmentPage() {
       to: workforceRoutes.employeeDetailPath,
       params: { employeeId },
     })
-  }
-
-  const select = (
-    label: string,
-    key: 'department_id' | 'position_id' | 'location_id' | 'shift_id',
-    options: { id: number; name: string }[],
-  ) => (
-    <div>
-      <label className="text-label-sm text-on-surface-variant mb-1 block">{label}</label>
-      <select
-        className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-sm focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none transition-colors"
-        value={form[key]}
-        onChange={(e) => setForm((f) => ({ ...f, [key]: Number(e.target.value) }))}
-      >
-        {options.map((o) => (
-          <option key={o.id} value={o.id}>
-            {o.name}
-          </option>
-        ))}
-      </select>
-    </div>
-  )
+  })
 
   return (
     <div className="space-y-6 max-w-xl animate-fade-in">
@@ -75,44 +101,96 @@ export function ChangeAssignmentPage() {
         title="Change assignment"
         description="Creates a new employment_assignments row and closes the previous effective_to"
       />
-      <div className="bv-surface p-6 space-y-4">
-        {select('Department', 'department_id', departments)}
-        {select('Position', 'position_id', positions)}
-        {select('Location', 'location_id', locations)}
-        {select('Shift', 'shift_id', shifts)}
+      <form className="bv-surface p-6 space-y-4" onSubmit={onSubmit}>
         <div>
-          <label className="text-label-sm text-on-surface-variant mb-1 block">Work mode</label>
-          <select
-            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-sm focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
-            value={form.work_mode}
-            onChange={(e) => setForm((f) => ({ ...f, work_mode: e.target.value }))}
-          >
-            <option value={WorkMode.OFFICE}>OFFICE</option>
-            <option value={WorkMode.WFH}>WFH</option>
-          </select>
+          <Select
+            label="Department"
+            value={form.watch('department_id')}
+            onChange={(v) => form.setValue('department_id', v, { shouldValidate: true })}
+            options={deptOptions}
+            placeholder="Select department"
+            aria-label="Department"
+            minWidthClass="w-full"
+          />
+          {form.formState.errors.department_id && (
+            <p className="text-xs text-error mt-1">{form.formState.errors.department_id.message}</p>
+          )}
         </div>
         <div>
-          <label className="text-label-sm text-on-surface-variant mb-1 block">Effective from</label>
+          <Select
+            label="Position"
+            value={form.watch('position_id')}
+            onChange={(v) => form.setValue('position_id', v, { shouldValidate: true })}
+            options={posOptions}
+            placeholder="Select position"
+            aria-label="Position"
+            minWidthClass="w-full"
+          />
+        </div>
+        <div>
+          <Select
+            label="Location"
+            value={form.watch('location_id')}
+            onChange={(v) => form.setValue('location_id', v, { shouldValidate: true })}
+            options={locOptions}
+            placeholder="Select location"
+            aria-label="Location"
+            minWidthClass="w-full"
+          />
+        </div>
+        <div>
+          <Select
+            label="Shift"
+            value={form.watch('shift_id')}
+            onChange={(v) => form.setValue('shift_id', v, { shouldValidate: true })}
+            options={shiftOptions}
+            placeholder="Select shift"
+            aria-label="Shift"
+            minWidthClass="w-full"
+          />
+        </div>
+        <div>
+          <Select
+            label="Work mode"
+            value={form.watch('work_mode')}
+            onChange={(v) => form.setValue('work_mode', v, { shouldValidate: true })}
+            options={[
+              { value: WorkMode.OFFICE, label: 'OFFICE' },
+              { value: WorkMode.WFH, label: 'WFH' },
+            ]}
+            aria-label="Work mode"
+            minWidthClass="w-full"
+          />
+        </div>
+        <div>
+          <label className="text-label-sm text-on-surface-variant mb-1 block" htmlFor="effective_from">
+            Effective from
+          </label>
           <input
+            id="effective_from"
             type="date"
-            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-sm focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
-            value={form.effective_from}
-            onChange={(e) => setForm((f) => ({ ...f, effective_from: e.target.value }))}
+            className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-sm focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none transition-colors"
+            {...form.register('effective_from')}
           />
         </div>
         <div>
-          <label className="text-label-sm text-on-surface-variant mb-1 block">Change reason</label>
+          <label className="text-label-sm text-on-surface-variant mb-1 block" htmlFor="change_reason">
+            Change reason
+          </label>
           <input
+            id="change_reason"
             className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-sm focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
-            value={form.change_reason}
-            onChange={(e) => setForm((f) => ({ ...f, change_reason: e.target.value }))}
             placeholder="Promotion, transfer, relocation…"
+            {...form.register('change_reason')}
           />
+          {form.formState.errors.change_reason && (
+            <p className="text-xs text-error mt-1">{form.formState.errors.change_reason.message}</p>
+          )}
         </div>
-        <Button variant="primary" onClick={() => void submit()} disabled={saving || !form.change_reason}>
-          {saving ? 'Saving…' : 'Save assignment'}
+        <Button type="submit" variant="primary" isLoading={saving}>
+          Save assignment
         </Button>
-      </div>
+      </form>
     </div>
   )
 }

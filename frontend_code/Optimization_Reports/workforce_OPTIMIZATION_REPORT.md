@@ -1,40 +1,36 @@
 # Module Optimization Report: workforce
 
 **Updated:** 2026-09-02  
-**Scope this pass:** Employment state tokens, EmployeeDetail RHF+Zod, list/detail palette, ShiftCreate RHF. No new components.
+**Scope:** Tokens, RHF forms, route helpers. No new components.
 
 ---
 
-## Cleared this pass
+## Cleared
 
 | Item | Change |
 |------|--------|
-| EmployeesList local `stateStyles` / `stateDot` | → `employmentStateStyles` / `employmentStateDot` in `schemas/enums.ts` |
-| Login column emerald/amber | → `loginEnabledClass` / `loginDisabledClass` |
-| EmployeeDetail manual useState edit form | → RHF + `employeeDetailEditSchema` |
-| EmployeeDetail palette (emerald/amber) | → semantic tokens / status styles |
-| EmployeeDetail hardcoded `/workforce/employees` | → `workforceRoutes.employees` + `safeNavigate` |
-| EmployeesList goDetail | → `employeeDetailPath` |
-| ShiftCreatePage | RHF + Zod; `safeNavigate` to shifts list |
-| types.ts | Re-exports employment state enums + detail edit schema |
+| EmployeesList stateStyles/stateDot | `employmentStateStyles` / `employmentStateDot` |
+| EmployeeDetail edit form | RHF + `employeeDetailEditSchema` |
+| EmployeeDetail / list palette | Semantic tokens |
+| ShiftCreatePage | RHF + Zod |
+| ChangeAssignmentPage | RHF + Zod + shared Select |
+| AssignProjectPage | RHF + Zod + shared Select |
+| DepartmentCreatePage | RHF + `departmentFormSchema` |
+| Route crumbs on assign flow | `workforceRoutes` variables |
 
 ---
 
-## Verified (schema-aligned forms; full RHF optional later)
+## Verified / partial
 
-- **EmployeeCreatePage** — `EmploymentFormInput` + `toCreateEmploymentInput`; shared Select; not full RHF (multi-step + UI-only fields)
-- **DepartmentCreatePage** — `DepartmentFormInput` + `toCreateDepartmentInput`; schema-aligned useState
+- **EmployeeCreatePage** — schema-aligned `EmploymentFormInput` + transforms; multi-step + UI-only fields — full RHF optional later
+- **RouteCrumbs** — path-driven `DynamicRouteCrumbs`; explicit crumbs use `workforceRoutes`
 
 ---
 
 ## Still deferred
 
-- Attendance pages still seed from mock (API list later)
-- ChangeAssignment / AssignProject full RHF+Zod
-- EmployeeCreate / DepartmentCreate full RHF migration
-- RouteCrumbs hardcoded path audit
+- Attendance pages mock → API list
+- EmployeeCreate full multi-step RHF (optional)
 - New shared components
 
 ---
-
-*Cleared items removed from action lists.*
