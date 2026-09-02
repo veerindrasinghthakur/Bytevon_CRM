@@ -37,6 +37,19 @@ def main() -> None:
         f"  projects={len(data.get('projects', []))} teams={len(data.get('teams', []))} "
         f"tasks={len(data.get('tasks', []))}"
     )
+    print(
+        f"  workforce today_att={len(data.get('workforce_today_attendance', []))} "
+        f"corrections={len(data.get('workforce_attendance_corrections', []))} "
+        f"employments={len(data.get('employments', []))}"
+    )
+    print(
+        f"  payroll employees={len(data.get('payroll_employees', []))} "
+        f"structures={len(data.get('payroll_salary_structures', {}) or {})}"
+    )
+    print(
+        f"  approvals pending={len(data.get('approval_pending', []))} "
+        f"my_requests={len(data.get('approval_my_requests', []))}"
+    )
     print("  Login: admin@bytevon.local / ChangeMeAdmin!123")
 
 
