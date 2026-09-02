@@ -137,6 +137,7 @@ export function AttendanceDashboardPage() {
             <h2 className="text-title-md font-semibold">Recent check-ins</h2>
             <Link
               to={workforceRoutes.attendanceEmployees}
+              search={{}}
               className="text-label-sm text-secondary hover:underline"
             >
               View all
