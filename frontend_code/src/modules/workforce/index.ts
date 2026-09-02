@@ -41,10 +41,24 @@ export {
   getOrgMastersForEmployeeForm,
 } from './api/employment'
 
+export {
+  getAttendanceDashboard,
+  listTodayAttendance,
+  getAttendanceById,
+  getAttendanceDayDetail,
+  listAttendanceCorrections,
+} from './api/attendance'
+
 export { useEmployeesList } from './hooks/use-employees-list'
 export { useDepartmentsList } from './hooks/use-departments-list'
 export { useTeamsList } from './hooks/use-teams-list'
 export { useDepartmentDetail } from './hooks/use-department-detail'
 export { useTeamDetail } from './hooks/use-team-detail'
+export {
+  useAttendanceDashboard,
+  useTodayAttendance,
+  useAttendanceDetail,
+  useAttendanceDayDetail,
+} from './hooks/use-attendance'
 
 export type * from './types'
