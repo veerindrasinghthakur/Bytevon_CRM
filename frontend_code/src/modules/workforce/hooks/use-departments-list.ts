@@ -5,6 +5,19 @@ import { queryKeys } from '@/shared/lib/query-keys'
 
 const FILTER_DEFAULTS = { status: 'All' }
 
+type DeptMetrics = {
+  total: number
+  active: number
+  inactive: number
+  staffing: number
+}
+
+type DeptListResult = {
+  items: Awaited<ReturnType<typeof listDepartments>>['items']
+  total: number
+  metrics?: DeptMetrics
+}
+
 /** Query key factory used by use-department-detail invalidation. */
 export const DEPARTMENTS_LIST_KEY = queryKeys.workforce.departments.all
 
@@ -30,12 +43,17 @@ export function useDepartmentsList() {
         status: listFilters.status,
         page: listFilters.page,
         pageSize: listFilters.pageSize,
-      }),
+      }) as Promise<DeptListResult>,
   })
 
   const items = data?.items ?? []
   const totalCount = data?.total ?? 0
-  const metrics = data?.metrics ?? { total: 0, active: 0, inactive: 0, staffing: 0 }
+  const metrics: DeptMetrics = data?.metrics ?? {
+    total: 0,
+    active: 0,
+    inactive: 0,
+    staffing: 0,
+  }
   const filtered = items
   const pageItems = items
 
