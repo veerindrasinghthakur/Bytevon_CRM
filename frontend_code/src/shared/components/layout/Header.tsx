@@ -5,6 +5,7 @@ import { HeaderAttendanceSummary } from './HeaderAttendanceSummary'
 import { HeaderProps } from '@/shared/types'
 import { notificationRoutes } from '@/modules/notifications/routes'
 import { profileRoutes } from '@/modules/profile/routes'
+import { looseLinkProps } from '@/shared/lib/safeNavigate'
 
 export const HEADER_HEIGHT_PX = 56
 
@@ -55,18 +56,17 @@ export function Header({ title, className, style }: HeaderProps) {
         <HeaderAttendanceSummary />
 
         <Link
-          {...({
+          {...looseLinkProps({
             to: notificationRoutes.center,
-            search: {},
-          } as never)}
-          aria-label="My notifications"
-          title="Notifications"
-          className={cn(
-            'relative inline-flex items-center justify-center rounded-full p-2',
-            'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue',
-            isNotificationsActive && 'bg-[#e8f1ff] text-secondary',
-          )}
+            'aria-label': 'My notifications',
+            title: 'Notifications',
+            className: cn(
+              'relative inline-flex items-center justify-center rounded-full p-2',
+              'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue',
+              isNotificationsActive && 'bg-[#e8f1ff] text-secondary',
+            ),
+          })}
         >
           <span
             className="material-symbols-outlined"
@@ -83,20 +83,19 @@ export function Header({ title, className, style }: HeaderProps) {
         </Link>
 
         <Link
-          {...({
+          {...looseLinkProps({
             to: profileRoutes.root,
-            search: {},
-          } as never)}
-          className={cn(
-            'flex items-center gap-2.5 pl-3 ml-1 py-1 pr-1.5 rounded-md',
-            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue',
-            isProfileActive
-              ? 'border-l-4 border-deep-navy bg-surface-container'
-              : 'border-l border-outline-variant/50',
-          )}
-          aria-label="Open profile"
-          aria-current={isProfileActive ? 'page' : undefined}
-          data-active={isProfileActive ? 'true' : 'false'}
+            className: cn(
+              'flex items-center gap-2.5 pl-3 ml-1 py-1 pr-1.5 rounded-md',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue',
+              isProfileActive
+                ? 'border-l-4 border-deep-navy bg-surface-container'
+                : 'border-l border-outline-variant/50',
+            ),
+            'aria-label': 'Open profile',
+            'aria-current': isProfileActive ? 'page' : undefined,
+            'data-active': isProfileActive ? 'true' : 'false',
+          })}
         >
           <div
             className={cn(
