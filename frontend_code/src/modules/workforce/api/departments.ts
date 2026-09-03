@@ -199,10 +199,10 @@ export async function assignEmployeeToDepartment(
   const now = new Date().toISOString()
   const current = db.employment_assignments.find(
     (a) => a.employment_id === employmentId && a.effective_to == null,
-  )
+  ) as (typeof db.employment_assignments)[number] | undefined
   if (current) {
     if (current.department_id === departmentId) return { ok: true as const }
-    current.effective_to = today
+    ;(current as { effective_to: string | null }).effective_to = today
   }
   db.employment_assignments.push({
     id: nextId(db.employment_assignments),
@@ -211,13 +211,13 @@ export async function assignEmployeeToDepartment(
     position_id: current?.position_id ?? 5,
     location_id: current?.location_id ?? 1,
     shift_id: current?.shift_id ?? 1,
-    work_mode: current?.work_mode ?? WorkMode.OFFICE,
+    work_mode: (current?.work_mode as typeof WorkMode.OFFICE) ?? WorkMode.OFFICE,
     effective_from: today,
     effective_to: null,
     change_reason: 'Assigned to department',
     created_at: now,
     changed_by: 1,
-  })
+  } as (typeof db.employment_assignments)[number])
   return { ok: true as const }
 }
 
@@ -238,12 +238,14 @@ export async function removeEmployeeFromDepartment(
       a.employment_id === employmentId &&
       a.department_id === departmentId &&
       a.effective_to == null,
-  )
+  ) as (typeof db.employment_assignments)[number] | undefined
   if (!current) return { ok: true as const }
-  current.effective_to = today
-  current.change_reason = 'Removed from department'
+  ;(current as { effective_to: string | null; change_reason?: string }).effective_to = today
+  ;(current as { change_reason?: string }).change_reason = 'Removed from department'
 
-  const dept = db.schema_departments.find((d) => d.id === departmentId)
+  const dept = db.schema_departments.find((d) => d.id === departmentId) as
+    | (DepartmentRow & { department_head_employment_id: number | null })
+    | undefined
   if (dept && dept.department_head_employment_id === employmentId) {
     dept.department_head_employment_id = null
   }
@@ -262,14 +264,14 @@ export async function createDepartment(input: {
   await delay(400)
   const db = getDb()
   const now = new Date().toISOString()
-  const row: DepartmentRow = {
+  const row = {
     id: nextId(db.schema_departments),
     name: input.name.trim(),
     department_head_employment_id: input.headEmploymentId ?? null,
     is_archived: input.isArchived ?? false,
     created_at: now,
     created_by: 1,
-  }
+  } as DepartmentRow
   db.schema_departments.push(row)
   return toListItem(row)
 }
@@ -283,7 +285,13 @@ export async function updateDepartment(
     return data
   }
   await delay(300)
-  const row = getDb().schema_departments.find((d) => d.id === id)
+  const row = getDb().schema_departments.find((d) => d.id === id) as
+    | (DepartmentRow & {
+        name: string
+        department_head_employment_id: number | null
+        is_archived: boolean
+      })
+    | undefined
   if (!row) throw new Error('Department not found')
   if (patch.name != null) row.name = patch.name.trim()
   if (patch.headEmploymentId !== undefined) row.department_head_employment_id = patch.headEmploymentId
@@ -314,9 +322,7 @@ export async function listEmploymentOptionsForPicker() {
 /** Employees on a given shift (from active assignments). */
 export async function listEmployeesOnShift(shiftId: number) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get(
-      `/workforce/shifts/${shiftId}/employees`,
-    )
+    const { data } = await apiClient.get(`/workforce/shifts/${shiftId}/employees`)
     return data as {
       employmentId: number
       employeeCode: string
