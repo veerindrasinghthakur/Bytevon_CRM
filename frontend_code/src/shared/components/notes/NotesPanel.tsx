@@ -4,7 +4,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { NoteReferenceType } from '@/shared/schema'
 import type { NoteItem, NotesPanelProps } from '@/shared/types'
 
-export type { NoteReferenceType }
+export type { NoteItem, NotesPanelProps, NoteReferenceType }
 
 function formatWhen(iso: string) {
   try {

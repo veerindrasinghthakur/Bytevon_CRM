@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 import { Select } from '@/shared/components/ui/Select'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { queryKeys } from '@/shared/lib/query-keys'
@@ -113,6 +114,20 @@ export function LeadCreatePage() {
   }, [repsQuery.data])
 
   const saving = createMut.isPending || updateMut.isPending
+
+  const archiveLead = async () => {
+    if (!isEdit || !params.leadId) return
+
+    try {
+      await updateMut.mutateAsync({
+        id: params.leadId,
+        patch: { status: 'Inactive' },
+      })
+      safeNavigate(navigate, { to: salesRoutes.leads, search: {} })
+    } catch (err) {
+      form.setError('root', { message: err instanceof Error ? err.message : 'Archive failed' })
+    }
+  }
 
   const onSubmit = async (data: LeadFormSchemaInput) => {
     const selectedRep = (repsQuery.data ?? []).find(
@@ -395,7 +410,14 @@ export function LeadCreatePage() {
           />
         </section>
 
-        <div className="flex items-center gap-3 pt-2">
+        <div className="flex items-center gap-3 pt-2 flex-wrap">
+          {isEdit && (
+            <ArchiveButton
+              entityLabel={existing?.title ?? 'this lead'}
+              onConfirm={() => void archiveLead()}
+              isLoading={updateMut.isPending}
+            />
+          )}
           <Button type="submit" variant="primary" isLoading={saving}>
             {isEdit ? 'Save changes' : 'Create lead'}
           </Button>

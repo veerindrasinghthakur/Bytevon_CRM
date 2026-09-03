@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { cn } from '@/shared/lib/cn'
-import { EntityOption, EntitySearchProps } from '@/shared/types'
+import type { EntityOption, EntitySearchProps } from '@/shared/types'
 import { useDispatch, useSelector } from 'react-redux'
 import type { RootState } from '@/shared/store'
 import { setSelected, setSelectedMultiple } from '@/shared/store/entitySearchSlice'
+
+export type { EntityOption, EntitySearchProps }
 
 export function EntitySearch({
   label,

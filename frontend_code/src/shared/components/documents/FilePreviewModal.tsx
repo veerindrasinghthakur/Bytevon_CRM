@@ -2,7 +2,9 @@ import { useMemo } from 'react'
 import { Button } from '@/shared/components/ui/Button'
 import { downloadFile } from '@/shared/lib/download-file'
 import { cn } from '@/shared/lib/cn'
-import {FilePreviewModalProps} from '@/shared/types'
+import type { FilePreviewItem, FilePreviewModalProps } from '@/shared/types'
+
+export type { FilePreviewItem, FilePreviewModalProps }
 
 
 function kindFromMime(name: string, mime?: string): 'image' | 'pdf' | 'text' | 'other' {
