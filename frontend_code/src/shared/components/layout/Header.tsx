@@ -8,8 +8,6 @@ import { profileRoutes } from '@/modules/profile/routes'
 
 export const HEADER_HEIGHT_PX = 56
 
-
-
 export function Header({ title, className, style }: HeaderProps) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const isProfileActive = pathname === '/profile' || pathname.startsWith('/profile/')
@@ -22,7 +20,7 @@ export function Header({ title, className, style }: HeaderProps) {
       className={cn(
         'fixed top-0 right-0 z-40 h-14 bg-surface border-b border-outline-variant',
         'flex items-center justify-between px-margin-desktop',
-        className
+        className,
       )}
       style={style}
       data-shell-header="v2"
@@ -57,15 +55,17 @@ export function Header({ title, className, style }: HeaderProps) {
         <HeaderAttendanceSummary />
 
         <Link
-          to={notificationRoutes.center}
-          search={{}}
+          {...({
+            to: notificationRoutes.center,
+            search: {},
+          } as never)}
           aria-label="My notifications"
           title="Notifications"
           className={cn(
             'relative inline-flex items-center justify-center rounded-full p-2',
             'text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue',
-            isNotificationsActive && 'bg-[#e8f1ff] text-secondary'
+            isNotificationsActive && 'bg-[#e8f1ff] text-secondary',
           )}
         >
           <span
@@ -83,14 +83,16 @@ export function Header({ title, className, style }: HeaderProps) {
         </Link>
 
         <Link
-          to={profileRoutes.root}
-          search={{} as const}
+          {...({
+            to: profileRoutes.root,
+            search: {},
+          } as never)}
           className={cn(
             'flex items-center gap-2.5 pl-3 ml-1 py-1 pr-1.5 rounded-md',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue',
             isProfileActive
               ? 'border-l-4 border-deep-navy bg-surface-container'
-              : 'border-l border-outline-variant/50'
+              : 'border-l border-outline-variant/50',
           )}
           aria-label="Open profile"
           aria-current={isProfileActive ? 'page' : undefined}
@@ -101,7 +103,7 @@ export function Header({ title, className, style }: HeaderProps) {
               'w-8 h-8 rounded-full flex items-center justify-center shrink-0',
               isProfileActive
                 ? 'bg-deep-navy text-white'
-                : 'bg-surface-container-highest text-on-surface'
+                : 'bg-surface-container-highest text-on-surface',
             )}
           >
             <span className="material-symbols-outlined text-[18px]" aria-hidden="true">
@@ -111,7 +113,7 @@ export function Header({ title, className, style }: HeaderProps) {
           <span
             className={cn(
               'text-label-md font-semibold hidden sm:inline',
-              isProfileActive ? 'text-deep-navy' : 'text-on-surface'
+              isProfileActive ? 'text-deep-navy' : 'text-on-surface',
             )}
           >
             Profile

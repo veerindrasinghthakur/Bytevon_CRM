@@ -51,7 +51,7 @@ export function useAppShell() {
 
   const handleLogout = async () => {
     await logout()
-    await navigate({ to: authRoutes.login, search: {} as const })
+    void navigate({ to: authRoutes.login, search: {} } as never)
   }
 
   return {

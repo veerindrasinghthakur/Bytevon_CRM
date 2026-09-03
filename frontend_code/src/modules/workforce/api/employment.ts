@@ -45,6 +45,7 @@ function enrichListRow(e: EmploymentRow) {
     email: login?.email ?? person?.personal_email ?? '',
     phone: person?.personal_phone ?? '',
     departmentName: dept?.name ?? '—',
+    departmentId: assignment?.department_id ?? null,
     positionName: position?.name ?? '—',
     locationName: location?.name ?? '—',
     hasLogin: Boolean(login),
@@ -70,16 +71,24 @@ function buildMetrics(items: EmploymentListItem[]) {
 }
 
 export async function listEmployments(
-  params: { status?: string } & EntityListParams = {},
+  params: {
+    status?: string
+    department?: string
+    state?: string
+    type?: string
+  } & EntityListParams = {},
 ) {
-  const { page = 1, pageSize = 20, search, status } = params
+  const { page = 1, pageSize = 20, search, status, department, state, type } = params
+  const stateFilter = state ?? status
 
   if (!env.useMockApi) {
     const { data } = await apiClient.get<{
       items: EmploymentListItem[]
       total: number
       metrics?: ReturnType<typeof buildMetrics>
-    }>('/workforce/employments', { params: { page, pageSize, search, status } })
+    }>('/workforce/employments', {
+      params: { page, pageSize, search, status: stateFilter, department, type },
+    })
     return { items: data.items, total: data.total, metrics: data.metrics }
   }
 
@@ -96,8 +105,20 @@ export async function listEmployments(
         e.positionName.toLowerCase().includes(q),
     )
   }
-  if (status) {
-    items = items.filter((e) => e.current_state === status)
+  if (stateFilter) {
+    items = items.filter((e) => e.current_state === stateFilter)
+  }
+  if (type) {
+    items = items.filter((e) => e.employment_type === type)
+  }
+  if (department) {
+    const deptId = Number(department)
+    if (Number.isFinite(deptId)) {
+      items = items.filter((e) => e.departmentId === deptId)
+    } else {
+      const q = department.toLowerCase()
+      items = items.filter((e) => e.departmentName.toLowerCase().includes(q))
+    }
   }
   const metrics = buildMetrics(items)
   if (page != null || pageSize != null) {
@@ -226,11 +247,11 @@ export async function createEmployment(input: CreateEmploymentInput) {
     anonymized_at: null,
     created_at: now,
     updated_at: now,
-  })
+  } as (typeof db.persons)[number])
 
   const empId = nextId(db.employments)
   const code = `EMP-${String(empId).padStart(3, '0')}`
-  const employment: EmploymentRow = {
+  const employment = {
     id: empId,
     person_id: personId,
     employee_code: code,
@@ -240,7 +261,7 @@ export async function createEmployment(input: CreateEmploymentInput) {
     created_at: now,
     updated_at: now,
     changed_by: 1,
-  }
+  } as EmploymentRow
   db.employments.push(employment)
 
   db.employment_state_history.push({
@@ -252,7 +273,7 @@ export async function createEmployment(input: CreateEmploymentInput) {
     reason: 'Joined',
     created_at: now,
     changed_by: 1,
-  })
+  } as (typeof db.employment_state_history)[number])
 
   db.employment_assignments.push({
     id: nextId(db.employment_assignments),
@@ -267,7 +288,7 @@ export async function createEmployment(input: CreateEmploymentInput) {
     change_reason: 'Initial assignment',
     created_at: now,
     changed_by: 1,
-  })
+  } as (typeof db.employment_assignments)[number])
 
   const employeeRole = db.roles.find((r) => r.name === 'Employee')
   if (employeeRole) {
@@ -276,7 +297,7 @@ export async function createEmployment(input: CreateEmploymentInput) {
       role_id: employeeRole.id,
       assigned_at: now,
       changed_by: 1,
-    })
+    } as (typeof db.employee_roles)[number])
   }
 
   if (input.bank?.accountNumber) {
@@ -293,7 +314,7 @@ export async function createEmployment(input: CreateEmploymentInput) {
       created_at: now,
       updated_at: now,
       changed_by: 1,
-    })
+    } as (typeof db.employee_bank_accounts)[number])
   }
 
   return enrichListRow(employment)

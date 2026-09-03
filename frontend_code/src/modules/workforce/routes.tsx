@@ -6,6 +6,7 @@
 import { createRoute, redirect } from '@tanstack/react-router'
 import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
+import { safeRedirectOpts } from '@/shared/lib/safeNavigate'
 
 const EmployeesListPage = lazyPage(() => import('./pages/EmployeesListPage'), 'EmployeesListPage')
 const EmployeeCreatePage = lazyPage(() => import('./pages/EmployeeCreatePage'), 'EmployeeCreatePage')
@@ -85,7 +86,7 @@ export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: 
       getParentRoute: () => appLayoutRoute,
       path: '/workforce',
       beforeLoad: () => {
-        throw redirect({ href: workforceRoutes.employees })
+        throw redirect(safeRedirectOpts({ to: workforceRoutes.employees }))
       },
     }),
     createRoute({

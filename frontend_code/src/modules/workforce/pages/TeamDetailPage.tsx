@@ -8,7 +8,7 @@ import { TeamTopView } from '../components/TeamTopView'
 import { useTeamDetail } from '../hooks/use-team-detail'
 import { workforceRoutes } from '../routes'
 import { projectRoutes } from '@/modules/projects/routes'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { looseParams, looseSearch, safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -31,31 +31,29 @@ export function TeamDetailPage() {
         title="Could not load team"
         description="Team detail failed to load. Retry or go back to teams."
         onRetry={() => void refetch()}
-        onBack={() => safeNavigate(navigate, { to: workforceRoutes.teams, search: {} })}
+        onBack={() => safeNavigate(navigate, { to: workforceRoutes.teams })}
       />
     )
   }
 
   const previewMembers = members.slice(0, 6)
   const activeProjects = projects.filter((p) => p.status === 'Active').slice(0, 2)
+  const tid = String(team.id)
 
   const goMembers = () =>
     safeNavigate(navigate, {
-      to: workforceRoutes.teamMembers(team.id),
-      params: { teamId: team.id },
-      search: {},
+      to: workforceRoutes.teamMembersPath,
+      params: { teamId: tid },
     })
   const goAddMember = () =>
     safeNavigate(navigate, {
-      to: workforceRoutes.teamAddMember(team.id),
-      params: { teamId: team.id },
-      search: {},
+      to: workforceRoutes.teamAddMemberPath,
+      params: { teamId: tid },
     })
   const goProjects = () =>
     safeNavigate(navigate, {
-      to: workforceRoutes.teamProjects(team.id),
-      params: { teamId: team.id },
-      search: {},
+      to: workforceRoutes.teamProjectsPath,
+      params: { teamId: tid },
     })
 
   return (
@@ -117,8 +115,8 @@ export function TeamDetailPage() {
                     <td className="px-5 py-3">
                       <Link
                         to={workforceRoutes.employeeDetailPath}
-                        params={{ employeeId: String(m.id) }}
-                        search={{}}
+                        params={looseParams({ employeeId: String(m.id) })}
+                        search={looseSearch()}
                         className="flex items-center gap-3"
                       >
                         <div className="w-9 h-9 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
@@ -150,8 +148,8 @@ export function TeamDetailPage() {
                     <td className="px-5 py-3 text-right">
                       <Link
                         to={workforceRoutes.employeeDetailPath}
-                        params={{ employeeId: String(m.id) }}
-                        search={{}}
+                        params={looseParams({ employeeId: String(m.id) })}
+                        search={looseSearch()}
                         className="text-secondary text-label-md font-semibold hover:underline"
                       >
                         View
@@ -188,8 +186,8 @@ export function TeamDetailPage() {
                 <Link
                   key={p.id}
                   to={projectRoutes.projectDetailPath}
-                  params={{ projectId: String(p.id) }}
-                  search={{}}
+                  params={looseParams({ projectId: String(p.id) })}
+                  search={looseSearch()}
                   className="block border border-outline-variant rounded-lg p-4 hover:border-secondary transition-colors card-hover"
                 >
                   <div className="flex justify-between mb-2">
