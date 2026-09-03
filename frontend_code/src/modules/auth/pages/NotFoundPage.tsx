@@ -1,6 +1,5 @@
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
-import { looseSearch } from '@/shared/lib/safeNavigate'
 import { authRoutes } from '../routes'
 
 export function NotFoundPage() {
@@ -12,7 +11,7 @@ export function NotFoundPage() {
         <p className="text-body-md text-on-surface-variant">
           The page you requested does not exist or may have been moved.
         </p>
-        <Link to={authRoutes.dashboard} search={looseSearch()}>
+        <Link {...({ to: authRoutes.dashboard, params: {}, search: {} } as never)}>
           <Button variant="primary">Back to Dashboard</Button>
         </Link>
       </div>

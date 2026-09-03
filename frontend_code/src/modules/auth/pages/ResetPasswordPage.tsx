@@ -2,7 +2,6 @@ import { Link } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { BrandLogo } from '@/shared/components/brand/BrandLogo'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
-import { looseSearch } from '@/shared/lib/safeNavigate'
 import { authRoutes } from '../routes'
 import { useResetPasswordForm } from '../hooks/useResetPasswordForm'
 
@@ -22,7 +21,7 @@ export function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="w-full px-6 md:px-10 py-4 flex items-center border-b border-outline-variant/40">
-        <Link to={authRoutes.login} search={looseSearch()}>
+        <Link {...({ to: authRoutes.login, params: {}, search: {} } as never)}>
           <BrandLogo
             withWordmark
             sizeClassName="w-8 h-8"
