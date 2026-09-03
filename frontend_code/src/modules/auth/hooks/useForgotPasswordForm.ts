@@ -4,20 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useMutation } from '@tanstack/react-query'
 import { forgotPasswordSchema, type ForgotPasswordInput } from '../schemas/auth'
 import { forgotPasswordApi } from '../api/auth'
-
-export interface UseForgotPasswordFormReturn {
-  register: ReturnType<typeof useForm<ForgotPasswordInput>>['register']
-  handleSubmit: ReturnType<typeof useForm<ForgotPasswordInput>>['handleSubmit']
-  formState: {
-    errors: ReturnType<typeof useForm<ForgotPasswordInput>>['formState']['errors']
-    isSubmitting: boolean
-  }
-  reset: ReturnType<typeof useForm<ForgotPasswordInput>>['reset']
-  sentTo: string | null
-  serverError: string | null
-  onSubmit: (data: ForgotPasswordInput) => Promise<void>
-  resetForm: () => void
-}
+import {UseForgotPasswordFormReturn} from '../types'
 
 export function useForgotPasswordForm(): UseForgotPasswordFormReturn {
   const [sentTo, setSentTo] = useState<string | null>(null)

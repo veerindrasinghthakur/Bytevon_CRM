@@ -1,15 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type { AuthSession } from '../schemas/auth'
 import { loadStoredSession, persistSession, refreshApi } from '../api/auth'
 import { setCurrentEmploymentId } from '@/shared/rbac'
 import { env } from '@/config/env'
 import { useEventListener } from '@/shared/hooks/useEventListener'
+import {UseAuthBootstrapResult} from '../types'
+import type { AuthSession } from '../schemas/auth'
 
-interface UseAuthBootstrapResult {
-  session: AuthSession | null
-  isBootstrapping: boolean
-  setSession: (session: AuthSession | null) => void
-}
 
 function applyEmploymentFromSession(session: AuthSession | null) {
   const employmentId = session?.user?.employmentId

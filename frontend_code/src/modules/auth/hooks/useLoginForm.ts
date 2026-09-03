@@ -11,20 +11,8 @@ import {
 import { authRoutes } from '../routes'
 import { useAuth } from '../context/AuthContext'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import {UseLoginFormReturn} from '../types'
 
-export interface UseLoginFormReturn {
-  register: ReturnType<typeof useForm<LoginInput>>['register']
-  handleSubmit: ReturnType<typeof useForm<LoginInput>>['handleSubmit']
-  formState: {
-    errors: ReturnType<typeof useForm<LoginInput>>['formState']['errors']
-    isSubmitting: boolean
-  }
-  serverError: string | null
-  showPassword: boolean
-  toggleShowPassword: () => void
-  onSubmit: (data: LoginInput) => Promise<void>
-  mockCredentials: { username: string; password: string }
-}
 
 function resolvePostLoginPath(redirect: string | undefined): string {
   if (

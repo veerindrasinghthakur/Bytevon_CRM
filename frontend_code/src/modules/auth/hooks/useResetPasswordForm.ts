@@ -11,21 +11,9 @@ import {
 import { resetPasswordApi } from '../api/auth'
 import { authRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import {UseResetPasswordFormReturn} from '../types'
 
-export interface UseResetPasswordFormReturn {
-  register: ReturnType<typeof useForm<ResetPasswordInput>>['register']
-  handleSubmit: ReturnType<typeof useForm<ResetPasswordInput>>['handleSubmit']
-  formState: {
-    errors: ReturnType<typeof useForm<ResetPasswordInput>>['formState']['errors']
-    isSubmitting: boolean
-  }
-  serverError: string | null
-  done: boolean
-  showPassword: boolean
-  toggleShowPassword: () => void
-  onSubmit: (data: ResetPasswordInput) => Promise<void>
-  goToLogin: () => void
-}
+
 
 export function useResetPasswordForm(): UseResetPasswordFormReturn {
   const navigate = useNavigate()
