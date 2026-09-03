@@ -55,3 +55,19 @@ export const weekHourBarSchema = z.object({
   breakMarkers: z.array(breakBarMarkerSchema).optional(),
 })
 export type WeekHourBar = z.infer<typeof weekHourBarSchema>
+
+/** Client-side today session (localStorage) */
+export type TodayAttendanceSession = {
+  date: string
+  checkInAt: string
+  checkOutAt?: string | null
+}
+
+/** Net work hours for header / mark-attendance summary */
+export type WorkHoursSummary = {
+  checkInAt: string
+  checkOutAt?: string | null
+  grossMs: number
+  breakMs: number
+  netMs: number
+}

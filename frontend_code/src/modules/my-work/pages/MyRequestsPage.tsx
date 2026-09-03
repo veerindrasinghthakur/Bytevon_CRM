@@ -10,8 +10,7 @@ import { myWorkRoutes } from '../routes'
 import { statusStyles } from '../schemas/enums'
 import { listMySubmittedRequests } from '../api/my-work'
 import { useRequestsPageFilter } from '../hooks/use-requests-page-filter'
-
-const filters = ['All Requests', 'In-Progress', 'Approved', 'Rejected'] as const
+import { REQUEST_FILTERS } from '../schemas/enums'
 
 /**
  * Full table of organizational requests the employee submitted.
@@ -97,7 +96,7 @@ export function MyRequestsPage() {
       <section className="bv-surface overflow-hidden">
         <div className="p-4 border-b border-outline-variant flex items-center justify-between flex-wrap gap-3">
           <div className="flex gap-2 flex-wrap">
-            {filters.map((f) => (
+            {REQUEST_FILTERS.map((f) => (
               <button
                 key={f}
                 type="button"

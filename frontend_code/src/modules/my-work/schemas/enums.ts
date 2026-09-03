@@ -51,3 +51,52 @@ export const MANUAL_ATTENDANCE_REASONS = [
   { value: 'Forgot to Log', label: 'Forgot to Log' },
   { value: 'Travel', label: 'Travel' },
 ] as const
+
+/** Leave request status filter options (LeaveHistoryTab). */
+export const LEAVE_STATUS_OPTIONS = [
+  { value: 'All', label: 'All Statuses' },
+  { value: 'Pending', label: 'Pending' },
+  { value: 'Approved', label: 'Approved' },
+  { value: 'Rejected', label: 'Rejected' },
+  { value: 'Cancelled', label: 'Cancelled' },
+]
+
+/** Leave type filter options (LeaveHistoryTab). */
+export const LEAVE_TYPE_OPTIONS = [
+  { value: 'All', label: 'All Types' },
+  { value: 'Casual', label: 'Casual' },
+  { value: 'Sick', label: 'Sick' },
+  { value: 'Earned', label: 'Earned' },
+  { value: 'Unpaid', label: 'Unpaid' },
+  { value: 'Comp Off', label: 'Comp Off' },
+]
+
+/** Attendance correction status filter options (AttendanceCorrectionsPage). */
+export const CORRECTION_STATUS_OPTIONS = [
+  { value: 'All', label: 'All statuses' },
+  { value: 'Pending', label: 'Pending' },
+  { value: 'Approved', label: 'Approved' },
+  { value: 'Rejected', label: 'Rejected' },
+  { value: 'Draft', label: 'Draft' },
+]
+
+/** Correction status badge colors (AttendanceCorrectionsPage). */
+export const correctionStatusStyles: Record<string, string> = {
+  Pending: 'bg-amber-100 text-amber-800',
+  Approved: 'bg-emerald-100 text-emerald-800',
+  Rejected: 'bg-red-100 text-red-800',
+  Draft: 'bg-surface-container-high text-on-surface-variant',
+}
+
+/** Break duration presets in minutes (TakeABreakPage). */
+export const BREAK_DURATION_PRESETS = [5, 10, 15, 30] as const
+
+/** Request list filter options (MyRequestsPage). */
+export const REQUEST_FILTERS = [
+  'All Requests',
+  'In-Progress',
+  'Approved',
+  'Rejected',
+] as const
+
+export type TaskFilter = 'open' | 'inProgress' | 'high' | null

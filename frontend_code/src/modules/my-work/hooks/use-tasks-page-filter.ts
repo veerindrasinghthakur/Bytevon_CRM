@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-type TaskFilter = 'open' | 'inProgress' | 'high' | null
+import {TaskFilter} from '../schemas/enums'
 
 export function useTasksPageFilter() {
   const [cardFilter, setCardFilter] = useState<TaskFilter>(null)

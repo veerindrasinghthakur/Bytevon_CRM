@@ -4,19 +4,10 @@ import { Select } from '@/shared/components/ui/Select'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../../routes'
-import { statusStyles } from '../../schemas/enums'
-import type { LeaveStatus } from '../../types'
+import { statusStyles, LEAVE_STATUS_OPTIONS, LEAVE_TYPE_OPTIONS } from '../../schemas/enums'
+import {LeaveHistoryRow} from '../../types'
 
-export type LeaveHistoryRow = {
-  id: string
-  type: string
-  from: string
-  to: string
-  days: number
-  reason: string
-  status: LeaveStatus
-  appliedOn: string
-}
+
 
 export function LeaveHistoryTab({
   filtered,
@@ -62,13 +53,7 @@ export function LeaveHistoryTab({
             value={statusFilter}
             onChange={setStatusFilter}
             minWidthClass="min-w-[140px]"
-            options={[
-              { value: 'All', label: 'All Statuses' },
-              { value: 'Pending', label: 'Pending' },
-              { value: 'Approved', label: 'Approved' },
-              { value: 'Rejected', label: 'Rejected' },
-              { value: 'Cancelled', label: 'Cancelled' },
-            ]}
+            options={[...LEAVE_STATUS_OPTIONS]}
           />
         </div>
         <div className="flex flex-col gap-1 min-w-[140px]">
@@ -77,14 +62,7 @@ export function LeaveHistoryTab({
             value={typeFilter}
             onChange={setTypeFilter}
             minWidthClass="min-w-[140px]"
-            options={[
-              { value: 'All', label: 'All Types' },
-              { value: 'Casual', label: 'Casual' },
-              { value: 'Sick', label: 'Sick' },
-              { value: 'Earned', label: 'Earned' },
-              { value: 'Unpaid', label: 'Unpaid' },
-              { value: 'Comp Off', label: 'Comp Off' },
-            ]}
+            options={[...LEAVE_TYPE_OPTIONS]}
           />
         </div>
         <ExportButton

@@ -25,6 +25,8 @@ export type {
   AttendanceCorrectionRequest,
   BreakBarMarker,
   WeekHourBar,
+  TodayAttendanceSession,
+  WorkHoursSummary,
 } from './schemas/attendance'
 
 export type { AttendanceListResponse } from './schemas/attendance-list-response'
@@ -68,8 +70,7 @@ export { emptyCorrectionForm, correctionFormSchema } from './schemas/correction-
 
 export type { BreakMode, BreakSession } from './schemas/break'
 
-/** Re-export session types from lib (single source of truth) */
-export type { TodayAttendanceSession, WorkHoursSummary } from './lib/attendance-session'
+export type { WorkLogRow, BreakSeg } from './schemas/working-hours-log'
 
 export {
   priorityClass,
@@ -79,5 +80,26 @@ export {
   approvalTypeIcon,
   typeIcon,
   MANUAL_ATTENDANCE_REASONS,
+  LEAVE_STATUS_OPTIONS,
+  LEAVE_TYPE_OPTIONS,
+  CORRECTION_STATUS_OPTIONS,
+  correctionStatusStyles,
+  BREAK_DURATION_PRESETS,
+  REQUEST_FILTERS,
 } from './schemas/enums'
 
+import type {LeaveStatus} from './schemas/leave'
+
+export type LeaveHistoryRow = {
+  id: string
+  type: string
+  from: string
+  to: string
+  days: number
+  reason: string
+  status: LeaveStatus
+  appliedOn: string
+}
+
+/** Tab options for MyLeavePage. */
+export type LeavePageTab = 'balance' | 'history' | 'calendar'

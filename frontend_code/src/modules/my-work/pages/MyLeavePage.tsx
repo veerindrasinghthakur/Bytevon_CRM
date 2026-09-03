@@ -8,8 +8,7 @@ import { LeaveCalendarTab } from '../components/leave/LeaveCalendarTab'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../routes'
 import { useLeavePageState } from '../hooks/use-leave-page-state'
-
-type Tab = 'balance' | 'history' | 'calendar'
+import type { LeavePageTab } from '../types'
 
 export function MyLeavePage() {
   const navigate = useNavigate()
@@ -34,7 +33,7 @@ export function MyLeavePage() {
     .filter((r) => r.status === 'Pending')
     .reduce((s, r) => s + r.days, 0)
 
-  const tabs: { id: Tab; label: string; icon: string }[] = [
+  const tabs: { id: LeavePageTab; label: string; icon: string }[] = [
     { id: 'balance', label: 'Leave Balance', icon: 'account_balance_wallet' },
     { id: 'history', label: 'Leave History', icon: 'history' },
     { id: 'calendar', label: 'Leave Calendar', icon: 'calendar_month' },

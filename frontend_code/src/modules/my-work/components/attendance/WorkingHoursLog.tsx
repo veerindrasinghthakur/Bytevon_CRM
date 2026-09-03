@@ -1,30 +1,6 @@
 import { cn } from '@/shared/lib/cn'
 import { formatClockTime } from '../../lib/attendance-session'
-
-export type WorkLogRow = {
-  id: string
-  activity: string
-  time: string
-  duration: string
-  statusLabel: string
-  statusTone: 'ok' | 'warn' | 'neutral'
-  location: string
-}
-
-type BreakSeg = {
-  id: string
-  startedAt: string
-  endedAt?: string | null
-}
-
-/** Percent of 24h day for timeline marker (0–100). */
-function dayPct(iso: string, now = Date.now()): number {
-  const d = new Date(iso)
-  const start = new Date(d)
-  start.setHours(0, 0, 0, 0)
-  const ms = Math.min(now, d.getTime()) - start.getTime()
-  return Math.min(100, Math.max(0, (ms / 86_400_000) * 100))
-}
+import { type WorkLogRow, type BreakSeg, dayPct } from '../../lib/working-hours-log'
 
 export function WorkingHoursLog({
   logRows,

@@ -18,8 +18,7 @@ import {
   type BreakSession,
 } from '../lib/break-session'
 import { cn } from '@/shared/lib/cn'
-
-const PRESETS = [5, 10, 15, 30] as const
+import { BREAK_DURATION_PRESETS } from '../schemas/enums'
 
 export function TakeABreakPage() {
   const navigate = useNavigate()
@@ -134,7 +133,7 @@ export function TakeABreakPage() {
                   className="w-full px-4 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-sm outline-none focus:ring-2 focus:ring-secondary/30 focus:border-secondary transition-colors"
                 />
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {PRESETS.map((m) => (
+                  {BREAK_DURATION_PRESETS.map((m) => (
                     <button
                       key={m}
                       type="button"

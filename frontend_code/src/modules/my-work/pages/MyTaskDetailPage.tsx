@@ -3,21 +3,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { myTasks, currentUser } from '../data/mock'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-
-const priorityClass: Record<string, string> = {
-  Critical: 'bg-red-100 text-red-800',
-  High: 'bg-red-50 text-red-700',
-  Medium: 'bg-surface-container-high text-on-surface-variant',
-  Low: 'bg-surface-container text-on-surface-variant',
-}
-
-const statusDot: Record<string, string> = {
-  'In Progress': 'bg-secondary',
-  Pending: 'bg-outline',
-  'Not Started': 'bg-outline',
-  Completed: 'bg-emerald-500',
-  Blocked: 'bg-orange-500',
-}
+import { priorityClass, statusDot } from '../schemas/enums'
 
 export function MyTaskDetailPage() {
   const { taskId } = useParams({ strict: false }) as { taskId: string }

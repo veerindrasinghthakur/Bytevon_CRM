@@ -22,7 +22,7 @@ import {
   subscribeBreakChange,
 } from '../lib/break-session'
 import { getMyWorkTodayInfo } from '../api/my-work'
-import type { WorkLogRow } from '../components/attendance/WorkingHoursLog'
+import type { WorkLogRow } from '../lib/working-hours-log'
 import { myWorkRoutes } from '../routes'
 
 export type WorkStatus = 'Present' | 'WFH' | 'Leave'

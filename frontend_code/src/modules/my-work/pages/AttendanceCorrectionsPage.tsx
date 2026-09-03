@@ -10,23 +10,7 @@ import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useAttendanceCorrections } from '../hooks/use-attendance-corrections'
 import { myWorkRoutes } from '../routes'
-import type { CorrectionStatus } from '../types'
-
-/** Status badge colors kept as semantic status styles (not design-token pass). */
-const STATUS_STYLES: Record<CorrectionStatus, string> = {
-  Pending: 'bg-amber-100 text-amber-800',
-  Approved: 'bg-emerald-100 text-emerald-800',
-  Rejected: 'bg-red-100 text-red-800',
-  Draft: 'bg-surface-container-high text-on-surface-variant',
-}
-
-const STATUS_OPTIONS = [
-  { value: 'All', label: 'All statuses' },
-  { value: 'Pending', label: 'Pending' },
-  { value: 'Approved', label: 'Approved' },
-  { value: 'Rejected', label: 'Rejected' },
-  { value: 'Draft', label: 'Draft' },
-]
+import { CORRECTION_STATUS_OPTIONS, correctionStatusStyles } from '../schemas/enums'
 
 export function AttendanceCorrectionsPage() {
   const navigate = useNavigate()
@@ -76,7 +60,7 @@ export function AttendanceCorrectionsPage() {
           onChange={c.setStatusFilter}
           placeholder="All statuses"
           aria-label="Filter by status"
-          options={STATUS_OPTIONS}
+          options={[...CORRECTION_STATUS_OPTIONS]}
           minWidthClass="min-w-[10rem] max-w-[14rem]"
         />
       </ListToolbar>
@@ -175,7 +159,7 @@ export function AttendanceCorrectionsPage() {
                       <span
                         className={cn(
                           'inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider',
-                          STATUS_STYLES[r.status],
+                          correctionStatusStyles[r.status],
                         )}
                       >
                         {r.status}
