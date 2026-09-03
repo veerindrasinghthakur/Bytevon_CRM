@@ -35,6 +35,12 @@ function formatMoney(n: number) {
   }).format(n)
 }
 
+/** Normalize employment state from snake_case or legacy camelCase payloads. */
+function resolveEmploymentState(employment: EmployeeDetailDto['employment']): string {
+  const row = employment as EmployeeDetailDto['employment'] & { currentState?: string }
+  return row.current_state ?? row.currentState ?? 'UNKNOWN'
+}
+
 const inputClass =
   'w-full rounded-lg border border-outline-variant px-3 py-2 text-body-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-transparent transition-colors'
 
@@ -72,12 +78,12 @@ export function EmployeeDetailPage() {
       } else {
         setData(dto)
         form.reset({
-          firstName: dto.person.first_name,
-          lastName: dto.person.last_name,
-          personalEmail: dto.person.personal_email ?? '',
-          personalPhone: dto.person.personal_phone ?? '',
-          address: dto.person.address ?? '',
-          dateOfBirth: dto.person.date_of_birth ?? '',
+          firstName: dto.person?.first_name ?? '',
+          lastName: dto.person?.last_name ?? '',
+          personalEmail: dto.person?.personal_email ?? '',
+          personalPhone: dto.person?.personal_phone ?? '',
+          address: dto.person?.address ?? '',
+          dateOfBirth: dto.person?.date_of_birth ?? '',
         })
       }
     } catch (e) {
@@ -95,12 +101,12 @@ export function EmployeeDetailPage() {
   const startEdit = () => {
     if (!data) return
     form.reset({
-      firstName: data.person.first_name,
-      lastName: data.person.last_name,
-      personalEmail: data.person.personal_email ?? '',
-      personalPhone: data.person.personal_phone ?? '',
-      address: data.person.address ?? '',
-      dateOfBirth: data.person.date_of_birth ?? '',
+      firstName: data.person?.first_name ?? '',
+      lastName: data.person?.last_name ?? '',
+      personalEmail: data.person?.personal_email ?? '',
+      personalPhone: data.person?.personal_phone ?? '',
+      address: data.person?.address ?? '',
+      dateOfBirth: data.person?.date_of_birth ?? '',
     })
     setEditing(true)
   }
@@ -109,12 +115,12 @@ export function EmployeeDetailPage() {
     setEditing(false)
     if (data) {
       form.reset({
-        firstName: data.person.first_name,
-        lastName: data.person.last_name,
-        personalEmail: data.person.personal_email ?? '',
-        personalPhone: data.person.personal_phone ?? '',
-        address: data.person.address ?? '',
-        dateOfBirth: data.person.date_of_birth ?? '',
+        firstName: data.person?.first_name ?? '',
+        lastName: data.person?.last_name ?? '',
+        personalEmail: data.person?.personal_email ?? '',
+        personalPhone: data.person?.personal_phone ?? '',
+        address: data.person?.address ?? '',
+        dateOfBirth: data.person?.date_of_birth ?? '',
       })
     }
   }
@@ -159,10 +165,10 @@ export function EmployeeDetailPage() {
         JSON.stringify(
           {
             employee_code: data.employment.employee_code,
-            name: `${data.person.first_name} ${data.person.last_name}`,
+            name: `${data.person?.first_name ?? ''} ${data.person?.last_name ?? ''}`.trim(),
             department: data.department?.name,
             position: data.position?.name,
-            state: data.employment.current_state,
+            state: resolveEmploymentState(data.employment),
             joining_date: data.employment.joining_date,
           },
           null,
@@ -205,10 +211,11 @@ export function EmployeeDetailPage() {
     )
   }
 
-  const fullName = `${data.person.first_name} ${data.person.last_name}`
-  const initials = `${data.person.first_name[0] ?? ''}${data.person.last_name[0] ?? ''}`.toUpperCase()
-  const stateClass =
-    employmentStateStyles[data.employment.current_state] ?? 'status-badge status-neutral'
+  const fullName = `${data.person?.first_name ?? ''} ${data.person?.last_name ?? ''}`.trim() || 'Employee'
+  const initials = `${data.person?.first_name?.[0] ?? ''}${data.person?.last_name?.[0] ?? ''}`.toUpperCase() || '?'
+  const currentState = resolveEmploymentState(data.employment)
+  const stateLabel = currentState.replace(/_/g, ' ')
+  const stateClass = employmentStateStyles[currentState] ?? 'status-badge status-neutral'
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -258,9 +265,9 @@ export function EmployeeDetailPage() {
       />
 
       <div className="flex flex-wrap items-center gap-2">
-        <span className={stateClass}>{data.employment.current_state.replace(/_/g, ' ')}</span>
+        <span className={stateClass}>{stateLabel}</span>
         <span className="px-3 py-1 bg-surface-container text-on-surface-variant text-xs font-bold rounded-full">
-          {data.employment.employment_type}
+          {data.employment.employment_type ?? '—'}
         </span>
         <span className="text-label-sm text-on-surface-variant">Emp code: {data.employment.employee_code}</span>
         {data.hasLogin && <span className={loginEnabledClass}>Login: {data.loginEmail}</span>}
@@ -320,7 +327,7 @@ export function EmployeeDetailPage() {
               {data.employment.employee_code}
             </p>
             <div className="text-left space-y-3 border-t border-outline-variant pt-4">
-              {data.person.personal_email && (
+              {data.person?.personal_email && (
                 <div className="flex gap-3">
                   <Icon name="mail" className="text-secondary" />
                   <div>
@@ -329,7 +336,7 @@ export function EmployeeDetailPage() {
                   </div>
                 </div>
               )}
-              {data.person.personal_phone && (
+              {data.person?.personal_phone && (
                 <div className="flex gap-3">
                   <Icon name="call" className="text-secondary" />
                   <div>
@@ -422,15 +429,15 @@ export function EmployeeDetailPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="p-4 border border-outline-variant rounded-lg card-hover">
                     <p className="text-label-sm text-on-surface-variant mb-1">Joining date</p>
-                    <p className="text-title-lg font-semibold">{data.employment.joining_date}</p>
+                    <p className="text-title-lg font-semibold">{data.employment.joining_date ?? '—'}</p>
                   </div>
                   <div className="p-4 border border-outline-variant rounded-lg card-hover">
                     <p className="text-label-sm text-on-surface-variant mb-1">Current state</p>
-                    <p className="text-title-lg font-semibold text-secondary">{data.employment.current_state}</p>
+                    <p className="text-title-lg font-semibold text-secondary">{stateLabel}</p>
                   </div>
                   <div className="p-4 border border-outline-variant rounded-lg card-hover">
                     <p className="text-label-sm text-on-surface-variant mb-1">Employment type</p>
-                    <p className="text-title-lg font-semibold">{data.employment.employment_type}</p>
+                    <p className="text-title-lg font-semibold">{data.employment.employment_type ?? '—'}</p>
                   </div>
                 </div>
 
@@ -541,6 +548,7 @@ export function EmployeeDetailPage() {
                     <Link
                       to="/payroll/salary/$employeeId"
                       params={{ employeeId: String(data.employment.id) }}
+                      search={{}}
                       className="inline-flex text-secondary font-medium hover:underline"
                     >
                       Open salary management →
