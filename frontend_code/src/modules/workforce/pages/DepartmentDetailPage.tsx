@@ -13,6 +13,7 @@ import type { DepartmentEmployee } from '../api/departments'
 import { useDepartmentDetail } from '../hooks/use-department-detail'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { workforceRoutes } from '../routes'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -153,7 +154,7 @@ export function DepartmentDetailPage() {
           title="Department not found"
           description="This department may have been archived or the link is invalid."
           showBack={false}
-          onBack={() => navigate({ to: workforceRoutes.departments, search: {} })}
+          onBack={() => safeNavigate(navigate, { to: workforceRoutes.departments })}
         />
       </div>
     )
@@ -300,10 +301,9 @@ export function DepartmentDetailPage() {
               variant="outline"
               size="sm"
               onClick={() =>
-                navigate({
+                safeNavigate(navigate, {
                   to: workforceRoutes.employeeDetailPath,
                   params: { employeeId: String(headEmployee.employmentId) },
-                  search: {},
                 })
               }
             >
@@ -367,10 +367,9 @@ export function DepartmentDetailPage() {
                     className="w-full text-left"
                     onClick={() => {
                       if (isEditing) return
-                      navigate({
+                      safeNavigate(navigate, {
                         to: workforceRoutes.employeeDetailPath,
                         params: { employeeId: String(e.employmentId) },
-                        search: {},
                       })
                     }}
                   >
@@ -435,9 +434,9 @@ export function DepartmentDetailPage() {
                   type="button"
                   className="text-left p-4 rounded-xl border border-outline-variant hover:border-secondary"
                   onClick={() =>
-                    navigate({
+                    safeNavigate(navigate, {
                       to: workforceRoutes.employeeNew,
-                      search: { departmentId: String(id) } as never,
+                      search: { departmentId: String(id) },
                     })
                   }
                 >
@@ -488,21 +487,17 @@ export function DepartmentDetailPage() {
             aria-label="Close"
             onClick={() => setRemoveTarget(null)}
           />
-          <div className="relative bv-surface executive-shadow w-full max-w-md p-6 space-y-4 z-10 rounded-xl">
-            <h3 className="text-title-lg font-semibold">Remove from department?</h3>
+          <div className="relative bv-surface executive-shadow w-full max-w-sm p-6 space-y-4 z-10 rounded-xl">
+            <h3 className="text-title-lg font-semibold">Remove member</h3>
             <p className="text-body-sm text-on-surface-variant">
-              <strong>{removeTarget.name}</strong> will no longer be assigned to <strong>{d.name}</strong>.
+              Remove <strong>{removeTarget.name}</strong> from this department? Their prior assignment
+              will be closed.
             </p>
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => setRemoveTarget(null)} disabled={isMutating}>
+              <Button variant="ghost" onClick={() => setRemoveTarget(null)}>
                 Cancel
               </Button>
-              <Button
-                variant="primary"
-                className="!bg-error !text-white"
-                isLoading={isMutating}
-                onClick={() => void confirmRemove()}
-              >
+              <Button variant="primary" isLoading={isMutating} onClick={() => void confirmRemove()}>
                 Remove
               </Button>
             </div>

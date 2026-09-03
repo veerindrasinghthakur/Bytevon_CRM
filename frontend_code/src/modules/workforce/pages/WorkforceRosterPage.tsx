@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { looseLinkProps } from '@/shared/lib/safeNavigate'
 import { listEmployments } from '../api/employment'
 import { AttendanceStatus } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
@@ -105,12 +106,12 @@ export function WorkforceRosterPage() {
                 </td>
                 <td className="px-5 py-3 text-right">
                   <Link
-                    {...({
+                    {...looseLinkProps({
                       to: workforceRoutes.attendanceDayPath,
                       params: { employmentId: String(r.id) },
                       search: { date },
-                    } as never)}
-                    className="text-secondary text-sm font-medium hover:underline"
+                      className: 'text-secondary text-sm font-medium hover:underline',
+                    })}
                   >
                     Day detail
                   </Link>

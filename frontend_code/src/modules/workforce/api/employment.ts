@@ -214,32 +214,96 @@ export async function createEmployment(input: CreateEmploymentSchemaInput) {
   const now = new Date().toISOString()
 
   const personId = nextId(db.persons)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(db.persons as any[]).push({
+    id: personId,
+    first_name: input.firstName.trim(),
+    last_name: input.lastName.trim(),
+    date_of_birth: input.dateOfBirth || null,
+    personal_email: input.personalEmail || null,
+    personal_phone: input.personalPhone || null,
+    address: input.address || null,
+    is_anonymized: false,
+    anonymized_at: null,
+    created_at: now,
+    updated_at: now,
+  })
+
   const empId = nextId(db.employments)
+  const code = `EMP-${String(empId).padStart(3, '0')}`
+  const employment = {
+    id: empId,
+    person_id: personId,
+    employee_code: code,
+    employment_type: input.employmentType,
+    current_state: EmploymentState.ONBOARDING,
+    joining_date: input.joiningDate,
+    created_at: now,
+    updated_at: now,
+    changed_by: 1,
+  }
+  // Seed arrays are literal-union typed — push via any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(db.employments as any[]).push(employment)
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(db.employment_state_history as any[]).push({
+    id: nextId(db.employment_state_history),
+    employment_id: empId,
+    previous_state: null,
+    new_state: EmploymentState.ONBOARDING,
+    effective_date: input.joiningDate,
+    reason: 'Joined',
+    created_at: now,
+    changed_by: 1,
+  })
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(db.employment_assignments as any[]).push({
+    id: nextId(db.employment_assignments),
+    employment_id: empId,
+    department_id: input.departmentId,
+    position_id: input.positionId,
+    location_id: input.locationId,
+    shift_id: input.shiftId,
+    work_mode: (input.workMode as WorkMode) || 'OFFICE',
+    effective_from: input.joiningDate,
+    effective_to: null,
+    change_reason: 'Initial assignment',
+    created_at: now,
+    changed_by: 1,
+  })
+
   const employeeRole = db.roles.find((r) => r.name === 'Employee')
-  const records = createEmploymentMockRecords(input, {
-    personId,
-    employmentId: empId,
-    stateHistoryId: nextId(db.employment_state_history),
-    assignmentId: nextId(db.employment_assignments),
-    bankAccountId: nextId(db.employee_bank_accounts),
-    employeeRoleId: employeeRole?.id,
-  }, now)
-
-  ;(db.persons as unknown as Record<string, unknown>[]).push(records.person)
-  const employment = records.employment as EmploymentRow
-  // Seed arrays are literal-union typed — push via widened array
-  ;(db.employments as EmploymentRow[]).push(employment)
-
-  ;(db.employment_state_history as unknown as Record<string, unknown>[]).push(records.stateHistory)
-  ;(db.employment_assignments as unknown as Record<string, unknown>[]).push(records.assignment)
-  if (records.employeeRole) {
-    ;(db.employee_roles as unknown as Record<string, unknown>[]).push(records.employeeRole)
-  }
-  if (records.bankAccount) {
-    ;(db.employee_bank_accounts as unknown as Record<string, unknown>[]).push(records.bankAccount)
+  if (employeeRole) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(db.employee_roles as any[]).push({
+      employment_id: empId,
+      role_id: employeeRole.id,
+      assigned_at: now,
+      changed_by: 1,
+    })
   }
 
-  return enrichListRow(employment)
+  if (input.bank?.accountNumber) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(db.employee_bank_accounts as any[]).push({
+      id: nextId(db.employee_bank_accounts),
+      employment_id: empId,
+      account_holder_name: input.bank.accountHolderName || `${input.firstName} ${input.lastName}`,
+      bank_name: input.bank.bankName,
+      account_number: input.bank.accountNumber,
+      ifsc_code: input.bank.ifscCode,
+      account_type: 'SAVINGS',
+      is_primary: true,
+      is_active: true,
+      created_at: now,
+      updated_at: now,
+      changed_by: 1,
+    })
+  }
+
+  return enrichListRow(employment as EmploymentRow)
 }
 
 export async function updateEmployment(
@@ -265,26 +329,11 @@ export async function updateEmployment(
 
   await delay(400)
   const db = getDb()
-  const emp = db.employments.find((e) => e.id === employmentId) as
-    | {
-        person_id: number
-        employment_type: EmploymentRow['employment_type']
-        current_state: EmploymentRow['current_state']
-        updated_at: string
-      }
-    | undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const emp = db.employments.find((e) => e.id === employmentId) as any
   if (!emp) throw new Error('Employment not found')
-  const person = db.persons.find((p) => p.id === emp.person_id) as
-    | {
-        first_name: string
-        last_name: string
-        personal_email: string | null
-        personal_phone: string | null
-        address: string | null
-        date_of_birth: string | null
-        updated_at: string
-      }
-    | undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const person = db.persons.find((p) => p.id === emp.person_id) as any
   if (!person) throw new Error('Person not found')
   const now = new Date().toISOString()
 
@@ -297,10 +346,10 @@ export async function updateEmployment(
   person.updated_at = now
 
   if (patch.employmentType) {
-    emp.employment_type = patch.employmentType as EmploymentRow['employment_type']
+    emp.employment_type = patch.employmentType
   }
   if (patch.currentState) {
-    emp.current_state = patch.currentState as EmploymentRow['current_state']
+    emp.current_state = patch.currentState
   }
   emp.updated_at = now
 

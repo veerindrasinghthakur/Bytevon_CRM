@@ -197,24 +197,17 @@ export async function assignEmployeeToDepartment(
   const db = getDb()
   const today = new Date().toISOString().slice(0, 10)
   const now = new Date().toISOString()
-  // Seed rows often type effective_to as literal null — mutate via mutable view
+  // Seed rows type effective_to as literal null — mutate via any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const current = db.employment_assignments.find(
     (a) => a.employment_id === employmentId && a.effective_to == null,
-  ) as
-    | {
-        department_id: number
-        position_id: number
-        location_id: number
-        shift_id: number
-        work_mode: string
-        effective_to: string | null
-      }
-    | undefined
+  ) as any
   if (current) {
     if (current.department_id === departmentId) return { ok: true as const }
     current.effective_to = today
   }
-  db.employment_assignments.push({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(db.employment_assignments as any[]).push({
     id: nextId(db.employment_assignments),
     employment_id: employmentId,
     department_id: departmentId,
@@ -227,7 +220,7 @@ export async function assignEmployeeToDepartment(
     change_reason: 'Assigned to department',
     created_at: now,
     changed_by: 1,
-  } as (typeof db.employment_assignments)[number])
+  })
   return { ok: true as const }
 }
 
@@ -243,19 +236,19 @@ export async function removeEmployeeFromDepartment(
   await delay(300)
   const db = getDb()
   const today = new Date().toISOString().slice(0, 10)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const current = db.employment_assignments.find(
     (a) =>
       a.employment_id === employmentId &&
       a.department_id === departmentId &&
       a.effective_to == null,
-  ) as { effective_to: string | null; change_reason?: string } | undefined
+  ) as any
   if (!current) return { ok: true as const }
   current.effective_to = today
   current.change_reason = 'Removed from department'
 
-  const dept = db.schema_departments.find((d) => d.id === departmentId) as
-    | { department_head_employment_id: number | null }
-    | undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const dept = db.schema_departments.find((d) => d.id === departmentId) as any
   if (dept && dept.department_head_employment_id === employmentId) {
     dept.department_head_employment_id = null
   }
@@ -281,10 +274,11 @@ export async function createDepartment(input: {
     is_archived: input.isArchived ?? false,
     created_at: now,
     created_by: 1,
-  } as DepartmentRow
-  // Seed arrays are often typed as readonly literal unions — push via any
-  ;(db.schema_departments as DepartmentRow[]).push(row)
-  return toListItem(row)
+  }
+  // Seed arrays are literal-union typed — push via any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(db.schema_departments as any[]).push(row)
+  return toListItem(row as DepartmentRow)
 }
 
 export async function updateDepartment(
@@ -296,13 +290,8 @@ export async function updateDepartment(
     return data
   }
   await delay(300)
-  const row = getDb().schema_departments.find((d) => d.id === id) as
-    | {
-        name: string
-        department_head_employment_id: number | null
-        is_archived: boolean
-      }
-    | undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const row = getDb().schema_departments.find((d) => d.id === id) as any
   if (!row) throw new Error('Department not found')
   if (patch.name != null) row.name = patch.name.trim()
   if (patch.headEmploymentId !== undefined) row.department_head_employment_id = patch.headEmploymentId
