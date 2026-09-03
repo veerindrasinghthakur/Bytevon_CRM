@@ -24,7 +24,7 @@ import type {
   SalesActivity,
   SalesMetric,
   CreateLeadInput,
-  CreateClientInput,
+  CreateClientInput,SalesRepOption,ClientFilterOptions,LeadFilterOptions
 } from '../types'
 
 /** Mutable in-memory stores when useMockApi */
@@ -41,26 +41,6 @@ function clients(): Client[] {
   return clientsStore
 }
 
-export interface LeadFilterOptions {
-  statuses: string[]
-  stages: string[]
-  priorities: string[]
-  sources: string[]
-}
-
-export interface ClientFilterOptions {
-  statuses: string[]
-  types: string[]
-  industries: string[]
-  countries: string[]
-}
-
-export interface SalesRepOption {
-  employmentId: number
-  name: string
-  employeeCode: string
-  department: string
-}
 
 export async function getLeadFilterOptions(): Promise<LeadFilterOptions> {
   if (env.useMockApi) {

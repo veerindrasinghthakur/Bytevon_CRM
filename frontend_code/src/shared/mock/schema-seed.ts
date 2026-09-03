@@ -29,8 +29,92 @@ import type {
   EmployeeBankAccountRow,
 } from '@/shared/schema'
 import { Action, EmploymentState, EmploymentType, ResourceName, ScopeName, WorkMode } from '@/shared/schema'
+import type { CreateEmploymentSchemaInput } from '@/modules/workforce/schemas/employment'
 
 const now = '2026-01-15T10:00:00Z'
+
+export function createEmploymentMockRecords(
+  input: CreateEmploymentSchemaInput,
+  ids: {
+    personId: number
+    employmentId: number
+    stateHistoryId: number
+    assignmentId: number
+    bankAccountId: number
+    employeeRoleId?: number
+  },
+  timestamp: string,
+) {
+  return {
+    person: {
+      id: ids.personId,
+      first_name: input.firstName.trim(),
+      last_name: input.lastName.trim(),
+      date_of_birth: input.dateOfBirth || null,
+      personal_email: input.personalEmail || null,
+      personal_phone: input.personalPhone || null,
+      address: input.address || null,
+      is_anonymized: false,
+      anonymized_at: null,
+      created_at: timestamp,
+      updated_at: timestamp,
+    },
+    employment: {
+      id: ids.employmentId,
+      person_id: ids.personId,
+      employee_code: `EMP-${String(ids.employmentId).padStart(3, '0')}`,
+      employment_type: input.employmentType as EmploymentRow['employment_type'],
+      current_state: EmploymentState.ONBOARDING,
+      joining_date: input.joiningDate,
+      created_at: timestamp,
+      updated_at: timestamp,
+      changed_by: 1,
+    },
+    stateHistory: {
+      id: ids.stateHistoryId,
+      employment_id: ids.employmentId,
+      previous_state: null,
+      new_state: EmploymentState.ONBOARDING,
+      effective_date: input.joiningDate,
+      reason: 'Joined',
+      created_at: timestamp,
+      changed_by: 1,
+    },
+    assignment: {
+      id: ids.assignmentId,
+      employment_id: ids.employmentId,
+      department_id: input.departmentId,
+      position_id: input.positionId,
+      location_id: input.locationId,
+      shift_id: input.shiftId,
+      work_mode: (input.workMode as WorkMode) || 'OFFICE',
+      effective_from: input.joiningDate,
+      effective_to: null,
+      change_reason: 'Initial assignment',
+      created_at: timestamp,
+      changed_by: 1,
+    },
+    employeeRole: ids.employeeRoleId
+      ? { employment_id: ids.employmentId, role_id: ids.employeeRoleId, assigned_at: timestamp, changed_by: 1 }
+      : null,
+    bankAccount: input.bank?.accountNumber
+      ? {
+          id: ids.bankAccountId,
+          employment_id: ids.employmentId,
+          account_holder_name: input.bank.accountHolderName || `${input.firstName} ${input.lastName}`,
+          bank_name: input.bank.bankName,
+          account_number: input.bank.accountNumber,
+          ifsc_code: input.bank.ifscCode,
+          account_type: 'SAVINGS',
+          is_primary: true,
+          is_active: true,
+          created_at: timestamp,
+          updated_at: timestamp,
+          changed_by: 1,
+        }
+      : null,
+  }
+}
 
 export const schemaSeed = {
   organization_settings: [

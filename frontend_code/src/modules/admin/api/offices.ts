@@ -1,11 +1,10 @@
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { headOfficeList, offices } from '../data/mock'
-import type { OfficeLocation } from '../types'
+import type { OfficeLocation,OfficeWriteInput } from '../types'
+import { delay} from '@/shared/mock/db'
 
-function delay(ms = 200) {
-  return new Promise((r) => setTimeout(r, ms))
-}
+
 
 export async function listOffices(): Promise<OfficeLocation[]> {
   if (env.useMockApi) {
@@ -29,16 +28,6 @@ export async function getOffice(officeId: string): Promise<OfficeLocation | null
   }
 }
 
-export type OfficeWriteInput = {
-  name: string
-  country: string
-  city: string
-  timezone: string
-  currency: string
-  fiscal: string
-  address: string
-  postal: string
-}
 
 export async function createOffice(input: OfficeWriteInput): Promise<OfficeLocation> {
   if (env.useMockApi) {

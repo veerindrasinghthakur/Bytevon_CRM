@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
-import { can, type CanParams } from './can'
-
+import { can, } from './can'
+import { CanParams } from '../types'
 export function Can({
   action,
   resource,

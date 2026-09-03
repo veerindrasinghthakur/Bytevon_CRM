@@ -20,10 +20,8 @@ import type {
   ProfileSession,
   ProfileUpdateInput,
 } from '../types'
+import { delay} from '@/shared/mock/db'
 
-function delay(ms = 300) {
-  return new Promise((r) => setTimeout(r, ms))
-}
 
 export async function getMyProfile(): Promise<ProfileDetail> {
   if (env.useMockApi) {

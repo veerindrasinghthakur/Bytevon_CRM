@@ -22,3 +22,10 @@ export {
   AUTH_COPYRIGHT_YEAR,
   AUTH_DEMO_RESET_TOKEN,
 } from './schemas/auth'
+
+export interface AxiosErrorResponse {
+  response?: {
+    status?: number
+  }
+}
+

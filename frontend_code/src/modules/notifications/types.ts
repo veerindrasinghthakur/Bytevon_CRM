@@ -46,3 +46,16 @@ export {
   COMPOSE_MODULE_OPTIONS,
   PRIORITY_OPTIONS,
 } from './schemas/enums'
+
+import type{NotificationTabId}  from './schemas/notification'
+
+export interface InboxListParams {
+  search?: string
+  tab?: NotificationTabId
+  typeFilter?: string
+  priorityFilter?: string
+  moduleFilter?: string
+  page?: number
+  pageSize?: number
+}
+

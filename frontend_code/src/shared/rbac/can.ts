@@ -7,15 +7,8 @@
  */
 
 import { getDb } from '@/shared/mock/db'
+import {CanParams,EffectiveGrants} from '../types'
 import type { Action, ResourceName, ScopeName } from '@/shared/schema'
-
-export interface CanParams {
-  action: Action | string
-  resource: ResourceName | string
-  /** Minimum scope required; ORGANIZATION satisfies all */
-  minScope?: ScopeName | string
-  employmentId?: number
-}
 
 const SCOPE_RANK: Record<string, number> = {
   SELF: 1,
@@ -25,6 +18,8 @@ const SCOPE_RANK: Record<string, number> = {
   ORGANIZATION: 5,
   CUSTOM: 0,
 }
+
+type GrantKey = string // `${resource}|${action}`
 
 /** Session employment id — set by auth after login (localStorage). */
 const EMPLOYMENT_KEY = 'bytevon_current_employment_id'
@@ -50,14 +45,8 @@ export function setCurrentEmploymentId(id: number | null) {
   clearPermissionCache()
 }
 
-type GrantKey = string // `${resource}|${action}`
 
-interface EffectiveGrants {
-  /** Super Admin short-circuit */
-  isSuperAdmin: boolean
-  /** Max scope rank per resource|action */
-  maxScopeByGrant: Map<GrantKey, number>
-}
+
 
 const grantsCache = new Map<number, EffectiveGrants>()
 

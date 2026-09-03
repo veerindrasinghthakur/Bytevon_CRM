@@ -272,3 +272,28 @@ export const emptyClientForm = (): ClientForm => ({
   chatLink: '',
   contacts: [emptyClientContact()],
 })
+
+
+export interface LeadFilterOptions {
+  statuses: string[]
+  stages: string[]
+  priorities: string[]
+  sources: string[]
+}
+
+export interface ClientFilterOptions {
+  statuses: string[]
+  types: string[]
+  industries: string[]
+  countries: string[]
+}
+
+export interface SalesRepOption {
+  employmentId: number
+  name: string
+  employeeCode: string
+  department: string
+}
+
+import { delay} from '@/shared/mock/db'
+

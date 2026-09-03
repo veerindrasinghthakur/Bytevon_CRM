@@ -10,6 +10,7 @@ import {
   sentNotifications as seedSent,
   notificationTriggers as seedTriggers,
   channelCards as seedChannels,
+  mockNotificationEmployees,
 } from '@/shared/mock/data/notifications'
 import type {
   AppNotification,
@@ -23,7 +24,7 @@ import type {
   NotificationTrigger,
   SentKpi,
   SentListResponse,
-  SentNotificationRow,
+  SentNotificationRow,InboxListParams
 } from '../types'
 
 let inboxStore: AppNotification[] | null = null
@@ -130,15 +131,7 @@ export function computeSentKpis(rows: SentNotificationRow[]): SentKpi[] {
   ]
 }
 
-export interface InboxListParams {
-  search?: string
-  tab?: NotificationTabId
-  typeFilter?: string
-  priorityFilter?: string
-  moduleFilter?: string
-  page?: number
-  pageSize?: number
-}
+
 
 function filterInbox(items: AppNotification[], params: InboxListParams): AppNotification[] {
   const {
@@ -334,20 +327,12 @@ export async function listChannelCards(): Promise<ChannelCard[]> {
   return data
 }
 
-const MOCK_EMPLOYEES = [
-  { name: 'Elena Rodriguez', contact: 'e.rodriguez@bytevon.com', initials: 'ER' },
-  { name: 'Marcus Webb', contact: 'm.webb@bytevon.com', initials: 'MW' },
-  { name: 'Julian Chen', contact: 'j.chen@bytevon.com', initials: 'JC' },
-  { name: 'Sarah Lowndes', contact: 's.lowndes@bytevon.com', initials: 'SL' },
-  { name: 'Alex Rivera', contact: 'a.rivera@bytevon.com', initials: 'AR' },
-]
-
 export async function sendNotification(input: ComposeNotificationInput): Promise<ComposeDeliveryResult> {
   if (env.useMockApi) {
     await delay(400)
     const recipients = input.broadcastAll
-      ? MOCK_EMPLOYEES
-      : MOCK_EMPLOYEES.filter((_, i) => input.roles.length === 0 || i < Math.max(1, input.roles.length))
+      ? mockNotificationEmployees
+      : mockNotificationEmployees.filter((_, i) => input.roles.length === 0 || i < Math.max(1, input.roles.length))
     const channel: SentNotificationRow['type'] = input.channels.email
       ? 'Email'
       : input.channels.inApp

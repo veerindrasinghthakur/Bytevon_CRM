@@ -5,61 +5,10 @@ import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
 import { paginateItems } from '@/shared/lib/list-params'
-import type { Team, TeamStatus } from '../types'
+import type { Team, TeamStatus,TeamMemberRow,TeamProjectRow,TeamCandidate,TeamRow,EmployeeLike} from '../types'
 
 export type { Team, TeamStatus } from '../types'
 
-export interface TeamMemberRow {
-  id: string
-  name: string
-  title: string
-  role: string
-  email: string
-  status: 'Active' | 'On Leave'
-  joined: string
-}
-
-export interface TeamProjectRow {
-  id: number
-  name: string
-  client: string
-  status: 'Active' | 'Completed' | 'On Hold'
-  due: string
-  pct: number
-  role: string
-}
-
-export interface TeamCandidate {
-  id: string
-  name: string
-  department: string
-  years: number
-  availability: 'Available' | 'Busy'
-}
-
-interface TeamRow {
-  id: number
-  name: string
-  description?: string | null
-  department?: string | null
-  headName?: string | null
-  headRole?: string | null
-  projectName?: string | null
-  memberCount: number
-  projectCount: number
-  status: string
-  createdAt: string
-}
-
-type EmployeeLike = {
-  id: number | string
-  fullName: string
-  role?: string | null
-  email?: string | null
-  status?: string | null
-  joiningDate?: string | null
-  department?: string | null
-}
 
 function asTeam(row: TeamRow): Team {
   return {

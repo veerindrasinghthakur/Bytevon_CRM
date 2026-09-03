@@ -15,10 +15,8 @@ import type {
   LeaveAccrualPolicy,
   OrganizationProfile,
 } from '../types'
+import { delay} from '@/shared/mock/db'
 
-function delay(ms = 200) {
-  return new Promise((r) => setTimeout(r, ms))
-}
 
 // ── Organisation profile ─────────────────────────────────────────────
 

@@ -423,3 +423,24 @@ export interface StatusDotProps {
   className?: string
   size?: 'sm' | 'md'
 }
+
+import type { Action, ResourceName, ScopeName } from '@/shared/schema'
+
+export interface CanParams {
+  action: Action | string
+  resource: ResourceName | string
+  /** Minimum scope required; ORGANIZATION satisfies all */
+  minScope?: ScopeName | string
+  employmentId?: number
+}
+type GrantKey = string // `${resource}|${action}`
+
+export interface EffectiveGrants {
+  isSuperAdmin: boolean
+  maxScopeByGrant: Map<GrantKey, number>
+}
+
+export interface EntitySearchState {
+  selected: EntityOption | null
+  selectedMultiple: EntityOption[]
+}

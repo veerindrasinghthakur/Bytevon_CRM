@@ -175,6 +175,14 @@ export const sentNotifications: SentNotificationRow[] = [
 
 export const sentKpis = [] as const
 
+export const mockNotificationEmployees = [
+  { name: 'Elena Rodriguez', contact: 'e.rodriguez@bytevon.com', initials: 'ER' },
+  { name: 'Marcus Webb', contact: 'm.webb@bytevon.com', initials: 'MW' },
+  { name: 'Julian Chen', contact: 'j.chen@bytevon.com', initials: 'JC' },
+  { name: 'Sarah Lowndes', contact: 's.lowndes@bytevon.com', initials: 'SL' },
+  { name: 'Alex Rivera', contact: 'a.rivera@bytevon.com', initials: 'AR' },
+]
+
 export const notificationTriggers: NotificationTrigger[] = [
   {
     id: 't1',

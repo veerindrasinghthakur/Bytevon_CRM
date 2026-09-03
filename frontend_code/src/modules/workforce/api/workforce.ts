@@ -1,35 +1,19 @@
 import { delay, getDb, nextId } from '@/shared/mock/db'
+import {
+  legacyDepartmentCreationDefaults,
+  legacyEmployeeCreationDefaults,
+} from '@/shared/mock/data/workforce'
+import type { LegacyDepartment, LegacyEmployee } from '../types'
 
-export interface Employee {
-  id: number
-  userId?: number | null
-  employeeCode: string
-  fullName: string
-  email: string
-  department?: string
-  role?: string
-  status: string
-  joiningDate?: string
-  workType?: string
-}
-
-export interface Department {
-  id: number
-  name: string
-  code?: string
-  headName?: string | null
-  employeeCount: number
-  status: string
-  createdAt: string
-}
+export type { LegacyDepartment as Department, LegacyEmployee as Employee } from '../types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asEmployee(row: any): Employee {
+function asEmployee(row: any): LegacyEmployee {
   return { ...row }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function asDepartment(row: any): Department {
+function asDepartment(row: any): LegacyDepartment {
   return { ...row }
 }
 
@@ -52,7 +36,7 @@ export async function createEmployee(input: {
   fullName: string
   email: string
   department?: string
-}): Promise<Employee> {
+}): Promise<LegacyEmployee> {
   await delay(400)
   const employees = getDb().employees
   const id = nextId(employees)
@@ -62,11 +46,9 @@ export async function createEmployee(input: {
     employeeCode: `EMP-${String(id).padStart(3, '0')}`,
     fullName: input.fullName,
     email: input.email,
-    department: input.department ?? 'Engineering',
-    role: 'Member',
-    status: 'ACTIVE',
+    ...legacyEmployeeCreationDefaults,
+    department: input.department ?? legacyEmployeeCreationDefaults.department,
     joiningDate: new Date().toISOString().slice(0, 10),
-    workType: 'Hybrid',
   }
   employees.unshift(row)
   return asEmployee(row)
@@ -87,16 +69,14 @@ export async function getDepartments(params?: { search?: string }) {
   return { items, total: items.length }
 }
 
-export async function createDepartment(input: { name: string; code?: string }): Promise<Department> {
+export async function createDepartment(input: { name: string; code?: string }): Promise<LegacyDepartment> {
   await delay(400)
   const departments = getDb().departments
   const row = {
     id: nextId(departments),
     name: input.name,
     code: input.code ?? input.name.slice(0, 3).toUpperCase(),
-    headName: null,
-    employeeCount: 0,
-    status: 'ACTIVE',
+    ...legacyDepartmentCreationDefaults,
     createdAt: new Date().toISOString(),
   }
   departments.unshift(row)

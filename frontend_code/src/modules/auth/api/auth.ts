@@ -17,12 +17,9 @@ import type {
 } from '../schemas/auth'
 import { MOCK_LOGIN_PASSWORD, MOCK_LOGIN_USERNAME } from '../schemas/auth'
 import { setCurrentEmploymentId } from '@/shared/rbac'
+import type {AxiosErrorResponse} from "../types.ts"
 
-interface AxiosErrorResponse {
-  response?: {
-    status?: number
-  }
-}
+import { delay} from '@/shared/mock/db'
 
 // sessionStorage for auth session (tab-scoped); localStorage fallback for legacy reads.
 const STORAGE_KEY = 'bytevon_auth_session'
@@ -39,9 +36,7 @@ const ADMIN_USER: AuthUser = {
   personId: 1,
 }
 
-function delay(ms = 500) {
-  return new Promise((r) => setTimeout(r, ms))
-}
+
 
 function makeTokens(): AuthSession['tokens'] {
   const id = Math.random().toString(36).slice(2)

@@ -13,42 +13,15 @@ import {
   todayAttendance as seedToday,
   corrections as seedCorrections,
   attendanceLogs as seedLogs,
+  attendanceDayDetailSeed,
 } from '@/shared/mock/data/workforce'
-
-export type AttendanceKpi = (typeof seedKpis)[number]
-export type WeeklyAttendancePoint = (typeof seedWeekly)[number]
-export type RecentCheckIn = (typeof seedRecent)[number]
-export type TodayAttendanceRow = (typeof seedToday)[number]
-export type CorrectionRow = (typeof seedCorrections)[number]
-export type AttendanceLogRow = (typeof seedLogs)[number]
-
-export interface AttendanceDashboardData {
-  kpis: AttendanceKpi[]
-  weekly: WeeklyAttendancePoint[]
-  recentCheckIns: RecentCheckIn[]
-  today: TodayAttendanceRow[]
-  corrections: CorrectionRow[]
-}
-
-export interface AttendanceDetailData {
-  row: TodayAttendanceRow
-  logs: AttendanceLogRow[]
-}
-
-export interface AttendanceDayDetailData {
-  employmentId: string
-  date: string
-  punches: Array<{
-    id: number
-    punch_type: string
-    punch_time: string
-    is_valid_punch: boolean
-    client_ip: string
-    validation_message: string | null
-  }>
-  breaks: Array<{ id: number; start: string; end: string; duration_min: number }>
-  workingHours: number
-}
+import type {
+  AttendanceDashboardData,
+  AttendanceDayDetailData,
+  AttendanceDetailData,
+  CorrectionRow,
+  TodayAttendanceRow,
+} from '../types'
 
 export async function getAttendanceDashboard(): Promise<AttendanceDashboardData> {
   if (!env.useMockApi) {
@@ -123,26 +96,9 @@ export async function getAttendanceDayDetail(
   return {
     employmentId,
     date,
-    punches: [
-      {
-        id: 1,
-        punch_type: 'CHECK_IN',
-        punch_time: '09:32:14',
-        is_valid_punch: true,
-        client_ip: '203.0.113.42',
-        validation_message: null,
-      },
-      {
-        id: 2,
-        punch_type: 'CHECK_OUT',
-        punch_time: '18:41:02',
-        is_valid_punch: true,
-        client_ip: '203.0.113.42',
-        validation_message: null,
-      },
-    ],
-    breaks: [{ id: 1, start: '13:05', end: '13:45', duration_min: 40 }],
-    workingHours: 8.2,
+    punches: attendanceDayDetailSeed.punches.map((punch) => ({ ...punch })),
+    breaks: attendanceDayDetailSeed.breaks.map((item) => ({ ...item })),
+    workingHours: attendanceDayDetailSeed.workingHours,
   }
 }
 

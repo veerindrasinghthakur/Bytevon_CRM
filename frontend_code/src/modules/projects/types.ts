@@ -110,3 +110,73 @@ export interface ProjectTeamListItem {
   memberCount?: number
   leadName?: string
 }
+
+import { computeProjectListMetrics } from '@/shared/compute/project-metrics'
+
+export type ProjectListMetrics = ReturnType<typeof computeProjectListMetrics>
+
+export interface TaskRow {
+  id: number
+  title: string
+  description?: string | null
+  priority: string
+  status: string
+  projectId: number
+  projectName?: string | null
+  assigneeName?: string | null
+  dueDate?: string | null
+  createdAt: string
+}
+
+
+export interface TeamMemberRow {
+  id: string
+  name: string
+  title: string
+  role: string
+  email: string
+  status: 'Active' | 'On Leave'
+  joined: string
+}
+
+export interface TeamProjectRow {
+  id: number
+  name: string
+  client: string
+  status: 'Active' | 'Completed' | 'On Hold'
+  due: string
+  pct: number
+  role: string
+}
+
+export interface TeamCandidate {
+  id: string
+  name: string
+  department: string
+  years: number
+  availability: 'Available' | 'Busy'
+}
+
+export interface TeamRow {
+  id: number
+  name: string
+  description?: string | null
+  department?: string | null
+  headName?: string | null
+  headRole?: string | null
+  projectName?: string | null
+  memberCount: number
+  projectCount: number
+  status: string
+  createdAt: string
+}
+export type EmployeeLike = {
+  id: number | string
+  fullName: string
+  role?: string | null
+  email?: string | null
+  status?: string | null
+  joiningDate?: string | null
+  department?: string | null
+}
+

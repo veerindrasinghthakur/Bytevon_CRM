@@ -32,34 +32,10 @@ import type {
   RunPayrollCheck,
   SalaryItem,
   SalaryStructure,
-  SaveSalaryStructureInput,
+  SaveSalaryStructureInput,PayrollEmployeeListParams,OrgPayrollHistoryRecord,RunPayrollPreview
 } from '../types'
 
-export interface PayrollEmployeeListParams {
-  search?: string
-  status?: string
-  page?: number
-  pageSize?: number
-}
 
-/** Org-wide paid history row (history list page). */
-export interface OrgPayrollHistoryRecord {
-  id: string
-  period: string
-  employeeId: string
-  paidOn: string
-  gross: number
-  net: number
-  ref: string
-}
-
-export interface RunPayrollPreview {
-  employees: PayrollEmployeeRow[]
-  totalGross: number
-  totalEarnings: number
-  totalDeductions: number
-  estimatedNet: number
-}
 
 function filterEmployees(params: PayrollEmployeeListParams = {}): PayrollEmployeeRow[] {
   let items = payrollEmployees.map((r) => ({ ...r }))

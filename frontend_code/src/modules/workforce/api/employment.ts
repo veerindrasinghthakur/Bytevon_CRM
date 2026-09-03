@@ -6,15 +6,16 @@
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
+import { createEmploymentMockRecords } from '@/shared/mock/schema-seed'
 import { paginateItems, type EntityListParams } from '@/shared/lib/list-params'
 import type {
   EmployeeDetailDto,
   EmploymentRow,
   EmploymentType,
   LoginUserRow,
-  WorkMode,
 } from '@/shared/schema'
 import { EmploymentState } from '@/shared/schema'
+import type { CreateEmploymentSchemaInput } from '../schemas/employment'
 
 function ensureLoginUsers(): LoginUserRow[] {
   const db = getDb() as ReturnType<typeof getDb> & { login_users?: LoginUserRow[] }
@@ -202,29 +203,7 @@ export async function getEmployeeDetail(employmentId: number): Promise<EmployeeD
   }
 }
 
-export interface CreateEmploymentInput {
-  firstName: string
-  lastName: string
-  dateOfBirth?: string | null
-  personalEmail?: string | null
-  personalPhone?: string | null
-  address?: string | null
-  employmentType: EmploymentType | string
-  joiningDate: string
-  departmentId: number
-  positionId: number
-  locationId: number
-  shiftId: number
-  workMode?: WorkMode | string
-  bank?: {
-    accountHolderName: string
-    bankName: string
-    accountNumber: string
-    ifscCode: string
-  }
-}
-
-export async function createEmployment(input: CreateEmploymentInput) {
+export async function createEmployment(input: CreateEmploymentSchemaInput) {
   if (!env.useMockApi) {
     const { data } = await apiClient.post<EmploymentListItem>('/workforce/employments', input)
     return data
@@ -235,87 +214,29 @@ export async function createEmployment(input: CreateEmploymentInput) {
   const now = new Date().toISOString()
 
   const personId = nextId(db.persons)
-  ;(db.persons as unknown as Record<string, unknown>[]).push({
-    id: personId,
-    first_name: input.firstName.trim(),
-    last_name: input.lastName.trim(),
-    date_of_birth: input.dateOfBirth || null,
-    personal_email: input.personalEmail || null,
-    personal_phone: input.personalPhone || null,
-    address: input.address || null,
-    is_anonymized: false,
-    anonymized_at: null,
-    created_at: now,
-    updated_at: now,
-  })
-
   const empId = nextId(db.employments)
-  const code = `EMP-${String(empId).padStart(3, '0')}`
-  const employment = {
-    id: empId,
-    person_id: personId,
-    employee_code: code,
-    employment_type: input.employmentType as EmploymentRow['employment_type'],
-    current_state: EmploymentState.ONBOARDING,
-    joining_date: input.joiningDate,
-    created_at: now,
-    updated_at: now,
-    changed_by: 1,
-  } as EmploymentRow
+  const employeeRole = db.roles.find((r) => r.name === 'Employee')
+  const records = createEmploymentMockRecords(input, {
+    personId,
+    employmentId: empId,
+    stateHistoryId: nextId(db.employment_state_history),
+    assignmentId: nextId(db.employment_assignments),
+    bankAccountId: nextId(db.employee_bank_accounts),
+    employeeRoleId: employeeRole?.id,
+  }, now)
+
+  ;(db.persons as unknown as Record<string, unknown>[]).push(records.person)
+  const employment = records.employment as EmploymentRow
   // Seed arrays are literal-union typed — push via widened array
   ;(db.employments as EmploymentRow[]).push(employment)
 
-  ;(db.employment_state_history as unknown as Record<string, unknown>[]).push({
-    id: nextId(db.employment_state_history),
-    employment_id: empId,
-    previous_state: null,
-    new_state: EmploymentState.ONBOARDING,
-    effective_date: input.joiningDate,
-    reason: 'Joined',
-    created_at: now,
-    changed_by: 1,
-  })
-
-  ;(db.employment_assignments as unknown as Record<string, unknown>[]).push({
-    id: nextId(db.employment_assignments),
-    employment_id: empId,
-    department_id: input.departmentId,
-    position_id: input.positionId,
-    location_id: input.locationId,
-    shift_id: input.shiftId,
-    work_mode: (input.workMode as WorkMode) || 'OFFICE',
-    effective_from: input.joiningDate,
-    effective_to: null,
-    change_reason: 'Initial assignment',
-    created_at: now,
-    changed_by: 1,
-  })
-
-  const employeeRole = db.roles.find((r) => r.name === 'Employee')
-  if (employeeRole) {
-    ;(db.employee_roles as unknown as Record<string, unknown>[]).push({
-      employment_id: empId,
-      role_id: employeeRole.id,
-      assigned_at: now,
-      changed_by: 1,
-    })
+  ;(db.employment_state_history as unknown as Record<string, unknown>[]).push(records.stateHistory)
+  ;(db.employment_assignments as unknown as Record<string, unknown>[]).push(records.assignment)
+  if (records.employeeRole) {
+    ;(db.employee_roles as unknown as Record<string, unknown>[]).push(records.employeeRole)
   }
-
-  if (input.bank?.accountNumber) {
-    ;(db.employee_bank_accounts as unknown as Record<string, unknown>[]).push({
-      id: nextId(db.employee_bank_accounts),
-      employment_id: empId,
-      account_holder_name: input.bank.accountHolderName || `${input.firstName} ${input.lastName}`,
-      bank_name: input.bank.bankName,
-      account_number: input.bank.accountNumber,
-      ifsc_code: input.bank.ifscCode,
-      account_type: 'SAVINGS',
-      is_primary: true,
-      is_active: true,
-      created_at: now,
-      updated_at: now,
-      changed_by: 1,
-    })
+  if (records.bankAccount) {
+    ;(db.employee_bank_accounts as unknown as Record<string, unknown>[]).push(records.bankAccount)
   }
 
   return enrichListRow(employment)

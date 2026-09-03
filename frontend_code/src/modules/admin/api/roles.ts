@@ -5,9 +5,8 @@ import { permissionCatalogSeed } from '../data/rbac-catalog'
 import { adminRoles } from '../data/mock'
 import type { AdminRole, PermissionCatalog, RolePermissionAction } from '../types'
 
-function delay(ms = 200) {
-  return new Promise((r) => setTimeout(r, ms))
-}
+import { delay} from '@/shared/mock/db'
+
 
 const TOTAL_MODULES = 18
 

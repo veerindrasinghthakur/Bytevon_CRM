@@ -10,10 +10,9 @@ import {
   pendingApprovals,
 } from '../data/mock'
 import type { ApprovalKpis, ApprovalRow, ApproverOption } from '../types'
+import { delay} from '@/shared/mock/db'
 
-function delay(ms = 200) {
-  return new Promise((r) => setTimeout(r, ms))
-}
+
 
 export async function getApprovalKpis(): Promise<ApprovalKpis> {
   if (env.useMockApi) {

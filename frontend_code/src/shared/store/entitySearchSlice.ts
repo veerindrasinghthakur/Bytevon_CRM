@@ -1,17 +1,12 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import type { EntityOption } from '@/shared/types'
-
+import {EntitySearchState} from '../types'
 /**
  * Simple slice to keep the last selected entity (or multiple selections).
  * This demonstrates how a component like `EntitySearch` could read/write
  * global state instead of receiving props.
  */
-export interface EntitySearchState {
-  // For single‑select mode we store a single option or null.
-  selected: EntityOption | null
-  // For multi‑select mode we store an array of options.
-  selectedMultiple: EntityOption[]
-}
+
 
 const initialState: EntitySearchState = {
   selected: null,

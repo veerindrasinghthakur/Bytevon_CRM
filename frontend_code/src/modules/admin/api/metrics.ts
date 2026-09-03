@@ -10,10 +10,8 @@ import type {
   AttendanceAdminMetrics,
 } from '../types'
 import { getDb } from '@/shared/mock/db'
+import { delay} from '@/shared/mock/db'
 
-function delay(ms = 200) {
-  return new Promise((r) => setTimeout(r, ms))
-}
 
 export async function getAdminHubMetrics(): Promise<AdminHubMetrics> {
   if (env.useMockApi) {

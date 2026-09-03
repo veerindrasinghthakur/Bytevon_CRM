@@ -213,3 +213,49 @@ export interface AttendanceAdminMetrics {
   onLeaveToday: number
   remoteCheckIns: number
 }
+
+export interface AuditListParams {
+  limit?: number
+  search?: string
+  action?: string
+  module?: string
+  dateFrom?: string
+  dateTo?: string
+  timeFrom?: string
+  timeTo?: string
+}
+
+
+export type OfficeWriteInput = {
+  name: string
+  country: string
+  city: string
+  timezone: string
+  currency: string
+  fiscal: string
+  address: string
+  postal: string
+}
+
+export interface AdminRoleOption {
+  id: string
+  name: string
+  description?: string | null
+}
+
+export interface DepartmentOption {
+  id: number
+  name: string
+}
+
+export type AdminUserListParams = {
+  search?: string
+  status?: string
+  department?: string
+  role?: string
+  dateFrom?: string
+  dateTo?: string
+  page?: number
+  pageSize?: number
+}
+

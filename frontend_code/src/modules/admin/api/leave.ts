@@ -7,10 +7,8 @@ import {
   leaveTypeSettings,
 } from '../data/mock'
 import type { LeaveLedgerRow, LeavePolicyRow, LeaveTypeSettingRow } from '../types'
+import { delay} from '@/shared/mock/db'
 
-function delay(ms = 200) {
-  return new Promise((r) => setTimeout(r, ms))
-}
 
 export async function listLeaveTypeSettings(): Promise<LeaveTypeSettingRow[]> {
   if (env.useMockApi) {

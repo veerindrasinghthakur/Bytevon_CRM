@@ -8,30 +8,10 @@ import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
 import { paginateItems } from '@/shared/lib/list-params'
 import type { LoginUserRow } from '@/shared/schema'
-import type { AdminUserListItem, EmploymentWithoutLogin } from '../types'
+import type { AdminUserListItem, EmploymentWithoutLogin,AdminRoleOption,DepartmentOption,AdminUserListParams } from '../types'
 
 /** Role option for user-create picker (supports backend string ids e.g. R-01). */
-export interface AdminRoleOption {
-  id: string
-  name: string
-  description?: string | null
-}
 
-export interface DepartmentOption {
-  id: number
-  name: string
-}
-
-export type AdminUserListParams = {
-  search?: string
-  status?: string
-  department?: string
-  role?: string
-  dateFrom?: string
-  dateTo?: string
-  page?: number
-  pageSize?: number
-}
 
 function statusLabel(s: LoginUserRow['status']): AdminUserListItem['status'] {
   if (s === 'LOCKED') return 'Locked'

@@ -5,22 +5,11 @@ import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
 import { paginateItems } from '@/shared/lib/list-params'
-import type { Task, TaskPriority, TaskStatus } from '../types'
+import type { Task, TaskPriority, TaskStatus,TaskRow } from '../types'
 
-export type { Task, TaskPriority, TaskStatus } from '../types'
+export type { Task, TaskPriority, TaskStatus, } from '../types'
 
-interface TaskRow {
-  id: number
-  title: string
-  description?: string | null
-  priority: string
-  status: string
-  projectId: number
-  projectName?: string | null
-  assigneeName?: string | null
-  dueDate?: string | null
-  createdAt: string
-}
+
 
 function asTask(row: TaskRow): Task {
   return {

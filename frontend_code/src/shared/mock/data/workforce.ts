@@ -61,6 +61,42 @@ export const attendanceLogs = [
   { time: '06:02:10 PM', action: 'Punch Out', duration: '8h 02m', status: 'Complete', location: 'Office WiFi (HQ-GUEST)' },
 ]
 
+export const attendanceDayDetailSeed = {
+  punches: [
+    {
+      id: 1,
+      punch_type: 'CHECK_IN',
+      punch_time: '09:32:14',
+      is_valid_punch: true,
+      client_ip: '203.0.113.42',
+      validation_message: null,
+    },
+    {
+      id: 2,
+      punch_type: 'CHECK_OUT',
+      punch_time: '18:41:02',
+      is_valid_punch: true,
+      client_ip: '203.0.113.42',
+      validation_message: null,
+    },
+  ],
+  breaks: [{ id: 1, start: '13:05', end: '13:45', duration_min: 40 }],
+  workingHours: 8.2,
+} as const
+
+export const legacyEmployeeCreationDefaults = {
+  department: 'Engineering',
+  role: 'Member',
+  status: 'ACTIVE',
+  workType: 'Hybrid',
+} as const
+
+export const legacyDepartmentCreationDefaults = {
+  headName: null,
+  employeeCount: 0,
+  status: 'ACTIVE',
+} as const
+
 // --- Shifts seed ---
 export interface ShiftRow {
   id: string

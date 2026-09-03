@@ -6,22 +6,12 @@
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { auditLogs } from '../data/mock'
-import type { AuditLog, RecordAuditInput } from '../types'
+import type { AuditLog, RecordAuditInput,AuditListParams } from '../types'
+import { delay} from '@/shared/mock/db'
 
-function delay(ms = 80) {
-  return new Promise((r) => setTimeout(r, ms))
-}
 
-export interface AuditListParams {
-  limit?: number
-  search?: string
-  action?: string
-  module?: string
-  dateFrom?: string
-  dateTo?: string
-  timeFrom?: string
-  timeTo?: string
-}
+
+
 
 export async function listAuditLogs(params?: AuditListParams): Promise<AuditLog[]> {
   if (env.useMockApi) {

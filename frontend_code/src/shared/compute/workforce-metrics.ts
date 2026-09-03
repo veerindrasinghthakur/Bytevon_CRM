@@ -3,10 +3,7 @@
  * Pages must not re-implement these aggregations inline.
  */
 
-export interface DepartmentMetricInput {
-  status: string
-  staffCount?: number
-}
+import {DepartmentMetricInput,EmploymentMetricInput} from '@/modules/workforce/types'
 
 export function computeDepartmentListMetrics(items: DepartmentMetricInput[]) {
   const total = items.length
@@ -16,9 +13,7 @@ export function computeDepartmentListMetrics(items: DepartmentMetricInput[]) {
   return { total, active, inactive, staffing }
 }
 
-export interface EmploymentMetricInput {
-  current_state: string
-}
+
 
 const ACTIVE_STATES = new Set(['CONFIRMED', 'PROBATION', 'ONBOARDING'])
 const ARCHIVED_STATES = new Set(['RESIGNED', 'TERMINATED', 'ALUMNI'])

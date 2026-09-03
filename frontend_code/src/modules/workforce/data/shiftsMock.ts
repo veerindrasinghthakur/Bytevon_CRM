@@ -3,26 +3,7 @@
  * organization shift APIs fully replace local data.
  */
 
-export type ShiftMock = {
-  id: string
-  name: string
-  code: string
-  startTime: string
-  endTime: string
-  breakMinutes: number
-  days: string
-  status: 'Active' | 'Inactive'
-  employeeCount: number
-  description?: string
-}
-
-export type ShiftEmployeeMock = {
-  id: string
-  name: string
-  title: string
-  department: string
-  status: 'Active' | 'On Leave'
-}
+import {ShiftMock,ShiftEmployeeMock,} from '../types'
 
 export const canCreateShift = true
 

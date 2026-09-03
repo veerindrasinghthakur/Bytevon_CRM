@@ -44,3 +44,29 @@ export {
   payrollHistoryStatusStyles,
   SALARY_ITEM_TYPE_OPTIONS,
 } from './schemas/enums'
+
+export interface PayrollEmployeeListParams {
+  search?: string
+  status?: string
+  page?: number
+  pageSize?: number
+}
+
+/** Org-wide paid history row (history list page). */
+export interface OrgPayrollHistoryRecord {
+  id: string
+  period: string
+  employeeId: string
+  paidOn: string
+  gross: number
+  net: number
+  ref: string
+}
+import type{PayrollEmployeeRow} from './schemas/payroll'
+export interface RunPayrollPreview {
+  employees: PayrollEmployeeRow[]
+  totalGross: number
+  totalEarnings: number
+  totalDeductions: number
+  estimatedNet: number
+}

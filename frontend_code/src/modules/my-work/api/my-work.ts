@@ -419,9 +419,11 @@ export async function listApproverDirectory(): Promise<ApproverOption[]> {
 
 // Fetch holidays from the mock backend (or API in the future)
 export const fetchHolidays = async (): Promise<Record<string, string>> => {
-  const response = await fetch('http://localhost:8001/api/holidays')
-  if (!response.ok) {
-    throw new Error('Failed to fetch holidays')
+  if (env.useMockApi) {
+    await delay()
+    return Object.fromEntries(holidaysSeed.map((holiday) => [holiday.date, holiday.name]))
   }
-  return response.json()
+
+  const { data } = await apiClient.get<Record<string, string>>('/api/holidays')
+  return data
 }

@@ -7,10 +7,8 @@ import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { adminKpis, securityEvents } from '../data/mock'
 import type { AdminKpis, SecurityEvent } from '../types'
+import { delay} from '@/shared/mock/db'
 
-function delay(ms = 200) {
-  return new Promise((r) => setTimeout(r, ms))
-}
 
 export async function listSecurityEvents(): Promise<SecurityEvent[]> {
   if (env.useMockApi) {
