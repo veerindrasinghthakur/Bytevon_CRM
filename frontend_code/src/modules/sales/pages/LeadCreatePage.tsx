@@ -21,6 +21,11 @@ const fieldClass =
   'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors'
 const labelClass = 'block text-label-md text-on-surface-variant mb-1.5'
 
+function optTrim(v: string | undefined | null): string | undefined {
+  const t = (v ?? '').trim()
+  return t || undefined
+}
+
 export function LeadCreatePage() {
   const navigate = useNavigate()
   const params = useParams({ strict: false }) as { leadId?: string }
@@ -135,21 +140,21 @@ export function LeadCreatePage() {
     const payload = {
       title: data.title.trim(),
       contactName: data.contactName.trim(),
-      contactTitle: data.contactTitle?.trim() || undefined,
+      contactTitle: optTrim(data.contactTitle),
       company: data.company.trim(),
-      industry: data.industry?.trim() || undefined,
-      email: data.email?.trim() || undefined,
-      phone: data.phone?.trim() || undefined,
+      industry: optTrim(data.industry),
+      email: optTrim(data.email),
+      phone: optTrim(data.phone),
       source: data.source,
       priority: data.priority,
       status: data.status,
       stage: data.stage,
       budget: data.budget ? Number(data.budget) : 0,
-      date: data.date || undefined,
+      date: optTrim(data.date),
       assignedEmploymentId: data.assignedEmploymentId ? Number(data.assignedEmploymentId) : null,
       assignedTo: selectedRep?.name,
-      notes: data.notes?.trim() || undefined,
-      chatLink: data.chatLink?.trim() || undefined,
+      notes: optTrim(data.notes),
+      chatLink: optTrim(data.chatLink),
     }
     try {
       if (isEdit && params.leadId) {
@@ -164,6 +169,12 @@ export function LeadCreatePage() {
   }
 
   if (isEdit && existingQuery.isLoading) return <PageLoadingSkeleton />
+
+  const stageValue = form.watch('stage') ?? ''
+  const priorityValue = form.watch('priority') ?? ''
+  const statusValue = form.watch('status') ?? ''
+  const sourceValue = form.watch('source') ?? ''
+  const assignedValue = form.watch('assignedEmploymentId') ?? ''
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -283,28 +294,28 @@ export function LeadCreatePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <Select
               label="Stage"
-              value={form.watch('stage')}
+              value={stageValue}
               onChange={(v) => form.setValue('stage', v as PipelineStage)}
               options={stages.map((s) => ({ value: s, label: s }))}
               minWidthClass="w-full"
             />
             <Select
               label="Priority"
-              value={form.watch('priority')}
+              value={priorityValue}
               onChange={(v) => form.setValue('priority', v as LeadPriority)}
               options={priorities.map((p) => ({ value: p, label: p }))}
               minWidthClass="w-full"
             />
             <Select
               label="Status"
-              value={form.watch('status')}
+              value={statusValue}
               onChange={(v) => form.setValue('status', v as RecordStatus)}
               options={statuses.map((s) => ({ value: s, label: s }))}
               minWidthClass="w-full"
             />
             <Select
               label="Source"
-              value={form.watch('source')}
+              value={sourceValue}
               onChange={(v) => form.setValue('source', v)}
               options={sources.map((s) => ({ value: s, label: s }))}
               minWidthClass="w-full"
@@ -333,7 +344,7 @@ export function LeadCreatePage() {
             <div>
               <Select
                 label="Assigned sales representative"
-                value={form.watch('assignedEmploymentId') ?? ''}
+                value={assignedValue}
                 onChange={(v) => form.setValue('assignedEmploymentId', v)}
                 placeholder="Select Sales employee"
                 options={repOptions}

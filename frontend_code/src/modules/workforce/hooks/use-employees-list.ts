@@ -75,8 +75,10 @@ export function useEmployeesList() {
     [items],
   )
 
+  // useListControls + `as const` defaults narrow setFilter value to literal "all"
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const setFilterLoose = (key: FilterKey, v: string) => {
-    controls.setFilter(key, v as (typeof FILTER_DEFAULTS)[FilterKey])
+    ;(controls.setFilter as (k: FilterKey, val: string) => void)(key, v)
   }
 
   return {

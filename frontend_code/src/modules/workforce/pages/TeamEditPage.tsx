@@ -149,12 +149,13 @@ export function TeamEditPage() {
                   <p className="text-body-sm font-semibold truncate">{m.name}</p>
                   <p className="text-caption text-on-surface-variant">{m.role} · {m.title}</p>
                 </div>
+                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                 <Link
-                  {...looseLinkProps({
+                  {...(looseLinkProps({
                     to: '/workforce/employees/$employeeId',
                     params: { employeeId: String(m.id) },
                     className: 'text-secondary text-label-sm font-semibold',
-                  })}
+                  }) as any)}
                 >
                   View
                 </Link>
