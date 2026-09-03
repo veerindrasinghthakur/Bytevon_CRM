@@ -4,7 +4,6 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { Select } from '@/shared/components/ui/Select'
 import { useMyApprovals } from '../hooks/use-my-approvals'
-import type { ApprovalStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../routes'
@@ -106,17 +105,13 @@ export function MyApprovalsPage() {
           <p className="text-body-md text-on-surface-variant py-8 text-center">Loading…</p>
         )}
         {approvals.length === 0 && !isLoading && !isFetching && (
-          <p className="text-body-md text-on-surface-variant py-8 text-center">
-            No approvals found.
-          </p>
+          <p className="text-body-md text-on-surface-variant py-8 text-center">No approvals found.</p>
         )}
         {approvals.map((item) => (
           <button
             key={item.id}
             type="button"
-            onClick={() =>
-              safeNavigate(navigate,{ to: myWorkRoutes.approvalDetail(item.id) })
-            }
+            onClick={() => safeNavigate(navigate, { to: myWorkRoutes.approvalDetail(item.id) })}
             className="w-full text-left bv-surface card-hover p-5 flex flex-col sm:flex-row sm:items-center gap-4"
           >
             <div className="w-11 h-11 rounded-lg bg-surface-container-low flex items-center justify-center shrink-0">
@@ -127,7 +122,9 @@ export function MyApprovalsPage() {
             <div className="flex-1 min-w-0">
               <div className="flex flex-wrap items-center gap-2 mb-1">
                 <h3 className="text-label-md font-semibold text-on-background">{item.title}</h3>
-                <span className={`px-2.5 py-0.5 rounded-full text-label-sm font-semibold ${statusStyles[item.status]}`}>
+                <span
+                  className={`px-2.5 py-0.5 rounded-full text-label-sm font-semibold ${statusStyles[item.status]}`}
+                >
                   {item.status}
                 </span>
               </div>

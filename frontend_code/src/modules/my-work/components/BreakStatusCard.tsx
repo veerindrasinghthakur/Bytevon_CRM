@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import {
   formatDuration,
   getActiveBreak,
@@ -14,6 +15,7 @@ import {
   type BreakSession,
 } from '../lib/break-session'
 import { cn } from '@/shared/lib/cn'
+import { myWorkRoutes } from '../routes'
 
 export function BreakStatusCard() {
   const navigate = useNavigate()
@@ -49,14 +51,14 @@ export function BreakStatusCard() {
         'rounded-xl border p-5 shadow-sm flex flex-col sm:flex-row sm:items-center gap-4',
         running
           ? 'bg-secondary/5 border-secondary/30'
-          : 'bg-surface-container-lowest border-outline-variant'
+          : 'bg-surface-container-lowest border-outline-variant',
       )}
     >
       <div className="flex items-center gap-3 flex-1 min-w-0">
         <div
           className={cn(
             'w-12 h-12 rounded-xl flex items-center justify-center shrink-0',
-            running ? 'bg-secondary text-on-secondary' : 'bg-secondary/10 text-secondary'
+            running ? 'bg-secondary text-on-secondary' : 'bg-secondary/10 text-secondary',
           )}
         >
           <span className="material-symbols-outlined text-2xl" aria-hidden="true">
@@ -78,7 +80,10 @@ export function BreakStatusCard() {
             <p className="text-body-sm text-on-surface-variant">
               Last break {formatDuration(getElapsedMs(last))}
               {last.endedAt
-                ? ` · ended ${new Date(last.endedAt).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}`
+                ? ` · ended ${new Date(last.endedAt).toLocaleTimeString(undefined, {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}`
                 : ''}
             </p>
           ) : (
@@ -91,7 +96,11 @@ export function BreakStatusCard() {
       <div className="flex items-center gap-2 shrink-0">
         {running ? (
           <>
-            <Button variant="outline" size="sm" onClick={() => navigate({ to: '/my-work/break' })}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => safeNavigate(navigate, { to: myWorkRoutes.break })}
+            >
               Open
             </Button>
             <Button
@@ -106,7 +115,11 @@ export function BreakStatusCard() {
             </Button>
           </>
         ) : (
-          <Button variant="primary" size="sm" onClick={() => navigate({ to: '/my-work/break' })}>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => safeNavigate(navigate, { to: myWorkRoutes.break })}
+          >
             Take a break
           </Button>
         )}

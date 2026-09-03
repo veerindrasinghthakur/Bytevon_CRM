@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { queryKeys } from '@/shared/lib/query-keys'
@@ -10,7 +10,6 @@ const FILTER_DEFAULTS = {
 }
 
 export function useMyApprovals() {
-  const qc = useQueryClient()
   const controls = useListControls({
     filterDefaults: FILTER_DEFAULTS,
     pageSize: 20,

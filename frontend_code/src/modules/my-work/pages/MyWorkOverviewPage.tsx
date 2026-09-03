@@ -2,7 +2,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useMyWorkOverview } from '../hooks/use-my-work-overview'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../routes'
-import { priorityClass, statusDot, attendanceStatusStyles } from '../schemas/enums'
+import { priorityClass, statusDot } from '../schemas/enums'
 import type { MyTask } from '../types'
 
 export function MyWorkOverviewPage() {
@@ -19,7 +19,6 @@ export function MyWorkOverviewPage() {
     events: upcomingEvents,
   } = useMyWorkOverview()
   const navigate = useNavigate()
-
 
   const myWorkQuickActions = [
     { label: 'Apply Leave', to: myWorkRoutes.leaveApply, icon: 'event_available' },
@@ -89,7 +88,7 @@ export function MyWorkOverviewPage() {
             <button
               key={action.label}
               type="button"
-              onClick={() => safeNavigate(navigate,{ to: action.to })}
+              onClick={() => safeNavigate(navigate, { to: action.to })}
               className="bv-action-tile group"
             >
               <span
@@ -125,7 +124,7 @@ export function MyWorkOverviewPage() {
                 >
                   {m.subtitle}
                 </span>
-                )}
+              )}
             </div>
           </div>
         ))}
@@ -137,7 +136,7 @@ export function MyWorkOverviewPage() {
             <h3 className="text-title-lg font-semibold text-on-background">Attendance Overview</h3>
             <button
               type="button"
-              onClick={() => safeNavigate(navigate,{ to: myWorkRoutes.attendance })}
+              onClick={() => safeNavigate(navigate, { to: myWorkRoutes.attendance })}
               className="text-label-md font-semibold text-secondary hover:underline transition-colors duration-200 cursor-pointer"
             >
               Full Report
@@ -197,7 +196,7 @@ export function MyWorkOverviewPage() {
           ))}
           <button
             type="button"
-            onClick={() => safeNavigate(navigate,{ to: myWorkRoutes.leave })}
+            onClick={() => safeNavigate(navigate, { to: myWorkRoutes.leave })}
             className="mt-auto w-full py-2.5 bg-deep-navy text-on-primary rounded-lg text-label-md font-medium hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer"
           >
             Manage Leave
@@ -210,7 +209,7 @@ export function MyWorkOverviewPage() {
           <h3 className="text-title-lg font-semibold text-on-background">Assigned Tasks</h3>
           <button
             type="button"
-            onClick={() => safeNavigate(navigate,{ to: myWorkRoutes.tasks })}
+            onClick={() => safeNavigate(navigate, { to: myWorkRoutes.tasks })}
             className="px-3 py-1.5 text-label-sm bg-secondary text-on-secondary rounded-md hover:opacity-90 active:scale-95 transition-all duration-200 cursor-pointer"
           >
             View All

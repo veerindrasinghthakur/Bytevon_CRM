@@ -1,12 +1,9 @@
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { cn } from '@/shared/lib/cn'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { myWorkRoutes } from '../routes'
 import { WorkingHoursLog } from '../components/attendance/WorkingHoursLog'
 import { ManualAttendanceForm } from '../components/attendance/ManualAttendanceForm'
 import { useMarkAttendance } from '../hooks/use-mark-attendance'
-import { attendanceStatusStyles } from '../schemas/enums'
 
 export function MarkAttendancePage() {
   const m = useMarkAttendance()
@@ -16,7 +13,11 @@ export function MarkAttendancePage() {
       <BackButton to={m.attendanceBackTo} label="Back to attendance" />
       <PageHeader
         title="Mark Attendance"
-        description={m.todayInfo ? `Hello, ${m.todayInfo.todayLabel}. Log your daily check-in — time is recorded exactly when you punch.` : 'Log your daily check-in — time is recorded exactly when you punch.'}
+        description={
+          m.todayInfo
+            ? `Hello, ${m.todayInfo.todayLabel}. Log your daily check-in — time is recorded exactly when you punch.`
+            : 'Log your daily check-in — time is recorded exactly when you punch.'
+        }
         actions={
           <div className="flex items-center gap-2 text-label-md font-semibold text-secondary">
             <span className="material-symbols-outlined text-[18px]">calendar_month</span>

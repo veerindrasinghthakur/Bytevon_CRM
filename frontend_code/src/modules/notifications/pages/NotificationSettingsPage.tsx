@@ -5,12 +5,19 @@ import { Button } from '@/shared/components/ui/Button'
 import { useNotificationSettings } from '../hooks/use-notification-settings'
 import {
   notificationSettingsFormSchema,
-  emptyNotificationSettingsForm,
   type NotificationSettingsForm,
 } from '../schemas/settings-form'
 import { cn } from '@/shared/lib/cn'
 
-function Toggle({ checked, onChange, disabled = false }: { checked: boolean; onChange: () => void; disabled?: boolean }) {
+function Toggle({
+  checked,
+  onChange,
+  disabled = false,
+}: {
+  checked: boolean
+  onChange: () => void
+  disabled?: boolean
+}) {
   return (
     <button
       type="button"
@@ -75,7 +82,7 @@ export function NotificationSettingsPage() {
       setBaseline(initial)
       reset(initial)
     }
-  }, [s.channelCards, s.triggers, baseline, reset])
+  }, [s.channelCards, s.triggers, baseline, reset, s.channelEnabled, s.freq, s.quietOn, s.quietStart, s.quietEnd])
 
   const channelEnabled = watch('channelEnabled')
   const triggerEnabled = watch('triggerEnabled')
@@ -146,7 +153,12 @@ export function NotificationSettingsPage() {
                   </div>
                   <Toggle
                     checked={channelEnabled[c.id] ?? false}
-                    onChange={() => setValue('channelEnabled', { ...channelEnabled, [c.id]: !channelEnabled[c.id] })}
+                    onChange={() =>
+                      setValue('channelEnabled', {
+                        ...channelEnabled,
+                        [c.id]: !channelEnabled[c.id],
+                      })
+                    }
                   />
                 </div>
                 <h4 className="text-title-lg font-semibold text-deep-navy mb-1">{c.title}</h4>
@@ -211,7 +223,12 @@ export function NotificationSettingsPage() {
                     <td className="py-4 px-6">
                       <Toggle
                         checked={triggerEnabled[t.id] ?? false}
-                        onChange={() => setValue('triggerEnabled', { ...triggerEnabled, [t.id]: !triggerEnabled[t.id] })}
+                        onChange={() =>
+                          setValue('triggerEnabled', {
+                            ...triggerEnabled,
+                            [t.id]: !triggerEnabled[t.id],
+                          })
+                        }
                       />
                     </td>
                     <td className="py-4 px-6 text-right">
@@ -238,11 +255,25 @@ export function NotificationSettingsPage() {
                 Controls how often system updates are delivered to prevent inbox fatigue.
               </p>
               <div className="space-y-3">
-                {([
-                  { id: 'immediate' as const, title: 'Immediate Delivery', desc: 'Send triggers the moment they occur.' },
-                  { id: 'hourly' as const, title: 'Hourly Digest', desc: 'Collect notifications and send once per hour.' },
-                  { id: 'daily' as const, title: 'Daily Summary', desc: 'One consolidated report at end of day (18:00).' },
-                ] as const).map((o) => (
+                {(
+                  [
+                    {
+                      id: 'immediate' as const,
+                      title: 'Immediate Delivery',
+                      desc: 'Send triggers the moment they occur.',
+                    },
+                    {
+                      id: 'hourly' as const,
+                      title: 'Hourly Digest',
+                      desc: 'Collect notifications and send once per hour.',
+                    },
+                    {
+                      id: 'daily' as const,
+                      title: 'Daily Summary',
+                      desc: 'One consolidated report at end of day (18:00).',
+                    },
+                  ] as const
+                ).map((o) => (
                   <label
                     key={o.id}
                     className={cn(
@@ -259,7 +290,9 @@ export function NotificationSettingsPage() {
                       className="text-secondary focus:ring-secondary"
                     />
                     <div>
-                      <p className={cn('text-body-md font-medium', freq === o.id && 'text-secondary')}>{o.title}</p>
+                      <p className={cn('text-body-md font-medium', freq === o.id && 'text-secondary')}>
+                        {o.title}
+                      </p>
                       <p className="text-[12px] text-on-surface-variant">{o.desc}</p>
                     </div>
                   </label>
@@ -275,10 +308,7 @@ export function NotificationSettingsPage() {
                     Suppress non-critical alerts during specified periods.
                   </p>
                 </div>
-                <Toggle
-                  checked={quietOn}
-                  onChange={() => setValue('quietOn', !quietOn)}
-                />
+                <Toggle checked={quietOn} onChange={() => setValue('quietOn', !quietOn)} />
               </div>
               <div className={cn('grid grid-cols-2 gap-4', !quietOn && 'opacity-50 pointer-events-none')}>
                 <div>

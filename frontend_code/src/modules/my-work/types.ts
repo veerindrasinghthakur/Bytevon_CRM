@@ -68,19 +68,20 @@ export { emptyCorrectionForm, correctionFormSchema } from './schemas/correction-
 
 export type { BreakMode, BreakSession } from './schemas/break'
 
-/** Session helpers used by attendance-session lib */
+/** Client-side today session (localStorage) — matches attendance-session lib */
 export type TodayAttendanceSession = {
-  checkedInAt?: string | null
-  checkedOutAt?: string | null
-  status?: string
-  breaks?: BreakSession[]
+  date: string
+  checkInAt: string
+  checkOutAt?: string | null
 }
 
+/** Net work hours for header / mark-attendance summary */
 export type WorkHoursSummary = {
-  workedMinutes: number
-  breakMinutes: number
-  netMinutes: number
-  label?: string
+  checkInAt: string
+  checkOutAt?: string | null
+  grossMs: number
+  breakMs: number
+  netMs: number
 }
 
 export {
