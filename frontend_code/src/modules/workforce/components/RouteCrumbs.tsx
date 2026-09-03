@@ -1,5 +1,6 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
+import { looseSearch } from '@/shared/lib/safeNavigate'
 
 export type Crumb = { label: string; to?: string }
 
@@ -24,9 +25,8 @@ const SEGMENT_LABELS: Record<string, string> = {
   admin: 'Administration',
 }
 
-function labelForSegment(segment: string, index: number, all: string[]): string {
+function labelForSegment(segment: string): string {
   if (SEGMENT_LABELS[segment]) return SEGMENT_LABELS[segment]
-  // id-looking segments: leave as-is (caller can override last label)
   if (/^[a-z]?\d+$/i.test(segment) || segment.length <= 4) return segment
   return segment
     .split('-')
@@ -57,12 +57,8 @@ export function crumbsFromPathname(
   parts.forEach((segment, i) => {
     const path = '/' + parts.slice(0, i + 1).join('/')
     const isLast = i === parts.length - 1
-    let label =
-      overrides[path] ??
-      overrides[segment] ??
-      labelForSegment(segment, i, parts)
+    const label = overrides[path] ?? overrides[segment] ?? labelForSegment(segment)
 
-    // Prefer a sensible home for module root
     let to: string | undefined = isLast ? undefined : path
     if (i === 0 && options?.rootTo) {
       to = isLast ? undefined : options.rootTo
@@ -102,7 +98,7 @@ export function RouteCrumbs({
               </span>
             )}
             {item.to && !last ? (
-              <Link to={item.to} className="hover:text-secondary hover:underline">
+              <Link to={item.to} search={looseSearch()} className="hover:text-secondary hover:underline">
                 {item.label}
               </Link>
             ) : (

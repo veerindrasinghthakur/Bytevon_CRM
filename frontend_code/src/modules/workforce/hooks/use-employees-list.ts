@@ -12,6 +12,8 @@ const FILTER_DEFAULTS = {
   type: 'all',
 } as const
 
+type FilterKey = keyof typeof FILTER_DEFAULTS
+
 const EMPLOYMENT_STATES = Object.values({
   ONBOARDING: 'ONBOARDING',
   PROBATION: 'PROBATION',
@@ -73,6 +75,10 @@ export function useEmployeesList() {
     [items],
   )
 
+  const setFilterLoose = (key: FilterKey, v: string) => {
+    controls.setFilter(key, v as (typeof FILTER_DEFAULTS)[FilterKey])
+  }
+
   return {
     items,
     filtered: items,
@@ -89,11 +95,11 @@ export function useEmployeesList() {
     search: controls.search,
     setSearch: controls.setSearch,
     deptFilter: controls.filters.dept,
-    setDeptFilter: (v: string) => controls.setFilter('dept', v),
+    setDeptFilter: (v: string) => setFilterLoose('dept', v),
     stateFilter: controls.filters.state,
-    setStateFilter: (v: string) => controls.setFilter('state', v),
+    setStateFilter: (v: string) => setFilterLoose('state', v),
     typeFilter: controls.filters.type,
-    setTypeFilter: (v: string) => controls.setFilter('type', v),
+    setTypeFilter: (v: string) => setFilterLoose('type', v),
     filtersActive: controls.anyActive,
     resetFilters: controls.resetAll,
     page: controls.page,
