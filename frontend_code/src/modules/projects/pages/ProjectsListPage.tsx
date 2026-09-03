@@ -40,12 +40,12 @@ function ProjectQuickContent({
   startDate,
   endDate,
 }: {
-  clientName?: string
-  progress?: number
-  taskCount?: number
-  teamCount?: number
-  startDate?: string
-  endDate?: string
+  clientName?: string | null
+  progress?: number | null
+  taskCount?: number | null
+  teamCount?: number | null
+  startDate?: string | null
+  endDate?: string | null
 }) {
   return (
     <>
