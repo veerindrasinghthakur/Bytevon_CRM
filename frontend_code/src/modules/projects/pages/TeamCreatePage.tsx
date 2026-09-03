@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -6,6 +6,7 @@ import { useNavigate, Link, useSearch } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useCreateTeam } from '../hooks/use-teams'
 import { useProject } from '../hooks/use-projects'
 import { projectRoutes } from '../routes'
@@ -28,7 +29,7 @@ export function TeamCreatePage() {
   }
   const projectId = search.projectId ? Number(search.projectId) : undefined
   const { data: project } = useProject(
-    projectId != null && Number.isFinite(projectId) ? projectId : undefined
+    projectId != null && Number.isFinite(projectId) ? projectId : undefined,
   )
 
   const employeeOptions: EntityOption[] = useMemo(
@@ -38,7 +39,7 @@ export function TeamCreatePage() {
         label: e.fullName,
         sublabel: [e.role, e.department].filter(Boolean).join(' · '),
       })),
-    []
+    [],
   )
 
   const createMutation = useCreateTeam()
@@ -74,11 +75,14 @@ export function TeamCreatePage() {
         projectName: project?.name,
       })
       if (search.returnTo) {
-        navigate({ to: search.returnTo as '/projects/new' })
+        safeNavigate(navigate, { to: search.returnTo })
       } else if (projectId && Number.isFinite(projectId)) {
-        navigate({ to: projectRoutes.projectDetail(projectId), params: { projectId: String(projectId) } })
+        safeNavigate(navigate, {
+          to: projectRoutes.projectDetailPath,
+          params: { projectId: String(projectId) },
+        })
       } else {
-        navigate({ to: projectRoutes.teams })
+        safeNavigate(navigate, { to: projectRoutes.teams })
       }
     } catch {
       // mutation error UI
@@ -96,10 +100,7 @@ export function TeamCreatePage() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="mb-4">
-        <BackButton
-          to={backTo}
-          label={project ? `Back to ${project.name}` : 'Back to teams'}
-        />
+        <BackButton to={backTo} label={project ? `Back to ${project.name}` : 'Back to teams'} />
       </div>
 
       <div className="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
@@ -113,7 +114,7 @@ export function TeamCreatePage() {
             </p>
           </div>
           <Link
-            to={backTo as '/projects/teams'}
+            {...({ to: backTo, params: {}, search: {} } as never)}
             className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-full p-2"
           >
             <span className="material-symbols-outlined">close</span>
@@ -196,7 +197,7 @@ export function TeamCreatePage() {
           </div>
 
           <div className="px-6 py-4 border-t border-outline-variant bg-surface flex justify-end gap-3">
-            <Button type="button" variant="outline" onClick={() => navigate({ to: backTo as '/projects/teams' })}>
+            <Button type="button" variant="outline" onClick={() => safeNavigate(navigate, { to: backTo })}>
               Cancel
             </Button>
             <Button type="submit" variant="primary" isLoading={isSubmitting || createMutation.isPending}>

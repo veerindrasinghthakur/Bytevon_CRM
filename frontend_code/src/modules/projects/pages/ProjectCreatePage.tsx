@@ -110,7 +110,7 @@ export function ProjectCreatePage() {
             </p>
           </div>
           <Link
-            to={projectRoutes.list}
+            {...({ to: projectRoutes.list, params: {}, search: {} } as never)}
             className="text-on-surface-variant hover:text-error p-1 rounded-md hover:bg-surface-container"
           >
             <span className="material-symbols-outlined">close</span>
