@@ -3,7 +3,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { looseSearch, safeNavigate } from '@/shared/lib/safeNavigate'
 import { StatusDot } from '@/shared/components/ui/StatusDot'
 import { useLead, useSalesActivities } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
@@ -52,11 +52,11 @@ export function LeadDetailPage() {
         backLabel="Back to leads"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to={salesRoutes.root} search={{}} className="hover:text-secondary">
+            <Link to={salesRoutes.root} search={looseSearch()} className="hover:text-secondary">
               Sales
             </Link>
             <span className="mx-2">/</span>
-            <Link to={salesRoutes.leads} search={{}} className="hover:text-secondary">
+            <Link to={salesRoutes.leads} search={looseSearch()} className="hover:text-secondary">
               Leads
             </Link>
             <span className="mx-2">/</span>
@@ -106,7 +106,7 @@ export function LeadDetailPage() {
       <div className="bv-surface p-5">
         <p className="text-[10px] font-bold uppercase text-on-surface-variant mb-4">Pipeline stage</p>
         <div className="flex flex-wrap items-center gap-2">
-          {PipelineStageValues.filter((s) => s !== 'Lost').map((stage, i) => {
+          {PipelineStageValues.filter((s) => s !== 'Lost').map((stage, i, arr) => {
             const done = currentIdx >= i && lead.stage !== 'Lost'
             const active = lead.stage === stage
             return (
@@ -123,10 +123,8 @@ export function LeadDetailPage() {
                 >
                   {stage}
                 </span>
-                {i < PipelineStageValues.filter((s) => s !== 'Lost').length - 1 && (
-                  <span className="material-symbols-outlined text-on-surface-variant text-sm">
-                    chevron_right
-                  </span>
+                {i < arr.length - 1 && (
+                  <span className="material-symbols-outlined text-on-surface-variant text-sm">chevron_right</span>
                 )}
               </div>
             )
@@ -192,7 +190,11 @@ export function LeadDetailPage() {
           <section className="bv-surface p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-title-md font-semibold">Activity</h2>
-              <Link to={salesRoutes.activity} search={{}} className="text-secondary text-sm font-semibold hover:underline">
+              <Link
+                to={salesRoutes.activity}
+                search={looseSearch()}
+                className="text-secondary text-sm font-semibold hover:underline"
+              >
                 Full timeline
               </Link>
             </div>
@@ -267,7 +269,10 @@ export function LeadDetailPage() {
               <p className="text-[10px] font-bold uppercase text-on-surface-variant mb-2">Tags</p>
               <div className="flex flex-wrap gap-1.5">
                 {lead.tags.map((t) => (
-                  <span key={t} className="bg-surface-container text-on-surface-variant px-2 py-0.5 rounded text-[10px] font-bold">
+                  <span
+                    key={t}
+                    className="bg-surface-container text-on-surface-variant px-2 py-0.5 rounded text-[10px] font-bold"
+                  >
                     {t}
                   </span>
                 ))}
