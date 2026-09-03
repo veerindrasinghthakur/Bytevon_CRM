@@ -56,14 +56,10 @@ export const createEmploymentSchema = z.object({
 
 export type CreateEmploymentSchemaInput = z.infer<typeof createEmploymentSchema>
 
+// Form helpers only — do NOT re-export employment-list-response here (circular TDZ).
 export {
   employmentFormSchema,
   type EmploymentFormInput,
   emptyEmploymentForm,
   toCreateEmploymentInput,
 } from './employment-form'
-
-export {
-  employmentListResponseSchema,
-  type EmploymentListResponse,
-} from './employment-list-response'

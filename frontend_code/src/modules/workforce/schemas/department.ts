@@ -38,14 +38,10 @@ export const createDepartmentSchema = z.object({
 
 export type CreateDepartmentInput = z.infer<typeof createDepartmentSchema>
 
+// Form helpers only — do NOT re-export department-list-response here (circular TDZ).
 export {
   departmentFormSchema,
   type DepartmentFormInput,
   emptyDepartmentForm,
   toCreateDepartmentInput,
 } from './department-form'
-
-export {
-  departmentListResponseSchema,
-  type DepartmentListResponse,
-} from './department-list-response'

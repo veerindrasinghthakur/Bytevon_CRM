@@ -7,8 +7,9 @@ export type {
   DepartmentEmployee,
   CreateDepartmentInput,
   DepartmentFormInput,
-  DepartmentListResponse,
 } from './schemas/department'
+
+export type { DepartmentListResponse } from './schemas/department-list-response'
 
 export {
   departmentFormSchema,
@@ -18,12 +19,15 @@ export {
   createDepartmentSchema,
 } from './schemas/department'
 
+export { departmentListResponseSchema } from './schemas/department-list-response'
+
 export type {
   EmploymentListItemSchema,
   CreateEmploymentSchemaInput,
   EmploymentFormInput,
-  EmploymentListResponse,
 } from './schemas/employment'
+
+export type { EmploymentListResponse } from './schemas/employment-list-response'
 
 export {
   employmentFormSchema,
@@ -33,6 +37,8 @@ export {
   employmentListItemSchema,
   createEmploymentSchema,
 } from './schemas/employment'
+
+export { employmentListResponseSchema } from './schemas/employment-list-response'
 
 export {
   employeeDetailEditSchema,
