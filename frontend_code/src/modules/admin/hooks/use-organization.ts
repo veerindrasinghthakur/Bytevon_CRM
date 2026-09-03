@@ -73,7 +73,7 @@ export function useHolidays(calendarId?: number) {
 
 export function usePositions(includeArchived = true) {
   return useQuery({
-    queryKey: queryKeys.organization.positions({ includeArchived }),
+    queryKey: queryKeys.organization.positions(includeArchived),
     queryFn: () => getPositions({ includeArchived }),
   })
 }

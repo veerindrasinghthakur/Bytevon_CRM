@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useForm } from 'react-hook-form'
+import { useForm, type UseFormRegisterReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
@@ -92,7 +92,6 @@ export function OrganizationProfileSection() {
         )}
       </div>
 
-      {/* Permanent form boundary — always visible in view and edit modes */}
       <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 sm:p-8">
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="shrink-0 space-y-3">
@@ -108,48 +107,13 @@ export function OrganizationProfileSection() {
           </div>
 
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
-            <Field
-              label="Organization Name"
-              editing={isEditing}
-              register={form.register('name')}
-              value={formValues.name}
-            />
-            <Field
-              label="Legal Name"
-              editing={isEditing}
-              register={form.register('legal')}
-              value={formValues.legal}
-            />
-            <Field
-              label="Email"
-              editing={isEditing}
-              register={form.register('email')}
-              value={formValues.email}
-            />
-            <Field
-              label="Phone"
-              editing={isEditing}
-              register={form.register('phone')}
-              value={formValues.phone}
-            />
-            <Field
-              label="Website"
-              editing={isEditing}
-              register={form.register('website')}
-              value={formValues.website}
-            />
-            <Field
-              label="Tax ID"
-              editing={isEditing}
-              register={form.register('tax')}
-              value={formValues.tax}
-            />
-            <Field
-              label="Registration No."
-              editing={isEditing}
-              register={form.register('reg')}
-              value={formValues.reg}
-            />
+            <Field label="Organization Name" editing={isEditing} register={form.register('name')} value={formValues.name ?? ''} />
+            <Field label="Legal Name" editing={isEditing} register={form.register('legal')} value={formValues.legal ?? ''} />
+            <Field label="Email" editing={isEditing} register={form.register('email')} value={formValues.email ?? ''} />
+            <Field label="Phone" editing={isEditing} register={form.register('phone')} value={formValues.phone ?? ''} />
+            <Field label="Website" editing={isEditing} register={form.register('website')} value={formValues.website ?? ''} />
+            <Field label="Tax ID" editing={isEditing} register={form.register('tax')} value={formValues.tax ?? ''} />
+            <Field label="Registration No." editing={isEditing} register={form.register('reg')} value={formValues.reg ?? ''} />
             <div className="sm:col-span-2">
               <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Description</p>
               {isEditing ? (
@@ -176,7 +140,7 @@ function Field({
 }: {
   label: string
   editing: boolean
-  register: ReturnType<typeof import('react-hook-form').useForm<OrganizationProfileInput>['register']>
+  register: UseFormRegisterReturn
   value: string
 }) {
   return (

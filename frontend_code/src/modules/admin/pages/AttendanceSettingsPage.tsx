@@ -10,14 +10,11 @@ import { Select } from '@/shared/components/ui/Select'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { cn } from '@/shared/lib/cn'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { getAttendanceSettings, updateAttendanceSettings } from '../api/settings'
 import { getAttendanceAdminMetrics } from '../api/metrics'
 import { getShifts } from '../api/organization'
 import { attendanceSettingsSchema, type AttendanceSettingsInput } from '../schemas/settings'
-import type { AttendanceSettings } from '../types'
-import type { ShiftRow } from '@/shared/schema'
 import { useShiftFormData } from '../hooks/use-attendance-settings'
 
 export function AttendanceSettingsPage() {
@@ -130,14 +127,14 @@ export function AttendanceSettingsPage() {
           </p>
         </div>
         <div className="flex gap-2">
-<Button
-              variant="outline"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-              onClick={() => safeNavigate(navigate, { to: myAdminRoutes.shiftsNew })}
-            >
-              Create Shift
-            </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+            onClick={() => safeNavigate(navigate, { to: myAdminRoutes.shiftsNew })}
+          >
+            Create Shift
+          </Button>
           {isEditing ? (
             <div className="flex gap-2">
               <Button
@@ -262,7 +259,11 @@ export function AttendanceSettingsPage() {
               <button
                 type="button"
                 disabled={!isEditing}
-                onClick={() => form.setValue('allowRemoteCheckIn', !form.getValues().allowRemoteCheckIn, { shouldValidate: true })}
+                onClick={() =>
+                  form.setValue('allowRemoteCheckIn', !form.getValues().allowRemoteCheckIn, {
+                    shouldValidate: true,
+                  })
+                }
                 className="disabled:cursor-default cursor-pointer"
                 aria-label="Toggle remote check-in"
               >
@@ -273,6 +274,7 @@ export function AttendanceSettingsPage() {
                   disabled={!isEditing}
                   className="w-10 h-6 appearance-none rounded-full bg-outline-variant checked:bg-secondary relative after:absolute after:top-1 after:left-1 after:w-4 after:h-4 after:bg-white after:rounded-full after:transition-all checked:after:left-5 focus:outline-none focus:ring-2 focus:ring-secondary/30"
                   aria-label="Toggle remote check-in"
+                  readOnly
                 />
               </button>
             </div>

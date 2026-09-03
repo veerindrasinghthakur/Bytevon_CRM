@@ -59,7 +59,6 @@ const numberFormatOptions = [
   { value: '1,234.56', label: '1,234.56 (US/UK)' },
   { value: '1.234,56', label: '1.234,56 (EU)' },
   { value: '1 234,56', label: '1 234,56 (Space)' },
-  { value: '1,234.56', label: '1,234.56 (Comma)' },
 ]
 
 const firstDayOptions = [
@@ -81,6 +80,8 @@ export function RegionalSection() {
     },
   })
 
+  const values = form.watch()
+
   return (
     <div className="bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm overflow-hidden">
       <div className="px-6 py-5 border-b border-outline-variant">
@@ -90,32 +91,38 @@ export function RegionalSection() {
       <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         <SelectField
           label="Default Language"
-          register={form.register('defaultLanguage')}
+          value={values.defaultLanguage}
+          onChange={(v) => form.setValue('defaultLanguage', v)}
           options={languageOptions}
         />
         <SelectField
           label="Default Timezone"
-          register={form.register('defaultTimezone')}
+          value={values.defaultTimezone}
+          onChange={(v) => form.setValue('defaultTimezone', v)}
           options={timezoneOptions}
         />
         <SelectField
           label="Default Currency"
-          register={form.register('defaultCurrency')}
+          value={values.defaultCurrency}
+          onChange={(v) => form.setValue('defaultCurrency', v)}
           options={currencyOptions}
         />
         <SelectField
           label="Date Format"
-          register={form.register('dateFormat')}
+          value={values.dateFormat}
+          onChange={(v) => form.setValue('dateFormat', v)}
           options={dateFormatOptions}
         />
         <SelectField
           label="Number Format"
-          register={form.register('numberFormat')}
+          value={values.numberFormat}
+          onChange={(v) => form.setValue('numberFormat', v)}
           options={numberFormatOptions}
         />
         <SelectField
           label="First Day of Week"
-          register={form.register('firstDayOfWeek')}
+          value={values.firstDayOfWeek}
+          onChange={(v) => form.setValue('firstDayOfWeek', v)}
           options={firstDayOptions}
         />
       </div>
@@ -125,17 +132,19 @@ export function RegionalSection() {
 
 function SelectField({
   label,
-  register,
+  value,
+  onChange,
   options,
 }: {
   label: string
-  register: ReturnType<typeof import('react-hook-form').useForm<RegionalForm>['register']>
+  value: string
+  onChange: (value: string) => void
   options: { value: string; label: string }[]
 }) {
   return (
     <div className="space-y-1">
       <label className="text-xs font-bold text-on-surface-variant uppercase">{label}</label>
-      <Select {...register} options={options} placeholder="Select" />
+      <Select value={value} onChange={onChange} options={options} placeholder="Select" />
     </div>
   )
 }

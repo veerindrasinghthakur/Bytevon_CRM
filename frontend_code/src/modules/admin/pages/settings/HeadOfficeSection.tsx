@@ -33,16 +33,16 @@ export function HeadOfficeSection() {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6">
-                <Readonly label="Head Office Name" value={head.name} />
-                <Readonly label="Country" value={head.country} />
-                <Readonly label="City" value={head.city} />
-                <Readonly label="Timezone" value={head.timezone} />
+                <Readonly label="Head Office Name" value={head.name ?? ''} />
+                <Readonly label="Country" value={head.country ?? ''} />
+                <Readonly label="City" value={head.city ?? ''} />
+                <Readonly label="Timezone" value={head.timezone ?? ''} />
                 <div className="md:col-span-2">
-                  <Readonly label="Address" value={head.address} />
+                  <Readonly label="Address" value={head.address ?? ''} />
                 </div>
-                <Readonly label="Postal Code" value={head.postal} />
-                <Readonly label="Currency" value={head.currency} />
-                <Readonly label="Fiscal Year" value={head.fiscal} />
+                <Readonly label="Postal Code" value={head.postal ?? ''} />
+                <Readonly label="Currency" value={head.currency ?? ''} />
+                <Readonly label="Fiscal Year" value={head.fiscal ?? ''} />
               </div>
               <p className="mt-6 text-[11px] text-on-surface-variant italic">
                 The Head Office references one of the existing office locations.
@@ -75,7 +75,7 @@ export function HeadOfficeSection() {
                     onClick={() => selectOffice(o.id)}
                     className={cn(
                       'w-full text-left px-4 py-3 rounded-lg border transition-all',
-                      String(o.id) === String(head.id)
+                      String(o.id) === String(head?.id)
                         ? 'border-secondary bg-secondary/10 ring-1 ring-secondary/30'
                         : 'border-outline-variant hover:bg-surface-container-low',
                     )}
@@ -87,7 +87,7 @@ export function HeadOfficeSection() {
                           {o.city}, {o.country} · {o.timezone}
                         </p>
                       </div>
-                      {String(o.id) === String(head.id) && (
+                      {String(o.id) === String(head?.id) && (
                         <span className="material-symbols-outlined text-secondary">check_circle</span>
                       )}
                     </div>

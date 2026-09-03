@@ -11,7 +11,7 @@ export const UserFormSchema = z.object({
   department: z.string().optional(),
 })
 
-export type UserFormInput = z.infer<UserFormSchema>
+export type UserFormInput = z.infer<typeof UserFormSchema>
 
 export const RoleFormSchema = z.object({
   name: z.string().min(2).max(120),
@@ -20,7 +20,7 @@ export const RoleFormSchema = z.object({
   permissions: z.array(z.enum(['VIEW', 'CREATE', 'UPDATE', 'DELETE', 'APPROVE', 'EXPORT', 'UNLOCK'])).optional(),
 })
 
-export type RoleFormInput = z.infer<RoleFormSchema>
+export type RoleFormInput = z.infer<typeof RoleFormSchema>
 
 export const LeavePolicyFormSchema = z.object({
   name: z.string().min(1).max(120),
@@ -28,10 +28,10 @@ export const LeavePolicyFormSchema = z.object({
   annualEntitlement: z.number().int().min(0).optional(),
   carryForwardLimit: z.number().int().min(0).optional(),
   effectiveFrom: z.string().optional(),
-  effectiveTo: z.string().optional(),
+  effectiveTo: z.string().nullable().optional(),
 })
 
-export type LeavePolicyFormInput = z.infer<LeavePolicyFormSchema>
+export type LeavePolicyFormInput = z.infer<typeof LeavePolicyFormSchema>
 
 export const OfficeFormSchema = z.object({
   name: z.string().min(2).max(120),
@@ -41,18 +41,18 @@ export const OfficeFormSchema = z.object({
   currency: z.string().optional(),
 })
 
-export type OfficeFormInput = z.infer<OfficeFormSchema>
+export type OfficeFormInput = z.infer<typeof OfficeFormSchema>
 
 export const AuditFormSchema = z.object({
   action: z.string().min(1).max(200),
   target: z.string().optional(),
   module: z.string().optional(),
   actor: z.string().optional(),
-  actorInitials: z.string().optional().length(2).max(2),
+  actorInitials: z.string().max(2).optional(),
   ip: z.string().optional(),
 })
 
-export type AuditFormInput = z.infer<AuditFormSchema>
+export type AuditFormInput = z.infer<typeof AuditFormSchema>
 
 // Empty form factories
 

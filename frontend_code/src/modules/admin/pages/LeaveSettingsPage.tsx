@@ -9,7 +9,6 @@ import { cn } from '@/shared/lib/cn'
 import { useLeaveEdit } from '../context/LeaveEditContext'
 import { listLeaveTypeSettings } from '../api/leave'
 import { getLeaveAccrualPolicy, updateLeaveAccrualPolicy } from '../api/settings'
-import type { LeaveAccrualPolicy } from '../types'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { leaveAccrualPolicySchema, type LeaveAccrualPolicyInput } from '../schemas/leave'
 import { leavePolicyFormSchema, type LeavePolicyFormInput } from '../schemas/leave-form'
@@ -36,12 +35,22 @@ export function LeaveSettingsPage() {
 
   const modalForm = useForm<LeavePolicyFormInput>({
     resolver: zodResolver(leavePolicyFormSchema),
-    defaultValues: { name: '', leave_type: '', annual_entitlement: 10, carry_forward_limit: 0, effective_from: '', effective_to: '' },
+    defaultValues: {
+      name: '',
+      leave_type: '',
+      annual_entitlement: 10,
+      carry_forward_limit: 0,
+      effective_from: '',
+      effective_to: '',
+    },
   })
 
   useEffect(() => {
     if (accrualData && !editing) {
-      accrualForm.reset({ maxCarryOverDays: accrualData.maxCarryOverDays, minimumNoticeDays: accrualData.minimumNoticeDays })
+      accrualForm.reset({
+        maxCarryOverDays: accrualData.maxCarryOverDays,
+        minimumNoticeDays: accrualData.minimumNoticeDays,
+      })
     }
   }, [accrualData, editing, accrualForm])
 
@@ -181,69 +190,65 @@ export function LeaveSettingsPage() {
         </section>
       </div>
 
-      <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        title="Add Leave Type"
-        widthClass="max-w-md"
-      >
-        <form onSubmit={modalForm.handleSubmit(onModalSubmit)} className="space-y-4 p-6">
-          <div>
-            <label className="block text-label-sm font-bold text-on-surface-variant uppercase mb-1">Leave Type Name</label>
-            <input
-              {...modalForm.register('name')}
-              placeholder="Leave type name"
-              className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
-            />
-            {modalForm.formState.errors.name && (
-              <p className="text-caption text-error mt-1">{modalForm.formState.errors.name.message}</p>
-            )}
-          </div>
-          <div className="grid grid-cols-2 gap-4">
+      {modalOpen && (
+        <Modal title="Add Leave Type" onClose={() => setModalOpen(false)}>
+          <form onSubmit={modalForm.handleSubmit(onModalSubmit)} className="space-y-4">
             <div>
-              <label className="block text-label-sm font-bold text-on-surface-variant uppercase mb-1">Annual Entitlement</label>
+              <label className="block text-label-sm font-bold text-on-surface-variant uppercase mb-1">
+                Leave Type Name
+              </label>
               <input
-                type="number"
-                {...modalForm.register('annual_entitlement', { valueAsNumber: true })}
+                {...modalForm.register('name')}
+                placeholder="Leave type name"
                 className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
               />
-              {modalForm.formState.errors.annual_entitlement && (
-                <p className="text-caption text-error mt-1">{modalForm.formState.errors.annual_entitlement.message}</p>
+              {modalForm.formState.errors.name && (
+                <p className="text-caption text-error mt-1">{modalForm.formState.errors.name.message}</p>
               )}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-label-sm font-bold text-on-surface-variant uppercase mb-1">
+                  Annual Entitlement
+                </label>
+                <input
+                  type="number"
+                  {...modalForm.register('annual_entitlement', { valueAsNumber: true })}
+                  className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-label-sm font-bold text-on-surface-variant uppercase mb-1">
+                  Carry Forward Limit
+                </label>
+                <input
+                  type="number"
+                  {...modalForm.register('carry_forward_limit', { valueAsNumber: true })}
+                  className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
+                />
+              </div>
             </div>
             <div>
-              <label className="block text-label-sm font-bold text-on-surface-variant uppercase mb-1">Carry Forward Limit</label>
+              <label className="block text-label-sm font-bold text-on-surface-variant uppercase mb-1">
+                Effective From
+              </label>
               <input
-                type="number"
-                {...modalForm.register('carry_forward_limit', { valueAsNumber: true })}
+                type="date"
+                {...modalForm.register('effective_from')}
                 className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
               />
-              {modalForm.formState.errors.carry_forward_limit && (
-                <p className="text-caption text-error mt-1">{modalForm.formState.errors.carry_forward_limit.message}</p>
-              )}
             </div>
-          </div>
-          <div>
-            <label className="block text-label-sm font-bold text-on-surface-variant uppercase mb-1">Effective From</label>
-            <input
-              type="date"
-              {...modalForm.register('effective_from')}
-              className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
-            />
-            {modalForm.formState.errors.effective_from && (
-              <p className="text-caption text-error mt-1">{modalForm.formState.errors.effective_from.message}</p>
-            )}
-          </div>
-          <div className="flex justify-end gap-2 pt-4 border-t border-outline-variant">
-            <Button type="button" variant="outline" size="sm" onClick={() => setModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary" size="sm">
-              Create
-            </Button>
-          </div>
-        </form>
-      </Modal>
+            <div className="flex justify-end gap-2 pt-4 border-t border-outline-variant">
+              <Button type="button" variant="outline" size="sm" onClick={() => setModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" variant="primary" size="sm">
+                Create
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
     </div>
   )
 }

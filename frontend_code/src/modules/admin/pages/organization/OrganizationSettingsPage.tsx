@@ -14,8 +14,6 @@ import {
   useOrgLocationsForSelect,
   useUpdateOrganizationSettings,
 } from '../../hooks/use-organization'
-import type { OrganizationSettings } from '@/shared/schema'
-import { cn } from '@/shared/lib/cn'
 
 const organizationSettingsSchema = z.object({
   company_name: z.string().min(2, 'Company name is required'),
@@ -103,7 +101,6 @@ export function OrganizationSettingsPage() {
   }
 
   const locationOptions = locations.map((l) => ({ value: String(l.id), label: l.name }))
-
   const formValues = form.watch()
 
   return (
@@ -155,7 +152,10 @@ export function OrganizationSettingsPage() {
             <p className="text-label-sm text-on-surface-variant mb-1">Head office</p>
             {isEditing ? (
               <Select
-                {...form.register('head_office_location_id', { valueAsNumber: true })}
+                value={String(formValues.head_office_location_id || '')}
+                onChange={(v) =>
+                  form.setValue('head_office_location_id', Number(v) || 0, { shouldValidate: true })
+                }
                 options={[{ value: '', label: 'Select location' }, ...locationOptions]}
                 placeholder="Select head office"
               />
@@ -163,7 +163,9 @@ export function OrganizationSettingsPage() {
               <p className="font-medium">{head}</p>
             )}
             {form.formState.errors.head_office_location_id && isEditing && (
-              <p className="text-caption text-error mt-1">{form.formState.errors.head_office_location_id.message}</p>
+              <p className="text-caption text-error mt-1">
+                {form.formState.errors.head_office_location_id.message}
+              </p>
             )}
           </div>
           <div>
@@ -174,10 +176,9 @@ export function OrganizationSettingsPage() {
                 className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm outline-none focus:border-secondary"
               />
             ) : (
-              <p className="font-medium text-on-background">{formValues.default_timezone || settings.default_timezone}</p>
-            )}
-            {form.formState.errors.default_timezone && isEditing && (
-              <p className="text-caption text-error mt-1">{form.formState.errors.default_timezone.message}</p>
+              <p className="font-medium text-on-background">
+                {formValues.default_timezone || settings.default_timezone}
+              </p>
             )}
           </div>
           <div>
@@ -188,10 +189,9 @@ export function OrganizationSettingsPage() {
                 className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-sm outline-none focus:border-secondary"
               />
             ) : (
-              <p className="font-medium text-on-background">{formValues.default_currency || settings.default_currency}</p>
-            )}
-            {form.formState.errors.default_currency && isEditing && (
-              <p className="text-caption text-error mt-1">{form.formState.errors.default_currency.message}</p>
+              <p className="font-medium text-on-background">
+                {formValues.default_currency || settings.default_currency}
+              </p>
             )}
           </div>
         </div>

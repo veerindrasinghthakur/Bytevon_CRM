@@ -7,7 +7,7 @@ import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { myAdminRoutes } from '../routes'
-import { uploadUserAvatar } from '@/modules/profile/api/profile'
+import { uploadAvatar } from '@/modules/profile/api/profile'
 import {
   activateUser,
   archiveUserCredentials,
@@ -22,6 +22,11 @@ import {
 import { userEditFormSchema, type UserEditFormValues } from '../schemas/user-form'
 
 export type AdminUserStatus = 'Active' | 'Inactive' | 'Locked'
+
+/** Admin user detail may pass a userId; profile API currently uploads for the session user. */
+async function uploadUserAvatar(_userId: string, file: File) {
+  return uploadAvatar(file)
+}
 
 export function useUserDetail(userId?: string) {
   const loginId = userId ? Number(userId) : NaN
@@ -57,7 +62,6 @@ export function useUserDetail(userId?: string) {
   const [resetSent, setResetSent] = useState(false)
   const [tempPassword, setTempPassword] = useState('')
 
-  // Zod-backed edit form (name / email / department / role)
   const form = useForm<UserEditFormValues>({
     resolver: zodResolver(userEditFormSchema),
     defaultValues: { name: '', email: '', departmentId: '', roleId: '' },
@@ -77,7 +81,6 @@ export function useUserDetail(userId?: string) {
       label: d.name,
     })) ?? []
 
-  // Seed the form whenever fresh data arrives (skipped while editing)
   useEffect(() => {
     if (!display || isEditing) return
     setStatus(display.status)
@@ -173,7 +176,6 @@ export function useUserDetail(userId?: string) {
 
   const handleCancelEdit = () => {
     cancelEditing()
-    // Re-seed from latest data after exiting edit mode
     if (display) {
       const matchRole = rolesQuery.data?.find((r) => r.name === display.role)
       const deptMatch = deptsQuery.data?.find((d) => d.name === display.department)
@@ -208,12 +210,10 @@ export function useUserDetail(userId?: string) {
   }
 
   return {
-    // queries
     isLoading: detailQuery.isLoading,
     isError: detailQuery.isError,
     refetch: () => void detailQuery.refetch(),
     display,
-    // form
     form,
     status,
     avatarUrl,
@@ -221,7 +221,6 @@ export function useUserDetail(userId?: string) {
     fileRef,
     roleOptions,
     deptOptions,
-    // modals
     resetOpen,
     setResetOpen,
     lockOpen,
@@ -229,11 +228,9 @@ export function useUserDetail(userId?: string) {
     resetSent,
     tempPassword,
     setTempPassword,
-    // edit mode
     isEditing,
     startEditing,
     handleCancelEdit,
-    // mutations
     saveMutation,
     lockMutation,
     deactivateMutation,
