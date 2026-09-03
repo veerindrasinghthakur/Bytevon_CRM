@@ -148,7 +148,7 @@ export function SalesDashboardPage() {
                 </div>
                 <div className="h-2.5 rounded-full bg-surface-container overflow-hidden">
                   <div
-                    className={cn('h-full rounded-full transition-all', stageColors[stage] ?? 'bg-secondary')}
+                    className={cn('h-full rounded-full transition-all', stageColors[String(stage)] ?? 'bg-secondary')}
                     style={{ width: `${(count / maxFunnel) * 100}%` }}
                   />
                 </div>
@@ -234,7 +234,7 @@ export function SalesDashboardPage() {
                       <span
                         className={cn(
                           'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase',
-                          stageStyles[lead.stage],
+                          stageStyles[String(lead.stage)] ?? 'status-badge status-neutral',
                         )}
                       >
                         {lead.stage}
@@ -263,20 +263,24 @@ export function SalesDashboardPage() {
                   {dateGroup}
                 </h3>
                 <ul className="space-y-3">
-                  {items.map((a) => (
-                    <li key={a.id} className="flex items-start gap-3">
-                      <span className="mt-0.5 w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
-                        <span className="material-symbols-outlined text-lg">{typeIcon[a.type] ?? 'circle'}</span>
-                      </span>
-                      <div className="min-w-0">
-                        <p className="text-body-sm font-semibold text-on-surface">{a.title}</p>
-                        <p className="text-xs text-on-surface-variant line-clamp-2 mt-0.5">{a.body}</p>
-                        <p className="text-[11px] text-on-surface-variant mt-1">
-                          {a.actor} · {a.time}
-                        </p>
-                      </div>
-                    </li>
-                  ))}
+                  {(items as Array<{ id: string; type: string; title: string; body: string; actor: string; time: string }>).map(
+                    (a) => (
+                      <li key={a.id} className="flex items-start gap-3">
+                        <span className="mt-0.5 w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center shrink-0">
+                          <span className="material-symbols-outlined text-lg">
+                            {typeIcon[a.type as keyof typeof typeIcon] ?? 'circle'}
+                          </span>
+                        </span>
+                        <div className="min-w-0">
+                          <p className="text-body-sm font-semibold text-on-surface">{a.title}</p>
+                          <p className="text-xs text-on-surface-variant line-clamp-2 mt-0.5">{a.body}</p>
+                          <p className="text-[11px] text-on-surface-variant mt-1">
+                            {a.actor} · {a.time}
+                          </p>
+                        </div>
+                      </li>
+                    ),
+                  )}
                 </ul>
               </section>
             ))}
@@ -296,34 +300,44 @@ export function SalesDashboardPage() {
           </button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 p-5">
-          {safeTopClients.map((c) => (
-            <div
-              key={c.id}
-              className="p-4 rounded-xl border border-outline-variant hover:border-secondary card-hover cursor-pointer"
-              onClick={() =>
-                safeNavigate(navigate, {
-                  to: salesRoutes.clientDetailPath,
-                  params: { clientId: c.id },
-                })
-              }
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-10 h-10 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center text-sm font-bold">
-                  {c.logoInitials ?? c.name.slice(0, 2).toUpperCase()}
+          {safeTopClients.map(
+            (c: {
+              id: string
+              name: string
+              industry?: string
+              status: string
+              projects: number
+              leads: number
+              logoInitials?: string
+            }) => (
+              <div
+                key={c.id}
+                className="p-4 rounded-xl border border-outline-variant hover:border-secondary card-hover cursor-pointer"
+                onClick={() =>
+                  safeNavigate(navigate, {
+                    to: salesRoutes.clientDetailPath,
+                    params: { clientId: c.id },
+                  })
+                }
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-xl bg-secondary/10 text-secondary flex items-center justify-center text-sm font-bold">
+                    {c.logoInitials ?? c.name.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-on-surface truncate">{c.name}</p>
+                    <p className="text-xs text-on-surface-variant">{c.industry}</p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="font-semibold text-on-surface truncate">{c.name}</p>
-                  <p className="text-xs text-on-surface-variant">{c.industry}</p>
+                <div className="flex items-center justify-between">
+                  <StatusDot status={c.status} />
+                  <span className="text-xs text-on-surface-variant">
+                    {c.projects} projects · {c.leads} leads
+                  </span>
                 </div>
               </div>
-              <div className="flex items-center justify-between">
-                <StatusDot status={c.status} />
-                <span className="text-xs text-on-surface-variant">
-                  {c.projects} projects · {c.leads} leads
-                </span>
-              </div>
-            </div>
-          ))}
+            ),
+          )}
         </div>
       </div>
     </div>
