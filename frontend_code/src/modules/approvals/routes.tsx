@@ -6,6 +6,7 @@
 import { createRoute, redirect } from '@tanstack/react-router'
 import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
+import { safeRedirectOpts } from '@/shared/lib/safeNavigate'
 
 const ApprovalCenterPage = lazyPage(() => import('./pages/ApprovalCenterPage'), 'ApprovalCenterPage')
 const PendingApprovalsPage = lazyPage(() => import('./pages/PendingApprovalsPage'), 'PendingApprovalsPage')
@@ -41,7 +42,7 @@ export function createApprovalRoutes<TParent extends AnyRoute>(appLayoutRoute: T
     getParentRoute: () => appLayoutRoute,
     path: '/approvals/my-requests',
     beforeLoad: () => {
-      throw redirect({ to: approvalRoutes.myWorkRequests })
+      throw redirect(safeRedirectOpts({ to: approvalRoutes.myWorkRequests }))
     },
   })
   return [approvalsRoute, approvalsPendingRoute, approvalsDetailRoute, approvalsMyRequestsRedirectRoute]
