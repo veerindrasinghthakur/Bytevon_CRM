@@ -138,6 +138,7 @@ export interface UploadButtonProps {
   label?: string
   className?: string
   disabled?: boolean
+  isLoading?: boolean
   iconOnly?: boolean
 }
 

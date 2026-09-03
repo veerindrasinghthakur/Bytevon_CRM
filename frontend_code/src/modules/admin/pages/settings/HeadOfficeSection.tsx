@@ -12,6 +12,17 @@ export function HeadOfficeSection() {
   })
 
   const { pickerOpen, head, openPicker, closePicker, selectOffice } = useHeadOfficePicker(offices)
+  const currentHead = head ?? {
+    id: '',
+    name: '',
+    country: '',
+    city: '',
+    timezone: '',
+    currency: '',
+    fiscal: '',
+    address: '',
+    postal: '',
+  }
 
   return (
     <>
@@ -33,16 +44,16 @@ export function HeadOfficeSection() {
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6">
-                <Readonly label="Head Office Name" value={head.name ?? ''} />
-                <Readonly label="Country" value={head.country ?? ''} />
-                <Readonly label="City" value={head.city ?? ''} />
-                <Readonly label="Timezone" value={head.timezone ?? ''} />
+                <Readonly label="Head Office Name" value={currentHead.name ?? ''} />
+                <Readonly label="Country" value={currentHead.country ?? ''} />
+                <Readonly label="City" value={currentHead.city ?? ''} />
+                <Readonly label="Timezone" value={currentHead.timezone ?? ''} />
                 <div className="md:col-span-2">
-                  <Readonly label="Address" value={head.address ?? ''} />
+                  <Readonly label="Address" value={currentHead.address ?? ''} />
                 </div>
-                <Readonly label="Postal Code" value={head.postal ?? ''} />
-                <Readonly label="Currency" value={head.currency ?? ''} />
-                <Readonly label="Fiscal Year" value={head.fiscal ?? ''} />
+                <Readonly label="Postal Code" value={currentHead.postal ?? ''} />
+                <Readonly label="Currency" value={currentHead.currency ?? ''} />
+                <Readonly label="Fiscal Year" value={currentHead.fiscal ?? ''} />
               </div>
               <p className="mt-6 text-[11px] text-on-surface-variant italic">
                 The Head Office references one of the existing office locations.

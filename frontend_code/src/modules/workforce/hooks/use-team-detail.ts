@@ -4,10 +4,12 @@ import {
   getTeam,
   getTeamMembers,
   getTeamProjects,
-  type TeamMemberRow,
-  type TeamProjectRow,
 } from '@/modules/projects/api/teams'
-import type { Team as ProjectsTeam } from '@/modules/projects/types'
+import type {
+  Team as ProjectsTeam,
+  TeamMemberRow,
+  TeamProjectRow,
+} from '@/modules/projects/types'
 import type { Team } from '../types'
 import { queryKeys } from '@/shared/lib/query-keys'
 

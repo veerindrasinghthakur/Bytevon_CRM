@@ -123,7 +123,7 @@ export function TeamDetailPage() {
                         <div className="w-9 h-9 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
                           {m.name
                             .split(' ')
-                            .map((p) => p[0])
+                            .map((p: string) => p[0])
                             .join('')
                             .slice(0, 2)}
                         </div>

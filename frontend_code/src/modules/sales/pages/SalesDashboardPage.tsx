@@ -330,7 +330,7 @@ export function SalesDashboardPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between">
-                  <StatusDot status={c.status} />
+                  <StatusDot status={c.status as 'Active' | 'Inactive'} />
                   <span className="text-xs text-on-surface-variant">
                     {c.projects} projects · {c.leads} leads
                   </span>

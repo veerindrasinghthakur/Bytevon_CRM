@@ -1,7 +1,6 @@
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { TimelineStep } from '@/shared/components/ui/TimelineStep'
@@ -9,13 +8,7 @@ import { usePendingApprovals } from '../hooks/use-pending-approvals'
 import { approvalRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import type { ApprovalPriority } from '../types'
-
-const actionSchema = z.object({
-  action: z.enum(['approved', 'rejected', 'revision']),
-  comment: z.string().optional(),
-})
-
-type ActionFormData = z.infer<typeof actionSchema>
+import { approvalActionFormSchema, type ApprovalActionFormInput } from '../schemas/approval'
 
 const FALLBACK_ROW = {
   id: '—',
@@ -46,8 +39,8 @@ export function ApprovalDetailPage() {
     setValue,
     reset,
     formState: { isSubmitting },
-  } = useForm<ActionFormData>({
-    resolver: zodResolver(actionSchema),
+  } = useForm<ApprovalActionFormInput>({
+    resolver: zodResolver(approvalActionFormSchema),
     defaultValues: {
       action: 'approved',
       comment: '',
@@ -56,13 +49,13 @@ export function ApprovalDetailPage() {
 
   const goPending = () => safeNavigate(navigate, { to: approvalRoutes.pending })
 
-  const onSubmit = (data: ActionFormData) => {
+  const onSubmit = (data: ApprovalActionFormInput) => {
     // Decision mutations wired when API is ready; form validates action + comment.
     console.log('Action:', data.action, 'Comment:', data.comment)
     reset({ action: 'approved', comment: '' })
   }
 
-  const runAction = (action: ActionFormData['action']) => {
+  const runAction = (action: ApprovalActionFormInput['action']) => {
     setValue('action', action, { shouldValidate: true })
     void handleSubmit(onSubmit)()
   }

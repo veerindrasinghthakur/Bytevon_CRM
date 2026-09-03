@@ -5,8 +5,8 @@ import {
   getProjectById,
   createProject,
   updateProject,
-  type ProjectListMetrics,
 } from '../api/projects'
+import type { ProjectListMetrics } from '../types'
 import type { CreateProjectInput, ProjectDetail, ProjectListItem } from '../schemas/project'
 
 type ProjectListCache = {

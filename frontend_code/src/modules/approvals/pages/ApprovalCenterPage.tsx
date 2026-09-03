@@ -7,28 +7,11 @@ import { useApprovalCenter } from '../hooks/use-approval-center'
 import { approvalRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
-import type { ApprovalPriority } from '../types'
-
-/** Semantic status tokens only — no raw Tailwind palette colors. */
-const priorityStyles: Record<ApprovalPriority, string> = {
-  High: 'status-badge status-error',
-  Medium: 'status-badge status-warning',
-  Normal: 'status-badge status-info',
-  Low: 'status-badge status-neutral',
-}
-
-const typeOptions = [
-  { value: 'All', label: 'All Request Types' },
-  { value: 'Leave Request', label: 'Leave Request' },
-  { value: 'Expense Claim', label: 'Expense Claim' },
-  { value: 'Purchase Order', label: 'Purchase Order' },
-]
-
-const statusOptions = [
-  { value: 'Pending', label: 'Status: Pending' },
-  { value: 'Approved', label: 'Approved' },
-  { value: 'Rejected', label: 'Rejected' },
-]
+import {
+  approvalPriorityStyles,
+  approvalStatusOptions,
+  approvalTypeOptions,
+} from '../enums'
 
 export function ApprovalCenterPage() {
   const navigate = useNavigate()
@@ -95,14 +78,14 @@ export function ApprovalCenterPage() {
               value="All"
               onChange={() => {}}
               placeholder="All Request Types"
-              options={typeOptions}
+              options={approvalTypeOptions}
               minWidthClass="min-w-[160px]"
             />
             <Select
               value="Pending"
               onChange={() => {}}
               placeholder="Status: Pending"
-              options={statusOptions}
+              options={approvalStatusOptions}
               minWidthClass="min-w-[140px]"
             />
             <button
@@ -157,7 +140,7 @@ export function ApprovalCenterPage() {
                   </td>
                   <td className="px-6 py-4 text-body-sm text-on-surface-variant">{row.date}</td>
                   <td className="px-6 py-4">
-                    <span className={cn('px-2 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide', priorityStyles[row.priority])}>
+                    <span className={cn('px-2 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide', approvalPriorityStyles[row.priority])}>
                       {row.priority}
                     </span>
                   </td>

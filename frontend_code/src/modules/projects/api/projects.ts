@@ -6,7 +6,7 @@ import { apiClient } from '@/shared/lib/axios'
 import type { CreateProjectInput, ProjectDetail, ProjectListItem } from '../schemas/project'
 import { delay, getDb, nextId } from '@/shared/mock/db'
 import { paginateItems } from '@/shared/lib/list-params'
-import {ProjectListMetrics} from '../types'
+import type { ProjectListMetrics } from '../types'
 import { computeProjectListMetrics } from '@/shared/compute/project-metrics'
 
 export async function getProjects(params?: {

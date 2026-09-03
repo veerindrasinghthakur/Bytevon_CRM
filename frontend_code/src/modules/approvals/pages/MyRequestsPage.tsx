@@ -4,24 +4,7 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { ResourceName } from '@/shared/schema'
 import { useMyRequests } from '../hooks/use-my-requests'
 import { cn } from '@/shared/lib/cn'
-import type { ApprovalStatus } from '../types'
-
-/** Status pills — semantic status-badge tokens only (no raw palette classes). */
-const statusStyles: Record<ApprovalStatus, string> = {
-  'In-Progress': 'status-badge status-warning',
-  Approved: 'status-badge status-success',
-  Rejected: 'status-badge status-error',
-  Pending: 'status-badge status-warning',
-}
-
-const statusDot: Record<ApprovalStatus, string> = {
-  'In-Progress': 'bg-[var(--color-warning-amber)]',
-  Approved: 'bg-secondary',
-  Rejected: 'bg-error',
-  Pending: 'bg-[var(--color-warning-amber)]',
-}
-
-const filters = ['All Requests', 'In-Progress', 'Approved', 'Rejected'] as const
+import { approvalRequestFilters, approvalStatusDot, approvalStatusStyles } from '../enums'
 
 export function MyRequestsPage() {
   const {
@@ -34,7 +17,7 @@ export function MyRequestsPage() {
   const filter =
     statusFilter === 'All' || !statusFilter
       ? 'All Requests'
-      : (statusFilter as (typeof filters)[number])
+      : (statusFilter as (typeof approvalRequestFilters)[number])
 
   const visible =
     filter === 'All Requests'
@@ -76,7 +59,7 @@ export function MyRequestsPage() {
       <section className="bv-surface overflow-hidden">
         <div className="p-4 border-b border-outline-variant flex items-center justify-between flex-wrap gap-3">
           <div className="flex gap-2 flex-wrap">
-            {filters.map((f) => (
+            {approvalRequestFilters.map((f) => (
               <button
                 key={f}
                 type="button"
@@ -124,7 +107,7 @@ export function MyRequestsPage() {
                       <span
                         className={cn(
                           'w-2 h-2 rounded-full',
-                          statusDot[row.status] ?? statusDot.Pending,
+                          approvalStatusDot[row.status] ?? approvalStatusDot.Pending,
                         )}
                       />
                       {row.stage ?? '—'}
@@ -143,7 +126,7 @@ export function MyRequestsPage() {
                     </div>
                   </td>
                   <td className="px-6 py-5">
-                    <span className={cn(statusStyles[row.status] ?? statusStyles.Pending)}>
+                    <span className={cn(approvalStatusStyles[row.status] ?? approvalStatusStyles.Pending)}>
                       {row.status}
                     </span>
                   </td>

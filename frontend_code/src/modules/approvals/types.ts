@@ -1,7 +1,6 @@
-/** Approvals domain types */
+import type { ApprovalStatus, ApprovalPriority } from './enums'
 
-export type ApprovalStatus = 'Pending' | 'Approved' | 'Rejected' | 'In-Progress'
-export type ApprovalPriority = 'High' | 'Medium' | 'Normal' | 'Low'
+export type { ApprovalStatus, ApprovalPriority } from './enums'
 
 export interface ApprovalRow {
   id: string

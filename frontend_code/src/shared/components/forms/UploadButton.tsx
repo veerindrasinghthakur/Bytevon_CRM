@@ -15,6 +15,7 @@ export function UploadButton({
   label = 'Upload',
   className,
   disabled,
+  isLoading = false,
   iconOnly = false,
 }: UploadButtonProps) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -37,12 +38,12 @@ export function UploadButton({
           className="hidden"
           accept={accept}
           multiple={multiple}
-          disabled={disabled}
+          disabled={disabled || isLoading}
           onChange={onChange}
         />
         <button
           type="button"
-          disabled={disabled}
+          disabled={disabled || isLoading}
           title={label}
           aria-label={label}
           className={cn(
@@ -75,11 +76,11 @@ export function UploadButton({
         variant={variant}
         size={size}
         className={className}
-        disabled={disabled}
+        disabled={disabled || isLoading}
         leftIcon={<span className="material-symbols-outlined text-[18px]">upload</span>}
         onClick={() => inputRef.current?.click()}
       >
-        {label}
+        {isLoading ? 'Uploading…' : label}
       </Button>
     </>
   )

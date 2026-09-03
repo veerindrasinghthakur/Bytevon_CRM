@@ -13,24 +13,14 @@ import { ResourceName } from '@/shared/schema'
 import { usePendingApprovals } from '../hooks/use-pending-approvals'
 import { useApprovalCenter } from '../hooks/use-approval-center'
 import type { ApprovalRow, ApprovalPriority } from '../types'
+import {
+  approvalPriorityDot,
+  approvalPriorityFilterOptions,
+  approvalPriorityStyles,
+} from '../enums'
 import { approvalRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
-
-const priorityStyles: Record<ApprovalPriority, string> = {
-  High: 'status-badge status-error',
-  Medium: 'status-badge status-warning',
-  Normal: 'status-badge status-info',
-  Low: 'status-badge status-neutral',
-}
-
-/** Dot classes use semantic tokens / CSS variables only. */
-const priorityDot: Record<ApprovalPriority, string> = {
-  High: 'bg-error',
-  Medium: 'bg-[var(--color-warning-amber)]',
-  Normal: 'bg-secondary',
-  Low: 'bg-outline',
-}
 
 export function PendingApprovalsPage() {
   const navigate = useNavigate()
@@ -64,7 +54,7 @@ export function PendingApprovalsPage() {
       subtitle: `#${row.id} · ${row.requester}`,
       icon: row.typeIcon || 'pending_actions',
       status: row.status,
-      statusDotClass: priorityDot[row.priority] ?? 'bg-secondary',
+      statusDotClass: approvalPriorityDot[row.priority] ?? 'bg-secondary',
       content: <ApprovalQuickContent row={row} />,
       fullRecordLabel: 'Open full record',
       onOpenFull: () => goDetail(row.id),
@@ -132,13 +122,7 @@ export function PendingApprovalsPage() {
           value={priorityFilter}
           onChange={setPriorityFilter}
           placeholder="All priority"
-          options={[
-            { value: 'All', label: 'All priority' },
-            { value: 'High', label: 'High' },
-            { value: 'Medium', label: 'Medium' },
-            { value: 'Normal', label: 'Normal' },
-            { value: 'Low', label: 'Low' },
-          ]}
+          options={approvalPriorityFilterOptions}
           minWidthClass="min-w-[130px]"
         />
       </ListToolbar>
@@ -188,7 +172,7 @@ export function PendingApprovalsPage() {
                   </td>
                   <td className="px-6 py-4 text-body-sm text-on-surface-variant">{row.date}</td>
                   <td className="px-6 py-4">
-                    <span className={priorityStyles[row.priority] ?? 'status-badge status-neutral'}>
+                    <span className={approvalPriorityStyles[row.priority] ?? 'status-badge status-neutral'}>
                       {row.priority}
                     </span>
                   </td>

@@ -21,7 +21,7 @@ import { workforceRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { can } from '@/shared/rbac'
 import { Action, ResourceName, EmploymentType } from '@/shared/schema'
-import type { RoleRow } from '@/shared/schema'
+import type { AdminRoleOption } from '@/modules/admin/types'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -91,7 +91,7 @@ export function EmployeeCreatePage() {
     locations: { id: number; name: string }[]
     shifts: { id: number; name: string }[]
   } | null>(null)
-  const [roles, setRoles] = useState<RoleRow[]>([])
+  const [roles, setRoles] = useState<AdminRoleOption[]>([])
   const [managerOptions, setManagerOptions] = useState<{ id: number; name: string }[]>([])
 
   const form = useForm<EmploymentFormInput>({
@@ -171,7 +171,7 @@ export function EmployeeCreatePage() {
       setManagerOptions(list.items.map((e) => ({ id: e.id, name: e.fullName })))
       if (canCreateUser) {
         const r = await listRoles()
-        setRoles(r)
+        setRoles(r as AdminRoleOption[])
         const empRole = r.find((x) => x.name === 'Employee') ?? r[0]
         if (empRole) setRoleId(String(empRole.id))
       }

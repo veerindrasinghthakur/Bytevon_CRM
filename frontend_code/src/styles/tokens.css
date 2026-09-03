@@ -13,7 +13,7 @@
      Solid CTA fill = deep navy (Manage Leave). Text on primary = white.
      =========================================================================== */
   --color-primary: #001f3f;              /* Solid CTA fill — Button primary, cards CTAs */
-  --color-on-primary: #ffffff;           /* Text/icons on primary fills */
+  --color-on-primary: #f3f8ff;           /* Brighter text/icons on dark primary fills */
   --color-primary-container: #0a2d52;    /* Primary hover / pressed */
   --color-primary-fixed: #d6e3ff;        /* Soft primary wash — status chips, icon wells */
 
