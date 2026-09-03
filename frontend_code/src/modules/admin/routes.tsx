@@ -1,10 +1,11 @@
-﻿/**
- * Admin module routes â€” heavy pages lazy-loaded via shared lazyPage helper.
+/**
+ * Admin module routes — heavy pages lazy-loaded via shared lazyPage helper.
  * Organization module routes are integrated here as settings sub-routes.
  */
 import { createRoute, redirect } from '@tanstack/react-router'
 import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
+import { safeRedirectOpts } from '@/shared/lib/safeNavigate'
 
 const UsersListPage = lazyPage(() => import('./pages/UsersListPage'), 'UsersListPage')
 const UserDetailPage = lazyPage(() => import('./pages/UserDetailPage'), 'UserDetailPage')
@@ -160,7 +161,7 @@ export function createAdminRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
       getParentRoute: () => appLayoutRoute,
       path: '/admin',
       beforeLoad: () => {
-        throw redirect({ to: myAdminRoutes.usersList })
+        throw redirect(safeRedirectOpts({ to: myAdminRoutes.usersList }))
       },
     }),
     createRoute({
@@ -202,7 +203,7 @@ export function createAdminRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
       getParentRoute: () => appLayoutRoute,
       path: '/admin/organization',
       beforeLoad: () => {
-        throw redirect({ to: myAdminRoutes.shiftsList })
+        throw redirect(safeRedirectOpts({ to: myAdminRoutes.shiftsList }))
       },
     }),
     attendanceLayout.addChildren([
@@ -233,17 +234,19 @@ export function createAdminRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
       getParentRoute: () => appLayoutRoute,
       path: '/admin/leave-policies',
       beforeLoad: () => {
-        throw redirect({ to: myAdminRoutes.leaveSettings + '/policies' })
+        throw redirect(safeRedirectOpts({ to: myAdminRoutes.leaveSettings + '/policies' }))
       },
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/admin/leave-ledger/$employeeId',
       beforeLoad: ({ params }) => {
-        throw redirect({
-          to: myAdminRoutes.leaveSettings + '/ledger/' + params.employeeId,
-          params: { employeeId: params.employeeId },
-        })
+        throw redirect(
+          safeRedirectOpts({
+            to: myAdminRoutes.leaveSettings + '/ledger/' + params.employeeId,
+            params: { employeeId: String(params.employeeId) },
+          }),
+        )
       },
     }),
     createRoute({
@@ -260,7 +263,7 @@ export function createAdminRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
       getParentRoute: () => appLayoutRoute,
       path: '/admin/notifications',
       beforeLoad: () => {
-        throw redirect({ to: '/notifications/settings' })
+        throw redirect(safeRedirectOpts({ to: '/notifications/settings' }))
       },
     }),
   ]
