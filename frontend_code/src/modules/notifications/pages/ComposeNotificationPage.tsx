@@ -55,7 +55,7 @@ function defaultScheduleDate() {
 export function ComposeNotificationPage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
-  const bodyRef = useRef<HTMLTextAreaElement>(null)
+  const bodyRef = useRef<HTMLTextAreaElement | null>(null)
 
   const empty = emptyComposeForm()
 
@@ -84,6 +84,7 @@ export function ComposeNotificationPage() {
   const priority = watch('priority')
   const broadcastAll = watch('broadcastAll')
   const scheduleMode = watch('scheduleMode')
+  const moduleCtx = watch('moduleCtx')
 
   const [files, setFiles] = useState<File[]>([])
   const [toast, setToast] = useState<string | null>(null)
@@ -121,6 +122,8 @@ export function ComposeNotificationPage() {
   const roleMatches = COMPOSE_ROLE_SUGGESTIONS.filter(
     (r) => roleQuery && r.toLowerCase().includes(roleQuery.toLowerCase()) && !watch('roles').includes(r),
   )
+
+  const { ref: bodyRegisterRef, ...bodyField } = register('body')
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -223,13 +226,7 @@ export function ComposeNotificationPage() {
                       title="Bold"
                       onClick={() =>
                         bodyRef.current &&
-                        wrapSelection(
-                          bodyRef.current,
-                          '**',
-                          '**',
-                          setValue,
-                          () => watch('body'),
-                        )
+                        wrapSelection(bodyRef.current, '**', '**', setValue, () => watch('body'))
                       }
                     >
                       <span className="material-symbols-outlined text-[20px]">format_bold</span>
@@ -262,21 +259,18 @@ export function ComposeNotificationPage() {
                       title="Link"
                       onClick={() =>
                         bodyRef.current &&
-                        wrapSelection(
-                          bodyRef.current,
-                          '[',
-                          '](https://)',
-                          setValue,
-                          () => watch('body'),
-                        )
+                        wrapSelection(bodyRef.current, '[', '](https://)', setValue, () => watch('body'))
                       }
                     >
                       <span className="material-symbols-outlined text-[20px]">link</span>
                     </button>
                   </div>
                   <textarea
-                    ref={bodyRef}
-                    {...register('body')}
+                    {...bodyField}
+                    ref={(el) => {
+                      bodyRef.current = el
+                      bodyRegisterRef(el)
+                    }}
                     className="w-full p-4 border-none outline-none text-body-md resize-none bg-surface-container-lowest"
                     placeholder="Enter your notification message here..."
                     rows={8}
@@ -290,7 +284,11 @@ export function ComposeNotificationPage() {
               </div>
               <div>
                 <label className="block text-label-md text-on-surface-variant mb-2">Related Module Context</label>
-                <Select {...register('moduleCtx')} options={[...COMPOSE_MODULE_OPTIONS]} />
+                <Select
+                  value={moduleCtx ?? ''}
+                  onChange={(v) => setValue('moduleCtx', v, { shouldValidate: true })}
+                  options={[...COMPOSE_MODULE_OPTIONS]}
+                />
               </div>
             </section>
           </div>
@@ -387,12 +385,14 @@ export function ComposeNotificationPage() {
               </h3>
               <p className="text-[11px] text-on-surface-variant mb-3">V1: In-App + Email. SMS disabled.</p>
               <div className="space-y-2">
-                {([
-                  { key: 'inApp' as const, icon: 'dashboard', label: 'In-App Dashboard', disabled: false },
-                  { key: 'email' as const, icon: 'mail', label: 'Official Email', disabled: false },
-                  { key: 'sms' as const, icon: 'sms', label: 'SMS Alert (disabled)', disabled: true },
-                  { key: 'push' as const, icon: 'notifications_active', label: 'Mobile Push', disabled: false },
-                ] as const).map((c) => (
+                {(
+                  [
+                    { key: 'inApp' as const, icon: 'dashboard', label: 'In-App Dashboard', disabled: false },
+                    { key: 'email' as const, icon: 'mail', label: 'Official Email', disabled: false },
+                    { key: 'sms' as const, icon: 'sms', label: 'SMS Alert (disabled)', disabled: true },
+                    { key: 'push' as const, icon: 'notifications_active', label: 'Mobile Push', disabled: false },
+                  ] as const
+                ).map((c) => (
                   <label
                     key={c.key}
                     className={cn(
@@ -446,9 +446,7 @@ export function ComposeNotificationPage() {
                       onChange={(e) =>
                         setValue(
                           'scheduleAt',
-                          e.target.value +
-                            'T' +
-                            (watch('scheduleAt')?.slice(11, 16) || '09:00'),
+                          e.target.value + 'T' + (watch('scheduleAt')?.slice(11, 16) || '09:00'),
                           { shouldValidate: true },
                         )
                       }
@@ -465,8 +463,7 @@ export function ComposeNotificationPage() {
                       onChange={(e) =>
                         setValue(
                           'scheduleAt',
-                          (watch('scheduleAt')?.slice(0, 11) || defaultScheduleDate() + 'T') +
-                            e.target.value,
+                          (watch('scheduleAt')?.slice(0, 11) || defaultScheduleDate() + 'T') + e.target.value,
                           { shouldValidate: true },
                         )
                       }
