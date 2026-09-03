@@ -5,7 +5,6 @@ import { HeaderAttendanceSummary } from './HeaderAttendanceSummary'
 import { HeaderProps } from '@/shared/types'
 import { notificationRoutes } from '@/modules/notifications/routes'
 import { profileRoutes } from '@/modules/profile/routes'
-import { looseSearch } from '@/shared/lib/safeNavigate'
 
 export const HEADER_HEIGHT_PX = 56
 
@@ -56,8 +55,10 @@ export function Header({ title, className, style }: HeaderProps) {
         <HeaderAttendanceSummary />
 
         <Link
-          to={notificationRoutes.center}
-          search={looseSearch()}
+          {...({
+            to: notificationRoutes.center,
+            search: {},
+          } as never)}
           aria-label="My notifications"
           title="Notifications"
           className={cn(
@@ -82,8 +83,10 @@ export function Header({ title, className, style }: HeaderProps) {
         </Link>
 
         <Link
-          to={profileRoutes.root}
-          search={looseSearch()}
+          {...({
+            to: profileRoutes.root,
+            search: {},
+          } as never)}
           className={cn(
             'flex items-center gap-2.5 pl-3 ml-1 py-1 pr-1.5 rounded-md',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue',

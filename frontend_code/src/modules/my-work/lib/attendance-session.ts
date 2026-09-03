@@ -6,9 +6,22 @@ import {
   getElapsedMs,
   isBreakRunning,
 } from './break-session'
-import type { TodayAttendanceSession, WorkHoursSummary } from '../types'
 
-export type { TodayAttendanceSession, WorkHoursSummary }
+/** Client-side today session (localStorage) */
+export type TodayAttendanceSession = {
+  date: string
+  checkInAt: string
+  checkOutAt?: string | null
+}
+
+/** Net work hours for header / mark-attendance summary */
+export type WorkHoursSummary = {
+  checkInAt: string
+  checkOutAt?: string | null
+  grossMs: number
+  breakMs: number
+  netMs: number
+}
 
 const KEY = 'bytevon.todayAttendance'
 
