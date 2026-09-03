@@ -7,7 +7,6 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { StatusDot } from '@/shared/components/ui/StatusDot'
 import { useLead, useSalesActivities } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
-import type { PipelineStage, LeadPriority, RecordStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 import { stageStyles, priorityStyles, activityIcon } from '../schemas/cssTokens'
 import { PipelineStageValues } from '../schemas/enums'
@@ -53,11 +52,11 @@ export function LeadDetailPage() {
         backLabel="Back to leads"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to={salesRoutes.root} className="hover:text-secondary">
+            <Link to={salesRoutes.root} search={{}} className="hover:text-secondary">
               Sales
             </Link>
             <span className="mx-2">/</span>
-            <Link to={salesRoutes.leads} className="hover:text-secondary">
+            <Link to={salesRoutes.leads} search={{}} className="hover:text-secondary">
               Leads
             </Link>
             <span className="mx-2">/</span>
@@ -193,7 +192,7 @@ export function LeadDetailPage() {
           <section className="bv-surface p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-title-md font-semibold">Activity</h2>
-              <Link to={salesRoutes.activity} className="text-secondary text-sm font-semibold hover:underline">
+              <Link to={salesRoutes.activity} search={{}} className="text-secondary text-sm font-semibold hover:underline">
                 Full timeline
               </Link>
             </div>
@@ -268,7 +267,7 @@ export function LeadDetailPage() {
               <p className="text-[10px] font-bold uppercase text-on-surface-variant mb-2">Tags</p>
               <div className="flex flex-wrap gap-1.5">
                 {lead.tags.map((t) => (
-                  <span key={t} className="bg-amber-50 text-amber-700 px-2 py-0.5 rounded text-[10px] font-bold">
+                  <span key={t} className="bg-surface-container text-on-surface-variant px-2 py-0.5 rounded text-[10px] font-bold">
                     {t}
                   </span>
                 ))}
