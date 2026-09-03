@@ -197,12 +197,22 @@ export async function assignEmployeeToDepartment(
   const db = getDb()
   const today = new Date().toISOString().slice(0, 10)
   const now = new Date().toISOString()
+  // Seed rows often type effective_to as literal null — mutate via mutable view
   const current = db.employment_assignments.find(
     (a) => a.employment_id === employmentId && a.effective_to == null,
-  ) as (typeof db.employment_assignments)[number] | undefined
+  ) as
+    | {
+        department_id: number
+        position_id: number
+        location_id: number
+        shift_id: number
+        work_mode: string
+        effective_to: string | null
+      }
+    | undefined
   if (current) {
     if (current.department_id === departmentId) return { ok: true as const }
-    ;(current as { effective_to: string | null }).effective_to = today
+    current.effective_to = today
   }
   db.employment_assignments.push({
     id: nextId(db.employment_assignments),
@@ -238,13 +248,13 @@ export async function removeEmployeeFromDepartment(
       a.employment_id === employmentId &&
       a.department_id === departmentId &&
       a.effective_to == null,
-  ) as (typeof db.employment_assignments)[number] | undefined
+  ) as { effective_to: string | null; change_reason?: string } | undefined
   if (!current) return { ok: true as const }
-  ;(current as { effective_to: string | null; change_reason?: string }).effective_to = today
-  ;(current as { change_reason?: string }).change_reason = 'Removed from department'
+  current.effective_to = today
+  current.change_reason = 'Removed from department'
 
   const dept = db.schema_departments.find((d) => d.id === departmentId) as
-    | (DepartmentRow & { department_head_employment_id: number | null })
+    | { department_head_employment_id: number | null }
     | undefined
   if (dept && dept.department_head_employment_id === employmentId) {
     dept.department_head_employment_id = null
@@ -272,7 +282,8 @@ export async function createDepartment(input: {
     created_at: now,
     created_by: 1,
   } as DepartmentRow
-  db.schema_departments.push(row)
+  // Seed arrays are often typed as readonly literal unions — push via any
+  ;(db.schema_departments as DepartmentRow[]).push(row)
   return toListItem(row)
 }
 
@@ -286,17 +297,17 @@ export async function updateDepartment(
   }
   await delay(300)
   const row = getDb().schema_departments.find((d) => d.id === id) as
-    | (DepartmentRow & {
+    | {
         name: string
         department_head_employment_id: number | null
         is_archived: boolean
-      })
+      }
     | undefined
   if (!row) throw new Error('Department not found')
   if (patch.name != null) row.name = patch.name.trim()
   if (patch.headEmploymentId !== undefined) row.department_head_employment_id = patch.headEmploymentId
   if (patch.isArchived != null) row.is_archived = patch.isArchived
-  return toListItem(row)
+  return toListItem(row as DepartmentRow)
 }
 
 export async function listEmploymentOptionsForPicker() {
