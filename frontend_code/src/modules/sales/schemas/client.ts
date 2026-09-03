@@ -1,7 +1,7 @@
 import { z } from 'zod'
-import { recordStatusSchema } from './lead'
+import { clientTypeSchema, recordStatusSchema } from './enums'
 
-export const clientTypeSchema = z.enum(['Enterprise', 'SMB', 'Partner'])
+export { clientTypeSchema, recordStatusSchema } from './enums'
 
 export const clientSchema = z.object({
   id: z.string(),
@@ -37,14 +37,6 @@ export const clientListResponseSchema = z.object({
   total: z.number(),
 })
 
-export const clientContactFormSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  designation: z.string(),
-  email: z.string().email().or(z.literal('')),
-  phone: z.string(),
-})
-
 export const createClientSchema = z.object({
   name: z.string().min(2, 'Name is required').max(120),
   legalName: z.string().max(160).optional().or(z.literal('')),
@@ -64,5 +56,9 @@ export const createClientSchema = z.object({
 
 export type CreateClientSchemaInput = z.infer<typeof createClientSchema>
 
-/** Re-export form schema from dedicated file */
-export { clientFormSchema, type ClientFormSchemaInput } from './client-form'
+/** Re-export form schema (+ contact schema) from dedicated file */
+export {
+  clientFormSchema,
+  clientContactFormSchema,
+  type ClientFormSchemaInput,
+} from './client-form'

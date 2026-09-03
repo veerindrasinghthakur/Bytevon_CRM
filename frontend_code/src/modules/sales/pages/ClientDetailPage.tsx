@@ -50,11 +50,11 @@ export function ClientDetailPage() {
         backLabel="Back to clients"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to={salesRoutes.root} className="hover:text-secondary">
+            <Link to={salesRoutes.root} search={{}} className="hover:text-secondary">
               Sales
             </Link>
             <span className="mx-2">/</span>
-            <Link to={salesRoutes.clients} className="hover:text-secondary">
+            <Link to={salesRoutes.clients} search={{}} className="hover:text-secondary">
               Clients
             </Link>
             <span className="mx-2">/</span>
@@ -178,7 +178,7 @@ export function ClientDetailPage() {
           <section className="bv-surface p-6">
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-title-md font-semibold">Activity</h2>
-              <Link to={salesRoutes.activity} className="text-secondary text-sm font-semibold hover:underline">
+              <Link to={salesRoutes.activity} search={{}} className="text-secondary text-sm font-semibold hover:underline">
                 Full timeline
               </Link>
             </div>

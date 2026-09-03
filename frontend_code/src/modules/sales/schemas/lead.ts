@@ -1,16 +1,15 @@
 import { z } from 'zod'
+import {
+  leadPrioritySchema,
+  pipelineStageSchema,
+  recordStatusSchema,
+} from './enums'
 
-export const recordStatusSchema = z.enum(['Active', 'Inactive'])
-export const pipelineStageSchema = z.enum([
-  'New',
-  'Contacted',
-  'Qualified',
-  'Proposal',
-  'Negotiation',
-  'Won',
-  'Lost',
-])
-export const leadPrioritySchema = z.enum(['Critical', 'High', 'Medium', 'Low'])
+export {
+  leadPrioritySchema,
+  pipelineStageSchema,
+  recordStatusSchema,
+} from './enums'
 
 export const leadSchema = z.object({
   id: z.string(),

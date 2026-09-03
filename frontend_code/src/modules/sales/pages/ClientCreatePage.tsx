@@ -10,7 +10,7 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useClient, useCreateClient, useUpdateClient } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
 import { clientFormSchema, type ClientFormSchemaInput } from '../schemas/client-form'
-import { emptyClientContact, type ClientContactForm } from '../types'
+import { emptyClientContact } from '../types'
 import { cn } from '@/shared/lib/cn'
 import { ClientTypeValues, RecordStatusValues } from '../schemas/enums'
 
@@ -48,7 +48,7 @@ export function ClientCreatePage() {
     },
   })
 
-  const { fields: contacts, append, remove, move } = useFieldArray({
+  const { fields: contacts, append, remove } = useFieldArray({
     control: form.control,
     name: 'contacts',
   })
@@ -89,16 +89,16 @@ export function ClientCreatePage() {
     const primary = data.contacts[0]
     const payload = {
       name: data.name.trim(),
-      legalName: data.legalName.trim() || undefined,
+      legalName: data.legalName?.trim() || undefined,
       type: data.type,
       status: data.status,
-      industry: data.industry.trim() || undefined,
-      website: data.website.trim() || undefined,
-      country: data.country.trim() || undefined,
-      address: data.address.trim() || undefined,
-      taxId: data.taxId.trim() || undefined,
+      industry: data.industry?.trim() || undefined,
+      website: data.website?.trim() || undefined,
+      country: data.country?.trim() || undefined,
+      address: data.address?.trim() || undefined,
+      taxId: data.taxId?.trim() || undefined,
       founded: data.founded || undefined,
-      chatLink: data.chatLink.trim() || undefined,
+      chatLink: data.chatLink?.trim() || undefined,
       primaryContact: primary?.name || undefined,
       email: primary?.email || undefined,
       phone: primary?.phone || undefined,
@@ -109,8 +109,8 @@ export function ClientCreatePage() {
           id: params.clientId,
           patch: {
             ...payload,
-            industry: data.industry.trim() || '—',
-            country: data.country.trim() || '—',
+            industry: data.industry?.trim() || '—',
+            country: data.country?.trim() || '—',
           },
         })
       } else {
@@ -130,7 +130,9 @@ export function ClientCreatePage() {
 
   const removeContact = (id: string) => {
     if (contacts.length <= 1) return
-    remove((contact, index) => contact.id === id)
+    const idx = contacts.findIndex((c) => c.id === id)
+    if (idx < 0) return
+    remove(idx)
     if (editingContactId === id) setEditingContactId(null)
   }
 
@@ -373,7 +375,7 @@ export function ClientCreatePage() {
                         />
                         {form.formState.errors.contacts?.[index]?.name && (
                           <p className="text-[11px] text-error mt-1">
-                            {form.formState.errors.contacts[index].name.message}
+                            {form.formState.errors.contacts[index]?.name?.message}
                           </p>
                         )}
                       </div>
@@ -400,7 +402,7 @@ export function ClientCreatePage() {
                         />
                         {form.formState.errors.contacts?.[index]?.email && (
                           <p className="text-[11px] text-error mt-1">
-                            {form.formState.errors.contacts[index].email.message}
+                            {form.formState.errors.contacts[index]?.email?.message}
                           </p>
                         )}
                       </div>

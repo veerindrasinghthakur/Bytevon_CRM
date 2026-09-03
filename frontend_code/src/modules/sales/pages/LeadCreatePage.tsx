@@ -88,7 +88,7 @@ export function LeadCreatePage() {
 
   useEffect(() => {
     if (!existing?.assignedTo || !repsQuery.data?.length) return
-    const match = repsQuery.data!.find(
+    const match = repsQuery.data.find(
       (r) => r.name.toLowerCase() === existing.assignedTo!.toLowerCase(),
     )
     if (match) {
@@ -121,11 +121,11 @@ export function LeadCreatePage() {
     const payload = {
       title: data.title.trim(),
       contactName: data.contactName.trim(),
-      contactTitle: data.contactTitle.trim() || undefined,
+      contactTitle: data.contactTitle?.trim() || undefined,
       company: data.company.trim(),
-      industry: data.industry.trim() || undefined,
-      email: data.email.trim() || undefined,
-      phone: data.phone.trim() || undefined,
+      industry: data.industry?.trim() || undefined,
+      email: data.email?.trim() || undefined,
+      phone: data.phone?.trim() || undefined,
       source: data.source,
       priority: data.priority,
       status: data.status,
@@ -136,8 +136,8 @@ export function LeadCreatePage() {
         ? Number(data.assignedEmploymentId)
         : null,
       assignedTo: selectedRep?.name,
-      notes: data.notes.trim() || undefined,
-      chatLink: data.chatLink.trim() || undefined,
+      notes: data.notes?.trim() || undefined,
+      chatLink: data.chatLink?.trim() || undefined,
     }
     try {
       if (isEdit && params.leadId) {
@@ -348,7 +348,7 @@ export function LeadCreatePage() {
             <div>
               <Select
                 label="Assigned sales representative"
-                value={form.watch('assignedEmploymentId')}
+                value={form.watch('assignedEmploymentId') ?? ''}
                 onChange={(v) => form.setValue('assignedEmploymentId', v)}
                 placeholder="Select Sales employee"
                 options={repOptions}
