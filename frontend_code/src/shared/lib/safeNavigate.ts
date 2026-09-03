@@ -32,3 +32,19 @@ export function looseSearch(search?: Record<string, unknown>): never {
 export function looseParams(params?: Record<string, string>): never {
   return (params ?? {}) as never
 }
+
+/**
+ * Spread onto <Link /> so strict MakeRequiredPathParams / search never errors
+ * do not block compile. Prefer this over hand-written `as never` on each Link.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function looseLinkProps(opts: {
+  to: string
+  params?: Record<string, string>
+  search?: Record<string, unknown>
+  className?: string
+  // allow extra Link props without listing every one
+  [key: string]: unknown
+}): any {
+  return { params: {}, search: {}, ...opts }
+}

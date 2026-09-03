@@ -6,7 +6,7 @@ import { useNavigate, Link, useSearch } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 import { useCreateTeam } from '../hooks/use-teams'
 import { useProject } from '../hooks/use-projects'
 import { projectRoutes } from '../routes'
@@ -113,7 +113,13 @@ export function TeamCreatePage() {
                 : 'Define team identity and assign members.'}
             </p>
           </div>
-          <Link to={backTo} params={{}} search={{}} className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-full p-2">
+          <Link
+            {...looseLinkProps({
+              to: backTo,
+              className:
+                'text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-full p-2',
+            })}
+          >
             <span className="material-symbols-outlined">close</span>
           </Link>
         </div>

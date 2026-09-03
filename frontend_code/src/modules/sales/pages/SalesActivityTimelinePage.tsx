@@ -2,6 +2,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Link } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
+import { looseLinkProps } from '@/shared/lib/safeNavigate'
 import { salesRoutes } from '../routes'
 import { useSalesActivities } from '../hooks/use-sales'
 import { typeIcon, typeColor } from '../schemas/cssTokens'
@@ -43,10 +44,7 @@ export function SalesActivityTimelinePage() {
         description="Chronological sales events across leads and clients."
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link
-              {...({ to: salesRoutes.root, params: {}, search: {} } as never)}
-              className="hover:text-secondary"
-            >
+            <Link {...looseLinkProps({ to: salesRoutes.root, className: 'hover:text-secondary' })}>
               Sales
             </Link>
             <span className="mx-2">/</span>

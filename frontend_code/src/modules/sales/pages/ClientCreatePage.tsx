@@ -6,7 +6,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 import { useClient, useCreateClient, useUpdateClient } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
 import { clientFormSchema, type ClientFormSchemaInput } from '../schemas/client-form'
@@ -153,17 +153,11 @@ export function ClientCreatePage() {
         backLabel="Back to clients"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link
-              {...({ to: salesRoutes.root, params: {}, search: {} } as never)}
-              className="hover:text-secondary"
-            >
+            <Link {...looseLinkProps({ to: salesRoutes.root, className: 'hover:text-secondary' })}>
               Sales
             </Link>
             <span className="mx-2">/</span>
-            <Link
-              {...({ to: salesRoutes.clients, params: {}, search: {} } as never)}
-              className="hover:text-secondary"
-            >
+            <Link {...looseLinkProps({ to: salesRoutes.clients, className: 'hover:text-secondary' })}>
               Clients
             </Link>
             <span className="mx-2">/</span>

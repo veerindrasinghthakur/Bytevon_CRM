@@ -1,5 +1,6 @@
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
+import { looseLinkProps } from '@/shared/lib/safeNavigate'
 import { authRoutes } from '../routes'
 
 export function SessionExpiredPage() {
@@ -14,7 +15,7 @@ export function SessionExpiredPage() {
           For your security, you were signed out after a period of inactivity. Please sign in again to
           continue.
         </p>
-        <Link to={authRoutes.login} params={{}} search={{}}>
+        <Link {...looseLinkProps({ to: authRoutes.login })}>
           <Button variant="primary" className="w-full">
             Back to Login
           </Button>

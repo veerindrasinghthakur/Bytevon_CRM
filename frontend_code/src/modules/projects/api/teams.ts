@@ -339,15 +339,18 @@ export async function createTeam(input: {
   if (input.projectId) {
     const pIdx = db.projects.findIndex((p) => p.id === input.projectId)
     if (pIdx !== -1) {
-      const prev = db.projects[pIdx] as unknown as Record<string, unknown>
-      db.projects[pIdx] = {
+      // Mock project rows are union-typed without teamId — patch via unknown
+      const projects = db.projects as unknown as Array<Record<string, unknown>>
+      const prev = (projects[pIdx] ?? {}) as Record<string, unknown>
+      const next: Record<string, unknown> = {
         ...prev,
         teamId: row.id,
         teamCount: 1,
         updatedAt: new Date().toISOString(),
-      } as (typeof db.projects)[number]
-      if (!row.projectName) {
-        row.projectName = db.projects[pIdx].name
+      }
+      projects[pIdx] = next
+      if (!row.projectName && typeof next.name === 'string') {
+        row.projectName = next.name
       }
     }
   }

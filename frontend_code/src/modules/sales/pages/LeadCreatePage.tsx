@@ -9,7 +9,7 @@ import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 import { Select } from '@/shared/components/ui/Select'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { queryKeys } from '@/shared/lib/query-keys'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 import { getLeadFilterOptions, listSalesRepresentatives } from '../api/sales'
 import { useCreateLead, useLead, useUpdateLead } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
@@ -179,10 +179,7 @@ export function LeadCreatePage() {
         backLabel="Back to leads"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link
-              {...({ to: salesRoutes.root, params: {}, search: {} } as never)}
-              className="hover:text-secondary"
-            >
+            <Link {...looseLinkProps({ to: salesRoutes.root, className: 'hover:text-secondary' })}>
               Sales
             </Link>
             <span className="mx-2">/</span>

@@ -8,6 +8,7 @@ import { RefreshButton } from '@/shared/components/ui/RefreshButton'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { NotesPanel } from '@/shared/components/notes/NotesPanel'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
+import { looseLinkProps } from '@/shared/lib/safeNavigate'
 import { useTaskDetail } from '../hooks/use-task-detail'
 import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
 import { projectRoutes } from '../routes'
@@ -51,7 +52,7 @@ export function TaskDetailPage() {
     return (
       <div className="text-center py-16">
         <p className="text-body-md text-error mb-3">Task not found.</p>
-        <Link to={projectRoutes.tasks as never} params={{} as never} search={{} as never}>
+        <Link {...looseLinkProps({ to: projectRoutes.tasks })}>
           <Button variant="outline">Back to Tasks</Button>
         </Link>
       </div>
@@ -75,12 +76,7 @@ export function TaskDetailPage() {
         backLabel="Back to tasks"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link
-              to={projectRoutes.tasks as never}
-              params={{} as never}
-              search={{} as never}
-              className="hover:text-secondary"
-            >
+            <Link {...looseLinkProps({ to: projectRoutes.tasks, className: 'hover:text-secondary' })}>
               Tasks
             </Link>
             <span className="mx-2">/</span>
@@ -226,10 +222,11 @@ export function TaskDetailPage() {
               />
               {task.projectId ? (
                 <Link
-                  to={projectRoutes.projectDetailPath as never}
-                  params={{ projectId: String(task.projectId) } as never}
-                  search={{} as never}
-                  className="block text-sm font-semibold text-secondary hover:underline"
+                  {...looseLinkProps({
+                    to: projectRoutes.projectDetailPath,
+                    params: { projectId: String(task.projectId) },
+                    className: 'block text-sm font-semibold text-secondary hover:underline',
+                  })}
                 >
                   Open project →
                 </Link>
