@@ -12,9 +12,8 @@ import { payrollStatusStyles } from '../schemas/enums'
 import { payrollRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
-
-/** Demo view modes matching Stitch monthly payroll variants */
-type RunView = 'ready' | 'empty' | 'error' | 'locked'
+import type { PayrollRunView } from '../types'
+import { DEMO_VIEW_OPTIONS, MONTH_OPTIONS, YEAR_OPTIONS, PAYROLL_STATUS_OPTIONS } from '../schemas/enums'
 
 export function MonthlyPayrollPage() {
   const navigate = useNavigate()
@@ -30,14 +29,14 @@ export function MonthlyPayrollPage() {
     isError,
     refetch,
   } = useMonthlyPayroll()
-  const [view, setView] = useState<RunView>('ready')
+  const [view, setView] = useState<PayrollRunView>('ready')
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [month, setMonth] = useState('8')
   const [year, setYear] = useState('2026')
 
   const rows = filtered
   const allPaid = rows.length > 0 && rows.every((r) => r.status === 'Paid')
-  const effectiveView: RunView = view === 'ready' && allPaid ? 'locked' : view
+  const effectiveView: PayrollRunView = view === 'ready' && allPaid ? 'locked' : view
 
   const summaryCards = useMemo(() => {
     if (!summary) return null
@@ -62,14 +61,9 @@ export function MonthlyPayrollPage() {
             <label className="text-label-sm text-on-surface-variant">Demo state</label>
             <Select
               value={view}
-              onChange={(v) => setView(v as RunView)}
+              onChange={(v) => setView(v as PayrollRunView)}
               minWidthClass="min-w-[140px]"
-              options={[
-                { value: 'ready', label: 'Ready' },
-                { value: 'empty', label: 'Empty' },
-                { value: 'error', label: 'Error' },
-                { value: 'locked', label: 'Paid / locked' },
-              ]}
+              options={[...DEMO_VIEW_OPTIONS]}
             />
           </div>
         }
@@ -150,31 +144,19 @@ export function MonthlyPayrollPage() {
                 value={month}
                 onChange={setMonth}
                 minWidthClass="min-w-[120px]"
-                options={[
-                  { value: '8', label: 'August' },
-                  { value: '9', label: 'September' },
-                  { value: '10', label: 'October' },
-                ]}
+                options={[...MONTH_OPTIONS]}
               />
               <Select
                 value={year}
                 onChange={setYear}
                 minWidthClass="min-w-[100px]"
-                options={[
-                  { value: '2026', label: '2026' },
-                  { value: '2025', label: '2025' },
-                ]}
+                options={[...YEAR_OPTIONS]}
               />
               <Select
                 value={statusFilter}
                 onChange={setStatusFilter}
                 minWidthClass="min-w-[140px]"
-                options={[
-                  { value: 'All', label: 'Status: All' },
-                  { value: 'Calculated', label: 'Calculated' },
-                  { value: 'Approved', label: 'Approved' },
-                  { value: 'Paid', label: 'Paid' },
-                ]}
+                options={[...PAYROLL_STATUS_OPTIONS]}
               />
               <div className="relative">
                 <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">

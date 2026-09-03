@@ -43,7 +43,14 @@ export {
   payrollStatusStyles,
   payrollHistoryStatusStyles,
   SALARY_ITEM_TYPE_OPTIONS,
+  PAYROLL_STATUS_OPTIONS,
+  MONTH_OPTIONS,
+  YEAR_OPTIONS,
+  DEMO_VIEW_OPTIONS,
 } from './schemas/enums'
+
+/** Demo view modes for payroll (MonthlyPayrollPage). */
+export type PayrollRunView = 'ready' | 'empty' | 'error' | 'locked'
 
 export interface PayrollEmployeeListParams {
   search?: string

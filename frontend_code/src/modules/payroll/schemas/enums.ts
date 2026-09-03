@@ -21,3 +21,32 @@ export const SALARY_ITEM_TYPE_OPTIONS = [
   { value: 'EARNING', label: 'EARNING' },
   { value: 'DEDUCTION', label: 'DEDUCTION' },
 ] as const
+
+/** Payroll status filter options (MonthlyPayrollPage). */
+export const PAYROLL_STATUS_OPTIONS = [
+  { value: 'All', label: 'Status: All' },
+  { value: 'Calculated', label: 'Calculated' },
+  { value: 'Approved', label: 'Approved' },
+  { value: 'Paid', label: 'Paid' },
+]
+
+/** Month selector options (MonthlyPayrollPage). */
+export const MONTH_OPTIONS = [
+  { value: '8', label: 'August' },
+  { value: '9', label: 'September' },
+  { value: '10', label: 'October' },
+]
+
+/** Year selector options (MonthlyPayrollPage). */
+export const YEAR_OPTIONS = [
+  { value: '2026', label: '2026' },
+  { value: '2025', label: '2025' },
+]
+
+/** Demo view state options (MonthlyPayrollPage). */
+export const DEMO_VIEW_OPTIONS = [
+  { value: 'ready', label: 'Ready' },
+  { value: 'empty', label: 'Empty' },
+  { value: 'error', label: 'Error' },
+  { value: 'locked', label: 'Paid / locked' },
+]
