@@ -138,7 +138,9 @@ export function LoginPage() {
                   <span className="text-label-md text-on-surface-variant">Remember Me</span>
                 </label>
                 <Link
-                  {...({ to: authRoutes.forgotPassword, params: {}, search: {} } as never)}
+                  to={authRoutes.forgotPassword as never}
+                  params={{} as never}
+                  search={{} as never}
                   className="text-label-md text-secondary hover:underline"
                 >
                   Forgot Password?

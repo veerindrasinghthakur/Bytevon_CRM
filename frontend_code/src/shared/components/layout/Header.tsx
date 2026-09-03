@@ -55,10 +55,8 @@ export function Header({ title, className, style }: HeaderProps) {
         <HeaderAttendanceSummary />
 
         <Link
-          {...({
-            to: notificationRoutes.center,
-            search: {},
-          } as never)}
+          to={notificationRoutes.center as never}
+          search={{} as never}
           aria-label="My notifications"
           title="Notifications"
           className={cn(
@@ -83,10 +81,8 @@ export function Header({ title, className, style }: HeaderProps) {
         </Link>
 
         <Link
-          {...({
-            to: profileRoutes.root,
-            search: {},
-          } as never)}
+          to={profileRoutes.root as never}
+          search={{} as never}
           className={cn(
             'flex items-center gap-2.5 pl-3 ml-1 py-1 pr-1.5 rounded-md',
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-electric-blue',

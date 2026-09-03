@@ -14,7 +14,7 @@ export function SessionExpiredPage() {
           For your security, you were signed out after a period of inactivity. Please sign in again to
           continue.
         </p>
-        <Link {...({ to: authRoutes.login, params: {}, search: {} } as never)}>
+        <Link to={authRoutes.login} params={{}} search={{}}>
           <Button variant="primary" className="w-full">
             Back to Login
           </Button>

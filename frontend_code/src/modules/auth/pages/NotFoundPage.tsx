@@ -11,7 +11,7 @@ export function NotFoundPage() {
         <p className="text-body-md text-on-surface-variant">
           The page you requested does not exist or may have been moved.
         </p>
-        <Link {...({ to: authRoutes.dashboard, params: {}, search: {} } as never)}>
+        <Link to={authRoutes.dashboard as never} params={{} as never} search={{} as never}>
           <Button variant="primary">Back to Dashboard</Button>
         </Link>
       </div>

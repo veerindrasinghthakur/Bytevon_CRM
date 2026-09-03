@@ -20,7 +20,7 @@ export function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="w-full px-6 md:px-10 py-4 flex justify-between items-center border-b border-outline-variant/40">
-        <Link {...({ to: authRoutes.login, params: {}, search: {} } as never)}>
+        <Link to={authRoutes.login as never} params={{} as never} search={{} as never}>
           <BrandLogo
             withWordmark
             sizeClassName="w-8 h-8"
@@ -70,8 +70,7 @@ export function ForgotPasswordPage() {
                   <Button type="submit" variant="primary" className="w-full h-12" isLoading={isSubmitting}>
                     Send Reset Link
                   </Button>
-                  <Link
-                    {...({ to: authRoutes.login, params: {}, search: {} } as never)}
+                  <Link to={authRoutes.login as never} params={{} as never} search={{} as never}
                     className="w-full h-12 flex items-center justify-center gap-2 text-on-surface-variant text-label-md hover:text-on-background border border-transparent hover:border-outline-variant rounded-lg"
                   >
                     <span className="material-symbols-outlined text-[18px]">arrow_back</span>
@@ -100,11 +99,9 @@ export function ForgotPasswordPage() {
               </div>
               <div className="flex flex-col gap-2">
                 <Link
-                  {...({
-                    to: authRoutes.resetPassword,
-                    params: {},
-                    search: { token: AUTH_DEMO_RESET_TOKEN },
-                  } as never)}
+                  to={authRoutes.resetPassword as never}
+                  params={{} as never}
+                  search={{ token: AUTH_DEMO_RESET_TOKEN } as never}
                   className="text-secondary text-label-md font-medium hover:underline"
                 >
                   Continue to reset form (dev)

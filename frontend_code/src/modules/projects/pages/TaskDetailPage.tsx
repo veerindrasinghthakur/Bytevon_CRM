@@ -51,7 +51,7 @@ export function TaskDetailPage() {
     return (
       <div className="text-center py-16">
         <p className="text-body-md text-error mb-3">Task not found.</p>
-        <Link {...({ to: projectRoutes.tasks, params: {}, search: {} } as never)}>
+        <Link to={projectRoutes.tasks as never} params={{} as never} search={{} as never}>
           <Button variant="outline">Back to Tasks</Button>
         </Link>
       </div>
@@ -76,7 +76,9 @@ export function TaskDetailPage() {
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
             <Link
-              {...({ to: projectRoutes.tasks, params: {}, search: {} } as never)}
+              to={projectRoutes.tasks as never}
+              params={{} as never}
+              search={{} as never}
               className="hover:text-secondary"
             >
               Tasks
@@ -224,11 +226,9 @@ export function TaskDetailPage() {
               />
               {task.projectId ? (
                 <Link
-                  {...({
-                    to: projectRoutes.projectDetailPath,
-                    params: { projectId: String(task.projectId) },
-                    search: {},
-                  } as never)}
+                  to={projectRoutes.projectDetailPath as never}
+                  params={{ projectId: String(task.projectId) } as never}
+                  search={{} as never}
                   className="block text-sm font-semibold text-secondary hover:underline"
                 >
                   Open project →

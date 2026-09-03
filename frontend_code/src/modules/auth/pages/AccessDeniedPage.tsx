@@ -15,10 +15,10 @@ export function AccessDeniedPage() {
           an error.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link {...({ to: authRoutes.dashboard, params: {}, search: {} } as never)}>
+          <Link to={authRoutes.dashboard as never} params={{} as never} search={{} as never}>
             <Button variant="primary">Go to Dashboard</Button>
           </Link>
-          <Link {...({ to: authRoutes.login, params: {}, search: {} } as never)}>
+          <Link to={authRoutes.login as never} params={{} as never} search={{} as never}>
             <Button variant="outline">Sign in as another user</Button>
           </Link>
         </div>

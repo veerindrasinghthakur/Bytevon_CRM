@@ -105,10 +105,7 @@ export function TaskCreatePage() {
               </p>
             </div>
           </div>
-          <Link
-            {...({ to: backTo, params: {}, search: {} } as never)}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors"
-          >
+          <Link to={backTo} params={{}} search={{}} className="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors">
             <span className="material-symbols-outlined">close</span>
           </Link>
         </div>

@@ -21,7 +21,7 @@ export function ResetPasswordPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="w-full px-6 md:px-10 py-4 flex items-center border-b border-outline-variant/40">
-        <Link {...({ to: authRoutes.login, params: {}, search: {} } as never)}>
+        <Link to={authRoutes.login as never} params={{} as never} search={{} as never}>
           <BrandLogo
             withWordmark
             sizeClassName="w-8 h-8"

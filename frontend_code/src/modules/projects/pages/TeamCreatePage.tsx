@@ -113,10 +113,7 @@ export function TeamCreatePage() {
                 : 'Define team identity and assign members.'}
             </p>
           </div>
-          <Link
-            {...({ to: backTo, params: {}, search: {} } as never)}
-            className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-full p-2"
-          >
+          <Link to={backTo} params={{}} search={{}} className="text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-full p-2">
             <span className="material-symbols-outlined">close</span>
           </Link>
         </div>

@@ -546,12 +546,14 @@ export function EmployeeDetailPage() {
                       <p className="text-sm opacity-80 uppercase mb-1">Current gross salary</p>
                       <p className="text-4xl font-bold">{formatMoney(data.currentSalary.gross_salary)}</p>
                     </div>
-                    <a
-                      href={payrollRoutes.salaryDetail(String(data.employment.id))}
+                    <Link
+                      to={payrollRoutes.salaryDetailPath as never}
+                      params={{ employeeId: String(data.employment.id) } as never}
+                      search={{} as never}
                       className="inline-flex text-secondary font-medium hover:underline"
                     >
                       Open salary management →
-                    </a>
+                    </Link>
                   </div>
                 ) : (
                   <p className="text-body-sm text-on-surface-variant">No active salary configuration.</p>

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useNavigate, Link } from '@tanstack/react-router'
+import { Link, useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Select } from '@/shared/components/ui/Select'
@@ -26,6 +26,9 @@ export function ProjectCreatePage() {
   const [selectedTeam, setSelectedTeam] = useState<EntityOption | null>(null)
   const [phase, setPhase] = useState(ProjectPhaseOptions[0]?.value ?? 'DISCOVERY')
   const [priority, setPriority] = useState(ProjectPriorityOptions[1]?.value ?? 'MEDIUM')
+
+  const handlePhaseChange = (value: string) => setPhase(value as typeof phase)
+  const handlePriorityChange = (value: string) => setPriority(value as typeof priority)
 
   const teamOptions: EntityOption[] = useMemo(
     () =>
@@ -110,7 +113,9 @@ export function ProjectCreatePage() {
             </p>
           </div>
           <Link
-            {...({ to: projectRoutes.list, params: {}, search: {} } as never)}
+            to={projectRoutes.list as never}
+            params={{} as never}
+            search={{} as never}
             className="text-on-surface-variant hover:text-error p-1 rounded-md hover:bg-surface-container"
           >
             <span className="material-symbols-outlined">close</span>
@@ -249,14 +254,14 @@ export function ProjectCreatePage() {
                     <Select
                       label="Phase"
                       value={phase}
-                      onChange={setPhase}
+                      onChange={handlePhaseChange}
                       options={ProjectPhaseOptions}
                       aria-label="Project phase"
                     />
                     <Select
                       label="Priority"
                       value={priority}
-                      onChange={setPriority}
+                      onChange={handlePriorityChange}
                       options={ProjectPriorityOptions}
                       aria-label="Project priority"
                     />
