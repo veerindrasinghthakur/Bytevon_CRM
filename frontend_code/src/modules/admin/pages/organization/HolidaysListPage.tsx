@@ -14,8 +14,7 @@ import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 import type { HolidayRow } from '@/shared/schema'
 // Shared utilities for typed query keys and route constants
 import { queryKeys } from '@/shared/lib/query-keys'
-
-const TYPES: HolidayRow['holiday_type'][] = ['NATIONAL', 'REGIONAL', 'OPTIONAL', 'COMPANY']
+import { holidayTypes as TYPES } from '../../schemas/enums'
 
 export function HolidaysListPage() {
   const { calendarId } = useParams({ strict: false }) as { calendarId: string }

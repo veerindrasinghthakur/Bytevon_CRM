@@ -1,5 +1,13 @@
 import { z } from 'zod'
 
+export const leaveTypeFormSchema = z.object({
+  name: z.string().min(1, 'Leave type name is required'),
+  days: z.coerce.number().min(0),
+  eligibility: z.string().min(1, 'Eligibility is required'),
+})
+
+export type LeaveTypeForm = z.infer<typeof leaveTypeFormSchema>
+
 /** UI form state for leave policy create/edit. */
 export const leavePolicyFormSchema = z.object({
   name: z.string().min(2, 'Name is required'),

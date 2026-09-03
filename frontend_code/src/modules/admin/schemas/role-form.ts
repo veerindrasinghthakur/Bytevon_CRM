@@ -1,21 +1,7 @@
 import { z } from 'zod'
 import { adminRoleCategorySchema, adminRoleStatusSchema } from './roles'
 
-const hierarchyLevels = [
-  '1 (Entry)',
-  '2',
-  '3',
-  '4',
-  '5 (Management)',
-  '10 (Executive)',
-] as const
-
-const inheritOptions = [
-  'None (Custom)',
-  'Basic Employee',
-  'Financial Analyst',
-  'HR Manager',
-] as const
+import { hierarchyLevels, inheritOptions } from './enums'
 
 /** UI form state for create/edit role. */
 export const roleFormSchema = z.object({

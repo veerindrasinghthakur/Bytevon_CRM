@@ -10,19 +10,14 @@ export function UnavailableProtocol({
   description: string
 }) {
   return (
-    <div className="flex items-center justify-between p-4 bg-surface-container-low/50 border border-dashed border-outline-variant rounded-lg opacity-75">
-      <div className="flex gap-4 items-center">
-        <div className="p-3 rounded-lg bg-surface-container text-outline">
-          <span className="material-symbols-outlined">{icon}</span>
-        </div>
-        <div>
-          <p className="font-bold text-on-surface-variant">{title}</p>
-          <p className="text-body-sm text-on-surface-variant">{description}</p>
-        </div>
-      </div>
-      <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant bg-surface-container px-2 py-1 rounded shrink-0">
-        Not available
+    <div className="flex items-center gap-4 rounded-lg border border-outline-variant bg-surface-container-low p-4 opacity-70">
+      <span className="material-symbols-outlined rounded-lg bg-surface-container p-2 text-outline" aria-hidden>
+        {icon}
       </span>
+      <div>
+        <p className="text-body-md font-semibold text-on-surface">{title}</p>
+        <p className="text-body-sm text-on-surface-variant">{description}</p>
+      </div>
     </div>
   )
 }
@@ -36,20 +31,20 @@ export function ProtocolRow({
   onChange,
 }: {
   icon: string
-  iconClass: string
+  iconClass?: string
   title: string
   description: string
   checked: boolean
-  onChange: (v: boolean) => void
+  onChange: (checked: boolean) => void
 }) {
   return (
-    <div className="flex items-center justify-between p-4 bg-surface-container-low border border-outline-variant rounded-lg">
-      <div className="flex gap-4 items-center">
-        <div className={cn('p-3 rounded-lg', iconClass)}>
-          <span className="material-symbols-outlined">{icon}</span>
-        </div>
-        <div>
-          <p className="font-bold text-primary">{title}</p>
+    <div className="flex items-center justify-between gap-4 rounded-lg border border-outline-variant p-4">
+      <div className="flex min-w-0 items-center gap-4">
+        <span className={cn('material-symbols-outlined rounded-lg p-2', iconClass)} aria-hidden>
+          {icon}
+        </span>
+        <div className="min-w-0">
+          <p className="text-body-md font-semibold text-on-surface">{title}</p>
           <p className="text-body-sm text-on-surface-variant">{description}</p>
         </div>
       </div>
@@ -57,15 +52,16 @@ export function ProtocolRow({
         type="button"
         role="switch"
         aria-checked={checked}
+        aria-label={title}
         onClick={() => onChange(!checked)}
         className={cn(
-          'relative w-11 h-6 rounded-full transition-colors',
+          'relative h-6 w-11 shrink-0 rounded-full transition-colors',
           checked ? 'bg-secondary' : 'bg-outline-variant',
         )}
       >
         <span
           className={cn(
-            'absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-all',
+            'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all',
             checked ? 'left-[22px]' : 'left-0.5',
           )}
         />

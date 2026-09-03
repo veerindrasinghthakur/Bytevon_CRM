@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { myAdminRoutes } from '../routes'
-import type { RolePermissionAction, RolePermissionMatrix } from '../types'
+import type { RoleFormMode, RolePermissionAction, RolePermissionMatrix } from '../types'
 import { emptyMatrix, matrixToPermissions, seedMatrix } from '../lib/role-matrix'
 import {
   createAdminRole,
@@ -15,8 +15,6 @@ import {
   updateAdminRole,
 } from '../api/roles'
 import { roleFormSchema, type RoleFormInput } from '../schemas/role-form'
-
-export type RoleFormMode = 'create' | 'edit'
 
 export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId?: string) {
   const navigate = useNavigate()

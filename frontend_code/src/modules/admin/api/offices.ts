@@ -75,8 +75,14 @@ export async function updateOffice(
 export async function listHeadOfficeOptions() {
   if (env.useMockApi) {
     await delay()
-    return headOfficeList.map((o) => ({ ...o }))
+    const source = Array.isArray(headOfficeList) ? headOfficeList : offices
+    return source.map((o) => ({ ...o }))
   }
-  const { data } = await apiClient.get<typeof headOfficeList>('/admin/offices/head-options')
-  return data
+  const { data } = await apiClient.get<unknown>('/admin/offices/head-options')
+  if (Array.isArray(data)) return data as typeof headOfficeList
+  if (typeof data === 'object' && data !== null && 'items' in data) {
+    const items = (data as { items?: unknown }).items
+    if (Array.isArray(items)) return items as typeof headOfficeList
+  }
+  return headOfficeList.map((o) => ({ ...o }))
 }

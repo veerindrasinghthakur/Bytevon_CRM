@@ -83,7 +83,7 @@ export const userStatusOptions = [
   { value: 'Active', label: 'Active' },
   { value: 'Inactive', label: 'Inactive' },
   { value: 'Locked', label: 'Locked' },
-] as const
+]
 
 /** Role status filter options (RolesListPage status Select). */
 export const roleStatusOptions = [
@@ -99,6 +99,15 @@ export const roleCategoryOptions = [
   { value: 'Operational', label: 'Operational' },
   { value: 'Financial', label: 'Financial' },
   { value: 'Standard', label: 'Standard' },
+] as const
+
+export const roleFilterStatusOptions = ['All', 'Active', 'Archived'] as const
+export const roleFilterCategoryOptions = [
+  'All',
+  'Core Role',
+  'Operational',
+  'Financial',
+  'Standard',
 ] as const
 
 /** Hierarchy level options for role creation. */
@@ -118,3 +127,77 @@ export const inheritOptions = [
   'Financial Analyst',
   'HR Manager',
 ] as const
+
+export const holidayTypes = ['NATIONAL', 'REGIONAL', 'OPTIONAL', 'COMPANY'] as const
+
+export const auditActionOptions = ['All Actions', 'Create', 'Update', 'Delete', 'Login', 'Lock'] as const
+export const auditModuleOptions = ['All Modules', 'Roles', 'Auth', 'Settings', 'Users'] as const
+
+export const colorOptions = [
+  { value: 'var(--color-primary)', label: 'Primary (--color-primary)' },
+  { value: 'var(--color-secondary)', label: 'Secondary (--color-secondary)' },
+  { value: 'var(--color-tertiary)', label: 'Tertiary (--color-tertiary)' },
+  { value: '#2563eb', label: 'Blue 600' },
+  { value: '#16a34a', label: 'Green 600' },
+  { value: '#ea580c', label: 'Orange 600' },
+  { value: '#9333ea', label: 'Purple 600' },
+  { value: '#dc2626', label: 'Red 600' },
+  { value: '#0891b2', label: 'Cyan 600' },
+  { value: '#db2777', label: 'Pink 600' },
+]
+
+export const languageOptions = [
+  { value: 'English (US)', label: 'English (US)' },
+  { value: 'English (UK)', label: 'English (UK)' },
+  { value: 'Spanish', label: 'Spanish' },
+  { value: 'French', label: 'French' },
+  { value: 'German', label: 'German' },
+  { value: 'Portuguese', label: 'Portuguese' },
+  { value: 'Chinese', label: 'Chinese' },
+  { value: 'Japanese', label: 'Japanese' },
+]
+
+export const timezoneOptions = [
+  { value: 'UTC-05:00 Eastern Time', label: 'UTC-05:00 Eastern Time' },
+  { value: 'UTC-06:00 Central Time', label: 'UTC-06:00 Central Time' },
+  { value: 'UTC-07:00 Mountain Time', label: 'UTC-07:00 Mountain Time' },
+  { value: 'UTC-08:00 Pacific Time', label: 'UTC-08:00 Pacific Time' },
+  { value: 'UTC+00:00 UTC', label: 'UTC+00:00 UTC' },
+  { value: 'UTC+01:00 CET', label: 'UTC+01:00 CET' },
+  { value: 'UTC+05:30 IST', label: 'UTC+05:30 IST' },
+  { value: 'UTC+08:00 CST', label: 'UTC+08:00 CST' },
+  { value: 'UTC+09:00 JST', label: 'UTC+09:00 JST' },
+]
+
+export const currencyOptions = [
+  { value: 'USD ($)', label: 'USD ($)' },
+  { value: 'EUR (€)', label: 'EUR (€)' },
+  { value: 'GBP (£)', label: 'GBP (£)' },
+  { value: 'INR (₹)', label: 'INR (₹)' },
+  { value: 'JPY (¥)', label: 'JPY (¥)' },
+  { value: 'CNY (¥)', label: 'CNY (¥)' },
+  { value: 'SGD ($)', label: 'SGD ($)' },
+  { value: 'AUD ($)', label: 'AUD ($)' },
+]
+
+export const dateFormatOptions = [
+  { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
+  { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
+  { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' },
+  { value: 'DD.MM.YYYY', label: 'DD.MM.YYYY' },
+]
+
+export const numberFormatOptions = [
+  { value: '1,234.56', label: '1,234.56 (US/UK)' },
+  { value: '1.234,56', label: '1.234,56 (EU)' },
+  { value: '1 234,56', label: '1 234,56 (Space)' },
+]
+
+export const firstDayOptions = [
+  { value: 'Sunday', label: 'Sunday' },
+  { value: 'Monday', label: 'Monday' },
+  { value: 'Saturday', label: 'Saturday' },
+]
+
+export const dayOptions = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
+export const weekKeys = ['organization', 'working-weeks'] as const

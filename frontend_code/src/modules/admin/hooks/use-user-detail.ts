@@ -20,8 +20,7 @@ import {
   updateUserLogin,
 } from '../api/users'
 import { userEditFormSchema, type UserEditFormValues } from '../schemas/user-form'
-
-export type AdminUserStatus = 'Active' | 'Inactive' | 'Locked'
+import type { AdminUserStatus } from '../types'
 
 /** Admin user detail may pass a userId; profile API currently uploads for the session user. */
 async function uploadUserAvatar(_userId: string, file: File) {

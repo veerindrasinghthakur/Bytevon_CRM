@@ -1,27 +1,18 @@
 import { useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import type { LeaveAccrualPolicy } from '../types'
-
-const leaveTypeSchema = z.object({
-  name: z.string().min(1, 'Leave type name is required'),
-  days: z.coerce.number().min(0),
-  eligibility: z.string().min(1, 'Eligibility is required'),
-})
-
-type LeaveTypeForm = z.infer<typeof leaveTypeSchema>
-
-const accrualSchema: z.ZodType<LeaveAccrualPolicy> = z.object({
-  maxCarryOverDays: z.number().min(0),
-  minimumNoticeDays: z.number().min(0),
-})
+import {
+  leaveAccrualPolicySchema,
+  leaveTypeFormSchema,
+  type LeaveAccrualPolicyInput,
+  type LeaveTypeForm,
+} from '../schemas/leave'
 
 export function useLeaveSettingsModal() {
   const [modalOpen, setModalOpen] = useState(false)
 
   const leaveTypeForm = useForm<LeaveTypeForm>({
-    resolver: zodResolver(leaveTypeSchema),
+    resolver: zodResolver(leaveTypeFormSchema),
     defaultValues: {
       name: '',
       days: 10,
@@ -46,9 +37,9 @@ export function useLeaveSettingsModal() {
   }
 }
 
-export function useAccrualForm(initialData?: LeaveAccrualPolicy) {
-  const form = useForm<LeaveAccrualPolicy>({
-    resolver: zodResolver(accrualSchema),
+export function useAccrualForm(initialData?: LeaveAccrualPolicyInput) {
+  const form = useForm<LeaveAccrualPolicyInput>({
+    resolver: zodResolver(leaveAccrualPolicySchema),
     defaultValues: initialData ?? {
       maxCarryOverDays: 0,
       minimumNoticeDays: 0,

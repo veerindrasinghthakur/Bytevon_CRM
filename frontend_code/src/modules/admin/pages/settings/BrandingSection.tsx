@@ -1,27 +1,8 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { Select } from '@/shared/components/ui/Select'
-
-const brandingSchema = z.object({
-  primaryColor: z.string().default('var(--color-primary)'),
-  secondaryColor: z.string().default('var(--color-secondary)'),
-})
-
-type BrandingForm = z.infer<typeof brandingSchema>
-
-const colorOptions = [
-  { value: 'var(--color-primary)', label: 'Primary (--color-primary)' },
-  { value: 'var(--color-secondary)', label: 'Secondary (--color-secondary)' },
-  { value: 'var(--color-tertiary)', label: 'Tertiary (--color-tertiary)' },
-  { value: '#2563eb', label: 'Blue 600' },
-  { value: '#16a34a', label: 'Green 600' },
-  { value: '#ea580c', label: 'Orange 600' },
-  { value: '#9333ea', label: 'Purple 600' },
-  { value: '#dc2626', label: 'Red 600' },
-  { value: '#0891b2', label: 'Cyan 600' },
-  { value: '#db2777', label: 'Pink 600' },
-]
+import { brandingSchema, type BrandingForm } from '../../schemas/settings'
+import { colorOptions } from '../../schemas/enums'
 
 export function BrandingSection() {
   const form = useForm<BrandingForm>({

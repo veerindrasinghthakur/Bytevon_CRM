@@ -156,6 +156,7 @@ export function ProjectsListPage() {
             filenameStem="projects"
           />
           <Button
+            type="button"
             variant="primary"
             size="sm"
             leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}

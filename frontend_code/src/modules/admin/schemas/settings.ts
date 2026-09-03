@@ -23,3 +23,30 @@ export const attendanceSettingsSchema = z.object({
 })
 
 export type AttendanceSettingsInput = z.infer<typeof attendanceSettingsSchema>
+
+export const organizationSettingsSchema = z.object({
+  company_name: z.string().min(2, 'Company name is required'),
+  head_office_location_id: z.number().int().positive('Select a head office location'),
+  default_timezone: z.string().min(1, 'Timezone is required'),
+  default_currency: z.string().min(1, 'Currency is required'),
+})
+
+export type OrganizationSettingsForm = z.infer<typeof organizationSettingsSchema>
+
+export const brandingSchema = z.object({
+  primaryColor: z.string().default('var(--color-primary)'),
+  secondaryColor: z.string().default('var(--color-secondary)'),
+})
+
+export type BrandingForm = z.infer<typeof brandingSchema>
+
+export const regionalSchema = z.object({
+  defaultLanguage: z.string().default('English (US)'),
+  defaultTimezone: z.string().default('UTC-05:00 Eastern Time'),
+  defaultCurrency: z.string().default('USD ($)'),
+  dateFormat: z.string().default('MM/DD/YYYY'),
+  numberFormat: z.string().default('1,234.56'),
+  firstDayOfWeek: z.string().default('Sunday'),
+})
+
+export type RegionalForm = z.infer<typeof regionalSchema>

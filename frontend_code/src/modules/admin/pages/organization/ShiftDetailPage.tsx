@@ -19,21 +19,7 @@ import {
 } from '../../hooks/use-organization-shifts'
 import { archiveShift } from '../../api/organization'
 import { queryKeys } from '@/shared/lib/query-keys'
-
-const emptyShift: ShiftRow = {
-  id: 0,
-  name: '',
-  start_time: '09:00:00',
-  end_time: '18:00:00',
-  is_overnight: false,
-  grace_late_minutes: 15,
-  flexible_end: false,
-  break_duration_minutes: 60,
-  is_archived: false,
-  created_at: '',
-  updated_at: '',
-  changed_by: 1,
-}
+import { emptyShift } from '@/shared/mock/data/workforce'
 
 function shiftsListPath(pathname: string) {
   if (pathname.startsWith('/workforce')) return '/workforce/shifts'

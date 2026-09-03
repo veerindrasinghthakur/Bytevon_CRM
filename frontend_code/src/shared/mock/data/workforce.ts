@@ -97,6 +97,21 @@ export const legacyDepartmentCreationDefaults = {
   status: 'ACTIVE',
 } as const
 
+export const emptyShift = {
+  id: 0,
+  name: '',
+  start_time: '09:00:00',
+  end_time: '18:00:00',
+  is_overnight: false,
+  grace_late_minutes: 15,
+  flexible_end: false,
+  break_duration_minutes: 60,
+  is_archived: false,
+  created_at: '',
+  updated_at: '',
+  changed_by: 1,
+} as const
+
 // --- Shifts seed ---
 export interface ShiftRow {
   id: string

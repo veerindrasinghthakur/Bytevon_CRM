@@ -26,3 +26,15 @@ export const officeFormSchema = officeLocationSchema
 
 export type OfficeFormInput = z.input<typeof officeFormSchema>
 export type OfficeFormValues = z.output<typeof officeFormSchema>
+
+export const emptyOfficeForm: OfficeFormValues = {
+  name: '',
+  country: '',
+  city: '',
+  state: '',
+  timezone: 'Asia/Kolkata',
+  currency: 'INR',
+  fiscalMonth: 4,
+  address: '',
+  postal: '',
+}

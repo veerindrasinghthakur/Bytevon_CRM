@@ -10,9 +10,7 @@ import { useWorkingWeeks } from '../../hooks/use-organization'
 import { deleteWorkingWeek } from '../../api/organization'
 import type { WorkingWeekRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
-
-const DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const WEEKS_QK = ['organization', 'working-weeks'] as const
+import { weekKeys as WEEKS_QK, dayOptions as DAY } from '../../schemas/enums'
 
 /** Normalize mock (monday:true) or schema (working_days_of_week:[1,2,...]) into day indexes 0–6. */
 function toDayIndexes(w: WorkingWeekRow | Record<string, unknown>): number[] {

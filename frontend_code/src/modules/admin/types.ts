@@ -6,8 +6,25 @@ export type {
   UserFormInput,
 } from './schemas/users'
 export type { AdminRoleSchema, RoleFormInput } from './schemas/roles'
-export type { LeaveAccrualPolicyInput, LeavePolicyFormInput } from './schemas/leave'
-export type { OrganizationProfileInput, AttendanceSettingsInput } from './schemas/settings'
+export type { LeaveAccrualPolicyInput, LeavePolicyFormInput, LeaveTypeForm } from './schemas/leave'
+export type {
+  OrganizationProfileInput,
+  AttendanceSettingsInput,
+  OrganizationSettingsForm,
+  BrandingForm,
+  RegionalForm,
+} from './schemas/settings'
+
+export type RoleStatusFilter = 'All' | 'Active' | 'Archived'
+export type RoleCategoryFilter = 'All' | 'Core Role' | 'Operational' | 'Financial' | 'Standard'
+export type RoleFormMode = 'create' | 'edit'
+export type AdminUserStatus = 'Active' | 'Inactive' | 'Locked'
+
+export interface RoleFormProps {
+  mode: RoleFormMode
+  roleId?: string
+  duplicateFromId?: string
+}
 
 export type AdminRoleStatus = 'Active' | 'Archived'
 export type AdminRoleCategory = 'Core Role' | 'Operational' | 'Financial' | 'Standard'
@@ -223,6 +240,16 @@ export interface AuditListParams {
   dateTo?: string
   timeFrom?: string
   timeTo?: string
+}
+
+export interface AuditFilters {
+  [key: string]: string
+  action: string
+  module: string
+  dateFrom: string
+  dateTo: string
+  timeFrom: string
+  timeTo: string
 }
 
 

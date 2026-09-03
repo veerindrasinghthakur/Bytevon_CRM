@@ -3,18 +3,11 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
 import { myAdminRoutes } from '@/modules/admin/routes'
-import { useRoleForm, type RoleFormMode } from '../hooks/use-role-form'
-import { permissionActionLabels } from '../schemas/enums'
-import type { RolePermissionAction } from '../types'
+import { useRoleForm } from '../hooks/use-role-form'
+import { hierarchyLevels, inheritOptions, permissionActionLabels } from '../schemas/enums'
+import type { RoleFormProps, RolePermissionAction } from '../types'
 
-type Props = {
-  mode: RoleFormMode
-  roleId?: string
-  /** Create mode: pre-fill permissions from this role */
-  duplicateFromId?: string
-}
-
-export function RoleFormPage({ mode, roleId, duplicateFromId }: Props) {
+export function RoleFormPage({ mode, roleId, duplicateFromId }: RoleFormProps) {
   const form = useRoleForm(mode, roleId, duplicateFromId)
 
   if (form.isLoadingRole || form.isLoadingCatalog) {
@@ -53,16 +46,6 @@ export function RoleFormPage({ mode, roleId, duplicateFromId }: Props) {
       <PageHeader
         title={title}
         description={description}
-        actions={
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={form.cancel}>
-              Cancel
-            </Button>
-            <Button variant="primary" size="sm" isLoading={form.isSubmitting} onClick={form.submit}>
-              {mode === 'create' ? 'Create Role' : 'Save Changes'}
-            </Button>
-          </div>
-        }
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -91,7 +74,7 @@ export function RoleFormPage({ mode, roleId, duplicateFromId }: Props) {
                       onChange={(e) => form.setHierarchy(e.target.value)}
                       className="w-full border border-outline-variant rounded-lg px-4 py-2.5 text-body-sm outline-none focus:border-secondary bg-transparent"
                     >
-                      {['Select Level', '1 (Entry)', '2', '3', '4', '5 (Management)', '10 (Executive)'].map(
+                      {['Select Level', ...hierarchyLevels].map(
                         (o) => (
                           <option key={o}>{o}</option>
                         ),
@@ -107,7 +90,7 @@ export function RoleFormPage({ mode, roleId, duplicateFromId }: Props) {
                       onChange={(e) => form.setInherit(e.target.value)}
                       className="w-full border border-outline-variant rounded-lg px-4 py-2.5 text-body-sm outline-none focus:border-secondary bg-transparent"
                     >
-                      {['None (Custom)', 'Basic Employee', 'Financial Analyst', 'HR Manager'].map((o) => (
+                      {inheritOptions.map((o) => (
                         <option key={o}>{o}</option>
                       ))}
                     </select>

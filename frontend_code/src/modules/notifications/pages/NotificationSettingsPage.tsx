@@ -44,10 +44,6 @@ function Toggle({
 export function NotificationSettingsPage() {
   const s = useNotificationSettings()
 
-  if (s.isLoading) {
-    return <div className="py-16 text-center text-on-surface-variant">Loading settings…</div>
-  }
-
   const {
     register,
     handleSubmit,
@@ -90,6 +86,10 @@ export function NotificationSettingsPage() {
   const quietOn = watch('quietOn')
   const quietStart = watch('quietStart')
   const quietEnd = watch('quietEnd')
+
+  if (s.isLoading) {
+    return <div className="py-16 text-center text-on-surface-variant">Loading settings…</div>
+  }
 
   const onSubmit = (data: NotificationSettingsForm) => {
     Object.entries(data.channelEnabled).forEach(([id, enabled]) => {

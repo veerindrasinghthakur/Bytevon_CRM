@@ -1,56 +1,43 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
+import { looseLinkProps } from '@/shared/lib/safeNavigate'
 
-export const LEAVE_SETTINGS_NAV = [
-  { id: 'general', label: 'Types & Rules', icon: 'event_busy', to: '/admin/leave-settings' },
-  { id: 'policies', label: 'Policies', icon: 'policy', to: '/admin/leave-settings/policies' },
+const items = [
+  { label: 'Leave Types', to: '/admin/leave-settings' },
+  { label: 'Policies', to: '/admin/leave-settings/policies' },
 ] as const
 
 export function LeaveSettingsNav() {
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
-
-  const isActive = (to: string) => {
-    if (to === '/admin/leave-settings') {
-      return pathname === '/admin/leave-settings' || pathname === '/admin/leave-settings/'
-    }
-    if (to === '/admin/leave-settings/policies') {
-      return pathname.startsWith('/admin/leave-settings/policies')
-    }
-    return pathname === to || pathname.startsWith(to + '/')
-  }
+  const pathname = useRouterState({ select: (state) => state.location.pathname })
 
   return (
     <nav
-      className="w-full bg-surface-container-lowest border border-outline-variant rounded-xl shadow-sm scrollbar-hide"
-      aria-label="Leave settings sections"
+      aria-label="Leave settings"
+      className="flex gap-1 overflow-x-auto border-b border-outline-variant"
     >
-      <ul className="flex flex-row items-stretch">
-        {LEAVE_SETTINGS_NAV.map((item) => {
-          const active = isActive(item.to)
-          return (
-            <li key={item.id} className="flex-1">
-              <Link
-                to={item.to as never}
-                title={item.label}
-                className={cn(
-                  'flex flex-col items-center justify-center gap-1 px-3 py-2.5 text-[11px] border-b-2 transition-colors duration-200',
-                  active
-                    ? 'border-secondary text-secondary font-semibold bg-secondary/5'
-                    : 'border-transparent text-on-surface-variant hover:bg-surface-container-low hover:text-on-background',
-                )}
-              >
-                <span
-                  className="material-symbols-outlined text-[22px]"
-                  style={active ? { fontVariationSettings: "'FILL' 1" } : undefined}
-                >
-                  {item.icon}
-                </span>
-                <span className="hidden sm:block">{item.label}</span>
-              </Link>
-            </li>
-          )
-        })}
-      </ul>
+      {items.map((item) => {
+        const isActive =
+          item.to === '/admin/leave-settings'
+            ? pathname === item.to
+            : pathname === item.to || pathname.startsWith(item.to + '/')
+
+        return (
+          <Link
+            key={item.to}
+            {...looseLinkProps({
+              to: item.to,
+              className: cn(
+                'whitespace-nowrap px-4 py-3 text-label-md transition-colors',
+                isActive
+                  ? 'border-b-2 border-secondary text-secondary font-semibold'
+                  : 'text-on-surface-variant hover:text-on-background',
+              ),
+            })}
+          >
+            {item.label}
+          </Link>
+        )
+      })}
     </nav>
   )
 }

@@ -35,4 +35,9 @@ export const leaveAccrualPolicySchema = z.object({
 export type LeaveAccrualPolicyInput = z.infer<typeof leaveAccrualPolicySchema>
 
 /** Re-export form schema from dedicated file */
-export { leavePolicyFormSchema, type LeavePolicyFormInput } from './leave-form'
+export {
+  leavePolicyFormSchema,
+  leaveTypeFormSchema,
+  type LeavePolicyFormInput,
+  type LeaveTypeForm,
+} from './leave-form'

@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
@@ -14,15 +13,7 @@ import {
   useOrgLocationsForSelect,
   useUpdateOrganizationSettings,
 } from '../../hooks/use-organization'
-
-const organizationSettingsSchema = z.object({
-  company_name: z.string().min(2, 'Company name is required'),
-  head_office_location_id: z.number().int().positive('Select a head office location'),
-  default_timezone: z.string().min(1, 'Timezone is required'),
-  default_currency: z.string().min(1, 'Currency is required'),
-})
-
-type OrganizationSettingsForm = z.infer<typeof organizationSettingsSchema>
+import { organizationSettingsSchema, type OrganizationSettingsForm } from '../../schemas/settings'
 
 export function OrganizationSettingsPage() {
   const settingsQ = useOrganizationSettings()

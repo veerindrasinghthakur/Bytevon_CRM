@@ -8,20 +8,8 @@ import { Button } from '@/shared/components/ui/Button'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 import { createLocation, getLocation, updateLocation } from '../api/organization'
-import { officeFormSchema, type OfficeFormValues } from '../schemas/offices'
+import { emptyOfficeForm, officeFormSchema, type OfficeFormValues } from '../schemas/offices'
 import { queryKeys } from '@/shared/lib/query-keys'
-
-const emptyOfficeForm = {
-  name: '',
-  country: '',
-  city: '',
-  state: '',
-  timezone: 'Asia/Kolkata',
-  currency: 'INR',
-  fiscalMonth: 4,
-  address: '',
-  postal: '',
-}
 
 export function OfficeFormPage() {
   const navigate = useNavigate()

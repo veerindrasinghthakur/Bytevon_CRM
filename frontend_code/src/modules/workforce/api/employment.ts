@@ -266,7 +266,7 @@ export async function createEmployment(input: CreateEmploymentSchemaInput) {
     position_id: input.positionId,
     location_id: input.locationId,
     shift_id: input.shiftId,
-    work_mode: (input.workMode as WorkMode) || 'OFFICE',
+    work_mode: (input.workMode) || 'OFFICE',
     effective_from: input.joiningDate,
     effective_to: null,
     change_reason: 'Initial assignment',

@@ -5,13 +5,11 @@ import { useListControls } from '@/shared/hooks/useListControls'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { listAdminRoles } from '../api/roles'
 import { getRoleListMetrics } from '../api/metrics'
-import type { AdminRole } from '../types'
-
-const STATUS_OPTIONS = ['All', 'Active', 'Archived'] as const
-const CATEGORY_OPTIONS = ['All', 'Core Role', 'Operational', 'Financial', 'Standard'] as const
-
-export type RoleStatusFilter = (typeof STATUS_OPTIONS)[number]
-export type RoleCategoryFilter = (typeof CATEGORY_OPTIONS)[number]
+import type { AdminRole, RoleCategoryFilter, RoleStatusFilter } from '../types'
+import {
+  roleFilterCategoryOptions as CATEGORY_OPTIONS,
+  roleFilterStatusOptions as STATUS_OPTIONS,
+} from '../schemas/enums'
 
 const FILTER_DEFAULTS = {
   status: 'All' as RoleStatusFilter,

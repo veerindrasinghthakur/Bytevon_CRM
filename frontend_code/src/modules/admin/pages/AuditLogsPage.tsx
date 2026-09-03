@@ -22,19 +22,11 @@ import { useListControls } from '@/shared/hooks/useListControls'
 import { ResourceName } from '@/shared/schema'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { listAuditLogs } from '../api/audit'
-import type { AuditLog } from '../types'
+import type { AuditFilters, AuditLog } from '../types'
 import { auditActionBadge, auditActionDot, resolveAuditActionKey } from '../schemas/enums'
+import { auditActionOptions as ACTION_OPTIONS, auditModuleOptions as MODULE_OPTIONS } from '../schemas/enums'
 import { cn } from '@/shared/lib/cn'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
-
-type AuditFilters = {
-  action: string
-  module: string
-  dateFrom: string
-  dateTo: string
-  timeFrom: string
-  timeTo: string
-}
 
 const FILTER_DEFAULTS: AuditFilters = {
   action: 'All Actions',
@@ -44,9 +36,6 @@ const FILTER_DEFAULTS: AuditFilters = {
   timeFrom: '',
   timeTo: '',
 }
-
-const ACTION_OPTIONS = ['All Actions', 'Create', 'Update', 'Delete', 'Login', 'Lock']
-const MODULE_OPTIONS = ['All Modules', 'Roles', 'Auth', 'Settings', 'Users']
 
 function AuditQuickContent({ log }: { log: AuditLog }) {
   return (

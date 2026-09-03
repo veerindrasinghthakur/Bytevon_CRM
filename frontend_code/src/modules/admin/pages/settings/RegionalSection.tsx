@@ -1,71 +1,15 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { Select } from '@/shared/components/ui/Select'
-
-const regionalSchema = z.object({
-  defaultLanguage: z.string().default('English (US)'),
-  defaultTimezone: z.string().default('UTC-05:00 Eastern Time'),
-  defaultCurrency: z.string().default('USD ($)'),
-  dateFormat: z.string().default('MM/DD/YYYY'),
-  numberFormat: z.string().default('1,234.56'),
-  firstDayOfWeek: z.string().default('Sunday'),
-})
-
-type RegionalForm = z.infer<typeof regionalSchema>
-
-const languageOptions = [
-  { value: 'English (US)', label: 'English (US)' },
-  { value: 'English (UK)', label: 'English (UK)' },
-  { value: 'Spanish', label: 'Spanish' },
-  { value: 'French', label: 'French' },
-  { value: 'German', label: 'German' },
-  { value: 'Portuguese', label: 'Portuguese' },
-  { value: 'Chinese', label: 'Chinese' },
-  { value: 'Japanese', label: 'Japanese' },
-]
-
-const timezoneOptions = [
-  { value: 'UTC-05:00 Eastern Time', label: 'UTC-05:00 Eastern Time' },
-  { value: 'UTC-06:00 Central Time', label: 'UTC-06:00 Central Time' },
-  { value: 'UTC-07:00 Mountain Time', label: 'UTC-07:00 Mountain Time' },
-  { value: 'UTC-08:00 Pacific Time', label: 'UTC-08:00 Pacific Time' },
-  { value: 'UTC+00:00 UTC', label: 'UTC+00:00 UTC' },
-  { value: 'UTC+01:00 CET', label: 'UTC+01:00 CET' },
-  { value: 'UTC+05:30 IST', label: 'UTC+05:30 IST' },
-  { value: 'UTC+08:00 CST', label: 'UTC+08:00 CST' },
-  { value: 'UTC+09:00 JST', label: 'UTC+09:00 JST' },
-]
-
-const currencyOptions = [
-  { value: 'USD ($)', label: 'USD ($)' },
-  { value: 'EUR (€)', label: 'EUR (€)' },
-  { value: 'GBP (£)', label: 'GBP (£)' },
-  { value: 'INR (₹)', label: 'INR (₹)' },
-  { value: 'JPY (¥)', label: 'JPY (¥)' },
-  { value: 'CNY (¥)', label: 'CNY (¥)' },
-  { value: 'SGD ($)', label: 'SGD ($)' },
-  { value: 'AUD ($)', label: 'AUD ($)' },
-]
-
-const dateFormatOptions = [
-  { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
-  { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
-  { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' },
-  { value: 'DD.MM.YYYY', label: 'DD.MM.YYYY' },
-]
-
-const numberFormatOptions = [
-  { value: '1,234.56', label: '1,234.56 (US/UK)' },
-  { value: '1.234,56', label: '1.234,56 (EU)' },
-  { value: '1 234,56', label: '1 234,56 (Space)' },
-]
-
-const firstDayOptions = [
-  { value: 'Sunday', label: 'Sunday' },
-  { value: 'Monday', label: 'Monday' },
-  { value: 'Saturday', label: 'Saturday' },
-]
+import { regionalSchema, type RegionalForm } from '../../schemas/settings'
+import {
+  currencyOptions,
+  dateFormatOptions,
+  firstDayOptions,
+  languageOptions,
+  numberFormatOptions,
+  timezoneOptions,
+} from '../../schemas/enums'
 
 export function RegionalSection() {
   const form = useForm<RegionalForm>({
