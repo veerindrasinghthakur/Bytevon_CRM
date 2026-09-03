@@ -37,17 +37,23 @@ export function looseParams(params?: Record<string, string>): never {
  * Spread onto <Link /> so strict MakeRequiredPathParams / search never errors
  * do not block compile. Prefer this over hand-written `as never` on each Link.
  *
- * Returns a concrete `any` (double-cast) so TS never narrows the spread props
- * back to a partial Link props object missing required params/search.
+ * Input params/search are typed as `any` so contextual typing from Link generics
+ * cannot force ParamsReducerFn onto the object literal inside the call.
+ * Returns `any` so the spread itself is not re-checked against Link props.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function looseLinkProps(opts: {
   to: string
-  params?: Record<string, string>
-  search?: Record<string, unknown>
+  // any — avoids TS2353 when Link contextual-types the argument
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  params?: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  search?: any
   className?: string
   // allow extra Link props without listing every one
-  [key: string]: unknown
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key: string]: any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 }): any {
   // Explicit `as any` on the object — return-type annotation alone is not always
   // enough when the result is spread into a generic Link component.
