@@ -2,6 +2,7 @@ import { Link, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { looseLinkProps } from '@/shared/lib/safeNavigate'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { TeamTopView } from '../components/TeamTopView'
 import { useTeamDetail } from '../hooks/use-team-detail'
@@ -46,12 +47,12 @@ export function TeamProjectsPage() {
         {projects.map((p) => (
           <Link
             key={p.id}
-            {...({
+            {...looseLinkProps({
               to: projectRoutes.projectDetailPath,
               params: { projectId: String(p.id) },
-              search: {},
-            } as never)}
-            className="bv-surface card-hover p-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between"
+              className:
+                'bv-surface card-hover p-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between',
+            })}
           >
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2 mb-1">

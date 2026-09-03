@@ -6,7 +6,7 @@ import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { cn } from '@/shared/lib/cn'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import {
   workforceAttendanceStatusStyles,
@@ -136,8 +136,10 @@ export function AttendanceDashboardPage() {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-title-md font-semibold">Recent check-ins</h2>
             <Link
-              {...({ to: workforceRoutes.attendanceEmployees, params: {}, search: {} } as never)}
-              className="text-label-sm text-secondary hover:underline"
+              {...looseLinkProps({
+                to: workforceRoutes.attendanceEmployees,
+                className: 'text-label-sm text-secondary hover:underline',
+              })}
             >
               View all
             </Link>

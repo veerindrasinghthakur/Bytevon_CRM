@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { teams, membersFor } from '@/shared/mock/data/workforce'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 import { RouteCrumbs } from '../components/RouteCrumbs'
 import { cn } from '@/shared/lib/cn'
 
@@ -150,12 +150,11 @@ export function TeamEditPage() {
                   <p className="text-caption text-on-surface-variant">{m.role} · {m.title}</p>
                 </div>
                 <Link
-                  {...({
+                  {...looseLinkProps({
                     to: '/workforce/employees/$employeeId',
                     params: { employeeId: String(m.id) },
-                    search: {},
-                  } as never)}
-                  className="text-secondary text-label-sm font-semibold"
+                    className: 'text-secondary text-label-sm font-semibold',
+                  })}
                 >
                   View
                 </Link>

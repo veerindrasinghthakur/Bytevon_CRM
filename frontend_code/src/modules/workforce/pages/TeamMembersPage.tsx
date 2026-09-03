@@ -3,6 +3,7 @@ import { Link, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { looseLinkProps } from '@/shared/lib/safeNavigate'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { TeamTopView } from '../components/TeamTopView'
 import { useTeamDetail } from '../hooks/use-team-detail'
@@ -89,12 +90,11 @@ export function TeamMembersPage() {
               <tr key={m.id} className="zebra-row">
                 <td className="px-6 py-4">
                   <Link
-                    {...({
+                    {...looseLinkProps({
                       to: workforceRoutes.employeeDetailPath,
                       params: { employeeId: String(m.id) },
-                      search: {},
-                    } as never)}
-                    className="flex items-center gap-3 hover:opacity-90"
+                      className: 'flex items-center gap-3 hover:opacity-90',
+                    })}
                   >
                     <div className="w-9 h-9 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
                       {m.name
