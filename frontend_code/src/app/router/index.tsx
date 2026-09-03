@@ -10,6 +10,7 @@ import { AuthLayout } from '@/app/layouts/AuthLayout'
 import { loadStoredSession } from '@/modules/auth/api/auth'
 import { NotFoundPage } from '@/modules/auth'
 import { createAuthRoutes, authRoutes } from '@/modules/auth/routes'
+import { safeRedirectOpts } from '@/shared/lib/safeNavigate'
 
 import { createDashboardRoutes, dashboardRoutes } from '@/modules/dashboard/routes'
 import { createProfileRoutes } from '@/modules/profile/routes'
@@ -30,10 +31,12 @@ import {
 function requireAuth() {
   const session = loadStoredSession()
   if (!session) {
-    throw redirect({
-      to: authRoutes.login,
-      search: { redirect: window.location.pathname } as const,
-    })
+    throw redirect(
+      safeRedirectOpts({
+        to: authRoutes.login,
+        search: { redirect: window.location.pathname },
+      }),
+    )
   }
 }
 
@@ -61,8 +64,7 @@ const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   beforeLoad: () => {
-    const session = loadStoredSession()
-    throw redirect({ to: dashboardRoutes.root, search: {} })
+    throw redirect(safeRedirectOpts({ to: dashboardRoutes.root }))
   },
 })
 

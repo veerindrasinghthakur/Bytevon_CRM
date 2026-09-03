@@ -52,13 +52,13 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
       description: '',
       category: undefined,
       status: undefined,
-      hierarchy: 'Select Level',
+      hierarchy: undefined,
       inherit: 'None (Custom)',
       active: true,
     },
   })
 
-  const { watch, setValue, reset: resetForm } = form
+  const { reset: resetForm } = form
 
   const [matrix, setMatrix] = useState<RolePermissionMatrix>({})
   const [seededFromDuplicate, setSeededFromDuplicate] = useState(false)
@@ -200,6 +200,8 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
   const isLoadingSource =
     mode === 'create' && Boolean(duplicateFromId) && sourceRoleQuery.isLoading
 
+  const values = form.watch()
+
   return {
     mode,
     role,
@@ -208,6 +210,19 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
     isLoadingRole: (mode === 'edit' && roleQuery.isLoading) || isLoadingSource,
     isLoadingCatalog: catalogQuery.isLoading,
     form,
+    /** Convenience mirrors for pages still using flat field API */
+    name: values.name,
+    setName: (v: string) => form.setValue('name', v, { shouldValidate: true }),
+    description: values.description ?? '',
+    setDescription: (v: string) => form.setValue('description', v),
+    hierarchy: values.hierarchy ?? '',
+    setHierarchy: (v: string) =>
+      form.setValue('hierarchy', v as RoleFormInput['hierarchy'], { shouldValidate: true }),
+    inherit: values.inherit ?? 'None (Custom)',
+    setInherit: (v: string) =>
+      form.setValue('inherit', v as RoleFormInput['inherit'], { shouldValidate: true }),
+    active: values.active,
+    setActive: (v: boolean) => form.setValue('active', v),
     matrix,
     toggleCell,
     toggleRowAll,
@@ -216,7 +231,7 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
     resetMatrix,
     actions,
     modules,
-    submit: form.handleSubmit((values) => saveMutation.mutate(values)),
+    submit: form.handleSubmit((v) => saveMutation.mutate(v)),
     isSubmitting: saveMutation.isPending,
     cancel,
   }

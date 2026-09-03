@@ -3,6 +3,7 @@ import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 import { loadStoredSession } from './api/auth'
 import { dashboardRoutes } from '@/modules/dashboard/routes'
+import { safeRedirectOpts } from '@/shared/lib/safeNavigate'
 
 const LoginPage = lazyPage(() => import('./pages/LoginPage'), 'LoginPage')
 const ForgotPasswordPage = lazyPage(() => import('./pages/ForgotPasswordPage'), 'ForgotPasswordPage')
@@ -19,12 +20,14 @@ export const authRoutes = {
   sessionExpired: '/session-expired',
   accessDenied: '/access-denied',
   notFound: '/not-found',
+  /** Post-auth landing — not an auth path; kept for page helpers. */
+  dashboard: '/dashboard',
 } as const
 
 function requireGuest() {
   const session = loadStoredSession()
   if (session) {
-    throw redirect({ to: dashboardRoutes.root, search: {} })
+    throw redirect(safeRedirectOpts({ to: dashboardRoutes.root }))
   }
 }
 
@@ -51,6 +54,7 @@ export function createAuthRoutes<TParent extends AnyRoute>(authLayoutRoute: TPar
       beforeLoad: () => {
         requireGuest()
       },
+      validateSearch: (search: Record<string, unknown>) => search,
       component: ForgotPasswordPage,
     }),
     createRoute({
@@ -64,16 +68,19 @@ export function createAuthRoutes<TParent extends AnyRoute>(authLayoutRoute: TPar
     createRoute({
       getParentRoute: () => authLayoutRoute,
       path: authRoutes.sessionExpired,
+      validateSearch: (search: Record<string, unknown>) => search,
       component: SessionExpiredPage,
     }),
     createRoute({
       getParentRoute: () => authLayoutRoute,
       path: authRoutes.accessDenied,
+      validateSearch: (search: Record<string, unknown>) => search,
       component: AccessDeniedPage,
     }),
     createRoute({
       getParentRoute: () => authLayoutRoute,
       path: authRoutes.notFound,
+      validateSearch: (search: Record<string, unknown>) => search,
       component: NotFoundPage,
     }),
   ]

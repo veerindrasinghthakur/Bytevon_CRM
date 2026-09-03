@@ -50,7 +50,7 @@ export * from './api/metrics'
 export * from './api/offices'
 export * from './api/security'
 
-// Hooks
+// Hooks (explicit — no barrel ./hooks folder)
 export { useLocationsList, useLocationDetail, useUpdateLocation } from './hooks/use-organization-locations'
 export { useShiftsList, useShiftDetail, useShiftStaff, useCreateShift, useUpdateShift } from './hooks/use-organization-shifts'
 export {
@@ -66,4 +66,3 @@ export { useUsersList } from './hooks/use-users-list'
 export { useUserCreate } from './hooks/use-user-create'
 export { useRolesList } from './hooks/use-roles-list'
 export { useRoleForm } from './hooks/use-role-form'
-export * from './hooks'

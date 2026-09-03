@@ -1,10 +1,9 @@
 /**
- * TanStack Router often types route `search` as `never` when there are no
- * real search params (or when the route tree is registered loosely).
- * Typed `navigate({ to })` then fails with MakeRequiredSearchParams / ParamsReducerFn.
+ * TanStack Router often types route `search` / `params` strictly when the route
+ * tree is registered loosely. Typed navigate/Link/redirect then fails with
+ * MakeRequiredSearchParams / ParamsReducerFn.
  *
- * Use this helper for path-only navigations so the whole module stays clean.
- * Always injects `search: {}` unless the caller provides an explicit search object.
+ * Always prefer these helpers for path navigations so modules stay clean.
  */
 export type NavigateFn = (opts: never) => unknown
 
@@ -18,4 +17,18 @@ export type SafeNavigateOpts = {
 
 export function safeNavigate(navigate: NavigateFn, opts: SafeNavigateOpts): void {
   void navigate({ search: {}, ...opts } as never)
+}
+
+/** For redirect() from beforeLoad / loaders. */
+export function safeRedirectOpts(opts: SafeNavigateOpts): never {
+  return { search: {}, ...opts } as never
+}
+
+/** For <Link search={...} /> / params when router types search as never. */
+export function looseSearch(search?: Record<string, unknown>): never {
+  return (search ?? {}) as never
+}
+
+export function looseParams(params?: Record<string, string>): never {
+  return (params ?? {}) as never
 }
