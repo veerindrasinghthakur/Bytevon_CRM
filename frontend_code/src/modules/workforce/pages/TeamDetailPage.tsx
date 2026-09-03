@@ -8,7 +8,7 @@ import { TeamTopView } from '../components/TeamTopView'
 import { useTeamDetail } from '../hooks/use-team-detail'
 import { workforceRoutes } from '../routes'
 import { projectRoutes } from '@/modules/projects/routes'
-import { looseParams, looseSearch, safeNavigate } from '@/shared/lib/safeNavigate'
+import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -114,10 +114,11 @@ export function TeamDetailPage() {
                   <tr key={m.id} className="zebra-row">
                     <td className="px-5 py-3">
                       <Link
-                        to={workforceRoutes.employeeDetailPath}
-                        params={looseParams({ employeeId: String(m.id) })}
-                        search={looseSearch()}
-                        className="flex items-center gap-3"
+                        {...looseLinkProps({
+                          to: workforceRoutes.employeeDetailPath,
+                          params: { employeeId: String(m.id) },
+                          className: 'flex items-center gap-3',
+                        })}
                       >
                         <div className="w-9 h-9 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
                           {m.name
@@ -147,10 +148,11 @@ export function TeamDetailPage() {
                     </td>
                     <td className="px-5 py-3 text-right">
                       <Link
-                        to={workforceRoutes.employeeDetailPath}
-                        params={looseParams({ employeeId: String(m.id) })}
-                        search={looseSearch()}
-                        className="text-secondary text-label-md font-semibold hover:underline"
+                        {...looseLinkProps({
+                          to: workforceRoutes.employeeDetailPath,
+                          params: { employeeId: String(m.id) },
+                          className: 'text-secondary text-label-md font-semibold hover:underline',
+                        })}
                       >
                         View
                       </Link>
@@ -185,10 +187,12 @@ export function TeamDetailPage() {
               {activeProjects.map((p) => (
                 <Link
                   key={p.id}
-                  to={projectRoutes.projectDetailPath}
-                  params={looseParams({ projectId: String(p.id) })}
-                  search={looseSearch()}
-                  className="block border border-outline-variant rounded-lg p-4 hover:border-secondary transition-colors card-hover"
+                  {...looseLinkProps({
+                    to: projectRoutes.projectDetailPath,
+                    params: { projectId: String(p.id) },
+                    className:
+                      'block border border-outline-variant rounded-lg p-4 hover:border-secondary transition-colors card-hover',
+                  })}
                 >
                   <div className="flex justify-between mb-2">
                     <div>
