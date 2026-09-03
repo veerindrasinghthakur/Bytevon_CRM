@@ -8,6 +8,7 @@ import { RefreshButton } from '@/shared/components/ui/RefreshButton'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useTeamDetail } from '../hooks/use-team-detail'
 import { projectRoutes } from '../routes'
 import type { TeamStatus } from '../types'
@@ -62,7 +63,7 @@ export function TeamDetailPage() {
     return (
       <div className="text-center py-16">
         <p className="text-body-md text-error mb-3">Team not found.</p>
-        <Link to={teamsListTo} search={{}}>
+        <Link {...({ to: teamsListTo, params: {}, search: {} } as never)}>
           <Button variant="outline">Back to Teams</Button>
         </Link>
       </div>
@@ -79,7 +80,10 @@ export function TeamDetailPage() {
         backLabel="Back to teams"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to={teamsListTo} search={{}} className="hover:text-secondary">
+            <Link
+              {...({ to: teamsListTo, params: {}, search: {} } as never)}
+              className="hover:text-secondary"
+            >
               Teams
             </Link>
             <span className="mx-2">/</span>
@@ -260,7 +264,10 @@ export function TeamDetailPage() {
                 <span className="material-symbols-outlined text-secondary">folder_open</span>
                 Recent projects
               </h3>
-              <Link to="/projects" search={{}} className="text-sm font-semibold text-secondary hover:underline">
+              <Link
+                {...({ to: '/projects', params: {}, search: {} } as never)}
+                className="text-sm font-semibold text-secondary hover:underline"
+              >
                 View all
               </Link>
             </div>
@@ -273,7 +280,10 @@ export function TeamDetailPage() {
                     key={p.id}
                     className="px-5 py-3 flex items-center justify-between hover:bg-surface-container-low cursor-pointer"
                     onClick={() =>
-                      navigate({ to: projectRoutes.projectDetail(p.id), params: { projectId: String(p.id) } })
+                      safeNavigate(navigate, {
+                        to: projectRoutes.projectDetailPath,
+                        params: { projectId: String(p.id) },
+                      })
                     }
                   >
                     <div>
