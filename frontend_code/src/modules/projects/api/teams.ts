@@ -339,15 +339,16 @@ export async function createTeam(input: {
   if (input.projectId) {
     const pIdx = db.projects.findIndex((p) => p.id === input.projectId)
     if (pIdx !== -1) {
-      const prev = db.projects[pIdx] as unknown as Record<string, unknown>
-      db.projects[pIdx] = {
+      const projects = db.projects as unknown as Array<Record<string, unknown>>
+      const prev = projects[pIdx] ?? {}
+      projects[pIdx] = {
         ...prev,
         teamId: row.id,
         teamCount: 1,
         updatedAt: new Date().toISOString(),
-      } as (typeof db.projects)[number]
-      if (!row.projectName) {
-        row.projectName = db.projects[pIdx].name
+      }
+      if (!row.projectName && typeof projects[pIdx].name === 'string') {
+        row.projectName = projects[pIdx].name as string
       }
     }
   }

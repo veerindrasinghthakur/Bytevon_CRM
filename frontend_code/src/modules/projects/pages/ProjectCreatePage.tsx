@@ -6,7 +6,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Select } from '@/shared/components/ui/Select'
 import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 import { createProjectSchema, type CreateProjectInput } from '../schemas/project'
 import { useCreateProject } from '../hooks/use-projects'
 import { useTeams } from '../hooks/use-teams'
@@ -16,6 +16,8 @@ import { createTeam } from '../api/teams'
 import { ProjectPhaseOptions, ProjectPriorityOptions } from '../enums'
 
 type AssignMode = 'existing' | 'new' | 'later'
+type PhaseValue = (typeof ProjectPhaseOptions)[number]['value']
+type PriorityValue = (typeof ProjectPriorityOptions)[number]['value']
 
 export function ProjectCreatePage() {
   const navigate = useNavigate()
@@ -24,8 +26,8 @@ export function ProjectCreatePage() {
 
   const [assignMode, setAssignMode] = useState<AssignMode>('later')
   const [selectedTeam, setSelectedTeam] = useState<EntityOption | null>(null)
-  const [phase, setPhase] = useState(ProjectPhaseOptions[0]?.value ?? 'DISCOVERY')
-  const [priority, setPriority] = useState(ProjectPriorityOptions[1]?.value ?? 'MEDIUM')
+  const [phase, setPhase] = useState<PhaseValue>(ProjectPhaseOptions[0]?.value ?? 'DISCOVERY')
+  const [priority, setPriority] = useState<PriorityValue>(ProjectPriorityOptions[1]?.value ?? 'MEDIUM')
 
   const teamOptions: EntityOption[] = useMemo(
     () =>
@@ -110,8 +112,11 @@ export function ProjectCreatePage() {
             </p>
           </div>
           <Link
-            {...({ to: projectRoutes.list, params: {}, search: {} } as never)}
-            className="text-on-surface-variant hover:text-error p-1 rounded-md hover:bg-surface-container"
+            {...looseLinkProps({
+              to: projectRoutes.list,
+              className:
+                'text-on-surface-variant hover:text-error p-1 rounded-md hover:bg-surface-container',
+            })}
           >
             <span className="material-symbols-outlined">close</span>
           </Link>
@@ -249,14 +254,14 @@ export function ProjectCreatePage() {
                     <Select
                       label="Phase"
                       value={phase}
-                      onChange={setPhase}
+                      onChange={(v) => setPhase(v as PhaseValue)}
                       options={ProjectPhaseOptions}
                       aria-label="Project phase"
                     />
                     <Select
                       label="Priority"
                       value={priority}
-                      onChange={setPriority}
+                      onChange={(v) => setPriority(v as PriorityValue)}
                       options={ProjectPriorityOptions}
                       aria-label="Project priority"
                     />
