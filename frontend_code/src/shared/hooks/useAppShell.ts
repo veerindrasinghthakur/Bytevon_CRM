@@ -13,6 +13,7 @@ import { HEADER_HEIGHT_PX } from '@/shared/components/layout/Header'
 import { getActiveModule } from './useSecondaryNav'
 import { useAuth } from '@/modules/auth'
 import { authRoutes } from '@/modules/auth/routes'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 
 export function useAppShell() {
   const [isRailExpanded, setIsRailExpanded] = useState(false)
@@ -51,7 +52,7 @@ export function useAppShell() {
 
   const handleLogout = async () => {
     await logout()
-    void navigate({ to: authRoutes.login, search: {} } as never)
+    safeNavigate(navigate, { to: authRoutes.login })
   }
 
   return {
