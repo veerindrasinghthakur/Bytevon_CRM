@@ -3,6 +3,7 @@ import { authRoutes } from '../routes'
 import { Button } from '@/shared/components/ui/Button'
 import { BrandLogo, BrandMark } from '@/shared/components/brand/BrandLogo'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
+import { looseSearch } from '@/shared/lib/safeNavigate'
 import { useLoginForm } from '../hooks/useLoginForm'
 import { AUTH_COPYRIGHT_YEAR } from '../schemas/auth'
 
@@ -139,6 +140,7 @@ export function LoginPage() {
                 </label>
                 <Link
                   to={authRoutes.forgotPassword}
+                  search={looseSearch()}
                   className="text-label-md text-secondary hover:underline"
                 >
                   Forgot Password?

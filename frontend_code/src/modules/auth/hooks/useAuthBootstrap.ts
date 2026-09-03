@@ -11,6 +11,11 @@ interface UseAuthBootstrapResult {
   setSession: (session: AuthSession | null) => void
 }
 
+function applyEmploymentFromSession(session: AuthSession | null) {
+  const employmentId = session?.user?.employmentId
+  setCurrentEmploymentId(employmentId != null ? employmentId : null)
+}
+
 export function useAuthBootstrap(): UseAuthBootstrapResult {
   const [session, setSessionState] = useState<AuthSession | null>(null)
   const [isBootstrapping, setIsBootstrapping] = useState(true)
@@ -23,11 +28,13 @@ export function useAuthBootstrap(): UseAuthBootstrapResult {
   const setSession = useCallback((newSession: AuthSession | null) => {
     setSessionState(newSession)
     persistSession(newSession)
+    applyEmploymentFromSession(newSession)
   }, [])
 
   useEffect(() => {
     const stored = loadStoredSession()
     setSessionState(stored)
+    applyEmploymentFromSession(stored)
     setIsBootstrapping(false)
   }, [])
 
@@ -41,7 +48,10 @@ export function useAuthBootstrap(): UseAuthBootstrapResult {
       if (inFlight) return
       inFlight = true
       void refreshApi(currentSession.tokens.refreshToken)
-        .then(setSessionState)
+        .then((next) => {
+          setSessionState(next)
+          applyEmploymentFromSession(next)
+        })
         .catch(() => {
           // keep session — network blip or offline must not log out
         })

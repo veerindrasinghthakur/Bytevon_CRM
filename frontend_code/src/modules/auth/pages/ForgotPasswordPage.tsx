@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { BrandLogo } from '@/shared/components/brand/BrandLogo'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
+import { looseSearch } from '@/shared/lib/safeNavigate'
 import { authRoutes } from '../routes'
 import { useForgotPasswordForm } from '../hooks/useForgotPasswordForm'
 import { AUTH_COPYRIGHT_YEAR, AUTH_DEMO_RESET_TOKEN } from '../schemas/auth'
@@ -20,7 +21,7 @@ export function ForgotPasswordPage() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <header className="w-full px-6 md:px-10 py-4 flex justify-between items-center border-b border-outline-variant/40">
-        <Link to={authRoutes.login} search={{}}>
+        <Link to={authRoutes.login} search={looseSearch()}>
           <BrandLogo
             withWordmark
             sizeClassName="w-8 h-8"
@@ -72,7 +73,7 @@ export function ForgotPasswordPage() {
                   </Button>
                   <Link
                     to={authRoutes.login}
-                    search={{}}
+                    search={looseSearch()}
                     className="w-full h-12 flex items-center justify-center gap-2 text-on-surface-variant text-label-md hover:text-on-background border border-transparent hover:border-outline-variant rounded-lg"
                   >
                     <span className="material-symbols-outlined text-[18px]">arrow_back</span>
@@ -102,7 +103,7 @@ export function ForgotPasswordPage() {
               <div className="flex flex-col gap-2">
                 <Link
                   to={authRoutes.resetPassword}
-                  search={{ token: AUTH_DEMO_RESET_TOKEN }}
+                  search={looseSearch({ token: AUTH_DEMO_RESET_TOKEN })}
                   className="text-secondary text-label-md font-medium hover:underline"
                 >
                   Continue to reset form (dev)
