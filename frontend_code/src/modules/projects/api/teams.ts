@@ -339,8 +339,9 @@ export async function createTeam(input: {
   if (input.projectId) {
     const pIdx = db.projects.findIndex((p) => p.id === input.projectId)
     if (pIdx !== -1) {
+      const prev = db.projects[pIdx] as unknown as Record<string, unknown>
       db.projects[pIdx] = {
-        ...db.projects[pIdx],
+        ...prev,
         teamId: row.id,
         teamCount: 1,
         updatedAt: new Date().toISOString(),

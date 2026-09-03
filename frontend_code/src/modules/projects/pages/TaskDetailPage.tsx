@@ -11,6 +11,7 @@ import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { useTaskDetail } from '../hooks/use-task-detail'
 import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
 import { projectRoutes } from '../routes'
+import type { TaskPriority, TaskStatus } from '../types'
 import { cn } from '@/shared/lib/cn'
 
 export function TaskDetailPage() {
@@ -50,7 +51,7 @@ export function TaskDetailPage() {
     return (
       <div className="text-center py-16">
         <p className="text-body-md text-error mb-3">Task not found.</p>
-        <Link to={projectRoutes.tasks} search={{}}>
+        <Link {...({ to: projectRoutes.tasks, params: {}, search: {} } as never)}>
           <Button variant="outline">Back to Tasks</Button>
         </Link>
       </div>
@@ -74,7 +75,10 @@ export function TaskDetailPage() {
         backLabel="Back to tasks"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to={projectRoutes.tasks} search={{}} className="hover:text-secondary">
+            <Link
+              {...({ to: projectRoutes.tasks, params: {}, search: {} } as never)}
+              className="hover:text-secondary"
+            >
               Tasks
             </Link>
             <span className="mx-2">/</span>
@@ -144,13 +148,13 @@ export function TaskDetailPage() {
                   <Select
                     label="Priority"
                     value={form.watch('priority')}
-                    onChange={(v) => form.setValue('priority', v)}
+                    onChange={(v) => form.setValue('priority', v as TaskPriority)}
                     options={priorityOptions}
                   />
                   <Select
                     label="Status"
                     value={form.watch('status')}
-                    onChange={(v) => form.setValue('status', v)}
+                    onChange={(v) => form.setValue('status', v as TaskStatus)}
                     options={statusOptions}
                   />
                   <div>
@@ -220,9 +224,11 @@ export function TaskDetailPage() {
               />
               {task.projectId ? (
                 <Link
-                  to={projectRoutes.projectDetailPath}
-                  params={{ projectId: String(task.projectId) }}
-                  search={{}}
+                  {...({
+                    to: projectRoutes.projectDetailPath,
+                    params: { projectId: String(task.projectId) },
+                    search: {},
+                  } as never)}
                   className="block text-sm font-semibold text-secondary hover:underline"
                 >
                   Open project →

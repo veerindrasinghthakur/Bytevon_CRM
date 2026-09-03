@@ -6,6 +6,7 @@ import { useNavigate, Link, useSearch } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useCreateTask } from '../hooks/use-tasks'
 import { useProject } from '../hooks/use-projects'
 import { projectRoutes } from '../routes'
@@ -25,7 +26,7 @@ export function TaskCreatePage() {
   const search = useSearch({ strict: false }) as { projectId?: string }
   const projectId = search.projectId ? Number(search.projectId) : undefined
   const { data: project } = useProject(
-    projectId != null && Number.isFinite(projectId) ? projectId : undefined
+    projectId != null && Number.isFinite(projectId) ? projectId : undefined,
   )
 
   const employeeOptions: EntityOption[] = useMemo(
@@ -35,7 +36,7 @@ export function TaskCreatePage() {
         label: e.fullName,
         sublabel: [e.role, e.department].filter(Boolean).join(' · '),
       })),
-    []
+    [],
   )
 
   const createMutation = useCreateTask()
@@ -67,9 +68,12 @@ export function TaskCreatePage() {
         assigneeName: data.assignee?.label,
       })
       if (projectId && Number.isFinite(projectId)) {
-        navigate({ to: projectRoutes.projectDetail(projectId), params: { projectId: String(projectId) } })
+        safeNavigate(navigate, {
+          to: projectRoutes.projectDetailPath,
+          params: { projectId: String(projectId) },
+        })
       } else {
-        navigate({ to: projectRoutes.tasks })
+        safeNavigate(navigate, { to: projectRoutes.tasks })
       }
     } catch {
       // shown below
@@ -83,10 +87,7 @@ export function TaskCreatePage() {
   return (
     <div className="max-w-2xl mx-auto animate-fade-in">
       <div className="mb-4">
-        <BackButton
-          to={backTo}
-          label={project ? `Back to ${project.name}` : 'Back to tasks'}
-        />
+        <BackButton to={backTo} label={project ? `Back to ${project.name}` : 'Back to tasks'} />
       </div>
 
       <div className="bv-surface overflow-hidden">
@@ -105,7 +106,7 @@ export function TaskCreatePage() {
             </div>
           </div>
           <Link
-            to={backTo as '/projects/tasks'}
+            {...({ to: backTo, params: {}, search: {} } as never)}
             className="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors"
           >
             <span className="material-symbols-outlined">close</span>
@@ -204,7 +205,7 @@ export function TaskCreatePage() {
           </div>
 
           <div className="p-5 border-t border-outline-variant bg-surface flex items-center justify-end gap-3">
-            <Button type="button" variant="outline" onClick={() => navigate({ to: backTo as '/projects/tasks' })}>
+            <Button type="button" variant="outline" onClick={() => safeNavigate(navigate, { to: backTo })}>
               Cancel
             </Button>
             <Button
@@ -212,9 +213,7 @@ export function TaskCreatePage() {
               variant="primary"
               isLoading={isSubmitting || createMutation.isPending}
               leftIcon={
-                <span className="material-symbols-outlined material-icons-filled text-sm">
-                  check
-                </span>
+                <span className="material-symbols-outlined material-icons-filled text-sm">check</span>
               }
             >
               Create Task
