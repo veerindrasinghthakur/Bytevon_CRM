@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 export const RecordStatusValues = ['Active', 'Inactive'] as const
 export type RecordStatus = (typeof RecordStatusValues)[number]
 
@@ -33,3 +35,11 @@ export const ActivityTypeValues = [
   'Proposal Sent',
 ] as const
 export type ActivityType = (typeof ActivityTypeValues)[number]
+
+/** Zod enums live here so entity/form files can import without circular TDZ. */
+export const recordStatusSchema = z.enum(RecordStatusValues)
+export const pipelineStageSchema = z.enum(PipelineStageValues)
+export const leadPrioritySchema = z.enum(LeadPriorityValues)
+export const clientTypeSchema = z.enum(ClientTypeValues)
+export const caseStudyStatusSchema = z.enum(CaseStudyStatusValues)
+export const activityTypeSchema = z.enum(ActivityTypeValues)

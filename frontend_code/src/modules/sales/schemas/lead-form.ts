@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { leadPrioritySchema, pipelineStageSchema, recordStatusSchema } from './lead'
+import { leadPrioritySchema, pipelineStageSchema, recordStatusSchema } from './enums'
 
 /** UI form (string budget / assigned id). */
 export const leadFormSchema = z.object({

@@ -1,6 +1,13 @@
 import { z } from 'zod'
-import { recordStatusSchema } from './lead'
-import { clientTypeSchema, clientContactFormSchema } from './client'
+import { clientTypeSchema, recordStatusSchema } from './enums'
+
+export const clientContactFormSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  designation: z.string(),
+  email: z.string().email().or(z.literal('')),
+  phone: z.string(),
+})
 
 /** UI form state for create/edit client (string fields + contacts array). */
 export const clientFormSchema = z.object({
