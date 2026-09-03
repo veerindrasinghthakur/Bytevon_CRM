@@ -14,6 +14,7 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { canCreateShift } from '../data/shiftsMock'
 import { useWorkforceShiftsList } from '../hooks/use-workforce-shifts'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -76,7 +77,11 @@ export function ShiftsListPage() {
       statusDotClass: s.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400',
       content: <ShiftQuickContent s={s} />,
       fullRecordLabel: 'Open full record',
-      onOpenFull: () => navigate({ to: '/workforce/shifts/$shiftId', params: { shiftId: s.id } }),
+      onOpenFull: () =>
+        safeNavigate(navigate, {
+          to: '/workforce/shifts/$shiftId',
+          params: { shiftId: String(s.id) },
+        }),
       widthClass: 'max-w-[520px]',
     })
   }
@@ -91,7 +96,7 @@ export function ShiftsListPage() {
             <Button
               variant="primary"
               leftIcon={<Icon name="add" />}
-              onClick={() => navigate({ to: '/workforce/shifts/new' })}
+              onClick={() => safeNavigate(navigate, { to: '/workforce/shifts/new' })}
             >
               Add Shift
             </Button>

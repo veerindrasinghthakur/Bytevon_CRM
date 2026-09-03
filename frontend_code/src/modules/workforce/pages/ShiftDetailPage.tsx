@@ -4,6 +4,7 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { canCreateShift, employeesOnShift, shifts } from '../data/shiftsMock'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
 function Icon({ name, className }: { name: string; className?: string }) {
@@ -63,7 +64,7 @@ export function ShiftDetailPage() {
               <Button
                 variant="primary"
                 leftIcon={<Icon name="add" />}
-                onClick={() => navigate({ to: '/workforce/shifts/new' })}
+                onClick={() => safeNavigate(navigate, { to: '/workforce/shifts/new' })}
               >
                 Add Shift
               </Button>
@@ -153,8 +154,11 @@ export function ShiftDetailPage() {
                 </td>
                 <td className="px-4 py-3 text-right">
                   <Link
-                    to="/workforce/employees/$employeeId"
-                    params={{ employeeId: String(m.id) }}
+                    {...({
+                      to: '/workforce/employees/$employeeId',
+                      params: { employeeId: String(m.id) },
+                      search: {},
+                    } as never)}
                     className="text-secondary text-label-md font-semibold hover:underline"
                   >
                     View
