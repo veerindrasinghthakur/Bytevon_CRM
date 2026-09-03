@@ -14,6 +14,7 @@ import {
   QuickMetaTile,
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
+import { looseLinkProps } from '@/shared/lib/safeNavigate'
 import { useCaseStudiesList } from '../hooks/use-case-studies-list'
 import type { CaseStudy } from '../types'
 import { cn } from '@/shared/lib/cn'
@@ -126,10 +127,7 @@ export function CaseStudiesListPage() {
         description="Published wins and drafts used in sales conversations."
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link
-              {...({ to: salesRoutes.root, params: {}, search: {} } as never)}
-              className="hover:text-secondary"
-            >
+            <Link {...looseLinkProps({ to: salesRoutes.root, className: 'hover:text-secondary' })}>
               Sales
             </Link>
             <span className="mx-2">/</span>
