@@ -6,7 +6,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { looseSearch, safeNavigate } from '@/shared/lib/safeNavigate'
 import { useClient, useCreateClient, useUpdateClient } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
 import { clientFormSchema, type ClientFormSchemaInput } from '../schemas/client-form'
@@ -53,6 +53,7 @@ export function ClientCreatePage() {
     name: 'contacts',
   })
 
+  const watchedContacts = form.watch('contacts') ?? []
   const [editingContactId, setEditingContactId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -152,11 +153,11 @@ export function ClientCreatePage() {
         backLabel="Back to clients"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to={salesRoutes.root} search={{}} className="hover:text-secondary">
+            <Link to={salesRoutes.root} search={looseSearch()} className="hover:text-secondary">
               Sales
             </Link>
             <span className="mx-2">/</span>
-            <Link to={salesRoutes.clients} search={{}} className="hover:text-secondary">
+            <Link to={salesRoutes.clients} search={looseSearch()} className="hover:text-secondary">
               Clients
             </Link>
             <span className="mx-2">/</span>
@@ -213,44 +214,25 @@ export function ClientCreatePage() {
               <label className={labelClass} htmlFor="industry">
                 Industry
               </label>
-              <input
-                id="industry"
-                {...form.register('industry')}
-                className={fieldClass}
-                placeholder="Technology"
-              />
+              <input id="industry" {...form.register('industry')} className={fieldClass} placeholder="Technology" />
             </div>
             <div>
               <label className={labelClass} htmlFor="website">
                 Website
               </label>
-              <input
-                id="website"
-                {...form.register('website')}
-                className={fieldClass}
-                placeholder="nexusglobal.com"
-              />
+              <input id="website" {...form.register('website')} className={fieldClass} placeholder="nexusglobal.com" />
             </div>
             <div>
               <label className={labelClass} htmlFor="taxId">
                 Tax ID
               </label>
-              <input
-                id="taxId"
-                {...form.register('taxId')}
-                className={fieldClass}
-              />
+              <input id="taxId" {...form.register('taxId')} className={fieldClass} />
             </div>
             <div>
               <label className={labelClass} htmlFor="founded">
                 Founding date
               </label>
-              <input
-                id="founded"
-                type="date"
-                {...form.register('founded')}
-                className={fieldClass}
-              />
+              <input id="founded" type="date" {...form.register('founded')} className={fieldClass} />
             </div>
           </div>
         </section>
@@ -262,32 +244,19 @@ export function ClientCreatePage() {
               <label className={labelClass} htmlFor="country">
                 Country
               </label>
-              <input
-                id="country"
-                {...form.register('country')}
-                className={fieldClass}
-                placeholder="United States"
-              />
+              <input id="country" {...form.register('country')} className={fieldClass} placeholder="United States" />
             </div>
             <div>
               <label className={labelClass} htmlFor="state">
                 State / Province
               </label>
-              <input
-                id="state"
-                {...form.register('state')}
-                className={fieldClass}
-              />
+              <input id="state" {...form.register('state')} className={fieldClass} />
             </div>
             <div>
               <label className={labelClass} htmlFor="city">
                 City
               </label>
-              <input
-                id="city"
-                {...form.register('city')}
-                className={fieldClass}
-              />
+              <input id="city" {...form.register('city')} className={fieldClass} />
             </div>
             <div className="md:col-span-2">
               <label className={labelClass} htmlFor="address">
@@ -324,6 +293,10 @@ export function ClientCreatePage() {
           <div className="space-y-3">
             {contacts.map((c, index) => {
               const open = editingContactId === c.id
+              const row = watchedContacts[index]
+              const displayName = row?.name ?? ''
+              const displayDesig = row?.designation ?? ''
+              const displayEmail = row?.email ?? ''
               return (
                 <div
                   key={c.id}
@@ -339,7 +312,7 @@ export function ClientCreatePage() {
                   >
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-9 h-9 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold shrink-0">
-                        {(c.name || '?')
+                        {(displayName || '?')
                           .split(' ')
                           .map((p) => p[0])
                           .join('')
@@ -348,10 +321,10 @@ export function ClientCreatePage() {
                       </div>
                       <div className="min-w-0">
                         <p className="font-semibold text-on-surface truncate">
-                          {c.name || `Contact ${index + 1}`}
+                          {displayName || `Contact ${index + 1}`}
                         </p>
                         <p className="text-xs text-on-surface-variant truncate">
-                          {[c.designation, c.email].filter(Boolean).join(' · ') || 'Click to edit'}
+                          {[displayDesig, displayEmail].filter(Boolean).join(' · ') || 'Click to edit'}
                         </p>
                       </div>
                     </div>
@@ -450,11 +423,7 @@ export function ClientCreatePage() {
           <Button type="submit" variant="primary" isLoading={saving}>
             {isEdit ? 'Save changes' : 'Create client'}
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => safeNavigate(navigate, { to: salesRoutes.clients })}
-          >
+          <Button type="button" variant="ghost" onClick={() => safeNavigate(navigate, { to: salesRoutes.clients })}>
             Cancel
           </Button>
         </div>

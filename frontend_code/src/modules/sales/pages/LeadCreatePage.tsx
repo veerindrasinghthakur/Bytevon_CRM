@@ -9,7 +9,7 @@ import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 import { Select } from '@/shared/components/ui/Select'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { queryKeys } from '@/shared/lib/query-keys'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { looseSearch, safeNavigate } from '@/shared/lib/safeNavigate'
 import { getLeadFilterOptions, listSalesRepresentatives } from '../api/sales'
 import { useCreateLead, useLead, useUpdateLead } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
@@ -117,13 +117,12 @@ export function LeadCreatePage() {
 
   const archiveLead = async () => {
     if (!isEdit || !params.leadId) return
-
     try {
       await updateMut.mutateAsync({
         id: params.leadId,
         patch: { status: 'Inactive' },
       })
-      safeNavigate(navigate, { to: salesRoutes.leads, search: {} })
+      safeNavigate(navigate, { to: salesRoutes.leads })
     } catch (err) {
       form.setError('root', { message: err instanceof Error ? err.message : 'Archive failed' })
     }
@@ -147,9 +146,7 @@ export function LeadCreatePage() {
       stage: data.stage,
       budget: data.budget ? Number(data.budget) : 0,
       date: data.date || undefined,
-      assignedEmploymentId: data.assignedEmploymentId
-        ? Number(data.assignedEmploymentId)
-        : null,
+      assignedEmploymentId: data.assignedEmploymentId ? Number(data.assignedEmploymentId) : null,
       assignedTo: selectedRep?.name,
       notes: data.notes?.trim() || undefined,
       chatLink: data.chatLink?.trim() || undefined,
@@ -160,7 +157,7 @@ export function LeadCreatePage() {
       } else {
         await createMut.mutateAsync(payload)
       }
-      safeNavigate(navigate, { to: salesRoutes.leads, search: {} })
+      safeNavigate(navigate, { to: salesRoutes.leads })
     } catch (err) {
       form.setError('root', { message: err instanceof Error ? err.message : 'Save failed' })
     }
@@ -182,7 +179,7 @@ export function LeadCreatePage() {
         backLabel="Back to leads"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to={salesRoutes.root} search={{}} className="hover:text-secondary">
+            <Link to={salesRoutes.root} search={looseSearch()} className="hover:text-secondary">
               Sales
             </Link>
             <span className="mx-2">/</span>
@@ -232,12 +229,7 @@ export function LeadCreatePage() {
               <label className={labelClass} htmlFor="contactTitle">
                 Contact title
               </label>
-              <input
-                id="contactTitle"
-                {...form.register('contactTitle')}
-                className={fieldClass}
-                placeholder="VP of Growth"
-              />
+              <input id="contactTitle" {...form.register('contactTitle')} className={fieldClass} placeholder="VP of Growth" />
             </div>
             <div>
               <label className={labelClass} htmlFor="company">
@@ -257,12 +249,7 @@ export function LeadCreatePage() {
               <label className={labelClass} htmlFor="industry">
                 Industry
               </label>
-              <input
-                id="industry"
-                {...form.register('industry')}
-                className={fieldClass}
-                placeholder="SaaS / Technology"
-              />
+              <input id="industry" {...form.register('industry')} className={fieldClass} placeholder="SaaS / Technology" />
             </div>
             <div>
               <label className={labelClass} htmlFor="email">
@@ -283,12 +270,7 @@ export function LeadCreatePage() {
               <label className={labelClass} htmlFor="phone">
                 Phone
               </label>
-              <input
-                id="phone"
-                {...form.register('phone')}
-                className={fieldClass}
-                placeholder="+1 (555) 012-3456"
-              />
+              <input id="phone" {...form.register('phone')} className={fieldClass} placeholder="+1 (555) 012-3456" />
             </div>
           </div>
         </section>
@@ -340,25 +322,13 @@ export function LeadCreatePage() {
               <label className={labelClass} htmlFor="budget">
                 Estimated budget (USD)
               </label>
-              <input
-                id="budget"
-                type="number"
-                min={0}
-                {...form.register('budget')}
-                className={fieldClass}
-                placeholder="120000"
-              />
+              <input id="budget" type="number" min={0} {...form.register('budget')} className={fieldClass} placeholder="120000" />
             </div>
             <div>
               <label className={labelClass} htmlFor="date">
                 Expected close date
               </label>
-              <input
-                id="date"
-                type="date"
-                {...form.register('date')}
-                className={fieldClass}
-              />
+              <input id="date" type="date" {...form.register('date')} className={fieldClass} />
             </div>
             <div>
               <Select
@@ -421,11 +391,7 @@ export function LeadCreatePage() {
           <Button type="submit" variant="primary" isLoading={saving}>
             {isEdit ? 'Save changes' : 'Create lead'}
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => safeNavigate(navigate, { to: salesRoutes.leads, search: {} })}
-          >
+          <Button type="button" variant="ghost" onClick={() => safeNavigate(navigate, { to: salesRoutes.leads })}>
             Cancel
           </Button>
         </div>
