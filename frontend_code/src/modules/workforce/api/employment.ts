@@ -235,7 +235,7 @@ export async function createEmployment(input: CreateEmploymentInput) {
   const now = new Date().toISOString()
 
   const personId = nextId(db.persons)
-  db.persons.push({
+  ;(db.persons as unknown as Record<string, unknown>[]).push({
     id: personId,
     first_name: input.firstName.trim(),
     last_name: input.lastName.trim(),
@@ -247,7 +247,7 @@ export async function createEmployment(input: CreateEmploymentInput) {
     anonymized_at: null,
     created_at: now,
     updated_at: now,
-  } as (typeof db.persons)[number])
+  })
 
   const empId = nextId(db.employments)
   const code = `EMP-${String(empId).padStart(3, '0')}`
@@ -262,9 +262,10 @@ export async function createEmployment(input: CreateEmploymentInput) {
     updated_at: now,
     changed_by: 1,
   } as EmploymentRow
-  db.employments.push(employment)
+  // Seed arrays are literal-union typed — push via widened array
+  ;(db.employments as EmploymentRow[]).push(employment)
 
-  db.employment_state_history.push({
+  ;(db.employment_state_history as unknown as Record<string, unknown>[]).push({
     id: nextId(db.employment_state_history),
     employment_id: empId,
     previous_state: null,
@@ -273,9 +274,9 @@ export async function createEmployment(input: CreateEmploymentInput) {
     reason: 'Joined',
     created_at: now,
     changed_by: 1,
-  } as (typeof db.employment_state_history)[number])
+  })
 
-  db.employment_assignments.push({
+  ;(db.employment_assignments as unknown as Record<string, unknown>[]).push({
     id: nextId(db.employment_assignments),
     employment_id: empId,
     department_id: input.departmentId,
@@ -288,20 +289,20 @@ export async function createEmployment(input: CreateEmploymentInput) {
     change_reason: 'Initial assignment',
     created_at: now,
     changed_by: 1,
-  } as (typeof db.employment_assignments)[number])
+  })
 
   const employeeRole = db.roles.find((r) => r.name === 'Employee')
   if (employeeRole) {
-    db.employee_roles.push({
+    ;(db.employee_roles as unknown as Record<string, unknown>[]).push({
       employment_id: empId,
       role_id: employeeRole.id,
       assigned_at: now,
       changed_by: 1,
-    } as (typeof db.employee_roles)[number])
+    })
   }
 
   if (input.bank?.accountNumber) {
-    db.employee_bank_accounts.push({
+    ;(db.employee_bank_accounts as unknown as Record<string, unknown>[]).push({
       id: nextId(db.employee_bank_accounts),
       employment_id: empId,
       account_holder_name: input.bank.accountHolderName || `${input.firstName} ${input.lastName}`,
@@ -314,7 +315,7 @@ export async function createEmployment(input: CreateEmploymentInput) {
       created_at: now,
       updated_at: now,
       changed_by: 1,
-    } as (typeof db.employee_bank_accounts)[number])
+    })
   }
 
   return enrichListRow(employment)
@@ -343,9 +344,26 @@ export async function updateEmployment(
 
   await delay(400)
   const db = getDb()
-  const emp = db.employments.find((e) => e.id === employmentId)
+  const emp = db.employments.find((e) => e.id === employmentId) as
+    | {
+        person_id: number
+        employment_type: EmploymentRow['employment_type']
+        current_state: EmploymentRow['current_state']
+        updated_at: string
+      }
+    | undefined
   if (!emp) throw new Error('Employment not found')
-  const person = db.persons.find((p) => p.id === emp.person_id)
+  const person = db.persons.find((p) => p.id === emp.person_id) as
+    | {
+        first_name: string
+        last_name: string
+        personal_email: string | null
+        personal_phone: string | null
+        address: string | null
+        date_of_birth: string | null
+        updated_at: string
+      }
+    | undefined
   if (!person) throw new Error('Person not found')
   const now = new Date().toISOString()
 
@@ -357,11 +375,15 @@ export async function updateEmployment(
   if (patch.dateOfBirth !== undefined) person.date_of_birth = patch.dateOfBirth
   person.updated_at = now
 
-  if (patch.employmentType) emp.employment_type = patch.employmentType as EmploymentRow['employment_type']
-  if (patch.currentState) emp.current_state = patch.currentState as EmploymentRow['current_state']
+  if (patch.employmentType) {
+    emp.employment_type = patch.employmentType as EmploymentRow['employment_type']
+  }
+  if (patch.currentState) {
+    emp.current_state = patch.currentState as EmploymentRow['current_state']
+  }
   emp.updated_at = now
 
-  return enrichListRow(emp)
+  return enrichListRow(emp as EmploymentRow)
 }
 
 export async function getOrgMastersForEmployeeForm() {
