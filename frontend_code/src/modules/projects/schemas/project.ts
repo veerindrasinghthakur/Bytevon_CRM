@@ -8,14 +8,14 @@ export type ProjectStatus = z.infer<typeof projectStatusSchema>
 export const projectListItemSchema = z.object({
   id: z.number(),
   name: z.string(),
-  code: z.string().optional(),
+  code: z.string().optional().nullable(),
   status: projectStatusSchema,
-  clientName: z.string().optional(),
+  clientName: z.string().optional().nullable(),
   startDate: z.string().nullable().optional(),
   endDate: z.string().nullable().optional(),
-  progress: z.number().min(0).max(100).optional(),
-  teamCount: z.number().optional(),
-  taskCount: z.number().optional(),
+  progress: z.number().min(0).max(100).optional().nullable(),
+  teamCount: z.number().optional().nullable(),
+  taskCount: z.number().optional().nullable(),
   /** Primary assigned team (mock association). */
   teamId: z.number().nullable().optional(),
 })
@@ -23,10 +23,15 @@ export const projectListItemSchema = z.object({
 export type ProjectListItem = z.infer<typeof projectListItemSchema>
 
 export const projectDetailSchema = projectListItemSchema.extend({
-  description: z.string().optional(),
-  repositoryUrl: z.string().url().optional().or(z.literal('')),
-  createdAt: z.string().optional(),
-  updatedAt: z.string().optional(),
+  description: z.string().optional().nullable(),
+  repositoryUrl: z
+    .string()
+    .url()
+    .optional()
+    .nullable()
+    .or(z.literal('')),
+  createdAt: z.string().optional().nullable(),
+  updatedAt: z.string().optional().nullable(),
 })
 
 export type ProjectDetail = z.infer<typeof projectDetailSchema>

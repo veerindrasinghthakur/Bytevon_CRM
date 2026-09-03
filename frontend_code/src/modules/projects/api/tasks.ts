@@ -5,7 +5,7 @@ import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
 import { paginateItems } from '@/shared/lib/list-params'
-import type { Task, TaskPriority } from '../types'
+import type { Task, TaskPriority, TaskStatus } from '../types'
 
 export type { Task, TaskPriority, TaskStatus } from '../types'
 
@@ -28,7 +28,7 @@ function asTask(row: TaskRow): Task {
     title: row.title,
     description: row.description ?? undefined,
     priority: row.priority as TaskPriority,
-    status: row.status,
+    status: row.status as TaskStatus,
     projectId: row.projectId,
     projectName: row.projectName ?? undefined,
     assigneeName: row.assigneeName ?? undefined,
@@ -51,7 +51,7 @@ export async function getTasks(params?: {
     return data
   }
   await delay()
-  let items = getDb().tasks.map(asTask)
+  let items = getDb().tasks.map((t) => asTask(t as TaskRow))
   if (params?.projectId != null) {
     items = items.filter((t) => t.projectId === params.projectId)
   }
@@ -84,7 +84,7 @@ export async function getTask(id: number): Promise<Task | null> {
   }
   await delay()
   const row = getDb().tasks.find((t) => t.id === id)
-  return row ? asTask(row) : null
+  return row ? asTask(row as TaskRow) : null
 }
 
 export async function updateTask(
@@ -98,10 +98,10 @@ export async function updateTask(
     return data
   }
   await delay(400)
-  const tasks = getDb().tasks
+  const tasks = getDb().tasks as TaskRow[]
   const idx = tasks.findIndex((t) => t.id === id)
   if (idx === -1) throw new Error('Task not found')
-  tasks[idx] = { ...tasks[idx], ...patch }
+  tasks[idx] = { ...tasks[idx], ...patch } as TaskRow
   return asTask(tasks[idx])
 }
 
@@ -119,8 +119,8 @@ export async function createTask(input: {
   }
   await delay(500)
   const db = getDb()
-  const tasks = db.tasks
-  const row = {
+  const tasks = db.tasks as TaskRow[]
+  const row: TaskRow = {
     id: nextId(tasks),
     title: input.title,
     description: input.description ?? null,
@@ -129,7 +129,7 @@ export async function createTask(input: {
     projectId: input.projectId ?? 0,
     projectName: input.projectName ?? null,
     assigneeName: input.assigneeName ?? null,
-    dueDate: null as string | null,
+    dueDate: null,
     createdAt: new Date().toISOString(),
   }
   tasks.unshift(row)
@@ -141,7 +141,7 @@ export async function createTask(input: {
         ...db.projects[pIdx],
         taskCount: (db.projects[pIdx].taskCount ?? 0) + 1,
         updatedAt: new Date().toISOString(),
-      }
+      } as (typeof db.projects)[number]
     }
   }
 

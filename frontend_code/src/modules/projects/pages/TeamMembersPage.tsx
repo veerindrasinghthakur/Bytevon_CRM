@@ -1,9 +1,11 @@
-import { Link, useNavigate, useParams } from '@tanstack/react-router'
+import { Link, useParams } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { useTeam } from '../hooks/use-teams'
 import { projectRoutes } from '../routes'
+import { looseParams, looseSearch, safeNavigate } from '@/shared/lib/safeNavigate'
+import { useNavigate } from '@tanstack/react-router'
 
 const MOCK_MEMBERS = [
   { id: '1', name: 'Sarah Chen', role: 'Tech Lead', status: 'Active' },
@@ -12,7 +14,7 @@ const MOCK_MEMBERS = [
   { id: '4', name: 'Marcus Thorne', role: 'QA', status: 'Active' },
 ]
 
-export function ProjectTeamMembersPage() {
+export function TeamMembersPage() {
   const params = useParams({ strict: false }) as { teamId?: string }
   const navigate = useNavigate()
   const id = Number(params.teamId)
@@ -40,7 +42,7 @@ export function ProjectTeamMembersPage() {
             variant="primary"
             leftIcon={<span className="material-symbols-outlined">person_add</span>}
             onClick={() =>
-              navigate({
+              safeNavigate(navigate, {
                 to: projectRoutes.teamAddMember(team.id),
                 params: { teamId: String(team.id) },
               })
@@ -94,10 +96,18 @@ export function ProjectTeamMembersPage() {
       </div>
 
       <p className="text-caption text-on-surface-variant">
-        <Link to={projectRoutes.teamDetail(team.id)} params={{ teamId: String(team.id) }} className="text-secondary hover:underline">
+        <Link
+          to={projectRoutes.teamDetail(team.id)}
+          params={looseParams({ teamId: String(team.id) })}
+          search={looseSearch()}
+          className="text-secondary hover:underline"
+        >
           Back to team
         </Link>
       </p>
     </div>
   )
 }
+
+/** Alias kept for any residual named imports */
+export { TeamMembersPage as ProjectTeamMembersPage }

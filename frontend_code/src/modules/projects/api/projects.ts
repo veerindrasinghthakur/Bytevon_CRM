@@ -82,12 +82,11 @@ export async function createProject(input: CreateProjectInput): Promise<ProjectD
   await delay(500)
   const projects = getDb().projects
   const id = nextId(projects)
-  const newProject = {
+  const newProject: ProjectDetail = {
     id,
     name: input.name,
     code: input.code || `PRJ-${id}`,
-    status: 'PLANNING' as const,
-    clientId: null as number | null,
+    status: 'PLANNING',
     clientName: input.clientName ?? null,
     startDate: input.startDate ?? null,
     endDate: input.endDate ?? null,
@@ -100,8 +99,8 @@ export async function createProject(input: CreateProjectInput): Promise<ProjectD
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   }
-  projects.unshift(newProject)
-  return newProject as ProjectDetail
+  projects.unshift(newProject as (typeof projects)[number])
+  return newProject
 }
 
 export async function updateProject(
@@ -131,14 +130,15 @@ export async function updateProject(
   const projects = getDb().projects
   const idx = projects.findIndex((p) => p.id === id)
   if (idx === -1) throw new Error('Project not found')
-  const next = {
-    ...projects[idx],
+  const current = projects[idx] as ProjectDetail
+  const next: ProjectDetail = {
+    ...current,
     ...patch,
     updatedAt: new Date().toISOString(),
   }
   if (patch.teamId !== undefined) {
     next.teamCount = patch.teamId != null ? Math.max(1, next.teamCount ?? 1) : 0
   }
-  projects[idx] = next
-  return projects[idx] as ProjectDetail
+  projects[idx] = next as (typeof projects)[number]
+  return next
 }

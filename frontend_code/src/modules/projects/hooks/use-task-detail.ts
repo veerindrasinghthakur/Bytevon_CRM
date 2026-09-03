@@ -2,7 +2,6 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { useTask, useUpdateTask } from './use-tasks'
-import type { TaskPriority, TaskStatus } from '../types'
 import { taskDetailFormSchema, type TaskDetailFormInput } from '../schemas/task-detail-form'
 
 export function useTaskDetail(taskId: number | undefined) {

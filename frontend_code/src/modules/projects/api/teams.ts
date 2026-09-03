@@ -5,7 +5,7 @@ import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
 import { paginateItems } from '@/shared/lib/list-params'
-import type { Team } from '../types'
+import type { Team, TeamStatus } from '../types'
 
 export type { Team, TeamStatus } from '../types'
 
@@ -51,6 +51,16 @@ interface TeamRow {
   createdAt: string
 }
 
+type EmployeeLike = {
+  id: number | string
+  fullName: string
+  role?: string | null
+  email?: string | null
+  status?: string | null
+  joiningDate?: string | null
+  department?: string | null
+}
+
 function asTeam(row: TeamRow): Team {
   return {
     id: row.id,
@@ -62,7 +72,7 @@ function asTeam(row: TeamRow): Team {
     projectName: row.projectName ?? undefined,
     memberCount: row.memberCount,
     projectCount: row.projectCount,
-    status: row.status,
+    status: row.status as TeamStatus,
     createdAt: row.createdAt,
   }
 }
@@ -96,7 +106,7 @@ export async function getTeams(params?: {
     return data
   }
   await delay()
-  let items = getDb().teams.map(asTeam)
+  let items = getDb().teams.map((t) => asTeam(t as TeamRow))
   if (params?.search) {
     const q = params.search.toLowerCase()
     items = items.filter(
@@ -107,10 +117,8 @@ export async function getTeams(params?: {
     )
   }
   if (params?.status && params.status !== 'All') {
-    const wantActive =
-      params.status === 'Active' || params.status === 'ACTIVE'
-    const wantInactive =
-      params.status === 'Inactive' || params.status === 'INACTIVE'
+    const wantActive = params.status === 'Active' || params.status === 'ACTIVE'
+    const wantInactive = params.status === 'Inactive' || params.status === 'INACTIVE'
     items = items.filter((t) => {
       const active = t.status === 'ACTIVE'
       if (wantActive) return active
@@ -139,7 +147,7 @@ export async function getTeam(id: number): Promise<Team | null> {
   }
   await delay()
   const row = getDb().teams.find((t) => t.id === id)
-  return row ? asTeam(row) : null
+  return row ? asTeam(row as TeamRow) : null
 }
 
 /** Teams linked to a project via teamId (or projectName fallback). */
@@ -154,7 +162,7 @@ export async function getTeamsForProject(projectId: number): Promise<Team[]> {
   const teamId = resolveProjectTeamId(projectId)
   if (teamId == null) return []
   const team = getDb().teams.find((t) => t.id === teamId)
-  return team ? [asTeam(team)] : []
+  return team ? [asTeam(team as TeamRow)] : []
 }
 
 export async function getTeamMembers(teamId: number): Promise<TeamMemberRow[]> {
@@ -166,20 +174,21 @@ export async function getTeamMembers(teamId: number): Promise<TeamMemberRow[]> {
   }
   await delay()
   const db = getDb()
-  const team = db.teams.find((t) => t.id === teamId)
+  const team = db.teams.find((t) => t.id === teamId) as TeamRow | undefined
   if (!team) return []
 
+  const employees = db.employees as EmployeeLike[]
   const dept = (team.department ?? '').toLowerCase()
-  let emps = db.employees.filter((e) => (e.department ?? '').toLowerCase() === dept)
+  let emps = employees.filter((e) => (e.department ?? '').toLowerCase() === dept)
   if (emps.length === 0) {
-    emps = db.employees.slice(0, Math.max(team.memberCount, 3))
+    emps = employees.slice(0, Math.max(team.memberCount, 3))
   } else if (emps.length > team.memberCount && team.memberCount > 0) {
     emps = emps.slice(0, team.memberCount)
   }
 
   const head = (team.headName ?? '').toLowerCase()
   const rows: TeamMemberRow[] = emps.map((e) => {
-    const isHead = head && e.fullName.toLowerCase() === head
+    const isHead = Boolean(head && e.fullName.toLowerCase() === head)
     return {
       id: String(e.id),
       name: e.fullName,
@@ -215,7 +224,7 @@ export async function getTeamProjects(teamId: number): Promise<TeamProjectRow[]>
   }
   await delay()
   const db = getDb()
-  const team = db.teams.find((t) => t.id === teamId)
+  const team = db.teams.find((t) => t.id === teamId) as TeamRow | undefined
   if (!team) return []
 
   const linked = db.projects.filter((p) => {
@@ -256,43 +265,25 @@ export async function getTeamCandidates(teamId: number): Promise<TeamCandidate[]
   }
   await delay()
   const db = getDb()
-  const team = db.teams.find((t) => t.id === teamId)
+  const team = db.teams.find((t) => t.id === teamId) as TeamRow | undefined
   if (!team) return []
 
+  const employees = db.employees as EmployeeLike[]
   const dept = (team.department ?? '').toLowerCase()
-  const currentMemberNames = new Set(
-    (db.employees as { fullName: string }[]).filter((e) => {
-      // In mock, we don't have direct team membership, so we filter by department
-      // In real API, this would check actual team membership
-      return (e.department ?? '').toLowerCase() === dept
-    }).map((e) => e.fullName.toLowerCase())
-  )
 
-  const candidates = db.employees
-    .filter((e) => (e.department ?? '').toLowerCase() === dept)
-    .filter((e) => !currentMemberNames.has(e.fullName.toLowerCase()))
-    .map((e) => ({
-      id: String(e.id),
-      name: e.fullName,
-      department: e.department ?? '—',
-      years: e.joiningDate ? Math.floor((Date.now() - new Date(e.joiningDate).getTime()) / (365 * 24 * 60 * 60 * 1000)) : 0,
-      availability: e.status === 'ON_LEAVE' ? 'Busy' : 'Available',
-    }))
+  const mapCandidate = (e: EmployeeLike): TeamCandidate => ({
+    id: String(e.id),
+    name: e.fullName,
+    department: e.department ?? '—',
+    years: e.joiningDate
+      ? Math.floor((Date.now() - new Date(e.joiningDate).getTime()) / (365 * 24 * 60 * 60 * 1000))
+      : 0,
+    availability: e.status === 'ON_LEAVE' ? 'Busy' : 'Available',
+  })
 
-  // If no candidates in same department, return all employees not in team
-  if (candidates.length === 0) {
-    return db.employees
-      .filter((e) => !currentMemberNames.has(e.fullName.toLowerCase()))
-      .map((e) => ({
-        id: String(e.id),
-        name: e.fullName,
-        department: e.department ?? '—',
-        years: e.joiningDate ? Math.floor((Date.now() - new Date(e.joiningDate).getTime()) / (365 * 24 * 60 * 60 * 1000)) : 0,
-        availability: e.status === 'ON_LEAVE' ? 'Busy' : 'Available',
-      }))
-  }
-
-  return candidates
+  const sameDept = employees.filter((e) => (e.department ?? '').toLowerCase() === dept)
+  if (sameDept.length > 0) return sameDept.map(mapCandidate)
+  return employees.map(mapCandidate)
 }
 
 export async function updateTeam(
@@ -306,10 +297,10 @@ export async function updateTeam(
     return data
   }
   await delay(400)
-  const teams = getDb().teams
+  const teams = getDb().teams as TeamRow[]
   const idx = teams.findIndex((t) => t.id === id)
   if (idx === -1) throw new Error('Team not found')
-  teams[idx] = { ...teams[idx], ...patch }
+  teams[idx] = { ...teams[idx], ...patch } as TeamRow
   return asTeam(teams[idx])
 }
 
@@ -328,9 +319,9 @@ export async function createTeam(input: {
   }
   await delay(500)
   const db = getDb()
-  const teams = db.teams
+  const teams = db.teams as TeamRow[]
   const memberCount = (input.memberNames?.length ?? 0) + (input.headName ? 1 : 0)
-  const row = {
+  const row: TeamRow = {
     id: nextId(teams),
     name: input.name,
     description: input.description ?? null,
@@ -340,7 +331,7 @@ export async function createTeam(input: {
     projectName: input.projectName ?? null,
     memberCount,
     projectCount: input.projectId ? 1 : 0,
-    status: 'ACTIVE' as const,
+    status: 'ACTIVE',
     createdAt: new Date().toISOString(),
   }
   teams.unshift(row)
@@ -353,7 +344,7 @@ export async function createTeam(input: {
         teamId: row.id,
         teamCount: 1,
         updatedAt: new Date().toISOString(),
-      }
+      } as (typeof db.projects)[number]
       if (!row.projectName) {
         row.projectName = db.projects[pIdx].name
       }
