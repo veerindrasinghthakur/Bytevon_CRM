@@ -3,7 +3,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
-import { looseSearch, safeNavigate } from '@/shared/lib/safeNavigate'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { StatusDot } from '@/shared/components/ui/StatusDot'
 import { useLead, useSalesActivities } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
@@ -52,11 +52,17 @@ export function LeadDetailPage() {
         backLabel="Back to leads"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to={salesRoutes.root} search={looseSearch()} className="hover:text-secondary">
+            <Link
+              {...({ to: salesRoutes.root, params: {}, search: {} } as never)}
+              className="hover:text-secondary"
+            >
               Sales
             </Link>
             <span className="mx-2">/</span>
-            <Link to={salesRoutes.leads} search={looseSearch()} className="hover:text-secondary">
+            <Link
+              {...({ to: salesRoutes.leads, params: {}, search: {} } as never)}
+              className="hover:text-secondary"
+            >
               Leads
             </Link>
             <span className="mx-2">/</span>
@@ -191,8 +197,7 @@ export function LeadDetailPage() {
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-title-md font-semibold">Activity</h2>
               <Link
-                to={salesRoutes.activity}
-                search={looseSearch()}
+                {...({ to: salesRoutes.activity, params: {}, search: {} } as never)}
                 className="text-secondary text-sm font-semibold hover:underline"
               >
                 Full timeline
