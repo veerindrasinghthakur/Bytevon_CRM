@@ -105,9 +105,11 @@ export function WorkforceRosterPage() {
                 </td>
                 <td className="px-5 py-3 text-right">
                   <Link
-                    to={workforceRoutes.attendanceDayPath}
-                    params={{ employmentId: String(r.id) }}
-                    search={{ date }}
+                    {...({
+                      to: workforceRoutes.attendanceDayPath,
+                      params: { employmentId: String(r.id) },
+                      search: { date },
+                    } as never)}
                     className="text-secondary text-sm font-medium hover:underline"
                   >
                     Day detail

@@ -136,8 +136,7 @@ export function AttendanceDashboardPage() {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-title-md font-semibold">Recent check-ins</h2>
             <Link
-              to={workforceRoutes.attendanceEmployees}
-              search={{}}
+              {...({ to: workforceRoutes.attendanceEmployees, params: {}, search: {} } as never)}
               className="text-label-sm text-secondary hover:underline"
             >
               View all

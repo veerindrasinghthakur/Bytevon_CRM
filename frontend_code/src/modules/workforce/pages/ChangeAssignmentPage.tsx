@@ -24,13 +24,32 @@ const changeAssignmentSchema = z.object({
 
 type ChangeAssignmentForm = z.infer<typeof changeAssignmentSchema>
 
+type IdName = { id: number; name: string }
+
+function asIdNameList(raw: unknown): IdName[] {
+  if (Array.isArray(raw)) {
+    return raw
+      .map((row) => {
+        const r = row as Record<string, unknown>
+        const id = Number(r.id)
+        const name = String(r.name ?? '')
+        return Number.isFinite(id) ? { id, name } : null
+      })
+      .filter((x): x is IdName => x != null)
+  }
+  if (raw && typeof raw === 'object' && 'items' in raw) {
+    return asIdNameList((raw as { items: unknown }).items)
+  }
+  return []
+}
+
 export function ChangeAssignmentPage() {
   const { employeeId } = useParams({ strict: false }) as { employeeId: string }
   const navigate = useNavigate()
-  const [departments, setDepartments] = useState<{ id: number; name: string }[]>([])
-  const [positions, setPositions] = useState<{ id: number; name: string }[]>([])
-  const [locations, setLocations] = useState<{ id: number; name: string }[]>([])
-  const [shifts, setShifts] = useState<{ id: number; name: string }[]>([])
+  const [departments, setDepartments] = useState<IdName[]>([])
+  const [positions, setPositions] = useState<IdName[]>([])
+  const [locations, setLocations] = useState<IdName[]>([])
+  const [shifts, setShifts] = useState<IdName[]>([])
   const [saving, setSaving] = useState(false)
 
   const form = useForm<ChangeAssignmentForm>({
@@ -49,15 +68,19 @@ export function ChangeAssignmentPage() {
   useEffect(() => {
     void Promise.all([getSchemaDepartments(), getPositions(), getLocations(), getShifts()]).then(
       ([d, p, l, s]) => {
-        setDepartments(d.items)
-        setPositions(p.items)
-        setLocations(l.items)
-        setShifts(s.items)
+        const deps = asIdNameList(d)
+        const pos = asIdNameList(p)
+        const locs = asIdNameList(l)
+        const sh = asIdNameList(s)
+        setDepartments(deps)
+        setPositions(pos)
+        setLocations(locs)
+        setShifts(sh)
         form.reset({
-          department_id: d.items[0] ? String(d.items[0].id) : '',
-          position_id: p.items[0] ? String(p.items[0].id) : '',
-          location_id: l.items[0] ? String(l.items[0].id) : '',
-          shift_id: s.items[0] ? String(s.items[0].id) : '',
+          department_id: deps[0] ? String(deps[0].id) : '',
+          position_id: pos[0] ? String(pos[0].id) : '',
+          location_id: locs[0] ? String(locs[0].id) : '',
+          shift_id: sh[0] ? String(sh[0].id) : '',
           work_mode: WorkMode.OFFICE,
           effective_from: new Date().toISOString().slice(0, 10),
           change_reason: '',

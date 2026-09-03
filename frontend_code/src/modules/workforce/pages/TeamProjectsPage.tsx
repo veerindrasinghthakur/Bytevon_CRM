@@ -46,9 +46,11 @@ export function TeamProjectsPage() {
         {projects.map((p) => (
           <Link
             key={p.id}
-            to={projectRoutes.projectDetailPath}
-            params={{ projectId: String(p.id) }}
-            search={{}}
+            {...({
+              to: projectRoutes.projectDetailPath,
+              params: { projectId: String(p.id) },
+              search: {},
+            } as never)}
             className="bv-surface card-hover p-5 flex flex-col sm:flex-row sm:items-center gap-4 justify-between"
           >
             <div className="min-w-0 flex-1">

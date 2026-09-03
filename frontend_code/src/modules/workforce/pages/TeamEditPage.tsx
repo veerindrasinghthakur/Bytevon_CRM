@@ -27,7 +27,10 @@ export function TeamEditPage() {
   const [status, setStatus] = useState(t.status)
 
   const save = () => {
-    safeNavigate(navigate, { to: '/workforce/teams/$teamId', params: { teamId: t.id }, search: {} })
+    safeNavigate(navigate, {
+      to: '/workforce/teams/$teamId',
+      params: { teamId: t.id },
+    })
   }
 
   return (
@@ -126,7 +129,6 @@ export function TeamEditPage() {
                 safeNavigate(navigate, {
                   to: '/workforce/teams/$teamId/add-member',
                   params: { teamId: t.id },
-                  search: {},
                 })
               }
             >
@@ -148,9 +150,11 @@ export function TeamEditPage() {
                   <p className="text-caption text-on-surface-variant">{m.role} · {m.title}</p>
                 </div>
                 <Link
-                  to="/workforce/employees/$employeeId"
-                  params={{ employeeId: String(m.id) }}
-                  search={{}}
+                  {...({
+                    to: '/workforce/employees/$employeeId',
+                    params: { employeeId: String(m.id) },
+                    search: {},
+                  } as never)}
                   className="text-secondary text-label-sm font-semibold"
                 >
                   View
@@ -171,7 +175,6 @@ export function TeamEditPage() {
               safeNavigate(navigate, {
                 to: '/workforce/teams/$teamId',
                 params: { teamId: t.id },
-                search: {},
               })
             }
           >
