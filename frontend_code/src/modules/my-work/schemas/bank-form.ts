@@ -8,10 +8,12 @@ export const bankFormSchema = z
     accountNumber: z.string().min(1, 'Required'),
     confirmAccountNumber: z.string().min(1, 'Required'),
     ifscOrRouting: z.string().min(1, 'Required'),
-    branchName: z.string().min(1, 'Required'),
+    branch: z.string().min(1, 'Required'),
     accountType: bankAccountTypeSchema,
     country: z.string().min(1),
     currency: z.string().min(1),
+    upiId: z.string().optional(),
+    pan: z.string().optional(),
   })
   .refine((d) => d.accountNumber === d.confirmAccountNumber, {
     message: 'Account numbers do not match',
@@ -26,8 +28,10 @@ export const emptyBankForm = (): BankFormValues => ({
   accountNumber: '',
   confirmAccountNumber: '',
   ifscOrRouting: '',
-  branchName: '',
+  branch: '',
   accountType: 'Salary',
   country: 'India',
   currency: 'INR',
+  upiId: '',
+  pan: '',
 })

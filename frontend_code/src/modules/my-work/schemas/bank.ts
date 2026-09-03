@@ -10,9 +10,11 @@ export const bankDetailsSchema = z.object({
   accountNumber: z.string(),
   confirmAccountNumber: z.string().optional(),
   ifscOrRouting: z.string(),
-  branchName: z.string(),
+  branch: z.string(),
   accountType: bankAccountTypeSchema,
   country: z.string(),
   currency: z.string(),
+  upiId: z.string().optional(),
+  pan: z.string().optional(),
 })
 export type BankDetails = z.infer<typeof bankDetailsSchema>

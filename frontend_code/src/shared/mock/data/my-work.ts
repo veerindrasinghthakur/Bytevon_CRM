@@ -137,10 +137,12 @@ export const bankDetailsSeed: BankDetails = {
   accountNumber: '50100234567890',
   confirmAccountNumber: '50100234567890',
   ifscOrRouting: 'HDFC0001234',
-  branchName: 'Koramangala, Bengaluru',
+  branch: 'Koramangala, Bengaluru',
   accountType: 'Salary',
   country: 'India',
   currency: 'INR',
+  upiId: '',
+  pan: '',
 }
 
 export const recentNotifications: NotificationItem[] = [

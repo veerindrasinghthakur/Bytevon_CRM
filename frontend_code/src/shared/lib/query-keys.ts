@@ -86,6 +86,7 @@ export const queryKeys = {
       list: (filters?: unknown) =>
         [...queryKeys.workforce.employees.all, 'list', filters ?? {}] as const,
       detail: (id: number) => [...queryKeys.workforce.employees.all, 'detail', id] as const,
+      bankDetails: (id: number) => [...queryKeys.workforce.employees.all, 'bank-details', id] as const,
     },
     shifts: {
       all: ['workforce', 'shifts'] as const,
@@ -269,6 +270,8 @@ export const invalidate = {
   myWorkCorrections: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.corrections.all }),
   myWorkBank: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.bankDetails() }),
   myWorkApprovals: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.myWork.approvals.all }),
+  workforceEmployeeBank: (qc: Qc, employeeId: number) =>
+    void qc.invalidateQueries({ queryKey: queryKeys.workforce.employees.bankDetails(employeeId) }),
   payroll: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.payroll.all }),
   payrollEmployees: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.payroll.employees.all }),
   adminRbac: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.admin.rbac.all }),

@@ -10,6 +10,7 @@ import { lazyPage } from '@/shared/lib/lazyPage'
 const EmployeesListPage = lazyPage(() => import('./pages/EmployeesListPage'), 'EmployeesListPage')
 const EmployeeCreatePage = lazyPage(() => import('./pages/EmployeeCreatePage'), 'EmployeeCreatePage')
 const EmployeeDetailPage = lazyPage(() => import('./pages/EmployeeDetailPage'), 'EmployeeDetailPage')
+const EmployeeBankDetailsPage = lazyPage(() => import('./pages/EmployeeBankDetailsPage'), 'EmployeeBankDetailsPage')
 const DepartmentsListPage = lazyPage(() => import('./pages/DepartmentsListPage'), 'DepartmentsListPage')
 const DepartmentCreatePage = lazyPage(() => import('./pages/DepartmentCreatePage'), 'DepartmentCreatePage')
 const DepartmentDetailPage = lazyPage(() => import('./pages/DepartmentDetailPage'), 'DepartmentDetailPage')
@@ -49,6 +50,8 @@ export const workforceRoutes = {
   employeeDetailPath: '/workforce/employees/$employeeId',
   employeeAssignment: (id: string | number) => `/workforce/employees/${id}/assignment`,
   employeeAssignmentPath: '/workforce/employees/$employeeId/assignment',
+  employeeBankDetails: (id: string | number) => `/workforce/employees/${id}/bank-details`,
+  employeeBankDetailsPath: '/workforce/employees/$employeeId/bank-details',
   departments: '/workforce/departments',
   departmentNew: '/workforce/departments/new',
   departmentDetail: (id: string | number) => `/workforce/departments/${id}`,
@@ -82,7 +85,7 @@ export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: 
       getParentRoute: () => appLayoutRoute,
       path: '/workforce',
       beforeLoad: () => {
-        throw redirect({ to: workforceRoutes.employees, search: {} })
+        throw redirect({ href: workforceRoutes.employees })
       },
     }),
     createRoute({
@@ -104,6 +107,11 @@ export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: 
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/employees/$employeeId/assignment',
       component: ChangeAssignmentPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/employees/$employeeId/bank-details',
+      component: EmployeeBankDetailsPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,

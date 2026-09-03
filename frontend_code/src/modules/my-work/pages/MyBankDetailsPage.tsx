@@ -1,69 +1,35 @@
 import { useNavigate } from '@tanstack/react-router'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { EditButton } from '@/shared/components/ui/EditButton'
-import { useBankDetails } from '../hooks/use-bank-details'
-import type { BankFormValues } from '../types'
-import { cn } from '@/shared/lib/cn'
+import { BackButton } from '@/shared/components/layout/BackButton'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../routes'
+import { cn } from '@/shared/lib/cn'
 import { maskAccount } from '../lib/maskAccount'
+import { getEmployeeBankDetails } from '@/modules/workforce/api/bank'
+import { queryKeys } from '@/shared/lib/query-keys'
+import { useAuth } from '@/modules/auth/context/AuthContext'
+
+function Icon({ name, className }: { name: string; className?: string }) {
+  return (
+    <span className={cn('material-symbols-outlined', className)} aria-hidden>
+      {name}
+    </span>
+  )
+}
 
 export function MyBankDetailsPage() {
   const navigate = useNavigate()
-  const { isLoading, saved, save, isSaving, emptyForm, formSchema } = useBankDetails()
+  const { employmentId: employeeId } = useAuth()
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    formState: { errors, isSubmitting },
-    reset,
-  } = useForm<BankFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: emptyForm,
+  const { data: saved, isLoading } = useQuery({
+    queryKey: queryKeys.workforce.employees.bankDetails(employeeId ?? 0),
+    queryFn: () => getEmployeeBankDetails(employeeId!),
+    enabled: Boolean(employeeId),
   })
 
-  const isCreate = !saved
-  const [isEditing, setIsEditing] = useState(false)
-  const [toast, setToast] = useState<string | null>(null)
-
-  const startEdit = () => {
-    if (saved) {
-      reset({
-        ...saved,
-        confirmAccountNumber: saved.accountNumber,
-      })
-    } else {
-      reset({ ...emptyForm })
-    }
-    setIsEditing(true)
-  }
-
-  const cancelEdit = () => {
-    reset(saved ? { ...saved, confirmAccountNumber: saved.accountNumber } : emptyForm)
-    setIsEditing(false)
-  }
-
-  const onSubmit = async (data: BankFormValues) => {
-    await save.mutateAsync(data)
-    setIsEditing(false)
-    setToast(isCreate ? 'Bank details saved successfully.' : 'Bank details updated successfully.')
-    setTimeout(() => setToast(null), 2800)
-  }
-
   const statusLabel = saved ? 'On file' : 'Not set'
-
-  const fieldClass = (disabled: boolean) =>
-    cn(
-      'w-full rounded-lg border px-3 py-2.5 text-body-md outline-none transition-colors',
-      disabled
-        ? 'bg-surface-container-low border-outline-variant text-deep-navy cursor-default'
-        : 'bg-surface-container-lowest border-outline-variant focus:border-secondary focus:ring-2 focus:ring-secondary/30 text-deep-navy',
-    )
 
   if (isLoading) {
     return <div className="animate-fade-in">Loading...</div>
@@ -85,17 +51,10 @@ export function MyBankDetailsPage() {
 
       <PageHeader
         title="Bank Details"
-        description="Manage the account used for salary disbursement. Only you can create or update these details."
+        description="View the account used for your salary disbursement."
         showBack
         backTo={myWorkRoutes.root}
       />
-
-      {toast && (
-        <div className="rounded-lg border border-success-emerald/30 bg-success-emerald/10 px-4 py-3 text-label-md text-success-emerald flex items-center gap-2">
-          <span className="material-symbols-outlined text-[20px]">check_circle</span>
-          {toast}
-        </div>
-      )}
 
       <section className="bv-surface p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -119,34 +78,6 @@ export function MyBankDetailsPage() {
             </span>
           </div>
         </div>
-
-        <div className="flex items-center gap-2 flex-wrap">
-          {!isEditing && !saved && (
-            <Button
-              variant="primary"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-              onClick={startEdit}
-            >
-              Add bank details
-            </Button>
-          )}
-          {isEditing && (
-            <>
-              <Button variant="outline" size="sm" onClick={cancelEdit}>
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                leftIcon={<span className="material-symbols-outlined text-[18px]">save</span>}
-                onClick={() => handleSubmit(onSubmit)()}
-              >
-                {isCreate ? 'Save' : 'Save changes'}
-              </Button>
-            </>
-          )}
-        </div>
       </section>
 
       <section className="bv-surface p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -166,159 +97,63 @@ export function MyBankDetailsPage() {
         </div>
       </section>
 
-      {!saved && !isEditing && (
+      {!saved && (
         <section className="bv-surface border-dashed p-10 text-center">
           <div className="mx-auto w-14 h-14 rounded-full bg-surface-container flex items-center justify-center mb-4">
             <span className="material-symbols-outlined text-[28px] text-secondary">account_balance</span>
           </div>
           <h2 className="text-title-lg font-semibold text-deep-navy mb-2">No bank details yet</h2>
           <p className="text-body-md text-on-surface-variant max-w-md mx-auto mb-6">
-            Add your salary account so payroll can transfer payments securely.
+            Your salary account has not been set up yet. Contact HR or payroll to add your bank details.
           </p>
-          <Button
-            variant="primary"
-            size="md"
-            leftIcon={<span className="material-symbols-outlined">add</span>}
-            onClick={startEdit}
-          >
-            Add bank details
-          </Button>
         </section>
       )}
 
-      {(saved || isEditing) && (
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <section className="bv-surface overflow-hidden">
-            <div className="px-6 py-4 border-b border-outline-variant bg-surface-container-low flex items-center justify-between">
-              <h2 className="text-title-lg font-semibold text-deep-navy flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary">account_balance</span>
-                {isEditing ? (isCreate ? 'Add bank account' : 'Edit bank account') : 'Salary account'}
-              </h2>
-              {!isEditing && <EditButton iconOnly onClick={startEdit} title="Edit bank details" />}
-            </div>
+      {saved && (
+        <section className="bv-surface overflow-hidden">
+          <div className="px-6 py-4 border-b border-outline-variant bg-surface-container-low flex items-center justify-between">
+            <h2 className="text-title-lg font-semibold text-deep-navy flex items-center gap-2">
+              <span className="material-symbols-outlined text-secondary">account_balance</span>
+              Salary account
+            </h2>
+          </div>
 
-            <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-              <Field label="Account holder name" required error={errors.accountHolderName?.message}>
-                {isEditing ? (
-                  <input
-                    {...register('accountHolderName')}
-                    className={fieldClass(false)}
-                    placeholder="Name as on bank account"
-                  />
-                ) : (
-                  <p className="text-body-md font-medium text-deep-navy">{saved?.accountHolderName}</p>
-                )}
-              </Field>
-
-              <Field label="Bank name" required error={errors.bankName?.message}>
-                {isEditing ? (
-                  <input
-                    {...register('bankName')}
-                    className={fieldClass(false)}
-                    placeholder="e.g. HDFC Bank"
-                  />
-                ) : (
-                  <p className="text-body-md font-medium text-deep-navy">{saved?.bankName}</p>
-                )}
-              </Field>
-
-              <Field label="Account number" required error={errors.accountNumber?.message}>
-                {isEditing ? (
-                  <input
-                    {...register('accountNumber')}
-                    className={fieldClass(false)}
-                    placeholder="Enter account number"
-                    autoComplete="off"
-                    onChange={(e) => setValue('accountNumber', e.target.value.replace(/\s/g, ''))}
-                  />
-                ) : (
-                  <p className="text-body-md font-medium text-deep-navy font-mono">
-                    {maskAccount(saved?.accountNumber ?? '')}
-                  </p>
-                )}
-              </Field>
-
-              {isEditing && (
-                <Field label="Confirm account number" required error={errors.confirmAccountNumber?.message}>
-                  <input
-                    {...register('confirmAccountNumber')}
-                    className={fieldClass(false)}
-                    placeholder="Re-enter account number"
-                    autoComplete="off"
-                    onChange={(e) => setValue('confirmAccountNumber', e.target.value.replace(/\s/g, ''))}
-                  />
-                </Field>
-              )}
-
-              <Field label="IFSC / Routing code" required error={errors.ifscOrRouting?.message}>
-                {isEditing ? (
-                  <input
-                    {...register('ifscOrRouting')}
-                    className={fieldClass(false)}
-                    placeholder="e.g. HDFC0001234"
-                    onChange={(e) => setValue('ifscOrRouting', e.target.value.toUpperCase())}
-                  />
-                ) : (
-                  <p className="text-body-md font-medium text-deep-navy font-mono">{saved?.ifscOrRouting}</p>
-                )}
-              </Field>
-
-              <Field label="Branch" required error={errors.branchName?.message}>
-                {isEditing ? (
-                  <input
-                    {...register('branchName')}
-                    className={fieldClass(false)}
-                    placeholder="Branch name / city"
-                  />
-                ) : (
-                  <p className="text-body-md font-medium text-deep-navy">{saved?.branchName}</p>
-                )}
-              </Field>
-
-              <Field label="Account type">
-                <p className="text-body-md font-medium text-deep-navy">Salary</p>
-                
-              </Field>
-
-              <Field label="Country">
-                {isEditing ? (
-                  <input {...register('country')} className={fieldClass(false)} />
-                ) : (
-                  <p className="text-body-md font-medium text-deep-white">{saved?.country}</p>
-                )}
-              </Field>
-
-              <Field label="Currency">
-                <p className="text-body-md font-medium text-deep-navy">
-                  INR
-                </p>
+          <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+            <Field label="Account holder name">
+              <p className="text-body-md font-medium text-deep-navy">{saved?.accountHolderName}</p>
             </Field>
-            </div>
 
-            {!isEditing && saved && (
-              <div className="px-6 pb-6">
-                <div className="rounded-lg bg-surface-container-low border border-outline-variant px-4 py-3 text-label-md text-on-surface-variant flex items-start gap-2">
-                  <span className="material-symbols-outlined text-[18px] text-secondary shrink-0 mt-0.5">info</span>
-                  <span>
-                    Account number is masked for security. Use the pencil to update any field. Changes apply to future
-                    payroll runs only.
-                  </span>
-                </div>
-              </div>
-            )}
+            <Field label="Bank name">
+              <p className="text-body-md font-medium text-deep-navy">{saved?.bankName}</p>
+            </Field>
 
-            {isEditing && (
-              <div className="px-6 py-4 border-t border-outline-variant bg-surface flex items-center gap-3 justify-end">
-                <Button type="button" variant="ghost" onClick={cancelEdit}>
-                  Cancel
-                </Button>
-                <Button type="submit" variant="primary" isLoading={isSubmitting || isSaving}>
-                  {isCreate ? 'Save' : 'Save changes'}
-                </Button>
-              </div>
-            )}
-          </section>
-        </form>
+            <Field label="Account number">
+              <p className="text-body-md font-medium text-deep-navy font-mono">
+                {maskAccount(saved?.accountNumber ?? '')}
+              </p>
+            </Field>
+
+            <Field label="IFSC / Routing code">
+              <p className="text-body-md font-medium text-deep-navy font-mono">{saved?.ifscOrRouting}</p>
+            </Field>
+
+            <Field label="Branch">
+              <p className="text-body-md text-on-surface-variant">{saved?.branch ?? '—'}</p>
+            </Field>
+
+            <Field label="Account type">
+              <p className="text-body-md text-on-surface-variant">{saved?.accountType ?? '—'}</p>
+            </Field>
+
+            <Field label="UPI ID">
+              <p className="text-body-md text-on-surface-variant">{saved?.upiId ?? '—'}</p>
+            </Field>
+
+            <Field label="PAN">
+              <p className="text-body-md text-on-surface-variant">{saved?.pan ?? '—'}</p>
+            </Field>
+          </div>
+        </section>
       )}
     </div>
   )
@@ -326,23 +161,15 @@ export function MyBankDetailsPage() {
 
 function Field({
   label,
-  required,
-  error,
   children,
 }: {
   label: string
-  required?: boolean
-  error?: string
   children: React.ReactNode
 }) {
   return (
-    <div className="flex flex-col gap-1.5 min-w-0">
-      <label className="text-label-md text-on-surface-variant">
-        {label}
-        {required && <span className="text-error ml-0.5">*</span>}
-      </label>
+    <div className="flex flex-col gap-1.5">
+      <label className="text-label-sm text-on-surface-variant">{label}</label>
       {children}
-      {error && <p className="text-caption text-error">{error}</p>}
     </div>
   )
 }

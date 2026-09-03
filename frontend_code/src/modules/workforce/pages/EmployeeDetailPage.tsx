@@ -13,6 +13,7 @@ import type { EmployeeDetailDto } from '@/shared/schema'
 import { Can } from '@/shared/rbac'
 import { Action, ResourceName } from '@/shared/schema'
 import { workforceRoutes } from '../routes'
+import { payrollRoutes } from '@/modules/payroll/routes'
 import {
   employeeDetailEditSchema,
   type EmployeeDetailEditInput,
@@ -316,8 +317,8 @@ export function EmployeeDetailPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-3 space-y-4">
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        <div className="xl:col-span-3 space-y-4">
           <div className="bv-surface card-hover p-6 text-center">
             <div className="w-28 h-28 mx-auto rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-3xl font-bold mb-3">
               {initials}
@@ -397,7 +398,7 @@ export function EmployeeDetailPage() {
           </div>
         </div>
 
-        <div className="lg:col-span-9">
+        <div className="xl:col-span-6">
           <div className="bv-surface rounded-b-none flex overflow-x-auto border-b-0">
             {(
               [
@@ -545,14 +546,12 @@ export function EmployeeDetailPage() {
                       <p className="text-sm opacity-80 uppercase mb-1">Current gross salary</p>
                       <p className="text-4xl font-bold">{formatMoney(data.currentSalary.gross_salary)}</p>
                     </div>
-                    <Link
-                      to="/payroll/salary/$employeeId"
-                      params={{ employeeId: String(data.employment.id) }}
-                      search={{}}
+                    <a
+                      href={payrollRoutes.salaryDetail(String(data.employment.id))}
                       className="inline-flex text-secondary font-medium hover:underline"
                     >
                       Open salary management →
-                    </Link>
+                    </a>
                   </div>
                 ) : (
                   <p className="text-body-sm text-on-surface-variant">No active salary configuration.</p>
@@ -568,6 +567,26 @@ export function EmployeeDetailPage() {
             )}
           </div>
         </div>
+
+        <aside className="xl:col-span-3">
+          <div className="bv-surface p-5 card-hover space-y-4">
+            <div className="flex items-center gap-2 text-secondary">
+              <Icon name="account_balance" className="text-lg" />
+              <p className="text-label-md font-semibold uppercase tracking-wide">Quick links</p>
+            </div>
+
+            <Link
+              to={workforceRoutes.employeeBankDetails(id)}
+              className="flex items-center justify-between gap-3 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-3 text-sm font-medium text-on-surface hover:border-secondary/60 hover:text-secondary transition-colors"
+            >
+              <span className="flex items-center gap-2">
+                <Icon name="account_balance_wallet" className="text-base" />
+                Bank details
+              </span>
+              <Icon name="chevron_right" className="text-base" />
+            </Link>
+          </div>
+        </aside>
       </div>
     </div>
   )
