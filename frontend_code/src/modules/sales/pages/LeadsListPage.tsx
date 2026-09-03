@@ -24,7 +24,7 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useLeadsList } from '../hooks/use-leads-list'
 import { LeadMetricsRow } from '../components/LeadMetricsRow'
 import { salesRoutes } from '../routes'
-import type { PipelineStage, LeadPriority, RecordStatus, Lead } from '../types'
+import type { RecordStatus, Lead } from '../types'
 import { cn } from '@/shared/lib/cn'
 import { stageStyles, priorityStyles, stageDot } from '../schemas/cssTokens'
 
@@ -86,7 +86,11 @@ function LeadQuickContent({ lead }: { lead: Lead }) {
           <QuickMetaTile
             icon="priority_high"
             label="Priority"
-            value={<span className={cn('font-bold uppercase text-sm', priorityStyles[lead.priority])}>{lead.priority}</span>}
+            value={
+              <span className={cn('font-bold uppercase text-sm', priorityStyles[lead.priority])}>
+                {lead.priority}
+              </span>
+            }
           />
         </div>
       </QuickSection>
@@ -106,9 +110,7 @@ function LeadQuickContent({ lead }: { lead: Lead }) {
           ) : (
             <QuickRelatedRow icon="person_off" label="Owner" value="Unassigned" />
           )}
-          {lead.contactTitle && (
-            <QuickRelatedRow icon="badge" label="Title" value={lead.contactTitle} />
-          )}
+          {lead.contactTitle && <QuickRelatedRow icon="badge" label="Title" value={lead.contactTitle} />}
         </div>
       </QuickSection>
 
