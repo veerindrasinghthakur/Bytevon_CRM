@@ -15,6 +15,6 @@ export const sessionStatusStyles = {
   inactive: 'status-badge status-neutral',
 } as const
 
-export function sessionStatusClass(status: string, isActive: boolean): string {
+export function sessionStatusClass(_status: string, isActive: boolean): string {
   return isActive ? sessionStatusStyles.active : sessionStatusStyles.inactive
 }

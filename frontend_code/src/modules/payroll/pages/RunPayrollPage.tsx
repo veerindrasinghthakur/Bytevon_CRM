@@ -5,6 +5,7 @@ import { useRunPayroll } from '../hooks/use-run-payroll'
 import { payrollRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
+import type { PayrollEmployeeRow } from '../types'
 
 export function RunPayrollPage() {
   const navigate = useNavigate()
@@ -125,7 +126,9 @@ export function RunPayrollPage() {
                   className="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant card-hover"
                 >
                   <p className="text-label-bold text-on-surface-variant uppercase mb-1">{m.label}</p>
-                  <p className={cn('text-headline-lg font-semibold text-on-background', m.valueClass)}>{m.value}</p>
+                  <p className={cn('text-headline-lg font-semibold text-on-background', m.valueClass)}>
+                    {m.value}
+                  </p>
                 </div>
               ))}
             </div>
@@ -143,7 +146,7 @@ export function RunPayrollPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant">
-                  {previewRows.map((r) => (
+                  {previewRows.map((r: PayrollEmployeeRow) => (
                     <tr key={r.id} className="h-[72px] zebra-row">
                       <td className="p-4">
                         <div className="flex items-center gap-3">

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { ChangePasswordInput } from '@/modules/auth/schemas/auth'
-import { queryKeys, invalidate } from '@/shared/lib/query-keys'
+import { queryKeys } from '@/shared/lib/query-keys'
 import {
   changeMyPassword,
   getMyProfile,

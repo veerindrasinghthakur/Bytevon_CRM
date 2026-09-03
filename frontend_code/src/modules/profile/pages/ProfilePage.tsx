@@ -10,7 +10,7 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { useTheme } from '@/shared/theme/ThemeProvider'
 import type { ThemePreference } from '@/shared/lib/theme'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { looseSearch, safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 import {
   useMyActivity,
@@ -324,6 +324,7 @@ export function ProfilePage() {
                 </div>
                 <Link
                   to={profileRoutes.sessions}
+                  search={looseSearch()}
                   className="text-error font-bold text-label-sm hover:underline"
                 >
                   Manage
@@ -334,6 +335,7 @@ export function ProfilePage() {
           <div className="mt-4">
             <Link
               to={profileRoutes.sessions}
+              search={looseSearch()}
               className="text-secondary text-label-md font-semibold hover:underline inline-flex items-center gap-1"
             >
               View all sessions
@@ -461,7 +463,7 @@ export function ProfilePage() {
             Last login: {profile.lastLoginAt} from {profile.lastLoginIp}
           </p>
           <div className="flex gap-3">
-            <Link to={profileRoutes.sessions}>
+            <Link to={profileRoutes.sessions} search={looseSearch()}>
               <Button variant="outline" size="sm" className="border-error text-error hover:bg-error/10">
                 Logout from All Devices
               </Button>

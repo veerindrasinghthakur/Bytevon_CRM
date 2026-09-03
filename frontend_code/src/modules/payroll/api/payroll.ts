@@ -53,6 +53,14 @@ export interface OrgPayrollHistoryRecord {
   ref: string
 }
 
+export interface RunPayrollPreview {
+  employees: PayrollEmployeeRow[]
+  totalGross: number
+  totalEarnings: number
+  totalDeductions: number
+  estimatedNet: number
+}
+
 function filterEmployees(params: PayrollEmployeeListParams = {}): PayrollEmployeeRow[] {
   let items = payrollEmployees.map((r) => ({ ...r }))
   if (params.search) {
@@ -79,14 +87,13 @@ function buildOrgPaidHistory(): OrgPayrollHistoryRecord[] {
         id: r.id,
         period: r.month,
         employeeId,
-        paidOn: r.paymentDate,
+        paidOn: r.paymentDate ?? '',
         gross: r.gross,
         net: r.net,
         ref: `TRX-${r.id.toUpperCase()}`,
       })
     }
   }
-  // Current-period paid employees not already in history seed
   for (const e of payrollEmployees) {
     if (e.status !== 'Paid') continue
     if (fromHistory.some((h) => h.employeeId === e.id && h.period.includes(String(periodMeta.year)))) {
@@ -248,7 +255,6 @@ export async function listEmployeePayrollHistory(employeeId: string): Promise<Pa
   return data
 }
 
-/** Org-wide paid payroll history (mock aggregates historyByEmployee + current Paid rows). */
 export async function listOrgPayrollHistory(search?: string): Promise<OrgPayrollHistoryRecord[]> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<OrgPayrollHistoryRecord[]>('/payroll/history', {
@@ -282,7 +288,7 @@ export async function getRunPayrollChecks(): Promise<RunPayrollCheck[]> {
   return data
 }
 
-export async function getRunPayrollPreview() {
+export async function getRunPayrollPreview(): Promise<RunPayrollPreview> {
   if (env.useMockApi) {
     await delay(200)
     const employees = payrollEmployees.map((r) => ({ ...r }))
@@ -294,7 +300,7 @@ export async function getRunPayrollPreview() {
       estimatedNet: employees.reduce((s, e) => s + e.net, 0),
     }
   }
-  const { data } = await apiClient.get('/payroll/run/preview')
+  const { data } = await apiClient.get<RunPayrollPreview>('/payroll/run/preview')
   return data
 }
 
