@@ -16,12 +16,12 @@ export type SafeNavigateOpts = {
 }
 
 export function safeNavigate(navigate: NavigateFn, opts: SafeNavigateOpts): void {
-  void navigate({ search: {}, ...opts } as never)
+  void navigate({ params: {}, search: {}, ...opts } as never)
 }
 
 /** For redirect() from beforeLoad / loaders. */
 export function safeRedirectOpts(opts: SafeNavigateOpts): never {
-  return { search: {}, ...opts } as never
+  return { params: {}, search: {}, ...opts } as never
 }
 
 /** For <Link search={...} /> / params when router types search as never. */
