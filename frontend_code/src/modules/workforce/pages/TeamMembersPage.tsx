@@ -89,12 +89,13 @@ export function TeamMembersPage() {
             {filtered.map((m) => (
               <tr key={m.id} className="zebra-row">
                 <td className="px-6 py-4">
+                  {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                   <Link
-                    {...looseLinkProps({
+                    {...(looseLinkProps({
                       to: workforceRoutes.employeeDetailPath,
                       params: { employeeId: String(m.id) },
                       className: 'flex items-center gap-3 hover:opacity-90',
-                    })}
+                    }) as any)}
                   >
                     <div className="w-9 h-9 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
                       {m.name
