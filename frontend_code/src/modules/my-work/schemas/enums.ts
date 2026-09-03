@@ -41,6 +41,9 @@ export const approvalTypeIcon: Record<string, string> = {
   Other: 'description',
 }
 
+/** Alias used by MyApprovalsPage */
+export const typeIcon = approvalTypeIcon
+
 /** Manual attendance reason options (Mark Attendance). */
 export const MANUAL_ATTENDANCE_REASONS = [
   { value: 'Client Meeting', label: 'Client Meeting' },

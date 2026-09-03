@@ -4,11 +4,11 @@ import { Can } from '@/shared/rbac/Can.tsx'
 import { Action, type ResourceName } from '@/shared/schema'
 import { useExport, type ExportFormat, type ExportRequest } from '@/shared/hooks/useExport'
 import { ExportDialog } from './ExportDialog'
-import {ButtonVariant,ButtonSize} from '@/shared/types'
+import { ButtonVariant, ButtonSize } from '@/shared/types'
 
 export interface ExportButtonProps {
   resource: ResourceName | string
-  selectedIds?: string[]
+  selectedIds?: string[] | Set<string>
   filters?: Record<string, unknown>
   query?: string
   sort?: ExportRequest['sort']
@@ -20,6 +20,10 @@ export interface ExportButtonProps {
   visible?: boolean
 }
 
+function toIdArray(selectedIds?: string[] | Set<string>): string[] | undefined {
+  if (!selectedIds) return undefined
+  return selectedIds instanceof Set ? Array.from(selectedIds) : selectedIds
+}
 
 export function ExportButton({
   resource,
@@ -36,12 +40,13 @@ export function ExportButton({
 }: ExportButtonProps) {
   const [open, setOpen] = useState(false)
   const { exportDataAsync, isExporting, error, reset } = useExport()
+  const ids = toIdArray(selectedIds)
 
   if (!visible) return null
 
   const contextLabel =
-    selectedIds && selectedIds.length > 0
-      ? `${selectedIds.length} selected`
+    ids && ids.length > 0
+      ? `${ids.length} selected`
       : query || (filters && Object.keys(filters).length > 0)
         ? 'filtered results'
         : 'current list'
@@ -50,7 +55,7 @@ export function ExportButton({
     try {
       await exportDataAsync({
         resource,
-        selectedIds,
+        selectedIds: ids,
         filters,
         query,
         sort,

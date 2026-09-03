@@ -3,18 +3,6 @@ import { useState } from 'react'
 import { Button } from '@/shared/components/ui/Button'
 import type { ListToolbarProps } from '@/shared/types'
 
-/**
- * Shared list filter bar.
- *
- * Layout (single row): [Search] · [filter controls] · [actions] · [Refresh] · [Clear]
- * If the row is tight, search + filter boxes shrink (truncate) instead of wrapping.
- *
- * - **Clear** — resets filters only (does not reload data).
- * - **Refresh** — reloads rows (refetch / reload).
- * Do not put result counts ("Showing n of m") inside this bar.
- *
- * Filter slot uses overflow-visible so Select dropdown panels are not clipped.
- */
 export function ListToolbar({
   searchValue,
   search,
@@ -22,6 +10,7 @@ export function ListToolbar({
   searchPlaceholder = 'Search…',
   filterSlot,
   actionsSlot,
+  actions,
   children,
   filtersActive,
   onResetFilters,
@@ -30,10 +19,10 @@ export function ListToolbar({
 }: ListToolbarProps) {
   const value = searchValue ?? search ?? ''
   const filters = filterSlot ?? children
+  const trailingActions = actionsSlot ?? actions
   const [clearing, setClearing] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
 
-  /** Clear filters only — never reloads rows. */
   const handleClear = async () => {
     if (!onResetFilters || clearing) return
     setClearing(true)
@@ -45,7 +34,6 @@ export function ListToolbar({
     }
   }
 
-  /** Reload rows only — does not reset filters. */
   const handleRefresh = async () => {
     if (!onRefresh || refreshing) return
     setRefreshing(true)
@@ -62,7 +50,6 @@ export function ListToolbar({
   return (
     <div
       className={cn(
-        // Single line — allow horizontal scroll on narrow viewports; do not clip dropdowns
         'flex flex-nowrap items-center gap-2 bg-surface-container-low px-3 py-2.5 rounded-xl border border-outline-variant',
         className,
       )}
@@ -86,12 +73,11 @@ export function ListToolbar({
       </div>
 
       <div className="flex flex-nowrap items-center gap-1.5 min-w-0 flex-1 justify-end overflow-visible">
-        {/* overflow-visible so Select panels are not clipped under the toolbar */}
         <div className="flex flex-nowrap items-center gap-1.5 min-w-0 overflow-visible [&>*]:shrink-0">
           {filters}
         </div>
-        {actionsSlot ? (
-          <div className="flex flex-nowrap items-center gap-1.5 shrink-0">{actionsSlot}</div>
+        {trailingActions ? (
+          <div className="flex flex-nowrap items-center gap-1.5 shrink-0">{trailingActions}</div>
         ) : null}
 
         {showRefresh && (
@@ -107,12 +93,7 @@ export function ListToolbar({
             aria-label="Refresh list"
             title="Reload rows"
           >
-            <span
-              className={cn(
-                'material-symbols-outlined text-[18px]',
-                refreshing && 'animate-spin',
-              )}
-            >
+            <span className={cn('material-symbols-outlined text-[18px]', refreshing && 'animate-spin')}>
               refresh
             </span>
           </button>
@@ -127,12 +108,7 @@ export function ListToolbar({
             title="Clear filters"
             className="shrink-0 !px-2"
             leftIcon={
-              <span
-                className={cn(
-                  'material-symbols-outlined text-[16px]',
-                  clearing && 'animate-spin',
-                )}
-              >
+              <span className={cn('material-symbols-outlined text-[16px]', clearing && 'animate-spin')}>
                 filter_alt_off
               </span>
             }

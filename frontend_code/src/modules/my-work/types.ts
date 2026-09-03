@@ -68,11 +68,27 @@ export { emptyCorrectionForm, correctionFormSchema } from './schemas/correction-
 
 export type { BreakMode, BreakSession } from './schemas/break'
 
+/** Session helpers used by attendance-session lib */
+export type TodayAttendanceSession = {
+  checkedInAt?: string | null
+  checkedOutAt?: string | null
+  status?: string
+  breaks?: BreakSession[]
+}
+
+export type WorkHoursSummary = {
+  workedMinutes: number
+  breakMinutes: number
+  netMinutes: number
+  label?: string
+}
+
 export {
   priorityClass,
   statusDot,
   statusStyles,
   attendanceStatusStyles,
   approvalTypeIcon,
+  typeIcon,
   MANUAL_ATTENDANCE_REASONS,
 } from './schemas/enums'

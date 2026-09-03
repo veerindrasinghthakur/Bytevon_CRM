@@ -190,11 +190,11 @@ export interface ListToolbarProps {
   searchPlaceholder?: string
   filterSlot?: ReactNode
   actionsSlot?: ReactNode
+  /** Alias for actionsSlot */
+  actions?: ReactNode
   children?: ReactNode
   filtersActive?: boolean
-  /** Clear filters only (search + selects). Does not reload rows. */
   onResetFilters?: () => void | Promise<void>
-  /** Reload rows (refetch). Does not clear filters. */
   onRefresh?: () => void | Promise<void>
   className?: string
 }
@@ -210,7 +210,6 @@ export interface PageHeaderProps {
   className?: string
 }
 
-/** Extra actions shown as buttons in the Quick Overview footer (replaces table ⋮ menus). */
 export interface QuickOverviewAction {
   id: string
   label: string
@@ -233,9 +232,7 @@ export type OpenQuickOverviewOptions = {
   editLabel?: string
   secondaryLabel?: string
   onSecondary?: () => void
-  /** Prefer this over table RowActions / ⋮ menus */
   actions?: QuickOverviewAction[]
-  /** Default max-w matches stitch ~md panel */
   widthClass?: string
 }
 
@@ -284,7 +281,6 @@ export interface ActivityFeedProps {
   title?: string
   headerAction?: ReactNode
   framed?: boolean
-  /** @deprecated use title + headerAction */
   header?: ReactNode
 }
 
@@ -369,7 +365,6 @@ export interface RefreshButtonProps {
   title?: string
 }
 
-/** @deprecated Prefer QuickOverview `actions` buttons — do not use ⋮ on list rows. */
 export interface RowAction {
   id: string
   label: string
@@ -379,7 +374,6 @@ export interface RowAction {
   disabled?: boolean
 }
 
-/** @deprecated Prefer QuickOverview panel actions. */
 export interface RowActionsProps {
   actions: RowAction[]
   label?: string
