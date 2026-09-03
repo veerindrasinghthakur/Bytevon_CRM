@@ -4,7 +4,6 @@ import { z } from 'zod'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { useCreateTask } from '../hooks/use-tasks'
-import type { TaskPriority } from '../types'
 
 const createTaskSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters').max(200),
@@ -36,6 +35,8 @@ export function CreateTaskModal({
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<CreateTaskFormValues>({
     resolver: zodResolver(createTaskSchema),
@@ -103,13 +104,15 @@ export function CreateTaskModal({
             </div>
             <Select
               label="Priority"
-              {...register('priority')}
+              value={watch('priority')}
+              onChange={(v) => setValue('priority', v as CreateTaskFormValues['priority'], { shouldValidate: true })}
               options={[
                 { value: 'LOW', label: 'Low' },
                 { value: 'MEDIUM', label: 'Medium' },
                 { value: 'HIGH', label: 'High' },
                 { value: 'URGENT', label: 'Urgent' },
               ]}
+              minWidthClass="w-full"
             />
             <div>
               <label className="text-label-sm block mb-1">Assignee</label>

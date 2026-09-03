@@ -1,5 +1,8 @@
 import { z } from 'zod'
-import { departmentStatusSchema, type CreateDepartmentInput } from './department'
+import type { CreateDepartmentInput } from './department'
+
+/** Local enum — do not import value schemas from ./department (circular re-export TDZ). */
+export const departmentStatusSchema = z.enum(['Active', 'Inactive'])
 
 /** UI form — string ids for Select; map via toCreateDepartmentInput on submit. */
 export const departmentFormSchema = z.object({

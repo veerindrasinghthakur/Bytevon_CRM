@@ -24,6 +24,11 @@ export function useQuickOverview() {
   return ctx
 }
 
+function blurActiveElement() {
+  const el = document.activeElement
+  if (el instanceof HTMLElement) el.blur()
+}
+
 export function QuickOverviewProvider({ children }: { children: ReactNode }) {
   const [isOpen, setIsOpen] = useState(false)
   const [options, setOptions] = useState<OpenQuickOverviewOptions | null>(null)
@@ -38,6 +43,8 @@ export function QuickOverviewProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const closePanel = useCallback(() => {
+    // Avoid aria-hidden on an ancestor of the focused control during exit animation
+    blurActiveElement()
     setIsOpen(false)
   }, [])
 
@@ -113,7 +120,11 @@ function QuickOverviewPanelShell({
         isOpen ? 'pointer-events-auto' : 'pointer-events-none',
       )}
       style={{ top: HEADER_HEIGHT_PX }}
+      // Only mark hidden when fully closed for AT; while open keep focusable tree visible.
+      // Blur on close prevents focused descendants under aria-hidden during exit.
       aria-hidden={!isOpen}
+      // @ts-expect-error inert is supported in modern browsers; React types lag
+      inert={!isOpen ? true : undefined}
     >
       <button
         type="button"
@@ -123,12 +134,13 @@ function QuickOverviewPanelShell({
           isOpen ? 'opacity-100' : 'opacity-0',
         )}
         aria-label="Close overview"
+        tabIndex={isOpen ? 0 : -1}
         onClick={onClose}
       />
 
       <aside
         role="dialog"
-        aria-modal="true"
+        aria-modal={isOpen ? true : undefined}
         aria-label={options.title}
         className={cn(
           'absolute right-0 w-full flex flex-col overflow-hidden',
@@ -168,7 +180,7 @@ function QuickOverviewPanelShell({
               )}
             </div>
           </div>
-          <IconButton label="Close panel" size="sm" onClick={onClose}>
+          <IconButton label="Close panel" size="sm" onClick={onClose} tabIndex={isOpen ? 0 : -1}>
             <span className="material-symbols-outlined text-[20px]">close</span>
           </IconButton>
         </header>
@@ -176,7 +188,6 @@ function QuickOverviewPanelShell({
         <div className="flex-1 overflow-y-auto p-6 space-y-5 min-h-0 bg-background">{options.content}</div>
 
         <footer className="p-6 border-t border-outline-variant bg-surface-container-lowest shrink-0 flex flex-col gap-3">
-          {/* Primary row actions — replaces table ⋮ menus */}
           {(extraActions.length > 0 || options.onEdit || options.secondaryLabel) && (
             <div className="flex flex-wrap gap-2">
               {options.onEdit && (
@@ -185,12 +196,18 @@ function QuickOverviewPanelShell({
                   size="sm"
                   leftIcon={<span className="material-symbols-outlined text-[18px]">edit</span>}
                   onClick={() => runThenClose(options.onEdit)}
+                  tabIndex={isOpen ? 0 : -1}
                 >
                   {options.editLabel ?? 'Edit'}
                 </Button>
               )}
               {options.secondaryLabel && options.onSecondary && (
-                <Button variant="outline" size="sm" onClick={() => runThenClose(options.onSecondary)}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => runThenClose(options.onSecondary)}
+                  tabIndex={isOpen ? 0 : -1}
+                >
                   {options.secondaryLabel}
                 </Button>
               )}
@@ -205,6 +222,7 @@ function QuickOverviewPanelShell({
                     ) : undefined
                   }
                   onClick={() => runThenClose(a.onClick)}
+                  tabIndex={isOpen ? 0 : -1}
                 >
                   {a.label}
                 </Button>
@@ -213,7 +231,7 @@ function QuickOverviewPanelShell({
           )}
 
           <div className="flex flex-wrap gap-2 justify-end">
-            <Button variant="outline" size="sm" onClick={onClose}>
+            <Button variant="outline" size="sm" onClick={onClose} tabIndex={isOpen ? 0 : -1}>
               Close
             </Button>
             {options.onOpenFull && (
@@ -222,6 +240,7 @@ function QuickOverviewPanelShell({
                 size="sm"
                 leftIcon={<span className="material-symbols-outlined text-[18px]">open_in_new</span>}
                 onClick={() => runThenClose(options.onOpenFull)}
+                tabIndex={isOpen ? 0 : -1}
               >
                 {fullLabel}
               </Button>
