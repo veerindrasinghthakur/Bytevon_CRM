@@ -3,7 +3,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 import { StatusDot } from '@/shared/components/ui/StatusDot'
 import { useClient, useSalesActivities } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
@@ -50,17 +50,11 @@ export function ClientDetailPage() {
         backLabel="Back to clients"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link
-              {...({ to: salesRoutes.root, params: {}, search: {} } as never)}
-              className="hover:text-secondary"
-            >
+            <Link {...looseLinkProps({ to: salesRoutes.root, className: 'hover:text-secondary' })}>
               Sales
             </Link>
             <span className="mx-2">/</span>
-            <Link
-              {...({ to: salesRoutes.clients, params: {}, search: {} } as never)}
-              className="hover:text-secondary"
-            >
+            <Link {...looseLinkProps({ to: salesRoutes.clients, className: 'hover:text-secondary' })}>
               Clients
             </Link>
             <span className="mx-2">/</span>
@@ -185,8 +179,10 @@ export function ClientDetailPage() {
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-title-md font-semibold">Activity</h2>
               <Link
-                {...({ to: salesRoutes.activity, params: {}, search: {} } as never)}
-                className="text-secondary text-sm font-semibold hover:underline"
+                {...looseLinkProps({
+                  to: salesRoutes.activity,
+                  className: 'text-secondary text-sm font-semibold hover:underline',
+                })}
               >
                 Full timeline
               </Link>
