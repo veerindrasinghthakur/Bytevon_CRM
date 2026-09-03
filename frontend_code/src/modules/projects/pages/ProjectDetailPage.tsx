@@ -10,7 +10,8 @@ import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { NotesPanel } from '@/shared/components/notes/NotesPanel'
 import { UploadButton } from '@/shared/components/forms/UploadButton'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
+import { NoteReferenceType } from '@/shared/schema'
 import { useProjectDetail, type ProjectDetailTab } from '../hooks/use-project-detail'
 import { useDocuments, useUploadDocument } from '../hooks/use-documents'
 import { ProjectStatusBadge } from '../components/ProjectStatusBadge'
@@ -103,7 +104,7 @@ export function ProjectDetailPage() {
       <div className="text-center py-16">
         <span className="material-symbols-outlined text-5xl text-on-surface-variant mb-4">folder_off</span>
         <h2 className="text-title-lg text-on-background mb-2">Project not found</h2>
-        <Link to={projectRoutes.list}>
+        <Link {...looseLinkProps({ to: projectRoutes.list })}>
           <Button variant="outline">Back to Projects</Button>
         </Link>
       </div>
@@ -115,7 +116,7 @@ export function ProjectDetailPage() {
     safeNavigate(navigate, {
       to: projectRoutes.projectDetailPath,
       params: { projectId: String(project.id) },
-      search: { tab: next } as never,
+      search: { tab: next },
       replace: true,
     })
   }
@@ -124,13 +125,13 @@ export function ProjectDetailPage() {
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         title={isEditing ? form.watch('name') || project.name : project.name}
-        description={project.code}
+        description={project.code ?? undefined}
         showBack
         backTo={projectRoutes.list}
         backLabel="Back to projects"
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to={projectRoutes.list} className="hover:text-secondary">
+            <Link {...looseLinkProps({ to: projectRoutes.list, className: 'hover:text-secondary' })}>
               Projects
             </Link>
             <span className="mx-2">/</span>
@@ -448,47 +449,84 @@ export function ProjectDetailPage() {
       {tab === 'documents' && (
         <section className="bv-surface overflow-hidden">
           <div className="px-5 py-4 border-b border-outline-variant flex justify-between items-center gap-3 flex-wrap">
-            <h3 className="font-semibold">Project documents</h3>
+            <h3 className="font-semibold text-title-md">Documents</h3>
             <UploadButton
-              label="Upload"
-              onFiles={(files) => void uploadDoc.mutateAsync(files).then(() => refetchDocs())}
-              disabled={uploadDoc.isPending}
+              onFiles={(files) => {
+                void uploadDoc.mutateAsync(files).then(() => refetchDocs())
+              }}
+              isLoading={uploadDoc.isPending}
             />
           </div>
-          <ul className="divide-y divide-outline-variant">
-            {(docsData?.items ?? []).length === 0 && (
-              <li className="px-5 py-8 text-center text-on-surface-variant text-sm">No documents yet.</li>
-            )}
-            {(docsData?.items ?? []).map((d) => (
-              <li key={d.id} className="px-5 py-4 flex items-center gap-3 hover:bg-surface-container-low">
-                <span className="material-symbols-outlined text-secondary">description</span>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{d.name}</p>
-                  <p className="text-xs text-on-surface-variant">
-                    {d.sizeLabel} · {d.uploadedBy} · {d.uploadedAt}
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ul>
+          {(docsData?.items ?? []).length === 0 ? (
+            <p className="p-8 text-center text-on-surface-variant text-sm">No documents yet.</p>
+          ) : (
+            <ul className="divide-y divide-outline-variant">
+              {(docsData?.items ?? []).map((doc) => (
+                <li key={doc.id} className="px-5 py-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm text-on-surface truncate">{doc.name}</p>
+                    <p className="text-xs text-on-surface-variant">{doc.sizeLabel ?? doc.type ?? '—'}</p>
+                  </div>
+                  {doc.url ? (
+                    <a
+                      href={doc.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-sm font-semibold text-secondary hover:underline shrink-0"
+                    >
+                      Open
+                    </a>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          )}
         </section>
       )}
 
       {tab === 'notes' && (
-        <NotesPanel className="max-w-3xl" referenceType="PROJECT" referenceId={project.id} title="Project notes" />
+        <NotesPanel
+          className="max-w-3xl"
+          referenceType={NoteReferenceType.TASK}
+          referenceId={project.id}
+          title="Project notes"
+        />
       )}
 
       {tab === 'repository' && (
         <section className="bv-surface p-6 space-y-4">
           <h3 className="text-title-md font-semibold">Repository</h3>
           {isEditing ? (
-            <input
-              {...form.register('repositoryUrl')}
-              className="w-full px-3 py-2 rounded-lg border border-outline-variant font-mono text-sm"
-              placeholder="https://github.com/..."
-            />
+            <div className="space-y-3 max-w-xl">
+              <div>
+                <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="repo-url">
+                  Git URL
+                </label>
+                <input
+                  id="repo-url"
+                  {...form.register('repositoryUrl')}
+                  onKeyDown={(e) => handleEnterAdvance(e)}
+                  className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-sm font-mono focus:outline-none focus:ring-2 focus:ring-secondary"
+                  placeholder="https://github.com/org/repo"
+                />
+              </div>
+            </div>
           ) : (
-            <p className="font-mono text-sm text-on-surface">{project.repositoryUrl || 'No repository URL set.'}</p>
+            <div className="space-y-2">
+              <p className="text-sm text-on-surface-variant">Git URL</p>
+              {project.repositoryUrl ? (
+                <a
+                  href={project.repositoryUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-secondary font-mono text-sm hover:underline break-all"
+                >
+                  {project.repositoryUrl}
+                </a>
+              ) : (
+                <p className="text-sm text-on-surface-variant">No repository linked.</p>
+              )}
+            </div>
           )}
         </section>
       )}
@@ -497,8 +535,6 @@ export function ProjectDetailPage() {
         open={createTaskOpen}
         onClose={() => setCreateTaskOpen(false)}
         projectId={project.id}
-        projectName={project.name}
-        onCreated={() => refetch()}
       />
     </div>
   )
@@ -506,14 +542,12 @@ export function ProjectDetailPage() {
 
 function MetricCard({ label, value, icon }: { label: string; value: string; icon: string }) {
   return (
-    <div className="bv-surface card-hover p-4 flex flex-col justify-between min-h-[100px]">
-      <div className="flex justify-between items-start">
-        <span className="text-xs text-on-surface-variant">{label}</span>
-        <span className="w-8 h-8 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center">
-          <span className="material-symbols-outlined text-lg">{icon}</span>
-        </span>
+    <div className="bv-surface p-4">
+      <div className="w-10 h-10 rounded-lg bg-secondary/10 text-secondary flex items-center justify-center mb-3">
+        <span className="material-symbols-outlined">{icon}</span>
       </div>
-      <p className="text-2xl font-bold text-on-background mt-2">{value}</p>
+      <p className="text-label-sm text-on-surface-variant">{label}</p>
+      <p className="text-title-lg font-bold text-on-background">{value}</p>
     </div>
   )
 }
