@@ -1,11 +1,12 @@
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Link } from '@tanstack/react-router'
-import type { ActivityType } from '../types'
 import { cn } from '@/shared/lib/cn'
+import { looseSearch } from '@/shared/lib/safeNavigate'
 import { salesRoutes } from '../routes'
 import { useSalesActivities } from '../hooks/use-sales'
 import { typeIcon, typeColor } from '../schemas/cssTokens'
+import type { SalesActivity } from '../types'
 
 export function SalesActivityTimelinePage() {
   const { data: activities, isLoading, isError } = useSalesActivities()
@@ -30,7 +31,8 @@ export function SalesActivityTimelinePage() {
     )
   }
 
-  const groups = activities.reduce<Record<string, typeof activities>>((acc, a) => {
+  const list: SalesActivity[] = activities ?? []
+  const groups = list.reduce<Record<string, SalesActivity[]>>((acc, a) => {
     ;(acc[a.dateGroup] ??= []).push(a)
     return acc
   }, {})
@@ -42,7 +44,7 @@ export function SalesActivityTimelinePage() {
         description="Chronological sales events across leads and clients."
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to={salesRoutes.root} search={{}} className="hover:text-secondary">
+            <Link to={salesRoutes.root} search={looseSearch()} className="hover:text-secondary">
               Sales
             </Link>
             <span className="mx-2">/</span>
@@ -63,7 +65,7 @@ export function SalesActivityTimelinePage() {
                   <span
                     className={cn(
                       'absolute -left-[1.9rem] top-1 w-8 h-8 rounded-full flex items-center justify-center executive-shadow',
-                      typeColor[a.type] ?? 'bg-surface-container text-on-surface-variant'
+                      typeColor[a.type] ?? 'bg-surface-container text-on-surface-variant',
                     )}
                   >
                     <span className="material-symbols-outlined text-base">{typeIcon[a.type] ?? 'circle'}</span>

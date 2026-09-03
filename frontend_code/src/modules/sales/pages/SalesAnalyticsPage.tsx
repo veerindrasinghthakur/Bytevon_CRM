@@ -2,6 +2,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Link } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
+import { looseSearch } from '@/shared/lib/safeNavigate'
 import { salesRoutes } from '../routes'
 import { useSalesDashboardMetrics } from '../hooks/use-sales'
 import { PipelineStageValues } from '../schemas/enums'
@@ -40,7 +41,7 @@ export function SalesAnalyticsPage() {
         description="Pipeline distribution, conversion signals, and commercial snapshot."
         breadcrumbs={
           <nav className="text-body-sm text-on-surface-variant">
-            <Link to={salesRoutes.root} search={{}} className="hover:text-secondary">
+            <Link to={salesRoutes.root} search={looseSearch()} className="hover:text-secondary">
               Sales
             </Link>
             <span className="mx-2">/</span>

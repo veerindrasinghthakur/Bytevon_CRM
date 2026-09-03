@@ -1,6 +1,7 @@
 import { createRoute, redirect } from '@tanstack/react-router'
 import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
+import { safeRedirectOpts } from '@/shared/lib/safeNavigate'
 
 const SalesDashboardPage = lazyPage(() => import('./pages/SalesDashboardPage'), 'SalesDashboardPage')
 const LeadsListPage = lazyPage(() => import('./pages/LeadsListPage'), 'LeadsListPage')
@@ -49,7 +50,7 @@ export function createSalesRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
       getParentRoute: () => appLayoutRoute,
       path: '/sales/leads',
       beforeLoad: () => {
-        throw redirect({ to: salesRoutes.leads, search: {} })
+        throw redirect(safeRedirectOpts({ to: salesRoutes.leads }))
       },
     }),
     createRoute({
