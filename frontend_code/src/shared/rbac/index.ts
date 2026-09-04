@@ -21,6 +21,20 @@ export { useRbac, invalidateRbac, type UseRbacResult } from './use-rbac'
 export { Can } from './Can'
 export { requirePermission, requireView, type RequirePermissionOpts } from './require-permission'
 
+export {
+  filterRailItems,
+  filterSecondaryNavItems,
+  filterSecondaryNavGroups,
+  RAIL_RESOURCE_BY_ID,
+} from './nav'
+export {
+  dataScope,
+  dataScopeFor,
+  withScope,
+  withAuthScope,
+  type ScopedListParams,
+} from './scope'
+
 /** @deprecated Prefer useRbac().can */
 export { useCanLegacy as useCan } from './legacy'
 /** @deprecated Prefer useRbac().can / canWith */
