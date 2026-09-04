@@ -2,10 +2,30 @@ import { delay, getDb, nextId } from '@/shared/mock/db'
 import {
   legacyDepartmentCreationDefaults,
   legacyEmployeeCreationDefaults,
+  teams,
+  departments,
+  employees,
+  candidateMembers,
+  assignableProjects,
+  membersFor,
+  canCreateShift,
+  shifts,
+  employeesOnShift,
 } from '@/shared/mock/data/workforce'
 import type { LegacyDepartment, LegacyEmployee } from '../types'
 
 export type { LegacyDepartment as Department, LegacyEmployee as Employee } from '../types'
+
+export const listWorkforceTeams = () => Object.values(teams)
+export const listWorkforceDepartments = () => Object.values(departments)
+export const listWorkforceEmployees = () => Object.values(employees)
+export const listCandidateMembers = () => candidateMembers
+export const listAssignableProjects = () => assignableProjects
+export const listWorkforceTeamMembers = (teamId: string) => membersFor(teamId)
+export const canCreateWorkforceShift = canCreateShift
+export const listWorkforceShifts = () => shifts
+export const getWorkforceShift = (shiftId: string) => shifts.find((shift) => shift.id === shiftId) ?? shifts[0]
+export const listWorkforceShiftEmployees = (shiftId: string) => employeesOnShift(shiftId)
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function asEmployee(row: any): LegacyEmployee {

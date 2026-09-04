@@ -3,7 +3,8 @@ import { Button } from '@/shared/components/ui/Button'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 import { workforceRoutes } from '../routes'
-import type { Team } from '../types'
+import { WORKFORCE_TEAM_METRICS, WORKFORCE_TEAM_TABS } from '../schemas/enums'
+import type { Team, TeamTopTab } from '../types'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -13,24 +14,25 @@ function Icon({ name, className }: { name: string; className?: string }) {
   )
 }
 
-type Tab = 'overview' | 'members' | 'projects'
-
 /** Shared header + metrics + tabs for team Overview / Members / Project History */
 export function TeamTopView({
   team,
   activeTab,
 }: {
   team: Team
-  activeTab: Tab
+  activeTab: TeamTopTab
 }) {
   const navigate = useNavigate()
   const t = team
 
-  const tabs: { id: Tab; label: string; to: string }[] = [
-    { id: 'overview', label: 'Overview', to: workforceRoutes.teamDetail(t.id) },
-    { id: 'members', label: 'Members', to: workforceRoutes.teamMembers(t.id) },
-    { id: 'projects', label: 'Project History', to: workforceRoutes.teamProjects(t.id) },
-  ]
+  const tabs = WORKFORCE_TEAM_TABS.map((tab) => ({
+    ...tab,
+    to: tab.id === 'overview'
+      ? workforceRoutes.teamDetail(t.id)
+      : tab.id === 'members'
+        ? workforceRoutes.teamMembers(t.id)
+        : workforceRoutes.teamProjects(t.id),
+  }))
 
   return (
     <>
@@ -82,17 +84,15 @@ export function TeamTopView({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-        {[
-          { label: 'Total Members', value: `${t.memberCount} Members`, icon: 'group', change: '12%' },
-          {
-            label: 'Projects Delivered',
-            value: `${t.projectCount * 6} Projects`,
-            icon: 'check_circle',
-            change: '4%',
-          },
-          { label: 'Current Velocity', value: `${t.velocity ?? 94}%`, icon: 'speed', change: '2%' },
-          { label: 'Avg. Task Completion', value: '4.2 Days', icon: 'timer' },
-        ].map((s) => (
+        {WORKFORCE_TEAM_METRICS.map((s) => {
+          const value = s.id === 'members'
+            ? `${t.memberCount} Members`
+            : s.id === 'projects'
+              ? `${t.projectCount * 6} Projects`
+              : s.id === 'velocity'
+                ? `${t.velocity ?? 94}%`
+                : '4.2 Days'
+          return (
           <div
             key={s.label}
             className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant shadow-sm"
@@ -101,16 +101,17 @@ export function TeamTopView({
               <div className="w-10 h-10 rounded-lg bg-surface-container-low text-secondary flex items-center justify-center">
                 <Icon name={s.icon} />
               </div>
-              {s.change && (
+              {'change' in s && s.change && (
                 <span className="text-emerald-600 text-label-sm bg-emerald-50 px-2 py-0.5 rounded">
                   ↑ {s.change}
                 </span>
               )}
             </div>
             <p className="text-body-md text-on-surface-variant">{s.label}</p>
-            <p className="text-headline-xl font-bold">{s.value}</p>
+            <p className="text-headline-xl font-bold">{value}</p>
           </div>
-        ))}
+          )
+        })}
       </div>
 
       <div className="border-b border-outline-variant flex gap-6 mt-6">

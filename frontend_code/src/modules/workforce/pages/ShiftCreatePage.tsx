@@ -1,26 +1,15 @@
 import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
-import { canCreateShift } from '../data/shiftsMock'
+import { canCreateWorkforceShift } from '../api/workforce'
 import { RouteCrumbs } from '../components/RouteCrumbs'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { emptyShiftCreateForm, shiftCreateSchema, type ShiftCreateInput } from '../schemas/shift-form'
 
 const SHIFTS_LIST = '/workforce/shifts'
-
-const shiftCreateSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  code: z.string().min(1, 'Code is required'),
-  start: z.string().min(1),
-  end: z.string().min(1),
-  breakMin: z.coerce.number().min(0),
-  days: z.string().min(1),
-})
-
-type ShiftCreateInput = z.infer<typeof shiftCreateSchema>
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -34,19 +23,12 @@ export function ShiftCreatePage() {
   const navigate = useNavigate()
   const form = useForm<ShiftCreateInput>({
     resolver: zodResolver(shiftCreateSchema),
-    defaultValues: {
-      name: '',
-      code: '',
-      start: '09:00',
-      end: '18:00',
-      breakMin: 60,
-      days: 'Mon–Fri',
-    },
+    defaultValues: emptyShiftCreateForm(),
   })
 
   const goList = () => safeNavigate(navigate, { to: SHIFTS_LIST })
 
-  if (!canCreateShift) {
+  if (!canCreateWorkforceShift) {
     return (
       <div className="space-y-4 max-w-lg animate-fade-in">
         <BackButton to={SHIFTS_LIST} label="Back to shifts" />

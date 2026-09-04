@@ -1,32 +1,14 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { cn } from '@/shared/lib/cn'
 import { looseSearch } from '@/shared/lib/safeNavigate'
+import { WORKFORCE_ROUTE_SEGMENT_LABELS } from '../schemas/enums'
+import type { Crumb, CrumbsFromPathOptions, DynamicRouteCrumbsProps, RouteCrumbsProps } from '../types'
 
-export type Crumb = { label: string; to?: string }
+export type { Crumb } from '../types'
 
 /** Pretty labels for known path segments (route-driven, not page-file names). */
-const SEGMENT_LABELS: Record<string, string> = {
-  workforce: 'Workforce',
-  employees: 'Employees',
-  departments: 'Departments',
-  teams: 'Teams',
-  attendance: 'Attendance',
-  members: 'Members',
-  projects: 'Project History',
-  edit: 'Edit',
-  'add-member': 'Add Member',
-  'assign-project': 'Assign Project',
-  new: 'New',
-  sales: 'Sales',
-  projects_mod: 'Projects',
-  'my-work': 'My Work',
-  leave: 'Leave',
-  approvals: 'Approvals',
-  admin: 'Administration',
-}
-
 function labelForSegment(segment: string): string {
-  if (SEGMENT_LABELS[segment]) return SEGMENT_LABELS[segment]
+  if (WORKFORCE_ROUTE_SEGMENT_LABELS[segment]) return WORKFORCE_ROUTE_SEGMENT_LABELS[segment]
   if (/^[a-z]?\d+$/i.test(segment) || segment.length <= 4) return segment
   return segment
     .split('-')
@@ -41,12 +23,7 @@ function labelForSegment(segment: string): string {
  */
 export function crumbsFromPathname(
   pathname: string,
-  options?: {
-    /** Override labels by full path or by last segment value */
-    labelOverrides?: Record<string, string>
-    /** Hide root-only paths that only redirect (e.g. skip linking /workforce if it redirects) */
-    rootTo?: string
-  },
+  options?: CrumbsFromPathOptions,
 ): Crumb[] {
   const parts = pathname.split('/').filter(Boolean)
   if (parts.length === 0) return []
@@ -73,10 +50,7 @@ export function crumbsFromPathname(
 export function RouteCrumbs({
   items,
   className,
-}: {
-  items: Crumb[]
-  className?: string
-}) {
+}: RouteCrumbsProps) {
   return (
     <nav
       aria-label="Breadcrumb"
@@ -119,11 +93,7 @@ export function DynamicRouteCrumbs({
   lastLabel,
   labelOverrides,
   className,
-}: {
-  lastLabel?: string
-  labelOverrides?: Record<string, string>
-  className?: string
-}) {
+}: DynamicRouteCrumbsProps) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const overrides = { ...labelOverrides }
   if (lastLabel) {

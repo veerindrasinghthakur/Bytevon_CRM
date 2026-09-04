@@ -2,22 +2,15 @@ import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { queryKeys } from '@/shared/lib/query-keys'
-import { shifts as shiftsSeed } from '@/shared/mock/data/workforce'
 import { delay } from '@/shared/mock/db'
 import { paginateItems } from '@/shared/lib/list-params'
+import { WORKFORCE_SHIFT_FILTER_DEFAULTS, type WorkforceShiftStatus } from '../schemas/enums'
+import type { WorkforceShiftsListParams } from '../types'
+import { listWorkforceShifts as getWorkforceShifts } from '../api/workforce'
 
-const FILTER_DEFAULTS = {
-  status: 'All' as 'All' | 'Active' | 'Inactive',
-}
-
-async function listWorkforceShifts(params?: {
-  search?: string
-  status?: string
-  page?: number
-  pageSize?: number
-}) {
+async function listWorkforceShifts(params?: WorkforceShiftsListParams) {
   await delay()
-  let items = shiftsSeed.map((s) => ({ ...s }))
+  let items = getWorkforceShifts().map((s) => ({ ...s }))
   if (params?.search) {
     const q = params.search.toLowerCase()
     items = items.filter(
@@ -38,7 +31,7 @@ async function listWorkforceShifts(params?: {
 
 export function useWorkforceShiftsList() {
   const controls = useListControls({
-    filterDefaults: FILTER_DEFAULTS,
+    filterDefaults: WORKFORCE_SHIFT_FILTER_DEFAULTS,
   })
 
   const listFilters = {
@@ -73,7 +66,7 @@ export function useWorkforceShiftsList() {
     search: controls.search,
     setSearch: controls.setSearch,
     status: controls.filters.status,
-    setStatus: (v: typeof FILTER_DEFAULTS.status) => controls.setFilter('status', v),
+    setStatus: (v: WorkforceShiftStatus) => controls.setFilter('status', v),
     filtersActive: controls.anyActive,
     resetFilters: controls.resetAll,
     page: controls.page,

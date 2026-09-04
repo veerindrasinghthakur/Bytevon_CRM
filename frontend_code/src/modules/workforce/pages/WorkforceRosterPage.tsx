@@ -5,19 +5,10 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { looseLinkProps } from '@/shared/lib/safeNavigate'
 import { listEmployments } from '../api/employment'
-import { AttendanceStatus } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 import { workforceRoutes } from '../routes'
-
-const STATUSES = Object.values(AttendanceStatus)
-
-type RosterRow = {
-  id: number
-  employee_code: string
-  fullName: string
-  departmentName: string
-  status: string
-}
+import { WORKFORCE_ROSTER_STATUSES } from '../schemas/enums'
+import type { RosterRow } from '../types'
 
 export function WorkforceRosterPage() {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
@@ -35,7 +26,7 @@ export function WorkforceRosterPage() {
             employee_code: e.employee_code,
             fullName: e.fullName,
             departmentName: e.departmentName,
-            status: STATUSES[i % STATUSES.length],
+            status: WORKFORCE_ROSTER_STATUSES[i % WORKFORCE_ROSTER_STATUSES.length],
           })),
         )
       })

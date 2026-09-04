@@ -23,6 +23,8 @@ import { can } from '@/shared/rbac'
 import { Action, ResourceName, EmploymentType } from '@/shared/schema'
 import type { AdminRoleOption } from '@/modules/admin/types'
 import { cn } from '@/shared/lib/cn'
+import { GENDER_OPTIONS } from '../schemas/enums'
+import type { EmployeeCreateMasters, EmployeeCreateStep, ManagerOption } from '../types'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -64,35 +66,20 @@ function Field({
 const inputClass =
   'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-4 py-3 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 transition-colors'
 
-const GENDER_OPTIONS = [
-  { value: '', label: 'Select…' },
-  { value: 'Female', label: 'Female' },
-  { value: 'Male', label: 'Male' },
-  { value: 'Non-binary', label: 'Non-binary' },
-  { value: 'Prefer not to say', label: 'Prefer not to say' },
-]
-
-type Step = 'profile' | 'auth' | 'done'
-
 export function EmployeeCreatePage() {
   const navigate = useNavigate()
   const canCreateUser = can({ action: Action.CREATE, resource: ResourceName.USER })
 
-  const [step, setStep] = useState<Step>('profile')
+  const [step, setStep] = useState<EmployeeCreateStep>('profile')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [createdEmploymentId, setCreatedEmploymentId] = useState<number | null>(null)
   const [createdName, setCreatedName] = useState('')
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
 
-  const [masters, setMasters] = useState<{
-    departments: { id: number; name: string }[]
-    positions: { id: number; name: string }[]
-    locations: { id: number; name: string }[]
-    shifts: { id: number; name: string }[]
-  } | null>(null)
+  const [masters, setMasters] = useState<EmployeeCreateMasters | null>(null)
   const [roles, setRoles] = useState<AdminRoleOption[]>([])
-  const [managerOptions, setManagerOptions] = useState<{ id: number; name: string }[]>([])
+  const [managerOptions, setManagerOptions] = useState<ManagerOption[]>([])
 
   const form = useForm<EmploymentFormInput>({
     resolver: zodResolver(employmentFormSchema),
@@ -408,7 +395,7 @@ export function EmployeeCreatePage() {
               <Select
                 value={gender}
                 onChange={setGender}
-                options={GENDER_OPTIONS}
+                options={[...GENDER_OPTIONS]}
                 placeholder="Select…"
                 minWidthClass="w-full"
                 aria-label="Gender"

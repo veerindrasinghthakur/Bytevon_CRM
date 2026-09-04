@@ -59,3 +59,90 @@ export const departmentStatusStyles: Record<string, string> = {
 
 export const loginEnabledClass = 'text-label-sm text-secondary font-medium'
 export const loginDisabledClass = 'text-label-sm text-on-surface-variant font-medium'
+
+export const TEAM_FILTER_DEFAULTS = {
+  status: 'All',
+  department: 'All',
+}
+
+export const EMPLOYMENT_STATES = [
+  'ONBOARDING',
+  'PROBATION',
+  'CONFIRMED',
+  'SERVING_NOTICE',
+  'RESIGNED',
+  'TERMINATED',
+  'ALUMNI',
+] as const
+
+export const EMPLOYMENT_TYPES = [
+  'FULL_TIME',
+  'PART_TIME',
+  'INTERN',
+  'CONTRACTOR',
+  'CONSULTANT',
+] as const
+
+export const WORKFORCE_SHIFT_STATUS_OPTIONS = ['All', 'Active', 'Inactive'] as const
+export type WorkforceShiftStatus = (typeof WORKFORCE_SHIFT_STATUS_OPTIONS)[number]
+export const WORKFORCE_SHIFT_FILTER_DEFAULTS = {
+  status: 'All' as WorkforceShiftStatus,
+}
+
+export const WORKFORCE_ROUTE_SEGMENT_LABELS: Record<string, string> = {
+  workforce: 'Workforce', employees: 'Employees', departments: 'Departments', teams: 'Teams', attendance: 'Attendance',
+  members: 'Members', projects: 'Project History', edit: 'Edit', 'add-member': 'Add Member',
+  'assign-project': 'Assign Project', new: 'New', sales: 'Sales', projects_mod: 'Projects', 'my-work': 'My Work',
+  leave: 'Leave', approvals: 'Approvals', admin: 'Administration',
+}
+
+export const WORKFORCE_TEAM_TABS = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'members', label: 'Members' },
+  { id: 'projects', label: 'Project History' },
+] as const
+
+export const WORKFORCE_TEAM_METRICS = [
+  { id: 'members', label: 'Total Members', icon: 'group', change: '12%' },
+  { id: 'projects', label: 'Projects Delivered', icon: 'check_circle', change: '4%' },
+  { id: 'velocity', label: 'Current Velocity', icon: 'speed', change: '2%' },
+  { id: 'completion', label: 'Avg. Task Completion', icon: 'timer' },
+] as const
+
+export const TEAM_PROJECT_ROLE_OPTIONS = [
+  { value: 'Primary', label: 'Primary' },
+  { value: 'Support', label: 'Support' },
+  { value: 'Consulting', label: 'Consulting' },
+] as const
+
+export const WORK_MODE_OPTIONS = [
+  { value: 'OFFICE', label: 'OFFICE' },
+  { value: 'WFH', label: 'WFH' },
+] as const
+
+export const GENDER_OPTIONS = [
+  { value: '', label: 'Select…' },
+  { value: 'Female', label: 'Female' },
+  { value: 'Male', label: 'Male' },
+  { value: 'Non-binary', label: 'Non-binary' },
+  { value: 'Prefer not to say', label: 'Prefer not to say' },
+] as const
+
+export const DEPARTMENT_ROLE_OPTIONS = [
+  { value: 'Lead', label: 'Lead' },
+  { value: 'Senior', label: 'Senior' },
+  { value: 'Junior', label: 'Junior' },
+] as const
+
+export const DEPARTMENT_STATUS_OPTIONS = [
+  { value: 'Active', label: 'Active' },
+  { value: 'Inactive', label: 'Inactive' },
+] as const
+
+export const SHIFT_STATUS_OPTIONS = [
+  { value: 'All', label: 'All statuses' },
+  { value: 'Active', label: 'Active' },
+  { value: 'Inactive', label: 'Inactive' },
+] as const
+
+export const WORKFORCE_ROSTER_STATUSES = ['PRESENT', 'LATE', 'ABSENT', 'WFH', 'ON_LEAVE'] as const

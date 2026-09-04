@@ -1,5 +1,7 @@
 /** Re-export domain types from Zod schemas — MODULE_STANDARDS (my-work pattern). */
 
+import type { DepartmentListItem } from './schemas/department'
+
 export type {
   DepartmentListItemSchema,
   DepartmentListItem,
@@ -55,7 +57,66 @@ export type {
   Employee,
   EmploymentType,
   EmployeeStatus,
+  TeamEditFormInput,
 } from './schemas/team'
+
+export type Crumb = { label: string; to?: string }
+export type CrumbsFromPathOptions = { labelOverrides?: Record<string, string>; rootTo?: string }
+export type RouteCrumbsProps = { items: Crumb[]; className?: string }
+export type DynamicRouteCrumbsProps = {
+  lastLabel?: string
+  labelOverrides?: Record<string, string>
+  className?: string
+}
+export type TeamTopTab = 'overview' | 'members' | 'projects'
+export type TeamTopTabItem = { id: TeamTopTab; label: string; to: string }
+
+export type DeptMetrics = {
+  total: number
+  active: number
+  inactive: number
+  staffing: number
+}
+
+export type DeptListResult = {
+  items: DepartmentListItem[]
+  total: number
+  metrics?: DeptMetrics
+}
+
+export type WorkforceShiftsListParams = {
+  search?: string
+  status?: string
+  page?: number
+  pageSize?: number
+}
+
+export type AddMemberMode = 'choose' | 'existing' | 'new'
+export type CandidateMember = {
+  id: string
+  name: string
+  title?: string
+  department?: string
+  experienceYears?: number
+  joinedLabel?: string
+  availability: string
+}
+export type RosterRow = {
+  id: number
+  employee_code: string
+  fullName: string
+  departmentName: string
+  status: string
+}
+export type EmployeeCreateStep = 'profile' | 'auth' | 'done'
+export type EmployeeCreateMasters = {
+  departments: { id: number; name: string }[]
+  positions: { id: number; name: string }[]
+  locations: { id: number; name: string }[]
+  shifts: { id: number; name: string }[]
+}
+export type ManagerOption = { id: number; name: string }
+export type IdName = { id: number; name: string }
 
 export {
   workforceAttendanceStatusStyles,
@@ -67,6 +128,8 @@ export {
   loginEnabledClass,
   loginDisabledClass,
 } from './schemas/enums'
+
+export { teamEditFormSchema, emptyTeamEditForm } from './schemas/team'
 
 
 export interface AttendanceKpi {

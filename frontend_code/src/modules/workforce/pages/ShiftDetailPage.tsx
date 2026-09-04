@@ -3,7 +3,11 @@ import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
-import { canCreateShift, employeesOnShift, shifts } from '../data/shiftsMock'
+import {
+  canCreateWorkforceShift,
+  getWorkforceShift,
+  listWorkforceShiftEmployees,
+} from '../api/workforce'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 
@@ -18,9 +22,9 @@ function Icon({ name, className }: { name: string; className?: string }) {
 export function ShiftDetailPage() {
   const { shiftId } = useParams({ strict: false }) as { shiftId: string }
   const navigate = useNavigate()
-  const shift = shifts.find((s) => s.id === shiftId) ?? shifts[0]
+  const shift = getWorkforceShift(shiftId)
   const [query, setQuery] = useState('')
-  const members = employeesOnShift(shift.id)
+  const members = listWorkforceShiftEmployees(shift.id)
   const filtered = useMemo(() => {
     const q = query.toLowerCase()
     return members.filter(
@@ -55,12 +59,12 @@ export function ShiftDetailPage() {
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
-            {canCreateShift && (
+            {canCreateWorkforceShift && (
               <Button variant="outline" leftIcon={<Icon name="edit" />}>
                 Edit Shift
               </Button>
             )}
-            {canCreateShift && (
+            {canCreateWorkforceShift && (
               <Button
                 variant="primary"
                 leftIcon={<Icon name="add" />}

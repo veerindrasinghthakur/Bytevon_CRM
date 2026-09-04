@@ -2,21 +2,9 @@ import { useQuery } from '@tanstack/react-query'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { listDepartments } from '../api/departments'
 import { queryKeys } from '@/shared/lib/query-keys'
+import type { DeptListResult, DeptMetrics } from '../types'
 
 const FILTER_DEFAULTS = { status: 'All' }
-
-type DeptMetrics = {
-  total: number
-  active: number
-  inactive: number
-  staffing: number
-}
-
-type DeptListResult = {
-  items: Awaited<ReturnType<typeof listDepartments>>['items']
-  total: number
-  metrics?: DeptMetrics
-}
 
 /** Query key factory used by use-department-detail invalidation. */
 export const DEPARTMENTS_LIST_KEY = queryKeys.workforce.departments.all

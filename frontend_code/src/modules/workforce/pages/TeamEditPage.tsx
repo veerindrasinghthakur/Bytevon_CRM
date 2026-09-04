@@ -1,11 +1,14 @@
-import { useState } from 'react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
-import { teams, membersFor } from '@/shared/mock/data/workforce'
+import { listWorkforceTeamMembers, listWorkforceTeams } from '../api/workforce'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 import { RouteCrumbs } from '../components/RouteCrumbs'
 import { cn } from '@/shared/lib/cn'
+import { emptyTeamEditForm, teamEditFormSchema } from '../schemas/team'
+import type { TeamEditFormInput } from '../types'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -18,13 +21,13 @@ function Icon({ name, className }: { name: string; className?: string }) {
 export function TeamEditPage() {
   const { teamId } = useParams({ strict: false }) as { teamId: string }
   const navigate = useNavigate()
-  const teamList = Object.values(teams)
+  const teamList = listWorkforceTeams()
   const t = teamList.find((x) => x.id === teamId) ?? teamList[0]
-  const members = membersFor(t.id)
-  const [name, setName] = useState(t.name)
-  const [description, setDescription] = useState(t.description ?? t.mission ?? '')
-  const [head, setHead] = useState(t.headName)
-  const [status, setStatus] = useState(t.status)
+  const members = listWorkforceTeamMembers(t.id)
+  const form = useForm<TeamEditFormInput>({
+    resolver: zodResolver(teamEditFormSchema),
+    defaultValues: emptyTeamEditForm(t),
+  })
 
   const save = () => {
     safeNavigate(navigate, {
@@ -52,10 +55,7 @@ export function TeamEditPage() {
 
       <form
         className="bv-surface p-6 space-y-5"
-        onSubmit={(e) => {
-          e.preventDefault()
-          save()
-        }}
+        onSubmit={form.handleSubmit(() => save())}
       >
         <section>
           <h2 className="text-title-md font-semibold mb-3 flex items-center gap-2">
@@ -65,8 +65,7 @@ export function TeamEditPage() {
             <label className="block text-body-sm">
               <span className="text-on-surface-variant">Team name</span>
               <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+                {...form.register('name')}
                 className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none transition-colors"
                 required
               />
@@ -74,8 +73,7 @@ export function TeamEditPage() {
             <label className="block text-body-sm">
               <span className="text-on-surface-variant">Description / mission</span>
               <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                {...form.register('description')}
                 rows={4}
                 className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md resize-none focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
               />
@@ -83,7 +81,7 @@ export function TeamEditPage() {
             <label className="block text-body-sm">
               <span className="text-on-surface-variant">Department</span>
               <input
-                defaultValue={t.department}
+                {...form.register('department')}
                 className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
               />
             </label>
@@ -97,16 +95,15 @@ export function TeamEditPage() {
           <label className="block text-body-sm">
             <span className="text-on-surface-variant">Team head</span>
             <input
-              value={head}
-              onChange={(e) => setHead(e.target.value)}
+              {...form.register('head')}
               className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
             />
           </label>
           <label className="block text-body-sm mt-3">
             <span className="text-on-surface-variant">Status</span>
             <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as 'Active' | 'Inactive')}
+              value={form.watch('status')}
+              onChange={(e) => form.setValue('status', e.target.value as TeamEditFormInput['status'])}
               className="mt-1 w-full border border-outline-variant rounded-lg px-3 py-2 text-body-md focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
             >
               <option value="Active">Active</option>

@@ -3,9 +3,15 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { teams, departments, employees, candidateMembers } from '@/shared/mock/data/workforce'
+import {
+  listCandidateMembers,
+  listWorkforceDepartments,
+  listWorkforceEmployees,
+  listWorkforceTeams,
+} from '../api/workforce'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import type { DepartmentRole } from '../types'
+import type { AddMemberMode, CandidateMember, DepartmentRole } from '../types'
+import { DEPARTMENT_ROLE_OPTIONS } from '../schemas/enums'
 import { RouteCrumbs } from '../components/RouteCrumbs'
 import { cn } from '@/shared/lib/cn'
 
@@ -17,18 +23,6 @@ function Icon({ name, className }: { name: string; className?: string }) {
   )
 }
 
-type Mode = 'choose' | 'existing' | 'new'
-
-type CandidateMember = {
-  id: string
-  name: string
-  title?: string
-  department?: string
-  experienceYears?: number
-  joinedLabel?: string
-  availability: string
-}
-
 /**
  * Add member flow. Prefer bottom-sheet presentation when opened as overlay
  * from team/department detail; full page still works via route.
@@ -36,8 +30,8 @@ type CandidateMember = {
 export function AddMemberPage() {
   const params = useParams({ strict: false }) as { departmentId?: string; teamId?: string }
   const navigate = useNavigate()
-  const departmentList = Object.values(departments)
-  const teamList = Object.values(teams)
+  const departmentList = listWorkforceDepartments()
+  const teamList = listWorkforceTeams()
   const dept = departmentList.find((d) => d.id === params.departmentId) ?? departmentList[0]
   const team = teamList.find((t) => t.id === params.teamId)
   const contextLabel = team ? team.name : dept.name
@@ -45,7 +39,7 @@ export function AddMemberPage() {
     ? `/workforce/teams/${params.teamId}`
     : `/workforce/departments/${dept.id}`
 
-  const [mode, setMode] = useState<Mode>('choose')
+  const [mode, setMode] = useState<AddMemberMode>('choose')
   const [search, setSearch] = useState('')
   const [roles, setRoles] = useState<Record<string, DepartmentRole | null>>({})
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -53,7 +47,7 @@ export function AddMemberPage() {
   const [sheetOpen, setSheetOpen] = useState(true)
 
   const pool = useMemo(() => {
-    const fromCandidates: CandidateMember[] = candidateMembers.map((m) => ({
+    const fromCandidates: CandidateMember[] = listCandidateMembers().map((m) => ({
       id: m.id,
       name: m.name,
       title: m.title,
@@ -62,7 +56,7 @@ export function AddMemberPage() {
       joinedLabel: undefined,
       availability: m.availability ?? 'Available',
     }))
-    const fromEmployees: CandidateMember[] = Object.values(employees).map((e) => ({
+    const fromEmployees: CandidateMember[] = listWorkforceEmployees().map((e) => ({
       id: e.id,
       name: e.name,
       title: e.title,
@@ -229,7 +223,9 @@ export function AddMemberPage() {
                           </div>
                         </button>
                         <div className="flex flex-wrap gap-2 mb-3">
-                          {(['Lead', 'Senior', 'Junior'] as DepartmentRole[]).map((r) => (
+                          {DEPARTMENT_ROLE_OPTIONS.map((option) => {
+                            const r = option.value as DepartmentRole
+                            return (
                             <button
                               key={r}
                               type="button"
@@ -246,7 +242,8 @@ export function AddMemberPage() {
                             >
                               {r}
                             </button>
-                          ))}
+                            )
+                          })}
                         </div>
                         <Button
                           variant="primary"

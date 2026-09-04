@@ -16,6 +16,7 @@ import {
 import { workforceRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
+import { DEPARTMENT_STATUS_OPTIONS } from '../schemas/enums'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -164,7 +165,7 @@ export function DepartmentCreatePage() {
               <div>
                 <label className="text-label-md block mb-3">Status</label>
                 <div className="flex flex-col gap-3">
-                  {(['Active', 'Inactive'] as const).map((s) => (
+                  {DEPARTMENT_STATUS_OPTIONS.map(({ value: s }) => (
                     <label
                       key={s}
                       className={cn(

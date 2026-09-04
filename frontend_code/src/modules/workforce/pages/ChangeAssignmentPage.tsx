@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
@@ -11,20 +10,9 @@ import { getSchemaDepartments, getLocations, getPositions, getShifts } from '@/m
 import { WorkMode } from '@/shared/schema'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { workforceRoutes } from '../routes'
-
-const changeAssignmentSchema = z.object({
-  department_id: z.string().min(1, 'Department is required'),
-  position_id: z.string().min(1, 'Position is required'),
-  location_id: z.string().min(1, 'Location is required'),
-  shift_id: z.string().min(1, 'Shift is required'),
-  work_mode: z.string().min(1),
-  effective_from: z.string().min(1, 'Effective date is required'),
-  change_reason: z.string().min(1, 'Change reason is required'),
-})
-
-type ChangeAssignmentForm = z.infer<typeof changeAssignmentSchema>
-
-type IdName = { id: number; name: string }
+import { changeAssignmentSchema, type ChangeAssignmentForm } from '../schemas/change-assignment-form'
+import { WORK_MODE_OPTIONS } from '../schemas/enums'
+import type { IdName } from '../types'
 
 function asIdNameList(raw: unknown): IdName[] {
   if (Array.isArray(raw)) {
@@ -177,10 +165,7 @@ export function ChangeAssignmentPage() {
             label="Work mode"
             value={form.watch('work_mode')}
             onChange={(v) => form.setValue('work_mode', v, { shouldValidate: true })}
-            options={[
-              { value: WorkMode.OFFICE, label: 'OFFICE' },
-              { value: WorkMode.WFH, label: 'WFH' },
-            ]}
+            options={[...WORK_MODE_OPTIONS]}
             aria-label="Work mode"
             minWidthClass="w-full"
           />

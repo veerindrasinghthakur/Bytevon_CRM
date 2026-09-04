@@ -1,23 +1,16 @@
 import { useForm } from 'react-hook-form'
-import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
-import { teams, assignableProjects } from '@/shared/mock/data/workforce'
+import { listAssignableProjects, listWorkforceTeams } from '../api/workforce'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { RouteCrumbs } from '../components/RouteCrumbs'
 import { workforceRoutes } from '../routes'
 import { cn } from '@/shared/lib/cn'
-
-const assignProjectSchema = z.object({
-  projectId: z.string().min(1, 'Select a project'),
-  role: z.string().min(1),
-  notes: z.string().optional().or(z.literal('')),
-})
-
-type AssignProjectForm = z.infer<typeof assignProjectSchema>
+import { assignProjectSchema, type AssignProjectForm } from '../schemas/assign-project-form'
+import { TEAM_PROJECT_ROLE_OPTIONS } from '../schemas/enums'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -30,7 +23,7 @@ function Icon({ name, className }: { name: string; className?: string }) {
 export function AssignProjectPage() {
   const { teamId } = useParams({ strict: false }) as { teamId: string }
   const navigate = useNavigate()
-  const teamList = Object.values(teams)
+  const teamList = listWorkforceTeams()
   const t = teamList.find((x) => x.id === teamId) ?? teamList[0]
 
   const form = useForm<AssignProjectForm>({
@@ -72,7 +65,7 @@ export function AssignProjectPage() {
             <Icon name="account_tree" className="text-secondary" /> Select project
           </h2>
           <ul className="space-y-2">
-            {assignableProjects.map((p) => {
+            {listAssignableProjects().map((p) => {
               const active = selected === p.id
               return (
                 <li key={p.id}>
@@ -108,11 +101,7 @@ export function AssignProjectPage() {
             label="Team role on project"
             value={form.watch('role')}
             onChange={(v) => form.setValue('role', v)}
-            options={[
-              { value: 'Primary', label: 'Primary' },
-              { value: 'Support', label: 'Support' },
-              { value: 'Consulting', label: 'Consulting' },
-            ]}
+            options={[...TEAM_PROJECT_ROLE_OPTIONS]}
             minWidthClass="w-full"
             aria-label="Team role on project"
           />

@@ -5,6 +5,7 @@ import { listEmployments } from '../api/employment'
 import { listDepartments } from '../api/departments'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { computeEmploymentListMetrics } from '@/shared/compute/workforce-metrics'
+import { EMPLOYMENT_STATES, EMPLOYMENT_TYPES } from '../schemas/enums'
 
 const FILTER_DEFAULTS = {
   dept: 'all',
@@ -13,24 +14,6 @@ const FILTER_DEFAULTS = {
 } as const
 
 type FilterKey = keyof typeof FILTER_DEFAULTS
-
-const EMPLOYMENT_STATES = Object.values({
-  ONBOARDING: 'ONBOARDING',
-  PROBATION: 'PROBATION',
-  CONFIRMED: 'CONFIRMED',
-  SERVING_NOTICE: 'SERVING_NOTICE',
-  RESIGNED: 'RESIGNED',
-  TERMINATED: 'TERMINATED',
-  ALUMNI: 'ALUMNI',
-})
-
-const EMPLOYMENT_TYPES = Object.values({
-  FULL_TIME: 'FULL_TIME',
-  PART_TIME: 'PART_TIME',
-  INTERN: 'INTERN',
-  CONTRACTOR: 'CONTRACTOR',
-  CONSULTANT: 'CONSULTANT',
-})
 
 export function useEmployeesList() {
   const controls = useListControls({

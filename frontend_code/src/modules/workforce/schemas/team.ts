@@ -26,6 +26,23 @@ export const teamSchema = z.object({
 })
 export type Team = z.infer<typeof teamSchema>
 
+export const teamEditFormSchema = z.object({
+  name: z.string().min(1, 'Team name is required'),
+  description: z.string().optional().or(z.literal('')),
+  department: z.string().optional().or(z.literal('')),
+  head: z.string().optional().or(z.literal('')),
+  status: recordStatusSchema,
+})
+export type TeamEditFormInput = z.infer<typeof teamEditFormSchema>
+
+export const emptyTeamEditForm = (team: Team): TeamEditFormInput => ({
+  name: team.name,
+  description: team.description ?? team.mission ?? '',
+  department: team.department,
+  head: team.headName,
+  status: team.status,
+})
+
 export const teamMemberSchema = z.object({
   id: z.string(),
   employeeId: z.string(),

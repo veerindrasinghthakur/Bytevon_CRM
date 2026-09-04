@@ -12,10 +12,12 @@ import {
   QuickMetaTile,
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
-import { canCreateShift } from '../data/shiftsMock'
+import { canCreateWorkforceShift } from '../api/workforce'
 import { useWorkforceShiftsList } from '../hooks/use-workforce-shifts'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
+import type { ShiftMock } from '../types'
+import { SHIFT_STATUS_OPTIONS } from '../schemas/enums'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -25,10 +27,7 @@ function Icon({ name, className }: { name: string; className?: string }) {
   )
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ShiftCard = any
-
-function ShiftQuickContent({ s }: { s: ShiftCard }) {
+function ShiftQuickContent({ s }: { s: ShiftMock }) {
   return (
     <>
       <QuickSection title="Schedule">
@@ -68,7 +67,7 @@ export function ShiftsListPage() {
     refetch,
   } = useWorkforceShiftsList()
 
-  const openShiftOverview = (s: ShiftCard) => {
+  const openShiftOverview = (s: ShiftMock) => {
     openPanel({
       title: s.name,
       subtitle: `${s.code} · ${s.startTime} – ${s.endTime}`,
@@ -92,7 +91,7 @@ export function ShiftsListPage() {
         title="Shifts"
         description="Define work schedules and see who is assigned to each shift."
         actions={
-          canCreateShift ? (
+          canCreateWorkforceShift ? (
             <Button
               variant="primary"
               leftIcon={<Icon name="add" />}
@@ -116,11 +115,7 @@ export function ShiftsListPage() {
           value={status}
           onChange={(v) => setStatus(v as typeof status)}
           placeholder="All statuses"
-          options={[
-            { value: 'All', label: 'All statuses' },
-            { value: 'Active', label: 'Active' },
-            { value: 'Inactive', label: 'Inactive' },
-          ]}
+          options={[...SHIFT_STATUS_OPTIONS]}
           minWidthClass="min-w-[140px]"
         />
       </ListToolbar>

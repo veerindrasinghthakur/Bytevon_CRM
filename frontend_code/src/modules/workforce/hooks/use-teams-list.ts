@@ -6,6 +6,7 @@ import { getTeams } from '@/modules/projects/api/teams'
 import type { Team as ProjectsTeam } from '@/modules/projects/types'
 import type { Team, WorkforceMetric } from '../types'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { TEAM_FILTER_DEFAULTS } from '../schemas/enums'
 
 /** Map projects Team (canonical) → workforce Team shape used by list UI */
 function toWorkforceTeam(t: ProjectsTeam): Team {
@@ -38,16 +39,11 @@ function buildMetrics(items: Team[]): WorkforceMetric[] {
   ]
 }
 
-const FILTER_DEFAULTS = {
-  status: 'All',
-  department: 'All',
-}
-
 export function useTeamsList() {
   const [createOpen, setCreateOpen] = useState(false)
 
   const controls = useListControls({
-    filterDefaults: FILTER_DEFAULTS,
+    filterDefaults: TEAM_FILTER_DEFAULTS,
   })
 
   const listFilters = {

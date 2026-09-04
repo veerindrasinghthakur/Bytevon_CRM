@@ -24,6 +24,7 @@ import { useDepartmentsList } from '../hooks/use-departments-list'
 import { workforceRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
+import { DEPARTMENT_STATUS_OPTIONS } from '../schemas/enums'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -229,11 +230,7 @@ export function DepartmentsListPage() {
           value={status}
           onChange={setStatus}
           placeholder="All Statuses"
-          options={[
-            { value: 'All', label: 'All Statuses' },
-            { value: 'Active', label: 'Active' },
-            { value: 'Inactive', label: 'Inactive' },
-          ]}
+          options={[{ value: 'All', label: 'All Statuses' }, ...DEPARTMENT_STATUS_OPTIONS]}
         />
       </div>
 
