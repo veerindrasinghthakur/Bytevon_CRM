@@ -3,10 +3,7 @@
  */
 import type { QueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/shared/lib/query-keys'
-import type { Client, Lead, SalesMetric } from '../types'
-
-export type LeadListData = { items: Lead[]; total: number; metrics: SalesMetric[] }
-export type ClientListData = { items: Client[]; total: number; metrics: SalesMetric[] }
+import type { Client, Lead, LeadListData, ClientListData } from '../types'
 
 export function findLeadInCache(qc: QueryClient, id: string): Lead | undefined {
   const detail = qc.getQueryData<Lead>(queryKeys.sales.leads.detail(id))

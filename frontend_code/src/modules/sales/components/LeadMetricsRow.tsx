@@ -1,14 +1,5 @@
 import { cn } from '@/shared/lib/cn'
-
-export interface LeadMetric {
-  id: string
-  label: string
-  value: string
-  icon: string
-  change?: string
-  changeType?: 'positive' | 'negative' | 'neutral'
-  subtitle?: string
-}
+import type { LeadMetric } from '../types'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (

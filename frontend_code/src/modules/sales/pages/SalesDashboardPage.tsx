@@ -6,7 +6,7 @@ import { StatusDot } from '@/shared/components/ui/StatusDot'
 import { useSalesDashboard } from '../hooks/use-sales-dashboard'
 import { salesRoutes } from '../routes'
 import { cn } from '@/shared/lib/cn'
-import { stageStyles, stageColors, typeIcon, changeTypeStyles } from '../schemas/cssTokens'
+import { stageStyles, stageColors, typeIcon, changeTypeStyles } from '../schemas/enums'
 
 function formatBudget(n: number) {
   return new Intl.NumberFormat('en-US', {

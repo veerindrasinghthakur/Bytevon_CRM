@@ -5,7 +5,7 @@ import {
   useSalesActivities,
   useSalesDashboardMetrics,
 } from './use-sales'
-import { typeIcon } from '../schemas/cssTokens'
+import { typeIcon } from '../schemas/enums'
 import {
   activityGroups,
   monthlyLeadGrowth,

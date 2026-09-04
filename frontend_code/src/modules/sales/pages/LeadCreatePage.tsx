@@ -13,18 +13,22 @@ import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 import { getLeadFilterOptions, listSalesRepresentatives } from '../api/sales'
 import { useCreateLead, useLead, useUpdateLead } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
-import { leadFormSchema, type LeadFormSchemaInput } from '../schemas/lead-form'
-import type { LeadPriority, PipelineStage, RecordStatus } from '../types'
+import { leadFormSchema, optTrim, type LeadFormSchemaInput } from '../schemas/lead-form'
+import {
+  LeadPriorityOptions,
+  LeadPriorityValues,
+  PipelineStageOptions,
+  PipelineStageValues,
+  RecordStatusOptions,
+  type LeadPriority,
+  type PipelineStage,
+  type RecordStatus,
+} from '../schemas/enums'
 import { cn } from '@/shared/lib/cn'
 
 const fieldClass =
   'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors'
 const labelClass = 'block text-label-md text-on-surface-variant mb-1.5'
-
-function optTrim(v: string | undefined | null): string | undefined {
-  const t = (v ?? '').trim()
-  return t || undefined
-}
 
 export function LeadCreatePage() {
   const navigate = useNavigate()
@@ -102,10 +106,10 @@ export function LeadCreatePage() {
     }
   }, [existing, repsQuery.data, form])
 
-  const stages = filterOptionsQuery.data?.stages ?? []
-  const priorities = filterOptionsQuery.data?.priorities ?? []
+  const stages = filterOptionsQuery.data?.stages ?? [...PipelineStageValues]
+  const priorities = filterOptionsQuery.data?.priorities ?? [...LeadPriorityValues]
   const sources = filterOptionsQuery.data?.sources ?? []
-  const statuses = filterOptionsQuery.data?.statuses ?? ['Active', 'Inactive']
+  const statuses = filterOptionsQuery.data?.statuses ?? [...RecordStatusOptions.map((option) => option.value)]
 
   const repOptions = useMemo(() => {
     const items = repsQuery.data ?? []
@@ -296,21 +300,27 @@ export function LeadCreatePage() {
               label="Stage"
               value={stageValue}
               onChange={(v) => form.setValue('stage', v as PipelineStage)}
-              options={stages.map((s) => ({ value: s, label: s }))}
+              options={[...PipelineStageOptions, ...stages
+                .filter((s) => !PipelineStageOptions.some((option) => option.value === s))
+                .map((s) => ({ value: s, label: s }))]}
               minWidthClass="w-full"
             />
             <Select
               label="Priority"
               value={priorityValue}
               onChange={(v) => form.setValue('priority', v as LeadPriority)}
-              options={priorities.map((p) => ({ value: p, label: p }))}
+              options={[...LeadPriorityOptions, ...priorities
+                .filter((p) => !LeadPriorityOptions.some((option) => option.value === p))
+                .map((p) => ({ value: p, label: p }))]}
               minWidthClass="w-full"
             />
             <Select
               label="Status"
               value={statusValue}
               onChange={(v) => form.setValue('status', v as RecordStatus)}
-              options={statuses.map((s) => ({ value: s, label: s }))}
+              options={[...RecordStatusOptions, ...statuses
+                .filter((s) => !RecordStatusOptions.some((option) => option.value === s))
+                .map((s) => ({ value: s, label: s }))]}
               minWidthClass="w-full"
             />
             <Select

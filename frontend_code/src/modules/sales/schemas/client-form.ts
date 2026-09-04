@@ -27,4 +27,33 @@ export const clientFormSchema = z.object({
   contacts: z.array(clientContactFormSchema).min(1),
 })
 
+export type ClientContactForm = z.infer<typeof clientContactFormSchema>
 export type ClientFormSchemaInput = z.infer<typeof clientFormSchema>
+export type ClientForm = ClientFormSchemaInput
+
+export function emptyClientContact(): ClientContactForm {
+  return {
+    id: `tmp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    name: '',
+    designation: '',
+    email: '',
+    phone: '',
+  }
+}
+
+export const emptyClientForm = (): ClientForm => ({
+  name: '',
+  legalName: '',
+  type: 'SMB',
+  status: 'Active',
+  industry: '',
+  website: '',
+  country: '',
+  state: '',
+  city: '',
+  address: '',
+  taxId: '',
+  founded: '',
+  chatLink: '',
+  contacts: [emptyClientContact()],
+})

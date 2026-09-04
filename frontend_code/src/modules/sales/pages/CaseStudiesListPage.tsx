@@ -19,8 +19,7 @@ import { useCaseStudiesList } from '../hooks/use-case-studies-list'
 import type { CaseStudy } from '../types'
 import { cn } from '@/shared/lib/cn'
 import { salesRoutes } from '../routes'
-import { caseStudyStatusStyles, caseStudyStatusDot } from '../schemas/cssTokens'
-import { CaseStudyStatusValues } from '../schemas/enums'
+import { caseStudyStatusStyles, caseStudyStatusDot, CaseStudyStatusOptions } from '../schemas/enums'
 
 async function shareCaseStudy(cs: CaseStudy) {
   const payload = {
@@ -198,7 +197,7 @@ export function CaseStudiesListPage() {
           placeholder="All status"
           options={[
             { value: 'All', label: 'All status' },
-            ...CaseStudyStatusValues.map((s) => ({ value: s, label: s })),
+            ...CaseStudyStatusOptions,
           ]}
           minWidthClass="min-w-[140px]"
         />

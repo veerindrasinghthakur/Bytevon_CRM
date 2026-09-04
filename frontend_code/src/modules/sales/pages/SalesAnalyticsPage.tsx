@@ -5,8 +5,7 @@ import { cn } from '@/shared/lib/cn'
 import { looseLinkProps } from '@/shared/lib/safeNavigate'
 import { salesRoutes } from '../routes'
 import { useSalesDashboardMetrics } from '../hooks/use-sales'
-import { PipelineStageValues } from '../schemas/enums'
-import { stageColors, changeTypeStyles } from '../schemas/cssTokens'
+import { PipelineStageValues, stageColors, changeTypeStyles } from '../schemas/enums'
 
 export function SalesAnalyticsPage() {
   const { data: metrics, isLoading, isError } = useSalesDashboardMetrics()

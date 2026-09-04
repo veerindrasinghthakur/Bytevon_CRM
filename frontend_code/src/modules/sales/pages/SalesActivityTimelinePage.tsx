@@ -5,7 +5,7 @@ import { cn } from '@/shared/lib/cn'
 import { looseLinkProps } from '@/shared/lib/safeNavigate'
 import { salesRoutes } from '../routes'
 import { useSalesActivities } from '../hooks/use-sales'
-import { typeIcon, typeColor } from '../schemas/cssTokens'
+import { typeIcon, typeColor } from '../schemas/enums'
 import type { SalesActivity } from '../types'
 
 export function SalesActivityTimelinePage() {

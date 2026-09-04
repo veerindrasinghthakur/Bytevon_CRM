@@ -8,7 +8,7 @@ import { StatusDot } from '@/shared/components/ui/StatusDot'
 import { useClient, useSalesActivities } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
 import { cn } from '@/shared/lib/cn'
-import { typeStyles, activityIcon } from '../schemas/cssTokens'
+import { typeStyles, activityIcon } from '../schemas/enums'
 
 function formatMoney(n?: number) {
   if (n == null) return '—'

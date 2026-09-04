@@ -9,10 +9,13 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 import { useClient, useCreateClient, useUpdateClient } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
-import { clientFormSchema, type ClientFormSchemaInput } from '../schemas/client-form'
-import { emptyClientContact } from '../types'
+import {
+  clientFormSchema,
+  emptyClientContact,
+  type ClientFormSchemaInput,
+} from '../schemas/client-form'
 import { cn } from '@/shared/lib/cn'
-import { ClientTypeValues, RecordStatusValues } from '../schemas/enums'
+import { ClientTypeOptions, RecordStatusOptions } from '../schemas/enums'
 
 const fieldClass =
   'w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2.5 text-body-md text-on-surface outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20 transition-colors'
@@ -200,14 +203,14 @@ export function ClientCreatePage() {
               label="Type"
               value={form.watch('type')}
               onChange={(v) => form.setValue('type', v as ClientFormSchemaInput['type'])}
-              options={ClientTypeValues.map((t) => ({ value: t, label: t }))}
+              options={ClientTypeOptions}
               minWidthClass="w-full"
             />
             <Select
               label="Status"
               value={form.watch('status')}
               onChange={(v) => form.setValue('status', v as ClientFormSchemaInput['status'])}
-              options={RecordStatusValues.map((s) => ({ value: s, label: s }))}
+              options={RecordStatusOptions}
               minWidthClass="w-full"
             />
             <div>

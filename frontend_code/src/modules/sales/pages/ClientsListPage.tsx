@@ -21,14 +21,9 @@ import { ResourceName } from '@/shared/schema'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useClientsList } from '../hooks/use-clients-list'
 import { salesRoutes } from '../routes'
-import type { ClientType, Client } from '../types'
+import type { Client } from '../types'
+import { typeStyles, RecordStatusOptions, ClientTypeOptions } from '../schemas/enums'
 import { cn } from '@/shared/lib/cn'
-
-const typeStyles: Record<ClientType, string> = {
-  Enterprise: 'bg-violet-100 text-violet-800',
-  SMB: 'bg-sky-100 text-sky-800',
-  Partner: 'bg-amber-100 text-amber-800',
-}
 
 function formatMoney(n?: number) {
   if (n == null) return '—'
@@ -238,10 +233,9 @@ export function ClientsListPage() {
           onChange={setStatusFilter}
           placeholder="All Status"
           aria-label="Filter by status"
-          options={[
-            { value: 'All', label: 'All Status' },
-            ...statuses.map((s) => ({ value: s, label: s })),
-          ]}
+          options={[{ value: 'All', label: 'All Status' }, ...RecordStatusOptions, ...statuses
+            .filter((s) => !RecordStatusOptions.some((option) => option.value === s))
+            .map((s) => ({ value: s, label: s }))]}
           minWidthClass="min-w-[140px]"
         />
         <Select
@@ -249,10 +243,9 @@ export function ClientsListPage() {
           onChange={setTypeFilter}
           placeholder="All Types"
           aria-label="Filter by type"
-          options={[
-            { value: 'All', label: 'All Types' },
-            ...types.map((t) => ({ value: t, label: t })),
-          ]}
+          options={[{ value: 'All', label: 'All Types' }, ...ClientTypeOptions, ...types
+            .filter((t) => !ClientTypeOptions.some((option) => option.value === t))
+            .map((t) => ({ value: t, label: t }))]}
           minWidthClass="min-w-[140px]"
         />
       </ListToolbar>

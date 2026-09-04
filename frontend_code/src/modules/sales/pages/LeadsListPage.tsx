@@ -26,7 +26,7 @@ import { LeadMetricsRow } from '../components/LeadMetricsRow'
 import { salesRoutes } from '../routes'
 import type { RecordStatus, Lead } from '../types'
 import { cn } from '@/shared/lib/cn'
-import { stageStyles, priorityStyles, stageDot } from '../schemas/cssTokens'
+import { stageStyles, priorityStyles, stageDot } from '../schemas/enums'
 
 function formatBudget(n: number) {
   return new Intl.NumberFormat('en-US', {

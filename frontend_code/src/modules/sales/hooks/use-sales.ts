@@ -13,7 +13,13 @@ import {
   listSalesActivities,
   getDashboardMetrics,
 } from '../api/sales'
-import type { Lead, Client } from '../types'
+import type {
+  Lead,
+  Client,
+  LeadListParams,
+  ClientListParams,
+  CaseStudyListParams,
+} from '../types'
 import {
   findLeadInCache,
   findClientInCache,
@@ -22,31 +28,6 @@ import {
   mergeLead,
   mergeClient,
 } from './sales-cache'
-
-export type LeadListParams = {
-  search?: string
-  status?: string
-  stage?: string
-  priority?: string
-  source?: string
-  page?: number
-  pageSize?: number
-}
-
-export type ClientListParams = {
-  search?: string
-  status?: string
-  type?: string
-  page?: number
-  pageSize?: number
-}
-
-export type CaseStudyListParams = {
-  search?: string
-  status?: string
-  page?: number
-  pageSize?: number
-}
 
 /** Server-side filters + pagination; query key includes params. */
 export function useLeadsQuery(filters?: LeadListParams) {

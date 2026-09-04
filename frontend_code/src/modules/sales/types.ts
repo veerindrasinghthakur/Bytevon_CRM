@@ -1,5 +1,14 @@
 /** Sales / CRM domain types — interfaces + schema re-exports */
 
+import type {
+  ActivityType,
+  CaseStudyStatus,
+  ClientType,
+  LeadPriority,
+  PipelineStage,
+  RecordStatus,
+} from './schemas/enums'
+
 export type {
   LeadSchema,
   CreateLeadSchemaInput,
@@ -13,31 +22,14 @@ export type {
 export type { CaseStudySchema, CaseStudyFormInput } from './schemas/case-study'
 
 /** Simple account/lead active state — shown as colored dots */
-export type RecordStatus = 'Active' | 'Inactive'
-
-/** Pipeline / lifecycle stage — separate from priority and Active/Inactive */
-export type PipelineStage =
-  | 'New'
-  | 'Contacted'
-  | 'Qualified'
-  | 'Proposal'
-  | 'Negotiation'
-  | 'Won'
-  | 'Lost'
-
-export type LeadPriority = 'Critical' | 'High' | 'Medium' | 'Low'
-export type ClientType = 'Enterprise' | 'SMB' | 'Partner'
-export type CaseStudyStatus = 'Published' | 'Draft' | 'Archived'
-export type ActivityType =
-  | 'Lead Created'
-  | 'Lead Won'
-  | 'Meeting Scheduled'
-  | 'Email Sent'
-  | 'Call'
-  | 'Document Viewed'
-  | 'System Alert'
-  | 'Contract Renewed'
-  | 'Proposal Sent'
+export type {
+  ActivityType,
+  CaseStudyStatus,
+  ClientType,
+  LeadPriority,
+  PipelineStage,
+  RecordStatus,
+} from './schemas/enums'
 
 export interface Lead {
   id: string
@@ -135,6 +127,44 @@ export interface SalesMetric {
   icon: string
 }
 
+export type LeadListParams = {
+  search?: string
+  status?: string
+  stage?: string
+  priority?: string
+  source?: string
+  page?: number
+  pageSize?: number
+}
+
+export type ClientListParams = {
+  search?: string
+  status?: string
+  type?: string
+  page?: number
+  pageSize?: number
+}
+
+export type CaseStudyListParams = {
+  search?: string
+  status?: string
+  page?: number
+  pageSize?: number
+}
+
+export type LeadListData = { items: Lead[]; total: number; metrics: SalesMetric[] }
+export type ClientListData = { items: Client[]; total: number; metrics: SalesMetric[] }
+
+export interface LeadMetric {
+  id: string
+  label: string
+  value: string
+  icon: string
+  change?: string
+  changeType?: 'positive' | 'negative' | 'neutral'
+  subtitle?: string
+}
+
 /** Create / update payloads (API) */
 export interface CreateLeadInput {
   title: string
@@ -158,14 +188,6 @@ export interface CreateLeadInput {
 
 export type UpdateLeadInput = Partial<CreateLeadInput>
 
-export interface ClientContactForm {
-  id: string
-  name: string
-  designation: string
-  email: string
-  phone: string
-}
-
 export interface CreateClientInput {
   name: string
   legalName?: string
@@ -184,95 +206,6 @@ export interface CreateClientInput {
 }
 
 export type UpdateClientInput = Partial<CreateClientInput>
-
-/**
- * Form state shapes (UI) — string fields for inputs; map to Create*Input on submit.
- * Prefer these over scattered useState per field.
- */
-export interface LeadForm {
-  title: string
-  contactName: string
-  contactTitle: string
-  company: string
-  industry: string
-  email: string
-  phone: string
-  source: string
-  priority: LeadPriority
-  status: RecordStatus
-  stage: PipelineStage
-  /** String so empty input stays controlled; parse to number on submit */
-  budget: string
-  date: string
-  /** Employment id as string for Select; parse on submit */
-  assignedEmploymentId: string
-  notes: string
-  chatLink: string
-}
-
-export const emptyLeadForm = (): LeadForm => ({
-  title: '',
-  contactName: '',
-  contactTitle: '',
-  company: '',
-  industry: '',
-  email: '',
-  phone: '',
-  source: 'LinkedIn',
-  priority: 'Medium',
-  status: 'Active',
-  stage: 'New',
-  budget: '',
-  date: '',
-  assignedEmploymentId: '',
-  notes: '',
-  chatLink: '',
-})
-
-export interface ClientForm {
-  name: string
-  legalName: string
-  type: ClientType
-  status: RecordStatus
-  industry: string
-  website: string
-  country: string
-  state: string
-  city: string
-  address: string
-  taxId: string
-  founded: string
-  chatLink: string
-  contacts: ClientContactForm[]
-}
-
-export function emptyClientContact(): ClientContactForm {
-  return {
-    id: `tmp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    name: '',
-    designation: '',
-    email: '',
-    phone: '',
-  }
-}
-
-export const emptyClientForm = (): ClientForm => ({
-  name: '',
-  legalName: '',
-  type: 'SMB',
-  status: 'Active',
-  industry: '',
-  website: '',
-  country: '',
-  state: '',
-  city: '',
-  address: '',
-  taxId: '',
-  founded: '',
-  chatLink: '',
-  contacts: [emptyClientContact()],
-})
-
 
 export interface LeadFilterOptions {
   statuses: string[]

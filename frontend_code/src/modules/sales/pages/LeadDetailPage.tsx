@@ -8,7 +8,7 @@ import { StatusDot } from '@/shared/components/ui/StatusDot'
 import { useLead, useSalesActivities } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
 import { cn } from '@/shared/lib/cn'
-import { stageStyles, priorityStyles, activityIcon } from '../schemas/cssTokens'
+import { stageStyles, priorityStyles, activityIcon } from '../schemas/enums'
 import { PipelineStageValues } from '../schemas/enums'
 
 function formatBudget(n: number) {

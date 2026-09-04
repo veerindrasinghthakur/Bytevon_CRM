@@ -22,3 +22,28 @@ export const leadFormSchema = z.object({
 })
 
 export type LeadFormSchemaInput = z.infer<typeof leadFormSchema>
+export type LeadForm = LeadFormSchemaInput
+
+export const emptyLeadForm = (): LeadForm => ({
+  title: '',
+  contactName: '',
+  contactTitle: '',
+  company: '',
+  industry: '',
+  email: '',
+  phone: '',
+  source: 'LinkedIn',
+  priority: 'Medium',
+  status: 'Active',
+  stage: 'New',
+  budget: '',
+  date: '',
+  assignedEmploymentId: '',
+  notes: '',
+  chatLink: '',
+})
+
+export function optTrim(value: string | undefined | null): string | undefined {
+  const trimmed = (value ?? '').trim()
+  return trimmed || undefined
+}
