@@ -1,21 +1,38 @@
 import type { ReactNode } from 'react'
+import type { Action, ResourceName, ScopeName } from '@/shared/schema'
+import { useRbac } from './use-rbac'
 
-import { can, } from './can'
-import { CanParams } from '../types'
+type CanProps = {
+  children: ReactNode
+  fallback?: ReactNode
+  action?: Action | string
+  resource?: ResourceName | string
+  minScope?: ScopeName | string
+  /** Pre-resolved boolean e.g. permission={permissions.project?.update} */
+  permission?: boolean
+  employmentId?: number
+}
+
 export function Can({
+  children,
+  fallback = null,
   action,
   resource,
   minScope,
+  permission,
   employmentId,
-  fallback = null,
-  children,
-}: CanParams & {
-  children: ReactNode
-  fallback?: ReactNode
-}) {
-  if (!can({ action, resource, minScope, employmentId })) {
-    return <>{fallback}</>
+}: CanProps) {
+  const { can, isLoading } = useRbac(employmentId)
+
+  if (isLoading) return <>{fallback}</>
+
+  let allowed = false
+  if (typeof permission === 'boolean') {
+    allowed = permission
+  } else if (action != null && resource != null) {
+    allowed = can(action, resource, minScope)
   }
 
+  if (!allowed) return <>{fallback}</>
   return <>{children}</>
 }
