@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { useParams } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
@@ -11,17 +10,8 @@ import { useTeam } from '../hooks/use-teams'
 import { getTeamCandidates } from '../api/teams'
 import { cn } from '@/shared/lib/cn'
 import { projectRoutes } from '../routes'
-
-const roleSchema = z.object({
-  candidateId: z.string(),
-  role: z.enum(['Lead', 'Senior', 'Junior']),
-})
-
-const formSchema = z.object({
-  roles: z.array(roleSchema),
-})
-
-type FormValues = z.infer<typeof formSchema>
+import { teamMemberFormSchema } from '../schemas/team-member-form'
+import type { TeamMemberFormValues } from '../types'
 
 export function TeamAddMemberPage() {
   const params = useParams({ strict: false }) as { teamId?: string }
@@ -33,8 +23,8 @@ export function TeamAddMemberPage() {
     watch,
     setValue,
     formState: { isSubmitting },
-  } = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
+  } = useForm<TeamMemberFormValues>({
+    resolver: zodResolver(teamMemberFormSchema),
     defaultValues: { roles: [] },
   })
 
@@ -44,13 +34,16 @@ export function TeamAddMemberPage() {
     enabled: Number.isFinite(id) && !!team,
   })
 
-  const roles = watch('roles')
+  const roles = watch('roles') as TeamMemberFormValues['roles']
 
-  const getRole = (candidateId: string) => {
+  const getRole = (candidateId: string): TeamMemberFormValues['roles'][number]['role'] | undefined => {
     return roles.find((r) => r.candidateId === candidateId)?.role
   }
 
-  const setRole = (candidateId: string, role: 'Lead' | 'Senior' | 'Junior') => {
+  const setRole = (
+    candidateId: string,
+    role: TeamMemberFormValues['roles'][number]['role'],
+  ) => {
     const existing = roles.findIndex((r) => r.candidateId === candidateId)
     if (existing >= 0) {
       const updated = [...roles]

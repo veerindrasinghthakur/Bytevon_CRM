@@ -2,23 +2,17 @@ import { Link, useParams } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
-import { useTeam } from '../hooks/use-teams'
+import { useTeam, useTeamMembers } from '../hooks/use-teams'
 import { projectRoutes } from '../routes'
 import { looseParams, looseSearch, safeNavigate } from '@/shared/lib/safeNavigate'
 import { useNavigate } from '@tanstack/react-router'
-
-const MOCK_MEMBERS = [
-  { id: '1', name: 'Sarah Chen', role: 'Tech Lead', status: 'Active' },
-  { id: '2', name: 'Jordan Lee', role: 'Senior Engineer', status: 'Active' },
-  { id: '3', name: 'Priya Sharma', role: 'Engineer', status: 'Active' },
-  { id: '4', name: 'Marcus Thorne', role: 'QA', status: 'Active' },
-]
 
 export function TeamMembersPage() {
   const params = useParams({ strict: false }) as { teamId?: string }
   const navigate = useNavigate()
   const id = Number(params.teamId)
   const { data: team, isLoading } = useTeam(Number.isFinite(id) ? id : undefined)
+  const { data: members = [] } = useTeamMembers(Number.isFinite(id) ? id : undefined)
 
   if (isLoading || !team) {
     return (
@@ -69,7 +63,7 @@ export function TeamMembersPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/30">
-            {MOCK_MEMBERS.map((m) => (
+            {members.map((m) => (
               <tr key={m.id} className="zebra-row">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">

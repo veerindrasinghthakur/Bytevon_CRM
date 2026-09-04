@@ -1,11 +1,6 @@
 import { cn } from '@/shared/lib/cn'
-import type { ProjectStatus } from '../schemas/project'
 import { projectStatusColors } from '../cssTokens'
-
-interface ProjectStatusBadgeProps {
-  status: ProjectStatus
-  className?: string
-}
+import {ProjectStatusBadgeProps} from '../types'
 
 export function ProjectStatusBadge({ status, className }: ProjectStatusBadgeProps) {
   const style = projectStatusColors[status]

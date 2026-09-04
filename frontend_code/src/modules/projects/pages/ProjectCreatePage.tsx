@@ -14,10 +14,7 @@ import { projectRoutes } from '../routes'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { createTeam } from '../api/teams'
 import { ProjectPhaseOptions, ProjectPriorityOptions } from '../enums'
-
-type AssignMode = 'existing' | 'new' | 'later'
-type PhaseValue = (typeof ProjectPhaseOptions)[number]['value']
-type PriorityValue = (typeof ProjectPriorityOptions)[number]['value']
+import {AssignMode,PhaseValue,PriorityValue} from '../types'
 
 export function ProjectCreatePage() {
   const navigate = useNavigate()

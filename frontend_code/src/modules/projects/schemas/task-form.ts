@@ -12,3 +12,19 @@ export const taskFormSchema = z.object({
 })
 
 export type TaskFormInput = z.infer<typeof taskFormSchema>
+
+export const createTaskSchema = z.object({
+  title: z.string().min(2, 'Title must be at least 2 characters').max(200),
+  description: z.string().max(2000).optional(),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).default('MEDIUM'),
+  assigneeName: z.string().max(120).optional(),
+})
+
+import {type EntityOption } from '@/shared/components/forms/EntitySearch'
+
+export const schema = z.object({
+  title: z.string().min(2, 'Title must be at least 2 characters').max(200),
+  description: z.string().max(2000).optional(),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
+  assignee: z.custom<EntityOption | null>().optional(),
+})

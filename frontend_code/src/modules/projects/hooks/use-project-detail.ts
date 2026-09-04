@@ -7,17 +7,9 @@ import { useProject, useUpdateProject } from './use-projects'
 import { useTasks } from './use-tasks'
 import { getTeamsForProject } from '../api/teams'
 import { auditLogs } from '@/modules/admin/data/mock'
-import type { ProjectDetail } from '../schemas/project'
+import type { ProjectDetailTab } from '../types'
+import { TaskStatusFilterOptions } from '../enums'
 import { projectDetailFormSchema, type ProjectDetailFormInput } from '../schemas/project-detail-form'
-
-export type ProjectDetailTab =
-  | 'overview'
-  | 'tasks'
-  | 'team'
-  | 'timeline'
-  | 'documents'
-  | 'notes'
-  | 'repository'
 
 function activityFromAudit(projectName?: string) {
   const logs = auditLogs.slice(0, 8)
@@ -163,14 +155,6 @@ export function useProjectDetail(
     setCreateTaskOpen,
     linkedTeam,
     activityItems,
-    taskStatusOptions: [
-      { value: '', label: 'All statuses' },
-      { value: 'TODO', label: 'To do' },
-      { value: 'IN_PROGRESS', label: 'In progress' },
-      { value: 'IN_REVIEW', label: 'In review' },
-      { value: 'DONE', label: 'Done' },
-      { value: 'BLOCKED', label: 'Blocked' },
-      { value: 'ON_HOLD', label: 'On hold' },
-    ],
+    taskStatusOptions: TaskStatusFilterOptions,
   }
 }

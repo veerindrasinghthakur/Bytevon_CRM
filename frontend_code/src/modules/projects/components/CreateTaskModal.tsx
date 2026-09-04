@@ -1,26 +1,12 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { useCreateTask } from '../hooks/use-tasks'
+import {CreateTaskModalProps,CreateTaskFormValues} from '../types'
+import {createTaskSchema} from '../schemas/task-form'
 
-const createTaskSchema = z.object({
-  title: z.string().min(2, 'Title must be at least 2 characters').max(200),
-  description: z.string().max(2000).optional(),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).default('MEDIUM'),
-  assigneeName: z.string().max(120).optional(),
-})
 
-type CreateTaskFormValues = z.infer<typeof createTaskSchema>
-
-export interface CreateTaskModalProps {
-  open: boolean
-  onClose: () => void
-  projectId?: number
-  projectName?: string
-  onCreated?: () => void
-}
 
 export function CreateTaskModal({
   open,

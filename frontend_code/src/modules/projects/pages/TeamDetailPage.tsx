@@ -243,7 +243,9 @@ export function TeamDetailPage() {
                       <button
                         type="button"
                         className="p-2 text-on-surface-variant hover:text-error rounded-lg"
-                        onClick={() => removeMember(m.employmentId)}
+                        onClick={() => {
+                          if (m.employmentId != null) removeMember(m.employmentId)
+                        }}
                         aria-label={`Remove ${m.name}`}
                       >
                         <span className="material-symbols-outlined text-lg">delete</span>

@@ -59,3 +59,27 @@ export const ProjectPriorityOptions = ProjectPriority.map((value) => ({
   value,
   label: value.charAt(0) + value.slice(1).toLowerCase(),
 }))
+
+/** Task priority options with formatted labels (TaskDetailForm). */
+export const TASK_PRIORITY_OPTIONS = [
+  { value: 'LOW', label: 'Low' },
+  { value: 'MEDIUM', label: 'Medium' },
+  { value: 'HIGH', label: 'High' },
+  { value: 'URGENT', label: 'Urgent' },
+] as const
+
+/** Task status options with formatted labels (TaskDetailForm). */
+export const TASK_STATUS_OPTIONS = [
+  { value: 'TODO', label: 'To do' },
+  { value: 'IN_PROGRESS', label: 'In progress' },
+  { value: 'IN_REVIEW', label: 'In review' },
+  { value: 'DONE', label: 'Done' },
+  { value: 'BLOCKED', label: 'Blocked' },
+  { value: 'ON_HOLD', label: 'On hold' },
+] as const
+
+/** Task status filter options for project detail views. */
+export const TaskStatusFilterOptions = [
+  { value: '', label: 'All statuses' },
+  ...TASK_STATUS_OPTIONS,
+] as const

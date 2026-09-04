@@ -5,16 +5,8 @@ import { useEditMode } from '@/shared/hooks/useEditMode'
 import { useTeam, useUpdateTeam } from './use-teams'
 import { useProjects } from './use-projects'
 import { listEmployments } from '@/modules/workforce/api/employment'
-import type { TeamStatus } from '../types'
+import type { TeamMemberRow, TeamStatus } from '../types'
 import { teamDetailFormSchema, type TeamDetailFormInput } from '../schemas/team-detail-form'
-
-export interface TeamMemberRow {
-  employmentId: number
-  name: string
-  code: string
-  role: string
-  isHead?: boolean
-}
 
 export function useTeamDetail(teamId: number | undefined) {
   const query = useTeam(teamId)

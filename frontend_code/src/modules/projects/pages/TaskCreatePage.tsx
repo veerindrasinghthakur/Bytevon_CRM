@@ -11,13 +11,8 @@ import { useCreateTask } from '../hooks/use-tasks'
 import { useProject } from '../hooks/use-projects'
 import { projectRoutes } from '../routes'
 import { getDb } from '@/shared/mock/db'
+import {schema} from '../schemas/task-form'
 
-const schema = z.object({
-  title: z.string().min(2, 'Title must be at least 2 characters').max(200),
-  description: z.string().max(2000).optional(),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']),
-  assignee: z.custom<EntityOption | null>().optional(),
-})
 
 type FormValues = z.infer<typeof schema>
 

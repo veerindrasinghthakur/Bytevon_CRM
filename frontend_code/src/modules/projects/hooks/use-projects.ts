@@ -6,22 +6,8 @@ import {
   createProject,
   updateProject,
 } from '../api/projects'
-import type { ProjectListMetrics } from '../types'
+import type { ProjectListMetrics, ProjectListParams, ProjectListCache } from '../types'
 import type { CreateProjectInput, ProjectDetail, ProjectListItem } from '../schemas/project'
-
-type ProjectListCache = {
-  items: ProjectListItem[]
-  total: number
-  metrics?: ProjectListMetrics
-}
-
-export type ProjectListParams = {
-  search?: string
-  status?: string
-  teamId?: number
-  page?: number
-  pageSize?: number
-}
 
 /** Server-side filters + pagination; query key includes params. */
 export function useProjects(filters?: ProjectListParams) {

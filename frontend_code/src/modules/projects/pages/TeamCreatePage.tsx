@@ -1,7 +1,6 @@
 import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import { useNavigate, Link, useSearch } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
@@ -11,15 +10,9 @@ import { useCreateTeam } from '../hooks/use-teams'
 import { useProject } from '../hooks/use-projects'
 import { projectRoutes } from '../routes'
 import { getDb } from '@/shared/mock/db'
+import { schema, type FormValues } from '../schemas/team-form'
 
-const schema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').max(120),
-  description: z.string().max(500).optional(),
-  head: z.custom<EntityOption | null>().optional(),
-  members: z.array(z.custom<EntityOption>()).optional(),
-})
 
-type FormValues = z.infer<typeof schema>
 
 export function TeamCreatePage() {
   const navigate = useNavigate()
@@ -70,7 +63,7 @@ export function TeamCreatePage() {
         description: data.description,
         headName: data.head?.label,
         headRole: data.head?.sublabel?.split(' · ')[0],
-        memberNames: data.members?.map((m) => m.label) ?? [],
+        memberNames: data.members?.map((m: EntityOption) => m.label) ?? [],
         projectId: projectId && Number.isFinite(projectId) ? projectId : undefined,
         projectName: project?.name,
       })

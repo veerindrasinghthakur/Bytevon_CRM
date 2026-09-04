@@ -26,7 +26,7 @@ export function TeamMembersPage() {
   const filtered = useMemo(() => {
     const q = query.toLowerCase()
     return members.filter(
-      (m) => !q || m.name.toLowerCase().includes(q) || m.title.toLowerCase().includes(q),
+      (m) => !q || m.name.toLowerCase().includes(q) || (m.title ?? '').toLowerCase().includes(q),
     )
   }, [members, query])
 

@@ -26,7 +26,7 @@ import type { ProjectStatus } from '../schemas/project'
 import { cn } from '@/shared/lib/cn'
 import { projectStatusColors } from '../cssTokens'
 import { ProjectStatusOptions } from '../enums'
-
+import {ProjectQuickContentProps} from '../types'
 function statusTrackLabel(status: ProjectStatus) {
   const style = projectStatusColors[status]
   return { dot: style.dot, text: style.text, label: style.label }
@@ -39,14 +39,7 @@ function ProjectQuickContent({
   teamCount,
   startDate,
   endDate,
-}: {
-  clientName?: string | null
-  progress?: number | null
-  taskCount?: number | null
-  teamCount?: number | null
-  startDate?: string | null
-  endDate?: string | null
-}) {
+}: ProjectQuickContentProps) {
   return (
     <>
       <QuickSection title="General Info">

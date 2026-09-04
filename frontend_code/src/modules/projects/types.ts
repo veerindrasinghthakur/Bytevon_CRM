@@ -1,5 +1,21 @@
 /** Projects domain types — schemas + API entities */
 
+import { z } from 'zod'
+import type {
+  ProjectStatus,
+  ProjectListItem,
+  ProjectDetail,
+  CreateProjectInput,
+  ProjectFormInput,
+} from './schemas/project'
+import type { TaskPriority, TaskStatus, TeamStatus } from './enums'
+import {
+  teamMemberFormSchema,
+  teamMemberRoleSchema,
+} from './schemas/team-member-form'
+import { createTaskSchema } from './schemas/task-form'
+import { createTeamSchema } from './schemas/team-form'
+
 export type {
   ProjectStatus,
   ProjectListItem,
@@ -11,11 +27,41 @@ export type {
 export type { TaskSchema, CreateTaskSchemaInput, TaskFormInput } from './schemas/task'
 export type { TeamSchema, CreateTeamSchemaInput, TeamFormInput } from './schemas/team'
 export type { ProjectNoteSchema, NoteFormInput } from './schemas/note'
+export { teamMembersMock } from './data/teamMembersMock'
+export type { TeamMemberMock } from './data/teamMembersMock'
+export type { FormValues } from './schemas/team-form'
+
+export type TeamMemberFormValues = z.infer<typeof teamMemberFormSchema>
+export type TeamMemberRole = z.infer<typeof teamMemberRoleSchema>
 
 /** Re-export enum types from single source */
 export type { TaskPriority, TaskStatus, TeamStatus } from './enums'
 
-import type { TaskPriority, TaskStatus, TeamStatus } from './enums'
+/** Tabs for project detail page. */
+export type ProjectDetailTab =
+  | 'overview'
+  | 'tasks'
+  | 'team'
+  | 'timeline'
+  | 'documents'
+  | 'notes'
+  | 'repository'
+
+/** Parameters for filtering and paginating project lists. */
+export type ProjectListParams = {
+  search?: string
+  status?: string
+  teamId?: number
+  page?: number
+  pageSize?: number
+}
+
+/** Cached project list response structure. */
+export interface ProjectListCache {
+  items: ProjectListItem[]
+  total: number
+  metrics?: ProjectListMetrics
+}
 
 /** Tasks are sub-parts of a project (always owned by projectId). */
 export interface Task {
@@ -130,13 +176,16 @@ export interface TaskRow {
 
 
 export interface TeamMemberRow {
-  id: string
+  id?: string | number
+  employmentId?: number
   name: string
-  title: string
+  code?: string
+  title?: string
   role: string
-  email: string
-  status: 'Active' | 'On Leave'
-  joined: string
+  email?: string
+  status?: 'Active' | 'On Leave' | string
+  joined?: string
+  isHead?: boolean
 }
 
 export interface TeamProjectRow {
@@ -180,3 +229,39 @@ export type EmployeeLike = {
   department?: string | null
 }
 
+export interface CreateTaskModalProps {
+  open: boolean
+  onClose: () => void
+  projectId?: number
+  projectName?: string
+  onCreated?: () => void
+}
+
+export type CreateTaskFormValues = z.infer<typeof createTaskSchema>
+export type CreateTeamFormValues = z.infer<typeof createTeamSchema>
+
+export interface CreateTeamModalProps {
+  open: boolean
+  onClose: () => void
+  onCreated?: () => void
+}
+
+export interface ProjectStatusBadgeProps {
+  status: ProjectStatus
+  className?: string
+}
+
+import { ProjectPhaseOptions, ProjectPriorityOptions } from './enums'
+
+export type AssignMode = 'existing' | 'new' | 'later'
+export type PhaseValue = (typeof ProjectPhaseOptions)[number]['value']
+export type PriorityValue = (typeof ProjectPriorityOptions)[number]['value']
+
+export interface ProjectQuickContentProps {
+  clientName?: string | null
+  progress?: number | null
+  taskCount?: number | null
+  teamCount?: number | null
+  startDate?: string | null
+  endDate?: string | null
+}

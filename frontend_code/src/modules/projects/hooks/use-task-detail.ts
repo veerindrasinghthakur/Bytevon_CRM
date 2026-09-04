@@ -2,6 +2,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { useTask, useUpdateTask } from './use-tasks'
+import { TASK_PRIORITY_OPTIONS, TASK_STATUS_OPTIONS } from '../enums'
 import { taskDetailFormSchema, type TaskDetailFormInput } from '../schemas/task-detail-form'
 
 export function useTaskDetail(taskId: number | undefined) {
@@ -79,19 +80,7 @@ export function useTaskDetail(taskId: number | undefined) {
     cancelEdit,
     save,
     isSaving: updateMutation.isPending,
-    priorityOptions: [
-      { value: 'LOW', label: 'Low' },
-      { value: 'MEDIUM', label: 'Medium' },
-      { value: 'HIGH', label: 'High' },
-      { value: 'URGENT', label: 'Urgent' },
-    ],
-    statusOptions: [
-      { value: 'TODO', label: 'To do' },
-      { value: 'IN_PROGRESS', label: 'In progress' },
-      { value: 'IN_REVIEW', label: 'In review' },
-      { value: 'DONE', label: 'Done' },
-      { value: 'BLOCKED', label: 'Blocked' },
-      { value: 'ON_HOLD', label: 'On hold' },
-    ],
+    priorityOptions: [...TASK_PRIORITY_OPTIONS],
+    statusOptions: [...TASK_STATUS_OPTIONS],
   }
 }

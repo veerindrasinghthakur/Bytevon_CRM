@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getTeams, getTeam, createTeam, updateTeam } from '../api/teams'
+import { getTeams, getTeam, getTeamMembers, createTeam, updateTeam } from '../api/teams'
 import type { Team, TeamListCache } from '../types'
 import { queryKeys } from '@/shared/lib/query-keys'
 
@@ -30,6 +30,14 @@ export function useTeam(id: number | undefined) {
     queryKey: queryKeys.teams.detail(id as number),
     queryFn: () => getTeam(id as number),
     enabled: id != null && Number.isFinite(id),
+  })
+}
+
+export function useTeamMembers(teamId: number | undefined) {
+  return useQuery({
+    queryKey: queryKeys.teams.members(teamId as number),
+    queryFn: () => getTeamMembers(teamId as number),
+    enabled: teamId != null && Number.isFinite(teamId),
   })
 }
 

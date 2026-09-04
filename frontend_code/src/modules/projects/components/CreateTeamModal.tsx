@@ -3,21 +3,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Button } from '@/shared/components/ui/Button'
 import { useCreateTeam } from '../hooks/use-teams'
+import {CreateTeamFormValues,CreateTeamModalProps} from '../types'
+import {createTeamSchema} from '../schemas/team-form'
 
-const createTeamSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters').max(120),
-  description: z.string().max(2000).optional(),
-  headName: z.string().max(120).optional(),
-  headRole: z.string().max(80).optional(),
-})
-
-type CreateTeamFormValues = z.infer<typeof createTeamSchema>
-
-export interface CreateTeamModalProps {
-  open: boolean
-  onClose: () => void
-  onCreated?: () => void
-}
 
 export function CreateTeamModal({ open, onClose, onCreated }: CreateTeamModalProps) {
   const create = useCreateTeam()
