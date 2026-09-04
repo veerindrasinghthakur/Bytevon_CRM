@@ -4,6 +4,12 @@
  */
 
 export const queryKeys = {
+  /** Effective authorization (permissions + scope) — shared RBAC source of truth */
+  rbac: {
+    all: ['rbac'] as const,
+    effective: (employmentId?: number | null) =>
+      ['rbac', 'effective', employmentId ?? null] as const,
+  },
   admin: {
     users: {
       all: ['admin', 'users'] as const,
@@ -240,6 +246,7 @@ type Qc = { invalidateQueries: (opts: { queryKey: readonly unknown[] }) => unkno
 
 /** Prefix invalidation helpers for common mutation settle handlers */
 export const invalidate = {
+  rbac: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.rbac.all }),
   teams: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.teams.all }),
   projects: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.projects.all }),
   tasks: (qc: Qc) => void qc.invalidateQueries({ queryKey: queryKeys.tasks.all }),
