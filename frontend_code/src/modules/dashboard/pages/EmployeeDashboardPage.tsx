@@ -1,6 +1,8 @@
 import { useNavigate } from '@tanstack/react-router'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
+import { Can } from '@/shared/rbac'
+import { Action, ResourceName } from '@/shared/schema'
 import { useEmployeeDashboard } from '../hooks/use-employee-dashboard'
 import { useWeekBars } from '../hooks/use-week-bars'
 
@@ -116,13 +118,15 @@ export function EmployeeDashboardPage() {
         <div className={`${card} lg:col-span-2 p-6`}>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-title-lg text-on-background">Attendance Overview</h3>
-            <button
-              type="button"
-              className="text-secondary text-label-md font-bold hover:underline"
-              onClick={() => safeNavigate(navigate, { to: '/my-work/attendance' })}
-            >
-              Full Report
-            </button>
+            <Can action={Action.VIEW} resource={ResourceName.ATTENDANCE}>
+              <button
+                type="button"
+                className="text-secondary text-label-md font-bold hover:underline"
+                onClick={() => safeNavigate(navigate, { to: '/my-work/attendance' })}
+              >
+                Full Report
+              </button>
+            </Can>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="bg-surface-container-low p-4 rounded-lg">
@@ -177,13 +181,15 @@ export function EmployeeDashboardPage() {
       <section className={`${card} overflow-hidden`}>
         <div className="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
           <h3 className="text-title-lg text-on-background">Assigned Tasks</h3>
-          <button
-            type="button"
-            onClick={() => safeNavigate(navigate, { to: '/my-work/tasks/new' })}
-            className="px-3 py-1.5 text-label-sm bg-secondary text-on-secondary rounded-md bv-pressable"
-          >
-            + New Task
-          </button>
+          <Can action={Action.CREATE} resource={ResourceName.TASK}>
+            <button
+              type="button"
+              onClick={() => safeNavigate(navigate, { to: '/my-work/tasks/new' })}
+              className="px-3 py-1.5 text-label-sm bg-secondary text-on-secondary rounded-md bv-pressable"
+            >
+              + New Task
+            </button>
+          </Can>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">

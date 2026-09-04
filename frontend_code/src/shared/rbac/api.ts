@@ -1,24 +1,22 @@
 /**
  * Effective authorization API — mock vs real.
  */
+import { apiClient } from '@/shared/lib/axios'
 import { env } from '@/config/env'
 import { buildEffectiveAuthorization } from './build-effective'
 import type { EffectiveAuthorization } from './types'
 import { getCurrentEmploymentId } from './session'
 
 async function fetchEffectiveFromApi(employmentId: number): Promise<EffectiveAuthorization> {
-  const base = env.apiBaseUrl.replace(/\/$/, '')
-  const res = await fetch(`${base}/rbac/employments/${employmentId}/effective-permissions`, {
-    headers: {
-      Accept: 'application/json',
-      'X-Employment-Id': String(employmentId),
+  const { data } = await apiClient.get<EffectiveAuthorization>(
+    `/rbac/employments/${employmentId}/effective-permissions`,
+    {
+      headers: {
+        'X-Employment-Id': String(employmentId),
+      },
     },
-    credentials: 'include',
-  })
-  if (!res.ok) {
-    throw new Error(`Failed to load effective permissions (${res.status})`)
-  }
-  return (await res.json()) as EffectiveAuthorization
+  )
+  return data
 }
 
 export async function fetchEffectiveAuthorization(

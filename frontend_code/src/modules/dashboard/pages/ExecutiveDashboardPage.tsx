@@ -2,6 +2,8 @@ import { useNavigate } from '@tanstack/react-router'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 import { ActivityFeed } from '@/shared/components/ui/ActivityFeed'
+import { Can } from '@/shared/rbac'
+import { Action, ResourceName } from '@/shared/schema'
 import { useHomeDashboard } from '../hooks/use-home-dashboard'
 
 const card = 'bv-surface card-hover'
@@ -224,34 +226,38 @@ export function ExecutiveDashboardPage() {
                     </div>
                     {canApprove && (
                       <div className="flex gap-1">
-                        <button
-                          type="button"
-                          className="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center bv-pressable cursor-pointer"
-                          aria-label="Approve"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">check</span>
-                        </button>
-                        <button
-                          type="button"
-                          className="w-8 h-8 rounded-full border border-outline text-on-surface-variant flex items-center justify-center hover:bg-error hover:text-white hover:border-error transition-colors duration-200 cursor-pointer"
-                          aria-label="Reject"
-                        >
-                          <span className="material-symbols-outlined text-[18px]">close</span>
-                        </button>
+                        <Can action={Action.APPROVE} resource={ResourceName.APPROVAL}>
+                          <button
+                            type="button"
+                            className="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center bv-pressable cursor-pointer"
+                            aria-label="Approve"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">check</span>
+                          </button>
+                          <button
+                            type="button"
+                            className="w-8 h-8 rounded-full border border-outline text-on-surface-variant flex items-center justify-center hover:bg-error hover:text-white hover:border-error transition-colors duration-200 cursor-pointer"
+                            aria-label="Reject"
+                          >
+                            <span className="material-symbols-outlined text-[18px]">close</span>
+                          </button>
+                        </Can>
                       </div>
                     )}
                   </div>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={() =>
-                  safeNavigate(navigate, { to: '/approvals/pending', search: {} })
-                }
-                className="mt-3 text-secondary text-label-md hover:underline w-full text-center py-2 transition-colors duration-200 cursor-pointer"
-              >
-                View all requests
-              </button>
+              <Can action={Action.VIEW} resource={ResourceName.APPROVAL}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    safeNavigate(navigate, { to: '/approvals/pending', search: {} })
+                  }
+                  className="mt-3 text-secondary text-label-md hover:underline w-full text-center py-2 transition-colors duration-200 cursor-pointer"
+                >
+                  View all requests
+                </button>
+              </Can>
             </div>
           )}
 

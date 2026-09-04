@@ -175,36 +175,3 @@ export const employeeMeta = {
   ],
 }
 
-export const payrollKpis = [
-  { label: 'Total Processed', value: '$1.2M', note: '+4.2% vs last month' },
-  { label: 'Pending Payroll', value: '$245K', note: 'Due in 4 days' },
-  { label: 'Total Salary', value: '$850K', note: 'Monthly average' },
-  { label: 'Deductions', value: '$120K', note: 'Tax & Benefits' },
-  { label: 'Bonuses', value: '$85K', note: 'Q3 Incentives' },
-]
-
-export const payrollTrendData = [
-  { month: 'Apr', value: 60 },
-  { month: 'May', value: 55 },
-  { month: 'Jun', value: 70 },
-  { month: 'Jul', value: 65 },
-  { month: 'Aug', value: 80 },
-  { month: 'Sep', value: 75 },
-]
-
-export const payrollDepartmentCosts = [
-  { name: 'Engineering', value: '$540K (45%)', colorClass: 'bg-secondary-container' },
-  { name: 'Sales & Ops', value: '$360K (30%)', colorClass: 'bg-secondary' },
-  { name: 'Marketing', value: '$300K (25%)', colorClass: 'bg-primary' },
-]
-
-export const payrollPendingApprovals = [
-  { name: 'Jane Doe', role: 'Senior Engineer', dept: 'Engineering', amount: '$8,450', initials: 'JD' },
-  { name: 'Alex Smith', role: 'Marketing Lead', dept: 'Marketing', amount: '$7,200', initials: 'AS' },
-  { name: 'Michael Ross', role: 'Account Manager', dept: 'Sales', amount: '$6,800', initials: 'MR' },
-]
-
-export const payrollMeta = {
-  totalCost: '$1.2M',
-  trendPeriods: ['Last 6 Months', 'Current Year'],
-}

@@ -11,7 +11,8 @@ export function getActiveModule(pathname: string): string {
   if (pathname.startsWith('/approvals')) return 'approvals'
   if (pathname.startsWith('/notifications')) return 'notifications'
   if (pathname.startsWith('/admin')) return 'admin'
-  if (pathname.startsWith('/dashboard')) return 'dashboard'
+  if (pathname === '/dashboard') return 'dashboard'
+  if (pathname.startsWith('/dashboard/')) return 'dashboard'
   if (pathname.startsWith('/profile')) return 'dashboard'
   return 'dashboard'
 }
@@ -46,10 +47,9 @@ export function isSecondaryItemActive(pathname: string, to: string): boolean {
   if (to === '/admin/attendance-settings') {
     return pathname.startsWith('/admin/attendance-settings')
   }
-  // Dashboard home is exact; employee/payroll are distinct paths
+  // Dashboard home is exact; employee is distinct path
   if (to === '/dashboard') return pathname === '/dashboard'
   if (to === '/dashboard/employee') return pathname === '/dashboard/employee'
-  if (to === '/dashboard/payroll') return pathname === '/dashboard/payroll'
   if (to === '/payroll') return pathname === '/payroll'
   if (to === '/payroll/history') {
     return pathname === '/payroll/history'

@@ -13,17 +13,12 @@ const EmployeeDashboardPage = lazyPage(
   () => import('./pages/EmployeeDashboardPage'),
   'EmployeeDashboardPage',
 )
-const PayrollDashboardPage = lazyPage(
-  () => import('./pages/PayrollDashboardPage'),
-  'PayrollDashboardPage',
-)
 
 /** Canonical path helpers — prefer these over hard-coded strings in pages. */
 export const dashboardRoutes = {
   root: '/dashboard',
   executive: '/dashboard',
   employee: '/dashboard/employee',
-  payroll: '/dashboard/payroll',
 } as const
 
 export function createDashboardRoutes(appLayoutRoute: AnyRoute) {
@@ -37,11 +32,6 @@ export function createDashboardRoutes(appLayoutRoute: AnyRoute) {
       getParentRoute: () => appLayoutRoute,
       path: dashboardRoutes.employee,
       component: EmployeeDashboardPage,
-    }),
-    createRoute({
-      getParentRoute: () => appLayoutRoute,
-      path: dashboardRoutes.payroll,
-      component: PayrollDashboardPage,
     }),
   ]
 }

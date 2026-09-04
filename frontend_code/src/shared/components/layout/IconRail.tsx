@@ -10,6 +10,9 @@ export type { RailItem }
 /** Collapsed / expanded rail widths (2px narrower than original 80 / 220) */
 export const RAIL_COLLAPSED_WIDTH = 70
 export const RAIL_EXPANDED_WIDTH = 218
+/** Mobile collapsed / expanded rail widths */
+export const RAIL_MOBILE_COLLAPSED_WIDTH = 56
+export const RAIL_MOBILE_EXPANDED_WIDTH = 180
 
 
 export function IconRail({
@@ -27,8 +30,11 @@ export function IconRail({
       className={cn(
         'relative h-full bg-deep-navy flex flex-col items-center py-4 border-r border-sidebar-item-active/30 z-20',
         'transition-all duration-300 ease-in-out shrink-0 overflow-visible',
+        'w-[70px] md:w-[70px]',  // collapsed desktop
+        isExpanded && 'w-[218px] md:w-[218px]',  // expanded desktop
+        'max-w-[56px] md:max-w-none',  // collapsed mobile
+        isExpanded && 'max-w-[180px] md:max-w-none',  // expanded mobile
       )}
-      style={{ width: isExpanded ? RAIL_EXPANDED_WIDTH : RAIL_COLLAPSED_WIDTH }}
       aria-label="Primary navigation"
     >
       <div

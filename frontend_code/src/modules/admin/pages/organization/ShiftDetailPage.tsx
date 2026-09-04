@@ -9,7 +9,7 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { can } from '@/shared/rbac/can'
+import { can } from '@/shared/rbac'
 import { Action, ResourceName, type ShiftRow } from '@/shared/schema'
 import {
   useCreateShift,

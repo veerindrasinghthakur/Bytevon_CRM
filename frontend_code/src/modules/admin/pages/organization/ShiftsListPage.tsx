@@ -13,7 +13,7 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useShiftsList } from '../../hooks/use-organization-shifts'
-import { can } from '@/shared/rbac/can'
+import { can } from '@/shared/rbac'
 import { Action, ResourceName } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 import type { ShiftRow } from '@/shared/schema'
