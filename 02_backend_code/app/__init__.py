@@ -1,1 +1,1 @@
-"""ByteVon CRM application package."""
+# ByteVon CRM application package

@@ -1,3 +1,3 @@
-from app.core.middleware.logging import RequestLoggingMiddleware
+from app.core.middleware.logging import LoggingMiddleware
 
-__all__ = ["RequestLoggingMiddleware"]
+__all__ = ["LoggingMiddleware"]

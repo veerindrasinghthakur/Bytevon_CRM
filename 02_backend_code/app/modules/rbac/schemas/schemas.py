@@ -148,7 +148,6 @@ class RoleSensitiveFieldPermissionResponse(BaseModel):
     created_at: datetime
     changed_by: Optional[int]
 
-
 # ===========================================================================
 # Effective permissions for an employment
 # Flat grants (BE tools) + nested tree (frontend useRbac / can)

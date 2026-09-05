@@ -1,1 +1,0 @@
-# ByteVon CRM application package
