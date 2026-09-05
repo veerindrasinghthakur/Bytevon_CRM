@@ -37,7 +37,7 @@ class Settings(BaseSettings):
     # JWT / Auth V1
     JWT_SECRET_KEY: str = Field(..., min_length=32)
     JWT_ALGORITHM: str = "HS256"
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 10
+    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
     # Password reset
@@ -45,7 +45,7 @@ class Settings(BaseSettings):
 
     # Account lockout
     MAX_FAILED_LOGIN_ATTEMPTS: int = 5
-    ACCOUNT_LOCKOUT_MINUTES: int = 30
+    ACCOUNT_LOCKOUT_MINUTES: int = 20
 
     # System actor (reserved employment id)
     SYSTEM_EMPLOYMENT_ID: int = 1
