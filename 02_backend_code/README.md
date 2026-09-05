@@ -1,11 +1,26 @@
-# ByteVon CRM — Backend (`backend_code`)
+# ByteVon CRM — Backend (`02_backend_code`)
 
-FastAPI application under `app/`.
+**Single package root.** Run and import from this folder — not from a nested `backend_code/` subfolder.
+
+## Layout (correct)
+
+```
+02_backend_code/
+  app/
+    main.py
+    api/router.py
+    core/          # config, db, security, base services
+    modules/       # auth, org, employment, rbac, sales, ...
+  alembic/
+  scripts/
+  requirements.txt
+  .env.example
+```
 
 ## Run
 
 ```bash
-cd backend_code
+cd 02_backend_code
 cp .env.example .env
 pip install -r requirements.txt
 alembic upgrade head
@@ -13,16 +28,21 @@ python -m scripts.seed_bootstrap
 uvicorn app.main:app --reload --port 8000
 ```
 
-API base: `/api/v1` — see `API_REFERENCE.md` and `API_ENDPOINTS.json`.
+API base: `/api/v1`
 
-## Frontend alignment (RBAC)
+## If you still see `02_backend_code/backend_code/`
 
-| Item | Status |
-|------|--------|
-| `Action.UNLOCK` | Supported |
-| Resource seed names | Match FE `ResourceName` (snake_case) via `seed_rbac_catalog` |
-| `GET /rbac/employments/{id}/effective-permissions` | Nested `permissions`, `scope`, `scopeByResource`, `isSuperAdmin`, `employmentId` + flat `grants` |
-| Super Admin | Full tree @ ORGANIZATION when role name is Super Admin |
-| Domain `require_permission` on every route | Progressive — effective endpoint + FE gates first |
+That nested folder is a **duplicate** from an earlier extract. Flatten locally:
 
-Default seed admin: `admin@bytevon.local` / `ChangeMeAdmin!123`
+```bash
+cd 02_backend_code
+# keep one full tree at this level
+rm -rf app   # only if incomplete shell; or merge carefully
+shopt -s dotglob   # bash
+mv backend_code/* .
+rm -rf backend_code
+```
+
+Target end state: **one** `app/` with all modules under `app/modules/`.
+
+Default seed: `admin@bytevon.local` / `ChangeMeAdmin!123`
