@@ -1,0 +1,2241 @@
+{
+  "api_prefix": "/api/v1",
+  "endpoints": [
+    {
+      "module": "approvals",
+      "tag": "Approvals",
+      "method": "POST",
+      "path": "/approvals/requests",
+      "operation": "create_request",
+      "response_model": "ApprovalRequestResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "approvals",
+      "tag": "Approvals",
+      "method": "GET",
+      "path": "/approvals/requests",
+      "operation": "list_requests",
+      "response_model": "list[ApprovalRequestResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "approvals",
+      "tag": "Approvals",
+      "method": "GET",
+      "path": "/approvals/requests/{request_id}",
+      "operation": "get_request",
+      "response_model": "ApprovalRequestDetailResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "approvals",
+      "tag": "Approvals",
+      "method": "GET",
+      "path": "/approvals/requests/by-reference/{request_type}/{reference_id}",
+      "operation": "get_request_by_reference",
+      "response_model": "ApprovalRequestDetailResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "approvals",
+      "tag": "Approvals",
+      "method": "POST",
+      "path": "/approvals/requests/{request_id}/approve",
+      "operation": "approve",
+      "response_model": "ApprovalRequestDetailResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "approvals",
+      "tag": "Approvals",
+      "method": "POST",
+      "path": "/approvals/requests/{request_id}/reject",
+      "operation": "reject",
+      "response_model": "ApprovalRequestDetailResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "approvals",
+      "tag": "Approvals",
+      "method": "POST",
+      "path": "/approvals/requests/{request_id}/cancel",
+      "operation": "cancel",
+      "response_model": "ApprovalRequestDetailResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "approvals",
+      "tag": "Approvals",
+      "method": "POST",
+      "path": "/approvals/requests/{request_id}/comment",
+      "operation": "comment",
+      "response_model": "ApprovalActionResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "attendance",
+      "tag": "Attendance",
+      "method": "POST",
+      "path": "/attendance/punch",
+      "operation": "punch",
+      "response_model": "PunchResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "attendance",
+      "tag": "Attendance",
+      "method": "GET",
+      "path": "/attendance/days/{day_id}",
+      "operation": "get_day",
+      "response_model": "AttendanceDayDetailResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "attendance",
+      "tag": "Attendance",
+      "method": "GET",
+      "path": "/attendance/days/by-employment/{employment_id}",
+      "operation": "list_days",
+      "response_model": "list[AttendanceDayResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "attendance",
+      "tag": "Attendance",
+      "method": "POST",
+      "path": "/attendance/corrections",
+      "operation": "submit_correction",
+      "response_model": "CorrectionResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "attendance",
+      "tag": "Attendance",
+      "method": "GET",
+      "path": "/attendance/corrections/{correction_id}",
+      "operation": "get_correction",
+      "response_model": "CorrectionResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "attendance",
+      "tag": "Attendance",
+      "method": "POST",
+      "path": "/attendance/policies",
+      "operation": "create_policy",
+      "response_model": "AttendancePolicyResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "attendance",
+      "tag": "Attendance",
+      "method": "GET",
+      "path": "/attendance/policies",
+      "operation": "list_policies",
+      "response_model": "list[AttendancePolicyResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "attendance",
+      "tag": "Attendance",
+      "method": "GET",
+      "path": "/attendance/policies/current",
+      "operation": "get_current_policy",
+      "response_model": "AttendancePolicyResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "attendance",
+      "tag": "Attendance",
+      "method": "GET",
+      "path": "/attendance/summaries/{employment_id}/{year}/{month}",
+      "operation": "get_monthly_summary",
+      "response_model": "MonthlySummaryResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "attendance",
+      "tag": "Attendance",
+      "method": "POST",
+      "path": "/attendance/summaries/{employment_id}/{year}/{month}/rebuild",
+      "operation": "rebuild_monthly_summary",
+      "response_model": "MonthlySummaryResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "attendance",
+      "tag": "Attendance",
+      "method": "POST",
+      "path": "/attendance/summaries/{employment_id}/{year}/{month}/lock",
+      "operation": "lock_monthly_summary",
+      "response_model": "MonthlySummaryResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "attendance",
+      "tag": "Attendance",
+      "method": "POST",
+      "path": "/attendance/breaks/start",
+      "operation": "start_break",
+      "response_model": "BreakResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "attendance",
+      "tag": "Attendance",
+      "method": "POST",
+      "path": "/attendance/breaks/{break_id}/end",
+      "operation": "end_break",
+      "response_model": "BreakResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "audit",
+      "tag": "Audit",
+      "method": "POST",
+      "path": "/audit/logs",
+      "operation": "create_log",
+      "response_model": "Optional[AuditLogResponse]",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "audit",
+      "tag": "Audit",
+      "method": "GET",
+      "path": "/audit/logs",
+      "operation": "list_logs",
+      "response_model": "list[AuditLogResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "audit",
+      "tag": "Audit",
+      "method": "GET",
+      "path": "/audit/logs/{log_id}",
+      "operation": "get_log",
+      "response_model": "AuditLogResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "audit",
+      "tag": "Audit",
+      "method": "POST",
+      "path": "/audit/archive",
+      "operation": "archive_old_logs",
+      "response_model": "ArchiveResult",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "authentication",
+      "tag": "Authentication",
+      "method": "POST",
+      "path": "/auth/login",
+      "operation": "login",
+      "response_model": "LoginResponse",
+      "status": "HTTP_200_OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "authentication",
+      "tag": "Authentication",
+      "method": "POST",
+      "path": "/auth/refresh",
+      "operation": "refresh",
+      "response_model": "TokenPairResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "authentication",
+      "tag": "Authentication",
+      "method": "POST",
+      "path": "/auth/logout",
+      "operation": "logout",
+      "response_model": "MessageResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "authentication",
+      "tag": "Authentication",
+      "method": "POST",
+      "path": "/auth/change-password",
+      "operation": "change_password",
+      "response_model": "MessageResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "authentication",
+      "tag": "Authentication",
+      "method": "POST",
+      "path": "/auth/forgot-password",
+      "operation": "forgot_password",
+      "response_model": "MessageResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "authentication",
+      "tag": "Authentication",
+      "method": "POST",
+      "path": "/auth/reset-password",
+      "operation": "reset_password",
+      "response_model": "MessageResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "authentication",
+      "tag": "Authentication",
+      "method": "GET",
+      "path": "/auth/sessions",
+      "operation": "list_sessions",
+      "response_model": "list[SessionResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "developer",
+      "tag": "Developer",
+      "method": "POST",
+      "path": "/developer/teams",
+      "operation": "create_team",
+      "response_model": "TeamResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "developer",
+      "tag": "Developer",
+      "method": "GET",
+      "path": "/developer/teams",
+      "operation": "list_teams",
+      "response_model": "list[TeamResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "developer",
+      "tag": "Developer",
+      "method": "GET",
+      "path": "/developer/teams/{team_id}",
+      "operation": "get_team",
+      "response_model": "TeamResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "developer",
+      "tag": "Developer",
+      "method": "PATCH",
+      "path": "/developer/teams/{team_id}",
+      "operation": "update_team",
+      "response_model": "TeamResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "developer",
+      "tag": "Developer",
+      "method": "POST",
+      "path": "/developer/teams/{team_id}/members",
+      "operation": "add_team_member",
+      "response_model": "TeamMemberResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "developer",
+      "tag": "Developer",
+      "method": "DELETE",
+      "path": "/developer/teams/{team_id}/members/{employment_id}",
+      "operation": "remove_team_member",
+      "response_model": "MessageResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "developer",
+      "tag": "Developer",
+      "method": "GET",
+      "path": "/developer/teams/{team_id}/members",
+      "operation": "list_team_members",
+      "response_model": "list[TeamMemberResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "developer",
+      "tag": "Developer",
+      "method": "POST",
+      "path": "/developer/projects",
+      "operation": "create_project",
+      "response_model": "ProjectResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "developer",
+      "tag": "Developer",
+      "method": "GET",
+      "path": "/developer/projects",
+      "operation": "list_projects",
+      "response_model": "list[ProjectResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "developer",
+      "tag": "Developer",
+      "method": "GET",
+      "path": "/developer/projects/{project_id}",
+      "operation": "get_project",
+      "response_model": "ProjectResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "developer",
+      "tag": "Developer",
+      "method": "PATCH",
+      "path": "/developer/projects/{project_id}",
+      "operation": "update_project",
+      "response_model": "ProjectResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "developer",
+      "tag": "Developer",
+      "method": "POST",
+      "path": "/developer/tasks",
+      "operation": "create_task",
+      "response_model": "TaskResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "developer",
+      "tag": "Developer",
+      "method": "GET",
+      "path": "/developer/projects/{project_id}/tasks",
+      "operation": "list_tasks",
+      "response_model": "list[TaskResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "developer",
+      "tag": "Developer",
+      "method": "GET",
+      "path": "/developer/tasks/{task_id}",
+      "operation": "get_task",
+      "response_model": "TaskResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "developer",
+      "tag": "Developer",
+      "method": "PATCH",
+      "path": "/developer/tasks/{task_id}",
+      "operation": "update_task",
+      "response_model": "TaskResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "developer",
+      "tag": "Developer",
+      "method": "POST",
+      "path": "/developer/time-entries",
+      "operation": "create_time_entry",
+      "response_model": "TimeEntryResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "developer",
+      "tag": "Developer",
+      "method": "GET",
+      "path": "/developer/tasks/{task_id}/time-entries",
+      "operation": "list_time_entries",
+      "response_model": "list[TimeEntryResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "employment",
+      "tag": "Employment",
+      "method": "POST",
+      "path": "/employment/positions",
+      "operation": "create_position",
+      "response_model": "PositionResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "employment",
+      "tag": "Employment",
+      "method": "GET",
+      "path": "/employment/positions",
+      "operation": "list_positions",
+      "response_model": "list[PositionResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "employment",
+      "tag": "Employment",
+      "method": "GET",
+      "path": "/employment/positions/{position_id}",
+      "operation": "get_position",
+      "response_model": "PositionResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "employment",
+      "tag": "Employment",
+      "method": "PATCH",
+      "path": "/employment/positions/{position_id}",
+      "operation": "update_position",
+      "response_model": "PositionResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "employment",
+      "tag": "Employment",
+      "method": "POST",
+      "path": "/employment/positions/{position_id}/archive",
+      "operation": "archive_position",
+      "response_model": "MessageResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "employment",
+      "tag": "Employment",
+      "method": "POST",
+      "path": "/employment/employments",
+      "operation": "create_employment",
+      "response_model": "EmploymentDetailResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "employment",
+      "tag": "Employment",
+      "method": "GET",
+      "path": "/employment/employments",
+      "operation": "list_employments",
+      "response_model": "list[EmploymentResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "employment",
+      "tag": "Employment",
+      "method": "GET",
+      "path": "/employment/employments/by-person/{person_id}",
+      "operation": "list_employments_by_person",
+      "response_model": "list[EmploymentResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "employment",
+      "tag": "Employment",
+      "method": "GET",
+      "path": "/employment/employments/{employment_id}",
+      "operation": "get_employment",
+      "response_model": "EmploymentDetailResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "employment",
+      "tag": "Employment",
+      "method": "PATCH",
+      "path": "/employment/employments/{employment_id}",
+      "operation": "update_employment",
+      "response_model": "EmploymentResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "employment",
+      "tag": "Employment",
+      "method": "POST",
+      "path": "/employment/employments/{employment_id}/state",
+      "operation": "change_state",
+      "response_model": "EmploymentStateHistoryResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "employment",
+      "tag": "Employment",
+      "method": "GET",
+      "path": "/employment/employments/{employment_id}/state-history",
+      "operation": "list_state_history",
+      "response_model": "list[EmploymentStateHistoryResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "employment",
+      "tag": "Employment",
+      "method": "POST",
+      "path": "/employment/employments/{employment_id}/assignments",
+      "operation": "create_assignment",
+      "response_model": "EmploymentAssignmentResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "employment",
+      "tag": "Employment",
+      "method": "GET",
+      "path": "/employment/employments/{employment_id}/assignments/current",
+      "operation": "get_current_assignment",
+      "response_model": "EmploymentAssignmentResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "employment",
+      "tag": "Employment",
+      "method": "GET",
+      "path": "/employment/employments/{employment_id}/assignments",
+      "operation": "list_assignments",
+      "response_model": "list[EmploymentAssignmentResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "leave",
+      "tag": "Leave",
+      "method": "POST",
+      "path": "/leave/policies",
+      "operation": "create_policy",
+      "response_model": "LeavePolicyResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "leave",
+      "tag": "Leave",
+      "method": "GET",
+      "path": "/leave/policies",
+      "operation": "list_policies",
+      "response_model": "list[LeavePolicyResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "leave",
+      "tag": "Leave",
+      "method": "GET",
+      "path": "/leave/policies/current/{leave_type}",
+      "operation": "get_current_policy",
+      "response_model": "LeavePolicyResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "leave",
+      "tag": "Leave",
+      "method": "POST",
+      "path": "/leave/requests",
+      "operation": "submit_request",
+      "response_model": "LeaveRequestResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "leave",
+      "tag": "Leave",
+      "method": "GET",
+      "path": "/leave/requests",
+      "operation": "list_requests",
+      "response_model": "list[LeaveRequestResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "leave",
+      "tag": "Leave",
+      "method": "GET",
+      "path": "/leave/requests/{request_id}",
+      "operation": "get_request",
+      "response_model": "LeaveRequestResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "leave",
+      "tag": "Leave",
+      "method": "POST",
+      "path": "/leave/requests/{request_id}/cancel",
+      "operation": "cancel_request",
+      "response_model": "LeaveRequestResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "leave",
+      "tag": "Leave",
+      "method": "POST",
+      "path": "/leave/ledger",
+      "operation": "post_ledger_entry",
+      "response_model": "LeaveLedgerResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "leave",
+      "tag": "Leave",
+      "method": "GET",
+      "path": "/leave/ledger/{employment_id}",
+      "operation": "list_ledger",
+      "response_model": "list[LeaveLedgerResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "leave",
+      "tag": "Leave",
+      "method": "GET",
+      "path": "/leave/balances/{employment_id}",
+      "operation": "get_balances",
+      "response_model": "LeaveBalanceResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notes_documents",
+      "tag": "Notes & Documents",
+      "method": "POST",
+      "path": "/notes-documents/notes",
+      "operation": "create_note",
+      "response_model": "NoteResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notes_documents",
+      "tag": "Notes & Documents",
+      "method": "GET",
+      "path": "/notes-documents/notes",
+      "operation": "list_notes",
+      "response_model": "list[NoteResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notes_documents",
+      "tag": "Notes & Documents",
+      "method": "GET",
+      "path": "/notes-documents/notes/{note_id}",
+      "operation": "get_note",
+      "response_model": "NoteResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notes_documents",
+      "tag": "Notes & Documents",
+      "method": "PATCH",
+      "path": "/notes-documents/notes/{note_id}",
+      "operation": "update_note",
+      "response_model": "NoteResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notes_documents",
+      "tag": "Notes & Documents",
+      "method": "POST",
+      "path": "/notes-documents/document-types",
+      "operation": "create_document_type",
+      "response_model": "DocumentTypeResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notes_documents",
+      "tag": "Notes & Documents",
+      "method": "GET",
+      "path": "/notes-documents/document-types",
+      "operation": "list_document_types",
+      "response_model": "list[DocumentTypeResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notes_documents",
+      "tag": "Notes & Documents",
+      "method": "PATCH",
+      "path": "/notes-documents/document-types/{type_id}",
+      "operation": "update_document_type",
+      "response_model": "DocumentTypeResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notes_documents",
+      "tag": "Notes & Documents",
+      "method": "POST",
+      "path": "/notes-documents/document-types/{type_id}/archive",
+      "operation": "archive_document_type",
+      "response_model": "MessageResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notes_documents",
+      "tag": "Notes & Documents",
+      "method": "POST",
+      "path": "/notes-documents/documents",
+      "operation": "create_document",
+      "response_model": "DocumentDetailResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notes_documents",
+      "tag": "Notes & Documents",
+      "method": "GET",
+      "path": "/notes-documents/documents/{document_id}",
+      "operation": "get_document",
+      "response_model": "DocumentDetailResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notes_documents",
+      "tag": "Notes & Documents",
+      "method": "POST",
+      "path": "/notes-documents/documents/{document_id}/versions",
+      "operation": "add_version",
+      "response_model": "DocumentVersionResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notes_documents",
+      "tag": "Notes & Documents",
+      "method": "POST",
+      "path": "/notes-documents/documents/{document_id}/archive",
+      "operation": "archive_document",
+      "response_model": "MessageResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notes_documents",
+      "tag": "Notes & Documents",
+      "method": "POST",
+      "path": "/notes-documents/links",
+      "operation": "link_document",
+      "response_model": "DocumentLinkResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notes_documents",
+      "tag": "Notes & Documents",
+      "method": "GET",
+      "path": "/notes-documents/links/by-entity",
+      "operation": "list_links_for_entity",
+      "response_model": "list[DocumentLinkResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notes_documents",
+      "tag": "Notes & Documents",
+      "method": "GET",
+      "path": "/notes-documents/documents/{document_id}/links",
+      "operation": "list_links_for_document",
+      "response_model": "list[DocumentLinkResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notifications",
+      "tag": "Notifications",
+      "method": "POST",
+      "path": "/notifications/templates",
+      "operation": "create_template",
+      "response_model": "NotificationTemplateResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notifications",
+      "tag": "Notifications",
+      "method": "GET",
+      "path": "/notifications/templates",
+      "operation": "list_templates",
+      "response_model": "list[NotificationTemplateResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notifications",
+      "tag": "Notifications",
+      "method": "GET",
+      "path": "/notifications/templates/{template_id}",
+      "operation": "get_template",
+      "response_model": "NotificationTemplateResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notifications",
+      "tag": "Notifications",
+      "method": "PATCH",
+      "path": "/notifications/templates/{template_id}",
+      "operation": "update_template",
+      "response_model": "NotificationTemplateResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notifications",
+      "tag": "Notifications",
+      "method": "POST",
+      "path": "/notifications/notify",
+      "operation": "notify",
+      "response_model": "Optional[NotificationResponse]",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notifications",
+      "tag": "Notifications",
+      "method": "POST",
+      "path": "/notifications/notify/bulk",
+      "operation": "notify_bulk",
+      "response_model": "list[NotificationResponse]",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notifications",
+      "tag": "Notifications",
+      "method": "GET",
+      "path": "/notifications/inbox",
+      "operation": "list_inbox",
+      "response_model": "list[NotificationResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notifications",
+      "tag": "Notifications",
+      "method": "GET",
+      "path": "/notifications/inbox/unread-count",
+      "operation": "unread_count",
+      "response_model": null,
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notifications",
+      "tag": "Notifications",
+      "method": "POST",
+      "path": "/notifications/inbox/{notification_id}/read",
+      "operation": "mark_read",
+      "response_model": "NotificationResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notifications",
+      "tag": "Notifications",
+      "method": "POST",
+      "path": "/notifications/inbox/{notification_id}/archive",
+      "operation": "archive",
+      "response_model": "NotificationResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notifications",
+      "tag": "Notifications",
+      "method": "GET",
+      "path": "/notifications/preferences",
+      "operation": "list_preferences",
+      "response_model": "list[PreferenceResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "notifications",
+      "tag": "Notifications",
+      "method": "PUT",
+      "path": "/notifications/preferences",
+      "operation": "set_preference",
+      "response_model": "PreferenceResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "POST",
+      "path": "/organization/departments",
+      "operation": "create_department",
+      "response_model": "DepartmentResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "GET",
+      "path": "/organization/departments",
+      "operation": "list_departments",
+      "response_model": "list[DepartmentResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "GET",
+      "path": "/organization/departments/{department_id}",
+      "operation": "get_department",
+      "response_model": "DepartmentResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "PATCH",
+      "path": "/organization/departments/{department_id}",
+      "operation": "update_department",
+      "response_model": "DepartmentResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "POST",
+      "path": "/organization/departments/{department_id}/archive",
+      "operation": "archive_department",
+      "response_model": "MessageResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "POST",
+      "path": "/organization/working-weeks",
+      "operation": "create_working_week",
+      "response_model": "WorkingWeekResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "GET",
+      "path": "/organization/working-weeks",
+      "operation": "list_working_weeks",
+      "response_model": "list[WorkingWeekResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "GET",
+      "path": "/organization/working-weeks/current",
+      "operation": "get_current_working_week",
+      "response_model": "WorkingWeekResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "GET",
+      "path": "/organization/working-weeks/{week_id}",
+      "operation": "get_working_week",
+      "response_model": "WorkingWeekResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "POST",
+      "path": "/organization/shifts",
+      "operation": "create_shift",
+      "response_model": "ShiftResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "GET",
+      "path": "/organization/shifts",
+      "operation": "list_shifts",
+      "response_model": "list[ShiftResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "GET",
+      "path": "/organization/shifts/{shift_id}",
+      "operation": "get_shift",
+      "response_model": "ShiftResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "PATCH",
+      "path": "/organization/shifts/{shift_id}",
+      "operation": "update_shift",
+      "response_model": "ShiftResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "POST",
+      "path": "/organization/shifts/{shift_id}/archive",
+      "operation": "archive_shift",
+      "response_model": "MessageResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "POST",
+      "path": "/organization/holiday-calendars",
+      "operation": "create_holiday_calendar",
+      "response_model": "HolidayCalendarResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "GET",
+      "path": "/organization/holiday-calendars",
+      "operation": "list_holiday_calendars",
+      "response_model": "list[HolidayCalendarResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "GET",
+      "path": "/organization/holiday-calendars/{calendar_id}",
+      "operation": "get_holiday_calendar",
+      "response_model": "HolidayCalendarResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "PATCH",
+      "path": "/organization/holiday-calendars/{calendar_id}",
+      "operation": "update_holiday_calendar",
+      "response_model": "HolidayCalendarResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "POST",
+      "path": "/organization/holiday-calendars/{calendar_id}/archive",
+      "operation": "archive_holiday_calendar",
+      "response_model": "MessageResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "POST",
+      "path": "/organization/holidays",
+      "operation": "add_holiday",
+      "response_model": "HolidayResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "GET",
+      "path": "/organization/holiday-calendars/{calendar_id}/holidays",
+      "operation": "list_holidays",
+      "response_model": "list[HolidayResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "POST",
+      "path": "/organization/locations",
+      "operation": "create_location",
+      "response_model": "LocationResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "GET",
+      "path": "/organization/locations",
+      "operation": "list_locations",
+      "response_model": "list[LocationResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "GET",
+      "path": "/organization/locations/{location_id}",
+      "operation": "get_location",
+      "response_model": "LocationResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "PATCH",
+      "path": "/organization/locations/{location_id}",
+      "operation": "update_location",
+      "response_model": "LocationResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "POST",
+      "path": "/organization/locations/{location_id}/archive",
+      "operation": "archive_location",
+      "response_model": "MessageResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "GET",
+      "path": "/organization/settings",
+      "operation": "get_organization_settings",
+      "response_model": "OrganizationSettingsResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "organization",
+      "tag": "Organization",
+      "method": "PUT",
+      "path": "/organization/settings",
+      "operation": "upsert_organization_settings",
+      "response_model": "OrganizationSettingsResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "POST",
+      "path": "/payroll/salaries",
+      "operation": "create_salary",
+      "response_model": "EmployeeSalaryResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "GET",
+      "path": "/payroll/salaries/current/{employment_id}",
+      "operation": "get_current_salary",
+      "response_model": "EmployeeSalaryResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "GET",
+      "path": "/payroll/salaries/{employment_id}",
+      "operation": "list_salaries",
+      "response_model": "list[EmployeeSalaryResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "POST",
+      "path": "/payroll/calculate",
+      "operation": "calculate_payroll",
+      "response_model": "MonthlyPayrollResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "POST",
+      "path": "/payroll/{payroll_id}/approve",
+      "operation": "approve_payroll",
+      "response_model": "MonthlyPayrollResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "POST",
+      "path": "/payroll/{payroll_id}/pay",
+      "operation": "mark_paid",
+      "response_model": "MonthlyPayrollResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "GET",
+      "path": "/payroll/{payroll_id}",
+      "operation": "get_payroll",
+      "response_model": "MonthlyPayrollResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "GET",
+      "path": "/payroll",
+      "operation": "list_payrolls",
+      "response_model": "list[MonthlyPayrollResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "POST",
+      "path": "/payroll/bank-accounts",
+      "operation": "add_bank_account",
+      "response_model": "BankAccountResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "GET",
+      "path": "/payroll/bank-accounts/{employment_id}",
+      "operation": "list_bank_accounts",
+      "response_model": "list[BankAccountResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "GET",
+      "path": "/payroll/bank-accounts/{employment_id}/primary",
+      "operation": "get_primary_bank",
+      "response_model": "BankAccountResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "rbac",
+      "tag": "RBAC",
+      "method": "GET",
+      "path": "/rbac/resources",
+      "operation": "list_resources",
+      "response_model": "list[ResourceResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "rbac",
+      "tag": "RBAC",
+      "method": "GET",
+      "path": "/rbac/permissions",
+      "operation": "list_permissions",
+      "response_model": "list[PermissionResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "rbac",
+      "tag": "RBAC",
+      "method": "GET",
+      "path": "/rbac/scopes",
+      "operation": "list_scopes",
+      "response_model": "list[ScopeResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "rbac",
+      "tag": "RBAC",
+      "method": "GET",
+      "path": "/rbac/sensitive-fields",
+      "operation": "list_sensitive_fields",
+      "response_model": "list[SensitiveFieldResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "rbac",
+      "tag": "RBAC",
+      "method": "POST",
+      "path": "/rbac/roles",
+      "operation": "create_role",
+      "response_model": "RoleResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "rbac",
+      "tag": "RBAC",
+      "method": "GET",
+      "path": "/rbac/roles",
+      "operation": "list_roles",
+      "response_model": "list[RoleResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "rbac",
+      "tag": "RBAC",
+      "method": "GET",
+      "path": "/rbac/roles/{role_id}",
+      "operation": "get_role",
+      "response_model": "RoleDetailResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "rbac",
+      "tag": "RBAC",
+      "method": "PATCH",
+      "path": "/rbac/roles/{role_id}",
+      "operation": "update_role",
+      "response_model": "RoleResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "rbac",
+      "tag": "RBAC",
+      "method": "DELETE",
+      "path": "/rbac/roles/{role_id}",
+      "operation": "delete_role",
+      "response_model": "MessageResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "rbac",
+      "tag": "RBAC",
+      "method": "POST",
+      "path": "/rbac/roles/{role_id}/permissions",
+      "operation": "grant_permission",
+      "response_model": "RolePermissionResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "rbac",
+      "tag": "RBAC",
+      "method": "DELETE",
+      "path": "/rbac/roles/{role_id}/permissions/{permission_id}/scopes/{scope_id}",
+      "operation": "revoke_permission",
+      "response_model": "MessageResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "rbac",
+      "tag": "RBAC",
+      "method": "POST",
+      "path": "/rbac/employments/{employment_id}/roles",
+      "operation": "assign_role",
+      "response_model": "EmployeeRoleResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "rbac",
+      "tag": "RBAC",
+      "method": "DELETE",
+      "path": "/rbac/employments/{employment_id}/roles/{role_id}",
+      "operation": "unassign_role",
+      "response_model": "MessageResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "rbac",
+      "tag": "RBAC",
+      "method": "GET",
+      "path": "/rbac/employments/{employment_id}/roles",
+      "operation": "list_roles_for_employment",
+      "response_model": "list[EmployeeRoleResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "rbac",
+      "tag": "RBAC",
+      "method": "GET",
+      "path": "/rbac/employments/{employment_id}/effective-permissions",
+      "operation": "get_effective_permissions",
+      "response_model": "EffectivePermissionsResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "rbac",
+      "tag": "RBAC",
+      "method": "PUT",
+      "path": "/rbac/roles/{role_id}/sensitive-fields",
+      "operation": "set_sensitive_field_permission",
+      "response_model": "RoleSensitiveFieldPermissionResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "sales",
+      "tag": "Sales",
+      "method": "POST",
+      "path": "/sales/clients",
+      "operation": "create_client",
+      "response_model": "ClientResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "sales",
+      "tag": "Sales",
+      "method": "GET",
+      "path": "/sales/clients",
+      "operation": "list_clients",
+      "response_model": "list[ClientResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "sales",
+      "tag": "Sales",
+      "method": "GET",
+      "path": "/sales/clients/{client_id}",
+      "operation": "get_client",
+      "response_model": "ClientResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "sales",
+      "tag": "Sales",
+      "method": "PATCH",
+      "path": "/sales/clients/{client_id}",
+      "operation": "update_client",
+      "response_model": "ClientResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "sales",
+      "tag": "Sales",
+      "method": "POST",
+      "path": "/sales/clients/{client_id}/archive",
+      "operation": "archive_client",
+      "response_model": "MessageResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "sales",
+      "tag": "Sales",
+      "method": "POST",
+      "path": "/sales/contacts",
+      "operation": "add_contact",
+      "response_model": "ClientContactResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "sales",
+      "tag": "Sales",
+      "method": "GET",
+      "path": "/sales/clients/{client_id}/contacts",
+      "operation": "list_contacts",
+      "response_model": "list[ClientContactResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "sales",
+      "tag": "Sales",
+      "method": "POST",
+      "path": "/sales/platforms",
+      "operation": "create_platform",
+      "response_model": "PlatformResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "sales",
+      "tag": "Sales",
+      "method": "GET",
+      "path": "/sales/platforms",
+      "operation": "list_platforms",
+      "response_model": "list[PlatformResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "sales",
+      "tag": "Sales",
+      "method": "PATCH",
+      "path": "/sales/platforms/{platform_id}",
+      "operation": "update_platform",
+      "response_model": "PlatformResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "sales",
+      "tag": "Sales",
+      "method": "POST",
+      "path": "/sales/platforms/{platform_id}/archive",
+      "operation": "archive_platform",
+      "response_model": "MessageResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "sales",
+      "tag": "Sales",
+      "method": "POST",
+      "path": "/sales/leads",
+      "operation": "create_lead",
+      "response_model": "LeadResponse",
+      "status": "HTTP_201_CREATED",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "sales",
+      "tag": "Sales",
+      "method": "GET",
+      "path": "/sales/leads",
+      "operation": "list_leads",
+      "response_model": "list[LeadResponse]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "sales",
+      "tag": "Sales",
+      "method": "GET",
+      "path": "/sales/leads/{lead_id}",
+      "operation": "get_lead",
+      "response_model": "LeadResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "sales",
+      "tag": "Sales",
+      "method": "PATCH",
+      "path": "/sales/leads/{lead_id}",
+      "operation": "update_lead",
+      "response_model": "LeadResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "sales",
+      "tag": "Sales",
+      "method": "POST",
+      "path": "/sales/leads/{lead_id}/status",
+      "operation": "change_lead_status",
+      "response_model": "Union[LeadResponse",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    }
+  ]
+}

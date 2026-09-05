@@ -1,0 +1,360 @@
+"""
+Organization HTTP routes.
+
+All operations go through OrganizationPublicService.
+Actor is temporarily taken from X-Employment-Id header until full auth dependency exists.
+"""
+
+from __future__ import annotations
+
+from datetime import date
+from typing import Annotated, Optional
+
+from fastapi import APIRouter, Header, Query, status
+
+from app.modules.organization.dependencies import OrganizationServiceDep
+from app.modules.organization.schemas.schemas import (
+    DepartmentCreate,
+    DepartmentResponse,
+    DepartmentUpdate,
+    HolidayCalendarCreate,
+    HolidayCalendarResponse,
+    HolidayCalendarUpdate,
+    HolidayCreate,
+    HolidayResponse,
+    LocationCreate,
+    LocationResponse,
+    LocationUpdate,
+    MessageResponse,
+    OrganizationSettingsResponse,
+    OrganizationSettingsUpdate,
+    ShiftCreate,
+    ShiftResponse,
+    ShiftUpdate,
+    WorkingWeekCreate,
+    WorkingWeekResponse,
+)
+
+router = APIRouter(prefix="/organization", tags=["Organization"])
+
+ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
+
+
+# ---------------------------------------------------------------------------
+# Departments
+# ---------------------------------------------------------------------------
+
+@router.post(
+    "/departments",
+    response_model=DepartmentResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_department(
+    body: DepartmentCreate,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> DepartmentResponse:
+    return await service.create_department(body, actor_employment_id=actor)
+
+
+@router.get("/departments", response_model=list[DepartmentResponse])
+async def list_departments(
+    service: OrganizationServiceDep,
+    include_archived: bool = Query(False),
+) -> list[DepartmentResponse]:
+    return await service.list_departments(include_archived=include_archived)
+
+
+@router.get("/departments/{department_id}", response_model=DepartmentResponse)
+async def get_department(
+    department_id: int,
+    service: OrganizationServiceDep,
+) -> DepartmentResponse:
+    return await service.get_department(department_id)
+
+
+@router.patch("/departments/{department_id}", response_model=DepartmentResponse)
+async def update_department(
+    department_id: int,
+    body: DepartmentUpdate,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> DepartmentResponse:
+    return await service.update_department(
+        department_id, body, actor_employment_id=actor
+    )
+
+
+@router.post(
+    "/departments/{department_id}/archive",
+    response_model=MessageResponse,
+)
+async def archive_department(
+    department_id: int,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> MessageResponse:
+    return await service.archive_department(
+        department_id, actor_employment_id=actor
+    )
+
+
+# ---------------------------------------------------------------------------
+# Working Weeks
+# ---------------------------------------------------------------------------
+
+@router.post(
+    "/working-weeks",
+    response_model=WorkingWeekResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_working_week(
+    body: WorkingWeekCreate,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> WorkingWeekResponse:
+    return await service.create_working_week(body, actor_employment_id=actor)
+
+
+@router.get("/working-weeks", response_model=list[WorkingWeekResponse])
+async def list_working_weeks(
+    service: OrganizationServiceDep,
+) -> list[WorkingWeekResponse]:
+    return await service.list_working_weeks()
+
+
+@router.get("/working-weeks/current", response_model=WorkingWeekResponse)
+async def get_current_working_week(
+    service: OrganizationServiceDep,
+    as_of: Optional[date] = Query(None),
+) -> WorkingWeekResponse:
+    return await service.get_current_working_week(as_of=as_of)
+
+
+@router.get("/working-weeks/{week_id}", response_model=WorkingWeekResponse)
+async def get_working_week(
+    week_id: int,
+    service: OrganizationServiceDep,
+) -> WorkingWeekResponse:
+    return await service.get_working_week(week_id)
+
+
+# ---------------------------------------------------------------------------
+# Shifts
+# ---------------------------------------------------------------------------
+
+@router.post(
+    "/shifts",
+    response_model=ShiftResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_shift(
+    body: ShiftCreate,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> ShiftResponse:
+    return await service.create_shift(body, actor_employment_id=actor)
+
+
+@router.get("/shifts", response_model=list[ShiftResponse])
+async def list_shifts(
+    service: OrganizationServiceDep,
+    include_archived: bool = Query(False),
+) -> list[ShiftResponse]:
+    return await service.list_shifts(include_archived=include_archived)
+
+
+@router.get("/shifts/{shift_id}", response_model=ShiftResponse)
+async def get_shift(
+    shift_id: int,
+    service: OrganizationServiceDep,
+) -> ShiftResponse:
+    return await service.get_shift(shift_id)
+
+
+@router.patch("/shifts/{shift_id}", response_model=ShiftResponse)
+async def update_shift(
+    shift_id: int,
+    body: ShiftUpdate,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> ShiftResponse:
+    return await service.update_shift(shift_id, body, actor_employment_id=actor)
+
+
+@router.post("/shifts/{shift_id}/archive", response_model=MessageResponse)
+async def archive_shift(
+    shift_id: int,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> MessageResponse:
+    return await service.archive_shift(shift_id, actor_employment_id=actor)
+
+
+# ---------------------------------------------------------------------------
+# Holiday Calendars
+# ---------------------------------------------------------------------------
+
+@router.post(
+    "/holiday-calendars",
+    response_model=HolidayCalendarResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_holiday_calendar(
+    body: HolidayCalendarCreate,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> HolidayCalendarResponse:
+    return await service.create_holiday_calendar(body, actor_employment_id=actor)
+
+
+@router.get("/holiday-calendars", response_model=list[HolidayCalendarResponse])
+async def list_holiday_calendars(
+    service: OrganizationServiceDep,
+    include_archived: bool = Query(False),
+) -> list[HolidayCalendarResponse]:
+    return await service.list_holiday_calendars(include_archived=include_archived)
+
+
+@router.get(
+    "/holiday-calendars/{calendar_id}",
+    response_model=HolidayCalendarResponse,
+)
+async def get_holiday_calendar(
+    calendar_id: int,
+    service: OrganizationServiceDep,
+) -> HolidayCalendarResponse:
+    return await service.get_holiday_calendar(calendar_id)
+
+
+@router.patch(
+    "/holiday-calendars/{calendar_id}",
+    response_model=HolidayCalendarResponse,
+)
+async def update_holiday_calendar(
+    calendar_id: int,
+    body: HolidayCalendarUpdate,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> HolidayCalendarResponse:
+    return await service.update_holiday_calendar(
+        calendar_id, body, actor_employment_id=actor
+    )
+
+
+@router.post(
+    "/holiday-calendars/{calendar_id}/archive",
+    response_model=MessageResponse,
+)
+async def archive_holiday_calendar(
+    calendar_id: int,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> MessageResponse:
+    return await service.archive_holiday_calendar(
+        calendar_id, actor_employment_id=actor
+    )
+
+
+# ---------------------------------------------------------------------------
+# Holidays
+# ---------------------------------------------------------------------------
+
+@router.post(
+    "/holidays",
+    response_model=HolidayResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def add_holiday(
+    body: HolidayCreate,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> HolidayResponse:
+    return await service.add_holiday(body, actor_employment_id=actor)
+
+
+@router.get(
+    "/holiday-calendars/{calendar_id}/holidays",
+    response_model=list[HolidayResponse],
+)
+async def list_holidays(
+    calendar_id: int,
+    service: OrganizationServiceDep,
+) -> list[HolidayResponse]:
+    return await service.list_holidays(calendar_id)
+
+
+# ---------------------------------------------------------------------------
+# Locations
+# ---------------------------------------------------------------------------
+
+@router.post(
+    "/locations",
+    response_model=LocationResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_location(
+    body: LocationCreate,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> LocationResponse:
+    return await service.create_location(body, actor_employment_id=actor)
+
+
+@router.get("/locations", response_model=list[LocationResponse])
+async def list_locations(
+    service: OrganizationServiceDep,
+    include_archived: bool = Query(False),
+) -> list[LocationResponse]:
+    return await service.list_locations(include_archived=include_archived)
+
+
+@router.get("/locations/{location_id}", response_model=LocationResponse)
+async def get_location(
+    location_id: int,
+    service: OrganizationServiceDep,
+) -> LocationResponse:
+    return await service.get_location(location_id)
+
+
+@router.patch("/locations/{location_id}", response_model=LocationResponse)
+async def update_location(
+    location_id: int,
+    body: LocationUpdate,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> LocationResponse:
+    return await service.update_location(
+        location_id, body, actor_employment_id=actor
+    )
+
+
+@router.post("/locations/{location_id}/archive", response_model=MessageResponse)
+async def archive_location(
+    location_id: int,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> MessageResponse:
+    return await service.archive_location(location_id, actor_employment_id=actor)
+
+
+# ---------------------------------------------------------------------------
+# Organization Settings (singleton)
+# ---------------------------------------------------------------------------
+
+@router.get("/settings", response_model=OrganizationSettingsResponse)
+async def get_organization_settings(
+    service: OrganizationServiceDep,
+) -> OrganizationSettingsResponse:
+    return await service.get_organization_settings()
+
+
+@router.put("/settings", response_model=OrganizationSettingsResponse)
+async def upsert_organization_settings(
+    body: OrganizationSettingsUpdate,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> OrganizationSettingsResponse:
+    return await service.upsert_organization_settings(
+        body, actor_employment_id=actor
+    )

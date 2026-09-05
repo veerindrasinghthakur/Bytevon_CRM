@@ -1,0 +1,2 @@
+# Alembic revision scripts land here.
+# Generate with: alembic revision --autogenerate -m "initial_schema"
