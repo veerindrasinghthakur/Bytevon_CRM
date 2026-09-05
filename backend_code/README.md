@@ -15,14 +15,14 @@ uvicorn app.main:app --reload --port 8000
 
 API base: `/api/v1` — see `API_REFERENCE.md` and `API_ENDPOINTS.json`.
 
-## Frontend alignment (status)
+## Frontend alignment (RBAC)
 
-| Area | Status |
+| Item | Status |
 |------|--------|
-| Module coverage (auth, org, employment, rbac, sales, projects, leave, attendance, payroll, approvals, notifications, audit, notes) | Aligned in structure |
-| Action enum | Backend lacks `UNLOCK` (frontend has it) |
-| Effective permissions JSON | Backend returns **flat list**; frontend expects **nested tree** + `scope` / `scopeByResource` |
-| Domain route `require_permission` | Not systematically applied on BE yet |
-| Resource naming | Seed/catalog should match FE `ResourceName` snake_case |
+| `Action.UNLOCK` | Supported |
+| Resource seed names | Match FE `ResourceName` (snake_case) via `seed_rbac_catalog` |
+| `GET /rbac/employments/{id}/effective-permissions` | Nested `permissions`, `scope`, `scopeByResource`, `isSuperAdmin`, `employmentId` + flat `grants` |
+| Super Admin | Full tree @ ORGANIZATION when role name is Super Admin |
+| Domain `require_permission` on every route | Progressive — effective endpoint + FE gates first |
 
-Use mock FE (`env.useMockApi`) until effective-permissions response is mapped or BE returns the FE shape.
+Default seed admin: `admin@bytevon.local` / `ChangeMeAdmin!123`
