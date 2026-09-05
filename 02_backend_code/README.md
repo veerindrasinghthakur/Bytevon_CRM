@@ -1,20 +1,42 @@
 # ByteVon CRM — Backend (`02_backend_code`)
 
-**Single package root.** Run and import from this folder — not from a nested `backend_code/` subfolder.
+**One package root.** All of `app/`, `alembic/`, `scripts/` live directly under `02_backend_code/`.
 
-## Layout (correct)
+## Correct layout
 
 ```
 02_backend_code/
   app/
     main.py
-    api/router.py
-    core/          # config, db, security, base services
-    modules/       # auth, org, employment, rbac, sales, ...
+    api/
+    core/           # enums, config, security, base services
+    modules/        # authentication, organization, employment, rbac,
+                    # sales, developer, leave, attendance, payroll,
+                    # approvals, notifications, audit, notes_documents
   alembic/
   scripts/
   requirements.txt
   .env.example
+```
+
+## If you still see two trees (`app/` + `backend_code/`)
+
+That is a **duplicate extract**. Nested `backend_code/` is the full tree; top-level `app/` may be incomplete.
+
+From **repo root**:
+
+```bash
+bash 02_backend_code/scripts/flatten_package.sh
+```
+
+Or manually:
+
+```bash
+cd 02_backend_code
+rm -rf app    # only if incomplete (no app/core)
+shopt -s dotglob
+mv backend_code/* .
+rm -rf backend_code
 ```
 
 ## Run
@@ -28,21 +50,4 @@ python -m scripts.seed_bootstrap
 uvicorn app.main:app --reload --port 8000
 ```
 
-API base: `/api/v1`
-
-## If you still see `02_backend_code/backend_code/`
-
-That nested folder is a **duplicate** from an earlier extract. Flatten locally:
-
-```bash
-cd 02_backend_code
-# keep one full tree at this level
-rm -rf app   # only if incomplete shell; or merge carefully
-shopt -s dotglob   # bash
-mv backend_code/* .
-rm -rf backend_code
-```
-
-Target end state: **one** `app/` with all modules under `app/modules/`.
-
-Default seed: `admin@bytevon.local` / `ChangeMeAdmin!123`
+API: `/api/v1` — seed admin `admin@bytevon.local` / `ChangeMeAdmin!123`
