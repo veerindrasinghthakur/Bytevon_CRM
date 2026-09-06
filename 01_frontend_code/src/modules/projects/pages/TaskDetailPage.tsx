@@ -95,10 +95,12 @@ export function TaskDetailPage() {
             </div>
           ) : (
             <div className="flex items-center gap-2 flex-wrap">
-              <RefreshButton iconOnly onClick={() => refetch()} />
               <TaskPriorityLabel priority={task.priority} />
               <TaskStatusBadge status={task.status} />
-              <EditButton onClick={startEditing} />
+              <div className="flex items-center gap-2">
+                <EditButton onClick={startEditing} />
+                <RefreshButton iconOnly onClick={() => refetch() }size={'md'} />
+              </div>
             </div>
           )
         }

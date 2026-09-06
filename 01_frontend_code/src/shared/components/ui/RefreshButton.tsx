@@ -25,7 +25,7 @@ export function RefreshButton({
         title={title}
         aria-label={title}
         className={cn(
-          'p-2 rounded-lg border border-outline-variant text-on-surface-variant',
+          'p-0.5 pt-1 h-8 rounded-lg border border-outline-variant text-on-surface-variant',
           'hover:text-secondary hover:border-secondary transition-colors',
           'disabled:opacity-50 disabled:pointer-events-none',
           className,

@@ -52,8 +52,10 @@ export function useAppShell() {
 
   const handleLogout = async () => {
     await logout()
-    // Refresh the page to ensure the user is redirected to login
-    window.location.reload()
+    // Use React Router navigation instead of hard reload for instant redirect
+    // Include redirect to current path so user returns here after login
+    const redirect = encodeURIComponent(window.location.pathname + window.location.search)
+    safeNavigate(navigate, { to: authRoutes.login, search: { redirect }, replace: true })
   }
 
   return {

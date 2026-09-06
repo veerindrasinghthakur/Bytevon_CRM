@@ -146,9 +146,11 @@ export async function logoutApi(revokeAll = false): Promise<void> {
   if (!env.useMockApi) {
     try {
       await apiClient.post('/auth/logout', { revokeAll })
-    } finally {
-      persistSession(null)
+    } catch (error) {
+      console.error('Logout failed:', error)
+      throw error
     }
+    persistSession(null)
     return
   }
   await delay(250)

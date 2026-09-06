@@ -107,8 +107,8 @@ export function TeamDetailPage() {
             </div>
           ) : (
             <div className="flex gap-2 flex-wrap">
-              <RefreshButton iconOnly onClick={() => refetch()} />
               <EditButton onClick={startEditing} label="Edit Team" />
+              <RefreshButton iconOnly onClick={() => refetch()} />
             </div>
           )
         }

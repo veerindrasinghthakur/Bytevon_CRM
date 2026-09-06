@@ -253,7 +253,7 @@ export interface ProjectStatusBadgeProps {
 
 import { ProjectPhaseOptions, ProjectPriorityOptions } from './enums'
 
-export type AssignMode = 'existing' | 'new' | 'later'
+export type AssignMode = 'existing' | 'new' | 'later' | 'Individual';
 export type PhaseValue = (typeof ProjectPhaseOptions)[number]['value']
 export type PriorityValue = (typeof ProjectPriorityOptions)[number]['value']
 

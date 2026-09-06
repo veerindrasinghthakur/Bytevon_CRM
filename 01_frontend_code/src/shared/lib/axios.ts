@@ -27,6 +27,18 @@ apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
     config.headers = config.headers ?? {}
     config.headers.Authorization = `Bearer ${token}`
   }
+  // Add X-Login-Id header for logout and other auth endpoints
+  const loginId = session?.user?.id
+  if (loginId) {
+    config.headers = config.headers ?? {}
+    config.headers['X-Login-Id'] = String(loginId)
+  }
+  // Add X-Employment-Id header for employment-scoped endpoints
+  const employmentId = session?.user?.employmentId
+  if (employmentId) {
+    config.headers = config.headers ?? {}
+    config.headers['X-Employment-Id'] = String(employmentId)
+  }
   return config
 })
 

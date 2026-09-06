@@ -151,17 +151,19 @@ export function ProjectDetailPage() {
             </div>
           ) : (
             <div className="flex items-center gap-2 flex-wrap">
-              <RefreshButton iconOnly onClick={() => refetch()} />
               <ProjectStatusBadge status={project.status} />
-              <EditButton onClick={startEditing} label="Edit Project" />
-              <Button
-                variant="outline"
-                size="sm"
-                leftIcon={<span className="material-symbols-outlined text-lg">group</span>}
-                onClick={() => selectTab('team')}
-              >
-                Manage Team
-              </Button>
+              <div className="flex items-center gap-2">
+                <EditButton onClick={startEditing} label="Edit Project" />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<span className="h-5 material-symbols-outlined text-lg">group</span>}
+                  onClick={() => selectTab('team')}
+                >
+                  Manage Team
+                </Button>
+                <RefreshButton iconOnly onClick={() => refetch()} />
+              </div>
             </div>
           )
         }

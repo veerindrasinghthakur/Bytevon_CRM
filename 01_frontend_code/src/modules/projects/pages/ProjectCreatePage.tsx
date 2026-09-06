@@ -194,6 +194,11 @@ export function ProjectCreatePage() {
                         desc: 'After project save, build a team and auto-assign it here.',
                       },
                       {
+                        id: 'Individual' as const,
+                        title: 'Assign to an Individual',
+                        desc: 'Assingn the project to an individual, single person.',
+                      },
+                      {
                         id: 'later' as const,
                         title: 'Assign Later',
                         desc: 'Setup shell project, add members later.',
