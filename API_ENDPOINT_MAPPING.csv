@@ -1,0 +1,170 @@
+Frontend Module,Frontend Method,Frontend Path,Backend Module,Backend Method,Backend Path,Status,Notes
+approvals,GET,/approvals/kpis,,,"",MISSING IN BACKEND,Frontend expects KPIs endpoint
+approvals,GET,/approvals/pending,approvals,GET,/approvals/requests,MATCHES,Frontend uses different path
+approvals,GET,/approvals/my-requests,,,"",MISSING IN BACKEND,Frontend expects my-requests endpoint
+approvals,GET,/approvals/:id,approvals,GET,/approvals/requests/{request_id},MATCHES,
+approvals,GET,/approvals/approvers,,,"",MISSING IN BACKEND,Frontend expects approvers list
+approvals,POST,/approvals/:id/approve,approvals,POST,/approvals/requests/{request_id}/approve,MATCHES,
+approvals,POST,/approvals/:id/reject,approvals,POST,/approvals/requests/{request_id}/reject,MATCHES,
+notifications,GET,/notifications/inbox,notifications,GET,/notifications/inbox,MATCHES,
+notifications,GET,/notifications/inbox/all,,,"",MISSING IN BACKEND,Frontend expects all inbox
+notifications,GET,/notifications/:id,,,"",MISSING IN BACKEND,Frontend expects single notification
+notifications,POST,/notifications/:id/read,notifications,POST,/notifications/inbox/{notification_id}/read,MATCHES,
+notifications,POST,/notifications/read-all,,,"",MISSING IN BACKEND,Frontend expects read all
+notifications,POST,/notifications/:id/archive,notifications,POST,/notifications/inbox/{notification_id}/archive,MATCHES,
+notifications,POST,/notifications/archive-read,,,"",MISSING IN BACKEND,Frontend expects archive read
+notifications,PATCH,/notifications/:id,,,"",MISSING IN BACKEND,Frontend expects update notification
+notifications,GET,/notifications/sent,,,"",MISSING IN BACKEND,Frontend expects sent notifications
+notifications,GET,/notifications/triggers,,,"",MISSING IN BACKEND,Frontend expects triggers
+notifications,GET,/notifications/channels,,,"",MISSING IN BACKEND,Frontend expects channels
+notifications,POST,/notifications/compose,notifications,POST,/notifications/notify,MATCHES,Frontend uses compose, backend uses notify
+notifications,POST,/notifications/drafts,,,"",MISSING IN BACKEND,Frontend expects drafts
+employment,GET,/workforce/employments,employment,GET,/employment/employments,PREFIX MISMATCH,Frontend uses /workforce, backend uses /employment
+employment,GET,/workforce/employments/:id,employment,GET,/employment/employments/{employment_id},PREFIX MISMATCH,
+employment,POST,/workforce/employments,employment,POST,/employment/employments,PREFIX MISMATCH,
+employment,PATCH,/workforce/employments/:id,employment,PATCH,/employment/employments/{employment_id},PREFIX MISMATCH,
+employment,GET,/workforce/org-masters,,,"",MISSING IN BACKEND,Frontend expects org masters
+departments,GET,/workforce/departments,organization,GET,/organization/departments,PREFIX MISMATCH,Frontend uses /workforce, backend uses /organization
+departments,GET,/workforce/departments/:id,organization,GET,/organization/departments/{department_id},PREFIX MISMATCH,
+departments,GET,/workforce/departments/:id/employees,,,"",MISSING IN BACKEND,Frontend expects department employees
+departments,GET,/workforce/departments/:id/employees-available,,,"",MISSING IN BACKEND,Frontend expects available employees
+departments,POST,/workforce/departments/:id/assign,,,"",MISSING IN BACKEND,Frontend expects assign employee
+departments,POST,/workforce/departments/:id/remove,,,"",MISSING IN BACKEND,Frontend expects remove employee
+departments,POST,/workforce/departments,organization,POST,/organization/departments,PREFIX MISMATCH,
+departments,PATCH,/workforce/departments/:id,organization,PATCH,/organization/departments/{department_id},PREFIX MISMATCH,
+departments,GET,/workforce/employment-options,,,"",MISSING IN BACKEND,Frontend expects employment options
+departments,GET,/workforce/shifts/:id/employees,,,"",MISSING IN BACKEND,Frontend expects shift employees
+attendance,GET,/workforce/attendance/dashboard,,,"",MISSING IN BACKEND,Frontend expects attendance dashboard
+attendance,GET,/workforce/attendance/today,,,"",MISSING IN BACKEND,Frontend expects today attendance
+attendance,GET,/workforce/attendance/:id,,,"",MISSING IN BACKEND,Frontend expects attendance detail
+attendance,GET,/workforce/attendance/day/:employmentId,attendance,GET,/attendance/days/by-employment/{employment_id},PARTIAL MATCH,Backend has different path structure
+attendance,GET,/workforce/attendance/corrections,,,"",MISSING IN BACKEND,Frontend expects corrections list
+sales,GET,/sales/leads/filter-options,,,"",MISSING IN BACKEND,Frontend expects filter options
+sales,GET,/sales/leads,sales,GET,/sales/leads,MATCHES,
+sales,GET,/sales/leads/:id,sales,GET,/sales/leads/{lead_id},MATCHES,
+sales,POST,/sales/leads,sales,POST,/sales/leads,MATCHES,
+sales,PATCH,/sales/leads/:id,sales,PATCH,/sales/leads/{lead_id},MATCHES,
+sales,GET,/sales/clients/filter-options,,,"",MISSING IN BACKEND,Frontend expects filter options
+sales,GET,/sales/clients,sales,GET,/sales/clients,MATCHES,
+sales,GET,/sales/clients/:id,sales,GET,/sales/clients/{client_id},MATCHES,
+sales,POST,/sales/clients,sales,POST,/sales/clients,MATCHES,
+sales,PATCH,/sales/clients/:id,sales,PATCH,/sales/clients/{client_id},MATCHES,
+sales,GET,/sales/case-studies,,,"",MISSING IN BACKEND,Frontend expects case studies
+sales,GET,/sales/activities,,,"",MISSING IN BACKEND,Frontend expects activities
+sales,GET,/sales/metrics/dashboard,,,"",MISSING IN BACKEND,Frontend expects dashboard metrics
+sales,GET,/sales/sales-representatives,,,"",MISSING IN BACKEND,Frontend expects sales reps
+payroll,GET,/payroll/kpis,,,"",MISSING IN BACKEND,Frontend expects KPIs
+payroll,GET,/payroll/period,,,"",MISSING IN BACKEND,Frontend expects period
+payroll,GET,/payroll/employees,,,"",MISSING IN BACKEND,Frontend expects employees list (backend has salaries)
+payroll,GET,/payroll/employees/:id,,,"",MISSING IN BACKEND,Frontend expects employee detail
+payroll,GET,/payroll/activity,,,"",MISSING IN BACKEND,Frontend expects activity
+payroll,GET,/payroll/monthly-summary,,,"",MISSING IN BACKEND,Frontend expects monthly summary
+payroll,GET,/payroll/employees/:id/review,,,"",MISSING IN BACKEND,Frontend expects review
+payroll,GET,/payroll/employees/:id/payslip,,,"",MISSING IN BACKEND,Frontend expects payslip
+payroll,GET,/payroll/employees/:id/salary,payroll,GET,/payroll/salaries/current/{employment_id},PARTIAL MATCH,Path structure differs
+payroll,PUT,/payroll/employees/:id/salary,,,"",MISSING IN BACKEND,Frontend expects update salary
+payroll,GET,/payroll/employees/:id/history,payroll,GET,/payroll/salaries/{employment_id},PARTIAL MATCH,
+payroll,GET,/payroll/history,payroll,GET,/payroll,MATCHES,
+payroll,GET,/payroll/run/checks,,,"",MISSING IN BACKEND,Frontend expects run checks
+payroll,GET,/payroll/run/preview,,,"",MISSING IN BACKEND,Frontend expects run preview
+payroll,POST,/payroll/run,,,"",MISSING IN BACKEND,Frontend expects run payroll
+payroll,POST,/payroll/employees/:id/approve,,,"",MISSING IN BACKEND,Frontend expects approve
+payroll,POST,/payroll/employees/:id/pay,payroll,POST,/payroll/{payroll_id}/pay,PARTIAL MATCH,Path structure differs
+projects,GET,/projects,developer,GET,/developer/projects,PREFIX MISMATCH,Frontend uses /projects, backend uses /developer/projects
+projects,GET,/projects/:id,developer,GET,/developer/projects/{project_id},PREFIX MISMATCH,
+projects,POST,/projects,developer,POST,/developer/projects,PREFIX MISMATCH,
+projects,PATCH,/projects/:id,developer,PATCH,/developer/projects/{project_id},PREFIX MISMATCH,
+teams,GET,/projects/teams,developer,GET,/developer/teams,PREFIX MISMATCH,Frontend uses /projects/teams, backend uses /developer/teams
+teams,GET,/projects/teams/:id,developer,GET,/developer/teams/{team_id},PREFIX MISMATCH,
+teams,GET,/projects/:id/teams,,,"",MISSING IN BACKEND,Frontend expects project teams
+teams,GET,/projects/teams/:id/members,developer,GET,/developer/teams/{team_id}/members,MATCHES,
+teams,GET,/projects/teams/:id/projects,,,"",MISSING IN BACKEND,Frontend expects team projects
+teams,GET,/projects/teams/:id/candidates,,,"",MISSING IN BACKEND,Frontend expects candidates
+teams,PATCH,/projects/teams/:id,developer,PATCH,/developer/teams/{team_id},PREFIX MISMATCH,
+teams,POST,/projects/teams,developer,POST,/developer/teams,PREFIX MISMATCH,
+tasks,GET,/projects/tasks,developer,GET,/developer/projects/{project_id}/tasks,PREFIX MISMATCH,Frontend uses /projects/tasks, backend has different structure
+tasks,GET,/projects/tasks/:id,developer,GET,/developer/tasks/{task_id},PREFIX MISMATCH,
+tasks,PATCH,/projects/tasks/:id,developer,PATCH,/developer/tasks/{task_id},PREFIX MISMATCH,
+tasks,POST,/projects/tasks,developer,POST,/developer/tasks,PREFIX MISMATCH,
+my-work,GET,/my-work/overview,,,"",MISSING IN BACKEND,Frontend expects overview
+my-work,GET,/my-work/leave,leave,GET,/leave/requests,MATCHES,
+my-work,GET,/my-work/leave/balances,leave,GET,/leave/balances/{employment_id},PARTIAL MATCH,Requires employment_id
+my-work,GET,/my-work/leave/types,leave,GET,/leave/policies,MATCHES,
+my-work,GET,/my-work/leave/apply-context,,,"",MISSING IN BACKEND,Frontend expects apply context
+my-work,POST,/my-work/leave/calculate,,,"",MISSING IN BACKEND,Frontend expects calculate
+my-work,POST,/my-work/leave,leave,POST,/leave/requests,MATCHES,
+my-work,GET,/my-work/attendance,attendance,GET,/attendance/days/by-employment/{employment_id},PARTIAL MATCH,
+my-work,GET,/my-work/attendance/today-info,,,"",MISSING IN BACKEND,Frontend expects today info
+my-work,GET,/my-work/attendance/week-hours,,,"",MISSING IN BACKEND,Frontend expects week hours
+my-work,GET,/my-work/attendance/correction-candidates,,,"",MISSING IN BACKEND,Frontend expects correction candidates
+my-work,GET,/my-work/attendance/corrections,,,"",MISSING IN BACKEND,Frontend expects corrections
+my-work,POST,/my-work/attendance/corrections,attendance,POST,/attendance/corrections,MATCHES,
+my-work,GET,/my-work/tasks,developer,GET,/developer/tasks,PARTIAL MATCH,Frontend uses /my-work/tasks
+my-work,GET,/my-work/approvals,approvals,GET,/approvals/requests,MATCHES,
+my-work,GET,/my-work/requests,approvals,GET,/approvals/requests,MATCHES,
+my-work,GET,/my-work/approvers,,,"",MISSING IN BACKEND,Frontend expects approvers
+my-work,GET,/api/holidays,,,"",MISSING IN BACKEND,Frontend expects holidays
+auth,POST,/auth/login,authentication,POST,/auth/login,MATCHES,
+auth,POST,/auth/logout,authentication,POST,/auth/logout,MATCHES,
+auth,POST,/auth/refresh,authentication,POST,/auth/refresh,MATCHES,
+auth,POST,/auth/forgot-password,authentication,POST,/auth/forgot-password,MATCHES,
+auth,POST,/auth/reset-password,authentication,POST,/auth/reset-password,MATCHES,
+auth,POST,/auth/change-password,authentication,POST,/auth/change-password,MATCHES,
+admin-users,GET,/admin/users,,,"",MISSING IN BACKEND,Frontend expects admin users list
+admin-users,GET,/admin/employments-without-login,,,"",MISSING IN BACKEND,Frontend expects employments without login
+admin-users,GET,/organization/departments,organization,GET,/organization/departments,MATCHES,
+admin-users,GET,/rbac/roles,rbac,GET,/rbac/roles,MATCHES,
+admin-users,POST,/admin/users,,,"",MISSING IN BACKEND,Frontend expects create user
+admin-users,PATCH,/admin/users/:id,,,"",MISSING IN BACKEND,Frontend expects update user
+admin-users,POST,/admin/users/:id/deactivate,,,"",MISSING IN BACKEND,Frontend expects deactivate
+admin-users,POST,/admin/users/:id/activate,,,"",MISSING IN BACKEND,Frontend expects activate
+admin-users,POST,/admin/users/:id/archive,,,"",MISSING IN BACKEND,Frontend expects archive
+admin-users,GET,/admin/users/:id,,,"",MISSING IN BACKEND,Frontend expects user detail
+admin-users,POST,/admin/users/:id/lock,,,"",MISSING IN BACKEND,Frontend expects lock
+admin-users,POST,/admin/users/:id/unlock,,,"",MISSING IN BACKEND,Frontend expects unlock
+admin-roles,GET,/rbac/resources,rbac,GET,/rbac/resources,MATCHES,
+admin-roles,GET,/rbac/permissions,rbac,GET,/rbac/permissions,MATCHES,
+admin-roles,GET,/rbac/roles,rbac,GET,/rbac/roles,MATCHES,
+admin-roles,GET,/rbac/roles/:id,rbac,GET,/rbac/roles/{role_id},MATCHES,
+admin-roles,POST,/rbac/roles,rbac,POST,/rbac/roles,MATCHES,
+admin-roles,PATCH,/rbac/roles/:id,rbac,PATCH,/rbac/roles/{role_id},MATCHES,
+admin-roles,DELETE,/rbac/roles/:id,rbac,DELETE,/rbac/roles/{role_id},MATCHES,
+admin-leave,GET,/admin/leave/types,,,"",MISSING IN BACKEND,Frontend uses /admin/leave/types, backend has /leave/policies
+admin-leave,GET,/admin/leave/policies,leave,GET,/leave/policies,MATCHES,
+admin-leave,GET,/admin/leave/ledger,leave,GET,/leave/ledger/{employment_id},PARTIAL MATCH,
+admin-org,GET,/organization/settings,organization,GET,/organization/settings,MATCHES,
+admin-org,PATCH,/organization/settings,organization,PUT,/organization/settings,MATCHES,Method differs (PATCH vs PUT)
+admin-org,GET,/organization/locations,organization,GET,/organization/locations,MATCHES,
+admin-org,GET,/organization/locations/:id,organization,GET,/organization/locations/{location_id},MATCHES,
+admin-org,POST,/organization/locations,organization,POST,/organization/locations,MATCHES,
+admin-org,PATCH,/organization/locations/:id,organization,PATCH,/organization/locations/{location_id},MATCHES,
+admin-org,GET,/organization/shifts,organization,GET,/organization/shifts,MATCHES,
+admin-org,GET,/organization/shifts/:id,organization,GET,/organization/shifts/{shift_id},MATCHES,
+admin-org,POST,/organization/shifts,organization,POST,/organization/shifts,MATCHES,
+admin-org,PATCH,/organization/shifts/:id,organization,PATCH,/organization/shifts/{shift_id},MATCHES,
+admin-org,POST,/organization/shifts/:id/archive,organization,POST,/organization/shifts/{shift_id}/archive,MATCHES,
+admin-org,GET,/organization/working-weeks,organization,GET,/organization/working-weeks,MATCHES,
+admin-org,DELETE,/organization/working-weeks/:id,,,"",MISSING IN BACKEND,Frontend expects delete working week
+admin-org,GET,/organization/holiday-calendars,organization,GET,/organization/holiday-calendars,MATCHES,
+admin-org,GET,/organization/holiday-calendars/:id,organization,GET,/organization/holiday-calendars/{calendar_id},MATCHES,
+admin-org,POST,/organization/holiday-calendars,organization,POST,/organization/holiday-calendars,MATCHES,
+admin-org,PATCH,/organization/holiday-calendars/:id,organization,PATCH,/organization/holiday-calendars/{calendar_id},MATCHES,
+admin-org,GET,/organization/holidays,organization,GET,/organization/holiday-calendars/{calendar_id}/holidays,PARTIAL MATCH,
+admin-org,POST,/organization/holidays,organization,POST,/organization/holidays,MATCHES,
+admin-org,DELETE,/organization/holidays/:id,,,"",MISSING IN BACKEND,Frontend expects delete holiday
+admin-org,GET,/organization/positions,employment,GET,/employment/positions,PREFIX MISMATCH,Frontend uses /organization/positions, backend uses /employment/positions
+admin-org,GET,/organization/positions/:id,employment,GET,/employment/positions/{position_id},PREFIX MISMATCH,
+admin-org,POST,/organization/positions,employment,POST,/employment/positions,PREFIX MISMATCH,
+admin-org,PATCH,/organization/positions/:id,employment,PATCH,/employment/positions/{position_id},PREFIX MISMATCH,
+admin-org,POST,/organization/positions/:id/archive,employment,POST,/employment/positions/{position_id}/archive,PREFIX MISMATCH,
+admin-org,GET,/organization/departments,organization,GET,/organization/departments,MATCHES,
+profile,GET,/profile/me,,,"",MISSING IN BACKEND,Frontend expects profile
+profile,PATCH,/profile/me,,,"",MISSING IN BACKEND,Frontend expects update profile
+profile,POST,/profile/me/avatar,,,"",MISSING IN BACKEND,Frontend expects avatar upload
+profile,GET,/profile/sessions,authentication,GET,/auth/sessions,MATCHES,
+profile,POST,/profile/sessions/:id/revoke,,,"",MISSING IN BACKEND,Frontend expects revoke session
+profile,POST,/profile/sessions/revoke-all,,,"",MISSING IN BACKEND,Frontend expects revoke all
+profile,GET,/profile/activity,,,"",MISSING IN BACKEND,Frontend expects activity
+profile,POST,/auth/change-password,authentication,POST,/auth/change-password,MATCHES,
+dashboard,GET,/dashboard/executive,,,"",MISSING IN BACKEND,Frontend expects executive dashboard
+dashboard,GET,/dashboard/employee,,,"",MISSING IN BACKEND,Frontend expects employee dashboard

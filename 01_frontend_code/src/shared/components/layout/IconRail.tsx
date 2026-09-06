@@ -4,6 +4,8 @@ import { BrandLogo } from '@/shared/components/brand/BrandLogo'
 import { useIconRail } from '@/shared/hooks/useIconRail'
 import { useTheme } from '@/shared/theme/ThemeProvider'
 import { DEFAULT_RAIL_ITEMS, IconRailProps, type RailItem } from '@/shared/types'
+import { Modal } from '@/shared/components/ui/Modal'
+import { useState } from 'react'
 
 export type { RailItem }
 
@@ -24,6 +26,22 @@ export function IconRail({
   const { visibleItems, isActive } = useIconRail(items)
   const { theme, toggleTheme } = useTheme()
   const isDark = theme === 'dark'
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
+
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true)
+  }
+
+  const handleConfirmLogout = () => {
+    setShowLogoutConfirm(false)
+    if (onLogout) {
+      void onLogout()
+    }
+  }
+
+  const handleCancelLogout = () => {
+    setShowLogoutConfirm(false)
+  }
 
   return (
     <nav
@@ -120,7 +138,7 @@ export function IconRail({
 
         <button
           type="button"
-          onClick={onLogout}
+          onClick={handleLogoutClick}
           className={cn(
             'text-white/80 hover:text-white flex items-center gap-4 w-full',
             isExpanded ? 'px-5 py-3 justify-start' : 'py-3 justify-center',
@@ -132,6 +150,33 @@ export function IconRail({
           {isExpanded && <span className="text-sm font-medium">Logout</span>}
         </button>
       </div>
+    {showLogoutConfirm && (
+      <Modal
+      title="Confirm Logout"
+        onClose={handleCancelLogout}
+        danger
+      >
+        <p className="text-body-md text-on-surface-variant mb-6">
+          Are you sure you want to logout?
+        </p>
+        <div className="flex justify-end gap-3">
+          <button
+            type="button"
+            onClick={handleCancelLogout}
+            className="px-4 py-2 text-sm font-medium text-on-surface-variant hover:bg-surface-container rounded-lg transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirmLogout}
+            className="px-4 py-2 text-sm font-medium text-on-error bg-error hover:bg-error/90 rounded-lg transition-colors"
+          >
+            Logout
+          </button>
+        </div>
+      </Modal>
+    )}
     </nav>
   )
 }

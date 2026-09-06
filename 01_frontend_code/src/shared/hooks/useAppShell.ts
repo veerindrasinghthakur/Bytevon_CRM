@@ -52,7 +52,8 @@ export function useAppShell() {
 
   const handleLogout = async () => {
     await logout()
-    safeNavigate(navigate, { to: authRoutes.login })
+    // Refresh the page to ensure the user is redirected to login
+    window.location.reload()
   }
 
   return {

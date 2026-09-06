@@ -50,8 +50,9 @@ class Settings(BaseSettings):
     # System actor (reserved employment id)
     SYSTEM_EMPLOYMENT_ID: int = 1
 
-    # CORS
-    CORS_ORIGINS: str = "http://localhost:3000"
+    # CORS - allow frontend dev server origins
+    # Added localhost ports 5173 and 5174 for Vite dev server.
+    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173,http://localhost:5174"
 
     # Logging
     LOG_LEVEL: str = "INFO"

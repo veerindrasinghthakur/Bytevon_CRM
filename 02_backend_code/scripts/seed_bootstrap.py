@@ -28,7 +28,8 @@ from app.modules.rbac.models import EmployeeRole, Permission, Resource, Role, Ro
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("seed")
 
-ADMIN_EMAIL = "admin@bytevon.local"
+# Updated admin email to a valid domain for Pydantic EmailStr validation.
+ADMIN_EMAIL = "admin@example.com"
 ADMIN_PASSWORD = "ChangeMeAdmin!123"
 SYSTEM_EMP_ID = settings.SYSTEM_EMPLOYMENT_ID
 
@@ -160,7 +161,7 @@ async def seed() -> None:
             logger.info("Created person id=%s", person.id)
 
         login = (
-            await session.execute(select(Login).where(Login.email == ADMIN_EMAIL))
+            await session.execute(select(Login).where(Login.person_id == person.id))
         ).scalar_one_or_none()
         if login is None:
             login = Login(
@@ -174,7 +175,12 @@ async def seed() -> None:
             await session.flush()
             logger.info("Created login id=%s email=%s", login.id, ADMIN_EMAIL)
         else:
-            logger.info("Login already exists for %s", ADMIN_EMAIL)
+            login.email = ADMIN_EMAIL
+            login.password_hash = pwd.hash(ADMIN_PASSWORD)
+            login.is_active = True
+            login.failed_attempt_count = 0
+            login.locked_until = None
+            logger.info("Reset login id=%s for %s", login.id, ADMIN_EMAIL)
 
         # --- Employment with fixed SYSTEM_EMPLOYMENT_ID ---
         emp = (

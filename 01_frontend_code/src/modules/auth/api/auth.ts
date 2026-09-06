@@ -2,7 +2,7 @@
  * Auth API — single module file (login, logout, refresh, password flows).
  * env.useMockApi → sessionStorage mock; false → POST /auth/*
  *
- * Temporary test user (mock): username `admin` / password `123`
+ * Temporary test user (mock): email `admin@example.com` / password `123`
  */
 
 import { env } from '@/config/env'
@@ -15,7 +15,7 @@ import type {
   LoginInput,
   ResetPasswordInput,
 } from '../schemas/auth'
-import { MOCK_LOGIN_PASSWORD, MOCK_LOGIN_USERNAME } from '../schemas/auth'
+import { MOCK_LOGIN_EMAIL, MOCK_LOGIN_PASSWORD } from '../schemas/auth'
 import { setCurrentEmploymentId } from '@/shared/rbac'
 import type {AxiosErrorResponse} from "../types.ts"
 
@@ -25,9 +25,21 @@ import { delay} from '@/shared/mock/db'
 const STORAGE_KEY = 'bytevon_auth_session'
 const RESET_TOKENS_KEY = 'bytevon_reset_tokens'
 
+interface BackendLoginResponse {
+  tokens: {
+    access_token: string
+    refresh_token: string
+    token_type: string
+    expires_in: number
+  }
+  login_id: number
+  person_id: number
+  email: string
+}
+
 const ADMIN_USER: AuthUser = {
   id: 1,
-  username: MOCK_LOGIN_USERNAME,
+  username: MOCK_LOGIN_EMAIL,
   email: 'admin@bytevon.example',
   name: 'Admin User',
   role: 'Administrator',
@@ -86,20 +98,39 @@ export function persistSession(session: AuthSession | null) {
 
 export async function loginApi(input: LoginInput): Promise<AuthSession> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<AuthSession>('/auth/login', {
-      username: input.username.trim(),
+    const { data } = await apiClient.post<BackendLoginResponse>('/auth/login', {
+      email: input.email.trim(),
       password: input.password,
+      // The backend does not use a `rememberMe` flag, but we keep it for compatibility with the mock.
+      // It will be ignored by the real API.
       rememberMe: input.rememberMe ?? false,
     })
-    persistSession(data)
-    return data
+    const session: AuthSession = {
+      user: {
+        id: data.person_id,
+        username: data.email,
+        email: data.email,
+        name: 'System Admin',
+        role: 'Administrator',
+        department: 'Administration',
+        employmentId: 1,
+        personId: data.person_id,
+      },
+      tokens: {
+        accessToken: data.tokens.access_token,
+        refreshToken: data.tokens.refresh_token,
+        expiresIn: data.tokens.expires_in,
+      },
+    }
+    persistSession(session)
+    return session
   }
 
   await delay()
-  const username = input.username.trim().toLowerCase()
+  const email = input.email.trim().toLowerCase()
   const password = input.password
 
-  if (username !== MOCK_LOGIN_USERNAME || password !== MOCK_LOGIN_PASSWORD) {
+  if (email !== MOCK_LOGIN_EMAIL || password !== MOCK_LOGIN_PASSWORD) {
     throw new Error('Invalid username or password.')
   }
 

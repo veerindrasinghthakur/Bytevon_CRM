@@ -17,7 +17,7 @@ export {
   forgotPasswordSchema,
   resetPasswordSchema,
   changePasswordSchema,
-  MOCK_LOGIN_USERNAME,
+  MOCK_LOGIN_EMAIL,
   MOCK_LOGIN_PASSWORD,
   AUTH_COPYRIGHT_YEAR,
   AUTH_DEMO_RESET_TOKEN,
@@ -67,7 +67,7 @@ export interface UseLoginFormReturn {
   showPassword: boolean
   toggleShowPassword: () => void
   onSubmit: (data: LoginInput) => Promise<void>
-  mockCredentials: { username: string; password: string }
+  mockCredentials: { email: string; password: string }
 }
 
 export interface UseResetPasswordFormReturn {

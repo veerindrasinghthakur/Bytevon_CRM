@@ -6,7 +6,7 @@ import {
   loginSchema,
   type LoginInput,
   MOCK_LOGIN_PASSWORD,
-  MOCK_LOGIN_USERNAME,
+  MOCK_LOGIN_EMAIL,
 } from '../schemas/auth'
 import { authRoutes } from '../routes'
 import { useAuth } from '../context/AuthContext'
@@ -39,7 +39,7 @@ export function useLoginForm(): UseLoginFormReturn {
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { username: '', password: '', rememberMe: false },
+    defaultValues: { email: '', password: '', rememberMe: false },
   })
 
   const toggleShowPassword = useCallback(() => {
@@ -67,6 +67,6 @@ export function useLoginForm(): UseLoginFormReturn {
     showPassword,
     toggleShowPassword,
     onSubmit,
-    mockCredentials: { username: MOCK_LOGIN_USERNAME, password: MOCK_LOGIN_PASSWORD },
+    mockCredentials: { email: MOCK_LOGIN_EMAIL, password: MOCK_LOGIN_PASSWORD },
   }
 }

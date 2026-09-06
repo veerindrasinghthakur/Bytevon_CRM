@@ -74,25 +74,25 @@ export function LoginPage() {
               )}
 
               <div>
-                <label className="block text-label-md text-on-surface-variant mb-2" htmlFor="username">
-                  Username
+                <label className="block text-label-md text-on-surface-variant mb-2" htmlFor="email">
+                  Email
                 </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-outline pointer-events-none">
                     <span className="material-symbols-outlined text-[20px]">person</span>
                   </span>
                   <input
-                    id="username"
-                    type="text"
-                    autoComplete="username"
-                    placeholder="admin"
+                    id="email"
+                    type="email"
+                    autoComplete="email"
+                    placeholder="admin@example.com"
                     className="block w-full pl-10 pr-4 py-3 bg-surface border border-outline-variant rounded-lg text-body-md text-on-background focus:outline-none focus:ring-2 focus:ring-primary"
-                    {...register('username')}
+                    {...register('email')}
                     onKeyDown={(e) => handleEnterAdvance(e, 'password')}
                   />
                 </div>
-                {errors.username && (
-                  <p className="mt-1 text-label-sm text-error">{errors.username.message}</p>
+                {errors.email && (
+                  <p className="mt-1 text-label-sm text-error">{errors.email.message}</p>
                 )}
               </div>
 
@@ -156,7 +156,7 @@ export function LoginPage() {
             <div className="mt-6 rounded-lg bg-surface-container-low border border-outline-variant/50 px-4 py-3 text-center">
               <p className="text-label-sm text-on-surface-variant mb-1">Temporary test account</p>
               <p className="text-body-sm text-on-background">
-                Username <span className="font-semibold">{mockCredentials.username}</span>
+                Email <span className="font-semibold">{mockCredentials.email}</span>
                 {' · '}
                 Password <span className="font-semibold">{mockCredentials.password}</span>
               </p>
