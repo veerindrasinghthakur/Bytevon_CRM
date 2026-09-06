@@ -71,7 +71,7 @@ export async function listMySessions(): Promise<ProfileSession[]> {
     await delay()
     return structuredClone(mockSessions)
   }
-  const { data } = await apiClient.get<ProfileSession[]>('/profile/sessions')
+  const { data } = await apiClient.get<ProfileSession[]>('/api/v1/auth/sessions')
   return data
 }
 
@@ -85,7 +85,7 @@ export async function revokeSession(sessionId: number): Promise<void> {
     )
     return
   }
-  await apiClient.post(`/profile/sessions/${sessionId}/revoke`)
+  await apiClient.post(`/api/v1/auth/sessions/${sessionId}/revoke`)
 }
 
 export async function revokeAllOtherSessions(): Promise<void> {
@@ -96,7 +96,7 @@ export async function revokeAllOtherSessions(): Promise<void> {
     )
     return
   }
-  await apiClient.post('/profile/sessions/revoke-all')
+  await apiClient.post('/api/v1/auth/sessions/revoke-all')
 }
 
 export async function listMyActivity(): Promise<ProfileActivityItem[]> {
