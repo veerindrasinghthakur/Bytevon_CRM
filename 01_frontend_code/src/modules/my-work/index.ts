@@ -14,5 +14,18 @@ export { MyApprovalDetailPage } from './pages/MyApprovalDetailPage'
 export { TakeABreakPage } from './pages/TakeABreakPage'
 export { MyRequestsPage } from './pages/MyRequestsPage'
 export { MyBankDetailsPage } from './pages/MyBankDetailsPage'
-export { createMyWorkRoutes, myWorkRoutes } from './routes'
+export { ProfilePage } from './pages/ProfilePage'
+export { ActiveSessionsPage } from './pages/ActiveSessionsPage'
+export { ChangePasswordPage } from './pages/ChangePasswordPage'
+export { createMyWorkRoutes, myWorkRoutes, profileRoutes, createProfileRoutes } from './routes'
 export { useApplyLeave } from './hooks/use-apply-leave'
+export {
+  useMyProfile,
+  useUpdateProfile,
+  useUploadAvatar,
+  useMySessions,
+  useRevokeSession,
+  useRevokeAllOtherSessions,
+  useMyActivity,
+  useChangePassword,
+} from './hooks/use-profile'

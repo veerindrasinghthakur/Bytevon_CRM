@@ -13,7 +13,6 @@ import { createAuthRoutes, authRoutes } from '@/modules/auth/routes'
 import { safeRedirectOpts } from '@/shared/lib/safeNavigate'
 
 import { createDashboardRoutes, dashboardRoutes } from '@/modules/dashboard/routes'
-import { createProfileRoutes } from '@/modules/profile/routes'
 import { createNotificationRoutes } from '@/modules/notifications/routes'
 import { createMyWorkRoutes } from '@/modules/my-work/routes'
 import { createApprovalRoutes } from '@/modules/approvals/routes'
@@ -75,7 +74,7 @@ const routeTree = rootRoute.addChildren([
   authLayoutRoute.addChildren([...createAuthRoutes(authLayoutRoute)]),
   appLayoutRoute.addChildren([
     ...createDashboardRoutes(appLayoutRoute),
-    ...createProfileRoutes(appLayoutRoute),
+    // Profile is registered inside createMyWorkRoutes (/profile/* URLs unchanged)
     ...createNotificationRoutes(appLayoutRoute),
     ...createMyWorkRoutes(appLayoutRoute),
     ...createApprovalRoutes(appLayoutRoute),
