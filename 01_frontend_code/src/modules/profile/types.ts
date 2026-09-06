@@ -1,5 +1,4 @@
-/** Re-export domain types from Zod schemas — MODULE_STANDARDS. */
-
+/** @deprecated Prefer `@/modules/my-work/types` for profile types */
 export type {
   AppearancePreference,
   ProfilePreferences,
@@ -8,9 +7,9 @@ export type {
   ProfileActivityItem,
   ProfileUpdateInput,
   ProfileListResponse,
-} from './schemas/profile'
-
-export type { ProfileFormInput, ProfileEditFormInput } from './schemas/profile-form'
+  ProfileFormInput,
+  ProfileEditFormInput,
+} from '@/modules/my-work/types'
 
 export {
   profileFormSchema,
@@ -18,11 +17,8 @@ export {
   emptyProfileForm,
   profileToFormValues,
   toProfileUpdateInput,
-} from './schemas/profile-form'
-
-export {
   PROFILE_LANG_OPTIONS,
   APPEARANCE_OPTIONS,
   sessionStatusStyles,
   sessionStatusClass,
-} from './schemas/enums'
+} from '@/modules/my-work/types'
