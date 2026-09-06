@@ -3,7 +3,7 @@ import type {
   ProfileActivityItem,
   ProfileDetail,
   ProfileSession,
-} from '@/modules/profile/types'
+} from '@/modules/my-work/types'
 
 export const mockProfile: ProfileDetail = {
   id: 1,

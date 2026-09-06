@@ -1,8 +1,9 @@
 /**
- * My Work module routes — import createMyWorkRoutes into the app router tree.
- * Heavy pages lazy-loaded via shared lazyPage helper.
+ * My Work module routes (includes profile self-service).
+ * Profile UI paths stay /profile/* — unchanged.
  */
 import { createRoute } from '@tanstack/react-router'
+import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 
 const MyWorkOverviewPage = lazyPage(() => import('./pages/MyWorkOverviewPage'), 'MyWorkOverviewPage')
@@ -25,7 +26,10 @@ const MyApprovalDetailPage = lazyPage(() => import('./pages/MyApprovalDetailPage
 const MyRequestsPage = lazyPage(() => import('./pages/MyRequestsPage'), 'MyRequestsPage')
 const MyBankDetailsPage = lazyPage(() => import('./pages/MyBankDetailsPage'), 'MyBankDetailsPage')
 
-/** Canonical path helpers — prefer these over hard-coded strings in pages. */
+const ProfilePage = lazyPage(() => import('./pages/profile/ProfilePage'), 'ProfilePage')
+const ActiveSessionsPage = lazyPage(() => import('./pages/profile/ActiveSessionsPage'), 'ActiveSessionsPage')
+const ChangePasswordPage = lazyPage(() => import('./pages/profile/ChangePasswordPage'), 'ChangePasswordPage')
+
 export const myWorkRoutes = {
   root: '/my-work',
   break: '/my-work/break',
@@ -45,7 +49,11 @@ export const myWorkRoutes = {
   bankDetails: '/my-work/bank-details',
 } as const
 
-import type { AnyRoute } from '@tanstack/react-router'
+export const profileRoutes = {
+  root: '/profile',
+  sessions: '/profile/sessions',
+  changePassword: '/profile/change-password',
+} as const
 
 export function createMyWorkRoutes(appLayoutRoute: AnyRoute) {
   return [
@@ -128,6 +136,21 @@ export function createMyWorkRoutes(appLayoutRoute: AnyRoute) {
       getParentRoute: () => appLayoutRoute,
       path: '/my-work/bank-details',
       component: MyBankDetailsPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/profile',
+      component: ProfilePage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/profile/sessions',
+      component: ActiveSessionsPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/profile/change-password',
+      component: ChangePasswordPage,
     }),
   ]
 }

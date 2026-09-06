@@ -1,6 +1,6 @@
 /**
- * Profile API — mock / real switch via env.useMockApi.
- * Sessions are stored in mock DB (mockSessions); real mode hits backend.
+ * Profile API — owned by my-work (self-service).
+ * Mock / real switch via env.useMockApi.
  */
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
@@ -20,8 +20,7 @@ import type {
   ProfileSession,
   ProfileUpdateInput,
 } from '../types'
-import { delay} from '@/shared/mock/db'
-
+import { delay } from '@/shared/mock/db'
 
 export async function getMyProfile(): Promise<ProfileDetail> {
   if (env.useMockApi) {

@@ -4,7 +4,7 @@ import { HeaderBreakChip } from './HeaderBreakChip'
 import { HeaderAttendanceSummary } from './HeaderAttendanceSummary'
 import { HeaderProps } from '@/shared/types'
 import { notificationRoutes } from '@/modules/notifications/routes'
-import { profileRoutes } from '@/modules/profile/routes'
+import { profileRoutes } from '@/modules/my-work/routes'
 import { looseLinkProps } from '@/shared/lib/safeNavigate'
 
 export const HEADER_HEIGHT_PX = 56

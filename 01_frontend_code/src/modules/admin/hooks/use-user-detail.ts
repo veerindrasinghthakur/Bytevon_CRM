@@ -7,7 +7,7 @@ import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { myAdminRoutes } from '../routes'
-import { uploadAvatar } from '@/modules/profile/api/profile'
+import { uploadAvatar } from '@/modules/my-work/api/profile'
 import {
   activateUser,
   archiveUserCredentials,
