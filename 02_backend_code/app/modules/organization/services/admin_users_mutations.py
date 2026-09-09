@@ -25,8 +25,8 @@ class AdminUsersMutationsMixin:
         *,
         actor_employment_id: Optional[int] = None,
     ) -> "AdminUserDetailResponse":
-        from app.modules.authentication.models import Login
-        from app.modules.employment.models import Employment
+        from app.modules.auth.models import Login
+        from app.modules.workforce.models import Employment
         from app.modules.rbac.models import EmployeeRole, Role
 
         emp = await self._session.get(Employment, data.employmentId)
@@ -106,8 +106,8 @@ class AdminUsersMutationsMixin:
         *,
         actor_employment_id: Optional[int] = None,
     ) -> "AdminUserDetailResponse":
-        from app.modules.authentication.models import Login
-        from app.modules.employment.models import Employment, EmploymentAssignment
+        from app.modules.auth.models import Login
+        from app.modules.workforce.models import Employment, EmploymentAssignment
         from app.modules.rbac.models import EmployeeRole, Role
 
         login = await self._session.get(Login, login_id)
@@ -209,7 +209,7 @@ class AdminUsersMutationsMixin:
     async def deactivate_admin_user(
         self, login_id: int, *, actor_employment_id: Optional[int] = None
     ) -> MessageResponse:
-        from app.modules.authentication.models import Login
+        from app.modules.auth.models import Login
 
         login = await self._session.get(Login, login_id)
         if login is None:
@@ -222,7 +222,7 @@ class AdminUsersMutationsMixin:
     async def activate_admin_user(
         self, login_id: int, *, actor_employment_id: Optional[int] = None
     ) -> MessageResponse:
-        from app.modules.authentication.models import Login
+        from app.modules.auth.models import Login
 
         login = await self._session.get(Login, login_id)
         if login is None:
@@ -237,7 +237,7 @@ class AdminUsersMutationsMixin:
     async def lock_admin_user(
         self, login_id: int, *, actor_employment_id: Optional[int] = None
     ) -> MessageResponse:
-        from app.modules.authentication.models import Login
+        from app.modules.auth.models import Login
 
         login = await self._session.get(Login, login_id)
         if login is None:
@@ -253,7 +253,7 @@ class AdminUsersMutationsMixin:
     async def unlock_admin_user(
         self, login_id: int, *, actor_employment_id: Optional[int] = None
     ) -> MessageResponse:
-        from app.modules.authentication.models import Login
+        from app.modules.auth.models import Login
 
         login = await self._session.get(Login, login_id)
         if login is None:
@@ -269,7 +269,7 @@ class AdminUsersMutationsMixin:
         self, login_id: int, *, actor_employment_id: Optional[int] = None
     ) -> MessageResponse:
         """Hard-remove login credentials. Employment remains (without login)."""
-        from app.modules.authentication.models import Login, Session, PasswordResetToken
+        from app.modules.auth.models import Login, Session, PasswordResetToken
 
         login = await self._session.get(Login, login_id)
         if login is None:
@@ -285,8 +285,8 @@ class AdminUsersMutationsMixin:
         return MessageResponse(message="User credentials archived")
 
     async def list_employments_without_login(self) -> list["EmploymentWithoutLogin"]:
-        from app.modules.authentication.models import Login
-        from app.modules.employment.models import Employment
+        from app.modules.auth.models import Login
+        from app.modules.workforce.models import Employment
 
         person_ids_with_login = (
             await self._session.execute(select(Login.person_id))
