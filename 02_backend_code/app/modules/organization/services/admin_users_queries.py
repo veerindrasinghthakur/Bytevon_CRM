@@ -38,10 +38,10 @@ class AdminUsersMixin:
 
     async def _resolve_employment_context(self, employment_id: int) -> dict:
         """Load employment + person + current assignment + roles for enrichment."""
-        from app.modules.employment.models import Employment, EmploymentAssignment, Position
+        from app.modules.workforce.models import Employment, EmploymentAssignment, Position
         from app.modules.organization.models import Department
         from app.modules.rbac.models import EmployeeRole, Role
-        from app.modules.authentication.models import Person
+        from app.modules.auth.models import Person
         from sqlalchemy import select
         from sqlalchemy.orm import selectinload
 
@@ -105,7 +105,7 @@ class AdminUsersMixin:
         }
 
     async def _last_login_at(self, login_id: int) -> Optional[datetime]:
-        from app.modules.authentication.models import Session
+        from app.modules.auth.models import Session
         from app.core.db.enums import SessionStatus
         from sqlalchemy import select, func
 
@@ -130,8 +130,8 @@ class AdminUsersMixin:
         page: int = 1,
         page_size: int = 20,
     ) -> "AdminUserListResponse":
-        from app.modules.authentication.models import Login, Person
-        from app.modules.employment.models import Employment
+        from app.modules.auth.models import Login, Person
+        from app.modules.workforce.models import Employment
         from sqlalchemy import select
         from sqlalchemy.orm import selectinload
         from app.modules.organization.schemas.schemas import (
@@ -235,8 +235,8 @@ class AdminUsersMixin:
         )
 
     async def get_admin_user(self, login_id: int) -> "AdminUserDetailResponse":
-        from app.modules.authentication.models import Login
-        from app.modules.employment.models import Employment
+        from app.modules.auth.models import Login
+        from app.modules.workforce.models import Employment
         from sqlalchemy import select
         from sqlalchemy.orm import selectinload
         from app.modules.organization.schemas.schemas import AdminUserDetailResponse
