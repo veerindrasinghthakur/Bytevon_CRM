@@ -1,5 +1,7 @@
 """
-Project HTTP routes (formerly developer module).
+Project HTTP routes (module package: project).
+
+Mounted at /api/v1/projects/* so frontend paths like /projects/teams resolve.
 """
 
 from __future__ import annotations
@@ -26,7 +28,7 @@ from app.modules.project.schemas.schemas import (
     TimeEntryResponse,
 )
 
-router = APIRouter(prefix="/project", tags=["Project"])
+router = APIRouter(prefix="/projects", tags=["Projects"])
 
 ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
 
