@@ -15,6 +15,7 @@ from fastapi import APIRouter, Header, Query, status
 from app.core.db.enums import EmploymentState
 from app.modules.workforce.dependencies import EmploymentServiceDep
 from app.modules.workforce.schemas.schemas import (
+    EmployeeCreate,
     EmploymentAssignmentCreate,
     EmploymentAssignmentResponse,
     EmploymentCreate,
@@ -24,6 +25,9 @@ from app.modules.workforce.schemas.schemas import (
     EmploymentStateHistoryResponse,
     EmploymentUpdate,
     MessageResponse,
+    PersonCreate,
+    PersonResponse,
+    PersonUpdate,
     PositionCreate,
     PositionResponse,
     PositionUpdate,
@@ -32,6 +36,50 @@ from app.modules.workforce.schemas.schemas import (
 router = APIRouter(prefix="/workforce", tags=["Workforce"])
 
 ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
+
+
+# ---------------------------------------------------------------------------
+# Persons (natural identity — required before employment)
+# ---------------------------------------------------------------------------
+
+@router.post(
+    "/persons",
+    response_model=PersonResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_person(
+    body: PersonCreate,
+    service: EmploymentServiceDep,
+    actor: ActorHeader = None,
+) -> PersonResponse:
+    return await service.create_person(body, actor_employment_id=actor)
+
+
+@router.get("/persons", response_model=list[PersonResponse])
+async def list_persons(
+    service: EmploymentServiceDep,
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+) -> list[PersonResponse]:
+    return await service.list_persons(limit=limit, offset=offset)
+
+
+@router.get("/persons/{person_id}", response_model=PersonResponse)
+async def get_person(
+    person_id: int,
+    service: EmploymentServiceDep,
+) -> PersonResponse:
+    return await service.get_person(person_id)
+
+
+@router.patch("/persons/{person_id}", response_model=PersonResponse)
+async def update_person(
+    person_id: int,
+    body: PersonUpdate,
+    service: EmploymentServiceDep,
+    actor: ActorHeader = None,
+) -> PersonResponse:
+    return await service.update_person(person_id, body, actor_employment_id=actor)
 
 
 # ---------------------------------------------------------------------------
@@ -91,6 +139,20 @@ async def archive_position(
 # ---------------------------------------------------------------------------
 # Employments
 # ---------------------------------------------------------------------------
+
+@router.post(
+    "/employees",
+    response_model=EmploymentDetailResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create person + employment in one request",
+)
+async def create_employee(
+    body: EmployeeCreate,
+    service: EmploymentServiceDep,
+    actor: ActorHeader = None,
+) -> EmploymentDetailResponse:
+    return await service.create_employee(body, actor_employment_id=actor)
+
 
 @router.post(
     "/employments",
