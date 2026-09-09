@@ -1,3 +1,3 @@
-from app.modules.project.repositories.repository import DeveloperRepository
+from app.modules.project.repositories.repository import ProjectRepository
 
-__all__ = ["DeveloperRepository"]
+__all__ = ["ProjectRepository"]
