@@ -1,5 +1,5 @@
 """
-Developer / Projects HTTP routes.
+Project HTTP routes (formerly developer module).
 """
 
 from __future__ import annotations
@@ -26,7 +26,7 @@ from app.modules.project.schemas.schemas import (
     TimeEntryResponse,
 )
 
-router = APIRouter(prefix="/developer", tags=["Developer"])
+router = APIRouter(prefix="/project", tags=["Project"])
 
 ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
 
