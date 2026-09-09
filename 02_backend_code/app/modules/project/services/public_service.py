@@ -1,5 +1,5 @@
 """
-ProjectPublicService — sole public entry for Developer / Projects.
+ProjectPublicService — sole public entry for Projects module.
 
 Exposes create_from_lead for Sales (callable inside Sales TX with commit=False).
 """
@@ -10,6 +10,7 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -29,7 +30,7 @@ from app.modules.project.models import (
     Team,
     TeamMember,
 )
-from app.modules.project.repositories.repository import DeveloperRepository
+from app.modules.project.repositories.repository import ProjectRepository
 from app.modules.project.schemas.schemas import (
     MessageResponse,
     ProjectCreate,
@@ -51,11 +52,9 @@ logger = logging.getLogger(__name__)
 
 
 class ProjectPublicService(BasePublicService):
-    """Alias name used by Sales; primary public service for this module."""
-
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
-        self._repo = DeveloperRepository(session)
+        self._repo = ProjectRepository(session)
 
     # ==================================================================
     # create_from_lead (called by Sales inside TX)
@@ -77,7 +76,6 @@ class ProjectPublicService(BasePublicService):
             raise ConflictError(f"Project already exists for lead {lead_id}")
 
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
-        # Default assignment: system actor / requester as individual owner
         assignee = assigned_to_id or actor
 
         project = Project(
@@ -111,21 +109,43 @@ class ProjectPublicService(BasePublicService):
         *,
         actor_employment_id: Optional[int] = None,
     ) -> TeamResponse:
+        """Create team and auto-enrol head as active member (role: Team Head)."""
+        if not data.name or not str(data.name).strip():
+            raise DomainError("Team name is required")
+
         team = Team(
-            name=data.name,
+            name=str(data.name).strip(),
             team_head_employment_id=data.team_head_employment_id,
             description=data.description,
             changed_by=actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID,
         )
         await self._repo.add(team)
         await self._flush()
-        # Auto-add head as member
-        member = TeamMember(
-            team_id=team.id,
-            employment_id=data.team_head_employment_id,
-            team_role="Team Head",
+
+        existing = await self._repo.get_active_member(
+            team.id, data.team_head_employment_id
         )
-        await self._repo.add(member)
+        if existing is None:
+            hist = (
+                await self._session.execute(
+                    select(TeamMember).where(
+                        TeamMember.team_id == team.id,
+                        TeamMember.employment_id == data.team_head_employment_id,
+                    )
+                )
+            ).scalar_one_or_none()
+            if hist is not None:
+                hist.left_at = None
+                hist.team_role = "Team Head"
+            else:
+                await self._repo.add(
+                    TeamMember(
+                        team_id=team.id,
+                        employment_id=data.team_head_employment_id,
+                        team_role="Team Head",
+                    )
+                )
+
         await self._commit()
         await self._audit("team.created", team.id, actor_employment_id)
         return TeamResponse.model_validate(team)
@@ -154,6 +174,7 @@ class ProjectPublicService(BasePublicService):
             setattr(team, field, value)
         team.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
+        await self._audit("team.updated", team.id, actor_employment_id)
         return TeamResponse.model_validate(team)
 
     async def add_team_member(
@@ -169,13 +190,29 @@ class ProjectPublicService(BasePublicService):
         existing = await self._repo.get_active_member(team_id, data.employment_id)
         if existing:
             raise ConflictError("Employment is already an active member of this team")
-        member = TeamMember(
-            team_id=team_id,
-            employment_id=data.employment_id,
-            team_role=data.team_role,
-        )
-        await self._repo.add(member)
+
+        hist = (
+            await self._session.execute(
+                select(TeamMember).where(
+                    TeamMember.team_id == team_id,
+                    TeamMember.employment_id == data.employment_id,
+                )
+            )
+        ).scalar_one_or_none()
+        if hist is not None:
+            hist.left_at = None
+            hist.team_role = data.team_role
+            member = hist
+        else:
+            member = TeamMember(
+                team_id=team_id,
+                employment_id=data.employment_id,
+                team_role=data.team_role,
+            )
+            await self._repo.add(member)
+
         await self._commit()
+        await self._audit("team.member_added", team_id, actor_employment_id)
         return TeamMemberResponse.model_validate(member)
 
     async def remove_team_member(
@@ -190,6 +227,7 @@ class ProjectPublicService(BasePublicService):
             raise NotFoundError("Active team membership not found")
         member.left_at = datetime.now(timezone.utc)
         await self._commit()
+        await self._audit("team.member_removed", team_id, actor_employment_id)
         return MessageResponse(message="Team member removed")
 
     async def list_team_members(self, team_id: int) -> list[TeamMemberResponse]:
@@ -376,8 +414,3 @@ class ProjectPublicService(BasePublicService):
             raise NotFoundError("Task not found")
         rows = await self._repo.list_time_entries(task_id)
         return [TimeEntryResponse.model_validate(r) for r in rows]
-
-    # ==================================================================
-    # Helpers
-    # ==================================================================
-
