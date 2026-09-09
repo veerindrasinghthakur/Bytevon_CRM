@@ -64,9 +64,9 @@ function mapApiDepartment(row: Record<string, unknown>): DepartmentListItem {
     code: String(row.code ?? `DEPT-${String(id).padStart(3, '0')}`),
     headName: String(row.headName ?? '—'),
     headEmploymentId:
-      row.department_head_employment_id == null
+      row.department_head_employment_id == null && row.departmentHeadEmploymentId == null
         ? null
-        : Number(row.department_head_employment_id),
+        : Number(row.department_head_employment_id ?? row.departmentHeadEmploymentId),
     staffCount: Number(row.staffCount ?? 0),
     isArchived,
     status: isArchived ? 'Inactive' : 'Active',
@@ -77,7 +77,7 @@ function mapApiDepartment(row: Record<string, unknown>): DepartmentListItem {
 function mapApiDepartmentDetail(row: Record<string, unknown>): DepartmentListItem & {
   openPositions?: number
   employees?: DepartmentEmployee[]
-  head?: DepartmentEmployee
+  head?: DepartmentEmployee | null
   updated_at?: string
   changed_by?: number
 } {
@@ -88,7 +88,7 @@ function mapApiDepartmentDetail(row: Record<string, unknown>): DepartmentListIte
           employmentId: Number(e.employmentId ?? e.id ?? 0),
           name: String(e.name ?? '—'),
           employeeCode: String(e.employeeCode ?? '—'),
-          departmentId: Number(e.departmentId ?? 0),
+          departmentId: Number(e.departmentId ?? base.id),
           email: String(e.email ?? ''),
           positionName: String(e.positionName ?? ''),
           state: String(e.state ?? ''),
@@ -102,7 +102,19 @@ function mapApiDepartmentDetail(row: Record<string, unknown>): DepartmentListIte
     employees,
     head,
     updated_at: String(row.updated_at ?? row.updatedAt ?? ''),
-    changed_by: Number(row.changed_by ?? 0),
+    changed_by: Number(row.changed_by ?? row.changedBy ?? 0),
+  }
+}
+
+function mapApiDepartmentEmployee(e: Record<string, unknown>): DepartmentEmployee {
+  return {
+    employmentId: Number(e.employmentId ?? e.id ?? 0),
+    name: String(e.name ?? '—'),
+    employeeCode: String(e.employeeCode ?? e.employee_code ?? '—'),
+    departmentId: Number(e.departmentId ?? 0),
+    email: String(e.email ?? ''),
+    positionName: String(e.positionName ?? e.position_name ?? ''),
+    state: String(e.state ?? e.current_state ?? ''),
   }
 }
 
@@ -165,11 +177,11 @@ export async function listDepartments(
 
 export async function getDepartment(id: number) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<
-      Array<Record<string, unknown>> | { items?: Array<Record<string, unknown>> }
-    >(`/organization/departments/${id}`)
-    const row = Array.isArray(data) ? data[0] : (data?.items?.[0] ?? {})
-    return mapApiDepartmentDetail(row ?? {})
+    // Backend returns a single DepartmentResponse object (not a list)
+    const { data } = await apiClient.get<Record<string, unknown>>(
+      `/organization/departments/${id}`,
+    )
+    return mapApiDepartmentDetail(data ?? {})
   }
   await delay()
   const row = getDb().schema_departments.find((d) => d.id === id)
@@ -177,13 +189,33 @@ export async function getDepartment(id: number) {
   return toListItem(row)
 }
 
-export async function listDepartmentEmployees(departmentId: number): Promise<DepartmentEmployee[]> {
+/**
+ * Single API call: employees currently assigned to this department.
+ * Backend: GET /organization/departments/{id}/employees?page&pageSize&search
+ * Returns the items array (hook expects DepartmentEmployee[]).
+ */
+export async function listDepartmentEmployees(
+  departmentId: number,
+  params: { page?: number; pageSize?: number; search?: string } = {},
+): Promise<DepartmentEmployee[]> {
+  const page = params.page ?? 1
+  const pageSize = params.pageSize ?? 200
+
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<DepartmentEmployee[] | { items: DepartmentEmployee[] }>(
-      `/organization/departments/${departmentId}/employees`,
-    )
-    return Array.isArray(data) ? data : (data.items ?? [])
+    const { data } = await apiClient.get<
+      DepartmentEmployee[] | {
+        items?: Array<Record<string, unknown>>
+        total?: number
+      }
+    >(`/organization/departments/${departmentId}/employees`, {
+      params: { page, pageSize, search: params.search || undefined },
+    })
+    if (Array.isArray(data)) {
+      return data.map((e) => mapApiDepartmentEmployee(e as unknown as Record<string, unknown>))
+    }
+    return (data.items ?? []).map(mapApiDepartmentEmployee)
   }
+
   await delay()
   const db = getDb()
   const empIds = db.employment_assignments
@@ -194,7 +226,7 @@ export async function listDepartmentEmployees(departmentId: number): Promise<Dep
     (db as typeof db & { login_users?: { employment_id: number; email: string }[] }).login_users ??
     []
 
-  return empIds.map((eid) => {
+  let all = empIds.map((eid) => {
     const emp = db.employments.find((e) => e.id === eid)!
     const person = db.persons.find((p) => p.id === emp.person_id)
     const assignment = db.employment_assignments.find(
@@ -211,8 +243,22 @@ export async function listDepartmentEmployees(departmentId: number): Promise<Dep
       positionName: position?.name ?? '—',
       state: emp.current_state,
       email: login?.email ?? person?.personal_email ?? '',
-    }
+      departmentId,
+    } as DepartmentEmployee
   })
+
+  if (params.search) {
+    const q = params.search.toLowerCase()
+    all = all.filter(
+      (e) =>
+        e.name.toLowerCase().includes(q) ||
+        e.employeeCode.toLowerCase().includes(q) ||
+        e.email.toLowerCase().includes(q),
+    )
+  }
+
+  const start = (page - 1) * pageSize
+  return all.slice(start, start + pageSize)
 }
 
 /** Employees not currently assigned to this department (for Add existing). */
@@ -262,7 +308,6 @@ export async function assignEmployeeToDepartment(
   const db = getDb()
   const today = new Date().toISOString().slice(0, 10)
   const now = new Date().toISOString()
-  // Seed rows type effective_to as literal null — mutate via any
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const current = db.employment_assignments.find(
     (a) => a.employment_id === employmentId && a.effective_to == null,
@@ -348,7 +393,6 @@ export async function createDepartment(input: {
     created_at: now,
     created_by: 1,
   }
-  // Seed arrays are literal-union typed — push via any
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(db.schema_departments as any[]).push(row)
   return toListItem(row as DepartmentRow)
@@ -359,8 +403,16 @@ export async function updateDepartment(
   patch: Partial<{ name: string; headEmploymentId: number | null; isArchived: boolean }>,
 ) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.patch<DepartmentListItem>(`/organization/departments/${id}`, patch)
-    return data
+    const body: Record<string, unknown> = {}
+    if (patch.name != null) body.name = patch.name
+    if (patch.headEmploymentId !== undefined) {
+      body.department_head_employment_id = patch.headEmploymentId
+    }
+    const { data } = await apiClient.patch<Record<string, unknown>>(
+      `/organization/departments/${id}`,
+      body,
+    )
+    return mapApiDepartment(data)
   }
   await delay(300)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -374,11 +426,23 @@ export async function updateDepartment(
 
 export async function listEmploymentOptionsForPicker() {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<{ value: string; label: string; meta?: string }[]>(
-      '/employment/employments',
-      { params: { limit: 1000 } },
+    const { data } = await apiClient.get<Array<Record<string, unknown>>>(
+      '/workforce/employments',
+      { params: { limit: 500 } },
     )
-    return data
+    return (Array.isArray(data) ? data : []).map((row) => {
+      const id = Number(row.id)
+      const code = String(row.employee_code ?? row.employeeCode ?? id)
+      const first = String(row.first_name ?? row.firstName ?? '')
+      const last = String(row.last_name ?? row.lastName ?? '')
+      const name = `${first} ${last}`.trim() || code
+      const state = String(row.current_state ?? row.currentState ?? '')
+      return {
+        value: String(id),
+        label: `${name} (${code})`,
+        meta: state,
+      }
+    })
   }
   await delay(150)
   const db = getDb()
@@ -443,6 +507,6 @@ export async function archiveDepartment(id: number): Promise<void> {
   const db = getDb()
   const dept = db.schema_departments.find((d) => d.id === id)
   if (dept) {
-    dept.is_archived = false
+    dept.is_archived = true
   }
 }
