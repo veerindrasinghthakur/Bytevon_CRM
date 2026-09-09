@@ -1,6 +1,7 @@
 /**
  * Admin settings API — organisation profile, attendance policy, leave accrual.
  * Mock/real switch; pages use TanStack Query only.
+ * Org profile → backend /organization/settings (organization module).
  */
 
 import { env } from '@/config/env'
@@ -15,8 +16,9 @@ import type {
   LeaveAccrualPolicy,
   OrganizationProfile,
 } from '../types'
-import { delay} from '@/shared/mock/db'
+import { delay } from '@/shared/mock/db'
 
+const ORG_SETTINGS_API = '/organization/settings'
 
 // ── Organisation profile ─────────────────────────────────────────────
 
@@ -25,7 +27,7 @@ export async function getOrganizationProfile(): Promise<OrganizationProfile> {
     await delay()
     return { ...organizationProfileMock }
   }
-  const { data } = await apiClient.get<OrganizationProfile>('/admin/settings/organization-profile')
+  const { data } = await apiClient.get<OrganizationProfile>(ORG_SETTINGS_API)
   return data
 }
 
@@ -37,10 +39,7 @@ export async function updateOrganizationProfile(
     Object.assign(organizationProfileMock, patch)
     return { ...organizationProfileMock }
   }
-  const { data } = await apiClient.patch<OrganizationProfile>(
-    '/admin/settings/organization-profile',
-    patch,
-  )
+  const { data } = await apiClient.patch<OrganizationProfile>(ORG_SETTINGS_API, patch)
   return data
 }
 
