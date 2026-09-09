@@ -160,7 +160,7 @@ async def remove_employee_from_department(
 
 
 # ---------------------------------------------------------------------------
-# Working Weeks
+# Working Weeks (versioned)
 # ---------------------------------------------------------------------------
 
 @router.post(
@@ -186,7 +186,9 @@ async def list_working_weeks(
 @router.get("/working-weeks/current", response_model=WorkingWeekResponse)
 async def get_current_working_week(
     service: OrganizationServiceDep,
-    as_of: Optional[date] = Query(None),
+    as_of: Optional[date] = Query(
+        None, description="Date to resolve (default: today)"
+    ),
 ) -> WorkingWeekResponse:
     return await service.get_current_working_week(as_of=as_of)
 
@@ -197,6 +199,24 @@ async def get_working_week(
     service: OrganizationServiceDep,
 ) -> WorkingWeekResponse:
     return await service.get_working_week(week_id)
+
+
+@router.post(
+    "/working-weeks/{week_id}/archive",
+    response_model=MessageResponse,
+    summary="Close a working-week version (sets effective_to)",
+)
+async def archive_working_week(
+    week_id: int,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+    effective_to: Optional[date] = Query(
+        None, description="Close date (default: today)"
+    ),
+) -> MessageResponse:
+    return await service.archive_working_week(
+        week_id, actor_employment_id=actor, effective_to=effective_to
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -406,6 +426,7 @@ async def get_organization_settings(
 
 
 @router.patch("/settings", response_model=OrganizationSettingsResponse)
+@router.put("/settings", response_model=OrganizationSettingsResponse)
 async def upsert_organization_settings(
     body: OrganizationSettingsUpdate,
     service: OrganizationServiceDep,
@@ -417,7 +438,7 @@ async def upsert_organization_settings(
 
 
 # ---------------------------------------------------------------------------
-# Users (login accounts) — same /organization/* pattern as shifts/locations
+# Users (login accounts)
 # ---------------------------------------------------------------------------
 
 @router.get("/users", response_model=AdminUserListResponse)
@@ -466,12 +487,14 @@ async def get_user(
     "/users",
     response_model=AdminUserDetailResponse,
     status_code=status.HTTP_201_CREATED,
+    summary="Create login for an existing employment",
 )
 async def create_user(
     body: AdminUserCreate,
     service: OrganizationServiceDep,
     actor: ActorHeader = None,
 ) -> AdminUserDetailResponse:
+    """Required body: employmentId, email, temporaryPassword (min 8)."""
     return await service.create_admin_user(body, actor_employment_id=actor)
 
 
