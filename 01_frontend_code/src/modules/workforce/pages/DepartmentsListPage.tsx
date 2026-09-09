@@ -18,8 +18,7 @@ import {
   QuickRelatedRow,
   QuickPersonRow,
 } from '@/shared/components/layout/QuickOverviewParts'
-import { Can } from '@/shared/rbac'
-import { Action, ResourceName } from '@/shared/schema'
+import { ResourceName } from '@/shared/schema'
 import { useDepartmentsList } from '../hooks/use-departments-list'
 import { workforceRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
@@ -190,11 +189,9 @@ export function DepartmentsListPage() {
               selectedIds={selection.selectionMode ? Array.from(selection.selectedIds) : undefined}
               filenameStem="departments"
             />
-            <Can action={Action.CREATE} resource={ResourceName.DEPARTMENT}>
-              <Button variant="primary" leftIcon={<Icon name="add" />} onClick={goNew}>
-                Add Department
-              </Button>
-            </Can>
+            <Button variant="primary" leftIcon={<Icon name="add" />} onClick={goNew}>
+              Add Department
+            </Button>
           </div>
         }
       />

@@ -55,21 +55,83 @@ function buildDeptMetrics(rows: DepartmentListItem[]) {
   }
 }
 
+function mapApiDepartment(row: Record<string, unknown>): DepartmentListItem {
+  const id = Number(row.id)
+  const isArchived = Boolean(row.is_archived ?? row.isArchived)
+  return {
+    id,
+    name: String(row.name ?? 'Unnamed department'),
+    code: String(row.code ?? `DEPT-${String(id).padStart(3, '0')}`),
+    headName: String(row.headName ?? '—'),
+    headEmploymentId:
+      row.department_head_employment_id == null
+        ? null
+        : Number(row.department_head_employment_id),
+    staffCount: Number(row.staffCount ?? 0),
+    isArchived,
+    status: isArchived ? 'Inactive' : 'Active',
+    createdAt: String(row.created_at ?? row.createdAt ?? ''),
+  }
+}
+
+function mapApiDepartmentDetail(row: Record<string, unknown>): DepartmentListItem & {
+  openPositions?: number
+  employees?: DepartmentEmployee[]
+  head?: DepartmentEmployee
+} {
+  const base = mapApiDepartment(row)
+  const employees = row.employees
+    ? Array.isArray(row.employees)
+      ? row.employees.map((e: Record<string, unknown>) => ({
+          employmentId: Number(e.employmentId ?? e.id ?? 0),
+          name: String(e.name ?? '—'),
+          employeeCode: String(e.employeeCode ?? '—'),
+          departmentId: Number(e.departmentId ?? 0),
+          email: String(e.email ?? ''),
+          positionName: String(e.positionName ?? ''),
+          state: String(e.state ?? ''),
+        }))
+      : []
+    : []
+  const head = employees?.[0] ?? null
+  return {
+    ...base,
+    openPositions: Number(row.openPositions ?? 0),
+    employees,
+    head,
+  }
+}
+
 export async function listDepartments(
   params: { includeArchived?: boolean } & EntityListParams = {},
 ) {
   const { page = 1, pageSize = 20, search, status } = params
 
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<{
-      items: DepartmentListItem[]
-      total: number
-      metrics?: ReturnType<typeof buildDeptMetrics>
-    }>('/organization/departments', { params: { page, pageSize, search, status } })
+    const { data } = await apiClient.get<
+      Array<Record<string, unknown>> | {
+        items?: Array<Record<string, unknown>>
+        total?: number
+        metrics?: ReturnType<typeof buildDeptMetrics>
+      }
+    >('/organization/departments', {
+      params: {
+        include_archived: params.includeArchived ?? false,
+      },
+    })
+    const rows = (Array.isArray(data) ? data : data.items ?? []).map(mapApiDepartment)
+    const filteredRows = rows.filter((row) => {
+      const matchesSearch = !search || [row.name, row.code, row.headName]
+        .some((value) => value.toLowerCase().includes(search.toLowerCase()))
+      const matchesStatus = !status || status === 'All' || row.status === status
+      return matchesSearch && matchesStatus
+    })
+    const start = (Number(page) - 1) * Number(pageSize)
+    const items = filteredRows.slice(start, start + Number(pageSize))
     return {
-      items: data.items,
-      total: data.total,
-      metrics: data.metrics ?? buildDeptMetrics(data.items),
+      items,
+      total: filteredRows.length,
+      metrics: buildDeptMetrics(filteredRows),
     }
   }
 
@@ -99,12 +161,11 @@ export async function listDepartments(
 
 export async function getDepartment(id: number) {
   if (!env.useMockApi) {
-    try {
-      const { data } = await apiClient.get<DepartmentListItem>(`/organization/departments/${id}`)
-      return data
-    } catch {
-      return null
-    }
+    const { data } = await apiClient.get<
+      Array<Record<string, unknown>> | { items?: Array<Record<string, unknown>> }
+    >(`/organization/departments/${id}`)
+    const row = Array.isArray(data) ? data[0] : (data?.items?.[0] ?? {})
+    return mapApiDepartmentDetail(row ?? {})
   }
   await delay()
   const row = getDb().schema_departments.find((d) => d.id === id)
@@ -261,8 +322,16 @@ export async function createDepartment(input: {
   isArchived?: boolean
 }) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<DepartmentListItem>('/organization/departments', input)
-    return data
+    const { data } = await apiClient.post<Record<string, unknown>>('/organization/departments', {
+      name: input.name,
+      department_head_employment_id: input.headEmploymentId ?? null,
+    })
+    const created = mapApiDepartment(data)
+    if (input.isArchived && !created.isArchived) {
+      await apiClient.post(`/organization/departments/${created.id}/archive`)
+      return { ...created, isArchived: true, status: 'Inactive' as const }
+    }
+    return created
   }
   await delay(400)
   const db = getDb()
