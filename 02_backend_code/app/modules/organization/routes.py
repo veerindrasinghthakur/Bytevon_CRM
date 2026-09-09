@@ -20,7 +20,7 @@ from app.modules.organization.schemas.schemas import (
     AdminUserUpdate,
     DepartmentAssignRequest,
     DepartmentCreate,
-    DepartmentEmployee,
+    DepartmentEmployeeListResponse,
     DepartmentEmployeeOption,
     DepartmentResponse,
     DepartmentUpdate,
@@ -109,13 +109,19 @@ async def archive_department(
 
 @router.get(
     "/departments/{department_id}/employees",
-    response_model=list[DepartmentEmployee],
+    response_model=DepartmentEmployeeListResponse,
+    summary="Paginated employees currently assigned to this department (single query)",
 )
 async def list_department_employees(
     department_id: int,
     service: OrganizationServiceDep,
-) -> list[DepartmentEmployee]:
-    return await service.list_department_employees(department_id)
+    page: int = Query(1, ge=1),
+    pageSize: int = Query(50, ge=1, le=200),
+    search: Optional[str] = Query(None),
+) -> DepartmentEmployeeListResponse:
+    return await service.list_department_employees(
+        department_id, page=page, page_size=pageSize, search=search
+    )
 
 
 @router.get(
