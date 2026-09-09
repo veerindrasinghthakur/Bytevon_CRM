@@ -20,8 +20,8 @@ class DepartmentMembersMixin:
     """Requires BasePublicService helpers: _session, _repo, _commit, _audit."""
 
     async def list_department_employees(self, department_id: int) -> list[DepartmentEmployee]:
-        from app.modules.authentication.models import Login, Person
-        from app.modules.employment.models import Employment, EmploymentAssignment, Position
+        from app.modules.auth.models import Login, Person
+        from app.modules.workforce.models import Employment, EmploymentAssignment, Position
 
         dept = await self._repo.get_department_by_id(department_id)
         if dept is None:
@@ -83,8 +83,8 @@ class DepartmentMembersMixin:
     async def list_employees_available_for_department(
         self, department_id: int
     ) -> list[DepartmentEmployeeOption]:
-        from app.modules.authentication.models import Person
-        from app.modules.employment.models import Employment, EmploymentAssignment
+        from app.modules.auth.models import Person
+        from app.modules.workforce.models import Employment, EmploymentAssignment
 
         dept = await self._repo.get_department_by_id(department_id)
         if dept is None:
@@ -150,7 +150,7 @@ class DepartmentMembersMixin:
         *,
         actor_employment_id: Optional[int] = None,
     ) -> MessageResponse:
-        from app.modules.employment.models import Employment, EmploymentAssignment
+        from app.modules.workforce.models import Employment, EmploymentAssignment
 
         dept = await self._repo.get_department_by_id(department_id)
         if dept is None:
@@ -201,7 +201,7 @@ class DepartmentMembersMixin:
         *,
         actor_employment_id: Optional[int] = None,
     ) -> MessageResponse:
-        from app.modules.employment.models import EmploymentAssignment
+        from app.modules.workforce.models import EmploymentAssignment
 
         dept = await self._repo.get_department_by_id(department_id)
         if dept is None:
