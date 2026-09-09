@@ -17,17 +17,9 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field
 from app.core.db.enums import HolidayType
 
 
-# ===========================================================================
-# Shared
-# ===========================================================================
-
 class MessageResponse(BaseModel):
     message: str
 
-
-# ===========================================================================
-# Department — ArchiveMixin + CreatedAtMixin + created_by
-# ===========================================================================
 
 class DepartmentCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
@@ -59,6 +51,15 @@ class DepartmentEmployee(BaseModel):
     email: str = ""
 
 
+class DepartmentEmployeeListResponse(BaseModel):
+    """Single-call paginated roster for a department."""
+
+    items: List[DepartmentEmployee]
+    total: int
+    page: int = 1
+    pageSize: int = 50
+
+
 class DepartmentAssignRequest(BaseModel):
     employmentId: int
 
@@ -68,10 +69,6 @@ class DepartmentEmployeeOption(BaseModel):
     label: str
     meta: Optional[str] = None
 
-
-# ===========================================================================
-# WorkingWeek — EffectiveDatingMixin + CreatedAtMixin + created_by
-# ===========================================================================
 
 class WorkingWeekCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
@@ -90,10 +87,6 @@ class WorkingWeekResponse(BaseModel):
     created_at: datetime
     created_by: Optional[int] = None
 
-
-# ===========================================================================
-# Shift — TimestampMixin + ChangedByMixin
-# ===========================================================================
 
 class ShiftCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
@@ -131,10 +124,6 @@ class ShiftResponse(BaseModel):
     updated_at: datetime
     changed_by: Optional[int] = None
 
-
-# ===========================================================================
-# HolidayCalendar / Holiday
-# ===========================================================================
 
 class HolidayCalendarCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
@@ -175,10 +164,6 @@ class HolidayResponse(BaseModel):
     created_at: datetime
     changed_by: Optional[int] = None
 
-
-# ===========================================================================
-# Location
-# ===========================================================================
 
 class LocationCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
@@ -241,10 +226,6 @@ class LocationResponse(BaseModel):
     changed_by: Optional[int] = None
 
 
-# ===========================================================================
-# OrganizationSettings (singleton)
-# ===========================================================================
-
 class OrganizationSettingsUpdate(BaseModel):
     company_name: Optional[str] = Field(None, min_length=1, max_length=255)
     head_office_location_id: Optional[int] = None
@@ -266,10 +247,6 @@ class OrganizationSettingsResponse(BaseModel):
     updated_at: datetime
     changed_by: Optional[int] = None
 
-
-# ===========================================================================
-# Admin Users (login accounts linked via person → employment)
-# ===========================================================================
 
 class AdminUserCreate(BaseModel):
     employmentId: int
