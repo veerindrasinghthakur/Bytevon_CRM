@@ -11,7 +11,7 @@ export async function getEmployeeBankDetails(employeeId: number): Promise<BankDe
     await delay()
     return mockStore.get(employeeId) ? { ...mockStore.get(employeeId)! } : null
   }
-  const { data } = await apiClient.get<BankDetails | null>(`/workforce/employees/${employeeId}/bank-details`)
+  const { data } = await apiClient.get<BankDetails | null>(`/payroll/bank-accounts/${employeeId}/primary`)
   return data
 }
 
@@ -22,6 +22,6 @@ export async function saveEmployeeBankDetails(employeeId: number, body: BankDeta
     mockStore.set(employeeId, record)
     return { ...record }
   }
-  const { data } = await apiClient.put<BankDetails>(`/workforce/employees/${employeeId}/bank-details`, body)
+  const { data } = await apiClient.post<BankDetails>(`/payroll/bank-accounts`, body)
   return data
 }

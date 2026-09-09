@@ -1,6 +1,6 @@
 /**
  * Workforce attendance API — org dashboard, today list, detail, day detail.
- * env.useMockApi → shared/mock seed; false → /workforce/attendance/*
+ * env.useMockApi → shared/mock seed; false → /attendance/*
  */
 
 import { env } from '@/config/env'
@@ -25,7 +25,7 @@ import type {
 
 export async function getAttendanceDashboard(): Promise<AttendanceDashboardData> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<AttendanceDashboardData>('/workforce/attendance/dashboard')
+    const { data } = await apiClient.get<AttendanceDashboardData>('/attendance/dashboard')
     return data
   }
   await delay()
@@ -44,7 +44,7 @@ export async function listTodayAttendance(params?: {
 }): Promise<{ items: TodayAttendanceRow[]; total: number }> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<{ items: TodayAttendanceRow[]; total: number }>(
-      '/workforce/attendance/today',
+      '/attendance/today',
       { params },
     )
     return data
@@ -68,7 +68,7 @@ export async function getAttendanceById(attendanceId: string): Promise<Attendanc
   if (!env.useMockApi) {
     try {
       const { data } = await apiClient.get<AttendanceDetailData>(
-        `/workforce/attendance/${attendanceId}`,
+        `/attendance/days/${attendanceId}`,
       )
       return data
     } catch {
@@ -87,7 +87,7 @@ export async function getAttendanceDayDetail(
 ): Promise<AttendanceDayDetailData> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<AttendanceDayDetailData>(
-      `/workforce/attendance/day/${employmentId}`,
+      `/attendance/days/by-employment/${employmentId}`,
       { params: { date } },
     )
     return data
@@ -105,7 +105,7 @@ export async function getAttendanceDayDetail(
 export async function listAttendanceCorrections(): Promise<CorrectionRow[]> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<{ items: CorrectionRow[] }>(
-      '/workforce/attendance/corrections',
+      '/attendance/corrections',
     )
     return data.items ?? []
   }

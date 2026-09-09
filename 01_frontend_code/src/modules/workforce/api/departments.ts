@@ -1,6 +1,6 @@
 /**
  * Department API — schema_departments in mock DB.
- * env.useMockApi → local mock; false → /workforce/departments
+ * env.useMockApi → local mock; false → /organization/departments
  */
 
 import { env } from '@/config/env'
@@ -65,7 +65,7 @@ export async function listDepartments(
       items: DepartmentListItem[]
       total: number
       metrics?: ReturnType<typeof buildDeptMetrics>
-    }>('/workforce/departments', { params: { page, pageSize, search, status } })
+    }>('/organization/departments', { params: { page, pageSize, search, status } })
     return {
       items: data.items,
       total: data.total,
@@ -100,7 +100,7 @@ export async function listDepartments(
 export async function getDepartment(id: number) {
   if (!env.useMockApi) {
     try {
-      const { data } = await apiClient.get<DepartmentListItem>(`/workforce/departments/${id}`)
+      const { data } = await apiClient.get<DepartmentListItem>(`/organization/departments/${id}`)
       return data
     } catch {
       return null
@@ -115,7 +115,7 @@ export async function getDepartment(id: number) {
 export async function listDepartmentEmployees(departmentId: number): Promise<DepartmentEmployee[]> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<DepartmentEmployee[] | { items: DepartmentEmployee[] }>(
-      `/workforce/departments/${departmentId}/employees`,
+      `/organization/departments/${departmentId}/employees`,
     )
     return Array.isArray(data) ? data : (data.items ?? [])
   }
@@ -154,7 +154,7 @@ export async function listDepartmentEmployees(departmentId: number): Promise<Dep
 export async function listEmployeesNotInDepartment(departmentId: number) {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<{ value: string; label: string; meta?: string }[]>(
-      `/workforce/departments/${departmentId}/employees-available`,
+      `/organization/departments/${departmentId}/employees-available`,
     )
     return data
   }
@@ -190,7 +190,7 @@ export async function assignEmployeeToDepartment(
   departmentId: number,
 ) {
   if (!env.useMockApi) {
-    await apiClient.post(`/workforce/departments/${departmentId}/assign`, { employmentId })
+    await apiClient.post(`/organization/departments/${departmentId}/assign`, { employmentId })
     return { ok: true as const }
   }
   await delay(350)
@@ -230,7 +230,7 @@ export async function removeEmployeeFromDepartment(
   departmentId: number,
 ) {
   if (!env.useMockApi) {
-    await apiClient.post(`/workforce/departments/${departmentId}/remove`, { employmentId })
+    await apiClient.post(`/organization/departments/${departmentId}/remove`, { employmentId })
     return { ok: true as const }
   }
   await delay(300)
@@ -261,7 +261,7 @@ export async function createDepartment(input: {
   isArchived?: boolean
 }) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<DepartmentListItem>('/workforce/departments', input)
+    const { data } = await apiClient.post<DepartmentListItem>('/organization/departments', input)
     return data
   }
   await delay(400)
@@ -286,7 +286,7 @@ export async function updateDepartment(
   patch: Partial<{ name: string; headEmploymentId: number | null; isArchived: boolean }>,
 ) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.patch<DepartmentListItem>(`/workforce/departments/${id}`, patch)
+    const { data } = await apiClient.patch<DepartmentListItem>(`/organization/departments/${id}`, patch)
     return data
   }
   await delay(300)
@@ -302,7 +302,8 @@ export async function updateDepartment(
 export async function listEmploymentOptionsForPicker() {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<{ value: string; label: string; meta?: string }[]>(
-      '/workforce/employment-options',
+      '/employment/employments',
+      { params: { limit: 1000 } },
     )
     return data
   }
@@ -322,7 +323,7 @@ export async function listEmploymentOptionsForPicker() {
 /** Employees on a given shift (from active assignments). */
 export async function listEmployeesOnShift(shiftId: number) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get(`/workforce/shifts/${shiftId}/employees`)
+    const { data } = await apiClient.get(`/organization/shifts/${shiftId}/employees`)
     return data as {
       employmentId: number
       employeeCode: string

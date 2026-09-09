@@ -1,6 +1,6 @@
 /**
  * Employment API — schema-shaped list/detail + create/update.
- * env.useMockApi → local mock DB; false → /workforce/employments
+ * env.useMockApi → local mock DB; false → /employment/employments
  */
 
 import { env } from '@/config/env'
@@ -87,7 +87,7 @@ export async function listEmployments(
       items: EmploymentListItem[]
       total: number
       metrics?: ReturnType<typeof buildMetrics>
-    }>('/workforce/employments', {
+    }>('/employment/employments', {
       params: { page, pageSize, search, status: stateFilter, department, type },
     })
     return { items: data.items, total: data.total, metrics: data.metrics }
@@ -133,7 +133,7 @@ export async function getEmployeeDetail(employmentId: number): Promise<EmployeeD
   if (!env.useMockApi) {
     try {
       const { data } = await apiClient.get<EmployeeDetailDto>(
-        `/workforce/employments/${employmentId}`,
+        `/employment/employments/${employmentId}`,
       )
       return data
     } catch {
@@ -205,7 +205,7 @@ export async function getEmployeeDetail(employmentId: number): Promise<EmployeeD
 
 export async function createEmployment(input: CreateEmploymentSchemaInput) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<EmploymentListItem>('/workforce/employments', input)
+    const { data } = await apiClient.post<EmploymentListItem>('/employment/employments', input)
     return data
   }
 
@@ -321,7 +321,7 @@ export async function updateEmployment(
 ) {
   if (!env.useMockApi) {
     const { data } = await apiClient.patch<EmploymentListItem>(
-      `/workforce/employments/${employmentId}`,
+      `/employment/employments/${employmentId}`,
       patch,
     )
     return data
@@ -363,7 +363,7 @@ export async function getOrgMastersForEmployeeForm() {
       positions: { id: number; name: string }[]
       locations: { id: number; name: string }[]
       shifts: { id: number; name: string }[]
-    }>('/workforce/org-masters')
+    }>('/employment/org-masters')
     return data
   }
   await delay(200)
