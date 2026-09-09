@@ -1,5 +1,5 @@
 """
-Pydantic v2 schemas for Employment module.
+Pydantic v2 schemas for Workforce (employment) module.
 """
 
 from __future__ import annotations
@@ -7,13 +7,50 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.core.db.enums import EmploymentState, EmploymentType, WorkMode
 
 
 class MessageResponse(BaseModel):
     message: str
+
+
+# ===========================================================================
+# Person (natural identity — table owned by auth module)
+# ===========================================================================
+
+class PersonCreate(BaseModel):
+    first_name: str = Field(..., min_length=1, max_length=100)
+    last_name: str = Field(..., min_length=1, max_length=100)
+    date_of_birth: Optional[date] = None
+    personal_email: Optional[EmailStr] = None
+    personal_phone: Optional[str] = Field(None, max_length=20)
+    address: Optional[str] = None
+
+
+class PersonUpdate(BaseModel):
+    first_name: Optional[str] = Field(None, min_length=1, max_length=100)
+    last_name: Optional[str] = Field(None, min_length=1, max_length=100)
+    date_of_birth: Optional[date] = None
+    personal_email: Optional[EmailStr] = None
+    personal_phone: Optional[str] = Field(None, max_length=20)
+    address: Optional[str] = None
+
+
+class PersonResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    first_name: str
+    last_name: str
+    date_of_birth: Optional[date] = None
+    personal_email: Optional[str] = None
+    personal_phone: Optional[str] = None
+    address: Optional[str] = None
+    is_anonymized: bool = False
+    created_at: datetime
+    updated_at: datetime
 
 
 # ===========================================================================
@@ -60,6 +97,30 @@ class EmploymentCreate(BaseModel):
     )
 
 
+class EmployeeCreate(BaseModel):
+    """One-shot employee onboarding: creates Person + Employment in one TX."""
+
+    first_name: str = Field(..., min_length=1, max_length=100)
+    last_name: str = Field(..., min_length=1, max_length=100)
+    date_of_birth: Optional[date] = None
+    personal_email: Optional[EmailStr] = None
+    personal_phone: Optional[str] = Field(None, max_length=20)
+    address: Optional[str] = None
+
+    employee_code: str = Field(..., min_length=1, max_length=50)
+    employment_type: EmploymentType
+    joining_date: date
+    initial_state: EmploymentState = EmploymentState.ONBOARDING
+    initial_state_reason: Optional[str] = None
+
+    department_id: Optional[int] = None
+    position_id: Optional[int] = None
+    location_id: Optional[int] = None
+    shift_id: Optional[int] = None
+    work_mode: Optional[WorkMode] = None
+    assignment_change_reason: Optional[str] = None
+
+
 class EmploymentUpdate(BaseModel):
     """Only non-lifecycle fields. State changes go through change_state."""
 
@@ -78,7 +139,7 @@ class EmploymentResponse(BaseModel):
     joining_date: date
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int]
+    changed_by: Optional[int] = None
 
 
 class EmploymentDetailResponse(EmploymentResponse):
@@ -88,6 +149,7 @@ class EmploymentDetailResponse(EmploymentResponse):
     recent_state_history: List["EmploymentStateHistoryResponse"] = Field(
         default_factory=list
     )
+    person: Optional[PersonResponse] = None
 
 
 # ===========================================================================
@@ -105,12 +167,12 @@ class EmploymentStateHistoryResponse(BaseModel):
 
     id: int
     employment_id: int
-    previous_state: Optional[EmploymentState]
+    previous_state: Optional[EmploymentState] = None
     new_state: EmploymentState
     effective_date: date
-    reason: Optional[str]
+    reason: Optional[str] = None
     created_at: datetime
-    changed_by: Optional[int]
+    changed_by: Optional[int] = None
 
 
 # ===========================================================================
@@ -132,13 +194,13 @@ class EmploymentAssignmentResponse(BaseModel):
 
     id: int
     employment_id: int
-    department_id: Optional[int]
-    position_id: Optional[int]
-    location_id: Optional[int]
-    shift_id: Optional[int]
+    department_id: Optional[int] = None
+    position_id: Optional[int] = None
+    location_id: Optional[int] = None
+    shift_id: Optional[int] = None
     work_mode: WorkMode
     effective_from: date
-    effective_to: Optional[date]
+    effective_to: Optional[date] = None
     change_reason: str
     created_at: datetime
-    changed_by: Optional[int]
+    changed_by: Optional[int] = None
