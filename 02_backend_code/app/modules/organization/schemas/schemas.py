@@ -6,9 +6,9 @@ from __future__ import annotations
 
 from datetime import date, datetime, time
 from decimal import Decimal
-from typing import List, Optional
+from typing import List, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.core.db.enums import HolidayType
 
@@ -43,29 +43,41 @@ class DepartmentResponse(BaseModel):
     department_head_employment_id: Optional[int]
     is_archived: bool
     created_at: datetime
-    created_by: Optional[int]
+    updated_at: datetime
+    changed_by: Optional[int]
 
 
 # ===========================================================================
-# WorkingWeek (versioned)
+# WorkingWeek
 # ===========================================================================
 
 class WorkingWeekCreate(BaseModel):
-    name: str = Field(..., min_length=1, max_length=150)
-    working_days_of_week: List[int] = Field(..., min_length=1)
     effective_from: date
+    monday: bool = True
+    tuesday: bool = True
+    wednesday: bool = True
+    thursday: bool = True
+    friday: bool = True
+    saturday: bool = False
+    sunday: bool = False
 
 
 class WorkingWeekResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    name: str
-    working_days_of_week: List[int]
     effective_from: date
-    effective_to: Optional[date]
+    monday: bool
+    tuesday: bool
+    wednesday: bool
+    thursday: bool
+    friday: bool
+    saturday: bool
+    sunday: bool
+    is_archived: bool
     created_at: datetime
-    created_by: Optional[int]
+    updated_at: datetime
+    changed_by: Optional[int]
 
 
 # ===========================================================================
@@ -76,20 +88,20 @@ class ShiftCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     start_time: time
     end_time: time
+    break_minutes: int = 0
     is_overnight: bool = False
-    grace_late_minutes: int = Field(0, ge=0)
-    flexible_end: bool = False
-    break_duration_minutes: Optional[int] = Field(None, ge=0)
+    grace_in_minutes: int = 0
+    grace_out_minutes: int = 0
 
 
 class ShiftUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     start_time: Optional[time] = None
     end_time: Optional[time] = None
+    break_minutes: Optional[int] = None
     is_overnight: Optional[bool] = None
-    grace_late_minutes: Optional[int] = Field(None, ge=0)
-    flexible_end: Optional[bool] = None
-    break_duration_minutes: Optional[int] = Field(None, ge=0)
+    grace_in_minutes: Optional[int] = None
+    grace_out_minutes: Optional[int] = None
 
 
 class ShiftResponse(BaseModel):
@@ -99,10 +111,10 @@ class ShiftResponse(BaseModel):
     name: str
     start_time: time
     end_time: time
+    break_minutes: int
     is_overnight: bool
-    grace_late_minutes: int
-    flexible_end: bool
-    break_duration_minutes: Optional[int]
+    grace_in_minutes: int
+    grace_out_minutes: int
     is_archived: bool
     created_at: datetime
     updated_at: datetime
@@ -110,11 +122,12 @@ class ShiftResponse(BaseModel):
 
 
 # ===========================================================================
-# HolidayCalendar
+# HolidayCalendar / Holiday
 # ===========================================================================
 
 class HolidayCalendarCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
+    year: int
 
 
 class HolidayCalendarUpdate(BaseModel):
@@ -126,22 +139,18 @@ class HolidayCalendarResponse(BaseModel):
 
     id: int
     name: str
+    year: int
     is_archived: bool
     created_at: datetime
     updated_at: datetime
     changed_by: Optional[int]
 
 
-# ===========================================================================
-# Holiday (append-only)
-# ===========================================================================
-
 class HolidayCreate(BaseModel):
     holiday_calendar_id: int
     name: str = Field(..., min_length=1, max_length=150)
-    date: date
+    holiday_date: date
     holiday_type: HolidayType
-    recurring_flag: bool = False
 
 
 class HolidayResponse(BaseModel):
@@ -150,9 +159,9 @@ class HolidayResponse(BaseModel):
     id: int
     holiday_calendar_id: int
     name: str
-    date: date
+    holiday_date: date
     holiday_type: HolidayType
-    recurring_flag: bool
+    is_archived: bool
     created_at: datetime
     changed_by: Optional[int]
 
@@ -163,37 +172,33 @@ class HolidayResponse(BaseModel):
 
 class LocationCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
-    timezone: str = Field(..., min_length=1, max_length=100)
-    working_week_id: Optional[int] = None
-    holiday_calendar_id: Optional[int] = None
+    timezone: str = Field(..., min_length=1, max_length=64)
     latitude: Decimal
     longitude: Decimal
-    attendance_radius_meters: int = Field(..., ge=0)
+    attendance_radius_meters: int = 200
     allowed_ip_cidrs: List[str] = Field(default_factory=list)
-    country: str
-    state: str
-    city: str
-    address: str
+    country: str = Field(..., min_length=1, max_length=100)
+    state: str = Field(..., min_length=1, max_length=100)
+    city: str = Field(..., min_length=1, max_length=100)
+    address: str = Field(..., min_length=1)
     payroll_region: Optional[str] = None
-    currency: str = Field(..., min_length=1, max_length=20)
-    fiscal_year_start_month: int = Field(..., ge=1, le=12)
+    currency: str = Field(..., min_length=1, max_length=10)
+    fiscal_year_start_month: int = Field(1, ge=1, le=12)
 
 
 class LocationUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=150)
-    timezone: Optional[str] = None
-    working_week_id: Optional[int] = None
-    holiday_calendar_id: Optional[int] = None
+    timezone: Optional[str] = Field(None, min_length=1, max_length=64)
     latitude: Optional[Decimal] = None
     longitude: Optional[Decimal] = None
-    attendance_radius_meters: Optional[int] = Field(None, ge=0)
+    attendance_radius_meters: Optional[int] = None
     allowed_ip_cidrs: Optional[List[str]] = None
-    country: Optional[str] = None
-    state: Optional[str] = None
-    city: Optional[str] = None
+    country: Optional[str] = Field(None, min_length=1, max_length=100)
+    state: Optional[str] = Field(None, min_length=1, max_length=100)
+    city: Optional[str] = Field(None, min_length=1, max_length=100)
     address: Optional[str] = None
     payroll_region: Optional[str] = None
-    currency: Optional[str] = None
+    currency: Optional[str] = Field(None, min_length=1, max_length=10)
     fiscal_year_start_month: Optional[int] = Field(None, ge=1, le=12)
 
 
@@ -203,8 +208,6 @@ class LocationResponse(BaseModel):
     id: int
     name: str
     timezone: str
-    working_week_id: Optional[int]
-    holiday_calendar_id: Optional[int]
     latitude: Decimal
     longitude: Decimal
     attendance_radius_meters: int
@@ -246,3 +249,80 @@ class OrganizationSettingsResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     changed_by: Optional[int]
+
+
+# ===========================================================================
+# Admin Users (login accounts linked via person → employment)
+# ===========================================================================
+
+class AdminUserCreate(BaseModel):
+    """Create a login for an employment (person must not already have a login)."""
+
+    employmentId: int
+    email: EmailStr
+    temporaryPassword: str = Field(..., min_length=8)
+    roleId: Optional[Union[int, str]] = None
+    status: Optional[str] = "ACTIVE"
+
+
+class AdminUserUpdate(BaseModel):
+    email: Optional[EmailStr] = None
+    temporaryPassword: Optional[str] = Field(None, min_length=8)
+    status: Optional[str] = None  # Active | Inactive | Locked | ACTIVE | INACTIVE | LOCKED
+    departmentId: Optional[int] = None
+    roleId: Optional[Union[int, str]] = None
+    failed_attempt_count: Optional[int] = None
+    locked_until: Optional[datetime] = None
+
+
+class AdminUserListItem(BaseModel):
+    id: int
+    employmentId: int
+    name: str
+    email: str
+    role: str
+    department: str
+    status: str  # Active | Inactive | Locked
+    lastLogin: str
+    lastLoginAt: Optional[datetime] = None
+    initials: str
+    employeeCode: str
+
+
+class AdminUserListResponse(BaseModel):
+    items: List[AdminUserListItem]
+    total: int
+    locked: int
+    active: int
+    departments: List[str] = Field(default_factory=list)
+    roles: List[str] = Field(default_factory=list)
+
+
+class EmploymentWithoutLogin(BaseModel):
+    employmentId: int
+    employeeCode: str
+    name: str
+    department: str
+    position: str
+    joiningDate: Optional[date] = None
+
+
+class AdminUserDetailResponse(BaseModel):
+    id: int
+    employmentId: int
+    email: str
+    name: str
+    status: str
+    department: str
+    departmentId: Optional[int] = None
+    role: str
+    roleIds: List[str] = Field(default_factory=list)
+    roleNames: List[str] = Field(default_factory=list)
+    lastLogin: str
+    lastLoginAt: Optional[datetime] = None
+    initials: str
+    employeeCode: str
+    failed_attempt_count: int = 0
+    locked_until: Optional[datetime] = None
+    person: Optional[dict] = None
+    employment: Optional[dict] = None
