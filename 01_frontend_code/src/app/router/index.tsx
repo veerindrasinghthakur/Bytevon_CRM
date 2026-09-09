@@ -63,7 +63,11 @@ const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/',
   beforeLoad: () => {
-    throw redirect(safeRedirectOpts({ to: dashboardRoutes.root }))
+    const session = loadStoredSession()
+    if (session) {
+      throw redirect(safeRedirectOpts({ to: dashboardRoutes.root }))
+    }
+    throw redirect(safeRedirectOpts({ to: authRoutes.login }))
   },
 })
 

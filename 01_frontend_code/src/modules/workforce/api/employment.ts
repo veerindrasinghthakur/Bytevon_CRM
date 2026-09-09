@@ -60,14 +60,12 @@ function enrichListRow(e: EmploymentRow) {
 }
 
 function buildMetrics(items: EmploymentListItem[]) {
+  const activeStates: EmploymentState[] = [EmploymentState.CONFIRMED, EmploymentState.PROBATION, EmploymentState.ONBOARDING]
+  const archivedStates: EmploymentState[] = [EmploymentState.RESIGNED, EmploymentState.TERMINATED, EmploymentState.ALUMNI]
   return {
     total: items.length,
-    active: items.filter((e) =>
-      ['CONFIRMED', 'PROBATION', 'ONBOARDING'].includes(e.current_state),
-    ).length,
-    archived: items.filter((e) =>
-      ['RESIGNED', 'TERMINATED', 'ALUMNI'].includes(e.current_state),
-    ).length,
+    active: items.filter((e) => activeStates.includes(e.current_state as EmploymentState)).length,
+    archived: items.filter((e) => archivedStates.includes(e.current_state as EmploymentState)).length,
   }
 }
 
@@ -374,4 +372,137 @@ export async function getOrgMastersForEmployeeForm() {
     locations: db.locations.filter((l) => !l.is_archived).map((l) => ({ ...l })),
     shifts: db.shifts.filter((s) => !s.is_archived).map((s) => ({ ...s })),
   }
+}
+
+export async function archivePosition(id: number): Promise<void> {
+  if (!env.useMockApi) {
+    await apiClient.post(`/employment/positions/${id}/archive`)
+    return
+  }
+  await delay()
+  const db = getDb()
+  const position = db.positions.find((p) => p.id === id)
+  if (position) {
+    position.is_archived = false
+  }
+}
+
+export async function getEmploymentsByPerson(personId: number): Promise<EmploymentListItem[]> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<EmploymentListItem[]>(
+      `/employment/employments/by-person/${personId}`,
+    )
+    return data
+  }
+  await delay()
+  const db = getDb()
+  return db.employments
+    .filter((e) => e.person_id === personId)
+    .map((e) => enrichListRow(e))
+}
+
+export async function changeEmploymentState(
+  employmentId: number,
+  newState: EmploymentState,
+  reason: string,
+): Promise<void> {
+  if (!env.useMockApi) {
+    await apiClient.post(
+      `/employment/employments/${employmentId}/state`,
+      { new_state: newState, reason },
+    )
+    return
+  }
+  await delay()
+  const db = getDb()
+  const emp = db.employments.find((e) => e.id === employmentId)
+  if (emp) {
+    emp.current_state = newState
+  }
+}
+
+export async function getEmploymentStateHistory(
+  employmentId: number,
+): Promise<any[]> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<any[]>(
+      `/employment/employments/${employmentId}/state-history`,
+    )
+    return data
+  }
+  await delay()
+  const db = getDb()
+  return db.employment_state_history
+    .filter((h) => h.employment_id === employmentId)
+    .sort((a, b) => b.effective_date.localeCompare(a.effective_date))
+}
+
+export async function createEmploymentAssignment(
+  employmentId: number,
+  assignmentData: {
+    departmentId?: number
+    positionId?: number
+    locationId?: number
+    shiftId?: number
+    workMode?: string
+    changeReason?: string
+  },
+): Promise<void> {
+  if (!env.useMockApi) {
+    await apiClient.post(
+      `/employment/employments/${employmentId}/assignments`,
+      assignmentData,
+    )
+    return
+  }
+  await delay()
+  const db = getDb()
+  const now = new Date().toISOString()
+  ;(db.employment_assignments as any[]).push({
+    id: nextId(db.employment_assignments),
+    employment_id: employmentId,
+    department_id: assignmentData.departmentId,
+    position_id: assignmentData.positionId,
+    location_id: assignmentData.locationId,
+    shift_id: assignmentData.shiftId,
+    work_mode: assignmentData.workMode ?? 'OFFICE',
+    effective_from: now,
+    effective_to: null,
+    change_reason: assignmentData.changeReason ?? 'New assignment',
+    created_at: now,
+    changed_by: 1,
+  })
+}
+
+export async function getCurrentAssignment(
+  employmentId: number,
+): Promise<any> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<any>(
+      `/employment/employments/${employmentId}/assignments/current`,
+    )
+    return data
+  }
+  await delay()
+  const db = getDb()
+  const assignment = db.employment_assignments.find(
+    (a) => a.employment_id === employmentId && a.effective_to == null,
+  )
+  return assignment ? { ...assignment } : null
+}
+
+export async function getEmploymentAssignmentHistory(
+  employmentId: number,
+): Promise<any[]> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<any[]>(
+      `/employment/employments/${employmentId}/assignments`,
+    )
+    return data
+  }
+  await delay()
+  const db = getDb()
+  return db.employment_assignments
+    .filter((a) => a.employment_id === employmentId)
+    .sort((a, b) => b.effective_from.localeCompare(a.effective_from))
 }

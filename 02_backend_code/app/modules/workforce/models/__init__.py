@@ -1,4 +1,4 @@
-from app.modules.employment.models.employment_models import (
+from app.modules.workforce.models.employment_models import (
     Employment,
     EmploymentAssignment,
     EmploymentStateHistory,

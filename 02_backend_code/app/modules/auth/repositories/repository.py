@@ -13,7 +13,7 @@ from sqlalchemy.orm import selectinload
 
 from app.core.db.enums import SessionStatus
 from app.core.repositories.base_repository import BaseRepository
-from app.modules.authentication.models import Login, PasswordResetToken, Person, Session
+from app.modules.auth.models import Login, PasswordResetToken, Person, Session
 
 
 class AuthenticationRepository(BaseRepository):

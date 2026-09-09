@@ -15,6 +15,7 @@ import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { workforceRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
+import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -132,6 +133,18 @@ export function DepartmentDetailPage() {
     }
   }
 
+  const { archiveDepartment: archiveMutation } = useDepartmentDetail(id)
+
+  const handleArchiveDepartment = async () => {
+    if (!d) return
+    try {
+      await archiveMutation(d.id)
+      safeNavigate(navigate, { to: workforceRoutes.departments })
+    } catch {
+      /* error handling */
+    }
+  }
+
   if (isLoading) {
     return <PageLoadingSkeleton />
   }
@@ -201,25 +214,33 @@ export function DepartmentDetailPage() {
           </div>
           <div className="flex gap-2 flex-wrap">
             {isEditing ? (
-              <>
-                <Button variant="ghost" onClick={cancelEdit} disabled={isMutating}>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={cancelEdit}>
                   Cancel
                 </Button>
-                <Button variant="primary" onClick={() => void saveEdit()} isLoading={isMutating}>
+                <Button variant="primary" onClick={saveEdit} isLoading={isMutating}>
                   Save
                 </Button>
-              </>
+              </div>
             ) : (
-              <>
-                <Can action={Action.UPDATE} resource={ResourceName.DEPARTMENT}>
-                  <EditButton onClick={() => void startEdit()} label="Edit Department" />
-                </Can>
-                <Can action={Action.UPDATE} resource={ResourceName.DEPARTMENT}>
-                  <Button variant="primary" leftIcon={<Icon name="person_add" />} onClick={() => void openAdd()}>
-                    Add Member
+              // <Can action={Action.Update} resource={ResourceName.Department}>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    leftIcon={<span className="material-symbols-outlined">edit</span>}
+                    onClick={startEdit}
+                  >
+                    Edit
                   </Button>
-                </Can>
-              </>
+                  <ArchiveButton
+                    entityLabel={d?.name}
+                    mode="archive"
+                    onConfirm={handleArchiveDepartment}
+                    disabled={isMutating}
+                    isLoading={isMutating}
+                  />
+                </div>
+              // </Can>
             )}
           </div>
         </div>

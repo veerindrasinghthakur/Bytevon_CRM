@@ -1,4 +1,4 @@
-from app.modules.employment.schemas.schemas import (
+from app.modules.workforce.schemas.schemas import (
     EmploymentAssignmentCreate,
     EmploymentAssignmentResponse,
     EmploymentCreate,

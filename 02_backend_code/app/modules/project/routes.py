@@ -8,8 +8,8 @@ from typing import Annotated, Optional
 
 from fastapi import APIRouter, Header, Query, status
 
-from app.modules.developer.dependencies import ProjectServiceDep
-from app.modules.developer.schemas.schemas import (
+from app.modules.project.dependencies import ProjectServiceDep
+from app.modules.project.schemas.schemas import (
     MessageResponse,
     ProjectCreate,
     ProjectResponse,

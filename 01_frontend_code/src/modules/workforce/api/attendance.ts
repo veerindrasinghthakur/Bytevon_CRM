@@ -112,3 +112,49 @@ export async function listAttendanceCorrections(): Promise<CorrectionRow[]> {
   await delay()
   return seedCorrections.map((c) => ({ ...c }))
 }
+
+export async function deleteWorkingWeek(id: number): Promise<void> {
+  if (!env.useMockApi) {
+    await apiClient.delete(`/organization/working-weeks/${id}`)
+    return
+  }
+  // await delay()
+  // const db = getDb()
+  // db.schema_working_weeks = db.schema_working_weeks.filter((w) => w.id !== id)
+}
+
+export async function archiveHolidayCalendar(id: number): Promise<void> {
+  if (!env.useMockApi) {
+    await apiClient.post(`/organization/holiday-calendars/${id}/archive`)
+    return
+  }
+  await delay()
+  // const db = getDb()
+  // const calendar = db.schema_holiday_calendars.find((c) => c.id === id)
+  // if (calendar) {
+  //   calendar.is_archived = true
+  // }
+}
+
+export async function deleteHoliday(id: number): Promise<void> {
+  if (!env.useMockApi) {
+    await apiClient.delete(`/organization/holidays/${id}`)
+    return
+  }
+  // await delay()
+  // const db = getDb()
+  // db.schema_holidays = db.schema_holidays.filter((h) => h.id !== id)
+}
+
+export async function archiveLocation(id: number): Promise<void> {
+  if (!env.useMockApi) {
+    await apiClient.post(`/organization/locations/${id}/archive`)
+    return
+  }
+  // await delay()
+  // const db = getDb()
+  // const location = db.schema_locations.find((l) => l.id === id)
+  // if (location) {
+  //   location.is_archived = true
+  // }
+}

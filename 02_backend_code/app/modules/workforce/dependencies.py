@@ -10,7 +10,7 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.modules.employment.services.public_service import EmploymentPublicService
+from app.modules.workforce.services.public_service import EmploymentPublicService
 
 
 def get_employment_public_service(

@@ -13,8 +13,8 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, Header, Query, status
 
 from app.core.db.enums import EmploymentState
-from app.modules.employment.dependencies import EmploymentServiceDep
-from app.modules.employment.schemas.schemas import (
+from app.modules.workforce.dependencies import EmploymentServiceDep
+from app.modules.workforce.schemas.schemas import (
     EmploymentAssignmentCreate,
     EmploymentAssignmentResponse,
     EmploymentCreate,

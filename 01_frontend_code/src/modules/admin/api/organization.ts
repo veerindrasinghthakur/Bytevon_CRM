@@ -396,6 +396,22 @@ export async function archivePosition(id: number): Promise<void> {
   return updatePosition(id, { is_archived: true }).then(() => undefined)
 }
 
+export async function archiveLocation(id: number): Promise<void> {
+  if (!env.useMockApi) {
+    await apiClient.post(`/organization/locations/${id}/archive`)
+    return
+  }
+  await delay(300)
+  const row = getDb().locations.find((l) => l.id === id) as LocationRow | undefined
+  if (!row) throw new Error('Location not found')
+  if (row.is_archived) throw new Error('Location is already archived')
+  const now = new Date().toISOString()
+  row.is_archived = true
+  row.archived_at = now
+  row.archived_by = 1
+  row.changed_by = 1
+}
+
 export async function getSchemaDepartments() {
   if (env.useMockApi) {
     await delay()

@@ -59,6 +59,8 @@ export interface LocationRow {
   currency: string
   fiscal_year_start_month: number
   is_archived: boolean
+  archived_at: string | null
+  archived_by: number | null
   created_at: string
   updated_at: string
   changed_by: number

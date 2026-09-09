@@ -20,6 +20,7 @@ import { useLocationsList } from '../../hooks/use-organization-locations'
 import type { LocationRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 import { myAdminRoutes } from '../../routes'
+import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 
 function LocationQuickContent({ loc }: { loc: LocationRow }) {
   return (
@@ -88,6 +89,15 @@ export function LocationsListPage() {
       onOpenFull: () => openLocation(loc),
       widthClass: 'max-w-[520px]',
     })
+  }
+
+  const archiveLocation = async (id: number) => {
+    try {
+      await archiveLocation(id)
+      await refetch()
+    } catch {
+      /* error handling */
+    }
   }
 
   if (isError) {
@@ -186,24 +196,24 @@ export function LocationsListPage() {
                     </span>
                   </td>
                   <td className="px-5 py-4 text-right" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex justify-end">
-                      <RowActions
-                        label={`Actions for ${loc.name}`}
-                        actions={[
-                          {
-                            id: 'overview',
-                            label: 'Quick view',
-                            icon: 'visibility',
-                            onClick: () => openLocationOverview(loc),
-                          },
-                          {
-                            id: 'details',
-                            label: 'View details',
-                            icon: 'description',
-                            onClick: () => openLocation(loc),
-                          },
-                        ]}
-                      />
+                    <div className="flex gap-1">
+                      {/* <Can action={Action.Update} resource={ResourceName.Location}> */}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openLocation(loc)}
+                        >
+                          <span className="material-symbols-outlined">edit</span>
+                        </Button>
+                        <ArchiveButton
+                          entityLabel={loc.name}
+                          mode="archive"
+                          onConfirm={() => archiveLocation(loc.id)}
+                          disabled={isFetching}
+                          isLoading={isFetching}
+                          size="sm"
+                        />
+                      {/* </Can> */}
                     </div>
                   </td>
                 </tr>

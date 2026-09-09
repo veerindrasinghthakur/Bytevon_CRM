@@ -20,7 +20,7 @@ from app.core.db.enums import DeviceType, SessionRevokeReason, SessionStatus
 from app.core.security.jwt_manager import JWTManager
 from app.core.security.password_manager import PasswordManager
 from app.core.services.base_public_service import BasePublicService
-from app.modules.authentication.exceptions import (
+from app.modules.auth.exceptions import (
     AccountInactiveException,
     AccountLockedException,
     InvalidCredentialsException,
@@ -30,9 +30,9 @@ from app.modules.authentication.exceptions import (
     SessionExpiredException,
     SessionRevokedException,
 )
-from app.modules.authentication.models import Login, PasswordResetToken, Session
-from app.modules.authentication.repositories.repository import AuthenticationRepository
-from app.modules.authentication.schemas.schemas import (
+from app.modules.auth.models import Login, PasswordResetToken, Session
+from app.modules.auth.repositories.repository import AuthenticationRepository
+from app.modules.auth.schemas.schemas import (
     ChangePasswordRequest,
     ForgotPasswordRequest,
     LoginRequest,

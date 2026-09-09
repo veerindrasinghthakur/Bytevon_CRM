@@ -10,7 +10,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.repositories.base_repository import BaseRepository
-from app.modules.developer.models import (
+from app.modules.project.models import (
     Project,
     Task,
     TaskTimeEntry,

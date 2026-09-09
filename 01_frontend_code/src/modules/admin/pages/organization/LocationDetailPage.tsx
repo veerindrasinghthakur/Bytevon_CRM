@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
+import { useMutation } from '@tanstack/react-query'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
@@ -8,7 +9,9 @@ import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useLocationDetail, useUpdateLocation } from '../../hooks/use-organization-locations'
+import { archiveLocation } from '../../api/organization'
 import type { LocationRow } from '@/shared/schema'
+import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 
 export function LocationDetailPage() {
   const { locationId } = useParams({ strict: false }) as { locationId: string }
@@ -17,6 +20,18 @@ export function LocationDetailPage() {
   const { data: loc, isLoading, isError, error, refetch } = useLocationDetail(id)
   const updateMut = useUpdateLocation(id)
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
+
+  const archiveMut = useMutation({
+    mutationFn: archiveLocation,
+    onSuccess: () => {
+      safeNavigate(navigate, { to: '/admin/settings/locations' })
+    },
+  })
+
+  const handleArchive = () => {
+    if (!loc) return
+    archiveMut.mutate(loc.id)
+  }
   const [draft, setDraft] = useState<Partial<LocationRow>>({})
 
   const beginEdit = () => {
@@ -100,7 +115,24 @@ export function LocationDetailPage() {
             </Button>
           </div>
         ) : (
-          <EditButton variant="primary" onClick={beginEdit} />
+          // <Can do={Action.Update} on={ResourceName.Location}>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                leftIcon={<span className="material-symbols-outlined">edit</span>}
+                onClick={beginEdit}
+              >
+                Edit
+              </Button>
+              <ArchiveButton
+                entityLabel={loc?.name}
+                mode="archive"
+                onConfirm={handleArchive}
+                disabled={updateMut.isPending || archiveMut.isPending}
+                isLoading={archiveMut.isPending}
+              />
+            </div>
+          // </Can>
         )}
       </div>
 

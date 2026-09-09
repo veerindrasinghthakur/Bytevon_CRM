@@ -389,7 +389,7 @@ export function RolesListPage() {
                           role.status === 'Active' ? 'bg-[var(--color-success-emerald)]' : 'bg-on-surface-variant',
                         )}
                       />
-                      {role.status.toUpperCase()}
+                      {String(role.status ?? 'Unknown').toUpperCase()}
                     </div>
                   </div>
                 </div>

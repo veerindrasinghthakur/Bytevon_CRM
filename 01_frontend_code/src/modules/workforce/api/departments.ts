@@ -360,3 +360,16 @@ export async function listEmployeesOnShift(shiftId: number) {
     }
   })
 }
+
+export async function archiveDepartment(id: number): Promise<void> {
+  if (!env.useMockApi) {
+    await apiClient.post(`/organization/departments/${id}/archive`)
+    return
+  }
+  await delay()
+  const db = getDb()
+  const dept = db.schema_departments.find((d) => d.id === id)
+  if (dept) {
+    dept.is_archived = false
+  }
+}

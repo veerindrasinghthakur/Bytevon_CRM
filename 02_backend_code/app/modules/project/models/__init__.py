@@ -1,4 +1,4 @@
-from app.modules.developer.models.developer_models import (
+from app.modules.project.models.developer_models import (
     Project,
     Task,
     TaskTimeEntry,

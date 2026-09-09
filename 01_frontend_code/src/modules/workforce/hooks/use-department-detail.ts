@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   assignEmployeeToDepartment,
+  archiveDepartment,
   getDepartment,
   listDepartmentEmployees,
   listEmployeesNotInDepartment,
@@ -65,6 +66,13 @@ export function useDepartmentDetail(id: number) {
     },
   })
 
+  const archiveMutation = useMutation({
+    mutationFn: (id: number) => archiveDepartment(id),
+    onSuccess: async () => {
+      await invalidateDepartment()
+    },
+  })
+
   return {
     department: deptQuery.data ?? null,
     staff: staffQuery.data ?? [],
@@ -76,8 +84,9 @@ export function useDepartmentDetail(id: number) {
     updateDepartment: updateMutation.mutateAsync,
     assignEmployee: assignMutation.mutateAsync,
     removeEmployee: removeMutation.mutateAsync,
+    archiveDepartment: archiveMutation.mutateAsync,
     isMutating:
-      updateMutation.isPending || assignMutation.isPending || removeMutation.isPending,
+      updateMutation.isPending || assignMutation.isPending || removeMutation.isPending || archiveMutation.isPending,
     listCandidates: () => listEmployeesNotInDepartment(id),
     listHeadOptions: listEmploymentOptionsForPicker,
   }

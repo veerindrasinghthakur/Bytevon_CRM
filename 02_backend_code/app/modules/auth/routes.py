@@ -10,8 +10,8 @@ from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, Header, Request, status
 
-from app.modules.authentication.dependencies import AuthenticationServiceDep
-from app.modules.authentication.schemas.schemas import (
+from app.modules.auth.dependencies import AuthenticationServiceDep
+from app.modules.auth.schemas.schemas import (
     ChangePasswordRequest,
     ForgotPasswordRequest,
     LoginRequest,

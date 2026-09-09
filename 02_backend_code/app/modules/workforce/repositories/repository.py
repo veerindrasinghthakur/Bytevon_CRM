@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core.repositories.base_repository import BaseRepository
-from app.modules.employment.models import (
+from app.modules.workforce.models import (
     Employment,
     EmploymentAssignment,
     EmploymentStateHistory,

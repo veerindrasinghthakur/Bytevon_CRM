@@ -92,18 +92,21 @@ export function persistSession(session: AuthSession | null) {
   }
   const payload = JSON.stringify(session)
   sessionStorage.setItem(STORAGE_KEY, payload)
-  localStorage.setItem(STORAGE_KEY, payload)
+  if (session.rememberMe) {
+    localStorage.setItem(STORAGE_KEY, payload)
+  } else {
+    localStorage.removeItem(STORAGE_KEY)
+  }
   setCurrentEmploymentId(session.user.employmentId)
 }
 
 export async function loginApi(input: LoginInput): Promise<AuthSession> {
+  const rememberMe = input.rememberMe ?? false
   if (!env.useMockApi) {
     const { data } = await apiClient.post<BackendLoginResponse>('/auth/login', {
       email: input.email.trim(),
       password: input.password,
-      // The backend does not use a `rememberMe` flag, but we keep it for compatibility with the mock.
-      // It will be ignored by the real API.
-      rememberMe: input.rememberMe ?? false,
+      rememberMe,
     })
     const session: AuthSession = {
       user: {
@@ -121,6 +124,7 @@ export async function loginApi(input: LoginInput): Promise<AuthSession> {
         refreshToken: data.tokens.refresh_token,
         expiresIn: data.tokens.expires_in,
       },
+      rememberMe,
     }
     persistSession(session)
     return session
@@ -137,24 +141,31 @@ export async function loginApi(input: LoginInput): Promise<AuthSession> {
   const session: AuthSession = {
     user: ADMIN_USER,
     tokens: makeTokens(),
+    rememberMe,
   }
   persistSession(session)
   return session
 }
 
 export async function logoutApi(revokeAll = false): Promise<void> {
-  if (!env.useMockApi) {
-    try {
+  try {
+    if (!env.useMockApi) {
       await apiClient.post('/auth/logout', { revokeAll })
-    } catch (error) {
-      console.error('Logout failed:', error)
-      throw error
+    } else {
+      await delay(250)
     }
+  } catch (error) {
+    // Local session cleanup must succeed even when the API is unavailable.
+    const responseStatus =
+      typeof error === 'object' && error !== null
+        ? (error as AxiosErrorResponse).response?.status
+        : undefined
+    if (responseStatus !== 404) {
+      console.warn('Remote logout failed; cleared local session:', error)
+    }
+  } finally {
     persistSession(null)
-    return
   }
-  await delay(250)
-  persistSession(null)
 }
 
 export async function refreshApi(refreshToken: string): Promise<AuthSession> {

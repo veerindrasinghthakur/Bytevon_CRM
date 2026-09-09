@@ -10,6 +10,29 @@ import { delay} from '@/shared/mock/db'
 
 const TOTAL_MODULES = 18
 
+function normalizeRole(role: Record<string, any>): AdminRole {
+  const permissions = Array.isArray(role.permissions) ? role.permissions : []
+  const coverage = computeCoverage(permissions)
+  const created = role.created ?? role.created_at
+  const formattedCreated = created
+    ? new Date(created).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
+    : 'Unknown'
+
+  return {
+    id: String(role.id),
+    name: role.name ?? 'Unnamed role',
+    description: role.description ?? '',
+    usersCount: Number(role.usersCount ?? 0),
+    permissions,
+    status: role.status === 'Archived' ? 'Archived' : 'Active',
+    category: role.category ?? (role.is_system_role ? 'Core Role' : 'Standard'),
+    coveragePct: role.coveragePct ?? coverage.pct,
+    coverageLabel: role.coverageLabel ?? coverage.label,
+    created: formattedCreated,
+    updated: role.updated ?? formattedCreated,
+  }
+}
+
 /** Derive coverage from permission keys (module-ish tokens). */
 export function computeCoverage(permissions: string[]): { pct: number; label: string } {
   if (!permissions?.length) return { pct: 0, label: '0 modules' }
@@ -124,24 +147,10 @@ export async function listAdminRoles(params?: {
     { params },
   )
   if (Array.isArray(data)) {
-    return data.map((r) => {
-      const cov = computeCoverage(r.permissions ?? [])
-      return {
-        ...r,
-        coveragePct: r.coveragePct ?? cov.pct,
-        coverageLabel: r.coverageLabel ?? cov.label,
-      }
-    })
+    return data.map((r) => normalizeRole(r as Record<string, any>))
   }
   return {
-    items: (data.items ?? []).map((r) => {
-      const cov = computeCoverage(r.permissions ?? [])
-      return {
-        ...r,
-        coveragePct: r.coveragePct ?? cov.pct,
-        coverageLabel: r.coverageLabel ?? cov.label,
-      }
-    }),
+    items: (data.items ?? []).map((r) => normalizeRole(r as Record<string, any>)),
     total: data.total,
   }
 }
@@ -156,8 +165,7 @@ export async function getAdminRole(roleId: string): Promise<AdminRole | null> {
   }
   try {
     const { data } = await apiClient.get<AdminRole>(`/rbac/roles/${roleId}`)
-    const cov = computeCoverage(data.permissions ?? [])
-    return { ...data, coveragePct: data.coveragePct ?? cov.pct, coverageLabel: data.coverageLabel ?? cov.label }
+    return normalizeRole(data as Record<string, any>)
   } catch {
     return null
   }

@@ -17,14 +17,14 @@ from app.core.config import settings
 from app.core.db.enums import EmploymentState
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
-from app.modules.employment.models import (
+from app.modules.workforce.models import (
     Employment,
     EmploymentAssignment,
     EmploymentStateHistory,
     Position,
 )
-from app.modules.employment.repositories.repository import EmploymentRepository
-from app.modules.employment.schemas.schemas import (
+from app.modules.workforce.repositories.repository import EmploymentRepository
+from app.modules.workforce.schemas.schemas import (
     EmploymentAssignmentCreate,
     EmploymentAssignmentResponse,
     EmploymentCreate,

@@ -10,7 +10,7 @@ from __future__ import annotations
 from app.core.base import Base  # noqa: F401
 
 # Authentication
-from app.modules.authentication.models import (  # noqa: F401
+from app.modules.auth.models import (  # noqa: F401
     Login,
     PasswordResetToken,
     Person,
@@ -29,7 +29,7 @@ from app.modules.organization.models import (  # noqa: F401
 )
 
 # Employment
-from app.modules.employment.models import (  # noqa: F401
+from app.modules.workforce.models import (  # noqa: F401
     Employment,
     EmploymentAssignment,
     EmploymentStateHistory,
@@ -87,7 +87,7 @@ from app.modules.sales.models import (  # noqa: F401
 )
 
 # Developer
-from app.modules.developer.models import (  # noqa: F401
+from app.modules.project.models import (  # noqa: F401
     Project,
     Task,
     TaskTimeEntry,

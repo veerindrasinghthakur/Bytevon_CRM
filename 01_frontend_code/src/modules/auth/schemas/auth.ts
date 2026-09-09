@@ -37,4 +37,5 @@ export interface AuthSession {
     refreshToken: string
     expiresIn: number
   }
+  rememberMe?: boolean
 }

@@ -87,6 +87,8 @@ export function OfficeFormPage() {
         payroll_region: values.state || null,
         currency: values.currency || 'INR',
         fiscal_year_start_month: Number(values.fiscalMonth) || 4,
+        archived_at: null,
+        archived_by: null,
       })
     },
     onSuccess: async () => {

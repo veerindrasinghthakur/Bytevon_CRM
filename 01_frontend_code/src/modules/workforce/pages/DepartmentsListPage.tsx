@@ -25,6 +25,7 @@ import { workforceRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 import { DEPARTMENT_STATUS_OPTIONS } from '../schemas/enums'
+import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -157,6 +158,10 @@ export function DepartmentsListPage() {
       onOpenFull: () => goDetail(d.id),
       widthClass: 'max-w-[520px]',
     })
+  }
+
+  const archiveDepartment = (id: number) => {
+    // TODO: Implement archive logic
   }
 
   if (loading) return <PageLoadingSkeleton />

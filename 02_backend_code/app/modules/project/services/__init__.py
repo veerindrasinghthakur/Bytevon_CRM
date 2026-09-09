@@ -1,4 +1,4 @@
-from app.modules.developer.services.public_service import (
+from app.modules.project.services.public_service import (
     ProjectPublicService,
 )
 

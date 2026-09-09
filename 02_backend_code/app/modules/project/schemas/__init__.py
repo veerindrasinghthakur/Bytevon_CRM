@@ -1,4 +1,4 @@
-from app.modules.developer.schemas.schemas import (
+from app.modules.project.schemas.schemas import (
     MessageResponse,
     ProjectCreate,
     ProjectResponse,

@@ -22,15 +22,15 @@ from app.core.db.enums import (
 )
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
-from app.modules.developer.models import (
+from app.modules.project.models import (
     Project,
     Task,
     TaskTimeEntry,
     Team,
     TeamMember,
 )
-from app.modules.developer.repositories.repository import DeveloperRepository
-from app.modules.developer.schemas.schemas import (
+from app.modules.project.repositories.repository import DeveloperRepository
+from app.modules.project.schemas.schemas import (
     MessageResponse,
     ProjectCreate,
     ProjectResponse,

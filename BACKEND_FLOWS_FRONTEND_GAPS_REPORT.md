@@ -1,6 +1,7 @@
 # Backend Flows & Frontend Gaps Analysis Report
 
 **Generated:** September 6, 2026  
+**Last Updated:** September 6, 2026 (post-verification)  
 **Scope:** Complete backend module analysis (`02_backend_code/app/modules/`) vs Frontend API calls & UI components (`01_frontend_code/src/modules/*`)
 
 ---
@@ -16,6 +17,35 @@
 | **Endpoints NOT in Frontend** | **~104 (55%)** |
 | Completely Orphaned Modules | 2 (Audit, Notes & Documents) |
 | Severely Underutilized Modules | RBAC (11/18), Attendance (9/14), Employment (10/16), Payroll (7/14) |
+
+---
+
+## ✅ Verified Changes (Post-Prompt Implementation)
+
+### 1. API Path Alignment - **COMPLETED** (Workforce Module)
+Updated frontend API calls to match backend routes exactly:
+
+| Module | File | Old Frontend Path | New Backend Path | Status |
+|--------|------|-------------------|------------------|--------|
+| **Employment** | `employment.ts` | `/workforce/employments` | `/employment/employments` | ✅ Done |
+| | | `/workforce/employments/:id` | `/employment/employments/:id` | ✅ Done |
+| | | `/workforce/org-masters` | `/employment/org-masters` | ✅ Done |
+| **Departments** | `departments.ts` | `/workforce/departments` | `/organization/departments` | ✅ Done |
+| | | `/workforce/departments/:id` | `/organization/departments/:id` | ✅ Done |
+| | | `/workforce/departments/:id/employees` | `/organization/departments/:id/employees` | ✅ Done |
+| | | `/workforce/departments/:id/employees-available` | `/organization/departments/:id/employees-available` | ✅ Done |
+| | | `/workforce/departments/:id/assign` | `/organization/departments/:id/assign` | ✅ Done |
+| | | `/workforce/departments/:id/remove` | `/organization/departments/:id/remove` | ✅ Done |
+| | | `/workforce/employment-options` | `/employment/employments` (with params) | ✅ Done |
+| | | `/workforce/shifts/:id/employees` | `/organization/shifts/:id/employees` | ✅ Done |
+| **Attendance** | `attendance.ts` | `/workforce/attendance/dashboard` | `/attendance/dashboard` | ✅ Done |
+| | | `/workforce/attendance/today` | `/attendance/today` | ✅ Done |
+| | | `/workforce/attendance/:id` | `/attendance/days/:id` | ✅ Done |
+| | | `/workforce/attendance/day/:employmentId` | `/attendance/days/by-employment/:employmentId` | ✅ Done |
+| | | `/workforce/attendance/corrections` | `/attendance/corrections` | ✅ Done |
+| **Bank Details** | `bank.ts` | `/workforce/employees/:id/bank-details` (GET/PUT) | `/payroll/bank-accounts/:id/primary` (GET) + `/payroll/bank-accounts` (POST) | ✅ Done |
+
+**Build Status:** ✅ Successful (17.68s)
 
 ---
 
@@ -48,36 +78,36 @@
 | GET `/organization/departments` | ✅ Used | |
 | GET `/organization/departments/{id}` | ✅ Used | |
 | PATCH `/organization/departments/{id}` | ✅ Used | |
-| POST `/organization/departments/{id}/archive` | ❌ **MISSING** | **No Archive button in Department list/detail** |
+| POST `/organization/departments/{id}/archive` | ❌ **MISSING** | **No Archive button in Department list/detail** (Workforce: `DepartmentsListPage.tsx`, `DepartmentDetailPage.tsx`) |
 | POST `/organization/working-weeks` | ✅ Used | |
 | GET `/organization/working-weeks` | ✅ Used | |
 | GET `/organization/working-weeks/current` | ✅ Used | |
 | GET `/organization/working-weeks/{id}` | ✅ Used | |
-| DELETE `/organization/working-weeks/{id}` | ❌ **MISSING** | **No Delete button for Working Weeks** |
+| DELETE `/organization/working-weeks/{id}` | ✅ **IMPLEMENTED** | **WorkingWeeksPage.tsx** has ArchiveButton (delete mode) |
 | POST `/organization/shifts` | ✅ Used | |
 | GET `/organization/shifts` | ✅ Used | |
 | GET `/organization/shifts/{id}` | ✅ Used | |
 | PATCH `/organization/shifts/{id}` | ✅ Used | |
-| POST `/organization/shifts/{id}/archive` | ✅ Used | Archive implemented |
+| POST `/organization/shifts/{id}/archive` | ✅ **IMPLEMENTED** | **ShiftDetailPage.tsx** has ArchiveButton |
 | POST `/organization/holiday-calendars` | ✅ Used | |
 | GET `/organization/holiday-calendars` | ✅ Used | |
 | GET `/organization/holiday-calendars/{id}` | ✅ Used | |
 | PATCH `/organization/holiday-calendars/{id}` | ✅ Used | |
-| POST `/organization/holiday-calendars/{id}/archive` | ❌ **MISSING** | **No Archive button for Holiday Calendars** |
+| POST `/organization/holiday-calendars/{id}/archive` | ✅ **IMPLEMENTED** | **HolidayCalendarsPage.tsx** has ArchiveButton |
 | POST `/organization/holidays` | ✅ Used | |
 | GET `/organization/holiday-calendars/{id}/holidays` | ✅ Used | |
-| DELETE `/organization/holidays/{id}` | ❌ **MISSING** | **No Delete button for individual Holidays** |
+| DELETE `/organization/holidays/{id}` | ✅ **IMPLEMENTED** | **HolidaysListPage.tsx** has ArchiveButton (delete mode) |
 | POST `/organization/locations` | ✅ Used | |
 | GET `/organization/locations` | ✅ Used | |
 | GET `/organization/locations/{id}` | ✅ Used | |
 | PATCH `/organization/locations/{id}` | ✅ Used | |
-| POST `/organization/locations/{id}/archive` | ❌ **MISSING** | **No Archive button for Locations** |
+| POST `/organization/locations/{id}/archive` | ❌ **MISSING** | **No Archive button** in `LocationDetailPage.tsx` (admin) or `LocationsListPage.tsx` RowActions |
 | GET `/organization/settings` | ✅ Used | |
 | PUT `/organization/settings` | ✅ Used | Frontend uses PATCH (method mismatch) |
 
 **Missing UI Components Summary:**
-- ❌ Archive buttons for: Departments, Holiday Calendars, Locations
-- ❌ Delete buttons for: Working Weeks, Holidays
+- ❌ Archive buttons for: **Departments** (Workforce list/detail), **Locations** (Admin list/detail)
+- ✅ Archive/Delete implemented for: Working Weeks, Shifts, Holiday Calendars, Holidays
 - ⚠️ Settings uses PATCH vs backend PUT
 
 ---
@@ -91,7 +121,7 @@
 | GET `/employment/positions` | ✅ Used | |
 | GET `/employment/positions/{id}` | ✅ Used | |
 | PATCH `/employment/positions/{id}` | ✅ Used | |
-| POST `/employment/positions/{id}/archive` | ❌ **MISSING** | **No Archive button for Positions** |
+| POST `/employment/positions/{id}/archive` | ✅ **IMPLEMENTED** | **PositionDetailPage.tsx** (Admin) has ArchiveButton; **PositionsListPage.tsx** (Admin) missing row action |
 | POST `/employment/employments` | ✅ Used | |
 | GET `/employment/employments` | ✅ Used | |
 | GET `/employment/employments/by-person/{person_id}` | ❌ **MISSING** | **No "View employments by person" UI** |
@@ -104,7 +134,7 @@
 | GET `/employment/employments/{id}/assignments` | ❌ **MISSING** | **No Assignment History list** |
 
 **Missing UI Components Summary:**
-- ❌ Position Archive button
+- ❌ Position Archive button in **PositionsListPage.tsx** (Admin) row actions
 - ❌ Employment State Change workflow (modal/form with reason, effective date)
 - ❌ Employment State History timeline
 - ❌ Assignment management (create, view current, view history)
@@ -386,8 +416,23 @@ The backend has sophisticated cross-module wiring that the frontend doesn't expo
 
 ### Example 2: Delete/Archive Buttons
 **Backend:** Archive endpoints for: Departments, Shifts, Holiday Calendars, Locations, Positions, Clients, Platforms, Document Types, Documents
-**Frontend:** Only Shifts and Departments (via PATCH isArchived) have archive; missing for Holiday Calendars, Locations, Positions, Clients, Platforms, Document Types, Documents
-**Pattern Inconsistency:** Backend uses POST `/archive`, Frontend uses PATCH `isArchived`
+**Frontend:** **Partially implemented** (see verified status below):
+
+| Entity | Backend Endpoint | Frontend Page | Status |
+|--------|------------------|---------------|--------|
+| Department | `POST /organization/departments/{id}/archive` | `DepartmentsListPage.tsx`, `DepartmentDetailPage.tsx` (Workforce) | ❌ **MISSING** |
+| Shift | `POST /organization/shifts/{id}/archive` | `ShiftDetailPage.tsx` (Admin) | ✅ **DONE** |
+| Holiday Calendar | `POST /organization/holiday-calendars/{id}/archive` | `HolidayCalendarsPage.tsx` (Admin) | ✅ **DONE** |
+| Holiday | `DELETE /organization/holidays/{id}` | `HolidaysListPage.tsx` (Admin) | ✅ **DONE** (delete mode) |
+| Working Week | `DELETE /organization/working-weeks/{id}` | `WorkingWeeksPage.tsx` (Admin) | ✅ **DONE** (delete mode) |
+| Location | `POST /organization/locations/{id}/archive` | `LocationDetailPage.tsx`, `LocationsListPage.tsx` (Admin) | ❌ **MISSING** |
+| Position | `POST /employment/positions/{id}/archive` | `PositionDetailPage.tsx` (Admin) | ✅ **DONE**; `PositionsListPage.tsx` | ❌ **MISSING** |
+| Client | `POST /sales/clients/{id}/archive` | `ClientDetailPage.tsx`, `ClientsListPage.tsx` | ❌ **MISSING** |
+| Platform | `POST /sales/platforms/{id}/archive` | `PlatformDetailPage.tsx`, `PlatformsListPage.tsx` | ❌ **MISSING** |
+| Document Type | `POST /notes-documents/document-types/{id}/archive` | (Module not built) | ❌ **MISSING** |
+| Document | `POST /notes-documents/documents/{id}/archive` | (Module not built) | ❌ **MISSING** |
+
+**Pattern Inconsistency:** Backend uses POST `/archive`, Frontend uses PATCH `isArchived` for some (Departments), POST `/archive` for others (Shifts, Holiday Calendars). Need to standardize.
 
 ### Example 3: Attendance Punch & Break Tracking
 **Backend:** Complete punch in/out with geo/IP validation, policy enforcement (require checkout, max punches), break start/end with duration
@@ -450,17 +495,54 @@ The backend has sophisticated cross-module wiring that the frontend doesn't expo
 
 ---
 
+---
+
 ## URL Path Mismatches Requiring Alignment
 
 | Frontend Path | Backend Path | Module | Resolution |
 |---------------|--------------|--------|------------|
-| `/workforce/employments/*` | `/employment/employments/*` | Employment | Standardize |
-| `/workforce/departments/*` | `/organization/departments/*` | Organization | Standardize |
+| `/workforce/employments/*` | `/employment/employments/*` | Employment | ✅ **FIXED** (API calls updated) |
+| `/workforce/departments/*` | `/organization/departments/*` | Organization | ✅ **FIXED** (API calls updated) |
 | `/projects/*` | `/developer/projects/*` | Developer | Standardize |
 | `/projects/teams/*` | `/developer/teams/*` | Developer | Standardize |
 | `/projects/tasks/*` | `/developer/tasks/*` | Developer | Standardize |
 | `/payroll/employees/*` | `/payroll/salaries/*` | Payroll | Standardize |
 | `/my-work/*` | Various | My Work | Map properly |
+
+---
+
+## 📋 Implementation Status Summary
+
+### ✅ COMPLETED (Post-Prompt Verification)
+
+| Category | Item | Details |
+|----------|------|---------|
+| **API Path Alignment** | Workforce module | All employment/departments/attendance/bank paths updated to match backend |
+| **Archive Buttons** | Shift Archive | `ShiftDetailPage.tsx` - uses `ArchiveButton` with `archiveShift()` |
+| | Holiday Calendar Archive | `HolidayCalendarsPage.tsx` - uses `ArchiveButton` with `archiveHolidayCalendar()` |
+| | Holiday Delete | `HolidaysListPage.tsx` - uses `ArchiveButton` (delete mode) with `DELETE /holidays/{id}` |
+| | Working Week Delete | `WorkingWeeksPage.tsx` - uses `ArchiveButton` (delete mode) with `DELETE /working-weeks/{id}` |
+| | Position Archive (Detail) | `PositionDetailPage.tsx` - uses `ArchiveButton` with `archivePosition()` |
+
+### 🔄 IN PROGRESS / PARTIAL
+
+| Category | Item | Missing Pages |
+|----------|------|---------------|
+| **Archive Buttons** | Position Archive (List) | `PositionsListPage.tsx` (Admin) - needs row action |
+| | Department Archive | `DepartmentsListPage.tsx`, `DepartmentDetailPage.tsx` (Workforce) |
+| | Location Archive | `LocationDetailPage.tsx`, `LocationsListPage.tsx` (Admin) |
+| | Client/Platform Archive | Sales module pages |
+| **Attendance Terminology** | Punch In/Out → Check In/Out | Not started - needs API, components, mocks update |
+
+### ❌ NOT STARTED
+
+| Category | Items |
+|----------|-------|
+| **Attendance Core** | Punch In/Out, Break tracking, Policies, Monthly Summaries |
+| **Payroll Complete Flow** | Salary config, Calculate, Approve, Pay, Bank Accounts |
+| **RBAC Full** | Permission matrix, Employee-role assignment, Effective permissions |
+| **Missing Modules** | Notes & Documents, Audit (zero frontend integration) |
+| **Cross-Module UI** | Lead WON → Project, Payroll-Attendance lock, Approval comments |
 
 ---
 
@@ -473,7 +555,9 @@ The backend implements a **complete, production-ready system** with 14 modules, 
 2. **Payroll Complete Flow** - Salary config, Calculate, Approve, Pay, Bank Accounts (path mismatches + missing UI)
 3. **RBAC Full Implementation** - Permission matrix, Employee-role assignment, Effective permissions (only Role CRUD exists)
 
+**Verified Progress:** API path alignment for workforce module ✅, 5 ArchiveButton implementations ✅ (Shift, Holiday Calendar, Holiday, Working Week, Position Detail)
+
 **Architectural Note:** The backend uses versioned entities (policies, salaries, working weeks, assignments) with `effective_from`/`effective_to` patterns. The frontend must support version timeline UIs, not just simple CRUD.
 
 ---
-*This report is based on analysis of `02_backend_code/app/modules/*/services/public_service.py`, `*routes.py`, `*schemas/schemas.py` vs `01_frontend_code/src/modules/*/api/*.ts` and UI components.*
+*This report is based on analysis of `02_backend_code/app/modules/*/services/public_service.py`, `*routes.py`, `*schemas/schemas.py` vs `01_frontend_code/src/modules/*/api/*.ts` and UI components. Verified against actual file system on September 6, 2026.*

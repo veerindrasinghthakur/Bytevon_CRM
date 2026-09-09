@@ -405,7 +405,7 @@ class SalesPublicService(BasePublicService):
         Returns project_id or None if module not yet implemented.
         """
         try:
-            from app.modules.developer.services.public_service import (
+            from app.modules.project.services.public_service import (
                 ProjectPublicService,
             )
 

@@ -1,4 +1,4 @@
-from app.modules.authentication.models.authentication_models import (
+from app.modules.auth.models.authentication_models import (
     Login,
     PasswordResetToken,
     Person,
