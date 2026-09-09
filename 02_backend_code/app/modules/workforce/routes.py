@@ -52,7 +52,7 @@ async def create_person(
     service: EmploymentServiceDep,
     actor: ActorHeader = None,
 ) -> PersonResponse:
-    return await service.create_person(body, actor_employment_id=actor)
+    return await service.create_person_response(body, actor_employment_id=actor)
 
 
 @router.get("/persons", response_model=list[PersonResponse])

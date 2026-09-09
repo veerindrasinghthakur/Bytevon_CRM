@@ -19,6 +19,7 @@ from app.core.db.enums import EmploymentState
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
 from app.modules.auth.models import Person
+from app.modules.organization.models import Department, Location, Shift
 from app.modules.workforce.models import (
     Employment,
     EmploymentAssignment,
@@ -48,6 +49,13 @@ from app.modules.workforce.schemas.schemas import (
 logger = logging.getLogger(__name__)
 
 
+def _optional_id(value: Optional[int]) -> Optional[int]:
+    """Treat 0 / negative as unset (Swagger often sends 0 for optional ints)."""
+    if value is None or value <= 0:
+        return None
+    return value
+
+
 class EmploymentPublicService(BasePublicService):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
@@ -59,6 +67,43 @@ class EmploymentPublicService(BasePublicService):
             raise NotFoundError(f"Person not found (id={person_id})")
         return person
 
+    async def _person_response(self, person: Person) -> PersonResponse:
+        """Refresh so server-side updated_at/created_at are loaded after commit."""
+        await self._session.refresh(person)
+        return PersonResponse.model_validate(person)
+
+    async def _validate_assignment_refs(
+        self,
+        *,
+        department_id: Optional[int],
+        position_id: Optional[int],
+        location_id: Optional[int],
+        shift_id: Optional[int],
+    ) -> tuple[Optional[int], Optional[int], Optional[int], Optional[int]]:
+        department_id = _optional_id(department_id)
+        position_id = _optional_id(position_id)
+        location_id = _optional_id(location_id)
+        shift_id = _optional_id(shift_id)
+
+        if department_id is not None:
+            dept = await self._session.get(Department, department_id)
+            if dept is None:
+                raise NotFoundError(f"Department not found (id={department_id})")
+        if position_id is not None:
+            pos = await self._repo.get_position_by_id(position_id)
+            if pos is None:
+                raise NotFoundError(f"Position not found (id={position_id})")
+        if location_id is not None:
+            loc = await self._session.get(Location, location_id)
+            if loc is None:
+                raise NotFoundError(f"Location not found (id={location_id})")
+        if shift_id is not None:
+            shift = await self._session.get(Shift, shift_id)
+            if shift is None:
+                raise NotFoundError(f"Shift not found (id={shift_id})")
+
+        return department_id, position_id, location_id, shift_id
+
     # ==================================================================
     # Persons
     # ==================================================================
@@ -68,7 +113,8 @@ class EmploymentPublicService(BasePublicService):
         data: PersonCreate,
         *,
         actor_employment_id: Optional[int] = None,
-    ) -> PersonResponse:
+        commit: bool = True,
+    ) -> Person:
         person = Person(
             first_name=data.first_name.strip(),
             last_name=data.last_name.strip(),
@@ -78,9 +124,21 @@ class EmploymentPublicService(BasePublicService):
             address=data.address,
         )
         self._session.add(person)
-        await self._commit()
-        await self._audit("person.created", person.id, actor_employment_id)
-        return PersonResponse.model_validate(person)
+        if commit:
+            await self._commit()
+            await self._audit("person.created", person.id, actor_employment_id)
+        else:
+            await self._flush()
+        return person
+
+    async def create_person_response(
+        self,
+        data: PersonCreate,
+        *,
+        actor_employment_id: Optional[int] = None,
+    ) -> PersonResponse:
+        person = await self.create_person(data, actor_employment_id=actor_employment_id)
+        return await self._person_response(person)
 
     async def get_person(self, person_id: int) -> PersonResponse:
         person = await self._require_person(person_id)
@@ -116,7 +174,7 @@ class EmploymentPublicService(BasePublicService):
             setattr(person, field, value)
         await self._commit()
         await self._audit("person.updated", person.id, actor_employment_id)
-        return PersonResponse.model_validate(person)
+        return await self._person_response(person)
 
     # ==================================================================
     # Positions
@@ -136,6 +194,7 @@ class EmploymentPublicService(BasePublicService):
         await self._repo.add(pos)
         await self._commit()
         await self._audit("position.created", pos.id, actor_employment_id)
+        await self._session.refresh(pos)
         return PositionResponse.model_validate(pos)
 
     async def get_position(self, position_id: int) -> PositionResponse:
@@ -167,6 +226,7 @@ class EmploymentPublicService(BasePublicService):
             pos.name = data.name
         await self._commit()
         await self._audit("position.updated", pos.id, actor_employment_id)
+        await self._session.refresh(pos)
         return PositionResponse.model_validate(pos)
 
     async def archive_position(
@@ -199,7 +259,7 @@ class EmploymentPublicService(BasePublicService):
         *,
         actor_employment_id: Optional[int] = None,
     ) -> EmploymentDetailResponse:
-        """Create Person + Employment (and optional assignment) in one transaction."""
+        """Create Person + Employment (+ optional assignment) in a single transaction."""
         person = await self.create_person(
             PersonCreate(
                 first_name=data.first_name,
@@ -210,10 +270,8 @@ class EmploymentPublicService(BasePublicService):
                 address=data.address,
             ),
             actor_employment_id=actor_employment_id,
+            commit=False,
         )
-        # create_person already committed — employment create is a follow-up TX
-        # Prefer single TX: reimplement without nested commit
-        # Rebuild as single path below for atomicity
         return await self.create_employment(
             EmploymentCreate(
                 person_id=person.id,
@@ -222,14 +280,15 @@ class EmploymentPublicService(BasePublicService):
                 joining_date=data.joining_date,
                 initial_state=data.initial_state,
                 initial_state_reason=data.initial_state_reason,
-                department_id=data.department_id,
-                position_id=data.position_id,
-                location_id=data.location_id,
-                shift_id=data.shift_id,
+                department_id=_optional_id(data.department_id),
+                position_id=_optional_id(data.position_id),
+                location_id=_optional_id(data.location_id),
+                shift_id=_optional_id(data.shift_id),
                 work_mode=data.work_mode,
                 assignment_change_reason=data.assignment_change_reason,
             ),
             actor_employment_id=actor_employment_id,
+            person=person,
         )
 
     async def create_employment(
@@ -237,10 +296,12 @@ class EmploymentPublicService(BasePublicService):
         data: EmploymentCreate,
         *,
         actor_employment_id: Optional[int] = None,
+        person: Optional[Person] = None,
     ) -> EmploymentDetailResponse:
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
 
-        person = await self._require_person(data.person_id)
+        if person is None:
+            person = await self._require_person(data.person_id)
 
         existing_code = await self._repo.get_employment_by_code(data.employee_code)
         if existing_code:
@@ -268,15 +329,14 @@ class EmploymentPublicService(BasePublicService):
         await self._repo.add(history)
 
         current_assignment = None
-        if any(
-            [
-                data.department_id,
-                data.position_id,
-                data.location_id,
-                data.shift_id,
-                data.work_mode,
-            ]
-        ):
+        dept_id, pos_id, loc_id, shift_id = await self._validate_assignment_refs(
+            department_id=data.department_id,
+            position_id=data.position_id,
+            location_id=data.location_id,
+            shift_id=data.shift_id,
+        )
+        wants_assignment = any([dept_id, pos_id, loc_id, shift_id, data.work_mode])
+        if wants_assignment:
             if data.work_mode is None:
                 raise DomainError("work_mode is required when creating an assignment")
             if not data.assignment_change_reason:
@@ -285,10 +345,10 @@ class EmploymentPublicService(BasePublicService):
                 )
             assignment = EmploymentAssignment(
                 employment_id=emp.id,
-                department_id=data.department_id,
-                position_id=data.position_id,
-                location_id=data.location_id,
-                shift_id=data.shift_id,
+                department_id=dept_id,
+                position_id=pos_id,
+                location_id=loc_id,
+                shift_id=shift_id,
                 work_mode=data.work_mode,
                 effective_from=data.joining_date,
                 effective_to=None,
@@ -300,6 +360,12 @@ class EmploymentPublicService(BasePublicService):
 
         await self._commit()
         await self._audit("employment.created", emp.id, actor_employment_id)
+
+        await self._session.refresh(emp)
+        if current_assignment is not None:
+            await self._session.refresh(current_assignment)
+        await self._session.refresh(history)
+        await self._session.refresh(person)
 
         return EmploymentDetailResponse(
             **EmploymentResponse.model_validate(emp).model_dump(),
@@ -381,6 +447,7 @@ class EmploymentPublicService(BasePublicService):
         emp.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
         await self._audit("employment.updated", emp.id, actor_employment_id)
+        await self._session.refresh(emp)
         return EmploymentResponse.model_validate(emp)
 
     # ==================================================================
@@ -429,6 +496,7 @@ class EmploymentPublicService(BasePublicService):
 
         await self._commit()
         await self._audit("employment.state_changed", emp.id, actor_employment_id)
+        await self._session.refresh(history)
         return EmploymentStateHistoryResponse.model_validate(history)
 
     async def list_state_history(
@@ -456,6 +524,12 @@ class EmploymentPublicService(BasePublicService):
             raise NotFoundError("Employment not found")
 
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        dept_id, pos_id, loc_id, shift_id = await self._validate_assignment_refs(
+            department_id=data.department_id,
+            position_id=data.position_id,
+            location_id=data.location_id,
+            shift_id=data.shift_id,
+        )
 
         current = await self._repo.get_current_assignment(
             employment_id, as_of=data.effective_from
@@ -469,10 +543,10 @@ class EmploymentPublicService(BasePublicService):
 
         assignment = EmploymentAssignment(
             employment_id=employment_id,
-            department_id=data.department_id,
-            position_id=data.position_id,
-            location_id=data.location_id,
-            shift_id=data.shift_id,
+            department_id=dept_id,
+            position_id=pos_id,
+            location_id=loc_id,
+            shift_id=shift_id,
             work_mode=data.work_mode,
             effective_from=data.effective_from,
             effective_to=None,
@@ -484,6 +558,7 @@ class EmploymentPublicService(BasePublicService):
         await self._audit(
             "employment.assignment_created", assignment.id, actor_employment_id
         )
+        await self._session.refresh(assignment)
         return EmploymentAssignmentResponse.model_validate(assignment)
 
     async def get_current_assignment(
