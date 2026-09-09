@@ -1,5 +1,5 @@
 """
-Employment HTTP routes.
+Workforce HTTP routes (formerly employment module).
 
 All operations go through EmploymentPublicService.
 Actor temporarily from X-Employment-Id header.
@@ -29,7 +29,7 @@ from app.modules.workforce.schemas.schemas import (
     PositionUpdate,
 )
 
-router = APIRouter(prefix="/employment", tags=["Employment"])
+router = APIRouter(prefix="/workforce", tags=["Workforce"])
 
 ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
 
