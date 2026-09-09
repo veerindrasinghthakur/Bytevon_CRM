@@ -78,6 +78,8 @@ function mapApiDepartmentDetail(row: Record<string, unknown>): DepartmentListIte
   openPositions?: number
   employees?: DepartmentEmployee[]
   head?: DepartmentEmployee
+  updated_at?: string
+  changed_by?: number
 } {
   const base = mapApiDepartment(row)
   const employees = row.employees
@@ -99,6 +101,8 @@ function mapApiDepartmentDetail(row: Record<string, unknown>): DepartmentListIte
     openPositions: Number(row.openPositions ?? 0),
     employees,
     head,
+    updated_at: String(row.updated_at ?? row.updatedAt ?? ''),
+    changed_by: Number(row.changed_by ?? 0),
   }
 }
 
