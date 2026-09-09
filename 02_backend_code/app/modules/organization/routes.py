@@ -18,7 +18,10 @@ from app.modules.organization.schemas.schemas import (
     AdminUserDetailResponse,
     AdminUserListResponse,
     AdminUserUpdate,
+    DepartmentAssignRequest,
     DepartmentCreate,
+    DepartmentEmployee,
+    DepartmentEmployeeOption,
     DepartmentResponse,
     DepartmentUpdate,
     EmploymentWithoutLogin,
@@ -101,6 +104,58 @@ async def archive_department(
 ) -> MessageResponse:
     return await service.archive_department(
         department_id, actor_employment_id=actor
+    )
+
+
+@router.get(
+    "/departments/{department_id}/employees",
+    response_model=list[DepartmentEmployee],
+)
+async def list_department_employees(
+    department_id: int,
+    service: OrganizationServiceDep,
+) -> list[DepartmentEmployee]:
+    return await service.list_department_employees(department_id)
+
+
+@router.get(
+    "/departments/{department_id}/employees-available",
+    response_model=list[DepartmentEmployeeOption],
+)
+async def list_employees_available_for_department(
+    department_id: int,
+    service: OrganizationServiceDep,
+) -> list[DepartmentEmployeeOption]:
+    return await service.list_employees_available_for_department(department_id)
+
+
+@router.post(
+    "/departments/{department_id}/assign",
+    response_model=MessageResponse,
+)
+async def assign_employee_to_department(
+    department_id: int,
+    body: DepartmentAssignRequest,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> MessageResponse:
+    return await service.assign_employee_to_department(
+        department_id, body.employmentId, actor_employment_id=actor
+    )
+
+
+@router.post(
+    "/departments/{department_id}/remove",
+    response_model=MessageResponse,
+)
+async def remove_employee_from_department(
+    department_id: int,
+    body: DepartmentAssignRequest,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> MessageResponse:
+    return await service.remove_employee_from_department(
+        department_id, body.employmentId, actor_employment_id=actor
     )
 
 
