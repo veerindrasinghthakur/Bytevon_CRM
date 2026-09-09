@@ -1,5 +1,9 @@
 """
 Pydantic v2 schemas for Organization module.
+
+Response fields must match ORM mixins:
+  Department / WorkingWeek: CreatedAtMixin + created_by (no updated_at/changed_by)
+  Shift / HolidayCalendar / Location / Settings: TimestampMixin + ChangedByMixin
 """
 
 from __future__ import annotations
@@ -22,7 +26,7 @@ class MessageResponse(BaseModel):
 
 
 # ===========================================================================
-# Department
+# Department — ArchiveMixin + CreatedAtMixin + created_by
 # ===========================================================================
 
 class DepartmentCreate(BaseModel):
@@ -40,11 +44,10 @@ class DepartmentResponse(BaseModel):
 
     id: int
     name: str
-    department_head_employment_id: Optional[int]
-    is_archived: bool
+    department_head_employment_id: Optional[int] = None
+    is_archived: bool = False
     created_at: datetime
-    updated_at: datetime
-    changed_by: Optional[int]
+    created_by: Optional[int] = None
 
 
 class DepartmentEmployee(BaseModel):
@@ -67,60 +70,49 @@ class DepartmentEmployeeOption(BaseModel):
 
 
 # ===========================================================================
-# WorkingWeek
+# WorkingWeek — EffectiveDatingMixin + CreatedAtMixin + created_by
 # ===========================================================================
 
 class WorkingWeekCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=150)
+    working_days_of_week: List[int] = Field(..., min_length=1)
     effective_from: date
-    monday: bool = True
-    tuesday: bool = True
-    wednesday: bool = True
-    thursday: bool = True
-    friday: bool = True
-    saturday: bool = False
-    sunday: bool = False
 
 
 class WorkingWeekResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    name: str
+    working_days_of_week: List[int]
     effective_from: date
-    monday: bool
-    tuesday: bool
-    wednesday: bool
-    thursday: bool
-    friday: bool
-    saturday: bool
-    sunday: bool
-    is_archived: bool
+    effective_to: Optional[date] = None
     created_at: datetime
-    updated_at: datetime
-    changed_by: Optional[int]
+    created_by: Optional[int] = None
 
 
 # ===========================================================================
-# Shift
+# Shift — TimestampMixin + ChangedByMixin
 # ===========================================================================
 
 class ShiftCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     start_time: time
     end_time: time
-    break_minutes: int = 0
     is_overnight: bool = False
-    grace_in_minutes: int = 0
-    grace_out_minutes: int = 0
+    grace_late_minutes: int = Field(0, ge=0)
+    flexible_end: bool = False
+    break_duration_minutes: Optional[int] = None
 
 
 class ShiftUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     start_time: Optional[time] = None
     end_time: Optional[time] = None
-    break_minutes: Optional[int] = None
     is_overnight: Optional[bool] = None
-    grace_in_minutes: Optional[int] = None
-    grace_out_minutes: Optional[int] = None
+    grace_late_minutes: Optional[int] = Field(None, ge=0)
+    flexible_end: Optional[bool] = None
+    break_duration_minutes: Optional[int] = None
 
 
 class ShiftResponse(BaseModel):
@@ -130,14 +122,14 @@ class ShiftResponse(BaseModel):
     name: str
     start_time: time
     end_time: time
-    break_minutes: int
-    is_overnight: bool
-    grace_in_minutes: int
-    grace_out_minutes: int
-    is_archived: bool
+    is_overnight: bool = False
+    grace_late_minutes: int = 0
+    flexible_end: bool = False
+    break_duration_minutes: Optional[int] = None
+    is_archived: bool = False
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int]
+    changed_by: Optional[int] = None
 
 
 # ===========================================================================
@@ -146,7 +138,6 @@ class ShiftResponse(BaseModel):
 
 class HolidayCalendarCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
-    year: int
 
 
 class HolidayCalendarUpdate(BaseModel):
@@ -158,18 +149,18 @@ class HolidayCalendarResponse(BaseModel):
 
     id: int
     name: str
-    year: int
-    is_archived: bool
+    is_archived: bool = False
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int]
+    changed_by: Optional[int] = None
 
 
 class HolidayCreate(BaseModel):
     holiday_calendar_id: int
     name: str = Field(..., min_length=1, max_length=150)
-    holiday_date: date
+    date: date
     holiday_type: HolidayType
+    recurring_flag: bool = False
 
 
 class HolidayResponse(BaseModel):
@@ -178,11 +169,11 @@ class HolidayResponse(BaseModel):
     id: int
     holiday_calendar_id: int
     name: str
-    holiday_date: date
+    date: date
     holiday_type: HolidayType
-    is_archived: bool
+    recurring_flag: bool = False
     created_at: datetime
-    changed_by: Optional[int]
+    changed_by: Optional[int] = None
 
 
 # ===========================================================================
@@ -191,7 +182,7 @@ class HolidayResponse(BaseModel):
 
 class LocationCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
-    timezone: str = Field(..., min_length=1, max_length=64)
+    timezone: str = Field(..., min_length=1, max_length=100)
     latitude: Decimal
     longitude: Decimal
     attendance_radius_meters: int = 200
@@ -201,13 +192,15 @@ class LocationCreate(BaseModel):
     city: str = Field(..., min_length=1, max_length=100)
     address: str = Field(..., min_length=1)
     payroll_region: Optional[str] = None
-    currency: str = Field(..., min_length=1, max_length=10)
+    currency: str = Field(..., min_length=1, max_length=20)
     fiscal_year_start_month: int = Field(1, ge=1, le=12)
+    working_week_id: Optional[int] = None
+    holiday_calendar_id: Optional[int] = None
 
 
 class LocationUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=150)
-    timezone: Optional[str] = Field(None, min_length=1, max_length=64)
+    timezone: Optional[str] = Field(None, min_length=1, max_length=100)
     latitude: Optional[Decimal] = None
     longitude: Optional[Decimal] = None
     attendance_radius_meters: Optional[int] = None
@@ -217,8 +210,10 @@ class LocationUpdate(BaseModel):
     city: Optional[str] = Field(None, min_length=1, max_length=100)
     address: Optional[str] = None
     payroll_region: Optional[str] = None
-    currency: Optional[str] = Field(None, min_length=1, max_length=10)
+    currency: Optional[str] = Field(None, min_length=1, max_length=20)
     fiscal_year_start_month: Optional[int] = Field(None, ge=1, le=12)
+    working_week_id: Optional[int] = None
+    holiday_calendar_id: Optional[int] = None
 
 
 class LocationResponse(BaseModel):
@@ -227,21 +222,23 @@ class LocationResponse(BaseModel):
     id: int
     name: str
     timezone: str
+    working_week_id: Optional[int] = None
+    holiday_calendar_id: Optional[int] = None
     latitude: Decimal
     longitude: Decimal
     attendance_radius_meters: int
-    allowed_ip_cidrs: List[str]
+    allowed_ip_cidrs: List[str] = Field(default_factory=list)
     country: str
     state: str
     city: str
     address: str
-    payroll_region: Optional[str]
+    payroll_region: Optional[str] = None
     currency: str
     fiscal_year_start_month: int
-    is_archived: bool
+    is_archived: bool = False
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int]
+    changed_by: Optional[int] = None
 
 
 # ===========================================================================
@@ -261,13 +258,13 @@ class OrganizationSettingsResponse(BaseModel):
 
     id: int
     company_name: str
-    head_office_location_id: Optional[int]
+    head_office_location_id: Optional[int] = None
     default_timezone: str
     default_currency: str
-    logo_reference: Optional[str]
+    logo_reference: Optional[str] = None
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int]
+    changed_by: Optional[int] = None
 
 
 # ===========================================================================
