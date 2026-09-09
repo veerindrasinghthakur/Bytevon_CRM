@@ -13,10 +13,7 @@ from app.modules.authentication.routes import router as auth_router
 from app.modules.employment.routes import router as employment_router
 from app.modules.leave.routes import router as leave_router
 from app.modules.notifications.routes import router as notifications_router
-from app.modules.organization.routes import (
-    admin_users_router,
-    router as organization_router,
-)
+from app.modules.organization.routes import router as organization_router
 from app.modules.rbac.routes import router as rbac_router
 from app.modules.audit.routes import router as audit_router
 from app.modules.developer.routes import router as developer_router
@@ -28,7 +25,6 @@ api_router = APIRouter(prefix=settings.API_V1_PREFIX)
 
 api_router.include_router(auth_router)
 api_router.include_router(organization_router)
-api_router.include_router(admin_users_router)
 api_router.include_router(employment_router)
 api_router.include_router(rbac_router)
 api_router.include_router(approvals_router)
