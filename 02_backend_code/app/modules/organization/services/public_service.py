@@ -47,17 +47,15 @@ from app.modules.organization.schemas.schemas import (
     WorkingWeekResponse,
 )
 from app.modules.organization.services.admin_users_mixin import AdminUsersMixin
+from app.modules.organization.services.department_members import DepartmentMembersMixin
 
 logger = logging.getLogger(__name__)
 
 
-class OrganizationPublicService(AdminUsersMixin, BasePublicService):
+class OrganizationPublicService(AdminUsersMixin, DepartmentMembersMixin, BasePublicService):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
         self._repo = OrganizationRepository(session)
-
-    # Departments, working weeks, shifts, holidays, locations, settings
-    # Full implementations in module; user admin methods from AdminUsersMixin.
 
     async def create_department(self, data: DepartmentCreate, *, actor_employment_id: Optional[int] = None) -> DepartmentResponse:
         existing = await self._repo.get_department_by_name(data.name)
@@ -118,30 +116,11 @@ class OrganizationPublicService(AdminUsersMixin, BasePublicService):
             close_to = data.effective_from - timedelta(days=1)
             if close_to >= current.effective_from:
                 await self._repo.close_working_week(current.id, close_to)
-        week = WorkingWeek(
-            **{k: v for k, v in data.model_dump().items() if hasattr(WorkingWeek, k)},
-            created_by=actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID,
-        ) if False else None
-        # Prefer explicit fields depending on model shape
         payload = data.model_dump()
-        week = WorkingWeek(
-            **payload,
-            created_by=actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID,
-        ) if "name" in payload else WorkingWeek(
-            effective_from=data.effective_from,
-            monday=getattr(data, "monday", True),
-            tuesday=getattr(data, "tuesday", True),
-            wednesday=getattr(data, "wednesday", True),
-            thursday=getattr(data, "thursday", True),
-            friday=getattr(data, "friday", True),
-            saturday=getattr(data, "saturday", False),
-            sunday=getattr(data, "sunday", False),
-            created_by=actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID,
-        )
         try:
+            week = WorkingWeek(**payload, created_by=actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID)
             await self._repo.add(week)
         except Exception:
-            # fallback for model with name + working_days_of_week
             week = WorkingWeek(
                 name=getattr(data, "name", "Default"),
                 working_days_of_week=getattr(data, "working_days_of_week", [1, 2, 3, 4, 5]),
@@ -171,10 +150,6 @@ class OrganizationPublicService(AdminUsersMixin, BasePublicService):
         return [WorkingWeekResponse.model_validate(r) for r in rows]
 
     async def create_shift(self, data: ShiftCreate, *, actor_employment_id: Optional[int] = None) -> ShiftResponse:
-        payload = data.model_dump()
-        payload["changed_by"] = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
-        shift = Shift(**{k: v for k, v in payload.items() if k in Shift.__table__.columns.keys() or True})
-        # Safer construct
         shift = Shift(
             name=data.name,
             start_time=data.start_time,
