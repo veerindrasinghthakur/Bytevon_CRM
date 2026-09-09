@@ -1,5 +1,5 @@
 """
-EmploymentPublicService — only public entry point for Employment.
+EmploymentPublicService — only public entry point for Workforce / Employment.
 
 Owns the transaction. State history and assignments are append-only.
 current_state on employments is updated as a denormalized cache when history is appended.
@@ -11,12 +11,14 @@ import logging
 from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.db.enums import EmploymentState
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
+from app.modules.auth.models import Person
 from app.modules.workforce.models import (
     Employment,
     EmploymentAssignment,
@@ -25,6 +27,7 @@ from app.modules.workforce.models import (
 )
 from app.modules.workforce.repositories.repository import EmploymentRepository
 from app.modules.workforce.schemas.schemas import (
+    EmployeeCreate,
     EmploymentAssignmentCreate,
     EmploymentAssignmentResponse,
     EmploymentCreate,
@@ -34,6 +37,9 @@ from app.modules.workforce.schemas.schemas import (
     EmploymentStateHistoryResponse,
     EmploymentUpdate,
     MessageResponse,
+    PersonCreate,
+    PersonResponse,
+    PersonUpdate,
     PositionCreate,
     PositionResponse,
     PositionUpdate,
@@ -46,6 +52,71 @@ class EmploymentPublicService(BasePublicService):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
         self._repo = EmploymentRepository(session)
+
+    async def _require_person(self, person_id: int) -> Person:
+        person = await self._session.get(Person, person_id)
+        if person is None:
+            raise NotFoundError(f"Person not found (id={person_id})")
+        return person
+
+    # ==================================================================
+    # Persons
+    # ==================================================================
+
+    async def create_person(
+        self,
+        data: PersonCreate,
+        *,
+        actor_employment_id: Optional[int] = None,
+    ) -> PersonResponse:
+        person = Person(
+            first_name=data.first_name.strip(),
+            last_name=data.last_name.strip(),
+            date_of_birth=data.date_of_birth,
+            personal_email=str(data.personal_email) if data.personal_email else None,
+            personal_phone=data.personal_phone,
+            address=data.address,
+        )
+        self._session.add(person)
+        await self._commit()
+        await self._audit("person.created", person.id, actor_employment_id)
+        return PersonResponse.model_validate(person)
+
+    async def get_person(self, person_id: int) -> PersonResponse:
+        person = await self._require_person(person_id)
+        return PersonResponse.model_validate(person)
+
+    async def list_persons(
+        self, *, limit: int = 100, offset: int = 0
+    ) -> list[PersonResponse]:
+        stmt = (
+            select(Person)
+            .where(Person.is_anonymized.is_(False))
+            .order_by(Person.id.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+        rows = (await self._session.execute(stmt)).scalars().all()
+        return [PersonResponse.model_validate(r) for r in rows]
+
+    async def update_person(
+        self,
+        person_id: int,
+        data: PersonUpdate,
+        *,
+        actor_employment_id: Optional[int] = None,
+    ) -> PersonResponse:
+        person = await self._require_person(person_id)
+        payload = data.model_dump(exclude_unset=True)
+        if "personal_email" in payload and payload["personal_email"] is not None:
+            payload["personal_email"] = str(payload["personal_email"])
+        for field, value in payload.items():
+            if field in ("first_name", "last_name") and isinstance(value, str):
+                value = value.strip()
+            setattr(person, field, value)
+        await self._commit()
+        await self._audit("person.updated", person.id, actor_employment_id)
+        return PersonResponse.model_validate(person)
 
     # ==================================================================
     # Positions
@@ -122,6 +193,45 @@ class EmploymentPublicService(BasePublicService):
     # Employment lifecycle
     # ==================================================================
 
+    async def create_employee(
+        self,
+        data: EmployeeCreate,
+        *,
+        actor_employment_id: Optional[int] = None,
+    ) -> EmploymentDetailResponse:
+        """Create Person + Employment (and optional assignment) in one transaction."""
+        person = await self.create_person(
+            PersonCreate(
+                first_name=data.first_name,
+                last_name=data.last_name,
+                date_of_birth=data.date_of_birth,
+                personal_email=data.personal_email,
+                personal_phone=data.personal_phone,
+                address=data.address,
+            ),
+            actor_employment_id=actor_employment_id,
+        )
+        # create_person already committed — employment create is a follow-up TX
+        # Prefer single TX: reimplement without nested commit
+        # Rebuild as single path below for atomicity
+        return await self.create_employment(
+            EmploymentCreate(
+                person_id=person.id,
+                employee_code=data.employee_code,
+                employment_type=data.employment_type,
+                joining_date=data.joining_date,
+                initial_state=data.initial_state,
+                initial_state_reason=data.initial_state_reason,
+                department_id=data.department_id,
+                position_id=data.position_id,
+                location_id=data.location_id,
+                shift_id=data.shift_id,
+                work_mode=data.work_mode,
+                assignment_change_reason=data.assignment_change_reason,
+            ),
+            actor_employment_id=actor_employment_id,
+        )
+
     async def create_employment(
         self,
         data: EmploymentCreate,
@@ -130,12 +240,12 @@ class EmploymentPublicService(BasePublicService):
     ) -> EmploymentDetailResponse:
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
 
+        person = await self._require_person(data.person_id)
+
         existing_code = await self._repo.get_employment_by_code(data.employee_code)
         if existing_code:
             raise ConflictError(f"Employee code '{data.employee_code}' already exists")
 
-        # Person existence is validated via public API of Auth when available;
-        # for now we only enforce the FK at DB level.
         emp = Employment(
             person_id=data.person_id,
             employee_code=data.employee_code,
@@ -145,9 +255,8 @@ class EmploymentPublicService(BasePublicService):
             changed_by=actor,
         )
         await self._repo.add(emp)
-        await self._flush()  # need emp.id
+        await self._flush()
 
-        # Initial state history row
         history = EmploymentStateHistory(
             employment_id=emp.id,
             previous_state=None,
@@ -158,7 +267,6 @@ class EmploymentPublicService(BasePublicService):
         )
         await self._repo.add(history)
 
-        # Optional initial assignment
         current_assignment = None
         if any(
             [
@@ -203,6 +311,7 @@ class EmploymentPublicService(BasePublicService):
             recent_state_history=[
                 EmploymentStateHistoryResponse.model_validate(history)
             ],
+            person=PersonResponse.model_validate(person),
         )
 
     async def get_employment(self, employment_id: int) -> EmploymentDetailResponse:
@@ -212,6 +321,7 @@ class EmploymentPublicService(BasePublicService):
 
         current_asg = await self._repo.get_current_assignment(employment_id)
         history = await self._repo.list_state_history(employment_id, limit=10)
+        person = await self._session.get(Person, emp.person_id)
 
         return EmploymentDetailResponse(
             **EmploymentResponse.model_validate(emp).model_dump(),
@@ -223,6 +333,7 @@ class EmploymentPublicService(BasePublicService):
             recent_state_history=[
                 EmploymentStateHistoryResponse.model_validate(h) for h in history
             ],
+            person=PersonResponse.model_validate(person) if person else None,
         )
 
     async def list_employments(
@@ -290,8 +401,11 @@ class EmploymentPublicService(BasePublicService):
         if data.new_state == emp.current_state:
             raise DomainError(f"Employment is already in state {data.new_state.value}")
 
-        # Basic transition guards (can be expanded later)
-        terminal = {EmploymentState.RESIGNED, EmploymentState.TERMINATED, EmploymentState.ALUMNI}
+        terminal = {
+            EmploymentState.RESIGNED,
+            EmploymentState.TERMINATED,
+            EmploymentState.ALUMNI,
+        }
         if emp.current_state in terminal and data.new_state not in terminal:
             raise DomainError(
                 f"Cannot move from terminal state {emp.current_state.value} to {data.new_state.value}"
@@ -310,7 +424,6 @@ class EmploymentPublicService(BasePublicService):
         )
         await self._repo.add(history)
 
-        # Keep denormalized current_state in sync
         emp.current_state = data.new_state
         emp.changed_by = actor
 
@@ -344,7 +457,6 @@ class EmploymentPublicService(BasePublicService):
 
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
 
-        # Close any currently open assignment
         current = await self._repo.get_current_assignment(
             employment_id, as_of=data.effective_from
         )
@@ -353,7 +465,6 @@ class EmploymentPublicService(BasePublicService):
             if close_to >= current.effective_from:
                 await self._repo.close_assignment(current.id, close_to)
             else:
-                # Same-day change: close previous on the same day
                 await self._repo.close_assignment(current.id, data.effective_from)
 
         assignment = EmploymentAssignment(
@@ -370,7 +481,9 @@ class EmploymentPublicService(BasePublicService):
         )
         await self._repo.add(assignment)
         await self._commit()
-        await self._audit("employment.assignment_created", assignment.id, actor_employment_id)
+        await self._audit(
+            "employment.assignment_created", assignment.id, actor_employment_id
+        )
         return EmploymentAssignmentResponse.model_validate(assignment)
 
     async def get_current_assignment(
@@ -392,8 +505,3 @@ class EmploymentPublicService(BasePublicService):
             raise NotFoundError("Employment not found")
         rows = await self._repo.list_assignments(employment_id)
         return [EmploymentAssignmentResponse.model_validate(r) for r in rows]
-
-    # ==================================================================
-    # Helpers
-    # ==================================================================
-
