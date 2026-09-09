@@ -1,6 +1,6 @@
 /**
  * Admin users / logins API.
- * Mock: shared getDb. Real: FastAPI mock_backend /admin/users*.
+ * Mock: shared getDb. Real: FastAPI /organization/users* (organization module).
  */
 
 import { env } from '@/config/env'
@@ -8,10 +8,17 @@ import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
 import { paginateItems } from '@/shared/lib/list-params'
 import type { LoginUserRow } from '@/shared/schema'
-import type { AdminUserListItem, EmploymentWithoutLogin,AdminRoleOption,DepartmentOption,AdminUserListParams } from '../types'
+import type {
+  AdminUserListItem,
+  EmploymentWithoutLogin,
+  AdminRoleOption,
+  DepartmentOption,
+  AdminUserListParams,
+} from '../types'
 
-/** Role option for user-create picker (supports backend string ids e.g. R-01). */
-
+/** Backend login-account base (Organization module — not /admin). */
+const USERS_API = '/organization/users'
+const EMPLOYMENTS_WITHOUT_LOGIN_API = '/organization/employments-without-login'
 
 function statusLabel(s: LoginUserRow['status']): AdminUserListItem['status'] {
   if (s === 'LOCKED') return 'Locked'
@@ -95,7 +102,7 @@ export async function listAdminUsers(params?: AdminUserListParams) {
       active: number
       departments?: string[]
       roles?: string[]
-    }>('/admin/users', { params })
+    }>(USERS_API, { params })
     return {
       items: (data.items ?? []).map((u) => ({
         ...u,
@@ -170,7 +177,7 @@ export async function listAdminUsers(params?: AdminUserListParams) {
 
 export async function listEmploymentsWithoutLogin(): Promise<EmploymentWithoutLogin[]> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<EmploymentWithoutLogin[]>('/admin/employments-without-login')
+    const { data } = await apiClient.get<EmploymentWithoutLogin[]>(EMPLOYMENTS_WITHOUT_LOGIN_API)
     return Array.isArray(data)
       ? data.map((e) => ({
           ...e,
@@ -210,9 +217,9 @@ export async function listEmploymentsWithoutLogin(): Promise<EmploymentWithoutLo
 /** Departments for user-detail picker. */
 export async function listDepartments(): Promise<DepartmentOption[]> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<{ items?: Array<{ id: number; name: string }> } | Array<{ id: number; name: string }>>(
-      '/organization/departments',
-    )
+    const { data } = await apiClient.get<
+      { items?: Array<{ id: number; name: string }> } | Array<{ id: number; name: string }>
+    >('/organization/departments')
     const rows = Array.isArray(data) ? data : data?.items ?? []
     return rows.map((d) => ({ id: Number(d.id), name: d.name }))
   }
@@ -220,7 +227,7 @@ export async function listDepartments(): Promise<DepartmentOption[]> {
   return getDb().schema_departments.map((d) => ({ id: d.id, name: d.name }))
 }
 
-/** Roles for assign-on-create. Ids stay as strings (R-01) when backend returns them. */
+/** Roles for assign-on-create. */
 export async function listRoles(): Promise<AdminRoleOption[]> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<
@@ -261,7 +268,7 @@ export async function createUserLogin(input: {
   status?: LoginUserRow['status']
 }): Promise<LoginUserRow> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<LoginUserRow & { detail?: string }>('/admin/users', {
+    const { data } = await apiClient.post<LoginUserRow & { detail?: string }>(USERS_API, {
       employmentId: input.employmentId,
       email: input.email,
       temporaryPassword: input.temporaryPassword,
@@ -346,7 +353,7 @@ export async function updateUserLogin(
       }
       body.status = map[patch.status] ?? patch.status
     }
-    const { data } = await apiClient.patch(`/admin/users/${loginId}`, body)
+    const { data } = await apiClient.patch(`${USERS_API}/${loginId}`, body)
     return data as LoginUserRow
   }
 
@@ -371,28 +378,26 @@ export async function updateUserLogin(
   return { ...row }
 }
 
-/** Soft deactivate — login kept; can activate again. */
 export async function deactivateUser(loginId: number) {
   if (!env.useMockApi) {
     try {
-      const { data } = await apiClient.post(`/admin/users/${loginId}/deactivate`)
+      const { data } = await apiClient.post(`${USERS_API}/${loginId}/deactivate`)
       return data
     } catch {
-      const { data } = await apiClient.patch(`/admin/users/${loginId}`, { status: 'Inactive' })
+      const { data } = await apiClient.patch(`${USERS_API}/${loginId}`, { status: 'Inactive' })
       return data
     }
   }
   return updateUserLogin(loginId, { status: 'INACTIVE' })
 }
 
-/** Reactivate a deactivated login. */
 export async function activateUser(loginId: number) {
   if (!env.useMockApi) {
     try {
-      const { data } = await apiClient.post(`/admin/users/${loginId}/activate`)
+      const { data } = await apiClient.post(`${USERS_API}/${loginId}/activate`)
       return data
     } catch {
-      const { data } = await apiClient.patch(`/admin/users/${loginId}`, { status: 'Active' })
+      const { data } = await apiClient.patch(`${USERS_API}/${loginId}`, { status: 'Active' })
       return data
     }
   }
@@ -403,17 +408,13 @@ export async function activateUser(loginId: number) {
   })
 }
 
-/**
- * Hard archive: remove login credentials entirely.
- * Employment remains and appears under "employments without login".
- */
 export async function archiveUserCredentials(loginId: number) {
   if (!env.useMockApi) {
     try {
-      const { data } = await apiClient.post(`/admin/users/${loginId}/archive`)
+      const { data } = await apiClient.post(`${USERS_API}/${loginId}/archive`)
       return data
     } catch {
-      const { data } = await apiClient.delete(`/admin/users/${loginId}`)
+      const { data } = await apiClient.delete(`${USERS_API}/${loginId}`)
       return data
     }
   }
@@ -445,7 +446,7 @@ export async function getUserLogin(loginId: number) {
       initials?: string
       employeeCode?: string
       employmentId?: number
-    }>(`/admin/users/${loginId}`)
+    }>(`${USERS_API}/${loginId}`)
     if (data?.detail) return null
     const name =
       data.name ||
@@ -454,7 +455,8 @@ export async function getUserLogin(loginId: number) {
         : data.email) ||
       'User'
     return {
-      login: data.login ??
+      login:
+        data.login ??
         ({
           id: data.id,
           email: data.email ?? '',
@@ -480,9 +482,9 @@ export async function getUserLogin(loginId: number) {
         id: data.id,
         name,
         email: data.email ?? data.login?.email ?? '',
-        status: (data.status as AdminUserListItem['status']) ?? statusLabel(
-          (data.login?.status as LoginUserRow['status']) ?? 'ACTIVE',
-        ),
+        status:
+          (data.status as AdminUserListItem['status']) ??
+          statusLabel((data.login?.status as LoginUserRow['status']) ?? 'ACTIVE'),
         department: data.department ?? '—',
         departmentId: data.departmentId ?? null,
         role: data.role ?? data.roleNames?.[0] ?? '—',
@@ -535,7 +537,7 @@ export async function getUserLogin(loginId: number) {
 
 export async function lockUser(loginId: number) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post(`/admin/users/${loginId}/lock`)
+    const { data } = await apiClient.post(`${USERS_API}/${loginId}/lock`)
     return data
   }
   return updateUserLogin(loginId, { status: 'LOCKED' })
@@ -543,7 +545,7 @@ export async function lockUser(loginId: number) {
 
 export async function unlockUser(loginId: number) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post(`/admin/users/${loginId}/unlock`)
+    const { data } = await apiClient.post(`${USERS_API}/${loginId}/unlock`)
     return data
   }
   return updateUserLogin(loginId, {
