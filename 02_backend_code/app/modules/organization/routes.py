@@ -14,9 +14,17 @@ from fastapi import APIRouter, Header, Query, status
 
 from app.modules.organization.dependencies import OrganizationServiceDep
 from app.modules.organization.schemas.schemas import (
+    AdminUserCreate,
+    AdminUserDetailResponse,
+    AdminUserListResponse,
+    AdminUserUpdate,
+    DepartmentAssignRequest,
     DepartmentCreate,
+    DepartmentEmployee,
+    DepartmentEmployeeOption,
     DepartmentResponse,
     DepartmentUpdate,
+    EmploymentWithoutLogin,
     HolidayCalendarCreate,
     HolidayCalendarResponse,
     HolidayCalendarUpdate,
@@ -96,6 +104,58 @@ async def archive_department(
 ) -> MessageResponse:
     return await service.archive_department(
         department_id, actor_employment_id=actor
+    )
+
+
+@router.get(
+    "/departments/{department_id}/employees",
+    response_model=list[DepartmentEmployee],
+)
+async def list_department_employees(
+    department_id: int,
+    service: OrganizationServiceDep,
+) -> list[DepartmentEmployee]:
+    return await service.list_department_employees(department_id)
+
+
+@router.get(
+    "/departments/{department_id}/employees-available",
+    response_model=list[DepartmentEmployeeOption],
+)
+async def list_employees_available_for_department(
+    department_id: int,
+    service: OrganizationServiceDep,
+) -> list[DepartmentEmployeeOption]:
+    return await service.list_employees_available_for_department(department_id)
+
+
+@router.post(
+    "/departments/{department_id}/assign",
+    response_model=MessageResponse,
+)
+async def assign_employee_to_department(
+    department_id: int,
+    body: DepartmentAssignRequest,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> MessageResponse:
+    return await service.assign_employee_to_department(
+        department_id, body.employmentId, actor_employment_id=actor
+    )
+
+
+@router.post(
+    "/departments/{department_id}/remove",
+    response_model=MessageResponse,
+)
+async def remove_employee_from_department(
+    department_id: int,
+    body: DepartmentAssignRequest,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> MessageResponse:
+    return await service.remove_employee_from_department(
+        department_id, body.employmentId, actor_employment_id=actor
     )
 
 
@@ -192,7 +252,7 @@ async def archive_shift(
 
 
 # ---------------------------------------------------------------------------
-# Holiday Calendars
+# Holiday calendars / holidays
 # ---------------------------------------------------------------------------
 
 @router.post(
@@ -256,10 +316,6 @@ async def archive_holiday_calendar(
     )
 
 
-# ---------------------------------------------------------------------------
-# Holidays
-# ---------------------------------------------------------------------------
-
 @router.post(
     "/holidays",
     response_model=HolidayResponse,
@@ -277,7 +333,7 @@ async def add_holiday(
     "/holiday-calendars/{calendar_id}/holidays",
     response_model=list[HolidayResponse],
 )
-async def list_holidays(
+async def list_holidays_for_calendar(
     calendar_id: int,
     service: OrganizationServiceDep,
 ) -> list[HolidayResponse]:
@@ -339,7 +395,7 @@ async def archive_location(
 
 
 # ---------------------------------------------------------------------------
-# Organization Settings (singleton)
+# Organization settings
 # ---------------------------------------------------------------------------
 
 @router.get("/settings", response_model=OrganizationSettingsResponse)
@@ -349,7 +405,7 @@ async def get_organization_settings(
     return await service.get_organization_settings()
 
 
-@router.put("/settings", response_model=OrganizationSettingsResponse)
+@router.patch("/settings", response_model=OrganizationSettingsResponse)
 async def upsert_organization_settings(
     body: OrganizationSettingsUpdate,
     service: OrganizationServiceDep,
@@ -358,3 +414,149 @@ async def upsert_organization_settings(
     return await service.upsert_organization_settings(
         body, actor_employment_id=actor
     )
+
+
+# ---------------------------------------------------------------------------
+# Users (login accounts) — same /organization/* pattern as shifts/locations
+# ---------------------------------------------------------------------------
+
+@router.get("/users", response_model=AdminUserListResponse)
+async def list_users(
+    service: OrganizationServiceDep,
+    search: Optional[str] = Query(None),
+    user_status: Optional[str] = Query(None, alias="status"),
+    department: Optional[str] = Query(None),
+    role: Optional[str] = Query(None),
+    dateFrom: Optional[str] = Query(None),
+    dateTo: Optional[str] = Query(None),
+    page: int = Query(1, ge=1),
+    pageSize: int = Query(20, ge=1, le=200),
+) -> AdminUserListResponse:
+    return await service.list_admin_users(
+        search=search,
+        status=user_status,
+        department=department,
+        role=role,
+        date_from=dateFrom,
+        date_to=dateTo,
+        page=page,
+        page_size=pageSize,
+    )
+
+
+@router.get(
+    "/employments-without-login",
+    response_model=list[EmploymentWithoutLogin],
+)
+async def list_employments_without_login(
+    service: OrganizationServiceDep,
+) -> list[EmploymentWithoutLogin]:
+    return await service.list_employments_without_login()
+
+
+@router.get("/users/{login_id}", response_model=AdminUserDetailResponse)
+async def get_user(
+    login_id: int,
+    service: OrganizationServiceDep,
+) -> AdminUserDetailResponse:
+    return await service.get_admin_user(login_id)
+
+
+@router.post(
+    "/users",
+    response_model=AdminUserDetailResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_user(
+    body: AdminUserCreate,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> AdminUserDetailResponse:
+    return await service.create_admin_user(body, actor_employment_id=actor)
+
+
+@router.patch("/users/{login_id}", response_model=AdminUserDetailResponse)
+async def update_user(
+    login_id: int,
+    body: AdminUserUpdate,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> AdminUserDetailResponse:
+    return await service.update_admin_user(
+        login_id, body, actor_employment_id=actor
+    )
+
+
+@router.post(
+    "/users/{login_id}/deactivate",
+    response_model=MessageResponse,
+)
+async def deactivate_user(
+    login_id: int,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> MessageResponse:
+    return await service.deactivate_admin_user(
+        login_id, actor_employment_id=actor
+    )
+
+
+@router.post(
+    "/users/{login_id}/activate",
+    response_model=MessageResponse,
+)
+async def activate_user(
+    login_id: int,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> MessageResponse:
+    return await service.activate_admin_user(login_id, actor_employment_id=actor)
+
+
+@router.post(
+    "/users/{login_id}/lock",
+    response_model=MessageResponse,
+)
+async def lock_user(
+    login_id: int,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> MessageResponse:
+    return await service.lock_admin_user(login_id, actor_employment_id=actor)
+
+
+@router.post(
+    "/users/{login_id}/unlock",
+    response_model=MessageResponse,
+)
+async def unlock_user(
+    login_id: int,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> MessageResponse:
+    return await service.unlock_admin_user(login_id, actor_employment_id=actor)
+
+
+@router.post(
+    "/users/{login_id}/archive",
+    response_model=MessageResponse,
+)
+async def archive_user(
+    login_id: int,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> MessageResponse:
+    return await service.archive_admin_user(login_id, actor_employment_id=actor)
+
+
+@router.delete(
+    "/users/{login_id}",
+    response_model=MessageResponse,
+)
+async def delete_user(
+    login_id: int,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> MessageResponse:
+    """Same as archive — remove login credentials."""
+    return await service.archive_admin_user(login_id, actor_employment_id=actor)
