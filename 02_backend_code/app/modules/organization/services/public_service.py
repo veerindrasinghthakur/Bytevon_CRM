@@ -90,7 +90,10 @@ class OrganizationPublicService(AdminUsersMixin, DepartmentMembersMixin, BasePub
         return DepartmentResponse.model_validate(dept)
 
     async def get_department(self, department_id: int) -> DepartmentResponse:
-        dept = await self._repo.get_department_by_id(department_id)
+        # Detail pages must resolve even when the department is archived
+        dept = await self._repo.get_department_by_id(
+            department_id, include_archived=True
+        )
         if dept is None:
             raise NotFoundError("Department not found")
         return DepartmentResponse.model_validate(dept)
@@ -108,7 +111,9 @@ class OrganizationPublicService(AdminUsersMixin, DepartmentMembersMixin, BasePub
         *,
         actor_employment_id: Optional[int] = None,
     ) -> DepartmentResponse:
-        dept = await self._repo.get_department_by_id(department_id)
+        dept = await self._repo.get_department_by_id(
+            department_id, include_archived=True
+        )
         if dept is None:
             raise NotFoundError("Department not found")
         if data.name is not None and data.name != dept.name:
@@ -128,7 +133,9 @@ class OrganizationPublicService(AdminUsersMixin, DepartmentMembersMixin, BasePub
     async def archive_department(
         self, department_id: int, *, actor_employment_id: Optional[int] = None
     ) -> MessageResponse:
-        dept = await self._repo.get_department_by_id(department_id)
+        dept = await self._repo.get_department_by_id(
+            department_id, include_archived=True
+        )
         if dept is None:
             raise NotFoundError("Department not found")
         if dept.is_archived:
@@ -466,8 +473,11 @@ class OrganizationPublicService(AdminUsersMixin, DepartmentMembersMixin, BasePub
         loc = await self._repo.get_location_by_id(location_id)
         if loc is None:
             raise NotFoundError("Location not found")
-
         payload = data.model_dump(exclude_unset=True)
+        if "name" in payload and isinstance(payload["name"], str):
+            payload["name"] = payload["name"].strip()
+        if "timezone" in payload and isinstance(payload["timezone"], str):
+            payload["timezone"] = payload["timezone"].strip()
         if "working_week_id" in payload or "holiday_calendar_id" in payload:
             ww_id, hc_id = await self._validate_location_refs(
                 working_week_id=payload.get(
@@ -477,24 +487,11 @@ class OrganizationPublicService(AdminUsersMixin, DepartmentMembersMixin, BasePub
                     "holiday_calendar_id", loc.holiday_calendar_id
                 ),
             )
-            if "working_week_id" in payload:
-                payload["working_week_id"] = ww_id
-            if "holiday_calendar_id" in payload:
-                payload["holiday_calendar_id"] = hc_id
-
+            payload["working_week_id"] = ww_id
+            payload["holiday_calendar_id"] = hc_id
         for field, value in payload.items():
-            if isinstance(value, str) and field in {
-                "name",
-                "timezone",
-                "country",
-                "state",
-                "city",
-                "address",
-                "currency",
-            }:
-                value = value.strip()
-            setattr(loc, field, value)
-
+            if hasattr(loc, field):
+                setattr(loc, field, value)
         loc.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
         await self._audit("location.updated", loc.id, actor_employment_id)
@@ -523,12 +520,10 @@ class OrganizationPublicService(AdminUsersMixin, DepartmentMembersMixin, BasePub
     # ==================================================================
 
     async def get_organization_settings(self) -> OrganizationSettingsResponse:
-        settings_row = await self._repo.get_organization_settings()
-        if settings_row is None:
-            raise NotFoundError(
-                "Organization settings not configured — PATCH /organization/settings first"
-            )
-        return OrganizationSettingsResponse.model_validate(settings_row)
+        row = await self._repo.get_organization_settings()
+        if row is None:
+            raise NotFoundError("Organization settings not configured")
+        return OrganizationSettingsResponse.model_validate(row)
 
     async def upsert_organization_settings(
         self,
@@ -537,46 +532,19 @@ class OrganizationPublicService(AdminUsersMixin, DepartmentMembersMixin, BasePub
         actor_employment_id: Optional[int] = None,
     ) -> OrganizationSettingsResponse:
         row = await self._repo.get_organization_settings()
-        actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         payload = data.model_dump(exclude_unset=True)
-
-        head_id = payload.get("head_office_location_id")
-        if "head_office_location_id" in payload:
-            head_id = _optional_id(head_id)
-            payload["head_office_location_id"] = head_id
-            if head_id is not None:
-                loc = await self._repo.get_location_by_id(head_id)
-                if loc is None:
-                    raise NotFoundError(f"Location not found (id={head_id})")
-
+        actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         if row is None:
-            company_name = payload.get("company_name")
-            default_timezone = payload.get("default_timezone")
-            default_currency = payload.get("default_currency")
-            if not company_name or not default_timezone or not default_currency:
-                raise DomainError(
-                    "On first create, company_name, default_timezone and default_currency are required"
-                )
             row = OrganizationSettings(
-                company_name=str(company_name).strip(),
-                head_office_location_id=payload.get("head_office_location_id"),
-                default_timezone=str(default_timezone).strip(),
-                default_currency=str(default_currency).strip(),
-                logo_reference=payload.get("logo_reference"),
+                **payload,
                 changed_by=actor,
             )
             await self._repo.add(row)
         else:
             for field, value in payload.items():
-                if isinstance(value, str) and field in {
-                    "company_name",
-                    "default_timezone",
-                    "default_currency",
-                }:
-                    value = value.strip()
-                setattr(row, field, value)
+                if hasattr(row, field):
+                    setattr(row, field, value)
             row.changed_by = actor
-
         await self._commit()
         await self._audit("organization_settings.upserted", row.id, actor_employment_id)
         await self._refresh(row)
