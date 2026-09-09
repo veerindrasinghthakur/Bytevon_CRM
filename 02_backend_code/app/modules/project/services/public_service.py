@@ -56,6 +56,16 @@ class ProjectPublicService(BasePublicService):
         super().__init__(session)
         self._repo = ProjectRepository(session)
 
+    async def _require_employment(
+        self, employment_id: int, *, label: str = "Employment"
+    ) -> None:
+        """Ensure employment_id exists in employments (FK target for teams/members)."""
+        from app.modules.workforce.models import Employment
+
+        emp = await self._session.get(Employment, employment_id)
+        if emp is None:
+            raise NotFoundError(f"{label} not found (id={employment_id})")
+
     # ==================================================================
     # create_from_lead (called by Sales inside TX)
     # ==================================================================
@@ -112,6 +122,10 @@ class ProjectPublicService(BasePublicService):
         """Create team and auto-enrol head as active member (role: Team Head)."""
         if not data.name or not str(data.name).strip():
             raise DomainError("Team name is required")
+
+        await self._require_employment(
+            data.team_head_employment_id, label="Team head employment"
+        )
 
         team = Team(
             name=str(data.name).strip(),
@@ -170,7 +184,16 @@ class ProjectPublicService(BasePublicService):
         team = await self._repo.get_team_by_id(team_id)
         if team is None:
             raise NotFoundError("Team not found")
-        for field, value in data.model_dump(exclude_unset=True).items():
+        payload = data.model_dump(exclude_unset=True)
+        if (
+            "team_head_employment_id" in payload
+            and payload["team_head_employment_id"] is not None
+        ):
+            await self._require_employment(
+                int(payload["team_head_employment_id"]),
+                label="Team head employment",
+            )
+        for field, value in payload.items():
             setattr(team, field, value)
         team.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
@@ -187,6 +210,7 @@ class ProjectPublicService(BasePublicService):
         team = await self._repo.get_team_by_id(team_id)
         if team is None:
             raise NotFoundError("Team not found")
+        await self._require_employment(data.employment_id, label="Member employment")
         existing = await self._repo.get_active_member(team_id, data.employment_id)
         if existing:
             raise ConflictError("Employment is already an active member of this team")
