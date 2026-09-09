@@ -47,6 +47,25 @@ class DepartmentResponse(BaseModel):
     changed_by: Optional[int]
 
 
+class DepartmentEmployee(BaseModel):
+    employmentId: int
+    employeeCode: str
+    name: str
+    positionName: str = "—"
+    state: str
+    email: str = ""
+
+
+class DepartmentAssignRequest(BaseModel):
+    employmentId: int
+
+
+class DepartmentEmployeeOption(BaseModel):
+    value: str
+    label: str
+    meta: Optional[str] = None
+
+
 # ===========================================================================
 # WorkingWeek
 # ===========================================================================
@@ -256,8 +275,6 @@ class OrganizationSettingsResponse(BaseModel):
 # ===========================================================================
 
 class AdminUserCreate(BaseModel):
-    """Create a login for an employment (person must not already have a login)."""
-
     employmentId: int
     email: EmailStr
     temporaryPassword: str = Field(..., min_length=8)
@@ -268,7 +285,7 @@ class AdminUserCreate(BaseModel):
 class AdminUserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     temporaryPassword: Optional[str] = Field(None, min_length=8)
-    status: Optional[str] = None  # Active | Inactive | Locked | ACTIVE | INACTIVE | LOCKED
+    status: Optional[str] = None
     departmentId: Optional[int] = None
     roleId: Optional[Union[int, str]] = None
     failed_attempt_count: Optional[int] = None
@@ -282,7 +299,7 @@ class AdminUserListItem(BaseModel):
     email: str
     role: str
     department: str
-    status: str  # Active | Inactive | Locked
+    status: str
     lastLogin: str
     lastLoginAt: Optional[datetime] = None
     initials: str
