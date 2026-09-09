@@ -1,12 +1,12 @@
 """
-DeveloperRepository — domain-specific queries only.
+ProjectRepository — domain-specific queries only.
 """
 
 from __future__ import annotations
 
 from typing import Optional, Sequence
 
-from sqlalchemy import func, select, update
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.repositories.base_repository import BaseRepository
@@ -19,7 +19,7 @@ from app.modules.project.models import (
 )
 
 
-class DeveloperRepository(BaseRepository):
+class ProjectRepository(BaseRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
 
@@ -30,7 +30,7 @@ class DeveloperRepository(BaseRepository):
 
     async def list_teams(self) -> Sequence[Team]:
         stmt = select(Team).order_by(Team.name)
-        return await self.scalars(stmt)
+        return (await self._session.execute(stmt)).scalars().all()
 
     async def get_active_member(
         self, team_id: int, employment_id: int
@@ -46,7 +46,7 @@ class DeveloperRepository(BaseRepository):
         stmt = select(TeamMember).where(
             TeamMember.team_id == team_id, TeamMember.left_at.is_(None)
         )
-        return await self.scalars(stmt)
+        return (await self._session.execute(stmt)).scalars().all()
 
     # Projects
     async def get_project_by_id(self, project_id: int) -> Optional[Project]:
@@ -64,34 +64,31 @@ class DeveloperRepository(BaseRepository):
         limit: int = 100,
         offset: int = 0,
     ) -> Sequence[Project]:
-        stmt = select(Project).order_by(Project.created_at.desc())
+        stmt = select(Project).order_by(Project.id.desc()).limit(limit).offset(offset)
         if client_id is not None:
-            stmt = stmt.where(Project.client_id == client_id)
-        stmt = stmt.limit(limit).offset(offset)
-        return await self.scalars(stmt)
+            stmt = (
+                select(Project)
+                .where(Project.client_id == client_id)
+                .order_by(Project.id.desc())
+                .limit(limit)
+                .offset(offset)
+            )
+        return (await self._session.execute(stmt)).scalars().all()
 
     # Tasks
     async def get_task_by_id(self, task_id: int) -> Optional[Task]:
         stmt = select(Task).where(Task.id == task_id)
         return await self.scalar_one_or_none(stmt)
 
-    async def list_tasks(
-        self, project_id: int, *, limit: int = 200
-    ) -> Sequence[Task]:
-        stmt = (
-            select(Task)
-            .where(Task.project_id == project_id)
-            .order_by(Task.created_at.desc())
-            .limit(limit)
-        )
-        return await self.scalars(stmt)
+    async def list_tasks(self, project_id: int) -> Sequence[Task]:
+        stmt = select(Task).where(Task.project_id == project_id).order_by(Task.id)
+        return (await self._session.execute(stmt)).scalars().all()
 
     async def sum_task_minutes(self, task_id: int) -> int:
-        stmt = select(
-            func.coalesce(func.sum(TaskTimeEntry.duration_minutes), 0)
-        ).where(TaskTimeEntry.task_id == task_id)
-        result = await self.execute(stmt)
-        return int(result.scalar() or 0)
+        stmt = select(func.coalesce(func.sum(TaskTimeEntry.duration_minutes), 0)).where(
+            TaskTimeEntry.task_id == task_id
+        )
+        return int((await self._session.execute(stmt)).scalar_one() or 0)
 
     # Time entries
     async def get_time_entry(
@@ -104,12 +101,10 @@ class DeveloperRepository(BaseRepository):
         )
         return await self.scalar_one_or_none(stmt)
 
-    async def list_time_entries(
-        self, task_id: int
-    ) -> Sequence[TaskTimeEntry]:
+    async def list_time_entries(self, task_id: int) -> Sequence[TaskTimeEntry]:
         stmt = (
             select(TaskTimeEntry)
             .where(TaskTimeEntry.task_id == task_id)
             .order_by(TaskTimeEntry.work_date.desc())
         )
-        return await self.scalars(stmt)
+        return (await self._session.execute(stmt)).scalars().all()
