@@ -1,6 +1,14 @@
 /**
  * Admin users / logins API.
- * Mock: shared getDb. Real: FastAPI /organization/users* (organization module).
+ * Real: FastAPI /organization/users* (organization module).
+ *
+ * Create body (AdminUserCreate):
+ *   { employmentId: int, email: EmailStr, temporaryPassword: str (min 8),
+ *     roleId?: int|str, status?: str }
+ *
+ * 409 Conflict from backend:
+ *   - "This employee already has a login account"
+ *   - "Email is already in use"
  */
 
 import { env } from '@/config/env'
@@ -15,8 +23,8 @@ import type {
   DepartmentOption,
   AdminUserListParams,
 } from '../types'
+import axios from 'axios'
 
-/** Backend login-account base (Organization module — not /admin). */
 const USERS_API = '/organization/users'
 const EMPLOYMENTS_WITHOUT_LOGIN_API = '/organization/employments-without-login'
 
@@ -52,6 +60,24 @@ function inDateRange(iso: string | null, from?: string, to?: string): boolean {
   return true
 }
 
+/** Extract FastAPI / AppException message from axios error. */
+export function extractApiErrorMessage(err: unknown, fallback = 'Request failed'): string {
+  if (axios.isAxiosError(err)) {
+    const data = err.response?.data as
+      | { detail?: string | Array<{ msg?: string }>; message?: string }
+      | string
+      | undefined
+    if (typeof data === 'string' && data.trim()) return data
+    if (data && typeof data === 'object') {
+      if (typeof data.detail === 'string' && data.detail.trim()) return data.detail
+      if (Array.isArray(data.detail) && data.detail[0]?.msg) return String(data.detail[0].msg)
+      if (typeof data.message === 'string' && data.message.trim()) return data.message
+    }
+    if (err.response?.status === 409) return 'Conflict — email or employee login already exists'
+  }
+  if (err instanceof Error && err.message) return err.message
+  return fallback
+}
 
 function mapLoginUsers(): AdminUserListItem[] {
   const db = getDb()
@@ -215,7 +241,6 @@ export async function listEmploymentsWithoutLogin(): Promise<EmploymentWithoutLo
     })
 }
 
-/** Departments for user-detail picker. */
 export async function listDepartments(): Promise<DepartmentOption[]> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<
@@ -228,7 +253,6 @@ export async function listDepartments(): Promise<DepartmentOption[]> {
   return getDb().schema_departments.map((d) => ({ id: d.id, name: d.name }))
 }
 
-/** Roles for assign-on-create. */
 export async function listRoles(): Promise<AdminRoleOption[]> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<
@@ -261,25 +285,37 @@ export async function listRoles(): Promise<AdminRoleOption[]> {
   }))
 }
 
+/**
+ * POST /organization/users — AdminUserCreate shape only.
+ * Throws Error with backend detail on 409/4xx so the form can show it.
+ */
 export async function createUserLogin(input: {
   employmentId: number
   email: string
   temporaryPassword: string
   roleId: number | string
-  status?: LoginUserRow['status']
-}): Promise<LoginUserRow> {
+  status?: LoginUserRow['status'] | string
+}): Promise<Record<string, unknown>> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<LoginUserRow & { detail?: string }>(USERS_API, {
-      employmentId: input.employmentId,
-      email: input.email,
-      temporaryPassword: input.temporaryPassword,
-      roleId: input.roleId,
-      status: input.status,
-    })
-    if (data && typeof data === 'object' && 'detail' in data && data.detail) {
-      throw new Error(String(data.detail))
+    const body: Record<string, unknown> = {
+      employmentId: Number(input.employmentId),
+      email: String(input.email).trim().toLowerCase(),
+      temporaryPassword: String(input.temporaryPassword),
     }
-    return data as LoginUserRow
+    if (input.roleId != null && String(input.roleId).trim() !== '') {
+      const n = Number(input.roleId)
+      body.roleId = Number.isFinite(n) ? n : input.roleId
+    }
+    if (input.status) {
+      body.status = String(input.status).toUpperCase()
+    }
+
+    try {
+      const { data } = await apiClient.post<Record<string, unknown>>(USERS_API, body)
+      return data
+    } catch (err) {
+      throw new Error(extractApiErrorMessage(err, 'Could not create user login'))
+    }
   }
 
   await delay(400)
@@ -300,9 +336,9 @@ export async function createUserLogin(input: {
   const row: LoginUserRow = {
     id: nextId(logins),
     employment_id: input.employmentId,
-    email: input.email.trim(),
+    email: input.email.trim().toLowerCase(),
     temporary_password: input.temporaryPassword,
-    status: input.status ?? 'ACTIVE',
+    status: (input.status as LoginUserRow['status']) ?? 'ACTIVE',
     failed_attempt_count: 0,
     locked_until: null,
     last_login_at: null,
@@ -340,22 +376,33 @@ export async function updateUserLogin(
     role?: string
     department?: string
     departmentId?: number
+    roleId?: number | string
   },
 ): Promise<LoginUserRow | Record<string, unknown>> {
   if (!env.useMockApi) {
-    const body: Record<string, unknown> = { ...patch }
+    const body: Record<string, unknown> = {}
+    if (patch.email != null) body.email = String(patch.email).trim().toLowerCase()
     if (patch.temporary_password != null) body.temporaryPassword = patch.temporary_password
     if (patch.temporaryPassword != null) body.temporaryPassword = patch.temporaryPassword
+    if (patch.departmentId != null) body.departmentId = patch.departmentId
+    if (patch.roleId != null) body.roleId = patch.roleId
     if (patch.status) {
       const map: Record<string, string> = {
         ACTIVE: 'Active',
         INACTIVE: 'Inactive',
         LOCKED: 'Locked',
+        Active: 'Active',
+        Inactive: 'Inactive',
+        Locked: 'Locked',
       }
       body.status = map[patch.status] ?? patch.status
     }
-    const { data } = await apiClient.patch(`${USERS_API}/${loginId}`, body)
-    return data as LoginUserRow
+    try {
+      const { data } = await apiClient.patch(`${USERS_API}/${loginId}`, body)
+      return data as LoginUserRow
+    } catch (err) {
+      throw new Error(extractApiErrorMessage(err, 'Could not update user'))
+    }
   }
 
   await delay(300)
@@ -363,7 +410,8 @@ export async function updateUserLogin(
   const logins = ensureLoginUsers()
   const row = logins.find((l) => l.id === loginId)
   if (!row) throw new Error('User not found')
-  const { temporaryPassword, name: _n, role: _r, department: _d, departmentId, ...rest } = patch
+  const { temporaryPassword, name: _n, role: _r, department: _d, departmentId, roleId: _rid, ...rest } =
+    patch
   Object.assign(row, rest, { updated_at: new Date().toISOString() })
   if (temporaryPassword != null) row.temporary_password = temporaryPassword
 
