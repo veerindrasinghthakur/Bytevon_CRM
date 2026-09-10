@@ -1,8 +1,11 @@
 /**
  * Admin settings API — organisation profile, attendance policy, leave accrual.
  *
- * Attendance: GET/POST /attendance/policies (+ /policies/current).
- * Leave accrual: no dedicated endpoint — derived from leave policy carry_forward_limit.
+ * Attendance:
+ *   GET  /attendance/policies/current
+ *   POST /attendance/policies  (new effective version)
+ * Shift times (when a shift is selected):
+ *   PATCH /organization/shifts/{id}
  */
 
 import { env } from '@/config/env'
@@ -48,7 +51,8 @@ type OrgSettingsApi = {
   description?: string | null
 }
 
-type AttendancePolicyApi = {
+/** Backend AttendancePolicyResponse */
+export type AttendancePolicyApi = {
   id?: number
   name?: string
   correction_window_days?: number
@@ -64,13 +68,24 @@ type AttendancePolicyApi = {
   effective_to?: string | null
 }
 
-const DEFAULT_ATTENDANCE: AttendanceSettings = {
+export const DEFAULT_ATTENDANCE: AttendanceSettings = {
   shiftStart: '09:00',
   shiftEnd: '18:00',
   graceMinutes: 15,
   earlyOutMinutes: 30,
   otMinMinutes: 60,
   allowRemoteCheckIn: true,
+  correctionWindowDays: 7,
+  maxCorrectionsPerMonth: null,
+  reasonsMandatory: true,
+  approvalSlaHours: null,
+  allowMultiplePunches: true,
+  requireCheckoutBeforeNewCheckin: false,
+  autoCreateAttendanceDay: true,
+  maxClockDriftSeconds: null,
+  policyName: 'Company attendance policy',
+  policyId: null,
+  effectiveFrom: null,
 }
 
 function mapApiToProfile(row: OrgSettingsApi | null | undefined): OrganizationProfile {
@@ -120,7 +135,9 @@ function mapProfileToApi(patch: Partial<OrganizationProfile>): Record<string, un
   return body
 }
 
-function mapPolicyToAttendanceSettings(policy: AttendancePolicyApi | null): AttendanceSettings {
+export function mapPolicyToAttendanceSettings(
+  policy: AttendancePolicyApi | null,
+): AttendanceSettings {
   if (!policy) return { ...DEFAULT_ATTENDANCE }
   return {
     ...DEFAULT_ATTENDANCE,
@@ -128,6 +145,71 @@ function mapPolicyToAttendanceSettings(policy: AttendancePolicyApi | null): Atte
       policy.default_grace_late_minutes != null
         ? Number(policy.default_grace_late_minutes)
         : DEFAULT_ATTENDANCE.graceMinutes,
+    correctionWindowDays:
+      policy.correction_window_days != null
+        ? Number(policy.correction_window_days)
+        : DEFAULT_ATTENDANCE.correctionWindowDays,
+    maxCorrectionsPerMonth:
+      policy.max_corrections_per_month != null
+        ? Number(policy.max_corrections_per_month)
+        : null,
+    reasonsMandatory: policy.reasons_mandatory ?? true,
+    approvalSlaHours:
+      policy.approval_sla_hours != null ? Number(policy.approval_sla_hours) : null,
+    allowMultiplePunches: policy.allow_multiple_punches ?? true,
+    requireCheckoutBeforeNewCheckin: policy.require_checkout_before_new_checkin ?? false,
+    autoCreateAttendanceDay: policy.auto_create_attendance_day ?? true,
+    maxClockDriftSeconds:
+      policy.max_clock_drift_seconds != null
+        ? Number(policy.max_clock_drift_seconds)
+        : null,
+    policyName: policy.name ?? DEFAULT_ATTENDANCE.policyName,
+    policyId: policy.id ?? null,
+    effectiveFrom: policy.effective_from ?? null,
+  }
+}
+
+/** Build AttendancePolicyCreate body from form + current policy defaults. */
+export function toAttendancePolicyCreateBody(
+  patch: Partial<AttendanceSettings>,
+  current: AttendancePolicyApi | null,
+): Record<string, unknown> {
+  const today = new Date().toISOString().slice(0, 10)
+  const grace =
+    patch.graceMinutes ??
+    current?.default_grace_late_minutes ??
+    DEFAULT_ATTENDANCE.graceMinutes
+
+  return {
+    name: patch.policyName ?? current?.name ?? 'Company attendance policy',
+    correction_window_days:
+      patch.correctionWindowDays ??
+      current?.correction_window_days ??
+      DEFAULT_ATTENDANCE.correctionWindowDays,
+    max_corrections_per_month:
+      patch.maxCorrectionsPerMonth !== undefined
+        ? patch.maxCorrectionsPerMonth
+        : (current?.max_corrections_per_month ?? null),
+    reasons_mandatory:
+      patch.reasonsMandatory ?? current?.reasons_mandatory ?? true,
+    approval_sla_hours:
+      patch.approvalSlaHours !== undefined
+        ? patch.approvalSlaHours
+        : (current?.approval_sla_hours ?? null),
+    allow_multiple_punches:
+      patch.allowMultiplePunches ?? current?.allow_multiple_punches ?? true,
+    require_checkout_before_new_checkin:
+      patch.requireCheckoutBeforeNewCheckin ??
+      current?.require_checkout_before_new_checkin ??
+      false,
+    auto_create_attendance_day:
+      patch.autoCreateAttendanceDay ?? current?.auto_create_attendance_day ?? true,
+    default_grace_late_minutes: grace,
+    max_clock_drift_seconds:
+      patch.maxClockDriftSeconds !== undefined
+        ? patch.maxClockDriftSeconds
+        : (current?.max_clock_drift_seconds ?? null),
+    effective_from: today,
   }
 }
 
@@ -158,26 +240,30 @@ export async function updateOrganizationProfile(
 export async function getAttendanceSettings(): Promise<AttendanceSettings> {
   if (env.useMockApi) {
     await delay()
-    return { ...attendanceSettingsMock }
+    return { ...DEFAULT_ATTENDANCE, ...attendanceSettingsMock }
   }
   try {
     const { data } = await apiClient.get<AttendancePolicyApi>(ATTENDANCE_POLICY_CURRENT)
     return mapPolicyToAttendanceSettings(data)
   } catch {
+    // No policy yet — return safe defaults (page still usable)
     return { ...DEFAULT_ATTENDANCE }
   }
 }
 
+/**
+ * Creates a new attendance policy version (effective_from = today).
+ * Maps to POST /attendance/policies (AttendancePolicyCreate).
+ */
 export async function updateAttendanceSettings(
   patch: Partial<AttendanceSettings>,
 ): Promise<AttendanceSettings> {
   if (env.useMockApi) {
     await delay(400)
     Object.assign(attendanceSettingsMock, patch)
-    return { ...attendanceSettingsMock }
+    return { ...DEFAULT_ATTENDANCE, ...attendanceSettingsMock }
   }
 
-  const today = new Date().toISOString().slice(0, 10)
   let current: AttendancePolicyApi | null = null
   try {
     const res = await apiClient.get<AttendancePolicyApi>(ATTENDANCE_POLICY_CURRENT)
@@ -186,35 +272,11 @@ export async function updateAttendanceSettings(
     current = null
   }
 
-  const grace =
-    patch.graceMinutes ??
-    current?.default_grace_late_minutes ??
-    DEFAULT_ATTENDANCE.graceMinutes
-
-  const body = {
-    name: current?.name ?? 'Company attendance policy',
-    correction_window_days: current?.correction_window_days ?? 7,
-    max_corrections_per_month: current?.max_corrections_per_month ?? null,
-    reasons_mandatory: current?.reasons_mandatory ?? true,
-    approval_sla_hours: current?.approval_sla_hours ?? null,
-    allow_multiple_punches: current?.allow_multiple_punches ?? true,
-    require_checkout_before_new_checkin:
-      current?.require_checkout_before_new_checkin ?? false,
-    auto_create_attendance_day: current?.auto_create_attendance_day ?? true,
-    default_grace_late_minutes: grace,
-    max_clock_drift_seconds: current?.max_clock_drift_seconds ?? null,
-    effective_from: today,
-  }
-
+  const body = toAttendancePolicyCreateBody(patch, current)
   const { data } = await apiClient.post<AttendancePolicyApi>(ATTENDANCE_POLICIES, body)
   return mapPolicyToAttendanceSettings(data)
 }
 
-/**
- * Leave accrual summary for Leave Settings UI.
- * Backend has no /admin/settings/leave-accrual — derive max carry from current policies.
- * minimumNoticeDays is UI-only until a company setting exists.
- */
 export async function getLeaveAccrualPolicy(): Promise<LeaveAccrualPolicy> {
   if (env.useMockApi) {
     await delay()
@@ -236,11 +298,6 @@ export async function getLeaveAccrualPolicy(): Promise<LeaveAccrualPolicy> {
   }
 }
 
-/**
- * Persist accrual is not a single backend resource.
- * Updating max carry requires creating new policy versions per leave type —
- * for V1 we accept the form values locally and do not call a missing endpoint.
- */
 export async function updateLeaveAccrualPolicy(
   patch: Partial<LeaveAccrualPolicy>,
 ): Promise<LeaveAccrualPolicy> {
@@ -249,7 +306,6 @@ export async function updateLeaveAccrualPolicy(
     Object.assign(leaveAccrualPolicyMock, patch)
     return { ...leaveAccrualPolicyMock }
   }
-  // No company-wide leave-accrual API yet — return merged values without 404 noise
   const current = await getLeaveAccrualPolicy()
   return {
     maxCarryOverDays: patch.maxCarryOverDays ?? current.maxCarryOverDays,
