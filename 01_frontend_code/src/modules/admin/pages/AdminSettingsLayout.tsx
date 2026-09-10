@@ -12,7 +12,7 @@ import { queryKeys } from '@/shared/lib/query-keys'
  */
 export function AdminSettingsLayout() {
   const { data: metrics, isLoading } = useQuery({
-    queryKey: queryKeys.admin.metrics.hub?.() ?? (['admin', 'metrics', 'hub'] as const),
+    queryKey: [...queryKeys.admin.metrics.all, 'hub'] as const,
     queryFn: getAdminHubMetrics,
     staleTime: 30_000,
   })
