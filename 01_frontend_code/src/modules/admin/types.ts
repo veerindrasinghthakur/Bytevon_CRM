@@ -44,22 +44,54 @@ export interface AdminRole {
   updated: string
 }
 
+/**
+ * Audit row — mirrors backend AuditLogResponse + UI display helpers.
+ * Backend: id, reference_type, reference_id, action, description,
+ *          employment_id, ip_address, user_agent, created_at
+ */
 export interface AuditLog {
   id: string
+  /** AuditAction enum value e.g. CREATE, LOGIN */
   action: string
+  /** description from backend */
+  description: string
+  /** reference_type e.g. ROLE, LOGIN, EMPLOYMENT */
+  referenceType: string
+  referenceId: number | null
+  employmentId: number | null
+  ipAddress: string | null
+  userAgent: string | null
+  /** ISO created_at */
+  createdAt: string
+  /** Display-formatted created_at */
+  timestamp: string
+  /** Derived actor label */
   actor: string
   actorInitials: string
+  /** Alias: description or "TYPE #id" */
   target: string
+  /** Alias of referenceType for filters/columns */
   module: string
-  timestamp: string
+  /** Alias of ipAddress for columns */
   ip: string
 }
 
+/**
+ * Security event derived from audit logs (auth-related).
+ * Maps: action→eventType, actor→identity, ip/module→source
+ */
 export interface SecurityEvent {
   id: string
+  /** Backend AuditAction */
   eventType: string
+  /** Employment actor or System */
   identity: string
+  employmentId: number | null
+  /** IP or reference type */
   source: string
+  ipAddress: string | null
+  referenceType: string
+  description: string
   timestamp: string
   status: SecurityEventStatus
 }
@@ -103,12 +135,6 @@ export interface OfficeLocation {
   postal: string
 }
 
-/**
- * UI organization profile.
- * Persisted on backend today: name (← company_name), defaultTimezone,
- * defaultCurrency, headOfficeLocationId, logoReference.
- * Other fields are UI-only until schema is extended.
- */
 export interface OrganizationProfile {
   name: string
   legal: string
@@ -178,7 +204,6 @@ export interface AdminUserListItem {
   department: string
   status: 'Active' | 'Inactive' | 'Locked'
   lastLogin: string
-  /** ISO timestamp for date-range filters; null if never logged in */
   lastLoginAt: string | null
   initials: string
   employeeCode: string
@@ -217,7 +242,6 @@ export interface AdminHubMetrics {
   openAlerts?: number
 }
 
-/** Canonical KPI shape — AdminKpis kept as an alias for existing imports. */
 export type AdminKpis = AdminHubMetrics
 
 export interface RoleListMetrics {
@@ -261,7 +285,6 @@ export interface AuditFilters {
   timeFrom: string
   timeTo: string
 }
-
 
 export type OfficeWriteInput = {
   name: string
