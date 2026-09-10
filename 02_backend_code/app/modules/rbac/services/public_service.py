@@ -11,7 +11,7 @@ Owns the transaction.
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from typing import List, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -36,6 +36,7 @@ from app.modules.rbac.schemas.schemas import (
     ResourceResponse,
     RoleCreate,
     RoleDetailResponse,
+    RolePermissionDetail,
     RolePermissionGrant,
     RolePermissionResponse,
     RoleResponse,
@@ -50,6 +51,7 @@ logger = logging.getLogger(__name__)
 
 # Convention: system role named "Super Admin" (or similar) must never lose its last holder.
 SUPER_ADMIN_ROLE_NAME = "Super Admin"
+DEFAULT_SCOPE_NAME = "ORGANIZATION"
 
 
 class RBACPublicService(BasePublicService):
@@ -85,6 +87,97 @@ class RBACPublicService(BasePublicService):
     # Roles
     # ==================================================================
 
+    async def _resolve_default_scope_id(self, scope_id: Optional[int]) -> int:
+        if scope_id is not None:
+            scope = await self._repo.get_scope_by_id(scope_id)
+            if scope is None:
+                raise NotFoundError("Scope not found")
+            return scope.id
+        scope = await self._repo.get_scope_by_name(DEFAULT_SCOPE_NAME)
+        if scope is None:
+            # Fall back to first available scope
+            scopes = await self._repo.list_scopes()
+            if not scopes:
+                raise DomainError("No scopes seeded; cannot grant permissions")
+            return scopes[0].id
+        return scope.id
+
+    async def _grant_permission_ids(
+        self,
+        role_id: int,
+        permission_ids: List[int],
+        *,
+        scope_id: int,
+        actor_employment_id: Optional[int],
+        replace: bool = False,
+    ) -> None:
+        """Grant a set of permission ids under one scope. Optionally clear existing first."""
+        if replace:
+            await self._repo.delete_all_role_permissions(role_id)
+
+        actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        seen: set[int] = set()
+        for pid in permission_ids:
+            if pid in seen:
+                continue
+            seen.add(pid)
+            perm = await self._repo.get_permission_by_id(pid)
+            if perm is None:
+                raise NotFoundError(f"Permission id {pid} not found")
+            existing = await self._repo.get_role_permission(role_id, pid, scope_id)
+            if existing:
+                continue
+            rp = RolePermission(
+                role_id=role_id,
+                permission_id=pid,
+                scope_id=scope_id,
+                changed_by=actor,
+            )
+            await self._repo.add(rp)
+
+    def _build_role_detail(self, role: Role) -> RoleDetailResponse:
+        details: list[RolePermissionDetail] = []
+        keys: list[str] = []
+        for rp in role.role_permissions or []:
+            perm = getattr(rp, "permission", None)
+            resource = getattr(perm, "resource", None) if perm is not None else None
+            scope = getattr(rp, "scope", None)
+            action_val = None
+            if perm is not None:
+                action_val = (
+                    perm.action.value if hasattr(perm.action, "value") else str(perm.action)
+                )
+            resource_name = resource.name if resource is not None else None
+            scope_name = scope.name if scope is not None else None
+            key = None
+            if resource_name and action_val:
+                key = f"{resource_name.lower()}.{action_val.lower()}"
+                keys.append(key)
+            details.append(
+                RolePermissionDetail(
+                    id=rp.id,
+                    permission_id=rp.permission_id,
+                    scope_id=rp.scope_id,
+                    resource_name=resource_name,
+                    action=action_val,
+                    scope_name=scope_name,
+                    key=key,
+                )
+            )
+        return RoleDetailResponse(
+            **RoleResponse.model_validate(role).model_dump(),
+            permissions=[
+                RolePermissionResponse.model_validate(rp)
+                for rp in role.role_permissions or []
+            ],
+            permission_details=details,
+            permission_keys=keys,
+            sensitive_field_permissions=[
+                RoleSensitiveFieldPermissionResponse.model_validate(sfp)
+                for sfp in role.sensitive_field_permissions or []
+            ],
+        )
+
     async def create_role(
         self,
         data: RoleCreate,
@@ -102,6 +195,18 @@ class RBACPublicService(BasePublicService):
             changed_by=actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID,
         )
         await self._repo.add(role)
+        await self._session.flush()  # get role.id before grants
+
+        if data.permission_ids:
+            scope_id = await self._resolve_default_scope_id(data.scope_id)
+            await self._grant_permission_ids(
+                role.id,
+                data.permission_ids,
+                scope_id=scope_id,
+                actor_employment_id=actor_employment_id,
+                replace=False,
+            )
+
         await self._commit()
         await self._audit("role.created", role.id, actor_employment_id)
         return RoleResponse.model_validate(role)
@@ -110,17 +215,7 @@ class RBACPublicService(BasePublicService):
         role = await self._repo.get_role_by_id(role_id, with_details=True)
         if role is None:
             raise NotFoundError("Role not found")
-        return RoleDetailResponse(
-            **RoleResponse.model_validate(role).model_dump(),
-            permissions=[
-                RolePermissionResponse.model_validate(rp)
-                for rp in role.role_permissions
-            ],
-            sensitive_field_permissions=[
-                RoleSensitiveFieldPermissionResponse.model_validate(sfp)
-                for sfp in role.sensitive_field_permissions
-            ],
-        )
+        return self._build_role_detail(role)
 
     async def list_roles(self) -> list[RoleResponse]:
         rows = await self._repo.list_roles()
@@ -147,6 +242,16 @@ class RBACPublicService(BasePublicService):
         if data.description is not None:
             role.description = data.description
         role.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+
+        if data.permission_ids is not None:
+            scope_id = await self._resolve_default_scope_id(data.scope_id)
+            await self._grant_permission_ids(
+                role.id,
+                data.permission_ids,
+                scope_id=scope_id,
+                actor_employment_id=actor_employment_id,
+                replace=True,
+            )
 
         await self._commit()
         await self._audit("role.updated", role.id, actor_employment_id)
@@ -444,8 +549,3 @@ class RBACPublicService(BasePublicService):
             scope_by_resource=scope_by_resource,
             grants=items,
         )
-
-    # ==================================================================
-    # Helpers
-    # ==================================================================
-
