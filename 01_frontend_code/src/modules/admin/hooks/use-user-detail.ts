@@ -68,17 +68,21 @@ export function useUserDetail(userId?: string) {
   const { reset } = form
 
   const roleOptions =
-    rolesQuery.data?.map((r) => ({
-      value: String(r.id),
-      label: r.name,
-      meta: r.description ?? undefined,
-    })) ?? []
+    Array.isArray(rolesQuery.data)
+      ? rolesQuery.data.map((r) => ({
+          value: String(r.id),
+          label: r.name,
+          meta: r.description ?? undefined,
+        }))
+      : []
 
   const deptOptions =
-    deptsQuery.data?.map((d) => ({
-      value: String(d.id),
-      label: d.name,
-    })) ?? []
+    Array.isArray(deptsQuery.data)
+      ? deptsQuery.data.map((d) => ({
+          value: String(d.id),
+          label: d.name,
+        }))
+      : []
 
   useEffect(() => {
     if (!display || isEditing) return
