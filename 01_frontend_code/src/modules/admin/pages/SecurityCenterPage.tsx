@@ -6,7 +6,6 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { getSecurityKpis, listSecurityEvents } from '../api/security'
-import { cn } from '@/shared/lib/cn'
 import { securityScoreDefault } from '../schemas/enums'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { UnavailableProtocol, ProtocolRow } from '../components/SecurityProtocols'
@@ -51,7 +50,7 @@ export function SecurityCenterPage() {
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="Security Center"
-        description="Sessions, lockouts, authentication policy, and infrastructure posture. MFA is not available in V1."
+        description="Posture KPIs and recent auth-related audit events from GET /audit/logs. MFA is not available in V1."
         actions={
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 px-3 py-1 bg-surface-container-low rounded-full border border-outline-variant/30">
@@ -88,7 +87,8 @@ export function SecurityCenterPage() {
           <div>
             <h2 className="text-title-lg font-semibold text-primary">Security Health Score</h2>
             <p className="text-body-md text-on-surface-variant max-w-md">
-              Auth V1: no MFA, no password history. Session lockout and revoke-all are supported.
+              Derived from today’s audit volume and alert-like actions. Auth V1: no MFA, lockout via
+              failed_attempt_count.
             </p>
           </div>
         </div>
@@ -111,21 +111,21 @@ export function SecurityCenterPage() {
 
         <MetricCard
           icon="hub"
-          label="Active Sessions"
+          label="Active logins"
           value={String(kpis.activeSessions.toLocaleString())}
-          hint="Refresh tokens hashed on sessions"
+          hint="Active user accounts (proxy until session list API)"
         />
         <MetricCard
           icon="check_circle"
-          label="Open Security Alerts"
+          label="Open alerts"
           value={String(kpis.openAlerts)}
-          hint="Requires attention"
+          hint="FAIL / LOCK / REJECT style audit actions today"
         />
         <MetricCard
           icon="history"
-          label="Audit Events Today"
+          label="Audit events today"
           value={String(kpis.auditEventsToday)}
-          hint="Tracked in audit log"
+          hint="Rows from GET /audit/logs (from_ts=today)"
         />
       </section>
 
@@ -183,27 +183,47 @@ export function SecurityCenterPage() {
 
       <section className="bv-surface overflow-hidden">
         <div className="flex items-center justify-between p-6 border-b border-outline-variant">
-          <h3 className="text-title-lg font-semibold text-primary">Recent Security Events</h3>
+          <div>
+            <h3 className="text-title-lg font-semibold text-primary">Recent security events</h3>
+            <p className="text-body-sm text-on-surface-variant mt-1">
+              Derived from audit logs (action, employment_id, reference_type, ip_address, description)
+            </p>
+          </div>
         </div>
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
+          <table className="w-full text-left min-w-[880px]">
             <thead className="bg-surface-container-low border-b border-outline-variant text-on-surface-variant text-label-sm uppercase tracking-wider">
               <tr>
-                <th className="px-6 py-3 font-bold">Event Type</th>
-                <th className="px-6 py-3 font-bold">Identity</th>
-                <th className="px-6 py-3 font-bold">Source</th>
-                <th className="px-6 py-3 font-bold">Timestamp</th>
-                <th className="px-6 py-3 font-bold">Status</th>
+                <th className="px-4 py-3 font-bold">Action</th>
+                <th className="px-4 py-3 font-bold">Employment</th>
+                <th className="px-4 py-3 font-bold">Reference</th>
+                <th className="px-4 py-3 font-bold">Description</th>
+                <th className="px-4 py-3 font-bold">IP</th>
+                <th className="px-4 py-3 font-bold">Time</th>
+                <th className="px-4 py-3 font-bold">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {events.map((ev) => (
                 <tr key={ev.id} className="zebra-row">
-                  <td className="px-6 py-4 text-body-sm font-medium text-on-surface">{ev.eventType}</td>
-                  <td className="px-6 py-4 text-body-sm text-on-surface-variant">{ev.identity}</td>
-                  <td className="px-6 py-4 text-body-sm text-on-surface-variant">{ev.source}</td>
-                  <td className="px-6 py-4 text-body-sm text-on-surface-variant">{ev.timestamp}</td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-4 text-body-sm font-medium text-on-surface">{ev.eventType}</td>
+                  <td className="px-4 py-4 text-body-sm text-on-surface-variant">
+                    {ev.employmentId != null ? `#${ev.employmentId}` : ev.identity}
+                  </td>
+                  <td className="px-4 py-4 text-body-sm text-on-surface-variant">{ev.referenceType || '—'}</td>
+                  <td
+                    className="px-4 py-4 text-body-sm text-on-surface max-w-[240px] truncate"
+                    title={ev.description}
+                  >
+                    {ev.description || '—'}
+                  </td>
+                  <td className="px-4 py-4 text-body-sm font-mono text-on-surface-variant">
+                    {ev.ipAddress ?? '—'}
+                  </td>
+                  <td className="px-4 py-4 text-body-sm text-on-surface-variant whitespace-nowrap">
+                    {ev.timestamp}
+                  </td>
+                  <td className="px-4 py-4">
                     <span className={securityEventBadge[ev.status] ?? 'status-badge status-neutral'}>
                       {ev.status}
                     </span>
@@ -212,8 +232,8 @@ export function SecurityCenterPage() {
               ))}
               {events.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-10 text-center text-on-surface-variant">
-                    No security events
+                  <td colSpan={7} className="px-6 py-10 text-center text-on-surface-variant">
+                    No security-related audit events yet
                   </td>
                 </tr>
               )}
