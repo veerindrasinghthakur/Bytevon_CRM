@@ -10,9 +10,10 @@ import { archiveWorkingWeek, createWorkingWeek } from '../../api/organization'
 import type { WorkingWeekRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 import { queryKeys } from '@/shared/lib/query-keys'
-import { dayOptions as DAY } from '../../schemas/enums'
 
-/** Normalize mock (monday:true) or schema (working_days_of_week:[0..6]) into day indexes. */
+/** Backend: working_days_of_week 0=Mon … 6=Sun */
+const DAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
+
 function toDayIndexes(w: WorkingWeekRow | Record<string, unknown>): number[] {
   const row = w as Record<string, unknown>
   if (Array.isArray(row.working_days_of_week)) {
@@ -31,7 +32,7 @@ function toDayIndexes(w: WorkingWeekRow | Record<string, unknown>): number[] {
   for (const [key, idx] of map) {
     if (row[key] === true) days.push(idx)
   }
-  return days.length ? days : [0, 1, 2, 3, 4] // Mon–Fri default (0=Mon)
+  return days.length ? days : [0, 1, 2, 3, 4]
 }
 
 function todayISO() {
@@ -115,7 +116,7 @@ export function WorkingWeeksPage() {
           <h2 className="text-title-lg font-semibold text-on-background">Working weeks</h2>
           <p className="text-body-sm text-on-surface-variant mt-0.5">
             Versioned weekly schedules. Creating a new week closes the previous open version.
-            Days use 0=Mon … 6=Sun (backend convention).
+            Days: 0=Mon … 6=Sun.
           </p>
         </div>
         <Button
@@ -163,7 +164,7 @@ export function WorkingWeeksPage() {
           <div>
             <p className="text-xs font-bold text-on-surface-variant uppercase mb-2">Working days</p>
             <div className="flex flex-wrap gap-2">
-              {DAY.map((label, i) => {
+              {DAY_LABELS.map((label, i) => {
                 const on = days.includes(i)
                 return (
                   <button
@@ -235,7 +236,7 @@ export function WorkingWeeksPage() {
                 )}
               </div>
               <div className="mt-4 flex flex-wrap gap-2">
-                {DAY.map((d, i) => {
+                {DAY_LABELS.map((d, i) => {
                   const on = w.working_days_of_week.includes(i)
                   return (
                     <span
