@@ -10,16 +10,22 @@ import { getOrganizationProfile, updateOrganizationProfile } from '../../api/set
 import { queryKeys } from '@/shared/lib/query-keys'
 import { organizationProfileSchema, type OrganizationProfileInput } from '../../schemas/settings'
 
+/** Extended form values: schema fields + backend settings that persist. */
+type ProfileFormValues = OrganizationProfileInput & {
+  defaultTimezone?: string
+  defaultCurrency?: string
+}
+
 export function OrganizationProfileSection() {
   const qc = useQueryClient()
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: queryKeys.admin.settings.all,
     queryFn: getOrganizationProfile,
   })
 
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
 
-  const form = useForm<OrganizationProfileInput>({
+  const form = useForm<ProfileFormValues>({
     resolver: zodResolver(organizationProfileSchema),
     defaultValues: {
       name: '',
@@ -30,23 +36,47 @@ export function OrganizationProfileSection() {
       tax: '',
       reg: '',
       description: '',
+      defaultTimezone: '',
+      defaultCurrency: '',
     },
   })
 
   useEffect(() => {
     if (data && !isEditing) {
-      form.reset({ ...data })
+      form.reset({
+        name: data.name ?? '',
+        legal: data.legal ?? '',
+        email: data.email ?? '',
+        phone: data.phone ?? '',
+        website: data.website ?? '',
+        tax: data.tax ?? '',
+        reg: data.reg ?? '',
+        description: data.description ?? '',
+        defaultTimezone: data.defaultTimezone ?? '',
+        defaultCurrency: data.defaultCurrency ?? '',
+      })
     }
   }, [data, isEditing, form])
 
   const save = useMutation({
-    mutationFn: () => updateOrganizationProfile(form.getValues()),
+    mutationFn: () => {
+      const values = form.getValues()
+      return updateOrganizationProfile({
+        name: values.name,
+        legal: values.legal,
+        email: values.email,
+        phone: values.phone,
+        website: values.website,
+        tax: values.tax,
+        reg: values.reg,
+        description: values.description,
+        defaultTimezone: values.defaultTimezone,
+        defaultCurrency: values.defaultCurrency,
+      })
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.admin.settings.all })
       finishEditing()
-    },
-    onError: () => {
-      // Errors surface via mutation state if needed
     },
   })
 
@@ -56,13 +86,23 @@ export function OrganizationProfileSection() {
     return <p className="text-body-sm text-on-surface-variant">Loading organization profile…</p>
   }
 
+  if (isError) {
+    return (
+      <p className="text-body-sm text-error">
+        Failed to load organization settings
+        {error instanceof Error ? `: ${error.message}` : ''}
+      </p>
+    )
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-title-lg font-semibold text-on-background">Organization Information</h2>
           <p className="text-body-sm text-on-surface-variant mt-0.5">
-            Primary organization identity. Fields unlock when you enter edit mode.
+            Primary organization identity from organization settings. Company name, timezone, and
+            currency are saved to the backend.
           </p>
         </div>
         {isEditing ? (
@@ -71,7 +111,20 @@ export function OrganizationProfileSection() {
               variant="outline"
               size="sm"
               onClick={() => {
-                if (data) form.reset({ ...data })
+                if (data) {
+                  form.reset({
+                    name: data.name ?? '',
+                    legal: data.legal ?? '',
+                    email: data.email ?? '',
+                    phone: data.phone ?? '',
+                    website: data.website ?? '',
+                    tax: data.tax ?? '',
+                    reg: data.reg ?? '',
+                    description: data.description ?? '',
+                    defaultTimezone: data.defaultTimezone ?? '',
+                    defaultCurrency: data.defaultCurrency ?? '',
+                  })
+                }
                 cancelEditing()
               }}
               disabled={save.isPending}
@@ -96,8 +149,12 @@ export function OrganizationProfileSection() {
         <div className="flex flex-col lg:flex-row gap-8">
           <div className="shrink-0 space-y-3">
             <p className="text-label-sm text-on-surface-variant uppercase tracking-wider">Logo</p>
-            <div className="w-28 h-28 rounded-xl bg-surface-container-low flex items-center justify-center border border-dashed border-outline-variant">
-              <span className="material-symbols-outlined text-4xl text-outline">image</span>
+            <div className="w-28 h-28 rounded-xl bg-surface-container-low flex items-center justify-center border border-dashed border-outline-variant overflow-hidden">
+              {data?.logoReference ? (
+                <img src={data.logoReference} alt="Organization logo" className="w-full h-full object-cover" />
+              ) : (
+                <span className="material-symbols-outlined text-4xl text-outline">image</span>
+              )}
             </div>
             {isEditing && (
               <button type="button" className="text-xs font-medium text-secondary hover:underline cursor-pointer">
@@ -107,7 +164,24 @@ export function OrganizationProfileSection() {
           </div>
 
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
-            <Field label="Organization Name" editing={isEditing} register={form.register('name')} value={formValues.name ?? ''} />
+            <Field
+              label="Organization Name"
+              editing={isEditing}
+              register={form.register('name')}
+              value={formValues.name ?? ''}
+            />
+            <Field
+              label="Default Timezone"
+              editing={isEditing}
+              register={form.register('defaultTimezone')}
+              value={formValues.defaultTimezone ?? ''}
+            />
+            <Field
+              label="Default Currency"
+              editing={isEditing}
+              register={form.register('defaultCurrency')}
+              value={formValues.defaultCurrency ?? ''}
+            />
             <Field label="Legal Name" editing={isEditing} register={form.register('legal')} value={formValues.legal ?? ''} />
             <Field label="Email" editing={isEditing} register={form.register('email')} value={formValues.email ?? ''} />
             <Field label="Phone" editing={isEditing} register={form.register('phone')} value={formValues.phone ?? ''} />
