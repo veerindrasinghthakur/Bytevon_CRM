@@ -9,16 +9,31 @@ export const organizationProfileSchema = z.object({
   tax: z.string().max(40).optional().or(z.literal('')),
   reg: z.string().max(40).optional().or(z.literal('')),
   description: z.string().max(2000).optional().or(z.literal('')),
-  headOfficeLocationId:z.number(),
-
+  headOfficeLocationId: z.number(),
 })
 
 export type OrganizationProfileInput = z.infer<typeof organizationProfileSchema>
 
+/**
+ * Form state for /admin/attendance-settings.
+ * Shift times map to organization/shifts; policy fields map to AttendancePolicyCreate.
+ */
 export const attendanceSettingsSchema = z.object({
+  // Shift (organization/shifts when a shift is selected)
   shiftStart: z.string().min(1),
   shiftEnd: z.string().min(1),
+  // AttendancePolicy.default_grace_late_minutes (+ shift.grace_late_minutes)
   graceMinutes: z.coerce.number().int().min(0).max(180),
+  // Policy fields (POST /attendance/policies)
+  correctionWindowDays: z.coerce.number().int().min(0).max(90),
+  maxCorrectionsPerMonth: z.coerce.number().int().min(0).max(100).nullable(),
+  reasonsMandatory: z.boolean(),
+  approvalSlaHours: z.coerce.number().int().min(0).max(720).nullable(),
+  allowMultiplePunches: z.boolean(),
+  requireCheckoutBeforeNewCheckin: z.boolean(),
+  autoCreateAttendanceDay: z.boolean(),
+  maxClockDriftSeconds: z.coerce.number().int().min(0).max(3600).nullable(),
+  // UI-only until backend supports them on policy
   earlyOutMinutes: z.coerce.number().int().min(0).max(180),
   otMinMinutes: z.coerce.number().int().min(0).max(480),
   allowRemoteCheckIn: z.boolean(),
