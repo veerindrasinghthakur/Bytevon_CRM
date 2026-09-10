@@ -5,12 +5,35 @@ import { permissionCatalogSeed } from '../data/rbac-catalog'
 import { adminRoles } from '../data/mock'
 import type { AdminRole, PermissionCatalog, RolePermissionAction } from '../types'
 
-import { delay} from '@/shared/mock/db'
+import { delay } from '@/shared/mock/db'
 
 const TOTAL_MODULES = 18
 
+/** Extract FE matrix keys from a role detail payload. */
+function extractPermissionKeys(role: Record<string, any>): string[] {
+  if (Array.isArray(role.permission_keys) && role.permission_keys.length) {
+    return role.permission_keys.map(String)
+  }
+  if (Array.isArray(role.permission_details) && role.permission_details.length) {
+    return role.permission_details
+      .map((d: { key?: string; resource_name?: string; action?: string }) => {
+        if (d.key) return String(d.key)
+        if (d.resource_name && d.action) {
+          return `${String(d.resource_name).toLowerCase()}.${String(d.action).toLowerCase()}`
+        }
+        return null
+      })
+      .filter(Boolean) as string[]
+  }
+  // Legacy / mock: already string[]
+  if (Array.isArray(role.permissions) && role.permissions.every((p: unknown) => typeof p === 'string')) {
+    return role.permissions as string[]
+  }
+  return []
+}
+
 function normalizeRole(role: Record<string, any>): AdminRole {
-  const permissions = Array.isArray(role.permissions) ? role.permissions : []
+  const permissions = extractPermissionKeys(role)
   const coverage = computeCoverage(permissions)
   const created = role.created ?? role.created_at
   const formattedCreated = created
@@ -35,9 +58,7 @@ function normalizeRole(role: Record<string, any>): AdminRole {
 /** Derive coverage from permission keys (module-ish tokens). */
 export function computeCoverage(permissions: string[]): { pct: number; label: string } {
   if (!permissions?.length) return { pct: 0, label: '0 modules' }
-  const modules = new Set<
-    string
-  >()
+  const modules = new Set<string>()
   for (const p of permissions) {
     const part = p.split(/[./_]/)[0]?.toLowerCase()
     if (part) modules.add(part)
@@ -107,6 +128,23 @@ export async function listPermissionCatalog(): Promise<PermissionCatalog> {
   return { modules, actions, resources, permissions }
 }
 
+/** Map matrix string keys (resource.action) → seeded permission ids. */
+export async function permissionKeysToIds(keys: string[]): Promise<number[]> {
+  if (!keys.length) return []
+  const catalog = await listPermissionCatalog()
+  const byKey = new Map<string, number>()
+  for (const p of catalog.permissions) {
+    const k = `${String(p.resource_name).toLowerCase()}.${String(p.action).toLowerCase()}`
+    byKey.set(k, p.id)
+  }
+  const ids: number[] = []
+  for (const key of keys) {
+    const id = byKey.get(key.toLowerCase())
+    if (id != null) ids.push(id)
+  }
+  return ids
+}
+
 export async function listAdminRoles(params?: {
   search?: string
   status?: string
@@ -163,8 +201,8 @@ export async function getAdminRole(roleId: string): Promise<AdminRole | null> {
     return { ...r, coveragePct: cov.pct, coverageLabel: cov.label }
   }
   try {
-    const { data } = await apiClient.get<AdminRole>(`/rbac/roles/${roleId}`)
-    return normalizeRole(data as Record<string, any>)
+    const { data } = await apiClient.get<Record<string, any>>(`/rbac/roles/${roleId}`)
+    return normalizeRole(data)
   } catch {
     return null
   }
@@ -200,8 +238,17 @@ export async function createAdminRole(payload: {
     adminRoles.push(row)
     return { ...row }
   }
-  const { data } = await apiClient.post<AdminRole>('/rbac/roles', payload)
-  return data
+  const permission_ids = await permissionKeysToIds(payload.permissions ?? [])
+  const { data } = await apiClient.post<Record<string, any>>('/rbac/roles', {
+    name: payload.name,
+    description: payload.description,
+    is_system_role: false,
+    permission_ids,
+  })
+  // Detail may lag if create returns RoleResponse without keys — re-fetch for matrix accuracy
+  const detail = await getAdminRole(String(data.id))
+  if (detail) return detail
+  return normalizeRole({ ...data, permission_keys: payload.permissions ?? [] })
 }
 
 export async function updateAdminRole(
@@ -225,8 +272,16 @@ export async function updateAdminRole(
     }
     return { ...existing }
   }
-  const { data } = await apiClient.patch<AdminRole>(`/rbac/roles/${roleId}`, payload)
-  return data
+  const body: Record<string, unknown> = {}
+  if (payload.name != null) body.name = payload.name
+  if (payload.description != null) body.description = payload.description
+  if (payload.permissions != null) {
+    body.permission_ids = await permissionKeysToIds(payload.permissions)
+  }
+  const { data } = await apiClient.patch<Record<string, any>>(`/rbac/roles/${roleId}`, body)
+  const detail = await getAdminRole(roleId)
+  if (detail) return detail
+  return normalizeRole(data)
 }
 
 export async function deleteAdminRole(roleId: string): Promise<void> {
