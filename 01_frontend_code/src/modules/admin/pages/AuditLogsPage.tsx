@@ -37,15 +37,21 @@ const FILTER_DEFAULTS: AuditFilters = {
   timeTo: '',
 }
 
+const COL_COUNT = 8
+
 function AuditQuickContent({ log }: { log: AuditLog }) {
   return (
     <>
       <QuickSection title="Actor">
-        <QuickPersonRow initials={log.actorInitials} roleLabel="Actor" name={log.actor} />
+        <QuickPersonRow
+          initials={log.actorInitials}
+          roleLabel={log.employmentId != null ? `Employment #${log.employmentId}` : 'System'}
+          name={log.actor}
+        />
       </QuickSection>
       <QuickSection title="Event details">
         <div className="grid grid-cols-2 gap-3">
-          <QuickMetaTile icon="tag" label="Event ID" value={log.id} />
+          <QuickMetaTile icon="tag" label="Log ID" value={log.id} />
           <QuickMetaTile
             icon="bolt"
             label="Action"
@@ -55,14 +61,26 @@ function AuditQuickContent({ log }: { log: AuditLog }) {
               </span>
             }
           />
-          <QuickMetaTile icon="category" label="Module" value={log.module} />
-          <QuickMetaTile icon="schedule" label="Timestamp" value={log.timestamp} />
+          <QuickMetaTile icon="category" label="Reference type" value={log.referenceType} />
+          <QuickMetaTile
+            icon="tag"
+            label="Reference ID"
+            value={log.referenceId != null ? String(log.referenceId) : '—'}
+          />
+          <QuickMetaTile icon="schedule" label="Created at" value={log.timestamp} />
+          <QuickMetaTile icon="lan" label="IP address" value={log.ipAddress ?? '—'} />
         </div>
       </QuickSection>
-      <QuickSection title="Related">
-        <QuickRelatedRow icon="description" label="Target" value={log.target} />
-        <QuickRelatedRow icon="lan" label="IP Address" value={log.ip} />
-        <QuickRelatedRow icon="category" label="Module" value={log.module} />
+      <QuickSection title="Description">
+        <p className="text-body-sm text-on-surface whitespace-pre-wrap">{log.description || '—'}</p>
+      </QuickSection>
+      <QuickSection title="Client">
+        <QuickRelatedRow icon="devices" label="User agent" value={log.userAgent ?? '—'} />
+        <QuickRelatedRow
+          icon="badge"
+          label="Employment ID"
+          value={log.employmentId != null ? String(log.employmentId) : '—'}
+        />
       </QuickSection>
     </>
   )
@@ -122,7 +140,7 @@ export function AuditLogsPage() {
       title: log.action,
       subtitle: log.timestamp,
       icon: 'history',
-      status: log.module,
+      status: log.referenceType,
       statusDotClass: auditActionDot[actionKey] ?? 'bg-outline',
       content: <AuditQuickContent log={log} />,
       widthClass: 'max-w-[520px]',
@@ -143,7 +161,7 @@ export function AuditLogsPage() {
     <div className="space-y-6 relative animate-fade-in">
       <PageHeader
         title="Audit Logs"
-        description="Immutable record of significant administrative and security actions."
+        description="Immutable audit_logs rows from GET /audit/logs (action, reference, employment, IP)."
         actions={
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => void logsQuery.refetch()}>
@@ -168,24 +186,24 @@ export function AuditLogsPage() {
       />
 
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard icon="event_note" label="Loaded Events" value={String(auditLogs.length)} hint="From audit API / store." />
+        <MetricCard icon="event_note" label="Loaded Events" value={String(auditLogs.length)} hint="From GET /audit/logs" />
         <MetricCard
           icon="shield_person"
-          label="Login-related"
-          value={String(auditLogs.filter((l) => /login/i.test(l.action)).length)}
-          hint="Successful login and logout style events."
+          label="Login / Logout"
+          value={String(auditLogs.filter((l) => /LOGIN|LOGOUT/i.test(l.action)).length)}
+          hint="Auth session events"
         />
         <MetricCard
           icon="business_center"
-          label="Business Events"
-          value={String(auditLogs.filter((l) => !/login|lock/i.test(l.action)).length)}
-          hint="Roles, users, settings changes."
+          label="Mutations"
+          value={String(auditLogs.filter((l) => /CREATE|UPDATE|ARCHIVE|ASSIGN/i.test(l.action)).length)}
+          hint="CREATE / UPDATE / ARCHIVE / ASSIGN"
         />
         <MetricCard
           icon="terminal"
-          label="System Events"
-          value={String(auditLogs.filter((l) => l.actor === 'System').length)}
-          hint="Automated / system actor rows."
+          label="System actor"
+          value={String(auditLogs.filter((l) => l.employmentId == null).length)}
+          hint="employment_id is null"
         />
       </section>
 
@@ -193,7 +211,7 @@ export function AuditLogsPage() {
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex flex-col gap-1.5 flex-1 min-w-[200px] grow-[2]">
             <label className="text-label-md text-on-surface" htmlFor="audit-search">
-              Global Search
+              Search
             </label>
             <div className="relative min-w-0">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">
@@ -204,7 +222,7 @@ export function AuditLogsPage() {
                 value={controls.search}
                 onChange={(e) => controls.setSearch(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none text-body-sm bg-transparent transition-colors"
-                placeholder="Search description, employee, ID..."
+                placeholder="Description, action, reference type, employment id…"
               />
             </div>
           </div>
@@ -218,20 +236,20 @@ export function AuditLogsPage() {
               onChange={(v) => controls.setFilter('action', v as AuditFilters['action'])}
               aria-label="Filter by action"
               options={ACTION_OPTIONS.map((a) => ({ value: a, label: a }))}
-              minWidthClass="min-w-0 w-[8rem] max-w-full"
+              minWidthClass="min-w-0 w-[9rem] max-w-full"
             />
           </div>
           <div className="flex flex-col gap-1.5 shrink-0">
             <label className="text-label-md text-on-surface" htmlFor="audit-module">
-              Module
+              Reference type
             </label>
             <Select
               id="audit-module"
               value={controls.filters.module}
               onChange={(v) => controls.setFilter('module', v as AuditFilters['module'])}
-              aria-label="Filter by module"
+              aria-label="Filter by reference type"
               options={MODULE_OPTIONS.map((m) => ({ value: m, label: m }))}
-              minWidthClass="min-w-0 w-[8rem] max-w-full"
+              minWidthClass="min-w-0 w-[9rem] max-w-full"
             />
           </div>
           <div className="flex flex-col gap-1.5 shrink-0">
@@ -289,7 +307,7 @@ export function AuditLogsPage() {
 
       <section className="bv-surface overflow-hidden">
         <div ref={parentRef} className="overflow-x-auto max-h-[640px] overflow-y-auto">
-          <table className="w-full text-left border-collapse min-w-[880px]">
+          <table className="w-full text-left border-collapse min-w-[960px]">
             <thead className="sticky top-0 z-10 bg-surface-container-low shadow-sm">
               <tr>
                 <th className="px-3 py-3 w-12 text-center">
@@ -305,18 +323,19 @@ export function AuditLogsPage() {
                     <span className="sr-only">Select</span>
                   )}
                 </th>
-                <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">Time</th>
-                <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">Actor</th>
-                <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">Action</th>
-                <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">Description</th>
-                <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">Module</th>
-                <th className="px-6 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">IP</th>
+                <th className="px-4 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">Created at</th>
+                <th className="px-4 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">Employment</th>
+                <th className="px-4 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">Action</th>
+                <th className="px-4 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">Description</th>
+                <th className="px-4 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">Reference</th>
+                <th className="px-4 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">Ref ID</th>
+                <th className="px-4 py-3 text-label-sm text-on-surface-variant uppercase tracking-wider">IP</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
               {paddingTop > 0 && (
                 <tr>
-                  <td colSpan={7} style={{ height: `${paddingTop}px` }} />
+                  <td colSpan={COL_COUNT} style={{ height: `${paddingTop}px` }} />
                 </tr>
               )}
               {virtualRows.map((virtualRow) => {
@@ -356,29 +375,40 @@ export function AuditLogsPage() {
                         <span className="inline-block w-2 h-2 rounded-full bg-outline-variant" aria-hidden />
                       )}
                     </td>
-                    <td className="px-6 py-4 text-body-sm text-on-surface-variant whitespace-nowrap">
+                    <td className="px-4 py-4 text-body-sm text-on-surface-variant whitespace-nowrap">
                       {log.timestamp}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-4">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-label-sm font-bold">
                           {log.actorInitials}
                         </div>
-                        <span className="text-label-md text-on-background">{log.actor}</span>
+                        <span className="text-label-md text-on-background">
+                          {log.employmentId != null ? `#${log.employmentId}` : 'System'}
+                        </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className={auditActionBadge[actionKey] ?? 'status-badge status-neutral'}>{log.action}</span>
+                    <td className="px-4 py-4">
+                      <span className={auditActionBadge[actionKey] ?? 'status-badge status-neutral'}>
+                        {log.action}
+                      </span>
                     </td>
-                    <td className="px-6 py-4 text-body-sm text-on-surface max-w-[280px] truncate">{log.target}</td>
-                    <td className="px-6 py-4 text-body-sm text-on-surface-variant">{log.module}</td>
-                    <td className="px-6 py-4 text-body-sm font-mono text-on-surface-variant">{log.ip}</td>
+                    <td className="px-4 py-4 text-body-sm text-on-surface max-w-[280px] truncate" title={log.description}>
+                      {log.description || '—'}
+                    </td>
+                    <td className="px-4 py-4 text-body-sm text-on-surface-variant">{log.referenceType}</td>
+                    <td className="px-4 py-4 text-body-sm font-mono text-on-surface-variant">
+                      {log.referenceId != null ? log.referenceId : '—'}
+                    </td>
+                    <td className="px-4 py-4 text-body-sm font-mono text-on-surface-variant">
+                      {log.ipAddress ?? '—'}
+                    </td>
                   </tr>
                 )
               })}
               {paddingBottom > 0 && (
                 <tr>
-                  <td colSpan={7} style={{ height: `${paddingBottom}px` }} />
+                  <td colSpan={COL_COUNT} style={{ height: `${paddingBottom}px` }} />
                 </tr>
               )}
             </tbody>
