@@ -64,17 +64,13 @@ class RoleCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
     description: Optional[str] = None
     is_system_role: bool = False
-    # Optional grants applied in the same create transaction.
-    # Each id is a seeded permissions.id; default scope is ORGANIZATION.
     permission_ids: List[int] = Field(default_factory=list)
-    # Optional override scope for all grants on create (defaults to ORGANIZATION).
     scope_id: Optional[int] = None
 
 
 class RoleUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=150)
     description: Optional[str] = None
-    # When provided, replaces the full set of role_permissions (same default scope).
     permission_ids: Optional[List[int]] = None
     scope_id: Optional[int] = None
 
@@ -90,6 +86,14 @@ class RoleResponse(BaseModel):
     changed_by: Optional[int]
 
 
+class RoleListItemResponse(RoleResponse):
+    """List payload enriched for admin role cards."""
+
+    usersCount: int = 0
+    permission_count: int = 0
+    permission_keys: List[str] = Field(default_factory=list)
+
+
 class RolePermissionDetail(BaseModel):
     """Flattened grant for UI matrix (resource.action string + ids)."""
 
@@ -101,14 +105,14 @@ class RolePermissionDetail(BaseModel):
     resource_name: Optional[str] = None
     action: Optional[str] = None
     scope_name: Optional[str] = None
-    key: Optional[str] = None  # e.g. "users.view"
+    key: Optional[str] = None
 
 
 class RoleDetailResponse(RoleResponse):
     permissions: List[RolePermissionResponse] = Field(default_factory=list)
     permission_details: List[RolePermissionDetail] = Field(default_factory=list)
-    # Convenience string keys for frontend matrix (resource.action lowercase)
     permission_keys: List[str] = Field(default_factory=list)
+    usersCount: int = 0
     sensitive_field_permissions: List["RoleSensitiveFieldPermissionResponse"] = Field(
         default_factory=list
     )
@@ -173,40 +177,26 @@ class RoleSensitiveFieldPermissionResponse(BaseModel):
     created_at: datetime
     changed_by: Optional[int]
 
+
 # ===========================================================================
 # Effective permissions for an employment
-# Flat grants (BE tools) + nested tree (frontend useRbac / can)
 # ===========================================================================
 
 class EffectivePermissionItem(BaseModel):
-    """One granted (resource, action, scope) triple."""
-
     resource_name: str
     action: Action
     scope_name: str
 
 
 class EffectivePermissionsResponse(BaseModel):
-    """
-    Authorization payload for an employment.
-
-    Nested `permissions` + `scope` + `scope_by_resource` match the frontend
-    EffectiveAuthorization contract (camelCase aliases for JSON).
-    Flat `grants` keeps the original list shape for admin/debug tools.
-    """
-
     model_config = ConfigDict(populate_by_name=True, ser_json_by_alias=True)
 
     employment_id: int = Field(..., serialization_alias="employmentId")
     is_super_admin: bool = Field(False, serialization_alias="isSuperAdmin")
     roles: List[str] = Field(default_factory=list)
-    # Nested: { "lead": { "view": true, "create": true }, ... }
     permissions: dict[str, dict[str, bool]] = Field(default_factory=dict)
-    # Max scope across grants (SELF..ORGANIZATION)
     scope: str = "SELF"
-    # Max scope per resource name
     scope_by_resource: dict[str, str] = Field(
         default_factory=dict, serialization_alias="scopeByResource"
     )
-    # Flat list (backward compatible for internal tools)
     grants: List[EffectivePermissionItem] = Field(default_factory=list)
