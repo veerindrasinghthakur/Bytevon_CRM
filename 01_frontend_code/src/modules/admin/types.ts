@@ -103,6 +103,12 @@ export interface OfficeLocation {
   postal: string
 }
 
+/**
+ * UI organization profile.
+ * Persisted on backend today: name (← company_name), defaultTimezone,
+ * defaultCurrency, headOfficeLocationId, logoReference.
+ * Other fields are UI-only until schema is extended.
+ */
 export interface OrganizationProfile {
   name: string
   legal: string
@@ -112,6 +118,10 @@ export interface OrganizationProfile {
   tax: string
   reg: string
   description: string
+  defaultTimezone?: string
+  defaultCurrency?: string
+  headOfficeLocationId?: number | null
+  logoReference?: string | null
 }
 
 export interface AttendanceSettings {
@@ -285,4 +295,3 @@ export type AdminUserListParams = {
   page?: number
   pageSize?: number
 }
-
