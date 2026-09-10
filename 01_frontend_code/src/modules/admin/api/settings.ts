@@ -1,14 +1,8 @@
 /**
  * Admin settings API — organisation profile, attendance policy, leave accrual.
- * Mock/real switch; pages use TanStack Query only.
  *
- * Backend GET/PATCH /organization/settings returns:
- *   { id, company_name, head_office_location_id, default_timezone,
- *     default_currency, logo_reference, created_at, updated_at, changed_by }
- *
- * Attendance: there is NO /admin/settings/attendance.
- * Company policy lives at GET/POST /attendance/policies (+ /policies/current).
- * Shift start/end/grace also live on organization shifts.
+ * Attendance: GET/POST /attendance/policies (+ /policies/current).
+ * Leave accrual: no dedicated endpoint — derived from leave policy carry_forward_limit.
  */
 
 import { env } from '@/config/env'
@@ -24,12 +18,12 @@ import type {
   OrganizationProfile,
 } from '../types'
 import { delay } from '@/shared/mock/db'
+import { listLeavePolicies } from './leave'
 
 const ORG_SETTINGS_API = '/organization/settings'
 const ATTENDANCE_POLICY_CURRENT = '/attendance/policies/current'
 const ATTENDANCE_POLICIES = '/attendance/policies'
 
-/** Raw backend organization_settings row. */
 type OrgSettingsApi = {
   id?: number
   company_name?: string
@@ -137,8 +131,6 @@ function mapPolicyToAttendanceSettings(policy: AttendancePolicyApi | null): Atte
   }
 }
 
-// ── Organisation profile ─────────────────────────────────────────────
-
 export async function getOrganizationProfile(): Promise<OrganizationProfile> {
   if (env.useMockApi) {
     await delay()
@@ -163,9 +155,6 @@ export async function updateOrganizationProfile(
   return mapApiToProfile(data)
 }
 
-// ── Attendance company policy ────────────────────────────────────────
-// Backend: GET /attendance/policies/current, POST /attendance/policies (versioned)
-
 export async function getAttendanceSettings(): Promise<AttendanceSettings> {
   if (env.useMockApi) {
     await delay()
@@ -175,7 +164,6 @@ export async function getAttendanceSettings(): Promise<AttendanceSettings> {
     const { data } = await apiClient.get<AttendancePolicyApi>(ATTENDANCE_POLICY_CURRENT)
     return mapPolicyToAttendanceSettings(data)
   } catch {
-    // No current policy yet — UI still works from shifts
     return { ...DEFAULT_ATTENDANCE }
   }
 }
@@ -189,7 +177,6 @@ export async function updateAttendanceSettings(
     return { ...attendanceSettingsMock }
   }
 
-  // Versioned policy: create a new effective version (no PATCH on current)
   const today = new Date().toISOString().slice(0, 10)
   let current: AttendancePolicyApi | null = null
   try {
@@ -223,21 +210,37 @@ export async function updateAttendanceSettings(
   return mapPolicyToAttendanceSettings(data)
 }
 
-// ── Leave accrual policy (company-wide) ──────────────────────────────
-
+/**
+ * Leave accrual summary for Leave Settings UI.
+ * Backend has no /admin/settings/leave-accrual — derive max carry from current policies.
+ * minimumNoticeDays is UI-only until a company setting exists.
+ */
 export async function getLeaveAccrualPolicy(): Promise<LeaveAccrualPolicy> {
   if (env.useMockApi) {
     await delay()
     return { ...leaveAccrualPolicyMock }
   }
   try {
-    const { data } = await apiClient.get<LeaveAccrualPolicy>('/admin/settings/leave-accrual')
-    return data
+    const policies = await listLeavePolicies()
+    const current = policies.filter((p) => p.effective_to == null)
+    const maxCarry = current.reduce(
+      (m, p) => Math.max(m, Number(p.carry_forward_limit) || 0),
+      0,
+    )
+    return {
+      maxCarryOverDays: maxCarry,
+      minimumNoticeDays: leaveAccrualPolicyMock.minimumNoticeDays ?? 0,
+    }
   } catch {
     return { maxCarryOverDays: 0, minimumNoticeDays: 0 }
   }
 }
 
+/**
+ * Persist accrual is not a single backend resource.
+ * Updating max carry requires creating new policy versions per leave type —
+ * for V1 we accept the form values locally and do not call a missing endpoint.
+ */
 export async function updateLeaveAccrualPolicy(
   patch: Partial<LeaveAccrualPolicy>,
 ): Promise<LeaveAccrualPolicy> {
@@ -246,13 +249,10 @@ export async function updateLeaveAccrualPolicy(
     Object.assign(leaveAccrualPolicyMock, patch)
     return { ...leaveAccrualPolicyMock }
   }
-  try {
-    const { data } = await apiClient.patch<LeaveAccrualPolicy>(
-      '/admin/settings/leave-accrual',
-      patch,
-    )
-    return data
-  } catch {
-    return { ...leaveAccrualPolicyMock, ...patch }
+  // No company-wide leave-accrual API yet — return merged values without 404 noise
+  const current = await getLeaveAccrualPolicy()
+  return {
+    maxCarryOverDays: patch.maxCarryOverDays ?? current.maxCarryOverDays,
+    minimumNoticeDays: patch.minimumNoticeDays ?? current.minimumNoticeDays,
   }
 }
