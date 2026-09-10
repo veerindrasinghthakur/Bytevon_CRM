@@ -8,7 +8,7 @@ Actor is temporarily taken from X-Employment-Id header until full auth dependenc
 from __future__ import annotations
 
 from datetime import date
-from typing import Annotated, Optional
+from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Header, Query, status
 
@@ -256,6 +256,17 @@ async def get_shift(
     service: OrganizationServiceDep,
 ) -> ShiftResponse:
     return await service.get_shift(shift_id)
+
+
+@router.get(
+    "/shifts/{shift_id}/employees",
+    summary="Employees currently assigned to this shift",
+)
+async def list_shift_employees(
+    shift_id: int,
+    service: OrganizationServiceDep,
+) -> list[dict[str, Any]]:
+    return await service.list_shift_employees(shift_id)
 
 
 @router.patch("/shifts/{shift_id}", response_model=ShiftResponse)
