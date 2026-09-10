@@ -8,7 +8,13 @@ import { Button } from '@/shared/components/ui/Button'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 import { createLocation, getLocation, updateLocation } from '../api/organization'
-import { emptyOfficeForm, officeFormSchema, type OfficeFormValues } from '../schemas/offices'
+import {
+  emptyOfficeForm,
+  officeFormSchema,
+  toLocationCreatePayload,
+  toLocationUpdatePayload,
+  type OfficeFormValues,
+} from '../schemas/offices'
 import { queryKeys } from '@/shared/lib/query-keys'
 
 export function OfficeFormPage() {
@@ -49,7 +55,15 @@ export function OfficeFormPage() {
       currency: existing.currency,
       fiscalMonth: existing.fiscal_year_start_month ?? 4,
       address: existing.address,
-      postal: '',
+      latitude: Number(existing.latitude) || 0,
+      longitude: Number(existing.longitude) || 0,
+      attendanceRadiusMeters: existing.attendance_radius_meters ?? 200,
+      payrollRegion: existing.payroll_region ?? '',
+      allowedIpCidrs: Array.isArray(existing.allowed_ip_cidrs)
+        ? existing.allowed_ip_cidrs.join(', ')
+        : '',
+      workingWeekId: existing.working_week_id ?? '',
+      holidayCalendarId: existing.holiday_calendar_id ?? '',
     })
   }, [existing, reset])
 
@@ -60,49 +74,33 @@ export function OfficeFormPage() {
   const saveMutation = useMutation({
     mutationFn: async (values: OfficeFormValues) => {
       if (isEdit && Number.isFinite(numericId)) {
-        return updateLocation(numericId, {
-          name: values.name.trim(),
-          country: values.country,
-          city: values.city,
-          state: values.state ?? '',
-          timezone: values.timezone,
-          currency: values.currency,
-          fiscal_year_start_month: Number(values.fiscalMonth),
-          address: values.address ?? '',
-        })
+        return updateLocation(numericId, toLocationUpdatePayload(values) as any)
       }
-      return createLocation({
-        name: values.name.trim(),
-        timezone: values.timezone,
-        working_week_id: 1,
-        holiday_calendar_id: 1,
-        latitude: 0,
-        longitude: 0,
-        attendance_radius_meters: 200,
-        allowed_ip_cidrs: [],
-        country: values.country || 'India',
-        state: values.state || '',
-        city: values.city || '',
-        address: values.address || '',
-        payroll_region: values.state || null,
-        currency: values.currency || 'INR',
-        fiscal_year_start_month: Number(values.fiscalMonth) || 4,
-        archived_at: null,
-        archived_by: null,
-      })
+      // Backend LocationCreate — never send working_week_id/holiday_calendar_id = 0 or fake 1
+      return createLocation(toLocationCreatePayload(values) as any)
     },
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: queryKeys.organization.locations.all })
-      await qc.invalidateQueries({ queryKey: queryKeys.admin.roles.all })
       goLocations()
     },
-    onError: (e: Error) => {
-      setError(e.message || 'Failed to save office')
+    onError: (e: unknown) => {
+      const msg =
+        e && typeof e === 'object' && 'response' in e
+          ? String(
+              (e as { response?: { data?: { detail?: unknown; message?: string } } }).response?.data
+                ?.detail ??
+                (e as { response?: { data?: { message?: string } } }).response?.data?.message ??
+                (e as Error).message,
+            )
+          : e instanceof Error
+            ? e.message
+            : 'Failed to save location'
+      setError(msg)
     },
   })
 
   if (isEdit && officeQuery.isLoading) {
-    return <div className="p-12 text-center text-on-surface-variant">Loading office…</div>
+    return <div className="p-12 text-center text-on-surface-variant">Loading location…</div>
   }
 
   return (
@@ -119,11 +117,11 @@ export function OfficeFormPage() {
       </button>
 
       <PageHeader
-        title={isEdit ? `Edit Office: ${existing?.name ?? officeId}` : 'Add Office'}
+        title={isEdit ? `Edit Location: ${existing?.name ?? officeId}` : 'Add Location'}
         description={
           isEdit
-            ? 'Update office location details, timezone, and fiscal settings.'
-            : 'Register a new company office or branch location.'
+            ? 'Update location details, geo fence, timezone, and fiscal settings.'
+            : 'Register a new office / branch. Matches POST /organization/locations.'
         }
         actions={
           <div className="flex gap-2">
@@ -135,11 +133,11 @@ export function OfficeFormPage() {
               size="sm"
               isLoading={saveMutation.isPending}
               onClick={handleSubmit((values) => {
-                saveMutation.reset()
+                setError(null)
                 saveMutation.mutate(values)
               })}
             >
-              {isEdit ? 'Save Changes' : 'Create Office'}
+              {isEdit ? 'Save Changes' : 'Create Location'}
             </Button>
           </div>
         }
@@ -154,11 +152,11 @@ export function OfficeFormPage() {
       <div className="bv-surface p-6 space-y-5">
         <h3 className="text-title-lg font-semibold text-on-background flex items-center gap-2">
           <span className="material-symbols-outlined text-secondary">apartment</span>
-          Office Details
+          Location details
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <TextField
-            label="Office Name"
+            label="Name"
             error={errors.name?.message}
             registration={register('name')}
             placeholder="e.g. Singapore Office"
@@ -229,6 +227,70 @@ export function OfficeFormPage() {
             </select>
             {errors.fiscalMonth && <p className="text-caption text-error">{errors.fiscalMonth.message}</p>}
           </div>
+          <TextField
+            label="Payroll region"
+            error={errors.payrollRegion?.message}
+            registration={register('payrollRegion')}
+            placeholder="Optional"
+          />
+        </div>
+      </div>
+
+      <div className="bv-surface p-6 space-y-5">
+        <h3 className="text-title-lg font-semibold text-on-background flex items-center gap-2">
+          <span className="material-symbols-outlined text-secondary">my_location</span>
+          Geo & attendance
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <TextField
+            label="Latitude"
+            error={errors.latitude?.message}
+            registration={register('latitude')}
+            placeholder="0"
+          />
+          <TextField
+            label="Longitude"
+            error={errors.longitude?.message}
+            registration={register('longitude')}
+            placeholder="0"
+          />
+          <TextField
+            label="Attendance radius (meters)"
+            error={errors.attendanceRadiusMeters?.message}
+            registration={register('attendanceRadiusMeters')}
+            placeholder="200"
+          />
+          <TextField
+            label="Allowed IP CIDRs"
+            error={errors.allowedIpCidrs?.message}
+            registration={register('allowedIpCidrs')}
+            placeholder="Comma-separated, optional"
+          />
+        </div>
+      </div>
+
+      <div className="bv-surface p-6 space-y-5">
+        <h3 className="text-title-lg font-semibold text-on-background flex items-center gap-2">
+          <span className="material-symbols-outlined text-secondary">link</span>
+          Optional links
+        </h3>
+        <p className="text-body-sm text-on-surface-variant">
+          Leave blank unless the working week / holiday calendar already exists. Sending id 0 or a
+          missing id returns 404 from the API.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <TextField
+            label="Working week ID"
+            error={errors.workingWeekId?.message as string | undefined}
+            registration={register('workingWeekId')}
+            placeholder="Optional"
+          />
+          <TextField
+            label="Holiday calendar ID"
+            error={errors.holidayCalendarId?.message as string | undefined}
+            registration={register('holidayCalendarId')}
+            placeholder="Optional"
+          />
         </div>
       </div>
     </div>
