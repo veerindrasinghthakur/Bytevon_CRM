@@ -152,6 +152,14 @@ class HolidayCreate(BaseModel):
     recurring_flag: bool = False
 
 
+class HolidayUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=150)
+    date: Optional[date] = None
+    holiday_type: Optional[HolidayType] = None
+    recurring_flag: Optional[bool] = None
+    holiday_calendar_id: Optional[int] = None
+
+
 class HolidayResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
