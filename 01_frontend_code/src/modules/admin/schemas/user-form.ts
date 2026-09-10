@@ -1,10 +1,12 @@
 import { z } from 'zod'
 
-/** UI form state for create-user login (string ids for Select). */
+/** UI form state for create-user login (string ids for Select).
+ * Matches backend AdminUserCreate: employmentId, email, temporaryPassword (min 8), roleId?
+ */
 export const userFormSchema = z.object({
   employmentId: z.string().min(1, 'Select an employee'),
   email: z.string().email('Enter a valid email'),
-  temporaryPassword: z.string().min(6, 'At least 6 characters'),
+  temporaryPassword: z.string().min(8, 'At least 8 characters (backend requirement)'),
   roleId: z.string().min(1, 'Select a role'),
   deptFilter: z.string().optional(),
   sendInvite: z.boolean().optional(),
