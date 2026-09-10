@@ -10,13 +10,14 @@ import type {
 } from '../types'
 import { getDb, delay } from '@/shared/mock/db'
 import { listAdminRoles } from './roles'
+import { getLocations, getShifts, getSchemaDepartments } from './organization'
+import { listEmployments } from '@/modules/workforce/api/employment'
+import { listAdminUsers } from './users'
 
 /**
- * Backend does not expose /admin/metrics/* yet.
- * Role KPIs are derived from GET /rbac/roles (no 404 noise).
- * Hub / leave / attendance use safe defaults until dedicated APIs exist.
+ * Hub KPIs for Administration Settings.
+ * No dedicated /admin/metrics/hub — derive from list endpoints in parallel.
  */
-
 export async function getAdminHubMetrics(): Promise<AdminHubMetrics> {
   if (env.useMockApi) {
     await delay()
@@ -34,18 +35,56 @@ export async function getAdminHubMetrics(): Promise<AdminHubMetrics> {
     }
   }
 
-  // No /admin/metrics/hub on backend — keep UI stable with zeros
-  return {
+  const empty: AdminHubMetrics = {
     users: 0,
     roles: 0,
     activeSessions: 0,
     auditEventsToday: 0,
-    configHealth: 'unknown',
+    configHealth: 'ok',
     offices: 0,
     departments: 0,
     employees: 0,
     shifts: 0,
   }
+
+  const [locationsRes, shiftsRes, deptsRes, employmentsRes, usersRes, rolesRes] =
+    await Promise.allSettled([
+      getLocations(),
+      getShifts(),
+      getSchemaDepartments(),
+      listEmployments({ page: 1, pageSize: 500 }),
+      listAdminUsers({ page: 1, pageSize: 1 }),
+      listAdminRoles(),
+    ])
+
+  if (locationsRes.status === 'fulfilled') {
+    empty.offices = locationsRes.value.total ?? locationsRes.value.items?.length ?? 0
+  }
+  if (shiftsRes.status === 'fulfilled') {
+    empty.shifts = shiftsRes.value.total ?? shiftsRes.value.items?.length ?? 0
+  }
+  if (deptsRes.status === 'fulfilled') {
+    empty.departments = deptsRes.value.total ?? deptsRes.value.items?.length ?? 0
+  }
+  if (employmentsRes.status === 'fulfilled') {
+    const m = employmentsRes.value.metrics
+    empty.employees =
+      m?.active ??
+      employmentsRes.value.total ??
+      employmentsRes.value.items?.length ??
+      0
+  }
+  if (usersRes.status === 'fulfilled') {
+    empty.users = usersRes.value.total ?? usersRes.value.items?.length ?? 0
+  }
+  if (rolesRes.status === 'fulfilled') {
+    const items = Array.isArray(rolesRes.value)
+      ? rolesRes.value
+      : rolesRes.value.items ?? []
+    empty.roles = items.length
+  }
+
+  return empty
 }
 
 export async function getRoleListMetrics(): Promise<RoleListMetrics> {
@@ -62,7 +101,6 @@ export async function getRoleListMetrics(): Promise<RoleListMetrics> {
     }
   }
 
-  // Derive from roles list — do not call /admin/metrics/roles (not implemented)
   try {
     const result = await listAdminRoles()
     const items = Array.isArray(result) ? result : result.items ?? []
@@ -92,7 +130,6 @@ export async function getLeaveAdminMetrics(): Promise<LeaveAdminMetrics> {
       avgBalanceDays: 12,
     }
   }
-  // No /admin/metrics/leave on backend yet
   return {
     leaveTypes: 0,
     pendingRequests: 0,
@@ -111,7 +148,6 @@ export async function getAttendanceAdminMetrics(): Promise<AttendanceAdminMetric
       remoteCheckIns: 8,
     }
   }
-  // No /admin/metrics/attendance on backend yet
   return {
     presentToday: 0,
     lateToday: 0,
