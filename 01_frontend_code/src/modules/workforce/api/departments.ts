@@ -177,7 +177,6 @@ export async function listDepartments(
 
 export async function getDepartment(id: number) {
   if (!env.useMockApi) {
-    // Backend returns a single DepartmentResponse object (not a list)
     const { data } = await apiClient.get<Record<string, unknown>>(
       `/organization/departments/${id}`,
     )
@@ -189,11 +188,6 @@ export async function getDepartment(id: number) {
   return toListItem(row)
 }
 
-/**
- * Single API call: employees currently assigned to this department.
- * Backend: GET /organization/departments/{id}/employees?page&pageSize&search
- * Returns the items array (hook expects DepartmentEmployee[]).
- */
 export async function listDepartmentEmployees(
   departmentId: number,
   params: { page?: number; pageSize?: number; search?: string } = {},
@@ -261,7 +255,6 @@ export async function listDepartmentEmployees(
   return all.slice(start, start + pageSize)
 }
 
-/** Employees not currently assigned to this department (for Add existing). */
 export async function listEmployeesNotInDepartment(departmentId: number) {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<{ value: string; label: string; meta?: string }[]>(
@@ -295,7 +288,6 @@ export async function listEmployeesNotInDepartment(departmentId: number) {
     })
 }
 
-/** Assign existing employee into department (closes prior assignment version). */
 export async function assignEmployeeToDepartment(
   employmentId: number,
   departmentId: number,
@@ -334,7 +326,6 @@ export async function assignEmployeeToDepartment(
   return { ok: true as const }
 }
 
-/** Close active assignment for employee in this department (remove from dept). */
 export async function removeEmployeeFromDepartment(
   employmentId: number,
   departmentId: number,
@@ -460,15 +451,26 @@ export async function listEmploymentOptionsForPicker() {
 /** Employees on a given shift (from active assignments). */
 export async function listEmployeesOnShift(shiftId: number) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get(`/organization/shifts/${shiftId}/employees`)
-    return data as {
-      employmentId: number
-      employeeCode: string
-      name: string
-      departmentName: string
-      positionName: string
-      state: string
-    }[]
+    try {
+      const { data } = await apiClient.get(
+        `/organization/shifts/${shiftId}/employees`,
+      )
+      if (Array.isArray(data)) return data as {
+        employmentId: number
+        employeeCode: string
+        name: string
+        departmentName: string
+        positionName: string
+        state: string
+      }[]
+      if (data && typeof data === 'object' && Array.isArray((data as { items?: unknown }).items)) {
+        return (data as { items: typeof data }).items as any
+      }
+      return []
+    } catch {
+      // Endpoint may not exist yet — empty staff list, no UI crash / retry spam
+      return []
+    }
   }
   await delay()
   const db = getDb()
