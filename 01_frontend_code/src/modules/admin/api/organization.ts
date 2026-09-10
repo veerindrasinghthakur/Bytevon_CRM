@@ -243,7 +243,6 @@ export async function getWorkingWeeks() {
   return asList(data)
 }
 
-/** Backend: POST /organization/working-weeks */
 export async function createWorkingWeek(input: {
   name: string
   working_days_of_week: number[]
@@ -261,7 +260,6 @@ export async function createWorkingWeek(input: {
       created_at: new Date().toISOString(),
       created_by: 1,
     } as WorkingWeekRow
-    // Close previous open version
     for (const w of list) {
       if (w.effective_to == null) {
         ;(w as any).effective_to = input.effective_from
@@ -278,7 +276,6 @@ export async function createWorkingWeek(input: {
   return data
 }
 
-/** Backend: POST /organization/working-weeks/{id}/archive */
 export async function archiveWorkingWeek(id: number, effectiveTo?: string): Promise<void> {
   if (env.useMockApi) {
     await delay(300)
@@ -292,7 +289,6 @@ export async function archiveWorkingWeek(id: number, effectiveTo?: string): Prom
   })
 }
 
-/** @deprecated Prefer archiveWorkingWeek — hard delete is not supported by backend. */
 export async function deleteWorkingWeek(id: number): Promise<void> {
   return archiveWorkingWeek(id)
 }
@@ -409,6 +405,27 @@ export async function createHoliday(input: {
     return { ...row }
   }
   const { data } = await apiClient.post<HolidayRow>('/organization/holidays', input)
+  return data
+}
+
+export async function updateHoliday(
+  id: number,
+  patch: Partial<{
+    name: string
+    date: string
+    holiday_type: HolidayRow['holiday_type']
+    recurring_flag: boolean
+    holiday_calendar_id: number
+  }>,
+): Promise<HolidayRow> {
+  if (env.useMockApi) {
+    await delay(400)
+    const row = (getDb().holidays as HolidayRow[]).find((h) => h.id === id)
+    if (!row) throw new Error('Holiday not found')
+    Object.assign(row, patch)
+    return { ...row }
+  }
+  const { data } = await apiClient.patch<HolidayRow>(`/organization/holidays/${id}`, patch)
   return data
 }
 
