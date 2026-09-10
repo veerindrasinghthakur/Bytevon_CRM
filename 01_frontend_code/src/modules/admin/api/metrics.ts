@@ -1,7 +1,6 @@
 /** Admin / org metric aggregates for hub, roles, leave, attendance. */
 
 import { env } from '@/config/env'
-import { apiClient } from '@/shared/lib/axios'
 import { adminKpis, adminRoles, offices } from '../data/mock'
 import type {
   AdminHubMetrics,
@@ -12,14 +11,11 @@ import type {
 import { getDb, delay } from '@/shared/mock/db'
 import { listAdminRoles } from './roles'
 
-async function tryGet<T>(path: string): Promise<T | null> {
-  try {
-    const { data } = await apiClient.get<T>(path)
-    return data
-  } catch {
-    return null
-  }
-}
+/**
+ * Backend does not expose /admin/metrics/* yet.
+ * Role KPIs are derived from GET /rbac/roles (no 404 noise).
+ * Hub / leave / attendance use safe defaults until dedicated APIs exist.
+ */
 
 export async function getAdminHubMetrics(): Promise<AdminHubMetrics> {
   if (env.useMockApi) {
@@ -37,9 +33,8 @@ export async function getAdminHubMetrics(): Promise<AdminHubMetrics> {
       shifts: db.shifts?.filter((s) => !s.is_archived).length ?? 0,
     }
   }
-  const data = await tryGet<AdminHubMetrics>('/admin/metrics/hub')
-  if (data) return data
-  // Backend may not expose hub metrics yet — zeroed safe defaults
+
+  // No /admin/metrics/hub on backend — keep UI stable with zeros
   return {
     users: 0,
     roles: 0,
@@ -67,13 +62,9 @@ export async function getRoleListMetrics(): Promise<RoleListMetrics> {
     }
   }
 
-  // Preferred dedicated endpoint (not implemented on all backends yet)
-  const dedicated = await tryGet<RoleListMetrics>('/admin/metrics/roles')
-  if (dedicated) return dedicated
-
-  // Fallback: compute from roles list so RolesListPage never 404-spams
+  // Derive from roles list — do not call /admin/metrics/roles (not implemented)
   try {
-    const result = await listAdminRoles({ pageSize: 500 })
+    const result = await listAdminRoles()
     const items = Array.isArray(result) ? result : result.items ?? []
     return {
       totalRoles: items.length,
@@ -101,8 +92,7 @@ export async function getLeaveAdminMetrics(): Promise<LeaveAdminMetrics> {
       avgBalanceDays: 12,
     }
   }
-  const data = await tryGet<LeaveAdminMetrics>('/admin/metrics/leave')
-  if (data) return data
+  // No /admin/metrics/leave on backend yet
   return {
     leaveTypes: 0,
     pendingRequests: 0,
@@ -121,8 +111,7 @@ export async function getAttendanceAdminMetrics(): Promise<AttendanceAdminMetric
       remoteCheckIns: 8,
     }
   }
-  const data = await tryGet<AttendanceAdminMetrics>('/admin/metrics/attendance')
-  if (data) return data
+  // No /admin/metrics/attendance on backend yet
   return {
     presentToday: 0,
     lateToday: 0,
