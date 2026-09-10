@@ -27,10 +27,6 @@ class RBACRepository(BaseRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
 
-    # ------------------------------------------------------------------
-    # Seeded / read
-    # ------------------------------------------------------------------
-
     async def list_resources(self) -> Sequence[Resource]:
         stmt = select(Resource).order_by(Resource.name)
         return await self.scalars(stmt)
@@ -77,17 +73,15 @@ class RBACRepository(BaseRepository):
         stmt = select(SensitiveField).where(SensitiveField.id == field_id)
         return await self.scalar_one_or_none(stmt)
 
-    # ------------------------------------------------------------------
-    # Roles
-    # ------------------------------------------------------------------
-
     async def get_role_by_id(
         self, role_id: int, *, with_details: bool = False
     ) -> Optional[Role]:
         stmt = select(Role).where(Role.id == role_id)
         if with_details:
             stmt = stmt.options(
-                selectinload(Role.role_permissions).selectinload(RolePermission.permission).selectinload(Permission.resource),
+                selectinload(Role.role_permissions)
+                .selectinload(RolePermission.permission)
+                .selectinload(Permission.resource),
                 selectinload(Role.role_permissions).selectinload(RolePermission.scope),
                 selectinload(Role.sensitive_field_permissions),
             )
@@ -97,8 +91,15 @@ class RBACRepository(BaseRepository):
         stmt = select(Role).where(Role.name == name)
         return await self.scalar_one_or_none(stmt)
 
-    async def list_roles(self) -> Sequence[Role]:
+    async def list_roles(self, *, with_details: bool = False) -> Sequence[Role]:
         stmt = select(Role).order_by(Role.name)
+        if with_details:
+            stmt = stmt.options(
+                selectinload(Role.role_permissions)
+                .selectinload(RolePermission.permission)
+                .selectinload(Permission.resource),
+                selectinload(Role.role_permissions).selectinload(RolePermission.scope),
+            )
         return await self.scalars(stmt)
 
     async def count_employments_with_role(self, role_id: int) -> int:
@@ -110,9 +111,19 @@ class RBACRepository(BaseRepository):
         result = await self.execute(stmt)
         return int(result.scalar() or 0)
 
-    # ------------------------------------------------------------------
-    # Role permissions
-    # ------------------------------------------------------------------
+    async def count_employments_by_role_ids(self, role_ids: list[int]) -> dict[int, int]:
+        """Map role_id → assignment count."""
+        from sqlalchemy import func
+
+        if not role_ids:
+            return {}
+        stmt = (
+            select(EmployeeRole.role_id, func.count())
+            .where(EmployeeRole.role_id.in_(role_ids))
+            .group_by(EmployeeRole.role_id)
+        )
+        result = await self.execute(stmt)
+        return {int(rid): int(cnt) for rid, cnt in result.all()}
 
     async def get_role_permission(
         self, role_id: int, permission_id: int, scope_id: int
@@ -141,10 +152,6 @@ class RBACRepository(BaseRepository):
     async def delete_all_role_permissions(self, role_id: int) -> None:
         stmt = delete(RolePermission).where(RolePermission.role_id == role_id)
         await self.execute(stmt)
-
-    # ------------------------------------------------------------------
-    # Employee roles
-    # ------------------------------------------------------------------
 
     async def get_employee_role(
         self, employment_id: int, role_id: int
@@ -178,10 +185,6 @@ class RBACRepository(BaseRepository):
         )
         await self.execute(stmt)
 
-    # ------------------------------------------------------------------
-    # Sensitive field permissions
-    # ------------------------------------------------------------------
-
     async def get_role_sensitive_field_permission(
         self, role_id: int, sensitive_field_id: int
     ) -> Optional[RoleSensitiveFieldPermission]:
@@ -199,16 +202,9 @@ class RBACRepository(BaseRepository):
         )
         return await self.scalars(stmt)
 
-    # ------------------------------------------------------------------
-    # Effective permissions aggregation
-    # ------------------------------------------------------------------
-
     async def load_effective_permissions_for_employment(
         self, employment_id: int
     ) -> Sequence[tuple]:
-        """
-        Returns rows of (resource_name, action, scope_name, role_name).
-        """
         stmt = (
             select(
                 Resource.name,
