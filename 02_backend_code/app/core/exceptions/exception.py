@@ -27,22 +27,30 @@ class AppException(Exception):
 
 class NotFoundError(AppException):
     def __init__(self, message: str = "Resource not found", **kwargs: Any) -> None:
-        super().__init__(message, code="not_found", status_code=404, **kwargs)
+        code = kwargs.pop("code", "not_found")
+        status_code = kwargs.pop("status_code", 404)
+        super().__init__(message, code=code, status_code=status_code, **kwargs)
 
 
 class ValidationError(AppException):
     def __init__(self, message: str = "Validation failed", **kwargs: Any) -> None:
-        super().__init__(message, code="validation_error", status_code=422, **kwargs)
+        code = kwargs.pop("code", "validation_error")
+        status_code = kwargs.pop("status_code", 422)
+        super().__init__(message, code=code, status_code=status_code, **kwargs)
 
 
 class ConflictError(AppException):
     def __init__(self, message: str = "Conflict", **kwargs: Any) -> None:
-        super().__init__(message, code="conflict", status_code=409, **kwargs)
+        code = kwargs.pop("code", "conflict")
+        status_code = kwargs.pop("status_code", 409)
+        super().__init__(message, code=code, status_code=status_code, **kwargs)
 
 
 class UnauthorizedError(AppException):
     def __init__(self, message: str = "Unauthorized", **kwargs: Any) -> None:
-        super().__init__(message, code="unauthorized", status_code=401, **kwargs)
+        code = kwargs.pop("code", "unauthorized")
+        status_code = kwargs.pop("status_code", 401)
+        super().__init__(message, code=code, status_code=status_code, **kwargs)
 
 
 class ForbiddenError(AppException):
@@ -52,11 +60,15 @@ class ForbiddenError(AppException):
     """
 
     def __init__(self, message: str = "Forbidden", **kwargs: Any) -> None:
-        super().__init__(message, code="forbidden", status_code=403, **kwargs)
+        code = kwargs.pop("code", "forbidden")
+        status_code = kwargs.pop("status_code", 403)
+        super().__init__(message, code=code, status_code=status_code, **kwargs)
 
 
 class DomainError(AppException):
     """Business rule violation."""
 
     def __init__(self, message: str, **kwargs: Any) -> None:
-        super().__init__(message, code="domain_error", status_code=400, **kwargs)
+        code = kwargs.pop("code", "domain_error")
+        status_code = kwargs.pop("status_code", 400)
+        super().__init__(message, code=code, status_code=status_code, **kwargs)
