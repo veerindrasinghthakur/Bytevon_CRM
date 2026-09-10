@@ -252,7 +252,6 @@ class OrganizationPublicService(AdminUsersMixin, DepartmentMembersMixin, BasePub
         return ShiftResponse.model_validate(shift)
 
     async def get_shift(self, shift_id: int) -> ShiftResponse:
-        # Detail must resolve archived shifts (UI may still query after archive)
         shift = await self._repo.get_shift_by_id(shift_id, include_archived=True)
         if shift is None:
             raise NotFoundError("Shift not found")
@@ -346,5 +345,287 @@ class OrganizationPublicService(AdminUsersMixin, DepartmentMembersMixin, BasePub
         await self._audit("shift.archived", shift.id, actor_employment_id)
         return MessageResponse(message="Shift archived")
 
-    # Remaining methods continue in mixin / rest of file — truncated push risk.
-    # Full restore: re-apply from previous main if incomplete.
+    # ==================================================================
+    # Holiday calendars / holidays
+    # ==================================================================
+
+    async def create_holiday_calendar(
+        self, data: HolidayCalendarCreate, *, actor_employment_id: Optional[int] = None
+    ) -> HolidayCalendarResponse:
+        cal = HolidayCalendar(
+            name=data.name.strip(),
+            changed_by=actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID,
+        )
+        await self._repo.add(cal)
+        await self._commit()
+        await self._audit("holiday_calendar.created", cal.id, actor_employment_id)
+        await self._refresh(cal)
+        return HolidayCalendarResponse.model_validate(cal)
+
+    async def get_holiday_calendar(self, calendar_id: int) -> HolidayCalendarResponse:
+        cal = await self._repo.get_holiday_calendar_by_id(
+            calendar_id, include_archived=True
+        )
+        if cal is None:
+            raise NotFoundError("Holiday calendar not found")
+        return HolidayCalendarResponse.model_validate(cal)
+
+    async def list_holiday_calendars(
+        self, *, include_archived: bool = False
+    ) -> list[HolidayCalendarResponse]:
+        rows = await self._repo.list_holiday_calendars(include_archived=include_archived)
+        return [HolidayCalendarResponse.model_validate(r) for r in rows]
+
+    async def update_holiday_calendar(
+        self,
+        calendar_id: int,
+        data: HolidayCalendarUpdate,
+        *,
+        actor_employment_id: Optional[int] = None,
+    ) -> HolidayCalendarResponse:
+        cal = await self._repo.get_holiday_calendar_by_id(
+            calendar_id, include_archived=True
+        )
+        if cal is None:
+            raise NotFoundError("Holiday calendar not found")
+        if data.name is not None:
+            cal.name = data.name.strip()
+        cal.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        await self._commit()
+        await self._audit("holiday_calendar.updated", cal.id, actor_employment_id)
+        await self._refresh(cal)
+        return HolidayCalendarResponse.model_validate(cal)
+
+    async def archive_holiday_calendar(
+        self, calendar_id: int, *, actor_employment_id: Optional[int] = None
+    ) -> MessageResponse:
+        cal = await self._repo.get_holiday_calendar_by_id(
+            calendar_id, include_archived=True
+        )
+        if cal is None:
+            raise NotFoundError("Holiday calendar not found")
+        if cal.is_archived:
+            raise DomainError("Holiday calendar is already archived")
+        now = datetime.now(timezone.utc)
+        cal.is_archived = True
+        cal.archived_at = now
+        cal.archived_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        cal.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        await self._commit()
+        await self._audit("holiday_calendar.archived", cal.id, actor_employment_id)
+        return MessageResponse(message="Holiday calendar archived")
+
+    async def add_holiday(
+        self, data: HolidayCreate, *, actor_employment_id: Optional[int] = None
+    ) -> HolidayResponse:
+        cal = await self._repo.get_holiday_calendar_by_id(
+            data.holiday_calendar_id, include_archived=True
+        )
+        if cal is None:
+            raise NotFoundError("Holiday calendar not found")
+        holiday = Holiday(
+            holiday_calendar_id=data.holiday_calendar_id,
+            name=data.name.strip(),
+            date=data.date,
+            holiday_type=data.holiday_type,
+            recurring_flag=data.recurring_flag,
+            changed_by=actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID,
+        )
+        await self._repo.add(holiday)
+        await self._commit()
+        await self._audit("holiday.created", holiday.id, actor_employment_id)
+        await self._refresh(holiday)
+        return HolidayResponse.model_validate(holiday)
+
+    async def list_holidays(self, calendar_id: int) -> list[HolidayResponse]:
+        cal = await self._repo.get_holiday_calendar_by_id(
+            calendar_id, include_archived=True
+        )
+        if cal is None:
+            raise NotFoundError("Holiday calendar not found")
+        rows = await self._repo.list_holidays_for_calendar(calendar_id)
+        return [HolidayResponse.model_validate(r) for r in rows]
+
+    # ==================================================================
+    # Locations
+    # ==================================================================
+
+    async def _validate_location_refs(
+        self,
+        *,
+        working_week_id: Optional[int],
+        holiday_calendar_id: Optional[int],
+    ) -> tuple[Optional[int], Optional[int]]:
+        working_week_id = _optional_id(working_week_id)
+        holiday_calendar_id = _optional_id(holiday_calendar_id)
+        if working_week_id is not None:
+            week = await self._repo.get_working_week_by_id(working_week_id)
+            if week is None:
+                raise NotFoundError(f"Working week not found (id={working_week_id})")
+        if holiday_calendar_id is not None:
+            cal = await self._repo.get_holiday_calendar_by_id(
+                holiday_calendar_id, include_archived=True
+            )
+            if cal is None:
+                raise NotFoundError(
+                    f"Holiday calendar not found (id={holiday_calendar_id})"
+                )
+        return working_week_id, holiday_calendar_id
+
+    async def create_location(
+        self, data: LocationCreate, *, actor_employment_id: Optional[int] = None
+    ) -> LocationResponse:
+        ww_id, hc_id = await self._validate_location_refs(
+            working_week_id=data.working_week_id,
+            holiday_calendar_id=data.holiday_calendar_id,
+        )
+        loc = Location(
+            name=data.name.strip(),
+            timezone=data.timezone.strip(),
+            working_week_id=ww_id,
+            holiday_calendar_id=hc_id,
+            latitude=data.latitude,
+            longitude=data.longitude,
+            attendance_radius_meters=data.attendance_radius_meters,
+            allowed_ip_cidrs=list(data.allowed_ip_cidrs or []),
+            country=data.country.strip(),
+            state=data.state.strip(),
+            city=data.city.strip(),
+            address=data.address.strip(),
+            payroll_region=data.payroll_region,
+            currency=data.currency.strip(),
+            fiscal_year_start_month=data.fiscal_year_start_month,
+            changed_by=actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID,
+        )
+        await self._repo.add(loc)
+        await self._commit()
+        await self._audit("location.created", loc.id, actor_employment_id)
+        await self._refresh(loc)
+        return LocationResponse.model_validate(loc)
+
+    async def get_location(self, location_id: int) -> LocationResponse:
+        loc = await self._repo.get_location_by_id(location_id, include_archived=True)
+        if loc is None:
+            raise NotFoundError("Location not found")
+        return LocationResponse.model_validate(loc)
+
+    async def list_locations(
+        self, *, include_archived: bool = False
+    ) -> list[LocationResponse]:
+        rows = await self._repo.list_locations(include_archived=include_archived)
+        return [LocationResponse.model_validate(r) for r in rows]
+
+    async def update_location(
+        self,
+        location_id: int,
+        data: LocationUpdate,
+        *,
+        actor_employment_id: Optional[int] = None,
+    ) -> LocationResponse:
+        loc = await self._repo.get_location_by_id(location_id, include_archived=True)
+        if loc is None:
+            raise NotFoundError("Location not found")
+        payload = data.model_dump(exclude_unset=True)
+        if "working_week_id" in payload or "holiday_calendar_id" in payload:
+            ww = payload.get("working_week_id", loc.working_week_id)
+            hc = payload.get("holiday_calendar_id", loc.holiday_calendar_id)
+            ww, hc = await self._validate_location_refs(
+                working_week_id=ww, holiday_calendar_id=hc
+            )
+            if "working_week_id" in payload:
+                payload["working_week_id"] = ww
+            if "holiday_calendar_id" in payload:
+                payload["holiday_calendar_id"] = hc
+        for field in (
+            "name",
+            "timezone",
+            "country",
+            "state",
+            "city",
+            "address",
+            "currency",
+        ):
+            if field in payload and isinstance(payload[field], str):
+                payload[field] = payload[field].strip()
+        for field, value in payload.items():
+            if hasattr(loc, field):
+                setattr(loc, field, value)
+        loc.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        await self._commit()
+        await self._audit("location.updated", loc.id, actor_employment_id)
+        await self._refresh(loc)
+        return LocationResponse.model_validate(loc)
+
+    async def archive_location(
+        self, location_id: int, *, actor_employment_id: Optional[int] = None
+    ) -> MessageResponse:
+        loc = await self._repo.get_location_by_id(location_id, include_archived=True)
+        if loc is None:
+            raise NotFoundError("Location not found")
+        if loc.is_archived:
+            raise DomainError("Location is already archived")
+        now = datetime.now(timezone.utc)
+        loc.is_archived = True
+        loc.archived_at = now
+        loc.archived_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        loc.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        await self._commit()
+        await self._audit("location.archived", loc.id, actor_employment_id)
+        return MessageResponse(message="Location archived")
+
+    # ==================================================================
+    # Organization settings (singleton)
+    # ==================================================================
+
+    async def get_organization_settings(self) -> OrganizationSettingsResponse:
+        row = await self._repo.get_organization_settings()
+        if row is None:
+            raise NotFoundError(
+                "Organization settings not configured — seed or upsert via PATCH /organization/settings"
+            )
+        return OrganizationSettingsResponse.model_validate(row)
+
+    async def upsert_organization_settings(
+        self,
+        data: OrganizationSettingsUpdate,
+        *,
+        actor_employment_id: Optional[int] = None,
+    ) -> OrganizationSettingsResponse:
+        actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        payload = data.model_dump(exclude_unset=True)
+        if "head_office_location_id" in payload:
+            payload["head_office_location_id"] = _optional_id(
+                payload.get("head_office_location_id")
+            )
+            if payload["head_office_location_id"] is not None:
+                loc = await self._repo.get_location_by_id(
+                    payload["head_office_location_id"], include_archived=True
+                )
+                if loc is None:
+                    raise NotFoundError(
+                        f"Location not found (id={payload['head_office_location_id']})"
+                    )
+        for field in ("company_name", "default_timezone", "default_currency"):
+            if field in payload and isinstance(payload[field], str):
+                payload[field] = payload[field].strip()
+
+        row = await self._repo.get_organization_settings()
+        if row is None:
+            row = OrganizationSettings(
+                company_name=payload.get("company_name") or "Organization",
+                head_office_location_id=payload.get("head_office_location_id"),
+                default_timezone=payload.get("default_timezone") or "UTC",
+                default_currency=payload.get("default_currency") or "USD",
+                logo_reference=payload.get("logo_reference"),
+                changed_by=actor,
+            )
+            await self._repo.add(row)
+        else:
+            for field, value in payload.items():
+                if hasattr(row, field):
+                    setattr(row, field, value)
+            row.changed_by = actor
+        await self._commit()
+        await self._audit("organization_settings.upserted", row.id, actor_employment_id)
+        await self._refresh(row)
+        return OrganizationSettingsResponse.model_validate(row)
