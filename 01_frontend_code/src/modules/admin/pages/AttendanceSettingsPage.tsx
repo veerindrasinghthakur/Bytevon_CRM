@@ -13,14 +13,14 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { getAttendanceSettings, updateAttendanceSettings } from '../api/settings'
 import { getAttendanceAdminMetrics } from '../api/metrics'
-import { getShifts } from '../api/organization'
+import { getShifts, updateShift } from '../api/organization'
 import { attendanceSettingsSchema, type AttendanceSettingsInput } from '../schemas/settings'
 import { useShiftFormData } from '../hooks/use-attendance-settings'
 
 export function AttendanceSettingsPage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
-  const { data, isLoading } = useQuery({
+  const { data, isLoading: policyLoading } = useQuery({
     queryKey: queryKeys.admin.settings.attendance(),
     queryFn: getAttendanceSettings,
   })
@@ -49,23 +49,48 @@ export function AttendanceSettingsPage() {
 
   useEffect(() => {
     if (isEditing) return
-    form.reset(getFormValues())
+    const base = getFormValues()
+    // Prefer live shift times; overlay company policy grace when no shift selected
+    if (!selectedShiftId && data) {
+      form.reset({
+        ...base,
+        graceMinutes: data.graceMinutes ?? base.graceMinutes,
+        earlyOutMinutes: data.earlyOutMinutes ?? base.earlyOutMinutes,
+        otMinMinutes: data.otMinMinutes ?? base.otMinMinutes,
+        allowRemoteCheckIn: data.allowRemoteCheckIn ?? base.allowRemoteCheckIn,
+      })
+      return
+    }
+    form.reset(base)
   }, [isEditing, selectedShiftId, shifts, data, form, getFormValues])
 
   const save = useMutation({
-    mutationFn: () => updateAttendanceSettings(form.getValues()),
+    mutationFn: async () => {
+      const values = form.getValues()
+      // Company policy (versioned) — grace etc.
+      await updateAttendanceSettings(values)
+      // If a specific shift is selected, persist times + grace on that shift
+      if (selectedShiftId && activeShift) {
+        await updateShift(Number(selectedShiftId), {
+          start_time: values.shiftStart.length === 5 ? `${values.shiftStart}:00` : values.shiftStart,
+          end_time: values.shiftEnd.length === 5 ? `${values.shiftEnd}:00` : values.shiftEnd,
+          grace_late_minutes: values.graceMinutes,
+        } as never)
+      }
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.admin.settings.attendance() })
+      qc.invalidateQueries({ queryKey: queryKeys.organization.shifts.all })
       finishEditing()
-    },
-    onError: () => {
-      // Errors surface via mutation state if needed
     },
   })
 
-  if (isLoading || shiftsQuery.isLoading) {
+  // Only block on shifts — policy soft-fails to defaults
+  if (shiftsQuery.isLoading || (policyLoading && !shiftsQuery.data)) {
     return (
-      <div className="py-12 text-center text-on-surface-variant text-body-sm">Loading attendance settings…</div>
+      <div className="py-12 text-center text-on-surface-variant text-body-sm">
+        Loading attendance settings…
+      </div>
     )
   }
 
