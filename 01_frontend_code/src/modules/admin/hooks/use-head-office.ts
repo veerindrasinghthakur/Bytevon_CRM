@@ -19,14 +19,13 @@ export function useHeadOfficePicker() {
   })
 
   const settingsQuery = useQuery({
-    queryKey: queryKeys.admin.settings.organization(),
+    queryKey: queryKeys.organization.settings(),
     queryFn: getOrganizationSettings,
   })
 
   const offices = locationsQuery.data ?? []
   const settings = settingsQuery.data
 
-  // Sync selection from org settings when data arrives
   useEffect(() => {
     const hid = settings?.head_office_location_id
     if (hid != null && Number(hid) > 0) {
@@ -56,7 +55,8 @@ export function useHeadOfficePicker() {
       setSelectedId(
         data.head_office_location_id != null ? String(data.head_office_location_id) : null,
       )
-      void queryClient.invalidateQueries({ queryKey: queryKeys.admin.settings.organization() })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.organization.settings() })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.admin.offices.headOptions() })
       setPickerOpen(false)
     },
     onError: (e: Error) => {
