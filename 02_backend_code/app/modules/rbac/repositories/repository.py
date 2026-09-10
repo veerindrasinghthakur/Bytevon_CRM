@@ -59,6 +59,10 @@ class RBACRepository(BaseRepository):
         stmt = select(Scope).where(Scope.id == scope_id)
         return await self.scalar_one_or_none(stmt)
 
+    async def get_scope_by_name(self, name: str) -> Optional[Scope]:
+        stmt = select(Scope).where(Scope.name == name)
+        return await self.scalar_one_or_none(stmt)
+
     async def list_sensitive_fields(
         self, *, resource_id: Optional[int] = None
     ) -> Sequence[SensitiveField]:
@@ -83,7 +87,8 @@ class RBACRepository(BaseRepository):
         stmt = select(Role).where(Role.id == role_id)
         if with_details:
             stmt = stmt.options(
-                selectinload(Role.role_permissions),
+                selectinload(Role.role_permissions).selectinload(RolePermission.permission).selectinload(Permission.resource),
+                selectinload(Role.role_permissions).selectinload(RolePermission.scope),
                 selectinload(Role.sensitive_field_permissions),
             )
         return await self.scalar_one_or_none(stmt)
@@ -131,6 +136,10 @@ class RBACRepository(BaseRepository):
             RolePermission.permission_id == permission_id,
             RolePermission.scope_id == scope_id,
         )
+        await self.execute(stmt)
+
+    async def delete_all_role_permissions(self, role_id: int) -> None:
+        stmt = delete(RolePermission).where(RolePermission.role_id == role_id)
         await self.execute(stmt)
 
     # ------------------------------------------------------------------
