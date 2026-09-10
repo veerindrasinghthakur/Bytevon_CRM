@@ -1,14 +1,6 @@
 /**
  * Audit API — list + best-effort record.
- * Backend: GET/POST /audit/logs
- *
- * Query params (strict):
- *   action: AuditAction enum (CREATE, UPDATE, LOGIN, …)
- *   from_ts / to_ts: ISO datetime
- *   limit, offset, employment_id, reference_type, reference_id
- *
- * UI filters that are not valid enums are applied client-side only
- * so the API never returns 422.
+ * Backend GET /audit/logs → AuditLogResponse shape mapped to UI AuditLog.
  */
 
 import { env } from '@/config/env'
@@ -19,7 +11,6 @@ import { delay } from '@/shared/mock/db'
 
 const AUDIT_LOGS_API = '/audit/logs'
 
-/** Backend AuditAction StrEnum values. */
 const AUDIT_ACTIONS = new Set([
   'CREATE',
   'UPDATE',
@@ -36,7 +27,6 @@ const AUDIT_ACTIONS = new Set([
   'EXPORT',
 ])
 
-/** Map UI filter labels → backend enum (or null = client-only filter). */
 const UI_ACTION_TO_API: Record<string, string | null> = {
   'All Actions': null,
   CREATE: 'CREATE',
@@ -44,10 +34,12 @@ const UI_ACTION_TO_API: Record<string, string | null> = {
   ARCHIVE: 'ARCHIVE',
   LOGIN: 'LOGIN',
   LOGOUT: 'LOGOUT',
-  // legacy UI labels
+  APPROVE: 'APPROVE',
+  REJECT: 'REJECT',
+  EXPORT: 'EXPORT',
   Create: 'CREATE',
   Update: 'UPDATE',
-  Delete: null, // no DELETE on audit enum — client filter
+  Delete: null,
   Login: 'LOGIN',
   Lock: null,
 }
@@ -86,7 +78,6 @@ function initialsFrom(text: string): string {
   return (parts[0][0] + parts[1][0]).toUpperCase()
 }
 
-/** Normalize HH:mm or HH:mm:ss → HH:mm:ss */
 function normalizeTime(t: string, fallback: string): string {
   const raw = (t || '').trim()
   if (!raw) return fallback
@@ -97,30 +88,64 @@ function normalizeTime(t: string, fallback: string): string {
   return fallback
 }
 
-/** Build ISO local datetime only when date is present. */
 function toIsoLocal(date: string | undefined, time: string | undefined, endOfDay: boolean): string | undefined {
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return undefined
   const t = normalizeTime(time ?? '', endOfDay ? '23:59:59' : '00:00:00')
   return `${date}T${t}`
 }
 
+/** Map backend AuditLogResponse → UI AuditLog (full field set). */
 export function mapApiAuditLog(row: AuditLogApi): AuditLog {
   const action = String(row.action ?? 'UNKNOWN')
-  const refType = String(row.reference_type ?? '')
-  const refId = row.reference_id != null ? String(row.reference_id) : ''
+  const referenceType = String(row.reference_type ?? 'SYSTEM')
+  const referenceId = row.reference_id != null ? Number(row.reference_id) : null
   const description = String(row.description ?? '')
-  const actor =
-    row.employment_id != null ? `Employment #${row.employment_id}` : 'System'
+  const employmentId = row.employment_id != null ? Number(row.employment_id) : null
+  const ipAddress = row.ip_address ?? null
+  const userAgent = row.user_agent ?? null
+  const createdAt = String(row.created_at ?? '')
+  const actor = employmentId != null ? `Employment #${employmentId}` : 'System'
+  const target =
+    description ||
+    (referenceId != null ? `${referenceType} #${referenceId}` : referenceType || '—')
 
   return {
     id: String(row.id),
     action,
+    description,
+    referenceType,
+    referenceId,
+    employmentId,
+    ipAddress,
+    userAgent,
+    createdAt,
+    timestamp: formatTs(createdAt),
     actor,
     actorInitials: initialsFrom(actor),
-    target: description || (refId ? `${refType} #${refId}` : refType || '—'),
-    module: refType || 'SYSTEM',
-    timestamp: formatTs(row.created_at),
-    ip: row.ip_address ?? '—',
+    target,
+    module: referenceType,
+    ip: ipAddress ?? '—',
+  }
+}
+
+/** Ensure mock rows satisfy the full AuditLog shape. */
+function normalizeMock(row: Partial<AuditLog> & { id: string; action: string }): AuditLog {
+  return {
+    id: row.id,
+    action: row.action,
+    description: row.description ?? row.target ?? '',
+    referenceType: row.referenceType ?? row.module ?? 'SYSTEM',
+    referenceId: row.referenceId ?? null,
+    employmentId: row.employmentId ?? null,
+    ipAddress: row.ipAddress ?? (row.ip && row.ip !== '—' ? row.ip : null),
+    userAgent: row.userAgent ?? null,
+    createdAt: row.createdAt ?? '',
+    timestamp: row.timestamp ?? '—',
+    actor: row.actor ?? 'System',
+    actorInitials: row.actorInitials ?? 'SY',
+    target: row.target ?? row.description ?? '—',
+    module: row.module ?? row.referenceType ?? 'SYSTEM',
+    ip: row.ip ?? row.ipAddress ?? '—',
   }
 }
 
@@ -132,8 +157,12 @@ function applyClientFilters(items: AuditLog[], params?: AuditListParams): AuditL
       (l) =>
         l.action.toLowerCase().includes(q) ||
         l.actor.toLowerCase().includes(q) ||
+        l.description.toLowerCase().includes(q) ||
         l.target.toLowerCase().includes(q) ||
-        l.module.toLowerCase().includes(q),
+        l.referenceType.toLowerCase().includes(q) ||
+        l.module.toLowerCase().includes(q) ||
+        String(l.referenceId ?? '').includes(q) ||
+        String(l.employmentId ?? '').includes(q),
     )
   }
   if (params?.action && params.action !== 'All Actions') {
@@ -143,7 +172,6 @@ function applyClientFilters(items: AuditLog[], params?: AuditListParams): AuditL
   }
   if (params?.module && params.module !== 'All Modules') {
     const m = params.module.toLowerCase()
-    // UI modules: Roles → ROLE, Auth → LOGIN/SESSION, etc.
     const aliases: Record<string, string[]> = {
       roles: ['role', 'permission'],
       auth: ['login', 'session', 'password'],
@@ -151,10 +179,8 @@ function applyClientFilters(items: AuditLog[], params?: AuditListParams): AuditL
       users: ['employment', 'login'],
     }
     const keys = aliases[m] ?? [m]
-    out = out.filter((l) => keys.some((k) => l.module.toLowerCase().includes(k)))
+    out = out.filter((l) => keys.some((k) => l.referenceType.toLowerCase().includes(k)))
   }
-  // Time-of-day only (no date) → client filter on formatted timestamp is weak;
-  // when date was sent, server already narrowed the window.
   return out
 }
 
@@ -163,7 +189,7 @@ export async function listAuditLogs(params?: AuditListParams): Promise<AuditLog[
     await delay()
     const limit = params?.limit ?? 500
     return applyClientFilters(
-      auditLogs.map((r) => ({ ...r })),
+      auditLogs.map((r) => normalizeMock(r as AuditLog)),
       params,
     ).slice(0, limit)
   }
@@ -174,14 +200,12 @@ export async function listAuditLogs(params?: AuditListParams): Promise<AuditLog[
       offset: 0,
     }
 
-    // Only send action when it is a real AuditAction enum value
     if (params?.action && params.action !== 'All Actions') {
       const mapped = UI_ACTION_TO_API[params.action]
       const candidate = (mapped ?? params.action).toUpperCase()
       if (mapped && AUDIT_ACTIONS.has(candidate)) {
         query.action = candidate
       }
-      // else: filter client-side only (avoids 422)
     }
 
     const fromTs = toIsoLocal(params?.dateFrom, params?.timeFrom, false)
@@ -204,13 +228,15 @@ export async function recordAuditEvent(input: RecordAuditInput): Promise<void> {
   try {
     if (env.useMockApi) {
       await delay()
-      const entry: AuditLog = {
+      const entry = normalizeMock({
         id: `AUD-${Date.now()}`,
         action: input.action,
         actor: input.actor ?? 'Current User',
         actorInitials: input.actorInitials ?? 'CU',
         target: input.target,
         module: input.module,
+        description: input.target,
+        referenceType: input.module,
         timestamp: new Date().toLocaleString('en-IN', {
           day: '2-digit',
           month: 'short',
@@ -219,8 +245,8 @@ export async function recordAuditEvent(input: RecordAuditInput): Promise<void> {
           minute: '2-digit',
         }),
         ip: input.ip ?? '—',
-      }
-      auditLogs.unshift(entry)
+      })
+      auditLogs.unshift(entry as never)
       return
     }
     const actionRaw = String(input.action || 'UPDATE').toUpperCase().replace(/\s+/g, '_')
@@ -229,8 +255,7 @@ export async function recordAuditEvent(input: RecordAuditInput): Promise<void> {
       reference_type: 'SYSTEM',
       reference_id: 0,
       action,
-      description: `${input.action}: ${input.target}`.
-        slice(0, 500),
+      description: `${input.action}: ${input.target}`.slice(0, 500),
       ip_address: input.ip ?? null,
     })
   } catch {
