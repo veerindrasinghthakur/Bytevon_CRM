@@ -18,6 +18,7 @@ from app.modules.rbac.schemas.schemas import (
     ResourceResponse,
     RoleCreate,
     RoleDetailResponse,
+    RoleListItemResponse,
     RolePermissionGrant,
     RolePermissionResponse,
     RoleResponse,
@@ -32,10 +33,6 @@ router = APIRouter(prefix="/rbac", tags=["RBAC"])
 
 ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
 
-
-# ---------------------------------------------------------------------------
-# Seeded catalogues
-# ---------------------------------------------------------------------------
 
 @router.get("/resources", response_model=list[ResourceResponse])
 async def list_resources(service: RBACServiceDep) -> list[ResourceResponse]:
@@ -63,10 +60,6 @@ async def list_sensitive_fields(
     return await service.list_sensitive_fields(resource_id=resource_id)
 
 
-# ---------------------------------------------------------------------------
-# Roles
-# ---------------------------------------------------------------------------
-
 @router.post(
     "/roles",
     response_model=RoleResponse,
@@ -80,8 +73,8 @@ async def create_role(
     return await service.create_role(body, actor_employment_id=actor)
 
 
-@router.get("/roles", response_model=list[RoleResponse])
-async def list_roles(service: RBACServiceDep) -> list[RoleResponse]:
+@router.get("/roles", response_model=list[RoleListItemResponse])
+async def list_roles(service: RBACServiceDep) -> list[RoleListItemResponse]:
     return await service.list_roles()
 
 
@@ -108,10 +101,6 @@ async def delete_role(
 ) -> MessageResponse:
     return await service.delete_role(role_id, actor_employment_id=actor)
 
-
-# ---------------------------------------------------------------------------
-# Role permissions
-# ---------------------------------------------------------------------------
 
 @router.post(
     "/roles/{role_id}/permissions",
@@ -142,10 +131,6 @@ async def revoke_permission(
         role_id, permission_id, scope_id, actor_employment_id=actor
     )
 
-
-# ---------------------------------------------------------------------------
-# Employee roles
-# ---------------------------------------------------------------------------
 
 @router.post(
     "/employments/{employment_id}/roles",
@@ -199,10 +184,6 @@ async def get_effective_permissions(
 ) -> EffectivePermissionsResponse:
     return await service.get_effective_permissions(employment_id)
 
-
-# ---------------------------------------------------------------------------
-# Sensitive field permissions
-# ---------------------------------------------------------------------------
 
 @router.put(
     "/roles/{role_id}/sensitive-fields",
