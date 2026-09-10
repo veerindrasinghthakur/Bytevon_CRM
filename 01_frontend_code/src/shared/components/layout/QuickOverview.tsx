@@ -123,8 +123,13 @@ function QuickOverviewPanelShell({
       // Only mark hidden when fully closed for AT; while open keep focusable tree visible.
       // Blur on close prevents focused descendants under aria-hidden during exit.
       aria-hidden={!isOpen}
-      // @ts-expect-error inert is supported in modern browsers; React types lag
-      inert={!isOpen ? true : undefined}
+      // React 18 does not accept boolean `inert`; set DOM property via ref instead.
+      ref={(el) => {
+        if (el) {
+          // HTMLElement.inert is standard; keep focusable tree when open
+          el.inert = !isOpen
+        }
+      }}
     >
       <button
         type="button"
