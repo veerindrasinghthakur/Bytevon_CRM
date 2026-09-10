@@ -1,13 +1,10 @@
 /**
- * Security Center data — events + posture KPIs.
- *
- * Backend has no /admin/security/events or /admin/metrics/hub.
- * Derive from GET /audit/logs + org user list where possible.
+ * Security Center — events + KPIs derived from /audit/logs.
  */
 
 import { env } from '@/config/env'
 import { adminKpis, securityEvents } from '../data/mock'
-import type { AdminKpis, SecurityEvent } from '../types'
+import type { AdminKpis, AuditLog, SecurityEvent } from '../types'
 import { delay } from '@/shared/mock/db'
 import { listAuditLogs } from './audit'
 import { listAdminUsers } from './users'
@@ -15,7 +12,6 @@ import { listAdminUsers } from './users'
 const AUTH_ACTIONS = new Set([
   'LOGIN',
   'LOGOUT',
-  'LOGIN_FAILED',
   'PASSWORD_CHANGE',
   'PASSWORD_RESET',
   'SESSION_REVOKE',
@@ -23,23 +19,17 @@ const AUTH_ACTIONS = new Set([
   'UNLOCK',
   'CREATE',
   'UPDATE',
-  'DELETE',
+  'ARCHIVE',
+  'APPROVE',
+  'REJECT',
 ])
 
-function mapAuditToSecurityEvent(log: {
-  id: string
-  action: string
-  actor: string
-  target: string
-  module: string
-  timestamp: string
-  ip: string
-}): SecurityEvent {
+function mapAuditToSecurityEvent(log: AuditLog): SecurityEvent {
   const action = (log.action || '').toUpperCase()
   let status: SecurityEvent['status'] = 'Success'
   if (action.includes('FAIL') || action.includes('DENIED') || action.includes('BLOCK')) {
     status = 'Blocked'
-  } else if (action.includes('LOCK') || action.includes('WARN')) {
+  } else if (action.includes('LOCK') || action.includes('WARN') || action === 'REJECT') {
     status = 'Warning'
   }
 
@@ -47,21 +37,39 @@ function mapAuditToSecurityEvent(log: {
     id: log.id,
     eventType: log.action || 'Audit',
     identity: log.actor || '—',
-    source: log.ip && log.ip !== '—' ? log.ip : log.module || 'system',
+    employmentId: log.employmentId,
+    source: log.ipAddress || log.referenceType || 'system',
+    ipAddress: log.ipAddress,
+    referenceType: log.referenceType,
+    description: log.description || log.target,
     timestamp: log.timestamp,
     status,
+  }
+}
+
+function normalizeMockEvent(e: SecurityEvent): SecurityEvent {
+  return {
+    id: e.id,
+    eventType: e.eventType,
+    identity: e.identity,
+    employmentId: e.employmentId ?? null,
+    source: e.source,
+    ipAddress: e.ipAddress ?? null,
+    referenceType: e.referenceType ?? 'LOGIN',
+    description: e.description ?? e.eventType,
+    timestamp: e.timestamp,
+    status: e.status,
   }
 }
 
 export async function listSecurityEvents(): Promise<SecurityEvent[]> {
   if (env.useMockApi) {
     await delay()
-    return securityEvents.map((e) => ({ ...e }))
+    return securityEvents.map((e) => normalizeMockEvent(e as SecurityEvent))
   }
 
   try {
     const logs = await listAuditLogs({ limit: 100 })
-    // Prefer auth-ish rows; fall back to recent audit
     const authish = logs.filter((l) => AUTH_ACTIONS.has(String(l.action).toUpperCase()))
     const source = authish.length ? authish : logs
     return source.slice(0, 50).map(mapAuditToSecurityEvent)
@@ -87,7 +95,6 @@ export async function getSecurityKpis(): Promise<
     }
   }
 
-  // No /admin/metrics/hub — compose from audit + users
   let auditEventsToday = 0
   let openAlerts = 0
   let activeSessions = 0
@@ -102,28 +109,26 @@ export async function getSecurityKpis(): Promise<
     auditEventsToday = logs.length
     openAlerts = logs.filter((l) => {
       const a = String(l.action).toUpperCase()
-      return a.includes('FAIL') || a.includes('LOCK') || a.includes('DENIED')
+      return a.includes('FAIL') || a.includes('LOCK') || a.includes('DENIED') || a === 'REJECT'
     }).length
   } catch {
-    /* keep zeros */
+    /* zeros */
   }
 
   try {
     const users = await listAdminUsers({ page: 1, pageSize: 1 })
-    // Active logins as a proxy for "sessions" until session list API exists
     activeSessions = users.active ?? users.total ?? 0
   } catch {
-    /* keep zero */
+    /* zero */
   }
 
-  // Simple posture score: start 100, subtract for open alerts (capped)
   const securityScore = Math.max(60, Math.min(100, 100 - openAlerts * 5))
 
   return {
     securityScore,
     activeSessions,
     openAlerts,
-    mfaAdoption: 0, // MFA not in V1
+    mfaAdoption: 0,
     auditEventsToday,
   }
 }
