@@ -11,7 +11,7 @@ AttendancePublicService — only public entry point for Attendance.
 from __future__ import annotations
 
 import logging
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timezone
 from decimal import Decimal
 from typing import Optional
 
@@ -120,7 +120,6 @@ class AttendancePublicService(BasePublicService):
         elif data.shift_id and day.shift_id is None:
             day.shift_id = data.shift_id
 
-        # Optional policy: require checkout before new check-in
         if policy and policy.require_checkout_before_new_checkin:
             last = await self._repo.get_last_punch(day.id)
             if (
@@ -138,8 +137,6 @@ class AttendancePublicService(BasePublicService):
                     f"Multiple {data.punch_type.value} punches are not allowed by policy"
                 )
 
-        # Geo/IP validation is simplified: mark valid if IP present
-        # Full geofence against locations.allowed_ip_cidrs can be added later
         is_valid = bool(client_ip)
         validation_message = None if is_valid else "Missing client IP"
 
@@ -157,7 +154,6 @@ class AttendancePublicService(BasePublicService):
         await self._repo.add(punch)
         await self._flush()
 
-        # Recalculate working hours from all punches
         punches = list(await self._repo.list_punches(day.id))
         punches.append(punch)
         day.working_hours = _compute_working_hours(punches)
@@ -229,7 +225,6 @@ class AttendancePublicService(BasePublicService):
                 if count >= policy.max_corrections_per_month:
                     raise DomainError("Max corrections per month reached")
 
-        # Block if monthly summary locked
         summary = await self._repo.get_monthly_summary(
             day.employment_id,
             day.attendance_date.year,
@@ -296,7 +291,6 @@ class AttendancePublicService(BasePublicService):
                 correction.attendance_day_id, with_punches=True
             )
             if day:
-                # Apply corrected times as additional valid punches (append-only history preserved)
                 if correction.requested_check_in:
                     await self._repo.add(
                         AttendancePunch(
@@ -327,7 +321,6 @@ class AttendancePublicService(BasePublicService):
             await self._audit(
                 "attendance_correction.approved", correction.id, actor
             )
-            # Trigger summary rebuild
             if day:
                 await self.rebuild_monthly_summary(
                     day.employment_id,
@@ -355,11 +348,11 @@ class AttendancePublicService(BasePublicService):
         *,
         actor_employment_id: Optional[int] = None,
     ) -> AttendancePolicyResponse:
+        # Close open policy; effective_to is exclusive (= new.effective_from).
+        # Supports same-day supersede from /admin/attendance-settings saves.
         current = await self._repo.get_current_policy(as_of=data.effective_from)
         if current and current.effective_to is None:
-            close_to = data.effective_from - timedelta(days=1)
-            if close_to >= current.effective_from:
-                await self._repo.close_policy(current.id, close_to)
+            await self._repo.close_policy(current.id, data.effective_from)
 
         policy = AttendancePolicy(
             **data.model_dump(),
@@ -434,7 +427,7 @@ class AttendancePublicService(BasePublicService):
             pct = (present / expected * 100).quantize(Decimal("0.01"))
 
         now = datetime.now(timezone.utc)
-        actor = actor_employment_id  # None = system rebuild
+        actor = actor_employment_id
 
         if existing:
             existing.present_days = present
@@ -538,8 +531,3 @@ class AttendancePublicService(BasePublicService):
         await self._commit()
         await self._audit("attendance.break_ended", br.id, actor_employment_id)
         return BreakResponse.model_validate(br)
-
-    # ==================================================================
-    # Helpers
-    # ==================================================================
-
