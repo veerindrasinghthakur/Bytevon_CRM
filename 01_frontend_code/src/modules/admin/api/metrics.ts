@@ -13,6 +13,7 @@ import { listAdminRoles } from './roles'
 import { getLocations, getShifts, getSchemaDepartments } from './organization'
 import { listEmployments } from '@/modules/workforce/api/employment'
 import { listAdminUsers } from './users'
+import { getAttendanceSettings } from './settings'
 
 export async function getAdminHubMetrics(): Promise<AdminHubMetrics> {
   if (env.useMockApi) {
@@ -110,11 +111,9 @@ export async function getRoleListMetrics(): Promise<RoleListMetrics> {
           : rolesResult.value.items ?? []
         : []
 
-    // Backend has no role archive — Active = all listed roles
     const activeRoles = items.filter((r) => r.status !== 'Archived').length
     const archivedRoles = items.filter((r) => r.status === 'Archived').length
 
-    // Prefer sum of assignment counts from role list; fall back to active login users
     let activeUsers = items.reduce((sum, r) => sum + (Number(r.usersCount) || 0), 0)
     if (activeUsers === 0 && usersResult.status === 'fulfilled') {
       activeUsers = usersResult.value.active ?? usersResult.value.total ?? 0
@@ -154,6 +153,11 @@ export async function getLeaveAdminMetrics(): Promise<LeaveAdminMetrics> {
   }
 }
 
+/**
+ * Attendance settings KPIs.
+ * Live present/late/leave need a dashboard endpoint (not in V1).
+ * Derive config KPIs from shifts + current policy instead of hardcoding zeros.
+ */
 export async function getAttendanceAdminMetrics(): Promise<AttendanceAdminMetrics> {
   if (env.useMockApi) {
     await delay()
@@ -162,12 +166,34 @@ export async function getAttendanceAdminMetrics(): Promise<AttendanceAdminMetric
       lateToday: 3,
       onLeaveToday: 5,
       remoteCheckIns: 8,
+      activeShifts: 3,
+      graceMinutes: 15,
+      correctionWindowDays: 7,
     }
   }
-  return {
+
+  const base: AttendanceAdminMetrics = {
     presentToday: 0,
     lateToday: 0,
     onLeaveToday: 0,
     remoteCheckIns: 0,
+    activeShifts: 0,
+    graceMinutes: 0,
+    correctionWindowDays: 0,
   }
+
+  const [shiftsRes, policyRes] = await Promise.allSettled([
+    getShifts({ includeArchived: false }),
+    getAttendanceSettings(),
+  ])
+
+  if (shiftsRes.status === 'fulfilled') {
+    base.activeShifts = shiftsRes.value.total ?? shiftsRes.value.items?.length ?? 0
+  }
+  if (policyRes.status === 'fulfilled') {
+    base.graceMinutes = policyRes.value.graceMinutes ?? 0
+    base.correctionWindowDays = policyRes.value.correctionWindowDays ?? 0
+  }
+
+  return base
 }
