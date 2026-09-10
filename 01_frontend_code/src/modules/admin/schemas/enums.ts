@@ -28,6 +28,14 @@ export const securityScoreDefault = 94
 
 /** Audit log action → badge class (matched by substring against log.action). */
 export const auditActionBadge: Record<string, string> = {
+  CREATE: 'status-badge status-success',
+  UPDATE: 'status-badge status-info',
+  ARCHIVE: 'status-badge status-error',
+  LOGIN: 'status-badge status-info',
+  LOGOUT: 'status-badge status-neutral',
+  APPROVE: 'status-badge status-success',
+  REJECT: 'status-badge status-error',
+  // legacy keys still resolve via includes()
   Create: 'status-badge status-success',
   Update: 'status-badge status-info',
   Delete: 'status-badge status-error',
@@ -35,8 +43,12 @@ export const auditActionBadge: Record<string, string> = {
   Lock: 'status-badge status-warning',
 }
 
-/** Audit log action → dot color class (matched by substring against log.action). */
 export const auditActionDot: Record<string, string> = {
+  CREATE: 'bg-[var(--color-success-emerald)]',
+  UPDATE: 'bg-[var(--color-primary-blue)]',
+  ARCHIVE: 'bg-[var(--color-error-red)]',
+  LOGIN: 'bg-[var(--color-info-sky)]',
+  LOGOUT: 'bg-on-surface-variant',
   Create: 'bg-[var(--color-success-emerald)]',
   Update: 'bg-[var(--color-primary-blue)]',
   Delete: 'bg-[var(--color-error-red)]',
@@ -44,29 +56,28 @@ export const auditActionDot: Record<string, string> = {
   Lock: 'bg-[var(--color-warning-amber)]',
 }
 
-/** Security event status → badge class. */
 export const securityEventBadge: Record<string, string> = {
   Success: 'status-badge status-success',
   Blocked: 'status-badge status-error',
   Warning: 'status-badge status-warning',
 }
 
-/** Security event status → dot color class. */
 export const securityEventDot: Record<string, string> = {
   Success: 'bg-[var(--color-success-emerald)]',
   Blocked: 'bg-[var(--color-error-red)]',
   Warning: 'bg-[var(--color-warning-amber)]',
 }
 
-/** Resolve an audit action string to its badge/dot key ('Create' | 'Update' | ...). */
+/** Resolve an audit action string to its badge/dot key. */
 export function resolveAuditActionKey(action: string): string {
+  const upper = action.toUpperCase()
+  if (auditActionBadge[upper]) return upper
   return (
     Object.keys(auditActionBadge).find((k) => action.toLowerCase().includes(k.toLowerCase())) ??
-    'Update'
+    'UPDATE'
   )
 }
 
-/** Human labels for backend Action enum (seeded permissions). */
 export const permissionActionLabels: Record<string, string> = {
   VIEW: 'View',
   CREATE: 'Create',
@@ -77,7 +88,6 @@ export const permissionActionLabels: Record<string, string> = {
   UNLOCK: 'Unlock',
 }
 
-/** User status filter options (UsersListPage status Select). */
 export const userStatusOptions = [
   { value: 'All', label: 'All Status' },
   { value: 'Active', label: 'Active' },
@@ -85,14 +95,12 @@ export const userStatusOptions = [
   { value: 'Locked', label: 'Locked' },
 ]
 
-/** Role status filter options (RolesListPage status Select). */
 export const roleStatusOptions = [
   { value: 'All', label: 'All Status' },
   { value: 'Active', label: 'Active' },
   { value: 'Archived', label: 'Archived' },
 ] as const
 
-/** Role category filter options (RolesListPage category Select). */
 export const roleCategoryOptions = [
   { value: 'All', label: 'All Categories' },
   { value: 'Core Role', label: 'Core Role' },
@@ -110,7 +118,6 @@ export const roleFilterCategoryOptions = [
   'Standard',
 ] as const
 
-/** Hierarchy level options for role creation. */
 export const hierarchyLevels = [
   '1 (Entry)',
   '2',
@@ -120,7 +127,6 @@ export const hierarchyLevels = [
   '10 (Executive)',
 ] as const
 
-/** Inherit permissions options for role creation. */
 export const inheritOptions = [
   'None (Custom)',
   'Basic Employee',
@@ -130,8 +136,27 @@ export const inheritOptions = [
 
 export const holidayTypes = ['NATIONAL', 'REGIONAL', 'OPTIONAL', 'COMPANY'] as const
 
-export const auditActionOptions = ['All Actions', 'Create', 'Update', 'Delete', 'Login', 'Lock'] as const
-export const auditModuleOptions = ['All Modules', 'Roles', 'Auth', 'Settings', 'Users'] as const
+/** Values match backend AuditAction where possible (sent as query.action). */
+export const auditActionOptions = [
+  'All Actions',
+  'CREATE',
+  'UPDATE',
+  'ARCHIVE',
+  'LOGIN',
+  'LOGOUT',
+  'APPROVE',
+  'REJECT',
+  'EXPORT',
+] as const
+
+/** UI modules — filtered client-side against reference_type. */
+export const auditModuleOptions = [
+  'All Modules',
+  'Roles',
+  'Auth',
+  'Settings',
+  'Users',
+] as const
 
 export const colorOptions = [
   { value: 'var(--color-primary)', label: 'Primary (--color-primary)' },
