@@ -13,12 +13,9 @@ export function emptyMatrix(modules: string[], actions: string[]): RolePermissio
 }
 
 /**
- * Rebuild a matrix from stored permission strings.
- *
- * A permission string matches a module when it is the module name
- * lowercased followed by a dot (e.g. "users.view" matches module "Users").
- * This avoids the prefix-heuristic corruption and the "manage"/"security"
- * catch-all that previously granted ALL actions on ALL modules.
+ * Rebuild a matrix from stored permission keys.
+ * Expected key shape: `{resource}.{action}` (case-insensitive),
+ * e.g. `users.view` matches module "Users" + action "VIEW".
  */
 export function seedMatrix(
   permissions: string[],
@@ -26,13 +23,15 @@ export function seedMatrix(
   actions: string[],
 ): RolePermissionMatrix {
   const init = emptyMatrix(modules, actions)
+  const keySet = new Set(permissions.map((p) => p.toLowerCase()))
+
   modules.forEach((m) => {
     const modLower = m.toLowerCase()
-    const hasAny = permissions.some((p) =>
-      p.toLowerCase().startsWith(modLower + '.')
-    )
     init[m] = Object.fromEntries(
-      actions.map((a) => [a, hasAny && (a === 'VIEW' || a === 'CREATE' || a === 'UPDATE')]),
+      actions.map((a) => {
+        const key = `${modLower}.${String(a).toLowerCase()}`
+        return [a, keySet.has(key)]
+      }),
     )
   })
   return init
