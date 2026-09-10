@@ -89,8 +89,8 @@ function mapApiEmployment(row: Record<string, unknown>): EmploymentListItem {
     fullName,
     firstName: first,
     lastName: last,
-    email: String(row.email ?? row.loginEmail ?? ''),
-    phone: String(row.phone ?? row.personalPhone ?? ''),
+    email: String(row.email ?? row.loginEmail ?? person.personal_email ?? ''),
+    phone: String(row.phone ?? row.personalPhone ?? person.personal_phone ?? ''),
     departmentName: String(row.departmentName ?? '—'),
     departmentId: row.departmentId != null ? Number(row.departmentId) : null,
     positionName: String(row.positionName ?? '—'),
@@ -273,13 +273,15 @@ export async function getEmployeeDetail(employmentId: number): Promise<EmployeeD
 
 export async function createEmployment(input: CreateEmploymentSchemaInput) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<EmploymentListItem>('/workforce/employees', {
-      first_name: input.firstName,
-      last_name: input.lastName,
+    const email = (input.personalEmail || '').trim() || null
+    const { data } = await apiClient.post<Record<string, unknown>>('/workforce/employees', {
+      first_name: input.firstName.trim(),
+      last_name: input.lastName.trim(),
       date_of_birth: input.dateOfBirth || null,
-      personal_email: input.personalEmail || null,
+      personal_email: email,
       personal_phone: input.personalPhone || null,
       address: input.address || null,
+      // employee_code omitted → backend auto-generates EMP-####
       employment_type: input.employmentType,
       joining_date: input.joiningDate,
       department_id: input.departmentId || null,
@@ -287,8 +289,9 @@ export async function createEmployment(input: CreateEmploymentSchemaInput) {
       location_id: input.locationId || null,
       shift_id: input.shiftId || null,
       work_mode: input.workMode || 'OFFICE',
+      assignment_change_reason: 'Initial assignment',
     })
-    return data
+    return mapApiEmployment(data)
   }
 
   await delay(500)
@@ -347,7 +350,7 @@ export async function createEmployment(input: CreateEmploymentSchemaInput) {
     position_id: input.positionId,
     location_id: input.locationId,
     shift_id: input.shiftId,
-    work_mode: (input.workMode) || 'OFFICE',
+    work_mode: input.workMode || 'OFFICE',
     effective_from: input.joiningDate,
     effective_to: null,
     change_reason: 'Initial assignment',
@@ -458,7 +461,7 @@ export async function getOrgMastersForEmployeeForm() {
     departments: db.schema_departments.filter((d) => !d.is_archived).map((d) => ({ ...d })),
     positions: db.positions.filter((p) => !p.is_archived).map((p) => ({ ...p })),
     locations: db.locations.filter((l) => !l.is_archived).map((l) => ({ ...l })),
-    shifts: db.shifts.filter((s) => !s.is_archived).map((s) => ({ ...s })),
+    shifts: db.shifts.filter((s) => !s.is_archived).map((s) => ({ ...l })),
   }
 }
 
@@ -497,7 +500,7 @@ export async function changeEmploymentState(
   if (!env.useMockApi) {
     await apiClient.post(
       `/workforce/employments/${employmentId}/state`,
-      { new_state: newState, reason },
+      { new_state: newState, reason, effective_date: new Date().toISOString().slice(0, 10) },
     )
     return
   }
@@ -544,8 +547,9 @@ export async function createEmploymentAssignment(
         position_id: assignmentData.positionId,
         location_id: assignmentData.locationId,
         shift_id: assignmentData.shiftId,
-        work_mode: assignmentData.workMode,
-        change_reason: assignmentData.changeReason,
+        work_mode: assignmentData.workMode || 'OFFICE',
+        effective_from: new Date().toISOString().slice(0, 10),
+        change_reason: assignmentData.changeReason || 'Assignment update',
       },
     )
     return
@@ -553,6 +557,7 @@ export async function createEmploymentAssignment(
   await delay()
   const db = getDb()
   const now = new Date().toISOString()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ;(db.employment_assignments as any[]).push({
     id: nextId(db.employment_assignments),
     employment_id: employmentId,
@@ -561,7 +566,7 @@ export async function createEmploymentAssignment(
     location_id: assignmentData.locationId,
     shift_id: assignmentData.shiftId,
     work_mode: assignmentData.workMode ?? 'OFFICE',
-    effective_from: now,
+    effective_from: now.slice(0, 10),
     effective_to: null,
     change_reason: assignmentData.changeReason ?? 'New assignment',
     created_at: now,

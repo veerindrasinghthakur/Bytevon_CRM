@@ -7,7 +7,7 @@ from __future__ import annotations
 from datetime import date, datetime
 from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from app.core.db.enums import EmploymentState, EmploymentType, WorkMode
 
@@ -28,6 +28,13 @@ class PersonCreate(BaseModel):
     personal_phone: Optional[str] = Field(None, max_length=20)
     address: Optional[str] = None
 
+    @field_validator("personal_email", mode="before")
+    @classmethod
+    def empty_email_to_none(cls, v: object) -> object:
+        if v is None or (isinstance(v, str) and not v.strip()):
+            return None
+        return v
+
 
 class PersonUpdate(BaseModel):
     first_name: Optional[str] = Field(None, min_length=1, max_length=100)
@@ -36,6 +43,13 @@ class PersonUpdate(BaseModel):
     personal_email: Optional[EmailStr] = None
     personal_phone: Optional[str] = Field(None, max_length=20)
     address: Optional[str] = None
+
+    @field_validator("personal_email", mode="before")
+    @classmethod
+    def empty_email_to_none(cls, v: object) -> object:
+        if v is None or (isinstance(v, str) and not v.strip()):
+            return None
+        return v
 
 
 class PersonResponse(BaseModel):
@@ -98,7 +112,10 @@ class EmploymentCreate(BaseModel):
 
 
 class EmployeeCreate(BaseModel):
-    """One-shot employee onboarding: creates Person + Employment in one TX."""
+    """One-shot employee onboarding: creates Person + Employment in one TX.
+
+    employee_code is optional — when omitted, the service generates EMP-####.
+    """
 
     first_name: str = Field(..., min_length=1, max_length=100)
     last_name: str = Field(..., min_length=1, max_length=100)
@@ -107,7 +124,12 @@ class EmployeeCreate(BaseModel):
     personal_phone: Optional[str] = Field(None, max_length=20)
     address: Optional[str] = None
 
-    employee_code: str = Field(..., min_length=1, max_length=50)
+    employee_code: Optional[str] = Field(
+        None,
+        min_length=1,
+        max_length=50,
+        description="Optional; auto-generated as EMP-#### when omitted",
+    )
     employment_type: EmploymentType
     joining_date: date
     initial_state: EmploymentState = EmploymentState.ONBOARDING
@@ -119,6 +141,20 @@ class EmployeeCreate(BaseModel):
     shift_id: Optional[int] = None
     work_mode: Optional[WorkMode] = None
     assignment_change_reason: Optional[str] = None
+
+    @field_validator("personal_email", mode="before")
+    @classmethod
+    def empty_email_to_none(cls, v: object) -> object:
+        if v is None or (isinstance(v, str) and not v.strip()):
+            return None
+        return v
+
+    @field_validator("employee_code", mode="before")
+    @classmethod
+    def empty_code_to_none(cls, v: object) -> object:
+        if v is None or (isinstance(v, str) and not v.strip()):
+            return None
+        return v
 
 
 class EmploymentUpdate(BaseModel):

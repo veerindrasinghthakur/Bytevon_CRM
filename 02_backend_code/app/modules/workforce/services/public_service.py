@@ -11,11 +11,11 @@ import logging
 from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.db.enums import EmploymentState
+from app.core.db.enums import EmploymentState, WorkMode
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
 from app.modules.auth.models import Person
@@ -71,6 +71,17 @@ class EmploymentPublicService(BasePublicService):
         """Refresh so server-side updated_at/created_at are loaded after commit."""
         await self._session.refresh(person)
         return PersonResponse.model_validate(person)
+
+    async def _next_employee_code(self) -> str:
+        """Generate next unique EMP-#### code."""
+        count = await self._session.scalar(select(func.count()).select_from(Employment))
+        n = int(count or 0) + 1
+        while True:
+            code = f"EMP-{n:04d}"
+            existing = await self._repo.get_employment_by_code(code)
+            if existing is None:
+                return code
+            n += 1
 
     async def _validate_assignment_refs(
         self,
@@ -259,7 +270,12 @@ class EmploymentPublicService(BasePublicService):
         *,
         actor_employment_id: Optional[int] = None,
     ) -> EmploymentDetailResponse:
-        """Create Person + Employment (+ optional assignment) in a single transaction."""
+        """Create Person + Employment (+ optional assignment) in a single transaction.
+
+        employee_code is optional — auto-generated as EMP-#### when omitted.
+        When any assignment field is set, work_mode defaults to OFFICE and
+        assignment_change_reason defaults to "Initial assignment".
+        """
         person = await self.create_person(
             PersonCreate(
                 first_name=data.first_name,
@@ -272,20 +288,37 @@ class EmploymentPublicService(BasePublicService):
             actor_employment_id=actor_employment_id,
             commit=False,
         )
+
+        code = (data.employee_code or "").strip() or await self._next_employee_code()
+
+        dept_id = _optional_id(data.department_id)
+        pos_id = _optional_id(data.position_id)
+        loc_id = _optional_id(data.location_id)
+        shift_id = _optional_id(data.shift_id)
+        wants_assignment = any([dept_id, pos_id, loc_id, shift_id, data.work_mode])
+
+        work_mode = data.work_mode
+        reason = data.assignment_change_reason
+        if wants_assignment:
+            if work_mode is None:
+                work_mode = WorkMode.OFFICE
+            if not reason:
+                reason = "Initial assignment"
+
         return await self.create_employment(
             EmploymentCreate(
                 person_id=person.id,
-                employee_code=data.employee_code,
+                employee_code=code,
                 employment_type=data.employment_type,
                 joining_date=data.joining_date,
                 initial_state=data.initial_state,
                 initial_state_reason=data.initial_state_reason,
-                department_id=_optional_id(data.department_id),
-                position_id=_optional_id(data.position_id),
-                location_id=_optional_id(data.location_id),
-                shift_id=_optional_id(data.shift_id),
-                work_mode=data.work_mode,
-                assignment_change_reason=data.assignment_change_reason,
+                department_id=dept_id,
+                position_id=pos_id,
+                location_id=loc_id,
+                shift_id=shift_id,
+                work_mode=work_mode,
+                assignment_change_reason=reason,
             ),
             actor_employment_id=actor_employment_id,
             person=person,
@@ -337,22 +370,18 @@ class EmploymentPublicService(BasePublicService):
         )
         wants_assignment = any([dept_id, pos_id, loc_id, shift_id, data.work_mode])
         if wants_assignment:
-            if data.work_mode is None:
-                raise DomainError("work_mode is required when creating an assignment")
-            if not data.assignment_change_reason:
-                raise DomainError(
-                    "assignment_change_reason is required when creating an assignment"
-                )
+            work_mode = data.work_mode or WorkMode.OFFICE
+            reason = data.assignment_change_reason or "Initial assignment"
             assignment = EmploymentAssignment(
                 employment_id=emp.id,
                 department_id=dept_id,
                 position_id=pos_id,
                 location_id=loc_id,
                 shift_id=shift_id,
-                work_mode=data.work_mode,
+                work_mode=work_mode,
                 effective_from=data.joining_date,
                 effective_to=None,
-                change_reason=data.assignment_change_reason,
+                change_reason=reason,
                 changed_by=actor,
             )
             await self._repo.add(assignment)
@@ -524,6 +553,7 @@ class EmploymentPublicService(BasePublicService):
             raise NotFoundError("Employment not found")
 
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+
         dept_id, pos_id, loc_id, shift_id = await self._validate_assignment_refs(
             department_id=data.department_id,
             position_id=data.position_id,
@@ -555,9 +585,7 @@ class EmploymentPublicService(BasePublicService):
         )
         await self._repo.add(assignment)
         await self._commit()
-        await self._audit(
-            "employment.assignment_created", assignment.id, actor_employment_id
-        )
+        await self._audit("employment.assignment_created", assignment.id, actor_employment_id)
         await self._session.refresh(assignment)
         return EmploymentAssignmentResponse.model_validate(assignment)
 
