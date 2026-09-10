@@ -14,10 +14,6 @@ import { getLocations, getShifts, getSchemaDepartments } from './organization'
 import { listEmployments } from '@/modules/workforce/api/employment'
 import { listAdminUsers } from './users'
 
-/**
- * Hub KPIs for Administration Settings.
- * No dedicated /admin/metrics/hub — derive from list endpoints in parallel.
- */
 export async function getAdminHubMetrics(): Promise<AdminHubMetrics> {
   if (env.useMockApi) {
     await delay()
@@ -102,13 +98,33 @@ export async function getRoleListMetrics(): Promise<RoleListMetrics> {
   }
 
   try {
-    const result = await listAdminRoles()
-    const items = Array.isArray(result) ? result : result.items ?? []
+    const [rolesResult, usersResult] = await Promise.allSettled([
+      listAdminRoles(),
+      listAdminUsers({ page: 1, pageSize: 1 }),
+    ])
+
+    const items =
+      rolesResult.status === 'fulfilled'
+        ? Array.isArray(rolesResult.value)
+          ? rolesResult.value
+          : rolesResult.value.items ?? []
+        : []
+
+    // Backend has no role archive — Active = all listed roles
+    const activeRoles = items.filter((r) => r.status !== 'Archived').length
+    const archivedRoles = items.filter((r) => r.status === 'Archived').length
+
+    // Prefer sum of assignment counts from role list; fall back to active login users
+    let activeUsers = items.reduce((sum, r) => sum + (Number(r.usersCount) || 0), 0)
+    if (activeUsers === 0 && usersResult.status === 'fulfilled') {
+      activeUsers = usersResult.value.active ?? usersResult.value.total ?? 0
+    }
+
     return {
       totalRoles: items.length,
-      activeRoles: items.filter((r) => r.status === 'Active').length,
-      archivedRoles: items.filter((r) => r.status === 'Archived').length,
-      activeUsers: items.reduce((sum, r) => sum + (Number(r.usersCount) || 0), 0),
+      activeRoles,
+      archivedRoles,
+      activeUsers,
     }
   } catch {
     return {
