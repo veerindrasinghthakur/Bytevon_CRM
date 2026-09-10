@@ -56,7 +56,7 @@ export function useUserCreate() {
     },
   })
 
-  const { watch, setValue, reset: resetForm } = form
+  const { watch, setValue, setError, clearErrors } = form
 
   useEffect(() => {
     const defaultRole = roles.find((r) => r.name === 'Employee') ?? roles[0]
@@ -94,26 +94,39 @@ export function useUserCreate() {
     mutationFn: (values: UserFormInput) =>
       createUserLogin({
         employmentId: Number(values.employmentId),
-        email: values.email,
+        email: values.email.trim().toLowerCase(),
         temporaryPassword: values.temporaryPassword,
         roleId: values.roleId,
+        status: 'ACTIVE',
       }),
     onSuccess: () => {
+      clearErrors('root')
       void queryClient.invalidateQueries({ queryKey: queryKeys.admin.users.all })
+      void queryClient.invalidateQueries({ queryKey: queryKeys.admin.users.withoutLogin() })
       safeNavigate(navigate, { to: myAdminRoutes.usersList })
     },
-    onError: (e) => {
-      // Error handled by RHF formState.errors
-      console.error(e)
+    onError: (e: Error) => {
+      const msg = e?.message || 'Could not create user login'
+      // Map known backend conflicts to specific fields
+      if (/email is already in use/i.test(msg)) {
+        setError('email', { type: 'server', message: msg })
+      } else if (/already has a login/i.test(msg)) {
+        setError('employmentId', { type: 'server', message: msg })
+        void queryClient.invalidateQueries({ queryKey: queryKeys.admin.users.withoutLogin() })
+      } else {
+        setError('root', { type: 'server', message: msg })
+      }
     },
   })
 
   const onSelectEmployee = (v: string) => {
     setValue('employmentId', v, { shouldValidate: true })
+    clearErrors(['employmentId', 'root'])
     const emp = candidates.find((c) => String(c.employmentId) === v)
     if (emp) {
       const slug = emp.name.toLowerCase().replace(/\s+/g, '.')
       setValue('email', `${slug}@bytevon.com`, { shouldValidate: true })
+      clearErrors('email')
     }
   }
 
@@ -126,8 +139,12 @@ export function useUserCreate() {
     employeeOptions,
     selected,
     onSelectEmployee,
-    submit: form.handleSubmit((values) => createMutation.mutate(values)),
+    submit: form.handleSubmit((values) => {
+      clearErrors('root')
+      createMutation.mutate(values)
+    }),
     isSubmitting: createMutation.isPending,
+    serverError: form.formState.errors.root?.message as string | undefined,
     navigate,
   }
 }
