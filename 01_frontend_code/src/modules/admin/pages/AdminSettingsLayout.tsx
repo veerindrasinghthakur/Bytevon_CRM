@@ -8,13 +8,17 @@ import { queryKeys } from '@/shared/lib/query-keys'
 
 /**
  * Shared shell for /admin/settings/* — horizontal nav + content.
- * Top metric cards (offices, departments, employees) appended; layout otherwise unchanged.
+ * Metric cards derived from live org/workforce list APIs (see getAdminHubMetrics).
  */
 export function AdminSettingsLayout() {
-  const { data: metrics } = useQuery({
-    queryKey: queryKeys.admin.roles.metrics(),
+  const { data: metrics, isLoading } = useQuery({
+    queryKey: queryKeys.admin.metrics.hub?.() ?? (['admin', 'metrics', 'hub'] as const),
     queryFn: getAdminHubMetrics,
+    staleTime: 30_000,
   })
+
+  const display = (n: number | undefined) =>
+    isLoading && n == null ? '…' : String(n ?? '—')
 
   return (
     <div className="space-y-6">
@@ -27,25 +31,25 @@ export function AdminSettingsLayout() {
         <MetricCard
           icon="apartment"
           label="Offices / Locations"
-          value={String(metrics?.offices ?? '—')}
+          value={display(metrics?.offices)}
           hint="Active sites"
         />
         <MetricCard
           icon="schedule"
           label="Shifts"
-          value={String(metrics?.shifts ?? '—')}
+          value={display(metrics?.shifts)}
           hint="Active schedules"
         />
         <MetricCard
           icon="account_tree"
           label="Departments"
-          value={String(metrics?.departments ?? '—')}
+          value={display(metrics?.departments)}
           hint="Org structure"
         />
         <MetricCard
           icon="groups"
           label="Employees"
-          value={String(metrics?.employees ?? '—')}
+          value={display(metrics?.employees)}
           hint="Active employments"
         />
       </section>
