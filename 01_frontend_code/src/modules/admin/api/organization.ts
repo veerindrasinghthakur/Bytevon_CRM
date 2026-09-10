@@ -89,7 +89,6 @@ export async function getLocation(id: number): Promise<LocationRow | null> {
   }
 }
 
-/** Backend LocationCreate body — optional FKs omitted when null. */
 export type LocationCreateInput = {
   name: string
   timezone: string
@@ -128,7 +127,6 @@ export async function createLocation(input: LocationCreateInput | Record<string,
     return { ...row }
   }
 
-  // Strip null/undefined optional FKs so backend does not validate id=0
   const body: Record<string, unknown> = { ...input }
   for (const key of ['working_week_id', 'holiday_calendar_id', 'payroll_region'] as const) {
     const v = body[key]
@@ -222,7 +220,6 @@ export async function updateShift(id: number, patch: Partial<ShiftRow>): Promise
   return data
 }
 
-/** Archive a shift (soft delete — sets is_archived). */
 export async function archiveShift(id: number): Promise<void> {
   if (env.useMockApi) {
     await delay(300)
@@ -246,17 +243,58 @@ export async function getWorkingWeeks() {
   return asList(data)
 }
 
-/** Permanently remove a working week row. */
-export async function deleteWorkingWeek(id: number): Promise<void> {
+/** Backend: POST /organization/working-weeks */
+export async function createWorkingWeek(input: {
+  name: string
+  working_days_of_week: number[]
+  effective_from: string
+}): Promise<WorkingWeekRow> {
+  if (env.useMockApi) {
+    await delay(400)
+    const list = getDb().working_weeks as WorkingWeekRow[]
+    const row: WorkingWeekRow = {
+      id: nextId(list),
+      name: input.name.trim(),
+      working_days_of_week: [...input.working_days_of_week],
+      effective_from: input.effective_from,
+      effective_to: null,
+      created_at: new Date().toISOString(),
+      created_by: 1,
+    } as WorkingWeekRow
+    // Close previous open version
+    for (const w of list) {
+      if (w.effective_to == null) {
+        ;(w as any).effective_to = input.effective_from
+      }
+    }
+    list.push(row as any)
+    return { ...row }
+  }
+  const { data } = await apiClient.post<WorkingWeekRow>('/organization/working-weeks', {
+    name: input.name.trim(),
+    working_days_of_week: input.working_days_of_week,
+    effective_from: input.effective_from,
+  })
+  return data
+}
+
+/** Backend: POST /organization/working-weeks/{id}/archive */
+export async function archiveWorkingWeek(id: number, effectiveTo?: string): Promise<void> {
   if (env.useMockApi) {
     await delay(300)
-    const list = getDb().working_weeks as WorkingWeekRow[]
-    const idx = list.findIndex((w) => w.id === id)
-    if (idx < 0) throw new Error('Working week not found')
-    list.splice(idx, 1)
+    const row = (getDb().working_weeks as WorkingWeekRow[]).find((w) => w.id === id)
+    if (!row) throw new Error('Working week not found')
+    ;(row as any).effective_to = effectiveTo ?? new Date().toISOString().slice(0, 10)
     return
   }
-  await apiClient.delete(`/organization/working-weeks/${id}`)
+  await apiClient.post(`/organization/working-weeks/${id}/archive`, null, {
+    params: effectiveTo ? { effective_to: effectiveTo } : undefined,
+  })
+}
+
+/** @deprecated Prefer archiveWorkingWeek — hard delete is not supported by backend. */
+export async function deleteWorkingWeek(id: number): Promise<void> {
+  return archiveWorkingWeek(id)
 }
 
 export async function getHolidayCalendars() {
@@ -323,7 +361,6 @@ export async function updateHolidayCalendar(
   return data
 }
 
-/** Archive a holiday calendar (soft delete). */
 export async function archiveHolidayCalendar(id: number): Promise<void> {
   if (!env.useMockApi) {
     await apiClient.post(`/organization/holiday-calendars/${id}/archive`)
@@ -375,7 +412,6 @@ export async function createHoliday(input: {
   return data
 }
 
-/** Permanently remove a holiday row. */
 export async function deleteHoliday(id: number): Promise<void> {
   if (env.useMockApi) {
     await delay(300)
@@ -395,7 +431,6 @@ export async function getPositions(params?: { includeArchived?: boolean }) {
     if (!params?.includeArchived) items = items.filter((p) => !p.is_archived)
     return { items, total: items.length }
   }
-  // Positions live under workforce in real backend; fall back safely
   try {
     const { data } = await apiClient.get<PositionRow[] | { items: PositionRow[]; total: number }>(
       '/workforce/positions',
@@ -455,7 +490,6 @@ export async function updatePosition(
   return data
 }
 
-/** Archive a position (soft delete). */
 export async function archivePosition(id: number): Promise<void> {
   return updatePosition(id, { is_archived: true }).then(() => undefined)
 }
