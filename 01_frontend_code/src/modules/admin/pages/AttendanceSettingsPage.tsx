@@ -20,7 +20,9 @@ import { useShiftFormData } from '../hooks/use-attendance-settings'
 export function AttendanceSettingsPage() {
   const navigate = useNavigate()
   const qc = useQueryClient()
-  const { data, isLoading: policyLoading } = useQuery({
+  const [saveError, setSaveError] = useState<string | null>(null)
+
+  const { data: policy, isLoading: policyLoading } = useQuery({
     queryKey: queryKeys.admin.settings.attendance(),
     queryFn: getAttendanceSettings,
   })
@@ -39,8 +41,7 @@ export function AttendanceSettingsPage() {
   const [selectedShiftId, setSelectedShiftId] = useState<string>('')
 
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
-
-  const { activeShift, getFormValues } = useShiftFormData(shifts, selectedShiftId)
+  const { activeShift, getFormValues } = useShiftFormData(shifts, selectedShiftId, policy)
 
   const form = useForm<AttendanceSettingsInput>({
     resolver: zodResolver(attendanceSettingsSchema),
@@ -49,43 +50,38 @@ export function AttendanceSettingsPage() {
 
   useEffect(() => {
     if (isEditing) return
-    const base = getFormValues()
-    // Prefer live shift times; overlay company policy grace when no shift selected
-    if (!selectedShiftId && data) {
-      form.reset({
-        ...base,
-        graceMinutes: data.graceMinutes ?? base.graceMinutes,
-        earlyOutMinutes: data.earlyOutMinutes ?? base.earlyOutMinutes,
-        otMinMinutes: data.otMinMinutes ?? base.otMinMinutes,
-        allowRemoteCheckIn: data.allowRemoteCheckIn ?? base.allowRemoteCheckIn,
-      })
-      return
-    }
-    form.reset(base)
-  }, [isEditing, selectedShiftId, shifts, data, form, getFormValues])
+    form.reset(getFormValues())
+  }, [isEditing, selectedShiftId, shifts, policy, form, getFormValues])
 
   const save = useMutation({
     mutationFn: async () => {
+      setSaveError(null)
       const values = form.getValues()
-      // Company policy (versioned) — grace etc.
+      // 1) Versioned company policy
       await updateAttendanceSettings(values)
-      // If a specific shift is selected, persist times + grace on that shift
+      // 2) Optional: persist times + grace on selected shift
       if (selectedShiftId && activeShift) {
+        const start =
+          values.shiftStart.length === 5 ? `${values.shiftStart}:00` : values.shiftStart
+        const end = values.shiftEnd.length === 5 ? `${values.shiftEnd}:00` : values.shiftEnd
         await updateShift(Number(selectedShiftId), {
-          start_time: values.shiftStart.length === 5 ? `${values.shiftStart}:00` : values.shiftStart,
-          end_time: values.shiftEnd.length === 5 ? `${values.shiftEnd}:00` : values.shiftEnd,
+          start_time: start,
+          end_time: end,
           grace_late_minutes: values.graceMinutes,
         } as never)
       }
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.admin.settings.attendance() })
-      qc.invalidateQueries({ queryKey: queryKeys.organization.shifts.all })
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.settings.attendance() })
+      void qc.invalidateQueries({ queryKey: queryKeys.organization.shifts.all })
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.metrics.attendance() })
       finishEditing()
+    },
+    onError: (e: Error) => {
+      setSaveError(e?.message || 'Could not save attendance settings')
     },
   })
 
-  // Only block on shifts — policy soft-fails to defaults
   if (shiftsQuery.isLoading || (policyLoading && !shiftsQuery.data)) {
     return (
       <div className="py-12 text-center text-on-surface-variant text-body-sm">
@@ -95,7 +91,7 @@ export function AttendanceSettingsPage() {
   }
 
   const shiftOptions = [
-    { value: '', label: 'All shifts (company default)' },
+    { value: '', label: 'Company policy (all shifts)' },
     ...shifts.map((s) => ({
       value: String(s.id),
       label: `${s.name} (${String(s.start_time).slice(0, 5)}–${String(s.end_time).slice(0, 5)})`,
@@ -108,47 +104,52 @@ export function AttendanceSettingsPage() {
     <div className="space-y-8 animate-fade-in">
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <MetricCard
-          icon="how_to_reg"
-          label="Present Today"
-          value={String(metrics?.presentToday ?? '—')}
-          hint="Checked in"
-        />
-        <MetricCard
           icon="schedule"
-          label="Late Today"
-          value={String(metrics?.lateToday ?? '—')}
-          hint="After grace"
-          valueClassName="text-error"
+          label="Active Shifts"
+          value={String(metrics?.activeShifts ?? shifts.length)}
+          hint="Configured"
         />
         <MetricCard
-          icon="event_busy"
-          label="On Leave"
-          value={String(metrics?.onLeaveToday ?? '—')}
-          hint="Today"
+          icon="timer"
+          label="Grace (policy)"
+          value={`${metrics?.graceMinutes ?? policy?.graceMinutes ?? '—'}m`}
+          hint="Late threshold"
         />
         <MetricCard
-          icon="home_work"
-          label="Remote Check-ins"
-          value={String(metrics?.remoteCheckIns ?? '—')}
-          hint="Today"
+          icon="event_repeat"
+          label="Correction window"
+          value={`${metrics?.correctionWindowDays ?? policy?.correctionWindowDays ?? '—'}d`}
+          hint="Days to correct"
+        />
+        <MetricCard
+          icon="policy"
+          label="Policy"
+          value={policy?.policyId ? `#${policy.policyId}` : 'Default'}
+          hint={policy?.effectiveFrom ? `From ${policy.effectiveFrom}` : 'Not versioned yet'}
         />
       </section>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-3">
-          <div className="min-w-[240px]">
+          <div className="min-w-[260px]">
             <Select
               value={selectedShiftId}
-              onChange={setSelectedShiftId}
+              onChange={(v) => {
+                if (isEditing) {
+                  form.reset(getFormValues())
+                  cancelEditing()
+                }
+                setSelectedShiftId(v)
+              }}
               options={shiftOptions}
               placeholder="Select shift"
-              minWidthClass="min-w-[240px]"
+              minWidthClass="min-w-[260px]"
             />
           </div>
           <p className="text-body-sm text-on-surface-variant">
             {selectedShiftId
-              ? `Settings scoped to ${activeShift?.name ?? 'shift'}`
-              : 'Showing combined / default settings across all shifts'}
+              ? `Editing shift “${activeShift?.name ?? ''}” times + company policy`
+              : 'Editing company attendance policy (shift times are read-only averages)'}
           </p>
         </div>
         <div className="flex gap-2">
@@ -167,13 +168,19 @@ export function AttendanceSettingsPage() {
                 size="sm"
                 onClick={() => {
                   form.reset(getFormValues())
+                  setSaveError(null)
                   cancelEditing()
                 }}
                 disabled={save.isPending}
               >
                 Discard
               </Button>
-              <Button variant="primary" size="sm" isLoading={save.isPending} onClick={() => save.mutate()}>
+              <Button
+                variant="primary"
+                size="sm"
+                isLoading={save.isPending}
+                onClick={() => void form.handleSubmit(() => save.mutate())()}
+              >
                 Save Changes
               </Button>
             </div>
@@ -190,48 +197,61 @@ export function AttendanceSettingsPage() {
         </div>
       </div>
 
+      {saveError && (
+        <div className="rounded-lg border border-error/30 bg-error/5 px-4 py-3 text-body-sm text-error flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          {saveError}
+        </div>
+      )}
+
       {!shifts.length && (
         <EmptyState
           title="No shifts configured"
-          description="Create a shift to apply attendance rules per schedule. Until then, company defaults are shown."
+          description="Create a shift to apply per-schedule hours. Company policy can still be edited below."
           actionLabel="Create Shift"
           onAction={() => safeNavigate(navigate, { to: myAdminRoutes.shiftsNew })}
         />
       )}
 
       <div className="grid grid-cols-12 gap-6">
+        {/* Working hours */}
         <div className="col-span-12 lg:col-span-8 bv-surface card-hover p-6">
           <div className="flex items-center gap-3 mb-6">
             <span className="material-symbols-outlined text-secondary">schedule</span>
-            <h3 className="text-title-lg font-semibold text-on-surface">Working Hours & Days</h3>
+            <h3 className="text-title-lg font-semibold text-on-surface">Working Hours</h3>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <label className="block text-label-md text-on-surface-variant mb-2">Standard Shift Start</label>
-              {isEditing ? (
+              <label className="block text-label-md text-on-surface-variant mb-2">Shift start</label>
+              {isEditing && selectedShiftId ? (
                 <input
                   type="time"
                   {...form.register('shiftStart')}
-                  className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
+                  className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white"
                 />
               ) : (
                 <p className="text-body-md font-medium text-on-surface">{formValues.shiftStart}</p>
               )}
             </div>
             <div>
-              <label className="block text-label-md text-on-surface-variant mb-2">Standard Shift End</label>
-              {isEditing ? (
+              <label className="block text-label-md text-on-surface-variant mb-2">Shift end</label>
+              {isEditing && selectedShiftId ? (
                 <input
                   type="time"
                   {...form.register('shiftEnd')}
-                  className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
+                  className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white"
                 />
               ) : (
                 <p className="text-body-md font-medium text-on-surface">{formValues.shiftEnd}</p>
               )}
             </div>
           </div>
-          {!selectedShiftId && shifts.length > 1 && (
+          {!selectedShiftId && (
+            <p className="mt-4 text-body-sm text-on-surface-variant">
+              Select a shift above to edit start/end times. Company policy does not store shift hours.
+            </p>
+          )}
+          {!selectedShiftId && shifts.length > 0 && (
             <div className="mt-6 border-t border-outline-variant pt-4">
               <p className="text-label-sm text-on-surface-variant uppercase mb-2">All shifts</p>
               <ul className="space-y-1 text-body-sm">
@@ -249,99 +269,236 @@ export function AttendanceSettingsPage() {
           )}
         </div>
 
+        {/* Check-in rules */}
         <div className="col-span-12 lg:col-span-4 bv-surface card-hover p-6">
           <div className="flex items-center gap-3 mb-6">
             <span className="material-symbols-outlined text-secondary">gavel</span>
-            <h3 className="text-title-lg font-semibold text-on-surface">Check-in Rules</h3>
+            <h3 className="text-title-lg font-semibold text-on-surface">Check-in rules</h3>
           </div>
-          <div className="space-y-6">
-            <div>
-              <label className="block text-label-md text-on-surface-variant mb-2">Late Grace Period (Min)</label>
-              {isEditing ? (
-                <input
-                  type="number"
-                  {...form.register('graceMinutes', { valueAsNumber: true })}
-                  className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
-                />
-              ) : (
-                <p className="text-body-md font-medium text-on-surface">{form.watch('graceMinutes')} min</p>
-              )}
-            </div>
-            <div>
-              <label className="block text-label-md text-on-surface-variant mb-2">Early-out Threshold (Min)</label>
-              {isEditing ? (
-                <input
-                  type="number"
-                  {...form.register('earlyOutMinutes', { valueAsNumber: true })}
-                  className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
-                />
-              ) : (
-                <p className="text-body-md font-medium text-on-surface">{form.watch('earlyOutMinutes')} min</p>
-              )}
-            </div>
-            <div className="flex items-center justify-between p-3 bg-surface rounded-lg">
-              <span className="text-label-md text-on-surface">Allow Remote Check-in</span>
-              <button
-                type="button"
-                disabled={!isEditing}
-                onClick={() =>
-                  form.setValue('allowRemoteCheckIn', !form.getValues().allowRemoteCheckIn, {
-                    shouldValidate: true,
-                  })
-                }
-                className="disabled:cursor-default cursor-pointer"
-                aria-label="Toggle remote check-in"
-              >
-                <input
-                  type="checkbox"
-                  role="switch"
-                  checked={form.watch('allowRemoteCheckIn')}
-                  disabled={!isEditing}
-                  className="w-10 h-6 appearance-none rounded-full bg-outline-variant checked:bg-secondary relative after:absolute after:top-1 after:left-1 after:w-4 after:h-4 after:bg-white after:rounded-full after:transition-all checked:after:left-5 focus:outline-none focus:ring-2 focus:ring-secondary/30"
-                  aria-label="Toggle remote check-in"
-                  readOnly
-                />
-              </button>
-            </div>
+          <div className="space-y-5">
+            <NumberField
+              label="Late grace (min)"
+              editing={isEditing}
+              register={form.register('graceMinutes', { valueAsNumber: true })}
+              display={`${formValues.graceMinutes} min`}
+            />
+            <NumberField
+              label="Early-out threshold (min)"
+              editing={isEditing}
+              register={form.register('earlyOutMinutes', { valueAsNumber: true })}
+              display={`${formValues.earlyOutMinutes} min`}
+              hint="UI preference — not on policy API yet"
+            />
+            <ToggleField
+              label="Allow remote check-in"
+              editing={isEditing}
+              checked={formValues.allowRemoteCheckIn}
+              onToggle={() =>
+                form.setValue('allowRemoteCheckIn', !form.getValues().allowRemoteCheckIn, {
+                  shouldValidate: true,
+                })
+              }
+              hint="UI preference — geo rules live on locations"
+            />
           </div>
         </div>
 
-        <div className="col-span-12 lg:col-span-6 bv-surface card-hover p-6">
+        {/* Policy — real backend fields */}
+        <div className="col-span-12 bv-surface card-hover p-6">
           <div className="flex items-center gap-3 mb-6">
-            <span className="material-symbols-outlined text-secondary">calculate</span>
-            <h3 className="text-title-lg font-semibold text-on-surface">Overtime</h3>
+            <span className="material-symbols-outlined text-secondary">policy</span>
+            <div>
+              <h3 className="text-title-lg font-semibold text-on-surface">Attendance policy</h3>
+              <p className="text-body-sm text-on-surface-variant">
+                Saved via POST /attendance/policies (new effective version each save)
+              </p>
+            </div>
           </div>
-          <div>
-            <label className="block text-label-md text-on-surface-variant mb-2">Min OT Duration (Min)</label>
-            {isEditing ? (
-              <input
-                type="number"
-                {...form.register('otMinMinutes', { valueAsNumber: true })}
-                className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
-              />
-            ) : (
-              <p className="text-body-md font-medium text-on-surface">{form.watch('otMinMinutes')} min</p>
-            )}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <NumberField
+              label="Correction window (days)"
+              editing={isEditing}
+              register={form.register('correctionWindowDays', { valueAsNumber: true })}
+              display={`${formValues.correctionWindowDays} days`}
+            />
+            <NumberField
+              label="Max corrections / month"
+              editing={isEditing}
+              register={form.register('maxCorrectionsPerMonth', {
+                setValueAs: (v) => (v === '' || v == null ? null : Number(v)),
+              })}
+              display={
+                formValues.maxCorrectionsPerMonth == null
+                  ? 'Unlimited'
+                  : String(formValues.maxCorrectionsPerMonth)
+              }
+            />
+            <NumberField
+              label="Approval SLA (hours)"
+              editing={isEditing}
+              register={form.register('approvalSlaHours', {
+                setValueAs: (v) => (v === '' || v == null ? null : Number(v)),
+              })}
+              display={
+                formValues.approvalSlaHours == null ? '—' : `${formValues.approvalSlaHours}h`
+              }
+            />
+            <NumberField
+              label="Max clock drift (sec)"
+              editing={isEditing}
+              register={form.register('maxClockDriftSeconds', {
+                setValueAs: (v) => (v === '' || v == null ? null : Number(v)),
+              })}
+              display={
+                formValues.maxClockDriftSeconds == null
+                  ? '—'
+                  : `${formValues.maxClockDriftSeconds}s`
+              }
+            />
+            <NumberField
+              label="Min OT duration (min)"
+              editing={isEditing}
+              register={form.register('otMinMinutes', { valueAsNumber: true })}
+              display={`${formValues.otMinMinutes} min`}
+              hint="UI preference"
+            />
+            <ToggleField
+              label="Reasons mandatory on correction"
+              editing={isEditing}
+              checked={formValues.reasonsMandatory}
+              onToggle={() =>
+                form.setValue('reasonsMandatory', !form.getValues().reasonsMandatory, {
+                  shouldValidate: true,
+                })
+              }
+            />
+            <ToggleField
+              label="Allow multiple punches"
+              editing={isEditing}
+              checked={formValues.allowMultiplePunches}
+              onToggle={() =>
+                form.setValue('allowMultiplePunches', !form.getValues().allowMultiplePunches, {
+                  shouldValidate: true,
+                })
+              }
+            />
+            <ToggleField
+              label="Require checkout before new check-in"
+              editing={isEditing}
+              checked={formValues.requireCheckoutBeforeNewCheckin}
+              onToggle={() =>
+                form.setValue(
+                  'requireCheckoutBeforeNewCheckin',
+                  !form.getValues().requireCheckoutBeforeNewCheckin,
+                  { shouldValidate: true },
+                )
+              }
+            />
+            <ToggleField
+              label="Auto-create attendance day"
+              editing={isEditing}
+              checked={formValues.autoCreateAttendanceDay}
+              onToggle={() =>
+                form.setValue(
+                  'autoCreateAttendanceDay',
+                  !form.getValues().autoCreateAttendanceDay,
+                  { shouldValidate: true },
+                )
+              }
+            />
           </div>
         </div>
 
         <div className="col-span-12 lg:col-span-6 bv-surface card-hover p-6">
           <div className="flex items-center gap-3 mb-6">
             <span className="material-symbols-outlined text-secondary">account_tree</span>
-            <h3 className="text-title-lg font-semibold text-on-surface">Approval Workflow</h3>
+            <h3 className="text-title-lg font-semibold text-on-surface">Approval workflow</h3>
           </div>
           <div className="space-y-4">
             <div className="p-4 bg-surface-container-low rounded-lg border-l-4 border-secondary">
               <span className="text-label-md text-on-surface">Level 1: Direct Supervisor</span>
-              <p className="text-body-sm text-on-surface-variant mt-1">Required for exceptions and manual logs.</p>
+              <p className="text-body-sm text-on-surface-variant mt-1">
+                Required for exceptions and manual corrections (Approvals module).
+              </p>
             </div>
             <div className="p-4 bg-surface-container-low rounded-lg border-l-4 border-outline">
               <span className="text-label-md text-on-surface">Level 2: Department Head</span>
-              <p className="text-body-sm text-on-surface-variant mt-1">Optional for overtime over 4 hours.</p>
+              <p className="text-body-sm text-on-surface-variant mt-1">
+                Optional escalation — configured per correction request.
+              </p>
             </div>
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+function NumberField({
+  label,
+  editing,
+  register,
+  display,
+  hint,
+}: {
+  label: string
+  editing: boolean
+  register: ReturnType<ReturnType<typeof useForm<AttendanceSettingsInput>>['register']>
+  display: string
+  hint?: string
+}) {
+  return (
+    <div>
+      <label className="block text-label-md text-on-surface-variant mb-2">{label}</label>
+      {editing ? (
+        <input
+          type="number"
+          {...register}
+          className="w-full border border-outline-variant rounded-lg px-4 py-3 text-body-md outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white"
+        />
+      ) : (
+        <p className="text-body-md font-medium text-on-surface">{display}</p>
+      )}
+      {hint && <p className="text-[11px] text-on-surface-variant mt-1">{hint}</p>}
+    </div>
+  )
+}
+
+function ToggleField({
+  label,
+  editing,
+  checked,
+  onToggle,
+  hint,
+}: {
+  label: string
+  editing: boolean
+  checked: boolean
+  onToggle: () => void
+  hint?: string
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center justify-between p-3 bg-surface rounded-lg gap-3">
+        <span className="text-label-md text-on-surface">{label}</span>
+        <button
+          type="button"
+          disabled={!editing}
+          onClick={onToggle}
+          className="disabled:cursor-default cursor-pointer"
+          aria-label={label}
+        >
+          <input
+            type="checkbox"
+            role="switch"
+            checked={checked}
+            disabled={!editing}
+            className="w-10 h-6 appearance-none rounded-full bg-outline-variant checked:bg-secondary relative after:absolute after:top-1 after:left-1 after:w-4 after:h-4 after:bg-white after:rounded-full after:transition-all checked:after:left-5"
+            readOnly
+          />
+        </button>
+      </div>
+      {hint && <p className="text-[11px] text-on-surface-variant px-1">{hint}</p>}
     </div>
   )
 }
