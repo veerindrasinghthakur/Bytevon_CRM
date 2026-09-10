@@ -1,13 +1,14 @@
 /**
  * Audit API — list + best-effort record.
- * Backend: GET/POST /audit/logs (not /admin/audit/logs).
+ * Backend: GET/POST /audit/logs
  *
- * Backend AuditLogResponse:
- *   { id, reference_type, reference_id, action, description,
- *     employment_id, ip_address, user_agent, created_at }
+ * Query params (strict):
+ *   action: AuditAction enum (CREATE, UPDATE, LOGIN, …)
+ *   from_ts / to_ts: ISO datetime
+ *   limit, offset, employment_id, reference_type, reference_id
  *
- * UI AuditLog:
- *   { id, action, actor, actorInitials, target, module, timestamp, ip }
+ * UI filters that are not valid enums are applied client-side only
+ * so the API never returns 422.
  */
 
 import { env } from '@/config/env'
@@ -17,6 +18,39 @@ import type { AuditLog, RecordAuditInput, AuditListParams } from '../types'
 import { delay } from '@/shared/mock/db'
 
 const AUDIT_LOGS_API = '/audit/logs'
+
+/** Backend AuditAction StrEnum values. */
+const AUDIT_ACTIONS = new Set([
+  'CREATE',
+  'UPDATE',
+  'ARCHIVE',
+  'RESTORE',
+  'LOGIN',
+  'LOGOUT',
+  'PASSWORD_CHANGE',
+  'APPROVE',
+  'REJECT',
+  'ASSIGN',
+  'UNASSIGN',
+  'STATUS_CHANGE',
+  'EXPORT',
+])
+
+/** Map UI filter labels → backend enum (or null = client-only filter). */
+const UI_ACTION_TO_API: Record<string, string | null> = {
+  'All Actions': null,
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  ARCHIVE: 'ARCHIVE',
+  LOGIN: 'LOGIN',
+  LOGOUT: 'LOGOUT',
+  // legacy UI labels
+  Create: 'CREATE',
+  Update: 'UPDATE',
+  Delete: null, // no DELETE on audit enum — client filter
+  Login: 'LOGIN',
+  Lock: null,
+}
 
 type AuditLogApi = {
   id: number
@@ -52,7 +86,24 @@ function initialsFrom(text: string): string {
   return (parts[0][0] + parts[1][0]).toUpperCase()
 }
 
-/** Map backend row → UI AuditLog card/table shape. */
+/** Normalize HH:mm or HH:mm:ss → HH:mm:ss */
+function normalizeTime(t: string, fallback: string): string {
+  const raw = (t || '').trim()
+  if (!raw) return fallback
+  const parts = raw.split(':')
+  if (parts.length === 2) return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}:00`
+  if (parts.length >= 3)
+    return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}:${parts[2].padStart(2, '0').slice(0, 2)}`
+  return fallback
+}
+
+/** Build ISO local datetime only when date is present. */
+function toIsoLocal(date: string | undefined, time: string | undefined, endOfDay: boolean): string | undefined {
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return undefined
+  const t = normalizeTime(time ?? '', endOfDay ? '23:59:59' : '00:00:00')
+  return `${date}T${t}`
+}
+
 export function mapApiAuditLog(row: AuditLogApi): AuditLog {
   const action = String(row.action ?? 'UNKNOWN')
   const refType = String(row.reference_type ?? '')
@@ -73,81 +124,82 @@ export function mapApiAuditLog(row: AuditLogApi): AuditLog {
   }
 }
 
+function applyClientFilters(items: AuditLog[], params?: AuditListParams): AuditLog[] {
+  let out = items
+  if (params?.search) {
+    const q = params.search.toLowerCase()
+    out = out.filter(
+      (l) =>
+        l.action.toLowerCase().includes(q) ||
+        l.actor.toLowerCase().includes(q) ||
+        l.target.toLowerCase().includes(q) ||
+        l.module.toLowerCase().includes(q),
+    )
+  }
+  if (params?.action && params.action !== 'All Actions') {
+    const mapped = UI_ACTION_TO_API[params.action]
+    const needle = (mapped ?? params.action).toLowerCase()
+    out = out.filter((l) => l.action.toLowerCase().includes(needle))
+  }
+  if (params?.module && params.module !== 'All Modules') {
+    const m = params.module.toLowerCase()
+    // UI modules: Roles → ROLE, Auth → LOGIN/SESSION, etc.
+    const aliases: Record<string, string[]> = {
+      roles: ['role', 'permission'],
+      auth: ['login', 'session', 'password'],
+      settings: ['organization', 'system'],
+      users: ['employment', 'login'],
+    }
+    const keys = aliases[m] ?? [m]
+    out = out.filter((l) => keys.some((k) => l.module.toLowerCase().includes(k)))
+  }
+  // Time-of-day only (no date) → client filter on formatted timestamp is weak;
+  // when date was sent, server already narrowed the window.
+  return out
+}
+
 export async function listAuditLogs(params?: AuditListParams): Promise<AuditLog[]> {
   if (env.useMockApi) {
     await delay()
     const limit = params?.limit ?? 500
-    let items = auditLogs.map((r) => ({ ...r }))
-    if (params?.search) {
-      const q = params.search.toLowerCase()
-      items = items.filter(
-        (l) =>
-          l.action.toLowerCase().includes(q) ||
-          l.actor.toLowerCase().includes(q) ||
-          l.target.toLowerCase().includes(q) ||
-          l.module.toLowerCase().includes(q),
-      )
-    }
-    if (params?.action && params.action !== 'All Actions') {
-      items = items.filter((l) =>
-        l.action.toLowerCase().includes(params.action!.toLowerCase()),
-      )
-    }
-    if (params?.module && params.module !== 'All Modules') {
-      items = items.filter((l) => l.module === params.module)
-    }
-    return items.slice(0, limit)
+    return applyClientFilters(
+      auditLogs.map((r) => ({ ...r })),
+      params,
+    ).slice(0, limit)
   }
 
   try {
-    const query: Record<string, string | number | undefined> = {
+    const query: Record<string, string | number> = {
       limit: params?.limit ?? 500,
       offset: 0,
     }
-    // Backend filters: action (enum), employment_id, from_ts, to_ts
+
+    // Only send action when it is a real AuditAction enum value
     if (params?.action && params.action !== 'All Actions') {
-      query.action = params.action
+      const mapped = UI_ACTION_TO_API[params.action]
+      const candidate = (mapped ?? params.action).toUpperCase()
+      if (mapped && AUDIT_ACTIONS.has(candidate)) {
+        query.action = candidate
+      }
+      // else: filter client-side only (avoids 422)
     }
-    if (params?.dateFrom) {
-      query.from_ts = params.timeFrom
-        ? `${params.dateFrom}T${params.timeFrom}:00`
-        : `${params.dateFrom}T00:00:00`
-    }
-    if (params?.dateTo) {
-      query.to_ts = params.timeTo
-        ? `${params.dateTo}T${params.timeTo}:59`
-        : `${params.dateTo}T23:59:59`
-    }
+
+    const fromTs = toIsoLocal(params?.dateFrom, params?.timeFrom, false)
+    const toTs = toIsoLocal(params?.dateTo || params?.dateFrom, params?.timeTo, true)
+    if (fromTs) query.from_ts = fromTs
+    if (toTs) query.to_ts = toTs
 
     const { data } = await apiClient.get<AuditLogApi[] | { items?: AuditLogApi[] }>(
       AUDIT_LOGS_API,
       { params: query },
     )
-    let items = (Array.isArray(data) ? data : data.items ?? []).map(mapApiAuditLog)
-
-    // Client-side search / module filter (backend has no free-text search)
-    if (params?.search) {
-      const q = params.search.toLowerCase()
-      items = items.filter(
-        (l) =>
-          l.action.toLowerCase().includes(q) ||
-          l.actor.toLowerCase().includes(q) ||
-          l.target.toLowerCase().includes(q) ||
-          l.module.toLowerCase().includes(q),
-      )
-    }
-    if (params?.module && params.module !== 'All Modules') {
-      items = items.filter((l) =>
-        l.module.toLowerCase().includes(params.module!.toLowerCase()),
-      )
-    }
-    return items
+    const items = (Array.isArray(data) ? data : data.items ?? []).map(mapApiAuditLog)
+    return applyClientFilters(items, params)
   } catch {
     return []
   }
 }
 
-/** Append an audit row after a successful admin action (best-effort). */
 export async function recordAuditEvent(input: RecordAuditInput): Promise<void> {
   try {
     if (env.useMockApi) {
@@ -171,15 +223,17 @@ export async function recordAuditEvent(input: RecordAuditInput): Promise<void> {
       auditLogs.unshift(entry)
       return
     }
-    // Backend expects AuditLogCreate — best-effort map
+    const actionRaw = String(input.action || 'UPDATE').toUpperCase().replace(/\s+/g, '_')
+    const action = AUDIT_ACTIONS.has(actionRaw) ? actionRaw : 'UPDATE'
     await apiClient.post(AUDIT_LOGS_API, {
-      reference_type: input.module || 'SYSTEM',
+      reference_type: 'SYSTEM',
       reference_id: 0,
-      action: input.action || 'UPDATE',
-      description: `${input.action}: ${input.target}`,
+      action,
+      description: `${input.action}: ${input.target}`.
+        slice(0, 500),
       ip_address: input.ip ?? null,
     })
   } catch {
-    // best-effort — never block the primary UX
+    // best-effort
   }
 }
