@@ -3,7 +3,7 @@
  * Pages must not re-implement these aggregations inline.
  */
 
-import {DepartmentMetricInput,EmploymentMetricInput} from '@/modules/workforce/types'
+import type { DepartmentMetricInput, EmploymentMetricInput } from '@/modules/workforce/types'
 
 export function computeDepartmentListMetrics(items: DepartmentMetricInput[]) {
   const total = items.length
@@ -13,15 +13,14 @@ export function computeDepartmentListMetrics(items: DepartmentMetricInput[]) {
   return { total, active, inactive, staffing }
 }
 
-
-
 const ACTIVE_STATES = new Set(['CONFIRMED', 'PROBATION', 'ONBOARDING'])
 const ARCHIVED_STATES = new Set(['RESIGNED', 'TERMINATED', 'ALUMNI'])
 
 export function computeEmploymentListMetrics(items: EmploymentMetricInput[]) {
+  const safe = (items ?? []).filter((e): e is EmploymentMetricInput => Boolean(e))
   return {
-    total: items.length,
-    active: items.filter((e) => ACTIVE_STATES.has(e.current_state)).length,
-    archived: items.filter((e) => ARCHIVED_STATES.has(e.current_state)).length,
+    total: safe.length,
+    active: safe.filter((e) => ACTIVE_STATES.has(e.current_state ?? '')).length,
+    archived: safe.filter((e) => ARCHIVED_STATES.has(e.current_state ?? '')).length,
   }
 }
