@@ -9,6 +9,7 @@ import { cn } from '@/shared/lib/cn'
 import { getOrganizationProfile, updateOrganizationProfile } from '../../api/settings'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { organizationProfileSchema, type OrganizationProfileInput } from '../../schemas/settings'
+import { notUndefined } from '@tanstack/react-virtual'
 
 /** Extended form values: schema fields + backend settings that persist. */
 type ProfileFormValues = OrganizationProfileInput & {
@@ -38,6 +39,7 @@ export function OrganizationProfileSection() {
       description: '',
       defaultTimezone: '',
       defaultCurrency: '',
+      headOfficeLocationId:undefined,
     },
   })
 
@@ -54,6 +56,8 @@ export function OrganizationProfileSection() {
         description: data.description ?? '',
         defaultTimezone: data.defaultTimezone ?? '',
         defaultCurrency: data.defaultCurrency ?? '',
+        headOfficeLocationId:data.headOfficeLocationId?? undefined,
+
       })
     }
   }, [data, isEditing, form])
@@ -188,6 +192,7 @@ export function OrganizationProfileSection() {
             <Field label="Website" editing={isEditing} register={form.register('website')} value={formValues.website ?? ''} />
             <Field label="Tax ID" editing={isEditing} register={form.register('tax')} value={formValues.tax ?? ''} />
             <Field label="Registration No." editing={isEditing} register={form.register('reg')} value={formValues.reg ?? ''} />
+            <Field label="HeadOffice" editing={isEditing} register={form.register('headOfficeLocationId')} value={formValues.headOfficeLocationId ?? ''} />
             <div className="sm:col-span-2">
               <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Description</p>
               {isEditing ? (

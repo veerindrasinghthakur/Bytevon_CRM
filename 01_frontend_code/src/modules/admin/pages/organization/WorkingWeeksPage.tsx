@@ -50,7 +50,10 @@ export function WorkingWeeksPage() {
   }, [data?.items])
 
   const [editingId, setEditingId] = useState<number | null>(null)
+
   const [draftDays, setDraftDays] = useState<number[]>([])
+
+  const isCreateMode = editingId === -1
 
   const deleteMut = useMutation({
     mutationFn: (id: number) => deleteWorkingWeek(id),
@@ -64,9 +67,15 @@ export function WorkingWeeksPage() {
     return <ErrorState description={(error as Error).message} onRetry={() => void refetch()} />
   }
 
-  const startEdit = (w: (typeof items)[0]) => {
-    setEditingId(w.id)
-    setDraftDays([...w.working_days_of_week])
+  const startEdit = (w: (typeof items)[0] | { id: number }) => {
+    const id = 'id' in w ? w.id : -1
+    setEditingId(id)
+    if (id === -1) {
+      // Create mode: start with default Mon-Fri
+      setDraftDays([1, 2, 3, 4, 5])
+    } else {
+      setDraftDays([...w.working_days_of_week])
+    }
   }
 
   const cancelEdit = () => {
@@ -97,11 +106,19 @@ export function WorkingWeeksPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       <BackButton to="/admin/settings" label="Back to settings" />
-      <div>
-        <h2 className="text-title-lg font-semibold text-on-background">Working weeks</h2>
-        <p className="text-body-sm text-on-surface-variant mt-0.5">
-          Versioned weekly schedules (effective dating — previous versions are never overwritten)
-        </p>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div>
+          <h2 className="text-title-lg font-semibold text-on-background">Working weeks</h2>
+          <p className="text-body-sm text-on-surface-variant mt-0.5">
+            Versioned weekly schedules (effective dating — previous versions are never overwritten)
+          </p>
+        </div>
+        <Button
+          variant="primary"
+          size="sm"
+          leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>} onClick={() => setEditingId(-1)}>
+            Create Working Week
+        </Button>
       </div>
 
       {items.length === 0 && (

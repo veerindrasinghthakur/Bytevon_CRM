@@ -9,6 +9,8 @@ export const organizationProfileSchema = z.object({
   tax: z.string().max(40).optional().or(z.literal('')),
   reg: z.string().max(40).optional().or(z.literal('')),
   description: z.string().max(2000).optional().or(z.literal('')),
+  headOfficeLocationId:z.number(),
+
 })
 
 export type OrganizationProfileInput = z.infer<typeof organizationProfileSchema>
