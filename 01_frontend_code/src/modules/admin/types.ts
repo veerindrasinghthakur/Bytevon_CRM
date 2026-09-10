@@ -44,50 +44,29 @@ export interface AdminRole {
   updated: string
 }
 
-/**
- * Audit row — mirrors backend AuditLogResponse + UI display helpers.
- * Backend: id, reference_type, reference_id, action, description,
- *          employment_id, ip_address, user_agent, created_at
- */
 export interface AuditLog {
   id: string
-  /** AuditAction enum value e.g. CREATE, LOGIN */
   action: string
-  /** description from backend */
   description: string
-  /** reference_type e.g. ROLE, LOGIN, EMPLOYMENT */
   referenceType: string
   referenceId: number | null
   employmentId: number | null
   ipAddress: string | null
   userAgent: string | null
-  /** ISO created_at */
   createdAt: string
-  /** Display-formatted created_at */
   timestamp: string
-  /** Derived actor label */
   actor: string
   actorInitials: string
-  /** Alias: description or "TYPE #id" */
   target: string
-  /** Alias of referenceType for filters/columns */
   module: string
-  /** Alias of ipAddress for columns */
   ip: string
 }
 
-/**
- * Security event derived from audit logs (auth-related).
- * Maps: action→eventType, actor→identity, ip/module→source
- */
 export interface SecurityEvent {
   id: string
-  /** Backend AuditAction */
   eventType: string
-  /** Employment actor or System */
   identity: string
   employmentId: number | null
-  /** IP or reference type */
   source: string
   ipAddress: string | null
   referenceType: string
@@ -150,6 +129,7 @@ export interface OrganizationProfile {
   logoReference?: string | null
 }
 
+/** UI + mapped AttendancePolicy (GET/POST /attendance/policies). */
 export interface AttendanceSettings {
   shiftStart: string
   shiftEnd: string
@@ -157,6 +137,17 @@ export interface AttendanceSettings {
   earlyOutMinutes: number
   otMinMinutes: number
   allowRemoteCheckIn: boolean
+  correctionWindowDays: number
+  maxCorrectionsPerMonth: number | null
+  reasonsMandatory: boolean
+  approvalSlaHours: number | null
+  allowMultiplePunches: boolean
+  requireCheckoutBeforeNewCheckin: boolean
+  autoCreateAttendanceDay: boolean
+  maxClockDriftSeconds: number | null
+  policyName?: string
+  policyId?: number | null
+  effectiveFrom?: string | null
 }
 
 export interface LeaveAccrualPolicy {
@@ -263,6 +254,10 @@ export interface AttendanceAdminMetrics {
   lateToday: number
   onLeaveToday: number
   remoteCheckIns: number
+  /** Config KPIs when live day stats are unavailable */
+  activeShifts?: number
+  graceMinutes?: number
+  correctionWindowDays?: number
 }
 
 export interface AuditListParams {
