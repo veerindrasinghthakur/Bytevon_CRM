@@ -64,11 +64,19 @@ class RoleCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
     description: Optional[str] = None
     is_system_role: bool = False
+    # Optional grants applied in the same create transaction.
+    # Each id is a seeded permissions.id; default scope is ORGANIZATION.
+    permission_ids: List[int] = Field(default_factory=list)
+    # Optional override scope for all grants on create (defaults to ORGANIZATION).
+    scope_id: Optional[int] = None
 
 
 class RoleUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=150)
     description: Optional[str] = None
+    # When provided, replaces the full set of role_permissions (same default scope).
+    permission_ids: Optional[List[int]] = None
+    scope_id: Optional[int] = None
 
 
 class RoleResponse(BaseModel):
@@ -82,8 +90,25 @@ class RoleResponse(BaseModel):
     changed_by: Optional[int]
 
 
+class RolePermissionDetail(BaseModel):
+    """Flattened grant for UI matrix (resource.action string + ids)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    permission_id: int
+    scope_id: int
+    resource_name: Optional[str] = None
+    action: Optional[str] = None
+    scope_name: Optional[str] = None
+    key: Optional[str] = None  # e.g. "users.view"
+
+
 class RoleDetailResponse(RoleResponse):
-    permissions: List["RolePermissionResponse"] = Field(default_factory=list)
+    permissions: List[RolePermissionResponse] = Field(default_factory=list)
+    permission_details: List[RolePermissionDetail] = Field(default_factory=list)
+    # Convenience string keys for frontend matrix (resource.action lowercase)
+    permission_keys: List[str] = Field(default_factory=list)
     sensitive_field_permissions: List["RoleSensitiveFieldPermissionResponse"] = Field(
         default_factory=list
     )
