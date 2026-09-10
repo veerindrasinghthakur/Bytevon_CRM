@@ -12,7 +12,6 @@ import type {
 import { getDb } from '@/shared/mock/db'
 import { delay} from '@/shared/mock/db'
 
-
 export async function getAdminHubMetrics(): Promise<AdminHubMetrics> {
   if (env.useMockApi) {
     await delay()

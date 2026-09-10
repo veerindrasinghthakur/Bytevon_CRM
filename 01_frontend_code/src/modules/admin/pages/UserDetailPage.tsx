@@ -21,6 +21,7 @@ export function UserDetailPage() {
   const navigate = useNavigate()
   const d = useUserDetail(userId)
 
+
   if (d.isLoading) return <PageLoadingSkeleton />
   if (d.isError || !d.display) {
     return <ErrorState title="Could not load user" onRetry={d.refetch} />
@@ -118,7 +119,7 @@ export function UserDetailPage() {
             Reset Password
           </Button>
           {isLocked ? (
-            <Can action={Action.UNLOCK} resource={ResourceName.USER}>
+            // <Can action={Action.UNLOCK} resource={ResourceName.USER}>
               <Button
                 variant="outline"
                 size="sm"
@@ -127,9 +128,9 @@ export function UserDetailPage() {
               >
                 Unlock Account
               </Button>
-            </Can>
+            // </Can>
           ) : (
-            <Can action={Action.UPDATE} resource={ResourceName.USER}>
+            // <Can action={Action.UPDATE} resource={ResourceName.USER}>
               <Button
                 variant="outline"
                 size="sm"
@@ -138,10 +139,10 @@ export function UserDetailPage() {
               >
                 Lock Account
               </Button>
-            </Can>
+            // </Can>
           )}
 
-          <Can action={Action.UPDATE} resource={ResourceName.USER}>
+          {/* <Can action={Action.UPDATE} resource={ResourceName.USER}> */}
             {isInactive ? (
               <Button
                 variant="outline"
@@ -162,9 +163,9 @@ export function UserDetailPage() {
                 Deactivate
               </Button>
             )}
-          </Can>
+          {/* </Can> */}
 
-          <Can action={Action.DELETE} resource={ResourceName.USER}>
+          {/* <Can action={Action.DELETE} resource={ResourceName.USER}> */}
             <ArchiveButton
               entityLabel={name}
               mode="archive"
@@ -172,7 +173,7 @@ export function UserDetailPage() {
               isLoading={d.hardArchiveMutation.isPending}
               onConfirm={() => d.hardArchiveMutation.mutateAsync()}
             />
-          </Can>
+          {/* </Can> */}
 
           {d.isEditing ? (
             <>

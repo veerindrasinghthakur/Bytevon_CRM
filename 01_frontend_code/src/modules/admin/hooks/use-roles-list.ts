@@ -11,6 +11,7 @@ import {
   roleFilterStatusOptions as STATUS_OPTIONS,
 } from '../schemas/enums'
 
+
 const FILTER_DEFAULTS = {
   status: 'All' as RoleStatusFilter,
   category: 'All' as RoleCategoryFilter,

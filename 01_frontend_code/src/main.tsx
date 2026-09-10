@@ -8,9 +8,9 @@ import '@/styles/tokens-dark.css'
 import '@/styles/globals.css'
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+  // <StrictMode>
     <AppProviders>
       <RouterProvider router={router} />
     </AppProviders>
-  </StrictMode>,
+  // </StrictMode>,
 )

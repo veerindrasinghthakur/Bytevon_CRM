@@ -13,6 +13,7 @@ const FILTER_DEFAULTS = {
   dateTo: '',
 }
 
+
 export function useUsersList() {
   const controls = useListControls({
     filterDefaults: FILTER_DEFAULTS,

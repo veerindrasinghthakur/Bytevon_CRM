@@ -102,6 +102,7 @@ export function UsersListPage() {
     onRowPressCancel,
   } = useUsersList()
 
+  
   const goDetail = (u: AdminUserListItem) =>
     safeNavigate(navigate, { to: myAdminRoutes.usersDetail(String(u.id)), params: { userId: String(u.id) } })
 

@@ -22,6 +22,7 @@ import {
 import { userEditFormSchema, type UserEditFormValues } from '../schemas/user-form'
 import type { AdminUserStatus } from '../types'
 
+
 /** Admin user detail may pass a userId; profile API currently uploads for the session user. */
 async function uploadUserAvatar(_userId: string, file: File) {
   return uploadAvatar(file)

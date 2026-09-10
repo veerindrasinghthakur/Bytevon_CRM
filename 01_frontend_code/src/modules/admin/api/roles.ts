@@ -7,7 +7,6 @@ import type { AdminRole, PermissionCatalog, RolePermissionAction } from '../type
 
 import { delay} from '@/shared/mock/db'
 
-
 const TOTAL_MODULES = 18
 
 function normalizeRole(role: Record<string, any>): AdminRole {
