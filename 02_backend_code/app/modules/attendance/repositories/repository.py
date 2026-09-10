@@ -148,28 +148,29 @@ class AttendanceRepository(BaseRepository):
         return int(result.scalar() or 0)
 
     # ------------------------------------------------------------------
-    # Policies
+    # Policies (versioned; effective_to is exclusive end)
     # ------------------------------------------------------------------
 
     async def get_current_policy(
         self, *, as_of: Optional[date] = None
     ) -> Optional[AttendancePolicy]:
         as_of = as_of or date.today()
+        # effective_to is exclusive: open row (NULL) or effective_to > as_of
         stmt = (
             select(AttendancePolicy)
             .where(
                 AttendancePolicy.effective_from <= as_of,
                 (AttendancePolicy.effective_to.is_(None))
-                | (AttendancePolicy.effective_to >= as_of),
+                | (AttendancePolicy.effective_to > as_of),
             )
-            .order_by(AttendancePolicy.effective_from.desc())
+            .order_by(AttendancePolicy.effective_from.desc(), AttendancePolicy.id.desc())
             .limit(1)
         )
         return await self.scalar_one_or_none(stmt)
 
     async def list_policies(self) -> Sequence[AttendancePolicy]:
         stmt = select(AttendancePolicy).order_by(
-            AttendancePolicy.effective_from.desc()
+            AttendancePolicy.effective_from.desc(), AttendancePolicy.id.desc()
         )
         return await self.scalars(stmt)
 
