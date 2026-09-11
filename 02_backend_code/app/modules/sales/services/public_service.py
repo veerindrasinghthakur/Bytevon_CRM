@@ -1,14 +1,5 @@
 """
 SalesPublicService — only public entry point for Sales.
-
-Locked Lead WON (one TX):
-1. Resolve / create Client
-2. Set lead status = WON
-3. Optionally call ProjectPublicService.create_from_lead (if Developer module present)
-4. Commit → notify + audit
-
-Note: TimestampMixin.updated_at uses server onupdate=func.now(), so after commit
-the attribute is expired. Always refresh before Pydantic model_validate in async.
 """
 
 from __future__ import annotations
@@ -56,19 +47,11 @@ class SalesPublicService(BasePublicService):
         self._repo = SalesRepository(session)
 
     async def _validate_after_commit(self, instance: object, schema: type[T]) -> T:
-        """Refresh expired server columns (e.g. updated_at) then map to schema."""
         await self._refresh(instance)
         return schema.model_validate(instance)
 
-    # ==================================================================
-    # Clients
-    # ==================================================================
-
     async def create_client(
-        self,
-        data: ClientCreate,
-        *,
-        actor_employment_id: Optional[int] = None,
+        self, data: ClientCreate, *, actor_employment_id: Optional[int] = None
     ) -> ClientResponse:
         client = Client(
             **data.model_dump(),
@@ -94,11 +77,7 @@ class SalesPublicService(BasePublicService):
         return [ClientResponse.model_validate(r) for r in rows]
 
     async def update_client(
-        self,
-        client_id: int,
-        data: ClientUpdate,
-        *,
-        actor_employment_id: Optional[int] = None,
+        self, client_id: int, data: ClientUpdate, *, actor_employment_id: Optional[int] = None
     ) -> ClientResponse:
         client = await self._repo.get_client_by_id(client_id)
         if client is None:
@@ -111,10 +90,7 @@ class SalesPublicService(BasePublicService):
         return await self._validate_after_commit(client, ClientResponse)
 
     async def archive_client(
-        self,
-        client_id: int,
-        *,
-        actor_employment_id: Optional[int] = None,
+        self, client_id: int, *, actor_employment_id: Optional[int] = None
     ) -> MessageResponse:
         client = await self._repo.get_client_by_id(client_id)
         if client is None:
@@ -130,15 +106,8 @@ class SalesPublicService(BasePublicService):
         await self._audit("client.archived", client.id, actor_employment_id)
         return MessageResponse(message="Client archived")
 
-    # ==================================================================
-    # Contacts
-    # ==================================================================
-
     async def add_contact(
-        self,
-        data: ClientContactCreate,
-        *,
-        actor_employment_id: Optional[int] = None,
+        self, data: ClientContactCreate, *, actor_employment_id: Optional[int] = None
     ) -> ClientContactResponse:
         client = await self._repo.get_client_by_id(data.client_id)
         if client is None:
@@ -159,15 +128,8 @@ class SalesPublicService(BasePublicService):
         rows = await self._repo.list_contacts_for_client(client_id)
         return [ClientContactResponse.model_validate(r) for r in rows]
 
-    # ==================================================================
-    # Platforms
-    # ==================================================================
-
     async def create_platform(
-        self,
-        data: PlatformCreate,
-        *,
-        actor_employment_id: Optional[int] = None,
+        self, data: PlatformCreate, *, actor_employment_id: Optional[int] = None
     ) -> PlatformResponse:
         platform = Platform(
             **data.model_dump(),
@@ -178,18 +140,12 @@ class SalesPublicService(BasePublicService):
         await self._audit("platform.created", platform.id, actor_employment_id)
         return await self._validate_after_commit(platform, PlatformResponse)
 
-    async def list_platforms(
-        self, *, include_archived: bool = False
-    ) -> list[PlatformResponse]:
+    async def list_platforms(self, *, include_archived: bool = False) -> list[PlatformResponse]:
         rows = await self._repo.list_platforms(include_archived=include_archived)
         return [PlatformResponse.model_validate(r) for r in rows]
 
     async def update_platform(
-        self,
-        platform_id: int,
-        data: PlatformUpdate,
-        *,
-        actor_employment_id: Optional[int] = None,
+        self, platform_id: int, data: PlatformUpdate, *, actor_employment_id: Optional[int] = None
     ) -> PlatformResponse:
         platform = await self._repo.get_platform_by_id(platform_id)
         if platform is None:
@@ -201,10 +157,7 @@ class SalesPublicService(BasePublicService):
         return await self._validate_after_commit(platform, PlatformResponse)
 
     async def archive_platform(
-        self,
-        platform_id: int,
-        *,
-        actor_employment_id: Optional[int] = None,
+        self, platform_id: int, *, actor_employment_id: Optional[int] = None
     ) -> MessageResponse:
         platform = await self._repo.get_platform_by_id(platform_id)
         if platform is None:
@@ -219,15 +172,8 @@ class SalesPublicService(BasePublicService):
         await self._commit()
         return MessageResponse(message="Platform archived")
 
-    # ==================================================================
-    # Leads
-    # ==================================================================
-
     async def create_lead(
-        self,
-        data: LeadCreate,
-        *,
-        actor_employment_id: Optional[int] = None,
+        self, data: LeadCreate, *, actor_employment_id: Optional[int] = None
     ) -> LeadResponse:
         if data.platform_id is not None:
             p = await self._repo.get_platform_by_id(data.platform_id)
@@ -286,11 +232,7 @@ class SalesPublicService(BasePublicService):
         return [LeadResponse.model_validate(r) for r in rows]
 
     async def update_lead(
-        self,
-        lead_id: int,
-        data: LeadUpdate,
-        *,
-        actor_employment_id: Optional[int] = None,
+        self, lead_id: int, data: LeadUpdate, *, actor_employment_id: Optional[int] = None
     ) -> LeadResponse:
         lead = await self._repo.get_lead_by_id(lead_id)
         if lead is None:
@@ -304,6 +246,15 @@ class SalesPublicService(BasePublicService):
         payload.pop("client_type", None)
         payload.pop("client_name", None)
 
+        new_status = payload.pop("status", None)
+        if new_status is not None:
+            if new_status == LeadStatus.WON:
+                raise DomainError("Mark WON via POST /sales/leads/{id}/status")
+            if new_status in _TERMINAL and new_status != lead.status:
+                # LOST / CLOSED allowed via PATCH for archive-style UI
+                pass
+            lead.status = new_status
+
         for field, value in payload.items():
             setattr(lead, field, value)
         lead.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
@@ -312,11 +263,7 @@ class SalesPublicService(BasePublicService):
         return await self._validate_after_commit(lead, LeadResponse)
 
     async def change_lead_status(
-        self,
-        lead_id: int,
-        data: LeadStatusChange,
-        *,
-        actor_employment_id: Optional[int] = None,
+        self, lead_id: int, data: LeadStatusChange, *, actor_employment_id: Optional[int] = None
     ) -> LeadResponse | LeadWonResponse:
         lead = await self._repo.get_lead_by_id(lead_id)
         if lead is None:
@@ -328,9 +275,7 @@ class SalesPublicService(BasePublicService):
             )
 
         if data.status == LeadStatus.WON:
-            return await self._win_lead(
-                lead, data, actor_employment_id=actor_employment_id
-            )
+            return await self._win_lead(lead, data, actor_employment_id=actor_employment_id)
 
         lead.status = data.status
         lead.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
@@ -339,11 +284,7 @@ class SalesPublicService(BasePublicService):
         return await self._validate_after_commit(lead, LeadResponse)
 
     async def _win_lead(
-        self,
-        lead: Lead,
-        data: LeadStatusChange,
-        *,
-        actor_employment_id: Optional[int],
+        self, lead: Lead, data: LeadStatusChange, *, actor_employment_id: Optional[int]
     ) -> LeadWonResponse:
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
 
@@ -353,11 +294,7 @@ class SalesPublicService(BasePublicService):
             if client is None:
                 raise NotFoundError("Client not found")
         else:
-            client_name = (
-                data.client_name
-                or lead.contact_name
-                or lead.lead_title
-            )
+            client_name = data.client_name or lead.contact_name or lead.lead_title
             client_type = data.client_type or ClientType.COMPANY
             client = Client(
                 client_type=client_type,
@@ -393,25 +330,18 @@ class SalesPublicService(BasePublicService):
         await self._audit("lead.won", lead.id, actor_employment_id)
         await self._notify_won(lead, client.id, project_id)
 
-        lead_resp = await self._validate_after_commit(lead, LeadResponse)
-        client_resp = await self._validate_after_commit(client, ClientResponse)
         return LeadWonResponse(
-            lead=lead_resp,
-            client=client_resp,
+            lead=await self._validate_after_commit(lead, LeadResponse),
+            client=await self._validate_after_commit(client, ClientResponse),
             project_id=project_id,
             project_created=project_created,
         )
 
     async def _try_create_project_from_lead(
-        self,
-        lead: Lead,
-        client_id: int,
-        actor: int,
+        self, lead: Lead, client_id: int, actor: int
     ) -> Optional[int]:
         try:
-            from app.modules.project.services.public_service import (
-                ProjectPublicService,
-            )
+            from app.modules.project.services.public_service import ProjectPublicService
 
             project_svc = ProjectPublicService(self._session)
             project = await project_svc.create_from_lead(
@@ -423,28 +353,16 @@ class SalesPublicService(BasePublicService):
             )
             return project.id if project else None
         except ImportError:
-            logger.warning(
-                "Developer module not available; skipping auto project for lead %s",
-                lead.id,
-            )
+            logger.warning("Developer module not available; skip project for lead %s", lead.id)
             return None
         except Exception:
-            logger.exception(
-                "create_from_lead failed for lead %s (project not created)", lead.id
-            )
+            logger.exception("create_from_lead failed for lead %s", lead.id)
             return None
 
-    async def _notify_won(
-        self,
-        lead: Lead,
-        client_id: int,
-        project_id: Optional[int],
-    ) -> None:
+    async def _notify_won(self, lead: Lead, client_id: int, project_id: Optional[int]) -> None:
         try:
             from app.modules.notifications.schemas.schemas import NotifyRequest
-            from app.modules.notifications.services.public_service import (
-                NotificationPublicService,
-            )
+            from app.modules.notifications.services.public_service import NotificationPublicService
             from app.core.db.enums import NotificationRecipientType
 
             if lead.assigned_employment_id:
@@ -455,8 +373,7 @@ class SalesPublicService(BasePublicService):
                         recipient_id=lead.assigned_employment_id,
                         title=f"Lead won: {lead.lead_title}",
                         body=(
-                            f"Lead '{lead.lead_title}' marked WON. "
-                            f"Client #{client_id}"
+                            f"Lead '{lead.lead_title}' marked WON. Client #{client_id}"
                             + (f", Project #{project_id}" if project_id else "")
                         ),
                         payload={
