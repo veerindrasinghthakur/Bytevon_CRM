@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { myAdminRoutes } from '../routes'
 import {
@@ -105,9 +106,8 @@ export function useUserCreate() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.admin.users.withoutLogin() })
       safeNavigate(navigate, { to: myAdminRoutes.usersList })
     },
-    onError: (e: Error) => {
-      const msg = e?.message || 'Could not create user login'
-      // Map known backend conflicts to specific fields
+    onError: (e: unknown) => {
+      const msg = getApiErrorMessage(e, 'Could not create user login')
       if (/email is already in use/i.test(msg)) {
         setError('email', { type: 'server', message: msg })
       } else if (/already has a login/i.test(msg)) {
