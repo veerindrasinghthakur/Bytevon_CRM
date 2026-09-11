@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { toast } from '@/shared/hooks/use-toast'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { myAdminRoutes } from '../routes'
 import type { RoleFormMode, RolePermissionAction, RolePermissionMatrix } from '../types'
@@ -16,6 +17,7 @@ import {
   updateAdminRole,
 } from '../api/roles'
 import { roleFormSchema, type RoleFormInput } from '../schemas/role-form'
+import { useAdminMutation } from './use-admin-mutation'
 
 export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId?: string) {
   const navigate = useNavigate()
@@ -159,7 +161,7 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
     setMatrix(emptyMatrix(modules, actions))
   }, [modules, actions])
 
-  const saveMutation = useMutation({
+  const saveMutation = useAdminMutation({
     mutationFn: async (values: RoleFormInput) => {
       const permissions = matrixToPermissions(matrix)
       if (mode === 'create') {
@@ -177,19 +179,22 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
         permissions,
       })
     },
+    toastOnError: false,
+    errorFallback: 'Could not save role',
     onSuccess: (saved) => {
       setActionError(null)
       clearErrors('root')
+      toast.success(mode === 'create' ? 'Role created' : 'Role updated')
       void queryClient.invalidateQueries({ queryKey: queryKeys.admin.roles.all })
       safeNavigate(navigate, {
         to: myAdminRoutes.rolesDetail(String(saved.id)),
         params: { roleId: String(saved.id) },
       })
     },
-    onError: (e: unknown) => {
-      const msg = getApiErrorMessage(e, 'Could not save role')
+    onErrorMessage: (msg) => {
       setActionError(msg)
       setError('root', { type: 'server', message: msg })
+      toast.error(msg)
     },
   })
 
@@ -216,6 +221,13 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
     isDuplicate: Boolean(duplicateFromId),
     isLoadingRole: (mode === 'edit' && roleQuery.isLoading) || isLoadingSource,
     isLoadingCatalog: catalogQuery.isLoading,
+    roleLoadError:
+      (mode === 'edit' && roleQuery.isError
+        ? getApiErrorMessage(roleQuery.error, 'Could not load role')
+        : null) ||
+      (mode === 'create' && Boolean(duplicateFromId) && sourceRoleQuery.isError
+        ? getApiErrorMessage(sourceRoleQuery.error, 'Could not load role to duplicate')
+        : null),
     form,
     name: values.name,
     setName: (v: string) => form.setValue('name', v, { shouldValidate: true }),
