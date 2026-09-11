@@ -24,12 +24,27 @@ app = FastAPI(
     redoc_url="/redoc" if not settings.is_production else None,
 )
 
+# CORS must be outermost so 4xx/5xx still get Access-Control-* headers
+# (otherwise browsers report a misleading "CORS blocked" instead of the real 500).
+_cors_origins = list(settings.cors_origins_list)
+if not settings.is_production:
+    for o in (
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
+        "http://localhost:3000",
+    ):
+        if o not in _cors_origins:
+            _cors_origins.append(o)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 app.add_middleware(LoggingMiddleware)
 
