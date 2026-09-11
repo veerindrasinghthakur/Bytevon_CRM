@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
 import { myAdminRoutes } from '@/modules/admin/routes'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -8,6 +9,7 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { getAdminRole, deleteAdminRole } from '../api/roles'
 import { listAdminUsers } from '../api/users'
 import { cn } from '@/shared/lib/cn'
@@ -17,13 +19,18 @@ export function RoleDetailPage() {
   const { roleId } = useParams({ strict: false }) as { roleId?: string }
   const navigate = useNavigate()
   const qc = useQueryClient()
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const deleteMutation = useMutation({
     mutationFn: () => deleteAdminRole(roleId as string),
     onSuccess: async () => {
+      setActionError(null)
       await qc.invalidateQueries({ queryKey: queryKeys.admin.roles.all })
       void qc.invalidateQueries({ queryKey: queryKeys.admin.users.all })
       safeNavigate(navigate, { to: myAdminRoutes.rolesList })
+    },
+    onError: (e: unknown) => {
+      setActionError(getApiErrorMessage(e, 'Could not delete role'))
     },
   })
 
@@ -43,7 +50,7 @@ export function RoleDetailPage() {
     return (
       <ErrorState
         title="Could not load role"
-        description={(roleQuery.error as Error)?.message ?? 'Role not found'}
+        description={getApiErrorMessage(roleQuery.error, 'Role not found')}
         onRetry={() => void roleQuery.refetch()}
         onBack={() => safeNavigate(navigate, { to: myAdminRoutes.rolesList })}
       />
@@ -69,11 +76,27 @@ export function RoleDetailPage() {
     safeNavigate(navigate, { to: myAdminRoutes.rolesEdit(role.id), params: { roleId: role.id } })
 
   const goUser = (userId: number) =>
-    safeNavigate(navigate, { to: myAdminRoutes.usersDetail(String(userId)), params: { userId: String(userId) } })
+    safeNavigate(navigate, {
+      to: myAdminRoutes.usersDetail(String(userId)),
+      params: { userId: String(userId) },
+    })
 
   return (
     <div className="space-y-6 animate-fade-in">
       <BackButton to={myAdminRoutes.rolesList} label="Back to Roles & Permissions" />
+
+      {actionError && (
+        <div
+          className="flex items-start gap-3 rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error"
+          role="alert"
+        >
+          <span className="material-symbols-outlined shrink-0 text-[20px]">error</span>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-on-background">Action failed</p>
+            <p className="break-words">{actionError}</p>
+          </div>
+        </div>
+      )}
 
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
@@ -213,11 +236,7 @@ export function RoleDetailPage() {
               </thead>
               <tbody className="divide-y divide-outline-variant">
                 {assigned.map((u) => (
-                  <tr
-                    key={u.id}
-                    className="zebra-row cursor-pointer"
-                    onClick={() => goUser(u.id)}
-                  >
+                  <tr key={u.id} className="zebra-row cursor-pointer" onClick={() => goUser(u.id)}>
                     <td className="px-6 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-label-sm font-bold">
