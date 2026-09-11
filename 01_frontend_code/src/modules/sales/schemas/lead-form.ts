@@ -1,16 +1,32 @@
 import { z } from 'zod'
 import { leadPrioritySchema, pipelineStageSchema, recordStatusSchema } from './enums'
 
-/** UI form (string budget / assigned id). */
+/**
+ * UI form for /sales/leads/new.
+ * Maps to backend LeadCreate:
+ *   title → lead_title
+ *   contactName → contact_name
+ *   platformId → platform_id (platforms table = lead sources)
+ *   assignedEmploymentId → assigned_employment_id
+ *   budget → quotation
+ *   date → expected_close_date
+ *   notes → description
+ *   company → client_name (optional, used on WON)
+ *   stage → status (domain LeadStatus)
+ *
+ * UI-only (not on leads table): contactTitle, industry, priority, status (Active),
+ * chatLink — kept for UX / mock but not required by backend.
+ */
 export const leadFormSchema = z.object({
   title: z.string().min(2, 'Title is required'),
   contactName: z.string().min(1, 'Contact name is required'),
   contactTitle: z.string().optional().or(z.literal('')),
-  company: z.string().min(1, 'Company is required'),
+  company: z.string().optional().or(z.literal('')),
   industry: z.string().optional().or(z.literal('')),
   email: z.string().email('Enter a valid email').optional().or(z.literal('')),
   phone: z.string().optional().or(z.literal('')),
-  source: z.string().min(1),
+  /** platforms.id as string for Select; empty = none */
+  platformId: z.string().optional().or(z.literal('')),
   priority: leadPrioritySchema,
   status: recordStatusSchema,
   stage: pipelineStageSchema,
@@ -32,7 +48,7 @@ export const emptyLeadForm = (): LeadForm => ({
   industry: '',
   email: '',
   phone: '',
-  source: 'LinkedIn',
+  platformId: '',
   priority: 'Medium',
   status: 'Active',
   stage: 'New',
