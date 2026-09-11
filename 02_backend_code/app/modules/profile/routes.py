@@ -9,7 +9,7 @@ from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Header, Query
 
-from app.modules.auth.dependencies import AuthServiceDep
+from app.modules.auth.dependencies import AuthenticationServiceDep
 
 router = APIRouter(prefix="/profile", tags=["Profile"])
 
@@ -50,7 +50,7 @@ async def profile_activity(
 
 @router.get("/sessions")
 async def profile_sessions(
-    service: AuthServiceDep,
+    service: AuthenticationServiceDep,
     x_login_id: Annotated[int, Header(alias="X-Login-Id")],
 ) -> list[Any]:
     return await service.list_sessions(x_login_id)
