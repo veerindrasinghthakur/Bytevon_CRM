@@ -428,10 +428,11 @@ async def create_platform(
 async def list_platforms(
     service: SalesServiceDep,
     include_archived: bool = Query(False),
-    with_stats: bool = Query(True),
+    with_stats: bool = Query(False),
 ) -> Any:
-    """List lead sources (platforms). Default: items + metrics for Manage Sources UI.
-    Pass with_stats=false for a plain array (lead form pickers).
+    """List lead sources (platforms).
+    with_stats=true → {items, metrics} for Manage Sources.
+    Default plain array for lead Source pickers.
     """
     if with_stats:
         return await service.list_platforms_with_stats(include_archived=include_archived)
