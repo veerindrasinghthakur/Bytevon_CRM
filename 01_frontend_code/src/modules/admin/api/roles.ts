@@ -51,7 +51,6 @@ function normalizeRole(role: Record<string, any>): AdminRole {
   const isSystem = Boolean(role.is_system_role)
   const usersCount = Number(role.usersCount ?? role.users_count ?? 0)
 
-  // Backend has no archive flag on roles — Active for all listed roles
   let status: AdminRole['status'] = 'Active'
   if (role.status === 'Archived' || role.is_archived) status = 'Archived'
 
@@ -203,9 +202,16 @@ export async function listAdminRoles(params?: {
     return items
   }
 
+  const query: Record<string, string | number> = {}
+  if (params?.search) query.search = params.search
+  if (params?.category && params.category !== 'All') query.category = params.category
+  if (params?.page != null) query.page = params.page
+  if (params?.pageSize != null) query.pageSize = params.pageSize
+
   const { data } = await apiClient.get<
-    Array<Record<string, unknown>> | { items: Array<Record<string, unknown>>; total: number }
-  >('/rbac/roles', { params })
+    | Array<Record<string, unknown>>
+    | { items: Array<Record<string, unknown>>; total: number; page?: number; pageSize?: number }
+  >('/rbac/roles', { params: query })
 
   let raw: Array<Record<string, any>>
   let total: number
@@ -219,24 +225,11 @@ export async function listAdminRoles(params?: {
 
   let items = raw.map((r) => normalizeRole(r))
 
-  // Client filters (backend list has no search/status/category yet)
-  if (params?.search) {
-    const q = params.search.toLowerCase()
-    items = items.filter(
-      (r) => r.name.toLowerCase().includes(q) || r.description.toLowerCase().includes(q),
-    )
-  }
   if (params?.status && params.status !== 'All') {
     items = items.filter((r) => r.status === params.status)
   }
-  if (params?.category && params.category !== 'All') {
-    items = items.filter((r) => r.category === params.category)
-  }
 
-  if (params?.page != null || params?.pageSize != null) {
-    return paginateItems(items, params.page, params.pageSize)
-  }
-  return items
+  return { items, total }
 }
 
 export async function getAdminRole(roleId: string): Promise<AdminRole | null> {
