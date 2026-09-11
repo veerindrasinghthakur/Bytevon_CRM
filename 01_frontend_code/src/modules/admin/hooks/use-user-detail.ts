@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { myAdminRoutes } from '../routes'
 import { uploadAvatar } from '@/modules/my-work/api/profile'
@@ -22,8 +23,6 @@ import {
 import { userEditFormSchema, type UserEditFormValues } from '../schemas/user-form'
 import type { AdminUserStatus } from '../types'
 
-
-/** Admin user detail may pass a userId; profile API currently uploads for the session user. */
 async function uploadUserAvatar(_userId: string, file: File) {
   return uploadAvatar(file)
 }
@@ -61,12 +60,13 @@ export function useUserDetail(userId?: string) {
   const [lockOpen, setLockOpen] = useState(false)
   const [resetSent, setResetSent] = useState(false)
   const [tempPassword, setTempPassword] = useState('')
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const form = useForm<UserEditFormValues>({
     resolver: zodResolver(userEditFormSchema),
     defaultValues: { name: '', email: '', departmentId: '', roleId: '' },
   })
-  const { reset } = form
+  const { reset, setError, clearErrors } = form
 
   const roleOptions =
     Array.isArray(rolesQuery.data)
@@ -115,8 +115,15 @@ export function useUserDetail(userId?: string) {
         role: roleOptions.find((o) => o.value === values.roleId)?.label ?? display?.role ?? '',
       }),
     onSuccess: () => {
+      setActionError(null)
+      clearErrors('root')
       void qc.invalidateQueries({ queryKey: queryKeys.admin.users.all })
       finishEditing()
+    },
+    onError: (e: unknown) => {
+      const msg = getApiErrorMessage(e, 'Could not save user')
+      setActionError(msg)
+      setError('root', { type: 'server', message: msg })
     },
   })
 
@@ -126,11 +133,13 @@ export function useUserDetail(userId?: string) {
       return lockUser(loginId)
     },
     onSuccess: () => {
+      setActionError(null)
       void qc.invalidateQueries({ queryKey: queryKeys.admin.users.all })
       setStatus((s) => (s === 'Locked' ? 'Active' : 'Locked'))
       setLockOpen(false)
     },
-    onError: () => {
+    onError: (e: unknown) => {
+      setActionError(getApiErrorMessage(e, 'Could not update lock status'))
       setLockOpen(false)
     },
   })
@@ -138,25 +147,37 @@ export function useUserDetail(userId?: string) {
   const deactivateMutation = useMutation({
     mutationFn: () => deactivateUser(loginId),
     onSuccess: async () => {
+      setActionError(null)
       await qc.invalidateQueries({ queryKey: queryKeys.admin.users.all })
       setStatus('Inactive')
+    },
+    onError: (e: unknown) => {
+      setActionError(getApiErrorMessage(e, 'Could not deactivate user'))
     },
   })
 
   const activateMutation = useMutation({
     mutationFn: () => activateUser(loginId),
     onSuccess: async () => {
+      setActionError(null)
       await qc.invalidateQueries({ queryKey: queryKeys.admin.users.all })
       setStatus('Active')
+    },
+    onError: (e: unknown) => {
+      setActionError(getApiErrorMessage(e, 'Could not activate user'))
     },
   })
 
   const hardArchiveMutation = useMutation({
     mutationFn: () => archiveUserCredentials(loginId),
     onSuccess: async () => {
+      setActionError(null)
       await qc.invalidateQueries({ queryKey: queryKeys.admin.users.all })
       await qc.invalidateQueries({ queryKey: queryKeys.admin.users.withoutLogin() })
       safeNavigate(navigate, { to: myAdminRoutes.usersList })
+    },
+    onError: (e: unknown) => {
+      setActionError(getApiErrorMessage(e, 'Could not archive credentials'))
     },
   })
 
@@ -166,6 +187,7 @@ export function useUserDetail(userId?: string) {
         temporaryPassword: tempPassword || `Temp@${Date.now().toString().slice(-6)}`,
       }),
     onSuccess: () => {
+      setActionError(null)
       setResetSent(true)
       setTimeout(() => {
         setResetOpen(false)
@@ -173,13 +195,16 @@ export function useUserDetail(userId?: string) {
         setTempPassword('')
       }, 1500)
     },
-    onError: () => {
+    onError: (e: unknown) => {
+      setActionError(getApiErrorMessage(e, 'Could not reset password'))
       setResetOpen(false)
     },
   })
 
   const handleCancelEdit = () => {
     cancelEditing()
+    setActionError(null)
+    clearErrors('root')
     if (display) {
       const matchRole = rolesQuery.data?.find((r) => r.name === display.role)
       const deptMatch = deptsQuery.data?.find((d) => d.name === display.department)
@@ -205,8 +230,8 @@ export function useUserDetail(userId?: string) {
     try {
       const res = await uploadUserAvatar(userId, file)
       setAvatarUrl(res.avatarUrl)
-    } catch {
-      /* optional */
+    } catch (err) {
+      setActionError(getApiErrorMessage(err, 'Could not upload avatar'))
     } finally {
       setAvatarUploading(false)
       e.target.value = ''
@@ -216,6 +241,9 @@ export function useUserDetail(userId?: string) {
   return {
     isLoading: detailQuery.isLoading,
     isError: detailQuery.isError,
+    loadError: detailQuery.isError
+      ? getApiErrorMessage(detailQuery.error, 'Could not load user')
+      : null,
     refetch: () => void detailQuery.refetch(),
     display,
     form,
@@ -242,5 +270,7 @@ export function useUserDetail(userId?: string) {
     hardArchiveMutation,
     resetMutation,
     onAvatarPick,
+    actionError,
+    serverError: (form.formState.errors.root?.message as string | undefined) ?? actionError,
   }
 }
