@@ -9,6 +9,7 @@ import { useWorkingWeeks } from '../../hooks/use-organization'
 import { archiveWorkingWeek, createWorkingWeek } from '../../api/organization'
 import type { WorkingWeekRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { queryKeys } from '@/shared/lib/query-keys'
 
 /** Backend: working_days_of_week 0=Mon … 6=Sun */
@@ -58,6 +59,7 @@ export function WorkingWeeksPage() {
   const [effectiveFrom, setEffectiveFrom] = useState(todayISO())
   const [days, setDays] = useState<number[]>([0, 1, 2, 3, 4])
   const [formError, setFormError] = useState<string | null>(null)
+  const [archiveError, setArchiveError] = useState<string | null>(null)
 
   const createMut = useMutation({
     mutationFn: () =>
@@ -75,25 +77,18 @@ export function WorkingWeeksPage() {
       await qc.invalidateQueries({ queryKey: queryKeys.organization.workingWeeks() })
     },
     onError: (e: unknown) => {
-      const msg =
-        e && typeof e === 'object' && 'response' in e
-          ? String(
-              (e as { response?: { data?: { detail?: unknown; message?: string } } }).response?.data
-                ?.detail ??
-                (e as { response?: { data?: { message?: string } } }).response?.data?.message ??
-                (e as Error).message,
-            )
-          : e instanceof Error
-            ? e.message
-            : 'Failed to create working week'
-      setFormError(msg)
+      setFormError(getApiErrorMessage(e, 'Failed to create working week'))
     },
   })
 
   const archiveMut = useMutation({
     mutationFn: (id: number) => archiveWorkingWeek(id),
     onSuccess: async () => {
+      setArchiveError(null)
       await qc.invalidateQueries({ queryKey: queryKeys.organization.workingWeeks() })
+    },
+    onError: (e: unknown) => {
+      setArchiveError(getApiErrorMessage(e, 'Could not close working week'))
     },
   })
 
@@ -105,7 +100,12 @@ export function WorkingWeeksPage() {
 
   if (isLoading) return <PageLoadingSkeleton />
   if (isError) {
-    return <ErrorState description={(error as Error).message} onRetry={() => void refetch()} />
+    return (
+      <ErrorState
+        description={getApiErrorMessage(error, 'Could not load working weeks')}
+        onRetry={() => void refetch()}
+      />
+    )
   }
 
   return (
@@ -131,6 +131,12 @@ export function WorkingWeeksPage() {
         </Button>
       </div>
 
+      {archiveError && (
+        <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error">
+          {archiveError}
+        </div>
+      )}
+
       {showCreate && (
         <div className="bv-surface p-6 space-y-4 border border-secondary/30">
           <h3 className="text-title-md font-semibold text-on-background">New working week</h3>
@@ -150,9 +156,7 @@ export function WorkingWeeksPage() {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-bold text-on-surface-variant uppercase">
-                Effective from
-              </label>
+              <label className="text-xs font-bold text-on-surface-variant uppercase">Effective from</label>
               <input
                 type="date"
                 value={effectiveFrom}
