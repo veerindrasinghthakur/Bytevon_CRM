@@ -1,6 +1,6 @@
 /**
- * Sales API — leads, clients, case studies, filter options, sales reps.
- * env.useMockApi → local seed stores; false → mock backend /api/v1/sales/*
+ * Sales API — leads, clients, platforms (lead sources), case studies.
+ * env.useMockApi → local seed stores; false → /api/v1/sales/*
  */
 
 import { env } from '@/config/env'
@@ -24,12 +24,26 @@ import type {
   SalesActivity,
   SalesMetric,
   CreateLeadInput,
-  CreateClientInput,SalesRepOption,ClientFilterOptions,LeadFilterOptions
+  CreateClientInput,
+  SalesRepOption,
+  ClientFilterOptions,
+  LeadFilterOptions,
+  PlatformOption,
 } from '../types'
 
 /** Mutable in-memory stores when useMockApi */
 let leadsStore: Lead[] | null = null
 let clientsStore: Client[] | null = null
+
+const MOCK_PLATFORMS: PlatformOption[] = [
+  { id: 1, name: 'LinkedIn', description: null },
+  { id: 2, name: 'Website', description: null },
+  { id: 3, name: 'Referral', description: null },
+  { id: 4, name: 'Direct Referral', description: null },
+  { id: 5, name: 'Event', description: null },
+  { id: 6, name: 'Other', description: null },
+  { id: 7, name: 'Manual', description: null },
+]
 
 function leads(): Lead[] {
   if (!leadsStore) leadsStore = seedLeads.map((l) => ({ ...l }))
@@ -41,6 +55,24 @@ function clients(): Client[] {
   return clientsStore
 }
 
+/** Lead sources = platforms table (CRUD on /sales/platforms). */
+export async function listPlatforms(includeArchived = false): Promise<PlatformOption[]> {
+  if (env.useMockApi) {
+    await delay()
+    return MOCK_PLATFORMS.map((p) => ({ ...p }))
+  }
+  const { data } = await apiClient.get<
+    Array<{ id: number; name: string; description?: string | null; is_archived?: boolean }>
+  >('/sales/platforms', { params: { include_archived: includeArchived } })
+  const rows = Array.isArray(data) ? data : []
+  return rows
+    .filter((r) => includeArchived || !r.is_archived)
+    .map((r) => ({
+      id: Number(r.id),
+      name: String(r.name),
+      description: r.description ?? null,
+    }))
+}
 
 export async function getLeadFilterOptions(): Promise<LeadFilterOptions> {
   if (env.useMockApi) {
@@ -60,16 +92,7 @@ export async function getLeadFilterOptions(): Promise<LeadFilterOptions> {
         'Lost',
       ]),
       priorities: uniq([...items.map((l) => l.priority), 'Critical', 'High', 'Medium', 'Low']),
-      sources: uniq([
-        ...items.map((l) => l.source),
-        'LinkedIn',
-        'Website',
-        'Referral',
-        'Direct Referral',
-        'Event',
-        'Other',
-        'Manual',
-      ]),
+      sources: MOCK_PLATFORMS.map((p) => p.name),
     }
   }
   const { data } = await apiClient.get<LeadFilterOptions>('/sales/leads/filter-options')
@@ -92,7 +115,7 @@ export async function getClientFilterOptions(): Promise<ClientFilterOptions> {
   return data
 }
 
-/** Employees assigned to Sales department — for assigned-rep picker */
+/** @deprecated Prefer listEmployments from workforce for assignee picker */
 export async function listSalesRepresentatives(): Promise<SalesRepOption[]> {
   if (env.useMockApi) {
     await delay()
@@ -166,24 +189,73 @@ export async function getLeadById(id: string): Promise<Lead | null> {
   return leads().find((l) => l.id === id) ?? null
 }
 
+/** Map UI stage labels → backend LeadStatus enum values. */
+function mapStageToLeadStatus(stage?: string): string {
+  const s = (stage ?? 'New').toUpperCase().replace(/\s+/g, '_')
+  const map: Record<string, string> = {
+    NEW: 'NEW',
+    CONTACTED: 'CHAT_OPEN',
+    QUALIFIED: 'MEETING',
+    PROPOSAL: 'PROPOSAL_SENT',
+    NEGOTIATION: 'PAYMENT_DISCUSSION',
+    WON: 'WON',
+    LOST: 'LOST',
+    FOLLOW_UP: 'FOLLOW_UP',
+    CLOSED: 'CLOSED',
+  }
+  return map[s] ?? (['NEW', 'PROPOSAL_SENT', 'CHAT_OPEN', 'MEETING', 'EXECUTION_PLAN_SENT', 'PAYMENT_DISCUSSION', 'WON', 'LOST', 'FOLLOW_UP', 'CLOSED'].includes(s) ? s : 'NEW')
+}
+
+/**
+ * POST body aligned with backend LeadCreate / LeadCreateBody:
+ * lead_title, contact_name, platform_id, assigned_employment_id, quotation, …
+ */
+function toBackendLeadCreate(input: CreateLeadInput): Record<string, unknown> {
+  return {
+    lead_title: input.title,
+    title: input.title,
+    contact_name: input.contactName,
+    contactName: input.contactName,
+    platform_id: input.platformId ?? null,
+    email: input.email || null,
+    phone: input.phone || null,
+    quotation: input.budget ?? null,
+    budget: input.budget ?? null,
+    expected_close_date: input.date || null,
+    assigned_employment_id: input.assignedEmploymentId ?? null,
+    assignedEmploymentId: input.assignedEmploymentId ?? null,
+    description: input.notes || null,
+    notes: input.notes || null,
+    client_name: input.company || null,
+    company: input.company || null,
+    status: mapStageToLeadStatus(input.stage),
+    stage: input.stage,
+    auto_create_project: true,
+  }
+}
+
 export async function createLead(input: CreateLeadInput): Promise<Lead> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<Lead>('/sales/leads', input)
+    const { data } = await apiClient.post<Lead>('/sales/leads', toBackendLeadCreate(input))
     return data
   }
   await delay(400)
   const list = leads()
   const id = `LD-${1000 + list.length + 1}`
+  const platformName =
+    input.platformId != null
+      ? MOCK_PLATFORMS.find((p) => p.id === input.platformId)?.name
+      : undefined
   const row: Lead = {
     id,
     title: input.title,
-    company: input.company,
+    company: input.company ?? '',
     contactName: input.contactName,
     contactTitle: input.contactTitle,
     industry: input.industry,
     email: input.email,
     phone: input.phone,
-    source: input.source ?? 'Manual',
+    source: platformName ?? input.source ?? 'Manual',
     priority: input.priority ?? 'Medium',
     status: input.status ?? 'Active',
     stage: input.stage ?? 'New',
@@ -200,10 +272,24 @@ export async function createLead(input: CreateLeadInput): Promise<Lead> {
 
 export async function updateLead(
   id: string,
-  patch: Partial<Lead> & { assignedEmploymentId?: number | null },
+  patch: Partial<Lead> & {
+    assignedEmploymentId?: number | null
+    platformId?: number | null
+  },
 ): Promise<Lead> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.patch<Lead>(`/sales/leads/${id}`, patch)
+    const body: Record<string, unknown> = {}
+    if (patch.title != null) body.lead_title = patch.title
+    if (patch.contactName != null) body.contact_name = patch.contactName
+    if (patch.email != null) body.email = patch.email
+    if (patch.phone != null) body.phone = patch.phone
+    if (patch.notes != null) body.description = patch.notes
+    if (patch.budget != null) body.quotation = patch.budget
+    if (patch.date != null) body.expected_close_date = patch.date
+    if (patch.platformId !== undefined) body.platform_id = patch.platformId
+    if (patch.assignedEmploymentId !== undefined)
+      body.assigned_employment_id = patch.assignedEmploymentId
+    const { data } = await apiClient.patch<Lead>(`/sales/leads/${id}`, body)
     return data
   }
   await delay(350)
