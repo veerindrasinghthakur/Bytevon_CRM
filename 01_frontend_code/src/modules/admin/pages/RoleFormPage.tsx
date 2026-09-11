@@ -28,7 +28,7 @@ export function RoleFormPage({ mode, roleId, duplicateFromId }: RoleFormProps) {
         : 'Define access levels and assign granular permissions for a new organizational role.'
       : 'Update functional access levels and module permissions.'
 
-  const { modules, actions, matrix } = form
+  const { modules, actions, matrix, serverError } = form
 
   const grantedCount = modules.reduce(
     (sum, mod) => sum + actions.filter((a) => matrix[mod]?.[a]).length,
@@ -38,15 +38,25 @@ export function RoleFormPage({ mode, roleId, duplicateFromId }: RoleFormProps) {
 
   return (
     <div className="space-y-6 pb-28">
-<BackButton
-          to={mode === 'create' ? myAdminRoutes.rolesList : roleId ? myAdminRoutes.rolesDetail(roleId) : myAdminRoutes.rolesList}
-          label={mode === 'create' ? 'Back to Roles & Permissions' : 'Back to Role Detail'}
-        />
-
-      <PageHeader
-        title={title}
-        description={description}
+      <BackButton
+        to={
+          mode === 'create'
+            ? myAdminRoutes.rolesList
+            : roleId
+              ? myAdminRoutes.rolesDetail(roleId)
+              : myAdminRoutes.rolesList
+        }
+        label={mode === 'create' ? 'Back to Roles & Permissions' : 'Back to Role Detail'}
       />
+
+      <PageHeader title={title} description={description} />
+
+      {serverError && (
+        <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          {serverError}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <section className="lg:col-span-4 space-y-4">
@@ -74,11 +84,9 @@ export function RoleFormPage({ mode, roleId, duplicateFromId }: RoleFormProps) {
                       onChange={(e) => form.setHierarchy(e.target.value)}
                       className="w-full border border-outline-variant rounded-lg px-4 py-2.5 text-body-sm outline-none focus:border-secondary bg-transparent"
                     >
-                      {['Select Level', ...hierarchyLevels].map(
-                        (o) => (
-                          <option key={o}>{o}</option>
-                        ),
-                      )}
+                      {['Select Level', ...hierarchyLevels].map((o) => (
+                        <option key={o}>{o}</option>
+                      ))}
                     </select>
                   </div>
                   <div>
