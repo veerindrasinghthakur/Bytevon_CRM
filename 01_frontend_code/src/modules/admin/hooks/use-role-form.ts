@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { myAdminRoutes } from '../routes'
 import type { RoleFormMode, RolePermissionAction, RolePermissionMatrix } from '../types'
@@ -56,10 +57,11 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
     },
   })
 
-  const { reset: resetForm } = form
+  const { reset: resetForm, setError, clearErrors } = form
 
   const [matrix, setMatrix] = useState<RolePermissionMatrix>({})
   const [seededFromDuplicate, setSeededFromDuplicate] = useState(false)
+  const [actionError, setActionError] = useState<string | null>(null)
   const seededEditRoleIdRef = useRef<string | null>(null)
 
   useEffect(() => {
@@ -176,11 +178,18 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
       })
     },
     onSuccess: (saved) => {
+      setActionError(null)
+      clearErrors('root')
       void queryClient.invalidateQueries({ queryKey: queryKeys.admin.roles.all })
       safeNavigate(navigate, {
         to: myAdminRoutes.rolesDetail(String(saved.id)),
         params: { roleId: String(saved.id) },
       })
+    },
+    onError: (e: unknown) => {
+      const msg = getApiErrorMessage(e, 'Could not save role')
+      setActionError(msg)
+      setError('root', { type: 'server', message: msg })
     },
   })
 
@@ -208,7 +217,6 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
     isLoadingRole: (mode === 'edit' && roleQuery.isLoading) || isLoadingSource,
     isLoadingCatalog: catalogQuery.isLoading,
     form,
-    /** Convenience mirrors for pages still using flat field API */
     name: values.name,
     setName: (v: string) => form.setValue('name', v, { shouldValidate: true }),
     description: values.description ?? '',
@@ -229,8 +237,14 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
     resetMatrix,
     actions,
     modules,
-    submit: form.handleSubmit((v) => saveMutation.mutate(v)),
+    submit: form.handleSubmit((v) => {
+      setActionError(null)
+      clearErrors('root')
+      saveMutation.mutate(v)
+    }),
     isSubmitting: saveMutation.isPending,
+    actionError,
+    serverError: (form.formState.errors.root?.message as string | undefined) ?? actionError,
     cancel,
   }
 }
