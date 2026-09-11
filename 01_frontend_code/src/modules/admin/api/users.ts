@@ -13,6 +13,7 @@
 
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { delay, getDb, nextId } from '@/shared/mock/db'
 import { paginateItems } from '@/shared/lib/list-params'
 import type { LoginUserRow } from '@/shared/schema'
@@ -23,7 +24,6 @@ import type {
   DepartmentOption,
   AdminUserListParams,
 } from '../types'
-import axios from 'axios'
 
 const USERS_API = '/organization/users'
 const EMPLOYMENTS_WITHOUT_LOGIN_API = '/organization/employments-without-login'
@@ -60,23 +60,9 @@ function inDateRange(iso: string | null, from?: string, to?: string): boolean {
   return true
 }
 
-/** Extract FastAPI / AppException message from axios error. */
+/** Prefer getApiErrorMessage; kept for existing import sites. */
 export function extractApiErrorMessage(err: unknown, fallback = 'Request failed'): string {
-  if (axios.isAxiosError(err)) {
-    const data = err.response?.data as
-      | { detail?: string | Array<{ msg?: string }>; message?: string }
-      | string
-      | undefined
-    if (typeof data === 'string' && data.trim()) return data
-    if (data && typeof data === 'object') {
-      if (typeof data.detail === 'string' && data.detail.trim()) return data.detail
-      if (Array.isArray(data.detail) && data.detail[0]?.msg) return String(data.detail[0].msg)
-      if (typeof data.message === 'string' && data.message.trim()) return data.message
-    }
-    if (err.response?.status === 409) return 'Conflict — email or employee login already exists'
-  }
-  if (err instanceof Error && err.message) return err.message
-  return fallback
+  return getApiErrorMessage(err, fallback)
 }
 
 function mapLoginUsers(): AdminUserListItem[] {
@@ -432,9 +418,8 @@ export async function deactivateUser(loginId: number) {
     try {
       const { data } = await apiClient.post(`${USERS_API}/${loginId}/deactivate`)
       return data
-    } catch {
-      const { data } = await apiClient.patch(`${USERS_API}/${loginId}`, { status: 'Inactive' })
-      return data
+    } catch (err) {
+      throw new Error(extractApiErrorMessage(err, 'Could not deactivate user'))
     }
   }
   return updateUserLogin(loginId, { status: 'INACTIVE' })
@@ -445,9 +430,8 @@ export async function activateUser(loginId: number) {
     try {
       const { data } = await apiClient.post(`${USERS_API}/${loginId}/activate`)
       return data
-    } catch {
-      const { data } = await apiClient.patch(`${USERS_API}/${loginId}`, { status: 'Active' })
-      return data
+    } catch (err) {
+      throw new Error(extractApiErrorMessage(err, 'Could not activate user'))
     }
   }
   return updateUserLogin(loginId, {
@@ -462,9 +446,8 @@ export async function archiveUserCredentials(loginId: number) {
     try {
       const { data } = await apiClient.post(`${USERS_API}/${loginId}/archive`)
       return data
-    } catch {
-      const { data } = await apiClient.delete(`${USERS_API}/${loginId}`)
-      return data
+    } catch (err) {
+      throw new Error(extractApiErrorMessage(err, 'Could not archive user'))
     }
   }
   await delay(300)
@@ -586,16 +569,24 @@ export async function getUserLogin(loginId: number) {
 
 export async function lockUser(loginId: number) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post(`${USERS_API}/${loginId}/lock`)
-    return data
+    try {
+      const { data } = await apiClient.post(`${USERS_API}/${loginId}/lock`)
+      return data
+    } catch (err) {
+      throw new Error(extractApiErrorMessage(err, 'Could not lock user'))
+    }
   }
   return updateUserLogin(loginId, { status: 'LOCKED' })
 }
 
 export async function unlockUser(loginId: number) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post(`${USERS_API}/${loginId}/unlock`)
-    return data
+    try {
+      const { data } = await apiClient.post(`${USERS_API}/${loginId}/unlock`)
+      return data
+    } catch (err) {
+      throw new Error(extractApiErrorMessage(err, 'Could not unlock user'))
+    }
   }
   return updateUserLogin(loginId, {
     status: 'ACTIVE',
