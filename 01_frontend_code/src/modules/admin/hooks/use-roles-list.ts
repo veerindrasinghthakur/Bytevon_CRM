@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { listAdminRoles } from '../api/roles'
 import { getRoleListMetrics } from '../api/metrics'
 import type { AdminRole, RoleCategoryFilter, RoleStatusFilter } from '../types'
@@ -62,6 +63,9 @@ export function useRolesList() {
     isLoading: rolesQuery.isLoading,
     isFetching: rolesQuery.isFetching,
     isError: rolesQuery.isError,
+    errorMessage: rolesQuery.isError
+      ? getApiErrorMessage(rolesQuery.error, 'Could not load roles')
+      : null,
     refetch: rolesQuery.refetch,
     metrics: metricsQuery.data,
     search: controls.search,
