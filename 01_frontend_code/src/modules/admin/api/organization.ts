@@ -81,12 +81,8 @@ export async function getLocation(id: number): Promise<LocationRow | null> {
     const row = getDb().locations.find((l) => l.id === id)
     return row ? { ...row } : null
   }
-  try {
-    const { data } = await apiClient.get<LocationRow>(`/organization/locations/${id}`)
-    return data
-  } catch {
-    return null
-  }
+  const { data } = await apiClient.get<LocationRow>(`/organization/locations/${id}`)
+  return data
 }
 
 export type LocationCreateInput = {
@@ -179,12 +175,8 @@ export async function getShift(id: number): Promise<ShiftRow | null> {
     const row = getDb().shifts.find((s) => s.id === id)
     return row ? { ...row } : null
   }
-  try {
-    const { data } = await apiClient.get<ShiftRow>(`/organization/shifts/${id}`)
-    return data
-  } catch {
-    return null
-  }
+  const { data } = await apiClient.get<ShiftRow>(`/organization/shifts/${id}`)
+  return data
 }
 
 export async function createShift(
@@ -311,12 +303,8 @@ export async function getHolidayCalendar(id: number): Promise<HolidayCalendarRow
     const row = getDb().holiday_calendars.find((c) => c.id === id)
     return row ? { ...row } : null
   }
-  try {
-    const { data } = await apiClient.get<HolidayCalendarRow>(`/organization/holiday-calendars/${id}`)
-    return data
-  } catch {
-    return null
-  }
+  const { data } = await apiClient.get<HolidayCalendarRow>(`/organization/holiday-calendars/${id}`)
+  return data
 }
 
 export async function createHolidayCalendar(input: { name: string }): Promise<HolidayCalendarRow> {
@@ -448,15 +436,11 @@ export async function getPositions(params?: { includeArchived?: boolean }) {
     if (!params?.includeArchived) items = items.filter((p) => !p.is_archived)
     return { items, total: items.length }
   }
-  try {
-    const { data } = await apiClient.get<PositionRow[] | { items: PositionRow[]; total: number }>(
-      '/workforce/positions',
-      { params },
-    )
-    return asList(data)
-  } catch {
-    return { items: [], total: 0 }
-  }
+  const { data } = await apiClient.get<PositionRow[] | { items: PositionRow[]; total: number }>(
+    '/workforce/positions',
+    { params },
+  )
+  return asList(data)
 }
 
 export async function getPosition(id: number): Promise<PositionRow | null> {
@@ -465,12 +449,8 @@ export async function getPosition(id: number): Promise<PositionRow | null> {
     const row = getDb().positions.find((p) => p.id === id)
     return row ? { ...row } : null
   }
-  try {
-    const { data } = await apiClient.get<PositionRow>(`/workforce/positions/${id}`)
-    return data
-  } catch {
-    return null
-  }
+  const { data } = await apiClient.get<PositionRow>(`/workforce/positions/${id}`)
+  return data
 }
 
 export async function createPosition(input: { name: string }): Promise<PositionRow> {
