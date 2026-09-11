@@ -1,4 +1,3 @@
-import { useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
@@ -11,7 +10,6 @@ import {
   roleFilterStatusOptions as STATUS_OPTIONS,
 } from '../schemas/enums'
 
-
 const FILTER_DEFAULTS = {
   status: 'All' as RoleStatusFilter,
   category: 'All' as RoleCategoryFilter,
@@ -23,17 +21,24 @@ export function useRolesList() {
   })
 
   const listParams = {
-    search: controls.debouncedSearch || undefined,
+    search: controls.debouncedSearch.trim() || undefined,
     status: controls.filters.status !== 'All' ? controls.filters.status : undefined,
     category: controls.filters.category !== 'All' ? controls.filters.category : undefined,
+    page: controls.page,
+    pageSize: controls.pageSize,
   }
 
   const rolesQuery = useQuery({
     queryKey: queryKeys.admin.roles.list(listParams),
     queryFn: async () => {
       const result = await listAdminRoles(listParams)
-      return Array.isArray(result) ? result : result.items
+      if (Array.isArray(result)) {
+        return { items: result, total: result.length }
+      }
+      return { items: result.items ?? [], total: result.total ?? 0 }
     },
+    staleTime: 30_000,
+    placeholderData: (prev) => prev,
   })
 
   const metricsQuery = useQuery({
@@ -41,7 +46,8 @@ export function useRolesList() {
     queryFn: getRoleListMetrics,
   })
 
-  const roles = rolesQuery.data ?? []
+  const roles = rolesQuery.data?.items ?? []
+  const totalCount = rolesQuery.data?.total ?? 0
 
   const selection = useListSelection<AdminRole>({
     items: roles,
@@ -51,8 +57,10 @@ export function useRolesList() {
   return {
     roles,
     filtered: roles,
-    totalCount: roles.length,
+    pageItems: roles,
+    totalCount,
     isLoading: rolesQuery.isLoading,
+    isFetching: rolesQuery.isFetching,
     isError: rolesQuery.isError,
     refetch: rolesQuery.refetch,
     metrics: metricsQuery.data,
@@ -69,7 +77,7 @@ export function useRolesList() {
     page: controls.page,
     setPage: controls.setPage,
     pageSize: controls.pageSize,
-    pageItems: controls.pageItems(roles),
+    setPageSize: controls.setPageSize,
     selectionMode: selection.selectionMode,
     selectedIds: selection.selectedIds,
     selectedCount: selection.selectedCount,
