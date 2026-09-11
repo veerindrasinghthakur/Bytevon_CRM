@@ -21,7 +21,6 @@ export type {
 } from './schemas/client'
 export type { CaseStudySchema, CaseStudyFormInput } from './schemas/case-study'
 
-/** Simple account/lead active state — shown as colored dots */
 export type {
   ActivityType,
   CaseStudyStatus,
@@ -30,6 +29,13 @@ export type {
   PipelineStage,
   RecordStatus,
 } from './schemas/enums'
+
+/** platforms row — backend lead source FK target */
+export interface PlatformOption {
+  id: number
+  name: string
+  description?: string | null
+}
 
 export interface Lead {
   id: string
@@ -42,22 +48,20 @@ export interface Lead {
   phone?: string
   source: string
   priority: LeadPriority
-  /** Active | Inactive — colored dot */
   status: RecordStatus
-  /** Pipeline stage — separate column from priority & status */
   stage: PipelineStage
   budget: number
   probability?: number
-  /** Displayed as "Date" in tables */
   date?: string
   assignedTo?: string
   assignedAvatar?: string
   platform?: string
+  platformId?: number | null
+  assignedEmploymentId?: number | null
   tags?: string[]
   caseStudy?: string
   createdAt: string
   notes?: string
-  /** Link to chat conversation with the client */
   chatLink?: string
 }
 
@@ -66,7 +70,6 @@ export interface Client {
   name: string
   legalName?: string
   type: ClientType
-  /** Active | Inactive */
   status: RecordStatus
   industry: string
   sector?: string
@@ -165,15 +168,17 @@ export interface LeadMetric {
   subtitle?: string
 }
 
-/** Create / update payloads (API) */
 export interface CreateLeadInput {
   title: string
-  company: string
+  company?: string
   contactName: string
   contactTitle?: string
   industry?: string
   email?: string
   phone?: string
+  /** platforms.id */
+  platformId?: number | null
+  /** display name only for mock */
   source?: string
   priority?: LeadPriority
   status?: RecordStatus
@@ -227,6 +232,3 @@ export interface SalesRepOption {
   employeeCode: string
   department: string
 }
-
-import { delay} from '@/shared/mock/db'
-
