@@ -8,11 +8,11 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { useHolidays } from '../../hooks/use-organization'
 import { createHoliday, getHolidayCalendar, getHolidays, deleteHoliday } from '../../api/organization'
 import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 import type { HolidayRow } from '@/shared/schema'
-// Shared utilities for typed query keys and route constants
 import { queryKeys } from '@/shared/lib/query-keys'
 import { holidayTypes as TYPES } from '../../schemas/enums'
 
@@ -39,6 +39,7 @@ export function HolidaysListPage() {
   })
   const [pickHolidayId, setPickHolidayId] = useState('')
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const allHolidaysQuery = useQuery({
     queryKey: queryKeys.organization.holidays.all(),
@@ -85,22 +86,24 @@ export function HolidaysListPage() {
       setPickHolidayId('')
       setSaveError(null)
     },
-    onError: (e: Error) => setSaveError(e.message || 'Failed to save holiday'),
+    onError: (e: unknown) => setSaveError(getApiErrorMessage(e, 'Failed to save holiday')),
   })
 
   const deleteMut = useMutation({
     mutationFn: (holidayId: number) => deleteHoliday(holidayId),
     onSuccess: async () => {
+      setDeleteError(null)
       await qc.invalidateQueries({ queryKey: queryKeys.organization.holidays.all() })
       await qc.invalidateQueries({ queryKey: queryKeys.organization.holidays.detail(id) })
     },
+    onError: (e: unknown) => setDeleteError(getApiErrorMessage(e, 'Failed to delete holiday')),
   })
 
   if (isLoading || calQuery.isLoading) return <PageLoadingSkeleton />
   if (isError) {
     return (
       <ErrorState
-        description={(error as Error).message}
+        description={getApiErrorMessage(error, 'Could not load holidays')}
         onRetry={() => void refetch()}
         onBack={() => safeNavigate(navigate, { to: '/admin/settings/holidays' })}
       />
@@ -130,15 +133,17 @@ export function HolidaysListPage() {
         </Button>
       </div>
 
+      {deleteError && (
+        <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error">
+          {deleteError}
+        </div>
+      )}
+
       {adding && (
         <div className="bv-surface p-5 space-y-4 max-w-xl">
           <h3 className="text-title-md font-semibold">Add holiday</h3>
           <div className="flex gap-2">
-            <Button
-              variant={mode === 'new' ? 'primary' : 'outline'}
-              size="sm"
-              onClick={() => setMode('new')}
-            >
+            <Button variant={mode === 'new' ? 'primary' : 'outline'} size="sm" onClick={() => setMode('new')}>
               Create new
             </Button>
             <Button
@@ -230,7 +235,7 @@ export function HolidaysListPage() {
           </div>
           {(saveError || createMut.isError) && (
             <p className="text-body-sm text-error">
-              {saveError || (createMut.error as Error)?.message}
+              {saveError || getApiErrorMessage(createMut.error, 'Failed to save holiday')}
             </p>
           )}
         </div>
