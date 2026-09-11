@@ -1,5 +1,6 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import {
   getHolidayCalendars,
   getHolidays,
@@ -10,17 +11,29 @@ import {
   updateOrganizationSettings,
 } from '../api/organization'
 import type { OrganizationSettings } from '@/shared/schema'
+import { useAdminMutation } from './use-admin-mutation'
 
-export function useOrganizationSettings() {
-  return useQuery({
-    queryKey: queryKeys.organization.settings(),
-    queryFn: () => getOrganizationSettings(),
-  })
+function withErrorMessage<T extends { isError: boolean; error: unknown }>(q: T) {
+  return {
+    ...q,
+    errorMessage: q.isError ? getApiErrorMessage(q.error, 'Could not load data') : null,
+  }
 }
 
-export function useUpdateOrganizationSettings() {
+export function useOrganizationSettings() {
+  return withErrorMessage(
+    useQuery({
+      queryKey: queryKeys.organization.settings(),
+      queryFn: () => getOrganizationSettings(),
+    }),
+  )
+}
+
+export function useUpdateOrganizationSettings(options?: {
+  onErrorMessage?: (msg: string) => void
+}) {
   const qc = useQueryClient()
-  return useMutation({
+  return useAdminMutation({
     mutationFn: (
       patch: Partial<
         Pick<
@@ -33,47 +46,56 @@ export function useUpdateOrganizationSettings() {
         >
       >,
     ) => updateOrganizationSettings(patch),
+    errorFallback: 'Could not save organization settings',
+    onErrorMessage: options?.onErrorMessage,
     onSuccess: (row) => {
       qc.setQueryData(queryKeys.organization.settings(), row)
       qc.invalidateQueries({ queryKey: queryKeys.organization.settings() })
-    },
-    onError: () => {
-      // Handled by consumer
     },
   })
 }
 
 export function useOrgLocationsForSelect() {
-  return useQuery({
-    queryKey: queryKeys.organization.locations.list({ includeArchived: false }),
-    queryFn: () => getLocations({ includeArchived: false }),
-  })
+  return withErrorMessage(
+    useQuery({
+      queryKey: queryKeys.organization.locations.list({ includeArchived: false }),
+      queryFn: () => getLocations({ includeArchived: false }),
+    }),
+  )
 }
 
 export function useWorkingWeeks() {
-  return useQuery({
-    queryKey: queryKeys.organization.workingWeeks(),
-    queryFn: getWorkingWeeks,
-  })
+  return withErrorMessage(
+    useQuery({
+      queryKey: queryKeys.organization.workingWeeks(),
+      queryFn: getWorkingWeeks,
+    }),
+  )
 }
 
 export function useHolidayCalendars() {
-  return useQuery({
-    queryKey: queryKeys.organization.holidays.list(),
-    queryFn: getHolidayCalendars,
-  })
+  return withErrorMessage(
+    useQuery({
+      queryKey: queryKeys.organization.holidays.list(),
+      queryFn: getHolidayCalendars,
+    }),
+  )
 }
 
 export function useHolidays(calendarId?: number) {
-  return useQuery({
-    queryKey: queryKeys.organization.holidays.detail(calendarId ?? 0),
-    queryFn: () => getHolidays(calendarId),
-  })
+  return withErrorMessage(
+    useQuery({
+      queryKey: queryKeys.organization.holidays.detail(calendarId ?? 0),
+      queryFn: () => getHolidays(calendarId),
+    }),
+  )
 }
 
 export function usePositions(includeArchived = true) {
-  return useQuery({
-    queryKey: queryKeys.organization.positions(includeArchived),
-    queryFn: () => getPositions({ includeArchived }),
-  })
+  return withErrorMessage(
+    useQuery({
+      queryKey: queryKeys.organization.positions(includeArchived),
+      queryFn: () => getPositions({ includeArchived }),
+    }),
+  )
 }
