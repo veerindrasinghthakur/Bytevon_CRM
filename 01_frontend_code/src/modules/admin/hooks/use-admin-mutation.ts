@@ -7,6 +7,7 @@ import {
   type UseMutationResult,
 } from '@tanstack/react-query'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { toast } from '@/shared/hooks/use-toast'
 
 export type AdminMutationOptions<TData, TVariables, TContext = unknown> = Omit<
   UseMutationOptions<TData, unknown, TVariables, TContext>,
@@ -17,6 +18,8 @@ export type AdminMutationOptions<TData, TVariables, TContext = unknown> = Omit<
   /** Receives the parsed user-facing message */
   onErrorMessage?: (message: string, err: unknown) => void
   onError?: (err: unknown) => void
+  /** Show global toast on error (default true) */
+  toastOnError?: boolean
 }
 
 export function useAdminMutation<
@@ -26,17 +29,21 @@ export function useAdminMutation<
 >(
   options: AdminMutationOptions<TData, TVariables, TContext>,
 ): UseMutationResult<TData, unknown, TVariables, TContext> {
-  const { errorFallback, onErrorMessage, onError, ...rest } = options
+  const {
+    errorFallback,
+    onErrorMessage,
+    onError,
+    toastOnError = true,
+    ...rest
+  } = options
 
   return useMutation({
     ...rest,
-    onError: (err, variables, context) => {
+    onError: (err, _variables, _context) => {
       const msg = getApiErrorMessage(err, errorFallback ?? 'Action failed')
       onErrorMessage?.(msg, err)
+      if (toastOnError) toast.error(msg)
       onError?.(err)
-      // preserve any user-supplied onError from rest if they passed via mutationFn-only pattern
-      void variables
-      void context
     },
   })
 }
