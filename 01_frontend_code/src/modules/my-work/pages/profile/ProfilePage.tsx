@@ -89,7 +89,6 @@ export function ProfilePage() {
     e.target.value = ''
   }
 
-  if (isLoading || !profile) return <PageLoadingSkeleton />
   if (isError) {
     return (
       <div className="rounded-lg border border-error/30 bg-error/5 p-6 text-center">
@@ -100,6 +99,7 @@ export function ProfilePage() {
       </div>
     )
   }
+  if (isLoading || !profile) return <PageLoadingSkeleton />
 
   const displayName = isEditing ? watch('name') : profile.name
   const initials =
@@ -115,7 +115,14 @@ export function ProfilePage() {
   const otherSession = activeSessions.find((s) => !s.current)
 
   const prefs = watch('preferences')
-  const appearanceValue = isEditing ? prefs?.appearance : preference
+  // Backend profile may omit preferences until normalizeProfile runs; never read bare.
+  const savedPrefs = profile.preferences ?? {
+    emailNotifications: true,
+    desktopPush: true,
+    language: 'en',
+    appearance: 'system' as const,
+  }
+  const appearanceValue = isEditing ? prefs?.appearance ?? preference : preference
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -355,14 +362,14 @@ export function ProfilePage() {
             <ToggleRow
               title="Email Notifications"
               description="Weekly summaries and direct messages"
-              checked={isEditing ? !!prefs?.emailNotifications : profile.preferences.emailNotifications}
+              checked={isEditing ? !!prefs?.emailNotifications : !!savedPrefs.emailNotifications}
               disabled={!isEditing}
               onChange={(v) => setValue('preferences.emailNotifications', v)}
             />
             <ToggleRow
               title="Desktop Push"
               description="Real-time alerts for urgent tasks"
-              checked={isEditing ? !!prefs?.desktopPush : profile.preferences.desktopPush}
+              checked={isEditing ? !!prefs?.desktopPush : !!savedPrefs.desktopPush}
               disabled={!isEditing}
               onChange={(v) => setValue('preferences.desktopPush', v)}
             />
@@ -371,7 +378,7 @@ export function ProfilePage() {
                 Interface Language
               </label>
               <Select
-                value={isEditing ? prefs?.language ?? 'en' : profile.preferences.language}
+                value={isEditing ? prefs?.language ?? 'en' : savedPrefs.language}
                 onChange={(v) => setValue('preferences.language', v)}
                 options={[...PROFILE_LANG_OPTIONS]}
                 disabled={!isEditing}
@@ -444,10 +451,17 @@ export function ProfilePage() {
                     <td className="py-4 text-body-sm text-on-surface-variant">{row.module}</td>
                     <td className="py-4 text-body-sm text-on-surface-variant">{row.time}</td>
                     <td className="py-4 text-right">
-                      <span className="status-badge status-success">{row.status}</span>
+                      <span className="text-label-sm font-semibold text-secondary">{row.status}</span>
                     </td>
                   </tr>
                 ))}
+                {activity.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="py-8 text-center text-on-surface-variant text-body-sm">
+                      No recent activity
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -457,10 +471,10 @@ export function ProfilePage() {
   )
 }
 
-function Info({ label, value }: { label: string; value: string }) {
+function Info({ label, value }: { label: string; value?: string | null }) {
   return (
     <div>
-      <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">{label}</p>
+      <p className="text-label-md text-on-surface-variant uppercase tracking-wider mb-1">{label}</p>
       <p className="text-body-md font-medium text-on-background">{value || '—'}</p>
     </div>
   )
@@ -474,26 +488,23 @@ function EditableInfo({
   registerProps,
 }: {
   label: string
-  value: string
+  value?: string | null
   editing: boolean
   error?: string
   registerProps: ReturnType<ReturnType<typeof useForm<ProfileEditFormInput>>['register']>
 }) {
+  if (!editing) return <Info label={label} value={value} />
   return (
     <div>
-      <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">{label}</p>
-      {editing ? (
-        <>
-          <input
-            className="w-full h-10 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/20"
-            defaultValue={value}
-            {...registerProps}
-          />
-          {error && <p className="mt-1 text-label-sm text-error">{error}</p>}
-        </>
-      ) : (
-        <p className="text-body-md font-medium text-on-background">{value || '—'}</p>
-      )}
+      <label className="text-label-md text-on-surface-variant uppercase tracking-wider mb-1 block">
+        {label}
+      </label>
+      <input
+        className="w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-md text-on-background focus:outline-none focus:ring-2 focus:ring-secondary/40"
+        defaultValue={value ?? ''}
+        {...registerProps}
+      />
+      {error && <p className="text-label-sm text-error mt-1">{error}</p>}
     </div>
   )
 }
@@ -508,13 +519,13 @@ function ToggleRow({
   title: string
   description: string
   checked: boolean
-  disabled: boolean
+  disabled?: boolean
   onChange: (v: boolean) => void
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <div>
-        <p className="font-bold text-body-md">{title}</p>
+      <div className="min-w-0">
+        <p className="text-body-md font-semibold text-on-background">{title}</p>
         <p className="text-body-sm text-on-surface-variant">{description}</p>
       </div>
       <button
@@ -522,18 +533,15 @@ function ToggleRow({
         role="switch"
         aria-checked={checked}
         disabled={disabled}
-        onClick={() => !disabled && onChange(!checked)}
-        className={cn(
-          'relative w-11 h-6 rounded-full transition-colors shrink-0',
-          checked ? 'bg-secondary' : 'bg-outline-variant',
-          disabled && 'opacity-60 cursor-default',
-        )}
+        onClick={() => onChange(!checked)}
+        className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${
+          checked ? 'bg-secondary' : 'bg-outline-variant'
+        } ${disabled ? 'opacity-60 cursor-default' : 'cursor-pointer'}`}
       >
         <span
-          className={cn(
-            'absolute top-0.5 w-5 h-5 bg-surface-container-lowest rounded-full shadow transition-all',
-            checked ? 'left-[22px]' : 'left-0.5',
-          )}
+          className={`absolute top-0.5 left-0.5 h-6 w-6 rounded-full bg-white shadow transition-transform ${
+            checked ? 'translate-x-5' : 'translate-x-0'
+          }`}
         />
       </button>
     </div>
