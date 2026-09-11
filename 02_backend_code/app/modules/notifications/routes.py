@@ -1,12 +1,14 @@
 """
 Notifications HTTP routes.
+Includes frontend-facing aliases used by the admin/notifications UI.
 """
 
 from __future__ import annotations
 
-from typing import Annotated, Optional
+from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Header, Query, status
+from pydantic import BaseModel, Field
 
 from app.core.db.enums import NotificationStatus
 from app.modules.notifications.dependencies import NotificationServiceDep
@@ -21,11 +23,26 @@ from app.modules.notifications.schemas.schemas import (
     PreferenceUpdate,
 )
 
-# Optional is used in response_model for notify endpoint
-
 router = APIRouter(prefix="/notifications", tags=["Notifications"])
 
 ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
+ActorRequired = Annotated[int, Header(alias="X-Employment-Id")]
+
+
+class ComposeBody(BaseModel):
+    """Loose body from frontend compose form."""
+
+    title: str = ""
+    body: str = ""
+    employment_ids: list[int] = Field(default_factory=list)
+    broadcastAll: bool = False
+    template_code: Optional[str] = None
+    channels: dict[str, bool] = Field(default_factory=dict)
+
+
+class MessageOk(BaseModel):
+    message: str = "ok"
+    queued: int = 0
 
 
 # ---------------------------------------------------------------------------
@@ -77,7 +94,7 @@ async def update_template(
 
 
 # ---------------------------------------------------------------------------
-# Internal-style notify endpoints (also callable by other services in-process)
+# Notify (internal + compose aliases)
 # ---------------------------------------------------------------------------
 
 @router.post(
@@ -104,6 +121,35 @@ async def notify_bulk(
     return await service.notify_bulk(body)
 
 
+@router.post("/compose", status_code=status.HTTP_201_CREATED)
+async def compose(
+    body: ComposeBody,
+    service: NotificationServiceDep,
+) -> dict[str, Any]:
+    """Frontend compose → notify/notify_bulk when employment targets present."""
+    queued = 0
+    if body.employment_ids:
+        for eid in body.employment_ids:
+            req = NotifyRequest(
+                employment_id=eid,
+                template_code=body.template_code or "generic",
+                title=body.title or None,
+                body=body.body or None,
+            )
+            try:
+                await service.notify(req)
+                queued += 1
+            except Exception:
+                continue
+    return {"queued": queued, "sentRows": []}
+
+
+@router.post("/drafts", status_code=status.HTTP_201_CREATED)
+async def save_draft(body: ComposeBody) -> MessageOk:
+    """Drafts are client-side for V1; accept and acknowledge."""
+    return MessageOk(message="draft accepted")
+
+
 # ---------------------------------------------------------------------------
 # Inbox
 # ---------------------------------------------------------------------------
@@ -111,7 +157,7 @@ async def notify_bulk(
 @router.get("/inbox", response_model=list[NotificationResponse])
 async def list_inbox(
     service: NotificationServiceDep,
-    actor: Annotated[int, Header(alias="X-Employment-Id")],
+    actor: ActorRequired,
     status_filter: Optional[NotificationStatus] = Query(None, alias="status"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
@@ -121,10 +167,18 @@ async def list_inbox(
     )
 
 
+@router.get("/inbox/all", response_model=list[NotificationResponse])
+async def list_inbox_all(
+    service: NotificationServiceDep,
+    actor: ActorRequired,
+) -> list[NotificationResponse]:
+    return await service.list_inbox(actor, status=None, limit=200, offset=0)
+
+
 @router.get("/inbox/unread-count")
 async def unread_count(
     service: NotificationServiceDep,
-    actor: Annotated[int, Header(alias="X-Employment-Id")],
+    actor: ActorRequired,
 ) -> dict[str, int]:
     return await service.unread_count(actor)
 
@@ -136,9 +190,37 @@ async def unread_count(
 async def mark_read(
     notification_id: int,
     service: NotificationServiceDep,
-    actor: Annotated[int, Header(alias="X-Employment-Id")],
+    actor: ActorRequired,
 ) -> NotificationResponse:
     return await service.mark_read(notification_id, employment_id=actor)
+
+
+@router.post(
+    "/{notification_id}/read",
+    response_model=NotificationResponse,
+)
+async def mark_read_short(
+    notification_id: int,
+    service: NotificationServiceDep,
+    actor: ActorRequired,
+) -> NotificationResponse:
+    return await service.mark_read(notification_id, employment_id=actor)
+
+
+@router.post("/read-all")
+async def mark_all_read(
+    service: NotificationServiceDep,
+    actor: ActorRequired,
+) -> MessageOk:
+    items = await service.list_inbox(actor, status=NotificationStatus.UNREAD, limit=200, offset=0)
+    n = 0
+    for row in items:
+        try:
+            await service.mark_read(row.id, employment_id=actor)
+            n += 1
+        except Exception:
+            continue
+    return MessageOk(message="ok", queued=n)
 
 
 @router.post(
@@ -148,9 +230,88 @@ async def mark_read(
 async def archive(
     notification_id: int,
     service: NotificationServiceDep,
-    actor: Annotated[int, Header(alias="X-Employment-Id")],
+    actor: ActorRequired,
 ) -> NotificationResponse:
     return await service.archive(notification_id, employment_id=actor)
+
+
+@router.post(
+    "/{notification_id}/archive",
+    response_model=NotificationResponse,
+)
+async def archive_short(
+    notification_id: int,
+    service: NotificationServiceDep,
+    actor: ActorRequired,
+) -> NotificationResponse:
+    return await service.archive(notification_id, employment_id=actor)
+
+
+@router.post("/archive-read")
+async def archive_read(
+    service: NotificationServiceDep,
+    actor: ActorRequired,
+) -> MessageOk:
+    items = await service.list_inbox(actor, status=NotificationStatus.READ, limit=200, offset=0)
+    n = 0
+    for row in items:
+        try:
+            await service.archive(row.id, employment_id=actor)
+            n += 1
+        except Exception:
+            continue
+    return MessageOk(message="ok", queued=n)
+
+
+# ---------------------------------------------------------------------------
+# Sent / channels / triggers (V1 stubs + templates mapping)
+# ---------------------------------------------------------------------------
+
+@router.get("/sent")
+async def list_sent(
+    page: int = Query(1, ge=1),
+    pageSize: int = Query(20, ge=1, le=200),
+) -> dict[str, Any]:
+    """Outbound log not persisted in V1 — empty page for UI."""
+    return {"items": [], "total": 0, "page": page, "pageSize": pageSize}
+
+
+@router.get("/channels")
+async def list_channels() -> list[dict[str, Any]]:
+    return [
+        {
+            "id": "in_app",
+            "name": "In-App",
+            "enabled": True,
+            "description": "Bell / inbox notifications",
+        },
+        {
+            "id": "email",
+            "name": "Email",
+            "enabled": True,
+            "description": "Email channel (stub delivery in V1)",
+        },
+    ]
+
+
+@router.get("/triggers")
+async def list_triggers(
+    service: NotificationServiceDep,
+) -> list[dict[str, Any]]:
+    templates = await service.list_templates(active_only=False)
+    out: list[dict[str, Any]] = []
+    for t in templates:
+        out.append(
+            {
+                "id": str(t.id),
+                "code": getattr(t, "code", None) or getattr(t, "name", str(t.id)),
+                "name": getattr(t, "name", None) or getattr(t, "code", str(t.id)),
+                "description": getattr(t, "description", None) or "",
+                "channels": ["IN_APP", "EMAIL"],
+                "active": getattr(t, "is_active", True),
+            }
+        )
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -160,7 +321,7 @@ async def archive(
 @router.get("/preferences", response_model=list[PreferenceResponse])
 async def list_preferences(
     service: NotificationServiceDep,
-    actor: Annotated[int, Header(alias="X-Employment-Id")],
+    actor: ActorRequired,
 ) -> list[PreferenceResponse]:
     return await service.list_preferences(actor)
 
@@ -169,6 +330,6 @@ async def list_preferences(
 async def set_preference(
     body: PreferenceUpdate,
     service: NotificationServiceDep,
-    actor: Annotated[int, Header(alias="X-Employment-Id")],
+    actor: ActorRequired,
 ) -> PreferenceResponse:
     return await service.set_preference(actor, body)
