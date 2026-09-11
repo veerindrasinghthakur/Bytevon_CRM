@@ -94,6 +94,15 @@ class RoleListItemResponse(RoleResponse):
     permission_keys: List[str] = Field(default_factory=list)
 
 
+class RoleListResponse(BaseModel):
+    """Paginated roles list for admin UI."""
+
+    items: List[RoleListItemResponse] = Field(default_factory=list)
+    total: int = 0
+    page: int = 1
+    pageSize: int = 20
+
+
 class RolePermissionDetail(BaseModel):
     """Flattened grant for UI matrix (resource.action string + ids)."""
 
