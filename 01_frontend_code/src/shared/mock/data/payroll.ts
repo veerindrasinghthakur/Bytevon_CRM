@@ -368,14 +368,17 @@ export function computeMonthlySummary(rows?: PayrollEmployeeRow[]): MonthlyPayro
   }
 }
 
-export function formatMoney(n: number, currency = '$') {
-  return `${currency}${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+/** Safe money formatter — never throws on null/undefined/NaN. */
+export function formatMoney(n: number | null | undefined, currency = '$') {
+  const value = typeof n === 'number' && Number.isFinite(n) ? n : 0
+  return `${currency}${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
-export function formatMoneyShort(n: number, currency = '$') {
-  if (n >= 1_000_000) return `${currency}${(n / 1_000_000).toFixed(2)}M`
-  if (n >= 1_000) return `${currency}${(n / 1_000).toFixed(1)}K`
-  return formatMoney(n, currency)
+export function formatMoneyShort(n: number | null | undefined, currency = '$') {
+  const value = typeof n === 'number' && Number.isFinite(n) ? n : 0
+  if (value >= 1_000_000) return `${currency}${(value / 1_000_000).toFixed(2)}M`
+  if (value >= 1_000) return `${currency}${(value / 1_000).toFixed(1)}K`
+  return formatMoney(value, currency)
 }
 
 export function updateSalaryStructure(
