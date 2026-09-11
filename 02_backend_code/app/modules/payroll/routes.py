@@ -11,6 +11,7 @@ from datetime import date
 from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Header, Query, status
+from pydantic import BaseModel, Field
 
 from app.modules.payroll.dependencies import PayrollServiceDep
 from app.modules.payroll.schemas.schemas import (
@@ -29,6 +30,14 @@ router = APIRouter(prefix="/payroll", tags=["Payroll"])
 ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
 
 
+class RunPayrollBody(BaseModel):
+    """Frontend posts { year, month }; employment_id optional for bulk stub."""
+
+    year: int = Field(..., ge=2000, le=2100)
+    month: int = Field(..., ge=1, le=12)
+    employment_id: Optional[int] = None
+
+
 def _period_now() -> dict[str, Any]:
     today = date.today()
     return {
@@ -37,6 +46,22 @@ def _period_now() -> dict[str, Any]:
         "label": today.strftime("%B %Y"),
         "status": "OPEN",
     }
+
+
+def _money(r: Any, *names: str) -> float:
+    for n in names:
+        v = getattr(r, n, None)
+        if v is not None:
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                continue
+    return 0.0
+
+
+def _status_str(r: Any) -> str:
+    s = getattr(r, "status", "")
+    return s.value if hasattr(s, "value") else str(s)
 
 
 # ---------------------------------------------------------------------------
@@ -54,9 +79,9 @@ async def payroll_kpis(
     y = year or today.year
     m = month or today.month
     rows = await service.list_payrolls(year=y, month=m, limit=500)
-    total_net = sum(float(getattr(r, "net_pay", 0) or 0) for r in rows)
-    total_gross = sum(float(getattr(r, "gross_pay", 0) or 0) for r in rows)
-    paid = [r for r in rows if str(getattr(r, "status", "")).upper() == "PAID"]
+    total_net = sum(_money(r, "net_salary", "net_pay") for r in rows)
+    total_gross = sum(_money(r, "gross_salary", "gross_pay") for r in rows)
+    paid = [r for r in rows if _status_str(r).upper() == "PAID"]
     return {
         "employees": len(rows),
         "totalGross": total_gross,
@@ -81,7 +106,6 @@ async def list_payroll_employees(
     pageSize: int = Query(20, ge=1, le=200),
     search: Optional[str] = Query(None),
 ) -> dict[str, Any]:
-    """UI employee payroll list derived from monthly payroll rows."""
     today = date.today()
     y = year or today.year
     m = month or today.month
@@ -89,6 +113,7 @@ async def list_payroll_employees(
     items: list[dict[str, Any]] = []
     for r in rows:
         emp_id = getattr(r, "employment_id", None)
+        gross = _money(r, "gross_salary", "gross_pay")
         items.append(
             {
                 "id": str(getattr(r, "id", emp_id)),
@@ -96,11 +121,11 @@ async def list_payroll_employees(
                 "name": f"Employee #{emp_id}",
                 "code": f"EMP-{emp_id}",
                 "department": "—",
-                "status": str(getattr(r, "status", "DRAFT")),
-                "gross": float(getattr(r, "gross_pay", 0) or 0),
-                "earnings": float(getattr(r, "gross_pay", 0) or 0),
-                "deductions": float(getattr(r, "total_deductions", 0) or 0),
-                "net": float(getattr(r, "net_pay", 0) or 0),
+                "status": _status_str(r),
+                "gross": gross,
+                "earnings": _money(r, "total_earnings", "gross_salary"),
+                "deductions": _money(r, "total_deductions"),
+                "net": _money(r, "net_salary", "net_pay"),
                 "paymentRef": getattr(r, "payment_reference", None),
             }
         )
@@ -114,17 +139,16 @@ async def list_payroll_employees(
     total = len(items)
     start = (page - 1) * pageSize
     page_items = items[start : start + pageSize]
-    metrics = {
-        "totalGross": sum(e["gross"] for e in items),
-        "totalNet": sum(e["net"] for e in items),
-        "count": total,
-    }
     return {
         "items": page_items,
         "total": total,
         "page": page,
         "pageSize": pageSize,
-        "metrics": metrics,
+        "metrics": {
+            "totalGross": sum(e["gross"] for e in items),
+            "totalNet": sum(e["net"] for e in items),
+            "count": total,
+        },
     }
 
 
@@ -136,13 +160,17 @@ async def payroll_activity(
     rows = await service.list_payrolls(limit=limit)
     out: list[dict[str, Any]] = []
     for r in rows:
+        y = getattr(r, "year", None)
+        m = getattr(r, "month", None)
+        if y is not None and m is not None:
+            title = f"Payroll {y}-{int(m):02d}"
+        else:
+            title = f"Payroll #{getattr(r, 'id', '')}"
         out.append(
             {
                 "id": str(getattr(r, "id", "")),
-                "title": f"Payroll {getattr(r, 'year', '')}-{getattr(r, 'month', ''):02d}"
-                if getattr(r, "month", None)
-                else f"Payroll #{getattr(r, 'id', '')}",
-                "status": str(getattr(r, "status", "")),
+                "title": title,
+                "status": _status_str(r),
                 "time": str(getattr(r, "updated_at", getattr(r, "created_at", ""))),
             }
         )
@@ -163,11 +191,9 @@ async def monthly_summary(
         "year": y,
         "month": m,
         "employeeCount": len(rows),
-        "totalGross": sum(float(getattr(r, "gross_pay", 0) or 0) for r in rows),
-        "totalNet": sum(float(getattr(r, "net_pay", 0) or 0) for r in rows),
-        "totalDeductions": sum(
-            float(getattr(r, "total_deductions", 0) or 0) for r in rows
-        ),
+        "totalGross": sum(_money(r, "gross_salary", "gross_pay") for r in rows),
+        "totalNet": sum(_money(r, "net_salary", "net_pay") for r in rows),
+        "totalDeductions": sum(_money(r, "total_deductions") for r in rows),
     }
 
 
@@ -181,19 +207,24 @@ async def payroll_history(
     rows = await service.list_payrolls(year=year, limit=limit)
     out: list[dict[str, Any]] = []
     for r in rows:
-        status_val = str(getattr(r, "status", "")).upper()
-        if status_val != "PAID":
+        if _status_str(r).upper() != "PAID":
             continue
         emp_id = getattr(r, "employment_id", None)
+        y = getattr(r, "year", "")
+        m = getattr(r, "month", 0) or 0
         out.append(
             {
                 "id": str(getattr(r, "id", "")),
-                "period": f"{getattr(r, 'year', '')}-{getattr(r, 'month', 0):02d}",
+                "period": f"{y}-{int(m):02d}",
                 "employeeId": str(emp_id) if emp_id is not None else "",
-                "paidOn": str(getattr(r, "paid_at", getattr(r, "updated_at", ""))),
-                "gross": float(getattr(r, "gross_pay", 0) or 0),
-                "net": float(getattr(r, "net_pay", 0) or 0),
-                "ref": getattr(r, "payment_reference", None) or f"TRX-{getattr(r, 'id', '')}",
+                "paidOn": str(
+                    getattr(r, "payment_date", None)
+                    or getattr(r, "updated_at", "")
+                ),
+                "gross": _money(r, "gross_salary", "gross_pay"),
+                "net": _money(r, "net_salary", "net_pay"),
+                "ref": getattr(r, "payment_reference", None)
+                or f"TRX-{getattr(r, 'id', '')}",
             }
         )
     if search:
@@ -226,10 +257,10 @@ async def run_preview(
             "id": str(getattr(r, "id", "")),
             "employmentId": getattr(r, "employment_id", None),
             "name": f"Employee #{getattr(r, 'employment_id', '')}",
-            "gross": float(getattr(r, "gross_pay", 0) or 0),
-            "earnings": float(getattr(r, "gross_pay", 0) or 0),
-            "deductions": float(getattr(r, "total_deductions", 0) or 0),
-            "net": float(getattr(r, "net_pay", 0) or 0),
+            "gross": _money(r, "gross_salary", "gross_pay"),
+            "earnings": _money(r, "total_earnings", "gross_salary"),
+            "deductions": _money(r, "total_deductions"),
+            "net": _money(r, "net_salary", "net_pay"),
         }
         for r in rows
     ]
@@ -244,12 +275,24 @@ async def run_preview(
 
 @router.post("/run", status_code=status.HTTP_202_ACCEPTED)
 async def run_payroll(
-    body: PayrollCalculateRequest,
+    body: RunPayrollBody,
     service: PayrollServiceDep,
     actor: ActorHeader = None,
 ) -> MessageResponse:
-    await service.calculate_payroll(body, actor_employment_id=actor)
-    return MessageResponse(message="Payroll calculation started")
+    if body.employment_id is not None:
+        await service.calculate_payroll(
+            PayrollCalculateRequest(
+                employment_id=body.employment_id,
+                year=body.year,
+                month=body.month,
+            ),
+            actor_employment_id=actor,
+        )
+        return MessageResponse(message="Payroll calculated for employment")
+    return MessageResponse(
+        message=f"Payroll run accepted for {body.year}-{body.month:02d} "
+        "(pass employment_id to calculate a single employee)"
+    )
 
 
 # ---------------------------------------------------------------------------
