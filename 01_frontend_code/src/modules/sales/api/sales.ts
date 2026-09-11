@@ -317,7 +317,6 @@ export async function updateLead(
     if (patch.platformId !== undefined) body.platform_id = patch.platformId
     if (patch.assignedEmploymentId !== undefined)
       body.assigned_employment_id = patch.assignedEmploymentId
-    // Enums: stage drives domain LeadStatus; status Active/Inactive handled server-side
     if (patch.stage != null) body.stage = patch.stage
     if (patch.status != null) body.status = patch.status
     if (patch.stage != null || patch.status != null) {
@@ -332,6 +331,26 @@ export async function updateLead(
   if (idx < 0) throw new Error('Lead not found')
   list[idx] = { ...list[idx], ...patch, id }
   return list[idx]
+}
+
+/**
+ * Advance pipeline stage. WON uses POST /sales/leads/{id}/status (client create flow);
+ * other stages use PATCH via updateLead.
+ */
+export async function changeLeadStage(id: string, stage: string): Promise<Lead | null> {
+  if (stage === 'Won') {
+    if (!env.useMockApi) {
+      await apiClient.post(`/sales/leads/${id}/status`, { status: 'WON' })
+      return getLeadById(id)
+    }
+    await delay(350)
+    const list = leads()
+    const idx = list.findIndex((l) => l.id === id)
+    if (idx < 0) throw new Error('Lead not found')
+    list[idx] = { ...list[idx], stage: 'Won', status: 'Inactive', id }
+    return list[idx]
+  }
+  return updateLead(id, { stage, status: 'Active' })
 }
 
 export async function listClients(params?: {
