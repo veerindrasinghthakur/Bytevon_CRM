@@ -6,14 +6,18 @@ Locked Lead WON (one TX):
 2. Set lead status = WON
 3. Optionally call ProjectPublicService.create_from_lead (if Developer module present)
 4. Commit → notify + audit
+
+Note: TimestampMixin.updated_at uses server onupdate=func.now(), so after commit
+the attribute is expired. Always refresh before Pydantic model_validate in async.
 """
 
 from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
-from typing import Optional
+from typing import Optional, TypeVar
 
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -43,11 +47,18 @@ logger = logging.getLogger(__name__)
 
 _TERMINAL = {LeadStatus.WON, LeadStatus.LOST, LeadStatus.CLOSED}
 
+T = TypeVar("T", bound=BaseModel)
+
 
 class SalesPublicService(BasePublicService):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
         self._repo = SalesRepository(session)
+
+    async def _validate_after_commit(self, instance: object, schema: type[T]) -> T:
+        """Refresh expired server columns (e.g. updated_at) then map to schema."""
+        await self._refresh(instance)
+        return schema.model_validate(instance)
 
     # ==================================================================
     # Clients
@@ -66,7 +77,7 @@ class SalesPublicService(BasePublicService):
         await self._repo.add(client)
         await self._commit()
         await self._audit("client.created", client.id, actor_employment_id)
-        return ClientResponse.model_validate(client)
+        return await self._validate_after_commit(client, ClientResponse)
 
     async def get_client(self, client_id: int) -> ClientResponse:
         client = await self._repo.get_client_by_id(client_id)
@@ -97,7 +108,7 @@ class SalesPublicService(BasePublicService):
         client.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
         await self._audit("client.updated", client.id, actor_employment_id)
-        return ClientResponse.model_validate(client)
+        return await self._validate_after_commit(client, ClientResponse)
 
     async def archive_client(
         self,
@@ -139,7 +150,7 @@ class SalesPublicService(BasePublicService):
         await self._repo.add(contact)
         await self._commit()
         await self._audit("client_contact.created", contact.id, actor_employment_id)
-        return ClientContactResponse.model_validate(contact)
+        return await self._validate_after_commit(contact, ClientContactResponse)
 
     async def list_contacts(self, client_id: int) -> list[ClientContactResponse]:
         client = await self._repo.get_client_by_id(client_id)
@@ -165,7 +176,7 @@ class SalesPublicService(BasePublicService):
         await self._repo.add(platform)
         await self._commit()
         await self._audit("platform.created", platform.id, actor_employment_id)
-        return PlatformResponse.model_validate(platform)
+        return await self._validate_after_commit(platform, PlatformResponse)
 
     async def list_platforms(
         self, *, include_archived: bool = False
@@ -187,7 +198,7 @@ class SalesPublicService(BasePublicService):
             setattr(platform, field, value)
         platform.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
-        return PlatformResponse.model_validate(platform)
+        return await self._validate_after_commit(platform, PlatformResponse)
 
     async def archive_platform(
         self,
@@ -250,7 +261,7 @@ class SalesPublicService(BasePublicService):
         await self._repo.add(lead)
         await self._commit()
         await self._audit("lead.created", lead.id, actor_employment_id)
-        return LeadResponse.model_validate(lead)
+        return await self._validate_after_commit(lead, LeadResponse)
 
     async def get_lead(self, lead_id: int) -> LeadResponse:
         lead = await self._repo.get_lead_by_id(lead_id)
@@ -298,7 +309,7 @@ class SalesPublicService(BasePublicService):
         lead.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
         await self._audit("lead.updated", lead.id, actor_employment_id)
-        return LeadResponse.model_validate(lead)
+        return await self._validate_after_commit(lead, LeadResponse)
 
     async def change_lead_status(
         self,
@@ -325,7 +336,7 @@ class SalesPublicService(BasePublicService):
         lead.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
         await self._audit("lead.status_changed", lead.id, actor_employment_id)
-        return LeadResponse.model_validate(lead)
+        return await self._validate_after_commit(lead, LeadResponse)
 
     async def _win_lead(
         self,
@@ -382,9 +393,11 @@ class SalesPublicService(BasePublicService):
         await self._audit("lead.won", lead.id, actor_employment_id)
         await self._notify_won(lead, client.id, project_id)
 
+        lead_resp = await self._validate_after_commit(lead, LeadResponse)
+        client_resp = await self._validate_after_commit(client, ClientResponse)
         return LeadWonResponse(
-            lead=LeadResponse.model_validate(lead),
-            client=ClientResponse.model_validate(client),
+            lead=lead_resp,
+            client=client_resp,
             project_id=project_id,
             project_created=project_created,
         )
