@@ -6,6 +6,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { IconButton } from '@/shared/components/ui/IconButton'
 import { Modal } from '@/shared/components/ui/Modal'
 import { cn } from '@/shared/lib/cn'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { useLeaveEdit } from '../context/LeaveEditContext'
 import { listLeaveTypeSettings } from '../api/leave'
 import { getLeaveAccrualPolicy, updateLeaveAccrualPolicy } from '../api/settings'
@@ -17,16 +18,18 @@ import { leavePolicyFormSchema, type LeavePolicyFormInput } from '../schemas/lea
 export function LeaveSettingsPage() {
   const { editing, setEditing } = useLeaveEdit()
   const qc = useQueryClient()
+  const [saveError, setSaveError] = useState<string | null>(null)
 
-  const { data: leaveTypes = [], isLoading } = useQuery({
+  const { data: leaveTypes = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: queryKeys.admin.leave.policies(),
     queryFn: listLeaveTypeSettings,
   })
 
-  const { data: accrualData, isLoading: accrualLoading } = useQuery({
-    queryKey: queryKeys.admin.settings.leaveAccrual(),
-    queryFn: getLeaveAccrualPolicy,
-  })
+  const { data: accrualData, isLoading: accrualLoading, isError: accrualIsError, error: accrualError } =
+    useQuery({
+      queryKey: queryKeys.admin.settings.leaveAccrual(),
+      queryFn: getLeaveAccrualPolicy,
+    })
 
   const accrualForm = useForm<LeaveAccrualPolicyInput>({
     resolver: zodResolver(leaveAccrualPolicySchema),
@@ -57,10 +60,12 @@ export function LeaveSettingsPage() {
   const saveAccrual = useMutation({
     mutationFn: () => updateLeaveAccrualPolicy(accrualForm.getValues()),
     onSuccess: () => {
+      setSaveError(null)
       qc.invalidateQueries({ queryKey: queryKeys.admin.settings.leaveAccrual() })
     },
-    onError: () => {
-      // Errors surface via mutation state if needed
+    onError: (e: unknown) => {
+      setSaveError(getApiErrorMessage(e, 'Could not save accrual policy'))
+      setEditing(true)
     },
   })
 
@@ -82,6 +87,25 @@ export function LeaveSettingsPage() {
 
   return (
     <div className="space-y-8 animate-fade-in">
+      {saveError && (
+        <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          {saveError}
+        </div>
+      )}
+      {(isError || accrualIsError) && (
+        <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error flex flex-wrap items-center gap-3">
+          <span>
+            {isError
+              ? getApiErrorMessage(error, 'Could not load leave types')
+              : getApiErrorMessage(accrualError, 'Could not load accrual policy')}
+          </span>
+          <Button variant="outline" size="sm" onClick={() => void refetch()}>
+            Retry
+          </Button>
+        </div>
+      )}
+
       <div className="grid grid-cols-12 gap-6">
         <section className="col-span-12 lg:col-span-8 bv-surface card-hover p-6">
           <div className="flex justify-between items-center mb-6">
