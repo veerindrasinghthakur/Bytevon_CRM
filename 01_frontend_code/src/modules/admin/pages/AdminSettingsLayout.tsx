@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { AdminSettingsNav } from '../components/AdminSettingsNav'
+import { AdminErrorBoundary } from '../components/AdminErrorBoundary'
 import { getAdminHubMetrics } from '../api/metrics'
 import { queryKeys } from '@/shared/lib/query-keys'
 
@@ -56,7 +57,9 @@ export function AdminSettingsLayout() {
 
       <AdminSettingsNav />
       <div className="min-w-0 w-full">
-        <Outlet />
+        <AdminErrorBoundary label="Settings">
+          <Outlet />
+        </AdminErrorBoundary>
       </div>
     </div>
   )
