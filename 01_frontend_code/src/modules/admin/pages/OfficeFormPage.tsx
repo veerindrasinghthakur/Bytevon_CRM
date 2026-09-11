@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { cn } from '@/shared/lib/cn'
 import { createLocation, getLocation, updateLocation } from '../api/organization'
 import {
@@ -76,7 +77,6 @@ export function OfficeFormPage() {
       if (isEdit && Number.isFinite(numericId)) {
         return updateLocation(numericId, toLocationUpdatePayload(values) as any)
       }
-      // Backend LocationCreate — never send working_week_id/holiday_calendar_id = 0 or fake 1
       return createLocation(toLocationCreatePayload(values) as any)
     },
     onSuccess: async () => {
@@ -84,23 +84,20 @@ export function OfficeFormPage() {
       goLocations()
     },
     onError: (e: unknown) => {
-      const msg =
-        e && typeof e === 'object' && 'response' in e
-          ? String(
-              (e as { response?: { data?: { detail?: unknown; message?: string } } }).response?.data
-                ?.detail ??
-                (e as { response?: { data?: { message?: string } } }).response?.data?.message ??
-                (e as Error).message,
-            )
-          : e instanceof Error
-            ? e.message
-            : 'Failed to save location'
-      setError(msg)
+      setError(getApiErrorMessage(e, 'Failed to save location'))
     },
   })
 
   if (isEdit && officeQuery.isLoading) {
     return <div className="p-12 text-center text-on-surface-variant">Loading location…</div>
+  }
+
+  if (isEdit && officeQuery.isError) {
+    return (
+      <div className="p-6 rounded-lg border border-error/30 bg-error/10 text-body-sm text-error">
+        {getApiErrorMessage(officeQuery.error, 'Could not load location')}
+      </div>
+    )
   }
 
   return (
@@ -155,37 +152,12 @@ export function OfficeFormPage() {
           Location details
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <TextField
-            label="Name"
-            error={errors.name?.message}
-            registration={register('name')}
-            placeholder="e.g. Singapore Office"
-          />
-          <TextField
-            label="Country"
-            error={errors.country?.message}
-            registration={register('country')}
-            placeholder="India"
-          />
-          <TextField
-            label="State"
-            error={errors.state?.message}
-            registration={register('state')}
-            placeholder="Karnataka"
-          />
-          <TextField
-            label="City"
-            error={errors.city?.message}
-            registration={register('city')}
-            placeholder="Bengaluru"
-          />
+          <TextField label="Name" error={errors.name?.message} registration={register('name')} placeholder="e.g. Singapore Office" />
+          <TextField label="Country" error={errors.country?.message} registration={register('country')} placeholder="India" />
+          <TextField label="State" error={errors.state?.message} registration={register('state')} placeholder="Karnataka" />
+          <TextField label="City" error={errors.city?.message} registration={register('city')} placeholder="Bengaluru" />
           <div className="md:col-span-2">
-            <TextField
-              label="Address"
-              error={errors.address?.message}
-              registration={register('address')}
-              placeholder="Street, building, suite"
-            />
+            <TextField label="Address" error={errors.address?.message} registration={register('address')} placeholder="Street, building, suite" />
           </div>
           <div className="space-y-1">
             <label className="text-xs font-bold text-on-surface-variant uppercase">Timezone</label>
@@ -194,9 +166,7 @@ export function OfficeFormPage() {
               className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
             >
               {['Asia/Kolkata', 'America/New_York', 'Europe/London', 'Asia/Singapore', 'UTC'].map((t) => (
-                <option key={t} value={t}>
-                  {t}
-                </option>
+                <option key={t} value={t}>{t}</option>
               ))}
             </select>
             {errors.timezone && <p className="text-caption text-error">{errors.timezone.message}</p>}
@@ -208,9 +178,7 @@ export function OfficeFormPage() {
               className="w-full border border-outline-variant rounded-lg px-3 py-2.5 text-sm outline-none focus:border-secondary focus:ring-2 focus:ring-secondary/30 bg-white transition-colors"
             >
               {['INR', 'USD', 'GBP', 'SGD', 'EUR'].map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
+                <option key={c} value={c}>{c}</option>
               ))}
             </select>
             {errors.currency && <p className="text-caption text-error">{errors.currency.message}</p>}
@@ -227,12 +195,7 @@ export function OfficeFormPage() {
             </select>
             {errors.fiscalMonth && <p className="text-caption text-error">{errors.fiscalMonth.message}</p>}
           </div>
-          <TextField
-            label="Payroll region"
-            error={errors.payrollRegion?.message}
-            registration={register('payrollRegion')}
-            placeholder="Optional"
-          />
+          <TextField label="Payroll region" error={errors.payrollRegion?.message} registration={register('payrollRegion')} placeholder="Optional" />
         </div>
       </div>
 
@@ -242,30 +205,10 @@ export function OfficeFormPage() {
           Geo & attendance
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <TextField
-            label="Latitude"
-            error={errors.latitude?.message}
-            registration={register('latitude')}
-            placeholder="0"
-          />
-          <TextField
-            label="Longitude"
-            error={errors.longitude?.message}
-            registration={register('longitude')}
-            placeholder="0"
-          />
-          <TextField
-            label="Attendance radius (meters)"
-            error={errors.attendanceRadiusMeters?.message}
-            registration={register('attendanceRadiusMeters')}
-            placeholder="200"
-          />
-          <TextField
-            label="Allowed IP CIDRs"
-            error={errors.allowedIpCidrs?.message}
-            registration={register('allowedIpCidrs')}
-            placeholder="Comma-separated, optional"
-          />
+          <TextField label="Latitude" error={errors.latitude?.message} registration={register('latitude')} placeholder="0" />
+          <TextField label="Longitude" error={errors.longitude?.message} registration={register('longitude')} placeholder="0" />
+          <TextField label="Attendance radius (meters)" error={errors.attendanceRadiusMeters?.message} registration={register('attendanceRadiusMeters')} placeholder="200" />
+          <TextField label="Allowed IP CIDRs" error={errors.allowedIpCidrs?.message} registration={register('allowedIpCidrs')} placeholder="Comma-separated, optional" />
         </div>
       </div>
 
@@ -279,18 +222,8 @@ export function OfficeFormPage() {
           missing id returns 404 from the API.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <TextField
-            label="Working week ID"
-            error={errors.workingWeekId?.message as string | undefined}
-            registration={register('workingWeekId')}
-            placeholder="Optional"
-          />
-          <TextField
-            label="Holiday calendar ID"
-            error={errors.holidayCalendarId?.message as string | undefined}
-            registration={register('holidayCalendarId')}
-            placeholder="Optional"
-          />
+          <TextField label="Working week ID" error={errors.workingWeekId?.message as string | undefined} registration={register('workingWeekId')} placeholder="Optional" />
+          <TextField label="Holiday calendar ID" error={errors.holidayCalendarId?.message as string | undefined} registration={register('holidayCalendarId')} placeholder="Optional" />
         </div>
       </div>
     </div>
