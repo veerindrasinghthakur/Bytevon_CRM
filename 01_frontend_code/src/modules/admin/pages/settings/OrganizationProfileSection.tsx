@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm, type UseFormRegisterReturn } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -6,10 +6,10 @@ import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { cn } from '@/shared/lib/cn'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { getOrganizationProfile, updateOrganizationProfile } from '../../api/settings'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { organizationProfileSchema, type OrganizationProfileInput } from '../../schemas/settings'
-import { notUndefined } from '@tanstack/react-virtual'
 
 /** Extended form values: schema fields + backend settings that persist. */
 type ProfileFormValues = OrganizationProfileInput & {
@@ -19,6 +19,7 @@ type ProfileFormValues = OrganizationProfileInput & {
 
 export function OrganizationProfileSection() {
   const qc = useQueryClient()
+  const [saveError, setSaveError] = useState<string | null>(null)
   const { data, isLoading, isError, error } = useQuery({
     queryKey: queryKeys.admin.settings.all,
     queryFn: getOrganizationProfile,
@@ -39,7 +40,7 @@ export function OrganizationProfileSection() {
       description: '',
       defaultTimezone: '',
       defaultCurrency: '',
-      headOfficeLocationId:undefined,
+      headOfficeLocationId: undefined,
     },
   })
 
@@ -56,8 +57,7 @@ export function OrganizationProfileSection() {
         description: data.description ?? '',
         defaultTimezone: data.defaultTimezone ?? '',
         defaultCurrency: data.defaultCurrency ?? '',
-        headOfficeLocationId:data.headOfficeLocationId?? undefined,
-
+        headOfficeLocationId: data.headOfficeLocationId ?? undefined,
       })
     }
   }, [data, isEditing, form])
@@ -79,8 +79,12 @@ export function OrganizationProfileSection() {
       })
     },
     onSuccess: () => {
+      setSaveError(null)
       qc.invalidateQueries({ queryKey: queryKeys.admin.settings.all })
       finishEditing()
+    },
+    onError: (e: unknown) => {
+      setSaveError(getApiErrorMessage(e, 'Could not save organization profile'))
     },
   })
 
@@ -93,8 +97,7 @@ export function OrganizationProfileSection() {
   if (isError) {
     return (
       <p className="text-body-sm text-error">
-        Failed to load organization settings
-        {error instanceof Error ? `: ${error.message}` : ''}
+        {getApiErrorMessage(error, 'Failed to load organization settings')}
       </p>
     )
   }
@@ -115,6 +118,7 @@ export function OrganizationProfileSection() {
               variant="outline"
               size="sm"
               onClick={() => {
+                setSaveError(null)
                 if (data) {
                   form.reset({
                     name: data.name ?? '',
@@ -139,7 +143,10 @@ export function OrganizationProfileSection() {
               variant="primary"
               size="sm"
               isLoading={save.isPending}
-              onClick={() => save.mutate()}
+              onClick={() => {
+                setSaveError(null)
+                save.mutate()
+              }}
             >
               Save Changes
             </Button>
@@ -148,6 +155,13 @@ export function OrganizationProfileSection() {
           <EditButton iconOnly onClick={startEditing} title="Edit organization" aria-label="Edit organization" />
         )}
       </div>
+
+      {saveError && (
+        <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error flex items-center gap-2">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          {saveError}
+        </div>
+      )}
 
       <div className="rounded-xl border border-outline-variant bg-surface-container-lowest p-6 sm:p-8">
         <div className="flex flex-col lg:flex-row gap-8">
@@ -168,31 +182,21 @@ export function OrganizationProfileSection() {
           </div>
 
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
-            <Field
-              label="Organization Name"
-              editing={isEditing}
-              register={form.register('name')}
-              value={formValues.name ?? ''}
-            />
-            <Field
-              label="Default Timezone"
-              editing={isEditing}
-              register={form.register('defaultTimezone')}
-              value={formValues.defaultTimezone ?? ''}
-            />
-            <Field
-              label="Default Currency"
-              editing={isEditing}
-              register={form.register('defaultCurrency')}
-              value={formValues.defaultCurrency ?? ''}
-            />
+            <Field label="Organization Name" editing={isEditing} register={form.register('name')} value={formValues.name ?? ''} />
+            <Field label="Default Timezone" editing={isEditing} register={form.register('defaultTimezone')} value={formValues.defaultTimezone ?? ''} />
+            <Field label="Default Currency" editing={isEditing} register={form.register('defaultCurrency')} value={formValues.defaultCurrency ?? ''} />
             <Field label="Legal Name" editing={isEditing} register={form.register('legal')} value={formValues.legal ?? ''} />
             <Field label="Email" editing={isEditing} register={form.register('email')} value={formValues.email ?? ''} />
             <Field label="Phone" editing={isEditing} register={form.register('phone')} value={formValues.phone ?? ''} />
             <Field label="Website" editing={isEditing} register={form.register('website')} value={formValues.website ?? ''} />
             <Field label="Tax ID" editing={isEditing} register={form.register('tax')} value={formValues.tax ?? ''} />
             <Field label="Registration No." editing={isEditing} register={form.register('reg')} value={formValues.reg ?? ''} />
-            <Field label="HeadOffice" editing={isEditing} register={form.register('headOfficeLocationId')} value={formValues.headOfficeLocationId ?? ''} />
+            <Field
+              label="HeadOffice"
+              editing={isEditing}
+              register={form.register('headOfficeLocationId')}
+              value={formValues.headOfficeLocationId != null ? String(formValues.headOfficeLocationId) : ''}
+            />
             <div className="sm:col-span-2">
               <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Description</p>
               {isEditing ? (
