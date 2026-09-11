@@ -19,6 +19,7 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
       { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', to: '/sales/dashboard' },
       { id: 'leads', label: 'Leads', icon: 'person_search', to: '/sales' },
       { id: 'clients', label: 'Clients', icon: 'handshake', to: '/sales/clients' },
+      { id: 'sources', label: 'Manage sources', icon: 'hub', to: '/sales/sources' },
       { id: 'case-studies', label: 'Case Studies', icon: 'library_books', to: '/sales/case-studies' },
       // { id: 'analytics', label: 'Analytics', icon: 'analytics', to: '/sales/analytics' },
     ],
