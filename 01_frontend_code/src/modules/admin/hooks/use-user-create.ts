@@ -1,10 +1,11 @@
 import { useEffect, useMemo } from 'react'
 import { useNavigate, useSearch } from '@tanstack/react-router'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { toast } from '@/shared/hooks/use-toast'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { myAdminRoutes } from '../routes'
 import {
@@ -14,6 +15,7 @@ import {
 } from '../api/users'
 import { listDepartments } from '@/modules/workforce/api/departments'
 import { userFormSchema, type UserFormInput } from '../schemas/user-form'
+import { useAdminMutation } from './use-admin-mutation'
 
 export function useUserCreate() {
   const navigate = useNavigate()
@@ -91,7 +93,7 @@ export function useUserCreate() {
 
   const selected = candidates.find((c) => String(c.employmentId) === watch('employmentId'))
 
-  const createMutation = useMutation({
+  const createMutation = useAdminMutation({
     mutationFn: (values: UserFormInput) =>
       createUserLogin({
         employmentId: Number(values.employmentId),
@@ -100,14 +102,17 @@ export function useUserCreate() {
         roleId: values.roleId,
         status: 'ACTIVE',
       }),
+    // Field-level mapping below — avoid duplicate toast for those cases
+    toastOnError: false,
+    errorFallback: 'Could not create user login',
     onSuccess: () => {
       clearErrors('root')
+      toast.success('User login created')
       void queryClient.invalidateQueries({ queryKey: queryKeys.admin.users.all })
       void queryClient.invalidateQueries({ queryKey: queryKeys.admin.users.withoutLogin() })
       safeNavigate(navigate, { to: myAdminRoutes.usersList })
     },
-    onError: (e: unknown) => {
-      const msg = getApiErrorMessage(e, 'Could not create user login')
+    onErrorMessage: (msg) => {
       if (/email is already in use/i.test(msg)) {
         setError('email', { type: 'server', message: msg })
       } else if (/already has a login/i.test(msg)) {
@@ -115,6 +120,7 @@ export function useUserCreate() {
         void queryClient.invalidateQueries({ queryKey: queryKeys.admin.users.withoutLogin() })
       } else {
         setError('root', { type: 'server', message: msg })
+        toast.error(msg)
       }
     },
   })
@@ -146,5 +152,8 @@ export function useUserCreate() {
     isSubmitting: createMutation.isPending,
     serverError: form.formState.errors.root?.message as string | undefined,
     navigate,
+    candidatesError: candidatesQuery.isError
+      ? getApiErrorMessage(candidatesQuery.error, 'Could not load candidates')
+      : null,
   }
 }
