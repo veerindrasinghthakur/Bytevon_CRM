@@ -32,10 +32,157 @@ import type {
   RunPayrollCheck,
   SalaryItem,
   SalaryStructure,
-  SaveSalaryStructureInput,PayrollEmployeeListParams,OrgPayrollHistoryRecord,RunPayrollPreview
+  SaveSalaryStructureInput,
+  PayrollEmployeeListParams,
+  OrgPayrollHistoryRecord,
+  RunPayrollPreview,
 } from '../types'
 
+function num(v: unknown, fallback = 0): number {
+  if (typeof v === 'number' && Number.isFinite(v)) return v
+  if (typeof v === 'string' && v.trim() !== '' && Number.isFinite(Number(v))) return Number(v)
+  return fallback
+}
 
+function monthName(index: number): string {
+  const names = [
+    '',
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ]
+  return names[index] ?? String(index)
+}
+
+/** Backend may return alternate field names — always produce UI PayrollKpis. */
+function normalizeKpis(raw: Record<string, unknown> | null | undefined): PayrollKpis {
+  const r = raw ?? {}
+  return {
+    totalPayroll: num(r.totalPayroll ?? r.totalNet ?? r.total_net ?? r.netPayroll),
+    totalEmployees: num(r.totalEmployees ?? r.employees ?? r.employeeCount),
+    pendingApproval: num(r.pendingApproval ?? r.pendingCount ?? r.pending),
+    pendingPayment: num(r.pendingPayment ?? r.paidCount === undefined ? 0 : 0),
+    trendPct: num(r.trendPct, 0),
+  }
+}
+
+function normalizePeriod(raw: Record<string, unknown> | null | undefined): PayrollPeriodMeta {
+  const r = raw ?? {}
+  const year = num(r.year, new Date().getFullYear())
+  const monthIndex = num(r.monthIndex ?? r.month, new Date().getMonth() + 1)
+  const month =
+    typeof r.month === 'string' && Number.isNaN(Number(r.month))
+      ? String(r.month)
+      : monthName(monthIndex)
+  const statusRaw = String(r.status ?? 'In Progress')
+  const status =
+    statusRaw === 'Completed' || statusRaw === 'Draft' || statusRaw === 'In Progress'
+      ? statusRaw
+      : 'In Progress'
+  return {
+    month,
+    year,
+    monthIndex,
+    label: String(r.label ?? `${month} ${year} Payroll`),
+    status: status as PayrollPeriodMeta['status'],
+    calculated: num(r.calculated ?? r.employees ?? r.totalEmployees),
+    approved: num(r.approved),
+    paid: num(r.paid ?? r.paidCount),
+  }
+}
+
+function normalizeActivity(raw: unknown): PayrollActivity[] {
+  const list = Array.isArray(raw) ? raw : []
+  return list.map((item, idx) => {
+    const r = (item ?? {}) as Record<string, unknown>
+    return {
+      id: String(r.id ?? idx),
+      text: String(r.text ?? r.title ?? r.message ?? 'Payroll activity'),
+      time: String(r.time ?? r.created_at ?? r.updated_at ?? ''),
+      primary: Boolean(r.primary ?? idx === 0),
+    }
+  })
+}
+
+function mapStatus(s: unknown): PayrollEmployeeRow['status'] {
+  const v = String(s ?? 'Calculated').toUpperCase()
+  if (v === 'PAID' || v === 'APPROVED' || v === 'PENDING') {
+    if (v === 'PAID') return 'Paid'
+    if (v === 'APPROVED') return 'Approved'
+    return 'Pending'
+  }
+  if (v === 'CALCULATED' || v === 'DRAFT') return 'Calculated'
+  if (['Calculated', 'Approved', 'Paid', 'Pending'].includes(String(s))) {
+    return String(s) as PayrollEmployeeRow['status']
+  }
+  return 'Calculated'
+}
+
+function normalizeEmployee(raw: Record<string, unknown>): PayrollEmployeeRow {
+  const name = String(raw.name ?? `Employee #${raw.employmentId ?? raw.id ?? ''}`)
+  const initials =
+    String(raw.initials ?? '')
+      .trim() ||
+    name
+      .split(/\s+/)
+      .map((p) => p[0] ?? '')
+      .join('')
+      .slice(0, 2)
+      .toUpperCase() ||
+    'E'
+  return {
+    id: String(raw.id ?? raw.employmentId ?? ''),
+    name,
+    code: String(raw.code ?? `EMP-${raw.employmentId ?? raw.id ?? ''}`),
+    role: String(raw.role ?? '—'),
+    department: String(raw.department ?? '—'),
+    initials,
+    gross: num(raw.gross),
+    earnings: num(raw.earnings),
+    deductions: num(raw.deductions),
+    net: num(raw.net),
+    status: mapStatus(raw.status),
+    paymentRef: raw.paymentRef != null ? String(raw.paymentRef) : undefined,
+  }
+}
+
+function normalizeEmployeeList(data: unknown): PayrollEmployeeListResponse {
+  const raw = (data ?? {}) as Record<string, unknown>
+  const source = Array.isArray(data)
+    ? data
+    : Array.isArray(raw.items)
+      ? raw.items
+      : []
+  const items = source.map((row) => normalizeEmployee((row ?? {}) as Record<string, unknown>))
+  const total = num(raw.total, items.length)
+  const page = num(raw.page, 1)
+  const pageSize = num(raw.pageSize, items.length || 20)
+  const metricsRaw = (raw.metrics ?? {}) as Record<string, unknown>
+  return {
+    items,
+    total,
+    page,
+    pageSize,
+    metrics: {
+      totalEmployees: num(metricsRaw.totalEmployees ?? metricsRaw.count, items.length),
+      grossSalary: num(metricsRaw.grossSalary ?? metricsRaw.totalGross),
+      earnings: num(metricsRaw.earnings),
+      deductions: num(metricsRaw.deductions),
+      netPayroll: num(metricsRaw.netPayroll ?? metricsRaw.totalNet),
+      pendingApproval: num(metricsRaw.pendingApproval),
+      pendingPayment: num(metricsRaw.pendingPayment),
+    },
+  }
+}
 
 function filterEmployees(params: PayrollEmployeeListParams = {}): PayrollEmployeeRow[] {
   let items = payrollEmployees.map((r) => ({ ...r }))
@@ -93,8 +240,8 @@ export async function getPayrollKpis(): Promise<PayrollKpis> {
     await delay(200)
     return computeKpis()
   }
-  const { data } = await apiClient.get<PayrollKpis>('/payroll/kpis')
-  return data
+  const { data } = await apiClient.get<Record<string, unknown>>('/payroll/kpis')
+  return normalizeKpis(data)
 }
 
 export async function getPayrollPeriodMeta(): Promise<PayrollPeriodMeta> {
@@ -102,8 +249,8 @@ export async function getPayrollPeriodMeta(): Promise<PayrollPeriodMeta> {
     await delay(200)
     return { ...periodMeta }
   }
-  const { data } = await apiClient.get<PayrollPeriodMeta>('/payroll/period')
-  return data
+  const { data } = await apiClient.get<Record<string, unknown>>('/payroll/period')
+  return normalizePeriod(data)
 }
 
 export async function listPayrollEmployees(
@@ -113,10 +260,10 @@ export async function listPayrollEmployees(
   const pageSize = params.pageSize ?? DEFAULT_LIST_PAGE_SIZE
 
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<PayrollEmployeeListResponse>('/payroll/employees', {
+    const { data } = await apiClient.get<unknown>('/payroll/employees', {
       params: { ...params, page, pageSize },
     })
-    return data
+    return normalizeEmployeeList(data)
   }
 
   await delay(200)
@@ -133,8 +280,10 @@ export async function getPayrollEmployee(id: string): Promise<PayrollEmployeeRow
     return row ? { ...row } : null
   }
   try {
-    const { data } = await apiClient.get<PayrollEmployeeRow>(`/payroll/employees/${encodeURIComponent(id)}`)
-    return data
+    const { data } = await apiClient.get<Record<string, unknown>>(
+      `/payroll/employees/${encodeURIComponent(id)}`,
+    )
+    return normalizeEmployee(data)
   } catch {
     return null
   }
@@ -145,8 +294,8 @@ export async function listPayrollActivity(): Promise<PayrollActivity[]> {
     await delay(200)
     return recentActivity.map((a) => ({ ...a }))
   }
-  const { data } = await apiClient.get<PayrollActivity[]>('/payroll/activity')
-  return data
+  const { data } = await apiClient.get<unknown>('/payroll/activity')
+  return normalizeActivity(data)
 }
 
 export async function getMonthlyPayrollSummary(): Promise<MonthlyPayrollSummary> {
@@ -154,8 +303,17 @@ export async function getMonthlyPayrollSummary(): Promise<MonthlyPayrollSummary>
     await delay(200)
     return computeMonthlySummary()
   }
-  const { data } = await apiClient.get<MonthlyPayrollSummary>('/payroll/monthly-summary')
-  return data
+  const { data } = await apiClient.get<Record<string, unknown>>('/payroll/monthly-summary')
+  const r = data ?? {}
+  return {
+    totalEmployees: num(r.totalEmployees ?? r.employeeCount),
+    grossSalary: num(r.grossSalary ?? r.totalGross),
+    earnings: num(r.earnings),
+    deductions: num(r.deductions ?? r.totalDeductions),
+    netPayroll: num(r.netPayroll ?? r.totalNet),
+    pendingApproval: num(r.pendingApproval),
+    pendingPayment: num(r.pendingPayment),
+  }
 }
 
 export async function getPayrollReview(employeeId: string): Promise<PayrollReviewDetail | null> {
@@ -260,8 +418,24 @@ export async function getRunPayrollChecks(): Promise<RunPayrollCheck[]> {
     await delay(200)
     return runPayrollChecks.map((c) => ({ ...c }))
   }
-  const { data } = await apiClient.get<RunPayrollCheck[]>('/payroll/run/checks')
-  return data
+  const { data } = await apiClient.get<unknown>('/payroll/run/checks')
+  const list = Array.isArray(data) ? data : []
+  return list.map((c) => {
+    const r = (c ?? {}) as Record<string, unknown>
+    // Backend stub uses { id, label, status: 'ok'|'warn' }
+    if ('ok' in r || 'title' in r) {
+      return {
+        ok: Boolean(r.ok ?? r.status === 'ok'),
+        title: String(r.title ?? r.label ?? 'Check'),
+        detail: String(r.detail ?? r.label ?? ''),
+      }
+    }
+    return {
+      ok: String(r.status ?? 'ok') === 'ok',
+      title: String(r.label ?? r.id ?? 'Check'),
+      detail: String(r.detail ?? ''),
+    }
+  })
 }
 
 export async function getRunPayrollPreview(): Promise<RunPayrollPreview> {
@@ -276,8 +450,18 @@ export async function getRunPayrollPreview(): Promise<RunPayrollPreview> {
       estimatedNet: employees.reduce((s, e) => s + e.net, 0),
     }
   }
-  const { data } = await apiClient.get<RunPayrollPreview>('/payroll/run/preview')
-  return data
+  const { data } = await apiClient.get<Record<string, unknown>>('/payroll/run/preview')
+  const employeesRaw = Array.isArray(data?.employees) ? data.employees : []
+  const employees = employeesRaw.map((row) =>
+    normalizeEmployee((row ?? {}) as Record<string, unknown>),
+  )
+  return {
+    employees,
+    totalGross: num(data?.totalGross),
+    totalEarnings: num(data?.totalEarnings),
+    totalDeductions: num(data?.totalDeductions),
+    estimatedNet: num(data?.estimatedNet),
+  }
 }
 
 export async function runPayroll(period: { year: number; month: number }): Promise<void> {
