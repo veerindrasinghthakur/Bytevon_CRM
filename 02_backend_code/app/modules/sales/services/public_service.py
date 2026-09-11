@@ -18,7 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.db.enums import ClientType, LeadStatus
-from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
+from app.core.exceptions.exception import DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
 from app.modules.sales.models import Client, ClientContact, Lead, Platform
 from app.modules.sales.repositories.repository import SalesRepository
@@ -233,13 +233,16 @@ class SalesPublicService(BasePublicService):
             lead_title=data.lead_title,
             platform_id=data.platform_id,
             contact_name=data.contact_name,
+            contact_title=data.contact_title,
             email=str(data.email) if data.email else None,
             phone=data.phone,
             quotation=data.quotation,
             expected_close_date=data.expected_close_date,
             assigned_employment_id=data.assigned_employment_id,
             status=data.status,
+            priority=data.priority,
             description=data.description,
+            chat_link=data.chat_link,
             client_id=data.client_id,
             auto_create_project=data.auto_create_project,
             changed_by=actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID,
@@ -287,7 +290,6 @@ class SalesPublicService(BasePublicService):
         payload = data.model_dump(exclude_unset=True)
         if "email" in payload and payload["email"] is not None:
             payload["email"] = str(payload["email"])
-        # client_type / client_name are only for WON path metadata — not lead columns
         payload.pop("client_type", None)
         payload.pop("client_name", None)
 
@@ -332,13 +334,8 @@ class SalesPublicService(BasePublicService):
         *,
         actor_employment_id: Optional[int],
     ) -> LeadWonResponse:
-        """
-        Locked one-TX flow:
-        resolve/create client → status WON → optional create_from_lead → commit → notify.
-        """
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
 
-        # 1. Resolve client
         client_id = data.client_id or lead.client_id
         if client_id is not None:
             client = await self._repo.get_client_by_id(client_id)
@@ -359,24 +356,22 @@ class SalesPublicService(BasePublicService):
             await self._repo.add(client)
             await self._flush()
 
-            # Seed primary contact from lead
             contact = ClientContact(
                 client_id=client.id,
                 name=lead.contact_name,
+                designation=lead.contact_title,
                 email=lead.email,
                 phone=lead.phone,
                 changed_by=actor,
             )
             await self._repo.add(contact)
 
-        # 2. Set WON + client_id
         lead.client_id = client.id
         lead.status = LeadStatus.WON
         if data.auto_create_project is not None:
             lead.auto_create_project = data.auto_create_project
         lead.changed_by = actor
 
-        # 3. Optional project
         project_id: Optional[int] = None
         project_created = False
         if lead.auto_create_project:
@@ -400,10 +395,6 @@ class SalesPublicService(BasePublicService):
         client_id: int,
         actor: int,
     ) -> Optional[int]:
-        """
-        Call Developer ProjectPublicService if available.
-        Returns project_id or None if module not yet implemented.
-        """
         try:
             from app.modules.project.services.public_service import (
                 ProjectPublicService,
@@ -464,8 +455,3 @@ class SalesPublicService(BasePublicService):
                 )
         except Exception:
             logger.exception("Failed to notify on lead WON")
-
-    # ==================================================================
-    # Helpers
-    # ==================================================================
-
