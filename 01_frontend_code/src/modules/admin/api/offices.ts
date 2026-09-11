@@ -61,7 +61,6 @@ export async function listOffices(): Promise<OfficeLocation[]> {
     await delay()
     return offices.map((o) => ({ ...o }))
   }
-  // Prefer real locations API (no /admin/offices)
   const { items } = await getLocations()
   return items.map((loc) => {
     const o = mapLocationToHeadOption(loc as unknown as Record<string, unknown>)
@@ -84,22 +83,18 @@ export async function getOffice(officeId: string): Promise<OfficeLocation | null
     await delay()
     return offices.find((o) => o.id === officeId) ?? null
   }
-  try {
-    const { data } = await apiClient.get<Record<string, unknown>>(`/organization/locations/${officeId}`)
-    const o = mapLocationToHeadOption(data)
-    return {
-      id: o.id,
-      name: o.name,
-      country: o.country,
-      city: o.city,
-      timezone: o.timezone,
-      currency: o.currency,
-      fiscal: o.fiscal,
-      address: o.address,
-      postal: o.postal,
-    }
-  } catch {
-    return null
+  const { data } = await apiClient.get<Record<string, unknown>>(`/organization/locations/${officeId}`)
+  const o = mapLocationToHeadOption(data)
+  return {
+    id: o.id,
+    name: o.name,
+    country: o.country,
+    city: o.city,
+    timezone: o.timezone,
+    currency: o.currency,
+    fiscal: o.fiscal,
+    address: o.address,
+    postal: o.postal,
   }
 }
 
