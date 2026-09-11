@@ -43,7 +43,6 @@ function formatDate(value: unknown): string {
   }
 }
 
-/** Map backend RoleListItemResponse / RoleDetailResponse → AdminRole card DTO. */
 function normalizeRole(role: Record<string, any>): AdminRole {
   const permissions = extractPermissionKeys(role)
   const coverage = computeCoverage(permissions)
@@ -240,12 +239,8 @@ export async function getAdminRole(roleId: string): Promise<AdminRole | null> {
     const cov = computeCoverage(r.permissions ?? [])
     return { ...r, coveragePct: cov.pct, coverageLabel: cov.label }
   }
-  try {
-    const { data } = await apiClient.get<Record<string, any>>(`/rbac/roles/${roleId}`)
-    return normalizeRole(data)
-  } catch {
-    return null
-  }
+  const { data } = await apiClient.get<Record<string, any>>(`/rbac/roles/${roleId}`)
+  return normalizeRole(data)
 }
 
 export async function createAdminRole(payload: {
