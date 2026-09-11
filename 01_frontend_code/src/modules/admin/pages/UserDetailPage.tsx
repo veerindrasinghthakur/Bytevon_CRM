@@ -21,10 +21,15 @@ export function UserDetailPage() {
   const navigate = useNavigate()
   const d = useUserDetail(userId)
 
-
   if (d.isLoading) return <PageLoadingSkeleton />
   if (d.isError || !d.display) {
-    return <ErrorState title="Could not load user" onRetry={d.refetch} />
+    return (
+      <ErrorState
+        title="Could not load user"
+        description={d.loadError ?? undefined}
+        onRetry={d.refetch}
+      />
+    )
   }
 
   const display = d.display
@@ -32,10 +37,24 @@ export function UserDetailPage() {
   const isInactive = d.status === 'Inactive'
   const name = d.form.watch('name')
   const email = d.form.watch('email')
+  const serverError = d.serverError ?? d.actionError ?? null
 
   return (
     <div className="space-y-6 animate-fade-in">
       <BackButton to={myAdminRoutes.usersList} label="Back to Users" />
+
+      {serverError && (
+        <div
+          className="flex items-start gap-3 rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error"
+          role="alert"
+        >
+          <span className="material-symbols-outlined shrink-0 text-[20px]">error</span>
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-on-background">Action failed</p>
+            <p className="text-error break-words">{serverError}</p>
+          </div>
+        </div>
+      )}
 
       {isLocked && (
         <div
@@ -119,61 +138,53 @@ export function UserDetailPage() {
             Reset Password
           </Button>
           {isLocked ? (
-            // <Can action={Action.UNLOCK} resource={ResourceName.USER}>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-secondary text-secondary hover:bg-secondary/10"
-                onClick={() => d.setLockOpen(true)}
-              >
-                Unlock Account
-              </Button>
-            // </Can>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-secondary text-secondary hover:bg-secondary/10"
+              onClick={() => d.setLockOpen(true)}
+            >
+              Unlock Account
+            </Button>
           ) : (
-            // <Can action={Action.UPDATE} resource={ResourceName.USER}>
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-error text-error hover:bg-error/10"
-                onClick={() => d.setLockOpen(true)}
-              >
-                Lock Account
-              </Button>
-            // </Can>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-error text-error hover:bg-error/10"
+              onClick={() => d.setLockOpen(true)}
+            >
+              Lock Account
+            </Button>
           )}
 
-          {/* <Can action={Action.UPDATE} resource={ResourceName.USER}> */}
-            {isInactive ? (
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-secondary text-secondary hover:bg-secondary/10"
-                isLoading={d.activateMutation.isPending}
-                onClick={() => d.activateMutation.mutate()}
-              >
-                Activate
-              </Button>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                isLoading={d.deactivateMutation.isPending}
-                onClick={() => d.deactivateMutation.mutate()}
-              >
-                Deactivate
-              </Button>
-            )}
-          {/* </Can> */}
+          {isInactive ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-secondary text-secondary hover:bg-secondary/10"
+              isLoading={d.activateMutation.isPending}
+              onClick={() => d.activateMutation.mutate()}
+            >
+              Activate
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              isLoading={d.deactivateMutation.isPending}
+              onClick={() => d.deactivateMutation.mutate()}
+            >
+              Deactivate
+            </Button>
+          )}
 
-          {/* <Can action={Action.DELETE} resource={ResourceName.USER}> */}
-            <ArchiveButton
-              entityLabel={name}
-              mode="archive"
-              label="Archive"
-              isLoading={d.hardArchiveMutation.isPending}
-              onConfirm={() => d.hardArchiveMutation.mutateAsync()}
-            />
-          {/* </Can> */}
+          <ArchiveButton
+            entityLabel={name}
+            mode="archive"
+            label="Archive"
+            isLoading={d.hardArchiveMutation.isPending}
+            onConfirm={() => d.hardArchiveMutation.mutateAsync()}
+          />
 
           {d.isEditing ? (
             <>
@@ -183,10 +194,9 @@ export function UserDetailPage() {
               <Button
                 variant="primary"
                 size="sm"
-                disabled={d.saveMutation.isPending}
+                isLoading={d.saveMutation.isPending}
                 onClick={() =>
                   d.form.handleSubmit((values) => {
-                    d.saveMutation.reset()
                     d.saveMutation.mutate(values)
                   })()
                 }
@@ -265,8 +275,10 @@ export function UserDetailPage() {
             <span
               className={cn(
                 'inline-flex px-3 py-1 rounded-full text-label-sm font-medium border',
-                d.status === 'Active' && 'bg-[var(--color-success-emerald)]/10 text-[var(--color-success-emerald)] border-[var(--color-success-emerald)]/30',
-                d.status === 'Locked' && 'bg-[var(--color-error-red)]/10 text-[var(--color-error-red)] border-[var(--color-error-red)]/30',
+                d.status === 'Active' &&
+                  'bg-[var(--color-success-emerald)]/10 text-[var(--color-success-emerald)] border-[var(--color-success-emerald)]/30',
+                d.status === 'Locked' &&
+                  'bg-[var(--color-error-red)]/10 text-[var(--color-error-red)] border-[var(--color-error-red)]/30',
                 d.status === 'Inactive' &&
                   'bg-surface-container text-on-surface-variant border-outline-variant',
               )}
