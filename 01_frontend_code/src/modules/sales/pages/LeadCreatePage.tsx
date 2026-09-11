@@ -9,8 +9,10 @@ import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 import { Select } from '@/shared/components/ui/Select'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
-import { getLeadFilterOptions, listSalesRepresentatives } from '../api/sales'
+import { listEmployments } from '@/modules/workforce/api/employment'
+import { getLeadFilterOptions, listPlatforms } from '../api/sales'
 import { useCreateLead, useLead, useUpdateLead } from '../hooks/use-sales'
 import { salesRoutes } from '../routes'
 import { leadFormSchema, optTrim, type LeadFormSchemaInput } from '../schemas/lead-form'
@@ -42,9 +44,18 @@ export function LeadCreatePage() {
     staleTime: Infinity,
     refetchOnMount: false,
   })
-  const repsQuery = useQuery({
-    queryKey: queryKeys.sales.salesRepresentatives(),
-    queryFn: listSalesRepresentatives,
+
+  /** Lead sources = platforms table (backend CRUD). */
+  const platformsQuery = useQuery({
+    queryKey: queryKeys.sales.platforms(),
+    queryFn: () => listPlatforms(false),
+    staleTime: 60_000,
+  })
+
+  /** Assignee = workforce employments (not hardcoded names). */
+  const employeesQuery = useQuery({
+    queryKey: queryKeys.workforce.employees.list({ scope: 'lead-assignee', pageSize: 200 }),
+    queryFn: () => listEmployments({ page: 1, pageSize: 200 }),
     staleTime: 60_000,
   })
 
@@ -62,7 +73,7 @@ export function LeadCreatePage() {
       industry: '',
       email: '',
       phone: '',
-      source: 'LinkedIn',
+      platformId: '',
       priority: 'Medium' as LeadPriority,
       status: 'Active' as RecordStatus,
       stage: 'New' as PipelineStage,
@@ -84,43 +95,59 @@ export function LeadCreatePage() {
       industry: existing.industry ?? '',
       email: existing.email ?? '',
       phone: existing.phone ?? '',
-      source: existing.source ?? 'LinkedIn',
+      platformId:
+        existing.platformId != null
+          ? String(existing.platformId)
+          : '',
       priority: existing.priority ?? 'Medium',
       status: existing.status ?? 'Active',
       stage: existing.stage ?? 'New',
       budget: existing.budget != null ? String(existing.budget) : '',
       date: existing.date ?? '',
-      assignedEmploymentId: '',
+      assignedEmploymentId:
+        existing.assignedEmploymentId != null ? String(existing.assignedEmploymentId) : '',
       notes: existing.notes ?? '',
       chatLink: existing.chatLink ?? '',
     })
   }, [existing, form])
 
+  /** Match platform by name when only source string is available on edit. */
   useEffect(() => {
-    if (!existing?.assignedTo || !repsQuery.data?.length) return
-    const match = repsQuery.data.find(
-      (r) => r.name.toLowerCase() === existing.assignedTo!.toLowerCase(),
+    if (!existing?.source || form.getValues('platformId')) return
+    const match = (platformsQuery.data ?? []).find(
+      (p) => p.name.toLowerCase() === existing.source.toLowerCase(),
     )
-    if (match) {
-      form.setValue('assignedEmploymentId', String(match.employmentId))
-    }
-  }, [existing, repsQuery.data, form])
+    if (match) form.setValue('platformId', String(match.id))
+  }, [existing, platformsQuery.data, form])
 
   const stages = filterOptionsQuery.data?.stages ?? [...PipelineStageValues]
   const priorities = filterOptionsQuery.data?.priorities ?? [...LeadPriorityValues]
-  const sources = filterOptionsQuery.data?.sources ?? []
   const statuses = filterOptionsQuery.data?.statuses ?? [...RecordStatusOptions.map((option) => option.value)]
 
-  const repOptions = useMemo(() => {
-    const items = repsQuery.data ?? []
+  const platformOptions = useMemo(() => {
+    const items = platformsQuery.data ?? []
     return [
-      { value: '', label: 'Unassigned' },
-      ...items.map((r) => ({
-        value: String(r.employmentId),
-        label: `${r.name} (${r.employeeCode})`,
+      { value: '', label: platformsQuery.isLoading ? 'Loading sources…' : 'Select source' },
+      ...items.map((p) => ({
+        value: String(p.id),
+        label: p.name,
       })),
     ]
-  }, [repsQuery.data])
+  }, [platformsQuery.data, platformsQuery.isLoading])
+
+  const employeeOptions = useMemo(() => {
+    const items = employeesQuery.data?.items ?? []
+    return [
+      {
+        value: '',
+        label: employeesQuery.isLoading ? 'Loading employees…' : 'Unassigned',
+      },
+      ...items.map((e) => ({
+        value: String(e.id),
+        label: `${e.fullName} (${e.employee_code})`,
+      })),
+    ]
+  }, [employeesQuery.data, employeesQuery.isLoading])
 
   const saving = createMut.isPending || updateMut.isPending
 
@@ -133,30 +160,33 @@ export function LeadCreatePage() {
       })
       safeNavigate(navigate, { to: salesRoutes.leads })
     } catch (err) {
-      form.setError('root', { message: err instanceof Error ? err.message : 'Archive failed' })
+      form.setError('root', { message: getApiErrorMessage(err, 'Archive failed') })
     }
   }
 
   const onSubmit = async (data: LeadFormSchemaInput) => {
-    const selectedRep = (repsQuery.data ?? []).find(
-      (r) => String(r.employmentId) === data.assignedEmploymentId,
-    )
+    const platformId = data.platformId ? Number(data.platformId) : null
+    const platformName = (platformsQuery.data ?? []).find((p) => p.id === platformId)?.name
+    const employeeId = data.assignedEmploymentId ? Number(data.assignedEmploymentId) : null
+    const employee = (employeesQuery.data?.items ?? []).find((e) => e.id === employeeId)
+
     const payload = {
       title: data.title.trim(),
       contactName: data.contactName.trim(),
       contactTitle: optTrim(data.contactTitle),
-      company: data.company.trim(),
+      company: optTrim(data.company),
       industry: optTrim(data.industry),
       email: optTrim(data.email),
       phone: optTrim(data.phone),
-      source: data.source,
+      platformId,
+      source: platformName,
       priority: data.priority,
       status: data.status,
       stage: data.stage,
-      budget: data.budget ? Number(data.budget) : 0,
+      budget: data.budget ? Number(data.budget) : undefined,
       date: optTrim(data.date),
-      assignedEmploymentId: data.assignedEmploymentId ? Number(data.assignedEmploymentId) : null,
-      assignedTo: selectedRep?.name,
+      assignedEmploymentId: employeeId,
+      assignedTo: employee?.fullName,
       notes: optTrim(data.notes),
       chatLink: optTrim(data.chatLink),
     }
@@ -168,7 +198,7 @@ export function LeadCreatePage() {
       }
       safeNavigate(navigate, { to: salesRoutes.leads })
     } catch (err) {
-      form.setError('root', { message: err instanceof Error ? err.message : 'Save failed' })
+      form.setError('root', { message: getApiErrorMessage(err, 'Save failed') })
     }
   }
 
@@ -177,7 +207,7 @@ export function LeadCreatePage() {
   const stageValue = form.watch('stage') ?? ''
   const priorityValue = form.watch('priority') ?? ''
   const statusValue = form.watch('status') ?? ''
-  const sourceValue = form.watch('source') ?? ''
+  const platformValue = form.watch('platformId') ?? ''
   const assignedValue = form.watch('assignedEmploymentId') ?? ''
 
   return (
@@ -204,6 +234,12 @@ export function LeadCreatePage() {
       />
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 max-w-4xl">
+        {form.formState.errors.root?.message && (
+          <div className="rounded-lg border border-error/40 bg-error/10 px-4 py-3 text-body-sm text-error">
+            {form.formState.errors.root.message}
+          </div>
+        )}
+
         <section className="bv-surface p-6 space-y-4">
           <h2 className="text-title-md font-semibold text-on-background flex items-center gap-2">
             <span className="material-symbols-outlined text-secondary">badge</span>
@@ -257,7 +293,7 @@ export function LeadCreatePage() {
                 placeholder="TechNexus Corp. (optional — client created on WON)"
               />
               <p className="text-[11px] text-on-surface-variant mt-1">
-                Client is optional. On WON, an existing client is reused or a new one is created.
+                Optional. On WON, an existing client is reused or a new one is created from this name.
               </p>
             </div>
             <div>
@@ -300,36 +336,58 @@ export function LeadCreatePage() {
               label="Stage"
               value={stageValue}
               onChange={(v) => form.setValue('stage', v as PipelineStage)}
-              options={[...PipelineStageOptions, ...stages
-                .filter((s) => !PipelineStageOptions.some((option) => option.value === s))
-                .map((s) => ({ value: s, label: s }))]}
+              options={[
+                ...PipelineStageOptions,
+                ...stages
+                  .filter((s) => !PipelineStageOptions.some((option) => option.value === s))
+                  .map((s) => ({ value: s, label: s })),
+              ]}
               minWidthClass="w-full"
             />
             <Select
               label="Priority"
               value={priorityValue}
               onChange={(v) => form.setValue('priority', v as LeadPriority)}
-              options={[...LeadPriorityOptions, ...priorities
-                .filter((p) => !LeadPriorityOptions.some((option) => option.value === p))
-                .map((p) => ({ value: p, label: p }))]}
+              options={[
+                ...LeadPriorityOptions,
+                ...priorities
+                  .filter((p) => !LeadPriorityOptions.some((option) => option.value === p))
+                  .map((p) => ({ value: p, label: p })),
+              ]}
               minWidthClass="w-full"
             />
             <Select
               label="Status"
               value={statusValue}
               onChange={(v) => form.setValue('status', v as RecordStatus)}
-              options={[...RecordStatusOptions, ...statuses
-                .filter((s) => !RecordStatusOptions.some((option) => option.value === s))
-                .map((s) => ({ value: s, label: s }))]}
+              options={[
+                ...RecordStatusOptions,
+                ...statuses
+                  .filter((s) => !RecordStatusOptions.some((option) => option.value === s))
+                  .map((s) => ({ value: s, label: s })),
+              ]}
               minWidthClass="w-full"
             />
-            <Select
-              label="Source"
-              value={sourceValue}
-              onChange={(v) => form.setValue('source', v)}
-              options={sources.map((s) => ({ value: s, label: s }))}
-              minWidthClass="w-full"
-            />
+            <div>
+              <Select
+                label="Source"
+                value={platformValue}
+                onChange={(v) => form.setValue('platformId', v)}
+                options={platformOptions}
+                minWidthClass="w-full"
+                disabled={platformsQuery.isLoading}
+              />
+              {platformsQuery.isError && (
+                <p className="text-[11px] text-error mt-1">
+                  {getApiErrorMessage(platformsQuery.error, 'Failed to load sources')}
+                </p>
+              )}
+              {!platformsQuery.isLoading && !platformsQuery.isError && (platformsQuery.data?.length ?? 0) === 0 && (
+                <p className="text-[11px] text-on-surface-variant mt-1">
+                  No platforms configured. Add sources under Sales platforms.
+                </p>
+              )}
+            </div>
           </div>
         </section>
 
@@ -341,9 +399,9 @@ export function LeadCreatePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className={labelClass} htmlFor="budget">
-                Estimated budget (USD)
+                Estimated budget / quotation
               </label>
-              <input id="budget" type="number" min={0} {...form.register('budget')} className={fieldClass} placeholder="120000" />
+              <input id="budget" type="number" min={0} step="0.01" {...form.register('budget')} className={fieldClass} placeholder="120000" />
             </div>
             <div>
               <label className={labelClass} htmlFor="date">
@@ -353,15 +411,21 @@ export function LeadCreatePage() {
             </div>
             <div>
               <Select
-                label="Assigned sales representative"
+                label="Assigned representative"
                 value={assignedValue}
                 onChange={(v) => form.setValue('assignedEmploymentId', v)}
-                placeholder="Select Sales employee"
-                options={repOptions}
+                placeholder="Select employee"
+                options={employeeOptions}
                 minWidthClass="w-full"
+                disabled={employeesQuery.isLoading}
               />
+              {employeesQuery.isError && (
+                <p className="text-[11px] text-error mt-1">
+                  {getApiErrorMessage(employeesQuery.error, 'Failed to load employees')}
+                </p>
+              )}
               <p className="text-[11px] text-on-surface-variant mt-1">
-                Employees currently assigned to the Sales department.
+                Submits employment ID to assigned_employment_id.
               </p>
             </div>
           </div>
@@ -383,6 +447,7 @@ export function LeadCreatePage() {
               className={fieldClass}
               placeholder="https://chat.bytevon.app/c/..."
             />
+            <p className="text-[11px] text-on-surface-variant mt-1">UI-only — not stored on leads table.</p>
           </div>
         </section>
 
