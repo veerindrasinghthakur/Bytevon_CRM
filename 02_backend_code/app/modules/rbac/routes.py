@@ -19,6 +19,7 @@ from app.modules.rbac.schemas.schemas import (
     RoleCreate,
     RoleDetailResponse,
     RoleListItemResponse,
+    RoleListResponse,
     RolePermissionGrant,
     RolePermissionResponse,
     RoleResponse,
@@ -73,9 +74,20 @@ async def create_role(
     return await service.create_role(body, actor_employment_id=actor)
 
 
-@router.get("/roles", response_model=list[RoleListItemResponse])
-async def list_roles(service: RBACServiceDep) -> list[RoleListItemResponse]:
-    return await service.list_roles()
+@router.get("/roles", response_model=RoleListResponse)
+async def list_roles(
+    service: RBACServiceDep,
+    search: Optional[str] = Query(None),
+    category: Optional[str] = Query(None, description="Core Role | Standard"),
+    page: int = Query(1, ge=1),
+    pageSize: int = Query(20, ge=1, le=200),
+) -> RoleListResponse:
+    return await service.list_roles(
+        search=search,
+        category=category,
+        page=page,
+        page_size=pageSize,
+    )
 
 
 @router.get("/roles/{role_id}", response_model=RoleDetailResponse)
