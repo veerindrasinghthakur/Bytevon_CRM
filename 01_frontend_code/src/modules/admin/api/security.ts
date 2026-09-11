@@ -68,14 +68,10 @@ export async function listSecurityEvents(): Promise<SecurityEvent[]> {
     return securityEvents.map((e) => normalizeMockEvent(e as SecurityEvent))
   }
 
-  try {
-    const logs = await listAuditLogs({ limit: 100 })
-    const authish = logs.filter((l) => AUTH_ACTIONS.has(String(l.action).toUpperCase()))
-    const source = authish.length ? authish : logs
-    return source.slice(0, 50).map(mapAuditToSecurityEvent)
-  } catch {
-    return []
-  }
+  const logs = await listAuditLogs({ limit: 100 })
+  const authish = logs.filter((l) => AUTH_ACTIONS.has(String(l.action).toUpperCase()))
+  const source = authish.length ? authish : logs
+  return source.slice(0, 50).map(mapAuditToSecurityEvent)
 }
 
 export async function getSecurityKpis(): Promise<
@@ -95,6 +91,7 @@ export async function getSecurityKpis(): Promise<
     }
   }
 
+  // KPIs are aggregated best-effort: individual sources may fail without blanking the page
   let auditEventsToday = 0
   let openAlerts = 0
   let activeSessions = 0
@@ -112,14 +109,14 @@ export async function getSecurityKpis(): Promise<
       return a.includes('FAIL') || a.includes('LOCK') || a.includes('DENIED') || a === 'REJECT'
     }).length
   } catch {
-    /* zeros */
+    /* partial */
   }
 
   try {
     const users = await listAdminUsers({ page: 1, pageSize: 1 })
     activeSessions = users.active ?? users.total ?? 0
   } catch {
-    /* zero */
+    /* partial */
   }
 
   const securityScore = Math.max(60, Math.min(100, 100 - openAlerts * 5))
