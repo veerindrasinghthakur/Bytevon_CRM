@@ -45,10 +45,6 @@ class MessageOk(BaseModel):
     queued: int = 0
 
 
-# ---------------------------------------------------------------------------
-# Templates (admin)
-# ---------------------------------------------------------------------------
-
 @router.post(
     "/templates",
     response_model=NotificationTemplateResponse,
@@ -93,10 +89,6 @@ async def update_template(
     )
 
 
-# ---------------------------------------------------------------------------
-# Notify (internal + compose aliases)
-# ---------------------------------------------------------------------------
-
 @router.post(
     "/notify",
     response_model=Optional[NotificationResponse],
@@ -126,33 +118,27 @@ async def compose(
     body: ComposeBody,
     service: NotificationServiceDep,
 ) -> dict[str, Any]:
-    """Frontend compose → notify/notify_bulk when employment targets present."""
-    queued = 0
-    if body.employment_ids:
-        for eid in body.employment_ids:
-            req = NotifyRequest(
-                employment_id=eid,
-                template_code=body.template_code or "generic",
+    """Frontend compose → notify_bulk when employment targets present."""
+    if not body.employment_ids:
+        return {"queued": 0, "sentRows": []}
+    try:
+        rows = await service.notify_bulk(
+            NotifyBulkRequest(
+                employment_ids=body.employment_ids,
+                template_code=body.template_code,
                 title=body.title or None,
                 body=body.body or None,
             )
-            try:
-                await service.notify(req)
-                queued += 1
-            except Exception:
-                continue
-    return {"queued": queued, "sentRows": []}
+        )
+        return {"queued": len(rows), "sentRows": []}
+    except Exception:
+        return {"queued": 0, "sentRows": []}
 
 
 @router.post("/drafts", status_code=status.HTTP_201_CREATED)
 async def save_draft(body: ComposeBody) -> MessageOk:
-    """Drafts are client-side for V1; accept and acknowledge."""
     return MessageOk(message="draft accepted")
 
-
-# ---------------------------------------------------------------------------
-# Inbox
-# ---------------------------------------------------------------------------
 
 @router.get("/inbox", response_model=list[NotificationResponse])
 async def list_inbox(
@@ -212,7 +198,9 @@ async def mark_all_read(
     service: NotificationServiceDep,
     actor: ActorRequired,
 ) -> MessageOk:
-    items = await service.list_inbox(actor, status=NotificationStatus.UNREAD, limit=200, offset=0)
+    items = await service.list_inbox(
+        actor, status=NotificationStatus.UNREAD, limit=200, offset=0
+    )
     n = 0
     for row in items:
         try:
@@ -252,7 +240,9 @@ async def archive_read(
     service: NotificationServiceDep,
     actor: ActorRequired,
 ) -> MessageOk:
-    items = await service.list_inbox(actor, status=NotificationStatus.READ, limit=200, offset=0)
+    items = await service.list_inbox(
+        actor, status=NotificationStatus.READ, limit=200, offset=0
+    )
     n = 0
     for row in items:
         try:
@@ -263,16 +253,11 @@ async def archive_read(
     return MessageOk(message="ok", queued=n)
 
 
-# ---------------------------------------------------------------------------
-# Sent / channels / triggers (V1 stubs + templates mapping)
-# ---------------------------------------------------------------------------
-
 @router.get("/sent")
 async def list_sent(
     page: int = Query(1, ge=1),
     pageSize: int = Query(20, ge=1, le=200),
 ) -> dict[str, Any]:
-    """Outbound log not persisted in V1 — empty page for UI."""
     return {"items": [], "total": 0, "page": page, "pageSize": pageSize}
 
 
@@ -313,10 +298,6 @@ async def list_triggers(
         )
     return out
 
-
-# ---------------------------------------------------------------------------
-# Preferences
-# ---------------------------------------------------------------------------
 
 @router.get("/preferences", response_model=list[PreferenceResponse])
 async def list_preferences(
