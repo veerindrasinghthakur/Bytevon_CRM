@@ -1,5 +1,6 @@
 import { Outlet } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
+import { AdminErrorBoundary } from '../components/AdminErrorBoundary'
 
 /** Single-page layout — no sub-nav when only one section */
 export function AttendanceSettingsLayout() {
@@ -10,7 +11,9 @@ export function AttendanceSettingsLayout() {
         description="Organization-wide attendance policies, working hours, and check-in rules."
       />
       <div className="min-w-0 w-full">
-        <Outlet />
+        <AdminErrorBoundary label="Attendance settings">
+          <Outlet />
+        </AdminErrorBoundary>
       </div>
     </div>
   )
