@@ -1,13 +1,8 @@
 /**
  * Admin settings API — organisation profile, attendance policy, leave accrual.
- *
- * Attendance:
- *   GET  /attendance/policies/current
- *   POST /attendance/policies  (new effective version)
- * Shift times (when a shift is selected):
- *   PATCH /organization/shifts/{id}
  */
 
+import axios from 'axios'
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import {
@@ -51,7 +46,6 @@ type OrgSettingsApi = {
   description?: string | null
 }
 
-/** Backend AttendancePolicyResponse */
 export type AttendancePolicyApi = {
   id?: number
   name?: string
@@ -169,7 +163,6 @@ export function mapPolicyToAttendanceSettings(
   }
 }
 
-/** Build AttendancePolicyCreate body from form + current policy defaults. */
 export function toAttendancePolicyCreateBody(
   patch: Partial<AttendanceSettings>,
   current: AttendancePolicyApi | null,
@@ -245,16 +238,15 @@ export async function getAttendanceSettings(): Promise<AttendanceSettings> {
   try {
     const { data } = await apiClient.get<AttendancePolicyApi>(ATTENDANCE_POLICY_CURRENT)
     return mapPolicyToAttendanceSettings(data)
-  } catch {
-    // No policy yet — return safe defaults (page still usable)
-    return { ...DEFAULT_ATTENDANCE }
+  } catch (err) {
+    // No policy yet is a valid empty state — only soft-fail 404
+    if (axios.isAxiosError(err) && err.response?.status === 404) {
+      return { ...DEFAULT_ATTENDANCE }
+    }
+    throw err
   }
 }
 
-/**
- * Creates a new attendance policy version (effective_from = today).
- * Maps to POST /attendance/policies (AttendancePolicyCreate).
- */
 export async function updateAttendanceSettings(
   patch: Partial<AttendanceSettings>,
 ): Promise<AttendanceSettings> {
@@ -268,7 +260,8 @@ export async function updateAttendanceSettings(
   try {
     const res = await apiClient.get<AttendancePolicyApi>(ATTENDANCE_POLICY_CURRENT)
     current = res.data
-  } catch {
+  } catch (err) {
+    if (!(axios.isAxiosError(err) && err.response?.status === 404)) throw err
     current = null
   }
 
@@ -282,19 +275,15 @@ export async function getLeaveAccrualPolicy(): Promise<LeaveAccrualPolicy> {
     await delay()
     return { ...leaveAccrualPolicyMock }
   }
-  try {
-    const policies = await listLeavePolicies()
-    const current = policies.filter((p) => p.effective_to == null)
-    const maxCarry = current.reduce(
-      (m, p) => Math.max(m, Number(p.carry_forward_limit) || 0),
-      0,
-    )
-    return {
-      maxCarryOverDays: maxCarry,
-      minimumNoticeDays: leaveAccrualPolicyMock.minimumNoticeDays ?? 0,
-    }
-  } catch {
-    return { maxCarryOverDays: 0, minimumNoticeDays: 0 }
+  const policies = await listLeavePolicies()
+  const current = policies.filter((p) => p.effective_to == null)
+  const maxCarry = current.reduce(
+    (m, p) => Math.max(m, Number(p.carry_forward_limit) || 0),
+    0,
+  )
+  return {
+    maxCarryOverDays: maxCarry,
+    minimumNoticeDays: leaveAccrualPolicyMock.minimumNoticeDays ?? 0,
   }
 }
 
