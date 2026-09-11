@@ -6,6 +6,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { LeaveSettingsNav } from '../components/LeaveSettingsNav'
 import { LeaveEditContext } from '../context/LeaveEditContext'
+import { AdminErrorBoundary } from '../components/AdminErrorBoundary'
 import { getLeaveAdminMetrics } from '../api/metrics'
 import { queryKeys } from '@/shared/lib/query-keys'
 
@@ -70,7 +71,9 @@ export function LeaveSettingsLayout() {
 
         <LeaveSettingsNav />
         <div className="min-w-0 w-full">
-          <Outlet />
+          <AdminErrorBoundary label="Leave settings">
+            <Outlet />
+          </AdminErrorBoundary>
         </div>
       </div>
     </LeaveEditContext.Provider>
