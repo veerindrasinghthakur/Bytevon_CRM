@@ -1,1 +1,0 @@
-"""Profile facade module."""
