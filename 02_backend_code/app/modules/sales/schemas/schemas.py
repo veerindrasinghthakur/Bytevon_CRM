@@ -17,10 +17,6 @@ class MessageResponse(BaseModel):
     message: str
 
 
-# ===========================================================================
-# Client
-# ===========================================================================
-
 class ClientCreate(BaseModel):
     client_type: ClientType
     client_name: str = Field(..., min_length=1, max_length=255)
@@ -60,10 +56,6 @@ class ClientResponse(BaseModel):
     changed_by: Optional[int]
 
 
-# ===========================================================================
-# Client Contact
-# ===========================================================================
-
 class ClientContactCreate(BaseModel):
     client_id: int
     name: str = Field(..., min_length=1, max_length=150)
@@ -85,10 +77,6 @@ class ClientContactResponse(BaseModel):
     updated_at: datetime
     changed_by: Optional[int]
 
-
-# ===========================================================================
-# Platform
-# ===========================================================================
 
 class PlatformCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
@@ -112,10 +100,6 @@ class PlatformResponse(BaseModel):
     changed_by: Optional[int]
 
 
-# ===========================================================================
-# Lead
-# ===========================================================================
-
 class LeadCreate(BaseModel):
     lead_title: str = Field(..., min_length=1, max_length=255)
     platform_id: Optional[int] = None
@@ -127,7 +111,7 @@ class LeadCreate(BaseModel):
     expected_close_date: Optional[date] = None
     assigned_employment_id: Optional[int] = None
     status: LeadStatus = LeadStatus.NEW
-    priority: Optional[str] = Field(None, max_length=20)  # Critical|High|Medium|Low
+    priority: Optional[str] = Field(None, max_length=20)
     description: Optional[str] = None
     chat_link: Optional[str] = Field(None, max_length=500)
     client_id: Optional[int] = None
@@ -151,6 +135,8 @@ class LeadUpdate(BaseModel):
     chat_link: Optional[str] = Field(None, max_length=500)
     client_id: Optional[int] = None
     auto_create_project: Optional[bool] = None
+    # Pipeline stage (non-WON). WON must use /status endpoint.
+    status: Optional[LeadStatus] = None
     client_type: Optional[ClientType] = None
     client_name: Optional[str] = None
 
