@@ -83,6 +83,7 @@ class Lead(Base, IdentityMixin, TimestampMixin, ChangedByMixin):
         Integer, ForeignKey("platforms.id"), nullable=True
     )
     contact_name: Mapped[str] = mapped_column(String(150), nullable=False)
+    contact_title: Mapped[Optional[str]] = mapped_column(String(150), nullable=True)
     email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     phone: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     quotation: Mapped[Optional[Decimal]] = mapped_column(Numeric(12, 2), nullable=True)
@@ -93,7 +94,10 @@ class Lead(Base, IdentityMixin, TimestampMixin, ChangedByMixin):
     status: Mapped[LeadStatus] = mapped_column(
         nullable=False, default=LeadStatus.NEW
     )
+    # UI priority: Critical | High | Medium | Low
+    priority: Mapped[Optional[str]] = mapped_column(String(20), nullable=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    chat_link: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     # Set on WON (or earlier if linking existing client)
     client_id: Mapped[Optional[int]] = mapped_column(
         Integer, ForeignKey("clients.id"), nullable=True, index=True
