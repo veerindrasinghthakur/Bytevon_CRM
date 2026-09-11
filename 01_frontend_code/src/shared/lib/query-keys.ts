@@ -150,6 +150,8 @@ export const queryKeys = {
       list: (filters?: unknown) =>
         [...queryKeys.sales.caseStudies.all, 'list', filters ?? {}] as const,
     },
+    /** platforms table = lead sources */
+    platforms: () => ['sales', 'platforms'] as const,
     salesRepresentatives: () => ['sales', 'sales-representatives'] as const,
     activities: () => ['sales', 'activities'] as const,
     dashboardMetrics: () => ['sales', 'dashboard-metrics'] as const,
