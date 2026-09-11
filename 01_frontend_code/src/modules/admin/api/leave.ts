@@ -53,7 +53,6 @@ function eligibilityStyle(type: string): string {
   return 'bg-surface-container-high text-on-surface-variant'
 }
 
-/** Map policies → Leave Types table rows (current versions only). */
 function policiesToTypeSettings(policies: LeavePolicyRow[]): LeaveTypeSettingRow[] {
   const current = policies.filter((p) => p.effective_to == null)
   const byType = new Map<string, LeavePolicyRow>()
@@ -74,12 +73,8 @@ export async function listLeaveTypeSettings(): Promise<LeaveTypeSettingRow[]> {
     await delay()
     return leaveTypeSettings.map((r) => ({ ...r }))
   }
-  try {
-    const policies = await listLeavePolicies()
-    return policiesToTypeSettings(policies)
-  } catch {
-    return []
-  }
+  const policies = await listLeavePolicies()
+  return policiesToTypeSettings(policies)
 }
 
 export async function listLeavePolicies(params?: {
@@ -104,28 +99,24 @@ export async function listLeavePolicies(params?: {
     return items
   }
 
-  try {
-    const { data } = await apiClient.get<
-      LeavePolicyApi[] | { items: LeavePolicyApi[]; total: number }
-    >(LEAVE_POLICIES_API, {
-      params: params?.search ? { search: params.search } : undefined,
-    })
-    let items = (Array.isArray(data) ? data : data.items ?? []).map(mapPolicy)
-    if (params?.search) {
-      const q = params.search.toLowerCase()
-      items = items.filter(
-        (r) =>
-          r.name.toLowerCase().includes(q) ||
-          r.leave_type.toLowerCase().includes(q),
-      )
-    }
-    if (params?.page != null || params?.pageSize != null) {
-      return paginateItems(items, params.page, params.pageSize).items
-    }
-    return items
-  } catch {
-    return []
+  const { data } = await apiClient.get<
+    LeavePolicyApi[] | { items: LeavePolicyApi[]; total: number }
+  >(LEAVE_POLICIES_API, {
+    params: params?.search ? { search: params.search } : undefined,
+  })
+  let items = (Array.isArray(data) ? data : data.items ?? []).map(mapPolicy)
+  if (params?.search) {
+    const q = params.search.toLowerCase()
+    items = items.filter(
+      (r) =>
+        r.name.toLowerCase().includes(q) ||
+        r.leave_type.toLowerCase().includes(q),
+    )
   }
+  if (params?.page != null || params?.pageSize != null) {
+    return paginateItems(items, params.page, params.pageSize).items
+  }
+  return items
 }
 
 export async function createLeavePolicy(input: {
@@ -172,29 +163,25 @@ export async function listLeaveLedger(
     return items
   }
 
-  // Backend: GET /leave/ledger/{employment_id} — requires employment id
+  // No employment selected → empty list (not an API error)
   if (!employeeId) return []
 
-  try {
-    const { data } = await apiClient.get<
-      Array<Record<string, unknown>> | { items: Array<Record<string, unknown>> }
-    >(`/leave/ledger/${employeeId}`, {
-      params: { limit: params?.pageSize ?? 200 },
-    })
-    const raw = Array.isArray(data) ? data : data.items ?? []
-    let items: LeaveLedgerRow[] = raw.map((r) => ({
-      id: Number(r.id),
-      leave_type: String(r.leave_type ?? ''),
-      transaction_type: String(r.transaction_type ?? ''),
-      days: Number(r.days ?? 0),
-      reference_type: String(r.reference_type ?? ''),
-      created_at: String(r.created_at ?? ''),
-    }))
-    if (params?.page != null || params?.pageSize != null) {
-      return paginateItems(items, params.page, params.pageSize).items
-    }
-    return items
-  } catch {
-    return []
+  const { data } = await apiClient.get<
+    Array<Record<string, unknown>> | { items: Array<Record<string, unknown>> }
+  >(`/leave/ledger/${employeeId}`, {
+    params: { limit: params?.pageSize ?? 200 },
+  })
+  const raw = Array.isArray(data) ? data : data.items ?? []
+  let items: LeaveLedgerRow[] = raw.map((r) => ({
+    id: Number(r.id),
+    leave_type: String(r.leave_type ?? ''),
+    transaction_type: String(r.transaction_type ?? ''),
+    days: Number(r.days ?? 0),
+    reference_type: String(r.reference_type ?? ''),
+    created_at: String(r.created_at ?? ''),
+  }))
+  if (params?.page != null || params?.pageSize != null) {
+    return paginateItems(items, params.page, params.pageSize).items
   }
+  return items
 }
