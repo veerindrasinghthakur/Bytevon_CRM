@@ -1,6 +1,5 @@
 /**
  * Sales API — leads, clients, platforms (lead sources), case studies.
- * env.useMockApi → local seed stores; false → /api/v1/sales/*
  */
 
 import { env } from '@/config/env'
@@ -31,7 +30,6 @@ import type {
   PlatformOption,
 } from '../types'
 
-/** Mutable in-memory stores when useMockApi */
 let leadsStore: Lead[] | null = null
 let clientsStore: Client[] | null = null
 
@@ -55,7 +53,6 @@ function clients(): Client[] {
   return clientsStore
 }
 
-/** Lead sources = platforms table (CRUD on /sales/platforms). */
 export async function listPlatforms(includeArchived = false): Promise<PlatformOption[]> {
   if (env.useMockApi) {
     await delay()
@@ -95,7 +92,6 @@ export async function getLeadFilterOptions(): Promise<LeadFilterOptions> {
       sources: MOCK_PLATFORMS.map((p) => p.name),
     }
   }
-  // Prefer /meta/ path (never collides with /leads/{id}); fall back to legacy path
   try {
     const { data } = await apiClient.get<LeadFilterOptions>('/sales/meta/lead-filter-options')
     return data
@@ -126,13 +122,10 @@ export async function getClientFilterOptions(): Promise<ClientFilterOptions> {
   }
 }
 
-/** @deprecated Prefer listEmployments from workforce for assignee picker */
 export async function listSalesRepresentatives(): Promise<SalesRepOption[]> {
   if (env.useMockApi) {
     await delay()
-    const names = Array.from(
-      new Set(leads().map((l) => l.assignedTo).filter(Boolean) as string[]),
-    )
+    const names = Array.from(new Set(leads().map((l) => l.assignedTo).filter(Boolean) as string[]))
     return names.map((name, i) => ({
       employmentId: i + 1,
       name,
@@ -160,7 +153,6 @@ export async function listLeads(params?: {
       '/sales/leads',
       { params },
     )
-    // Backend may still return a bare array on older builds
     if (Array.isArray(data)) {
       return { items: data as unknown as Lead[], total: data.length, metrics: [] }
     }
@@ -219,7 +211,23 @@ function mapStageToLeadStatus(stage?: string, recordStatus?: string): string {
     CLOSED: 'CLOSED',
     ACTIVE: 'NEW',
   }
-  return map[s] ?? (['NEW', 'PROPOSAL_SENT', 'CHAT_OPEN', 'MEETING', 'EXECUTION_PLAN_SENT', 'PAYMENT_DISCUSSION', 'WON', 'LOST', 'FOLLOW_UP', 'CLOSED'].includes(s) ? s : 'NEW')
+  return (
+    map[s] ??
+    ([
+      'NEW',
+      'PROPOSAL_SENT',
+      'CHAT_OPEN',
+      'MEETING',
+      'EXECUTION_PLAN_SENT',
+      'PAYMENT_DISCUSSION',
+      'WON',
+      'LOST',
+      'FOLLOW_UP',
+      'CLOSED',
+    ].includes(s)
+      ? s
+      : 'NEW')
+  )
 }
 
 function toBackendLeadCreate(input: CreateLeadInput): Record<string, unknown> {
@@ -309,6 +317,12 @@ export async function updateLead(
     if (patch.platformId !== undefined) body.platform_id = patch.platformId
     if (patch.assignedEmploymentId !== undefined)
       body.assigned_employment_id = patch.assignedEmploymentId
+    // Enums: stage drives domain LeadStatus; status Active/Inactive handled server-side
+    if (patch.stage != null) body.stage = patch.stage
+    if (patch.status != null) body.status = patch.status
+    if (patch.stage != null || patch.status != null) {
+      body.status = mapStageToLeadStatus(patch.stage, patch.status)
+    }
     const { data } = await apiClient.patch<Lead>(`/sales/leads/${id}`, body)
     return data
   }
