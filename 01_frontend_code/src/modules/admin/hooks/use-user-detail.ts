@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
@@ -27,6 +27,15 @@ async function uploadUserAvatar(_userId: string, file: File) {
   return uploadAvatar(file)
 }
 
+/** Accept array or paginated { items } (shared workforce query-key cache). */
+function asList<T>(data: unknown): T[] {
+  if (Array.isArray(data)) return data as T[]
+  if (data && typeof data === 'object' && Array.isArray((data as { items?: unknown }).items)) {
+    return (data as { items: T[] }).items
+  }
+  return []
+}
+
 export function useUserDetail(userId?: string) {
   const loginId = userId ? Number(userId) : NaN
   const navigate = useNavigate()
@@ -43,8 +52,9 @@ export function useUserDetail(userId?: string) {
     queryFn: listRoles,
   })
 
+  // Dedicated key so we are not poisoned by workforce listDepartments paginated cache
   const deptsQuery = useQuery({
-    queryKey: queryKeys.workforce.departments.list(),
+    queryKey: [...queryKeys.workforce.departments.list(), 'admin-options'] as const,
     queryFn: listDepartments,
   })
 
@@ -68,28 +78,31 @@ export function useUserDetail(userId?: string) {
   })
   const { reset, setError, clearErrors } = form
 
-  const roleOptions =
-    Array.isArray(rolesQuery.data)
-      ? rolesQuery.data.map((r) => ({
-          value: String(r.id),
-          label: r.name,
-          meta: r.description ?? undefined,
-        }))
-      : []
+  const roles = useMemo(
+    () => asList<{ id: string | number; name: string; description?: string | null }>(rolesQuery.data),
+    [rolesQuery.data],
+  )
+  const departments = useMemo(
+    () => asList<{ id: number | string; name: string }>(deptsQuery.data),
+    [deptsQuery.data],
+  )
 
-  const deptOptions =
-    Array.isArray(deptsQuery.data)
-      ? deptsQuery.data.map((d) => ({
-          value: String(d.id),
-          label: d.name,
-        }))
-      : []
+  const roleOptions = roles.map((r) => ({
+    value: String(r.id),
+    label: r.name,
+    meta: r.description ?? undefined,
+  }))
+
+  const deptOptions = departments.map((d) => ({
+    value: String(d.id),
+    label: d.name,
+  }))
 
   useEffect(() => {
     if (!display || isEditing) return
     setStatus(display.status)
-    const matchRole = rolesQuery.data?.find((r) => r.name === display.role)
-    const deptMatch = deptsQuery.data?.find((d) => d.name === display.department)
+    const matchRole = roles.find((r) => r.name === display.role)
+    const deptMatch = departments.find((d) => d.name === display.department)
     const resolvedDeptId =
       (display as { departmentId?: number | null }).departmentId != null
         ? String((display as { departmentId?: number | null }).departmentId)
@@ -102,7 +115,7 @@ export function useUserDetail(userId?: string) {
       departmentId: resolvedDeptId,
       roleId: matchRole ? String(matchRole.id) : '',
     })
-  }, [display, isEditing, rolesQuery.data, deptsQuery.data, reset])
+  }, [display, isEditing, roles, departments, reset])
 
   const saveMutation = useMutation({
     mutationFn: (values: UserEditFormValues) =>
@@ -206,8 +219,8 @@ export function useUserDetail(userId?: string) {
     setActionError(null)
     clearErrors('root')
     if (display) {
-      const matchRole = rolesQuery.data?.find((r) => r.name === display.role)
-      const deptMatch = deptsQuery.data?.find((d) => d.name === display.department)
+      const matchRole = roles.find((r) => r.name === display.role)
+      const deptMatch = departments.find((d) => d.name === display.department)
       const resolvedDeptId =
         (display as { departmentId?: number | null }).departmentId != null
           ? String((display as { departmentId?: number | null }).departmentId)
