@@ -95,8 +95,14 @@ export async function getLeadFilterOptions(): Promise<LeadFilterOptions> {
       sources: MOCK_PLATFORMS.map((p) => p.name),
     }
   }
-  const { data } = await apiClient.get<LeadFilterOptions>('/sales/leads/filter-options')
-  return data
+  // Prefer /meta/ path (never collides with /leads/{id}); fall back to legacy path
+  try {
+    const { data } = await apiClient.get<LeadFilterOptions>('/sales/meta/lead-filter-options')
+    return data
+  } catch {
+    const { data } = await apiClient.get<LeadFilterOptions>('/sales/leads/filter-options')
+    return data
+  }
 }
 
 export async function getClientFilterOptions(): Promise<ClientFilterOptions> {
@@ -111,8 +117,13 @@ export async function getClientFilterOptions(): Promise<ClientFilterOptions> {
       countries: uniq(items.map((c) => c.country)),
     }
   }
-  const { data } = await apiClient.get<ClientFilterOptions>('/sales/clients/filter-options')
-  return data
+  try {
+    const { data } = await apiClient.get<ClientFilterOptions>('/sales/meta/client-filter-options')
+    return data
+  } catch {
+    const { data } = await apiClient.get<ClientFilterOptions>('/sales/clients/filter-options')
+    return data
+  }
 }
 
 /** @deprecated Prefer listEmployments from workforce for assignee picker */
@@ -149,6 +160,10 @@ export async function listLeads(params?: {
       '/sales/leads',
       { params },
     )
+    // Backend may still return a bare array on older builds
+    if (Array.isArray(data)) {
+      return { items: data as unknown as Lead[], total: data.length, metrics: [] }
+    }
     return data
   }
   await delay()
@@ -189,8 +204,8 @@ export async function getLeadById(id: string): Promise<Lead | null> {
   return leads().find((l) => l.id === id) ?? null
 }
 
-/** Map UI stage labels → backend LeadStatus enum values. */
-function mapStageToLeadStatus(stage?: string): string {
+function mapStageToLeadStatus(stage?: string, recordStatus?: string): string {
+  if ((recordStatus ?? '').toLowerCase() === 'inactive') return 'CLOSED'
   const s = (stage ?? 'New').toUpperCase().replace(/\s+/g, '_')
   const map: Record<string, string> = {
     NEW: 'NEW',
@@ -202,20 +217,19 @@ function mapStageToLeadStatus(stage?: string): string {
     LOST: 'LOST',
     FOLLOW_UP: 'FOLLOW_UP',
     CLOSED: 'CLOSED',
+    ACTIVE: 'NEW',
   }
   return map[s] ?? (['NEW', 'PROPOSAL_SENT', 'CHAT_OPEN', 'MEETING', 'EXECUTION_PLAN_SENT', 'PAYMENT_DISCUSSION', 'WON', 'LOST', 'FOLLOW_UP', 'CLOSED'].includes(s) ? s : 'NEW')
 }
 
-/**
- * POST body aligned with backend LeadCreate / LeadCreateBody:
- * lead_title, contact_name, platform_id, assigned_employment_id, quotation, …
- */
 function toBackendLeadCreate(input: CreateLeadInput): Record<string, unknown> {
   return {
     lead_title: input.title,
     title: input.title,
     contact_name: input.contactName,
     contactName: input.contactName,
+    contact_title: input.contactTitle || null,
+    contactTitle: input.contactTitle || null,
     platform_id: input.platformId ?? null,
     email: input.email || null,
     phone: input.phone || null,
@@ -226,9 +240,12 @@ function toBackendLeadCreate(input: CreateLeadInput): Record<string, unknown> {
     assignedEmploymentId: input.assignedEmploymentId ?? null,
     description: input.notes || null,
     notes: input.notes || null,
+    chat_link: input.chatLink || null,
+    chatLink: input.chatLink || null,
+    priority: input.priority || null,
     client_name: input.company || null,
     company: input.company || null,
-    status: mapStageToLeadStatus(input.stage),
+    status: mapStageToLeadStatus(input.stage, input.status),
     stage: input.stage,
     auto_create_project: true,
   }
@@ -281,11 +298,14 @@ export async function updateLead(
     const body: Record<string, unknown> = {}
     if (patch.title != null) body.lead_title = patch.title
     if (patch.contactName != null) body.contact_name = patch.contactName
+    if (patch.contactTitle != null) body.contact_title = patch.contactTitle
     if (patch.email != null) body.email = patch.email
     if (patch.phone != null) body.phone = patch.phone
     if (patch.notes != null) body.description = patch.notes
     if (patch.budget != null) body.quotation = patch.budget
     if (patch.date != null) body.expected_close_date = patch.date
+    if (patch.priority != null) body.priority = patch.priority
+    if (patch.chatLink != null) body.chat_link = patch.chatLink
     if (patch.platformId !== undefined) body.platform_id = patch.platformId
     if (patch.assignedEmploymentId !== undefined)
       body.assigned_employment_id = patch.assignedEmploymentId
@@ -312,6 +332,9 @@ export async function listClients(params?: {
       '/sales/clients',
       { params },
     )
+    if (Array.isArray(data)) {
+      return { items: data as unknown as Client[], total: data.length, metrics: [] }
+    }
     return data
   }
   await delay()
