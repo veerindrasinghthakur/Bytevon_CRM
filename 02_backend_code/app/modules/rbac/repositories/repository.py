@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Optional, Sequence
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -91,8 +91,44 @@ class RBACRepository(BaseRepository):
         stmt = select(Role).where(Role.name == name)
         return await self.scalar_one_or_none(stmt)
 
-    async def list_roles(self, *, with_details: bool = False) -> Sequence[Role]:
-        stmt = select(Role).order_by(Role.name)
+    def _role_filter_stmt(
+        self,
+        *,
+        search: Optional[str] = None,
+        is_system_role: Optional[bool] = None,
+    ):
+        stmt = select(Role)
+        if search and search.strip():
+            q = f"%{search.strip()}%"
+            stmt = stmt.where(
+                or_(Role.name.ilike(q), Role.description.ilike(q))
+            )
+        if is_system_role is not None:
+            stmt = stmt.where(Role.is_system_role.is_(is_system_role))
+        return stmt
+
+    async def count_roles(
+        self,
+        *,
+        search: Optional[str] = None,
+        is_system_role: Optional[bool] = None,
+    ) -> int:
+        base = self._role_filter_stmt(search=search, is_system_role=is_system_role)
+        stmt = select(func.count()).select_from(base.subquery())
+        result = await self.execute(stmt)
+        return int(result.scalar() or 0)
+
+    async def list_roles(
+        self,
+        *,
+        with_details: bool = False,
+        search: Optional[str] = None,
+        is_system_role: Optional[bool] = None,
+        skip: int = 0,
+        limit: Optional[int] = None,
+    ) -> Sequence[Role]:
+        stmt = self._role_filter_stmt(search=search, is_system_role=is_system_role)
+        stmt = stmt.order_by(Role.name)
         if with_details:
             stmt = stmt.options(
                 selectinload(Role.role_permissions)
@@ -100,11 +136,13 @@ class RBACRepository(BaseRepository):
                 .selectinload(Permission.resource),
                 selectinload(Role.role_permissions).selectinload(RolePermission.scope),
             )
+        if skip:
+            stmt = stmt.offset(skip)
+        if limit is not None:
+            stmt = stmt.limit(limit)
         return await self.scalars(stmt)
 
     async def count_employments_with_role(self, role_id: int) -> int:
-        from sqlalchemy import func
-
         stmt = select(func.count()).select_from(EmployeeRole).where(
             EmployeeRole.role_id == role_id
         )
@@ -113,8 +151,6 @@ class RBACRepository(BaseRepository):
 
     async def count_employments_by_role_ids(self, role_ids: list[int]) -> dict[int, int]:
         """Map role_id → assignment count."""
-        from sqlalchemy import func
-
         if not role_ids:
             return {}
         stmt = (
