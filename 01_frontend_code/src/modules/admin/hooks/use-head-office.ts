@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { listHeadOfficeOptions, type HeadOfficeOption } from '../api/offices'
 import {
   getOrganizationSettings,
@@ -59,8 +60,8 @@ export function useHeadOfficePicker() {
       void queryClient.invalidateQueries({ queryKey: queryKeys.admin.offices.headOptions() })
       setPickerOpen(false)
     },
-    onError: (e: Error) => {
-      setError(e?.message || 'Could not update head office')
+    onError: (e: unknown) => {
+      setError(getApiErrorMessage(e, 'Could not update head office'))
     },
   })
 
@@ -96,8 +97,12 @@ export function useHeadOfficePicker() {
     isSaving: saveMutation.isPending,
     error:
       error ||
-      (locationsQuery.isError ? 'Could not load locations' : null) ||
-      (settingsQuery.isError ? 'Could not load organization settings' : null),
+      (locationsQuery.isError
+        ? getApiErrorMessage(locationsQuery.error, 'Could not load locations')
+        : null) ||
+      (settingsQuery.isError
+        ? getApiErrorMessage(settingsQuery.error, 'Could not load organization settings')
+        : null),
     openPicker,
     closePicker,
     selectOffice,
