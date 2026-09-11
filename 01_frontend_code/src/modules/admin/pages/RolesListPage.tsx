@@ -106,6 +106,7 @@ export function RolesListPage() {
     totalCount,
     isLoading,
     isError,
+    errorMessage,
     refetch,
     metrics,
     search,
@@ -121,10 +122,8 @@ export function RolesListPage() {
     selectionMode,
     selectedIds,
     selectedCount,
-    allFilteredSelected,
     isSelected,
     toggleOne,
-    toggleSelectAllFiltered,
     exitSelectionMode,
     onRowPressStart,
     onRowPressEnd,
@@ -271,7 +270,7 @@ export function RolesListPage() {
       {isError && (
         <ErrorState
           title="Failed to load roles"
-          description="We could not load the roles list. Check your connection and try again."
+          description={errorMessage ?? 'We could not load the roles list. Check your connection and try again.'}
           onRetry={() => void refetch()}
           showBack={false}
         />
@@ -396,7 +395,6 @@ export function RolesListPage() {
               )
             })}
           </section>
-
 
           {filtered.length === 0 && (
             <div className="bv-surface p-12 text-center text-on-surface-variant">No roles match your filters.</div>
