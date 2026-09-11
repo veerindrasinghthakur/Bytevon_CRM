@@ -11,7 +11,6 @@ from datetime import date
 from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, Header, Query, status
-
 from app.modules.organization.dependencies import OrganizationServiceDep
 from app.modules.organization.schemas.schemas import (
     AdminUserCreate,
@@ -30,6 +29,7 @@ from app.modules.organization.schemas.schemas import (
     HolidayCalendarUpdate,
     HolidayCreate,
     HolidayResponse,
+    HolidayUpdate,
     LocationCreate,
     LocationResponse,
     LocationUpdate,
@@ -42,7 +42,6 @@ from app.modules.organization.schemas.schemas import (
     WorkingWeekCreate,
     WorkingWeekResponse,
 )
-
 router = APIRouter(prefix="/organization", tags=["Organization"])
 
 ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
@@ -375,6 +374,35 @@ async def list_holidays_for_calendar(
     service: OrganizationServiceDep,
 ) -> list[HolidayResponse]:
     return await service.list_holidays(calendar_id)
+
+
+@router.get("/holidays/{holiday_id}", response_model=HolidayResponse)
+async def get_holiday(
+    holiday_id: int,
+    service: OrganizationServiceDep,
+) -> HolidayResponse:
+    return await service.get_holiday(holiday_id)
+
+
+@router.patch("/holidays/{holiday_id}", response_model=HolidayResponse)
+async def update_holiday(
+    holiday_id: int,
+    body: HolidayUpdate,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> HolidayResponse:
+    return await service.update_holiday(
+        holiday_id, body, actor_employment_id=actor
+    )
+
+
+@router.delete("/holidays/{holiday_id}", response_model=MessageResponse)
+async def delete_holiday(
+    holiday_id: int,
+    service: OrganizationServiceDep,
+    actor: ActorHeader = None,
+) -> MessageResponse:
+    return await service.delete_holiday(holiday_id, actor_employment_id=actor)
 
 
 # ---------------------------------------------------------------------------
