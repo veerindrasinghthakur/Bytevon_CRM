@@ -128,7 +128,6 @@ export function mapApiAuditLog(row: AuditLogApi): AuditLog {
   }
 }
 
-/** Ensure mock rows satisfy the full AuditLog shape. */
 function normalizeMock(row: Partial<AuditLog> & { id: string; action: string }): AuditLog {
   return {
     id: row.id,
@@ -194,36 +193,32 @@ export async function listAuditLogs(params?: AuditListParams): Promise<AuditLog[
     ).slice(0, limit)
   }
 
-  try {
-    const query: Record<string, string | number> = {
-      limit: params?.limit ?? 500,
-      offset: 0,
-    }
-
-    if (params?.action && params.action !== 'All Actions') {
-      const mapped = UI_ACTION_TO_API[params.action]
-      const candidate = (mapped ?? params.action).toUpperCase()
-      if (mapped && AUDIT_ACTIONS.has(candidate)) {
-        query.action = candidate
-      }
-    }
-
-    const fromTs = toIsoLocal(params?.dateFrom, params?.timeFrom, false)
-    const toTs = toIsoLocal(params?.dateTo || params?.dateFrom, params?.timeTo, true)
-    if (fromTs) query.from_ts = fromTs
-    if (toTs) query.to_ts = toTs
-
-    const { data } = await apiClient.get<AuditLogApi[] | { items?: AuditLogApi[] }>(
-      AUDIT_LOGS_API,
-      { params: query },
-    )
-    const items = (Array.isArray(data) ? data : data.items ?? []).map(mapApiAuditLog)
-    return applyClientFilters(items, params)
-  } catch {
-    return []
+  const query: Record<string, string | number> = {
+    limit: params?.limit ?? 500,
+    offset: 0,
   }
+
+  if (params?.action && params.action !== 'All Actions') {
+    const mapped = UI_ACTION_TO_API[params.action]
+    const candidate = (mapped ?? params.action).toUpperCase()
+    if (mapped && AUDIT_ACTIONS.has(candidate)) {
+      query.action = candidate
+    }
+  }
+
+  const fromTs = toIsoLocal(params?.dateFrom, params?.timeFrom, false)
+  const toTs = toIsoLocal(params?.dateTo || params?.dateFrom, params?.timeTo, true)
+  if (fromTs) query.from_ts = fromTs
+  if (toTs) query.to_ts = toTs
+
+  const { data } = await apiClient.get<AuditLogApi[] | { items?: AuditLogApi[] }>(AUDIT_LOGS_API, {
+    params: query,
+  })
+  const items = (Array.isArray(data) ? data : data.items ?? []).map(mapApiAuditLog)
+  return applyClientFilters(items, params)
 }
 
+/** Best-effort only — must never fail the caller. */
 export async function recordAuditEvent(input: RecordAuditInput): Promise<void> {
   try {
     if (env.useMockApi) {
