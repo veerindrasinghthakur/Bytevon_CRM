@@ -9,6 +9,7 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { can } from '@/shared/rbac'
 import { Action, ResourceName, type ShiftRow } from '@/shared/schema'
 import {
@@ -33,6 +34,7 @@ export function ShiftDetailPage() {
   const { shiftId } = useParams({ strict: false }) as { shiftId?: string }
   const navigate = useNavigate()
   const id = Number(shiftId)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const canCreate = can({ action: Action.CREATE, resource: ResourceName.SHIFT })
   const canUpdate = can({ action: Action.UPDATE, resource: ResourceName.SHIFT })
@@ -45,8 +47,12 @@ export function ShiftDetailPage() {
   const archiveMut = useMutation({
     mutationFn: () => archiveShift(id),
     onSuccess: async () => {
+      setActionError(null)
       await qc.invalidateQueries({ queryKey: queryKeys.organization.shifts.all })
       safeNavigate(navigate, { to: listTo })
+    },
+    onError: (e: unknown) => {
+      setActionError(getApiErrorMessage(e, 'Could not archive shift'))
     },
   })
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(isNew)
@@ -68,7 +74,7 @@ export function ShiftDetailPage() {
   if (!isNew && (detailQuery.isError || !shift)) {
     return (
       <ErrorState
-        description={(detailQuery.error as Error)?.message ?? 'Shift not found'}
+        description={getApiErrorMessage(detailQuery.error, 'Shift not found')}
         onRetry={() => void detailQuery.refetch()}
         onBack={() => safeNavigate(navigate, { to: listTo })}
       />
@@ -80,11 +86,13 @@ export function ShiftDetailPage() {
   const beginEdit = () => {
     if (!shift) return
     setDraft({ ...shift })
+    setActionError(null)
     startEditing()
   }
 
   const onCancel = () => {
     setDraft({})
+    setActionError(null)
     cancelEditing()
   }
 
@@ -110,6 +118,7 @@ export function ShiftDetailPage() {
   )
 
   const onSave = () => {
+    setActionError(null)
     if (isNew) {
       createMut.mutate(
         {
@@ -123,6 +132,9 @@ export function ShiftDetailPage() {
         },
         {
           onSuccess: () => safeNavigate(navigate, { to: listTo }),
+          onError: (e: unknown) => {
+            setActionError(getApiErrorMessage(e, 'Could not create shift'))
+          },
         },
       )
       return
@@ -141,6 +153,9 @@ export function ShiftDetailPage() {
         onSuccess: () => {
           setDraft({})
           finishEditing()
+        },
+        onError: (e: unknown) => {
+          setActionError(getApiErrorMessage(e, 'Could not save shift'))
         },
       },
     )
@@ -191,10 +206,10 @@ export function ShiftDetailPage() {
         )}
       </div>
 
-      {(createMut.isError || updateMut.isError) && (
-        <p className="text-body-sm text-error">
-          {((createMut.error || updateMut.error) as Error).message}
-        </p>
+      {actionError && (
+        <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error" role="alert">
+          {actionError}
+        </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
