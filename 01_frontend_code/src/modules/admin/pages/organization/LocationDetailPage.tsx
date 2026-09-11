@@ -3,11 +3,11 @@ import { useNavigate, useParams } from '@tanstack/react-router'
 import { useMutation } from '@tanstack/react-query'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
-import { EditButton } from '@/shared/components/ui/EditButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { useLocationDetail, useUpdateLocation } from '../../hooks/use-organization-locations'
 import { archiveLocation } from '../../api/organization'
 import type { LocationRow } from '@/shared/schema'
@@ -20,16 +20,22 @@ export function LocationDetailPage() {
   const { data: loc, isLoading, isError, error, refetch } = useLocationDetail(id)
   const updateMut = useUpdateLocation(id)
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
+  const [actionError, setActionError] = useState<string | null>(null)
 
   const archiveMut = useMutation({
     mutationFn: archiveLocation,
     onSuccess: () => {
+      setActionError(null)
       safeNavigate(navigate, { to: '/admin/settings/locations' })
+    },
+    onError: (e: unknown) => {
+      setActionError(getApiErrorMessage(e, 'Could not archive location'))
     },
   })
 
   const handleArchive = () => {
     if (!loc) return
+    setActionError(null)
     archiveMut.mutate(loc.id)
   }
   const [draft, setDraft] = useState<Partial<LocationRow>>({})
@@ -37,16 +43,19 @@ export function LocationDetailPage() {
   const beginEdit = () => {
     if (!loc) return
     setDraft({ ...loc })
+    setActionError(null)
     startEditing()
   }
 
   const onCancel = () => {
     setDraft({})
+    setActionError(null)
     cancelEditing()
   }
 
   const save = () => {
     if (!loc) return
+    setActionError(null)
     updateMut.mutate(
       {
         name: draft.name,
@@ -63,6 +72,9 @@ export function LocationDetailPage() {
           setDraft({})
           finishEditing()
         },
+        onError: (e: unknown) => {
+          setActionError(getApiErrorMessage(e, 'Could not save location'))
+        },
       },
     )
   }
@@ -71,7 +83,7 @@ export function LocationDetailPage() {
   if (isError || !loc) {
     return (
       <ErrorState
-        description={(error as Error)?.message ?? 'Location not found'}
+        description={getApiErrorMessage(error, 'Location not found')}
         onRetry={() => void refetch()}
         onBack={() => safeNavigate(navigate, { to: '/admin/settings/locations' })}
       />
@@ -115,29 +127,29 @@ export function LocationDetailPage() {
             </Button>
           </div>
         ) : (
-          // <Can do={Action.Update} on={ResourceName.Location}>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                leftIcon={<span className="material-symbols-outlined">edit</span>}
-                onClick={beginEdit}
-              >
-                Edit
-              </Button>
-              <ArchiveButton
-                entityLabel={loc?.name}
-                mode="archive"
-                onConfirm={handleArchive}
-                disabled={updateMut.isPending || archiveMut.isPending}
-                isLoading={archiveMut.isPending}
-              />
-            </div>
-          // </Can>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              leftIcon={<span className="material-symbols-outlined">edit</span>}
+              onClick={beginEdit}
+            >
+              Edit
+            </Button>
+            <ArchiveButton
+              entityLabel={loc?.name}
+              mode="archive"
+              onConfirm={handleArchive}
+              disabled={updateMut.isPending || archiveMut.isPending}
+              isLoading={archiveMut.isPending}
+            />
+          </div>
         )}
       </div>
 
-      {updateMut.isError && (
-        <p className="text-body-sm text-error">{(updateMut.error as Error).message}</p>
+      {actionError && (
+        <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error" role="alert">
+          {actionError}
+        </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
