@@ -424,12 +424,24 @@ async def create_platform(
     return await service.create_platform(body, actor_employment_id=actor)
 
 
-@router.get("/platforms", response_model=list[PlatformResponse])
+@router.get("/platforms")
 async def list_platforms(
     service: SalesServiceDep,
     include_archived: bool = Query(False),
-) -> list[PlatformResponse]:
+    with_stats: bool = Query(False),
+) -> Any:
+    """List lead sources (platforms).
+    with_stats=true → {items, metrics} for Manage Sources.
+    Default plain array for lead Source pickers.
+    """
+    if with_stats:
+        return await service.list_platforms_with_stats(include_archived=include_archived)
     return await service.list_platforms(include_archived=include_archived)
+
+
+@router.get("/platforms/{platform_id}", response_model=PlatformResponse)
+async def get_platform(platform_id: int, service: SalesServiceDep) -> PlatformResponse:
+    return await service.get_platform(platform_id)
 
 
 @router.patch("/platforms/{platform_id}", response_model=PlatformResponse)
@@ -547,10 +559,10 @@ async def update_lead(
             else body.get("contactTitle")
         )
     if "email" in body:
-        data["email"] = body.get("email") or None
+        data["email"] = body.get("email")
     if "phone" in body:
         data["phone"] = body.get("phone")
-    if body.get("quotation") is not None or body.get("budget") is not None:
+    if "quotation" in body or "budget" in body:
         raw_q = body.get("quotation", body.get("budget"))
         try:
             data["quotation"] = Decimal(str(raw_q)) if raw_q is not None else None

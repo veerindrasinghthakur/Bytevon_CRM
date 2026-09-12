@@ -6,14 +6,14 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
-from typing import Optional, TypeVar
+from typing import Any, Optional, TypeVar
 
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.db.enums import ClientType, LeadStatus
-from app.core.exceptions.exception import DomainError, NotFoundError
+from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
 from app.modules.sales.models import Client, ClientContact, Lead, Platform
 from app.modules.sales.repositories.repository import SalesRepository
@@ -128,9 +128,16 @@ class SalesPublicService(BasePublicService):
         rows = await self._repo.list_contacts_for_client(client_id)
         return [ClientContactResponse.model_validate(r) for r in rows]
 
+    # ------------------------------------------------------------------
+    # Platforms (lead sources)
+    # ------------------------------------------------------------------
+
     async def create_platform(
         self, data: PlatformCreate, *, actor_employment_id: Optional[int] = None
     ) -> PlatformResponse:
+        existing = await self._repo.find_platform_by_name(data.name)
+        if existing is not None:
+            raise ConflictError(f"Source '{data.name}' already exists")
         platform = Platform(
             **data.model_dump(),
             changed_by=actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID,
@@ -140,26 +147,99 @@ class SalesPublicService(BasePublicService):
         await self._audit("platform.created", platform.id, actor_employment_id)
         return await self._validate_after_commit(platform, PlatformResponse)
 
+    async def get_platform(self, platform_id: int) -> PlatformResponse:
+        platform = await self._repo.get_platform_by_id(platform_id, include_archived=True)
+        if platform is None:
+            raise NotFoundError("Platform not found")
+        return PlatformResponse.model_validate(platform)
+
     async def list_platforms(self, *, include_archived: bool = False) -> list[PlatformResponse]:
         rows = await self._repo.list_platforms(include_archived=include_archived)
         return [PlatformResponse.model_validate(r) for r in rows]
 
+    async def list_platforms_with_stats(
+        self, *, include_archived: bool = False
+    ) -> dict[str, Any]:
+        rows = await self._repo.list_platforms(include_archived=include_archived)
+        counts = await self._repo.count_leads_by_platform()
+        items: list[dict[str, Any]] = []
+        for r in rows:
+            lead_count = counts.get(r.id, 0)
+            items.append(
+                {
+                    "id": r.id,
+                    "name": r.name,
+                    "description": r.description,
+                    "is_archived": r.is_archived,
+                    "leadCount": lead_count,
+                    "lead_count": lead_count,
+                    "created_at": r.created_at.isoformat() if r.created_at else None,
+                    "updated_at": r.updated_at.isoformat() if r.updated_at else None,
+                    "status": "Archived" if r.is_archived else "Active",
+                }
+            )
+        active = [i for i in items if not i["is_archived"]]
+        top = max(active, key=lambda x: x["leadCount"], default=None)
+        total_leads = sum(i["leadCount"] for i in items)
+        return {
+            "items": items,
+            "total": len(items),
+            "metrics": [
+                {
+                    "id": "total",
+                    "label": "Total sources",
+                    "value": str(len(active)),
+                    "icon": "hub",
+                },
+                {
+                    "id": "top",
+                    "label": "Source with highest leads",
+                    "value": (
+                        f"{top['name']} ({top['leadCount']})"
+                        if top and top["leadCount"] > 0
+                        else "—"
+                    ),
+                    "icon": "emoji_events",
+                },
+                {
+                    "id": "leads",
+                    "label": "Leads with source",
+                    "value": str(total_leads),
+                    "icon": "person_search",
+                },
+                {
+                    "id": "archived",
+                    "label": "Archived sources",
+                    "value": str(sum(1 for i in items if i["is_archived"])),
+                    "icon": "inventory_2",
+                },
+            ],
+        }
+
     async def update_platform(
         self, platform_id: int, data: PlatformUpdate, *, actor_employment_id: Optional[int] = None
     ) -> PlatformResponse:
-        platform = await self._repo.get_platform_by_id(platform_id)
+        platform = await self._repo.get_platform_by_id(platform_id, include_archived=True)
         if platform is None:
             raise NotFoundError("Platform not found")
-        for field, value in data.model_dump(exclude_unset=True).items():
+        payload = data.model_dump(exclude_unset=True)
+        if "name" in payload and payload["name"]:
+            dup = await self._repo.find_platform_by_name(
+                payload["name"], exclude_id=platform_id
+            )
+            if dup is not None:
+                raise ConflictError(f"Source '{payload['name']}' already exists")
+        for field, value in payload.items():
             setattr(platform, field, value)
         platform.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
+        await self._audit("platform.updated", platform.id, actor_employment_id)
         return await self._validate_after_commit(platform, PlatformResponse)
 
     async def archive_platform(
         self, platform_id: int, *, actor_employment_id: Optional[int] = None
     ) -> MessageResponse:
-        platform = await self._repo.get_platform_by_id(platform_id)
+        platform = await self._repo.get_platform_by_id(platform_id, include_archived=True)
         if platform is None:
             raise NotFoundError("Platform not found")
         if platform.is_archived:
@@ -170,6 +250,7 @@ class SalesPublicService(BasePublicService):
         platform.archived_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         platform.changed_by = platform.archived_by
         await self._commit()
+        await self._audit("platform.archived", platform.id, actor_employment_id)
         return MessageResponse(message="Platform archived")
 
     async def create_lead(
@@ -251,7 +332,6 @@ class SalesPublicService(BasePublicService):
             if new_status == LeadStatus.WON:
                 raise DomainError("Mark WON via POST /sales/leads/{id}/status")
             if new_status in _TERMINAL and new_status != lead.status:
-                # LOST / CLOSED allowed via PATCH for archive-style UI
                 pass
             lead.status = new_status
 

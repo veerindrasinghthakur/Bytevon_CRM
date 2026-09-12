@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from typing import Optional, Sequence
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db.enums import LeadStatus
@@ -59,7 +59,7 @@ class SalesRepository(BaseRepository):
         return await self.scalars(stmt)
 
     # ------------------------------------------------------------------
-    # Platforms
+    # Platforms (lead sources)
     # ------------------------------------------------------------------
 
     async def get_platform_by_id(
@@ -77,6 +77,27 @@ class SalesRepository(BaseRepository):
         if not include_archived:
             stmt = stmt.where(Platform.is_archived.is_(False))
         return await self.scalars(stmt)
+
+    async def count_leads_by_platform(self) -> dict[int, int]:
+        """platform_id → lead count (null platform_id excluded)."""
+        stmt = (
+            select(Lead.platform_id, func.count(Lead.id))
+            .where(Lead.platform_id.is_not(None))
+            .group_by(Lead.platform_id)
+        )
+        result = await self._session.execute(stmt)
+        return {int(pid): int(cnt) for pid, cnt in result.all() if pid is not None}
+
+    async def find_platform_by_name(
+        self, name: str, *, exclude_id: Optional[int] = None
+    ) -> Optional[Platform]:
+        stmt = select(Platform).where(
+            func.lower(Platform.name) == name.strip().lower(),
+            Platform.is_archived.is_(False),
+        )
+        if exclude_id is not None:
+            stmt = stmt.where(Platform.id != exclude_id)
+        return await self.scalar_one_or_none(stmt)
 
     # ------------------------------------------------------------------
     # Leads

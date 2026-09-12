@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
@@ -5,11 +6,22 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 import { StatusDot } from '@/shared/components/ui/StatusDot'
-import { useLead, useSalesActivities } from '../hooks/use-sales'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { useLead, useSalesActivities, useUpdateLead } from '../hooks/use-sales'
+import { changeLeadStage } from '../api/sales'
 import { salesRoutes } from '../routes'
 import { cn } from '@/shared/lib/cn'
-import { stageStyles, priorityStyles, activityIcon } from '../schemas/enums'
-import { PipelineStageValues } from '../schemas/enums'
+import { stageStyles, priorityStyles, activityIcon, PipelineStageValues } from '../schemas/enums'
+import type { PipelineStage } from '../schemas/enums'
+
+/** Forward pipeline only (Lost is a side exit, not “next”). */
+const FORWARD_STAGES = PipelineStageValues.filter((s) => s !== 'Lost') as PipelineStage[]
+
+function nextPipelineStage(current: string): PipelineStage | null {
+  const idx = FORWARD_STAGES.indexOf(current as PipelineStage)
+  if (idx < 0 || idx >= FORWARD_STAGES.length - 1) return null
+  return FORWARD_STAGES[idx + 1]
+}
 
 function formatBudget(n: number) {
   return new Intl.NumberFormat('en-US', {
@@ -24,8 +36,13 @@ export function LeadDetailPage() {
   const { leadId } = useParams({ strict: false }) as { leadId: string }
   const leadQuery = useLead(leadId)
   const activitiesQuery = useSalesActivities()
+  const updateLead = useUpdateLead()
   const lead = leadQuery.data ?? null
   const timeline = (activitiesQuery.data ?? []).slice(0, 4)
+
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [stageError, setStageError] = useState<string | null>(null)
+  const [advancing, setAdvancing] = useState(false)
 
   if (leadQuery.isLoading) return <PageLoadingSkeleton />
 
@@ -40,7 +57,32 @@ export function LeadDetailPage() {
     )
   }
 
-  const currentIdx = PipelineStageValues.indexOf(lead.stage)
+  const currentIdx = PipelineStageValues.indexOf(lead.stage as PipelineStage)
+  const nextStage = nextPipelineStage(lead.stage)
+  const isTerminal = lead.stage === 'Won' || lead.stage === 'Lost'
+
+  const handleAdvanceStage = async () => {
+    if (!nextStage) return
+    setStageError(null)
+    setAdvancing(true)
+    try {
+      // WON goes through dedicated status endpoint; other stages use PATCH
+      if (nextStage === 'Won') {
+        await changeLeadStage(lead.id, 'Won')
+        await leadQuery.refetch()
+      } else {
+        await updateLead.mutateAsync({
+          id: lead.id,
+          patch: { stage: nextStage, status: 'Active' },
+        })
+      }
+      setConfirmOpen(false)
+    } catch (err) {
+      setStageError(getApiErrorMessage(err, 'Could not update stage'))
+    } finally {
+      setAdvancing(false)
+    }
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -103,8 +145,69 @@ export function LeadDetailPage() {
         <span className="text-xs text-on-surface-variant font-mono">{lead.id}</span>
       </div>
 
-      <div className="bv-surface p-5">
-        <p className="text-[10px] font-bold uppercase text-on-surface-variant mb-4">Pipeline stage</p>
+      <div className="bv-surface p-5 space-y-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <p className="text-[10px] font-bold uppercase text-on-surface-variant">Pipeline stage</p>
+          {!isTerminal && nextStage && (
+            <div className="flex flex-col items-end gap-2 max-w-full">
+              {!confirmOpen ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<span className="material-symbols-outlined text-[18px]">moving</span>}
+                  onClick={() => {
+                    setStageError(null)
+                    setConfirmOpen(true)
+                  }}
+                >
+                  Update current status to {nextStage}
+                </Button>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2 justify-end">
+                  <p className="text-body-sm text-on-surface-variant w-full text-right sm:w-auto">
+                    Move from <span className="font-semibold text-on-surface">{lead.stage}</span> to{' '}
+                    <span className="font-semibold text-on-surface">{nextStage}</span>?
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={advancing}
+                    onClick={() => {
+                      setConfirmOpen(false)
+                      setStageError(null)
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    disabled={advancing}
+                    leftIcon={
+                      <span className="material-symbols-outlined text-[18px]">
+                        {advancing ? 'progress_activity' : 'check'}
+                      </span>
+                    }
+                    onClick={() => void handleAdvanceStage()}
+                  >
+                    {advancing ? 'Updating…' : `Confirm → ${nextStage}`}
+                  </Button>
+                </div>
+              )}
+              {stageError && (
+                <p className="text-body-sm text-error text-right" role="alert">
+                  {stageError}
+                </p>
+              )}
+            </div>
+          )}
+          {isTerminal && (
+            <p className="text-body-sm text-on-surface-variant">
+              This lead is in a terminal stage ({lead.stage}). Stage can no longer be advanced.
+            </p>
+          )}
+        </div>
+
         <div className="flex flex-wrap items-center gap-2">
           {PipelineStageValues.filter((s) => s !== 'Lost').map((stage, i, arr) => {
             const done = currentIdx >= i && lead.stage !== 'Lost'

@@ -16,6 +16,7 @@ const SalesActivityTimelinePage = lazyPage(
   'SalesActivityTimelinePage',
 )
 const CaseStudiesListPage = lazyPage(() => import('./pages/CaseStudiesListPage'), 'CaseStudiesListPage')
+const SourcesListPage = lazyPage(() => import('./pages/SourcesListPage'), 'SourcesListPage')
 
 /** Canonical path helpers — prefer these over hard-coded strings in pages. */
 export const salesRoutes = {
@@ -36,6 +37,7 @@ export const salesRoutes = {
   analytics: '/sales/analytics',
   activity: '/sales/activity',
   caseStudies: '/sales/case-studies',
+  sources: '/sales/sources',
 } as const
 
 export function createSalesRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
@@ -102,6 +104,11 @@ export function createSalesRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
       getParentRoute: () => appLayoutRoute,
       path: '/sales/case-studies',
       component: CaseStudiesListPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/sales/sources',
+      component: SourcesListPage,
     }),
   ]
 }
