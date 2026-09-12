@@ -273,3 +273,4 @@ class DepartmentMembersMixin:
         await self._commit()
         await self._audit("department.employee_removed", department_id, actor_employment_id)
         return MessageResponse(message="Employee removed from department")
+

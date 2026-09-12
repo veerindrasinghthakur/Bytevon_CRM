@@ -458,7 +458,6 @@ async def archive_location(
 ) -> MessageResponse:
     return await service.archive_location(location_id, actor_employment_id=actor)
 
-
 # ---------------------------------------------------------------------------
 # Organization settings
 # ---------------------------------------------------------------------------

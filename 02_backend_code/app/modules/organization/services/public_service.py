@@ -68,6 +68,8 @@ class OrganizationPublicService(AdminUsersMixin, DepartmentMembersMixin, BasePub
         await self._session.refresh(obj)
         return obj
 
+
+    # Department
     async def create_department(
         self, data: DepartmentCreate, *, actor_employment_id: Optional[int] = None
     ) -> DepartmentResponse:
@@ -130,6 +132,9 @@ class OrganizationPublicService(AdminUsersMixin, DepartmentMembersMixin, BasePub
         await self._audit("department.archived", dept.id, actor_employment_id)
         return MessageResponse(message="Department archived")
 
+
+    # -------------------Working weeek----------------------------------------
+
     async def create_working_week(
         self, data: WorkingWeekCreate, *, actor_employment_id: Optional[int] = None
     ) -> WorkingWeekResponse:
@@ -157,6 +162,7 @@ class OrganizationPublicService(AdminUsersMixin, DepartmentMembersMixin, BasePub
         await self._audit("working_week.created", week.id, actor_employment_id)
         await self._refresh(week)
         return WorkingWeekResponse.model_validate(week)
+
 
     async def get_working_week(self, week_id: int) -> WorkingWeekResponse:
         week = await self._repo.get_working_week_by_id(week_id)
@@ -197,6 +203,8 @@ class OrganizationPublicService(AdminUsersMixin, DepartmentMembersMixin, BasePub
         await self._audit("working_week.archived", week.id, actor_employment_id)
         return MessageResponse(message=f"Working week closed (effective_to={close_on.isoformat()})")
 
+
+    # -------------------------shift--------------------------------------------------
     async def create_shift(
         self, data: ShiftCreate, *, actor_employment_id: Optional[int] = None
     ) -> ShiftResponse:
@@ -300,6 +308,8 @@ class OrganizationPublicService(AdminUsersMixin, DepartmentMembersMixin, BasePub
         await self._audit("shift.archived", shift.id, actor_employment_id)
         return MessageResponse(message="Shift archived")
 
+
+    # ----------------------------Holiday calendar-------------------------------------
     async def create_holiday_calendar(
         self, data: HolidayCalendarCreate, *, actor_employment_id: Optional[int] = None
     ) -> HolidayCalendarResponse:
@@ -421,6 +431,8 @@ class OrganizationPublicService(AdminUsersMixin, DepartmentMembersMixin, BasePub
         await self._audit("holiday.deleted", holiday_id, actor_employment_id)
         return MessageResponse(message="Holiday deleted")
 
+
+    # -------------------------locations------------------------------------------------
     async def _validate_location_refs(
         self, *, working_week_id: Optional[int], holiday_calendar_id: Optional[int],
     ) -> tuple[Optional[int], Optional[int]]:
@@ -513,6 +525,8 @@ class OrganizationPublicService(AdminUsersMixin, DepartmentMembersMixin, BasePub
         await self._audit("location.archived", loc.id, actor_employment_id)
         return MessageResponse(message="Location archived")
 
+
+    # ---------------------------------organisation settings------------------------------------------
     async def get_organization_settings(self) -> OrganizationSettingsResponse:
         row = await self._repo.get_organization_settings()
         if row is None:
