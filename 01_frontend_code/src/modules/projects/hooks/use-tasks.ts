@@ -3,12 +3,12 @@ import { getTasks, getTask, createTask, updateTask } from '../api/tasks'
 import type { Task, TaskPriority, TaskListCache } from '../types'
 import { queryKeys } from '@/shared/lib/query-keys'
 
-/**
- * List tasks. Pass a filters object to fetch.
- * - Tasks list page: useTasks({ search, status, page, pageSize })
- * - Project detail Tasks tab: useTasks({ projectId }) when tab active
- * - Pass undefined to skip fetch (lazy)
- */
+function asListCache(old: TaskListCache | undefined | null, fallbackItems: Task[] = []): TaskListCache {
+  if (!old) return { items: fallbackItems, total: fallbackItems.length }
+  const items = Array.isArray(old.items) ? old.items : fallbackItems
+  return { items, total: typeof old.total === 'number' ? old.total : items.length }
+}
+
 export function useTasks(filters?: {
   search?: string
   status?: string
@@ -20,7 +20,6 @@ export function useTasks(filters?: {
   return useQuery({
     queryKey: queryKeys.tasks.list(filters ?? {}),
     queryFn: () => getTasks(filters),
-    // undefined = do not fetch (project detail before Tasks tab)
     enabled: filters !== undefined,
   })
 }
@@ -65,8 +64,8 @@ export function useCreateTask() {
       }
 
       queryClient.setQueriesData<TaskListCache>({ queryKey: queryKeys.tasks.all }, (old) => {
-        if (!old) return { items: [optimistic], total: 1 }
-        return { items: [optimistic, ...old.items], total: old.total + 1 }
+        const base = asListCache(old)
+        return { items: [optimistic, ...base.items], total: base.total + 1 }
       })
 
       return { previous, optimisticId: optimistic.id }
@@ -76,10 +75,10 @@ export function useCreateTask() {
     },
     onSuccess: (created, _input, ctx) => {
       queryClient.setQueriesData<TaskListCache>({ queryKey: queryKeys.tasks.all }, (old) => {
-        if (!old) return { items: [created], total: 1 }
+        const base = asListCache(old, [created])
         return {
-          items: old.items.map((t) => (t.id === ctx?.optimisticId ? created : t)),
-          total: old.total,
+          items: base.items.map((t) => (t.id === ctx?.optimisticId ? created : t)),
+          total: base.total,
         }
       })
       queryClient.setQueryData(queryKeys.tasks.detail(created.id), created)
@@ -109,9 +108,10 @@ export function useUpdateTask() {
 
       queryClient.setQueriesData<TaskListCache>({ queryKey: queryKeys.tasks.all }, (old) => {
         if (!old) return old
+        const items = Array.isArray(old.items) ? old.items : []
         return {
           ...old,
-          items: old.items.map((t) => (t.id === id ? { ...t, ...patch } : t)),
+          items: items.map((t) => (t.id === id ? { ...t, ...patch } : t)),
         }
       })
 
@@ -131,12 +131,14 @@ export function useUpdateTask() {
       }
     },
     onSuccess: (task) => {
+      if (!task?.id) return
       queryClient.setQueryData(queryKeys.tasks.detail(task.id), task)
       queryClient.setQueriesData<TaskListCache>({ queryKey: queryKeys.tasks.all }, (old) => {
         if (!old) return old
+        const items = Array.isArray(old.items) ? old.items : []
         return {
           ...old,
-          items: old.items.map((t) => (t.id === task.id ? task : t)),
+          items: items.map((t) => (t.id === task.id ? task : t)),
         }
       })
     },

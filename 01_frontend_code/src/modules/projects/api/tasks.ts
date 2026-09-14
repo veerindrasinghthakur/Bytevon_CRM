@@ -1,6 +1,8 @@
 /**
  * Tasks API — shared by Tasks list + Project detail Tasks tab.
- * Filters: project_id and/or project_name (same backend endpoint).
+ * Backend TaskStatus: TODO | IN_PROGRESS | IN_REVIEW | COMPLETED | BLOCKED | CANCELLED
+ * Backend TaskPriority: LOW | MEDIUM | HIGH | CRITICAL
+ * UI uses DONE / URGENT labels; mapped at the API boundary.
  */
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
@@ -10,17 +12,46 @@ import type { Task, TaskPriority, TaskStatus, TaskRow } from '../types'
 
 export type { Task, TaskPriority, TaskStatus } from '../types'
 
-function mapApiTask(row: Record<string, unknown>): Task {
-  const statusRaw = String(row.status ?? 'TODO').toUpperCase()
-  const statusMap: Record<string, TaskStatus> = {
+/** UI status → backend status */
+function toBackendStatus(status: string | undefined | null): string | undefined {
+  if (status == null || status === '') return undefined
+  const s = String(status).toUpperCase()
+  if (s === 'DONE') return 'COMPLETED'
+  if (s === 'ON_HOLD') return 'BLOCKED'
+  return s
+}
+
+/** Backend status → UI status */
+function fromBackendStatus(status: string | undefined | null): TaskStatus {
+  const s = String(status ?? 'TODO').toUpperCase()
+  const map: Record<string, TaskStatus> = {
     TODO: 'TODO',
     IN_PROGRESS: 'IN_PROGRESS',
     IN_REVIEW: 'IN_REVIEW',
-    DONE: 'DONE',
     COMPLETED: 'DONE',
+    DONE: 'DONE',
     BLOCKED: 'BLOCKED',
+    CANCELLED: 'BLOCKED',
     ON_HOLD: 'ON_HOLD',
   }
+  return map[s] ?? 'TODO'
+}
+
+function toBackendPriority(priority: string | undefined | null): string | undefined {
+  if (priority == null || priority === '') return undefined
+  const p = String(priority).toUpperCase()
+  if (p === 'URGENT') return 'CRITICAL'
+  return p
+}
+
+function fromBackendPriority(priority: string | undefined | null): TaskPriority {
+  const p = String(priority ?? 'MEDIUM').toUpperCase()
+  if (p === 'CRITICAL') return 'URGENT'
+  if (p === 'LOW' || p === 'MEDIUM' || p === 'HIGH' || p === 'URGENT') return p as TaskPriority
+  return 'MEDIUM'
+}
+
+function mapApiTask(row: Record<string, unknown>): Task {
   const assigneeId = row.assignee_employment_id ?? row.assigneeEmploymentId
   const assigneeName =
     (row.assignee_name as string | undefined) ??
@@ -30,8 +61,8 @@ function mapApiTask(row: Record<string, unknown>): Task {
     id: Number(row.id),
     title: String(row.title ?? ''),
     description: (row.description as string | undefined) ?? undefined,
-    priority: String(row.priority ?? 'MEDIUM').toUpperCase() as TaskPriority,
-    status: statusMap[statusRaw] ?? 'TODO',
+    priority: fromBackendPriority(String(row.priority ?? 'MEDIUM')),
+    status: fromBackendStatus(String(row.status ?? 'TODO')),
     projectId: Number(row.project_id ?? row.projectId ?? 0),
     projectName:
       (row.project_name as string | undefined) ??
@@ -154,9 +185,9 @@ export async function updateTask(
     const body: Record<string, unknown> = {}
     if (patch.title != null) body.title = patch.title
     if (patch.description !== undefined) body.description = patch.description
-    if (patch.priority != null) body.priority = patch.priority
-    if (patch.status != null) body.status = patch.status
-    if (patch.dueDate !== undefined) body.due_date = patch.dueDate
+    if (patch.priority != null) body.priority = toBackendPriority(patch.priority)
+    if (patch.status != null) body.status = toBackendStatus(patch.status)
+    if (patch.dueDate !== undefined) body.due_date = patch.dueDate || null
     if (patch.assigneeEmploymentId !== undefined)
       body.assignee_employment_id = patch.assigneeEmploymentId
     const { data } = await apiClient.patch<Record<string, unknown>>(`/projects/tasks/${id}`, body)
@@ -187,7 +218,7 @@ export async function createTask(input: {
       project_id: input.projectId,
       title: input.title,
       description: input.description || null,
-      priority: input.priority ?? 'MEDIUM',
+      priority: toBackendPriority(input.priority ?? 'MEDIUM'),
       status: 'TODO',
       assignee_employment_id: input.assigneeEmploymentId ?? null,
     })
