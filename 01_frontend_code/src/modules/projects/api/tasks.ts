@@ -73,7 +73,7 @@ export async function getTasks(params?: {
       ? data.map((r) => mapApiTask(r))
       : (data.items ?? []).map((t) =>
           typeof t === 'object' && t && 'project_id' in (t as object)
-            ? mapApiTask(t as Record<string, unknown>)
+            ? mapApiTask(t as unknown as Record<string, unknown>)
             : (t as Task),
         )
     if (params?.search) {
