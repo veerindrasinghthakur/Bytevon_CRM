@@ -13,61 +13,17 @@ import { RowActions } from '@/shared/components/ui/RowActions'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
-import {
-  QuickSection,
-  QuickMetaTile,
-  QuickRelatedRow,
-  QuickPersonRow,
-} from '@/shared/components/layout/QuickOverviewParts'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useTasksList } from '../hooks/use-tasks-list'
 import { projectRoutes } from '../routes'
 import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
 import { CreateTaskModal } from '../components/CreateTaskModal'
+import { TaskQuickContent } from '../components/TaskQuickContent'
 import type { Task } from '../types'
 import { cn } from '@/shared/lib/cn'
 import { taskStatusColors } from '../cssTokens'
 import { TaskPriorityOptions, TaskStatusOptions } from '../enums'
-
-function TaskQuickContent({ task }: { task: Task }) {
-  return (
-    <>
-      <QuickSection title="General Info">
-        <div className="grid grid-cols-2 gap-3">
-          <QuickMetaTile icon="flag" label="Status" value={<TaskStatusBadge status={task.status} />} />
-          <QuickMetaTile
-            icon="priority_high"
-            label="Priority"
-            value={<TaskPriorityLabel priority={task.priority} />}
-          />
-          <QuickMetaTile icon="event" label="Due date" value={task.dueDate ?? '—'} />
-          <QuickMetaTile icon="folder_open" label="Project" value={task.projectName ?? '—'} />
-        </div>
-      </QuickSection>
-      <QuickSection title="Assignment">
-        {task.assigneeName ? (
-          <QuickPersonRow
-            initials={task.assigneeName
-              .split(' ')
-              .map((p) => p[0])
-              .join('')
-              .slice(0, 2)}
-            roleLabel="Assignee"
-            name={task.assigneeName}
-          />
-        ) : (
-          <QuickRelatedRow icon="person_off" label="Assignee" value="Unassigned" />
-        )}
-      </QuickSection>
-      <QuickSection title="Related">
-        <QuickRelatedRow icon="folder_open" label="Project" value={task.projectName ?? '—'} />
-        <QuickRelatedRow icon="event" label="Due" value={task.dueDate ?? '—'} />
-        <QuickRelatedRow icon="title" label="Task" value={task.title} />
-      </QuickSection>
-    </>
-  )
-}
 
 export function TasksListPage() {
   const navigate = useNavigate()
