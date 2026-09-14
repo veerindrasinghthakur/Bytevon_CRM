@@ -1,6 +1,4 @@
-"""
-FastAPI dependencies for Project module (domain services).
-"""
+"""FastAPI dependencies for Project module (domain services)."""
 
 from __future__ import annotations
 
@@ -10,9 +8,9 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.modules.project.domains.project.service import ProjectService
-from app.modules.project.domains.task.service import TaskService
-from app.modules.project.domains.team.service import TeamService
+from app.modules.project.project.service import ProjectService
+from app.modules.project.task.service import TaskService
+from app.modules.project.team.service import TeamService
 
 
 def get_project_service(
@@ -36,6 +34,3 @@ def get_team_service(
 ProjectServiceDep = Annotated[ProjectService, Depends(get_project_service)]
 TaskServiceDep = Annotated[TaskService, Depends(get_task_service)]
 TeamServiceDep = Annotated[TeamService, Depends(get_team_service)]
-
-# Backward-compatible alias used by older call sites
-ProjectPublicService = ProjectService
