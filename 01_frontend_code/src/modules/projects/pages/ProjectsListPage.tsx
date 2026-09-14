@@ -12,13 +12,6 @@ import { RowActions } from '@/shared/components/ui/RowActions'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
-import {
-  QuickSection,
-  QuickStat,
-  QuickStatGrid,
-  QuickMetaTile,
-  QuickRelatedRow,
-} from '@/shared/components/layout/QuickOverviewParts'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useProjectsList } from '../hooks/use-projects-list'
 import { projectRoutes } from '../routes'
@@ -26,43 +19,11 @@ import type { ProjectStatus } from '../schemas/project'
 import { cn } from '@/shared/lib/cn'
 import { projectStatusColors } from '../cssTokens'
 import { ProjectStatusOptions } from '../enums'
-import {ProjectQuickContentProps} from '../types'
+import { ProjectQuickContent } from '../components/ProjectQuickContent'
+
 function statusTrackLabel(status: ProjectStatus) {
   const style = projectStatusColors[status]
   return { dot: style.dot, text: style.text, label: style.label }
-}
-
-function ProjectQuickContent({
-  clientName,
-  progress,
-  taskCount,
-  teamCount,
-  startDate,
-  endDate,
-}: ProjectQuickContentProps) {
-  return (
-    <>
-      <QuickSection title="General Info">
-        <div className="grid grid-cols-2 gap-3">
-          <QuickMetaTile icon="calendar_today" label="Start Date" value={startDate ?? '—'} />
-          <QuickMetaTile icon="event_available" label="End Date" value={endDate ?? '—'} />
-        </div>
-      </QuickSection>
-
-      <QuickSection title="Quick Statistics">
-        <QuickStatGrid>
-          <QuickStat icon="check_circle" value={taskCount ?? 0} label="Tasks" />
-          <QuickStat icon="groups" value={teamCount ?? 0} label="Teams" />
-          <QuickStat icon="trending_up" value={`${progress ?? 0}%`} label="Progress" />
-        </QuickStatGrid>
-      </QuickSection>
-
-      <QuickSection title="Related Information">
-        <QuickRelatedRow icon="business" label="Client" value={clientName ?? '—'} />
-        <QuickRelatedRow icon="percent" label="Progress" value={`${progress ?? 0}%`} />
-      </QuickSection>
-    </>
-  )
 }
 
 export function ProjectsListPage() {
