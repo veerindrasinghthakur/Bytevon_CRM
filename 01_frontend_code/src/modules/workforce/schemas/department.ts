@@ -25,6 +25,7 @@ export const departmentEmployeeSchema = z.object({
   positionName: z.string(),
   state: z.string(),
   email: z.string(),
+  departmentId: z.number().optional(),
 })
 
 export type DepartmentEmployeeSchema = z.infer<typeof departmentEmployeeSchema>
