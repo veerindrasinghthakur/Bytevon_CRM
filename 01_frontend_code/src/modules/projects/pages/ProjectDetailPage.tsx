@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Link, useParams, useNavigate, useSearch } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
@@ -23,15 +24,15 @@ import { projectRoutes } from '../routes'
 import { ProjectStatus as ProjectStatusValues } from '../enums'
 import type { ProjectStatus } from '../schemas/project'
 import { getTeams } from '../api/teams'
+import { listAuditLogs } from '@/modules/admin/api/audit'
+import type { ActivityItem } from '@/shared/types'
 import { cn } from '@/shared/lib/cn'
 
 const TABS: { id: ProjectDetailTab; label: string }[] = [
   { id: 'overview', label: 'Overview' },
   { id: 'tasks', label: 'Tasks' },
-  { id: 'timeline', label: 'Timeline' },
   { id: 'documents', label: 'Documents' },
   { id: 'notes', label: 'Notes' },
-  { id: 'repository', label: 'Repository' },
 ]
 
 const STATUS_TIMELINE: ProjectStatus[] = [...ProjectStatusValues]
@@ -42,7 +43,11 @@ export function ProjectDetailPage() {
   const search = useSearch({ strict: false }) as { edit?: string; tab?: string }
   const id = Number(params.projectId)
 
-  const initialTab = (TABS.find((t) => t.id === search.tab)?.id ?? 'overview') as ProjectDetailTab
+  const rawTab = search.tab as ProjectDetailTab | undefined
+  const initialTab = (
+    TABS.find((t) => t.id === rawTab)?.id ??
+    (rawTab === 'timeline' || rawTab === 'repository' || rawTab === 'team' ? 'overview' : 'overview')
+  ) as ProjectDetailTab
   const detail = useProjectDetail(Number.isFinite(id) ? id : undefined, initialTab)
   const {
     project,
@@ -108,7 +113,7 @@ export function ProjectDetailPage() {
     try {
       const { items } = await getTeams({ pageSize: 100 })
       setTeamOptions(
-        items.map((t) => ({
+        (items ?? []).map((t) => ({
           id: String(t.id),
           label: t.name,
           sublabel: t.headName ? `Head: ${t.headName}` : undefined,
@@ -126,6 +131,47 @@ export function ProjectDetailPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [changingTeam])
+
+  const activityQuery = useQuery({
+    queryKey: ['projects', 'activity', project?.id],
+    queryFn: () => listAuditLogs({ limit: 40 }),
+    enabled: project?.id != null,
+    staleTime: 30_000,
+  })
+
+  const activityItems: ActivityItem[] = useMemo(() => {
+    const logs = activityQuery.data ?? []
+    const pid = project?.id
+    const pname = (project?.name ?? '').toLowerCase()
+    const filtered = logs.filter((l) => {
+      if (pid != null && l.referenceId === pid) return true
+      const blob = `${l.description} ${l.target} ${l.referenceType} ${l.module}`.toLowerCase()
+      if (pname && blob.includes(pname)) return true
+      if (pid != null && blob.includes(`#${pid}`)) return true
+      return false
+    })
+    const source = filtered.length > 0 ? filtered : logs.slice(0, 8)
+    return source.slice(0, 12).map((l) => ({
+      id: l.id,
+      title: l.action.replace(/_/g, ' '),
+      description: l.description || l.target,
+      timestamp: l.timestamp,
+      actor: l.actor,
+      icon: l.action.includes('CREATE')
+        ? 'add_circle'
+        : l.action.includes('UPDATE') || l.action.includes('STATUS')
+          ? 'edit'
+          : l.action.includes('ASSIGN')
+            ? 'group'
+            : 'history',
+    }))
+  }, [activityQuery.data, project?.id, project?.name])
+
+  const repoHref = project?.repositoryUrl
+    ? project.repositoryUrl.startsWith('http')
+      ? project.repositoryUrl
+      : `https://github.com/${project.repositoryUrl}`
+    : null
 
   if (isLoading) {
     return (
@@ -347,290 +393,4 @@ export function ProjectDetailPage() {
                     <Button
                       type="button"
                       variant="ghost"
-                      size="sm"
-                      disabled={isAssigningTeam}
-                      onClick={() => setChangingTeam(false)}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : hasTeam ? (
-                <div className="flex items-center gap-4 p-4 border border-outline-variant rounded-lg bg-surface-container-low">
-                  <div className="w-12 h-12 rounded-lg bg-secondary/15 text-secondary flex items-center justify-center">
-                    <span className="material-symbols-outlined">engineering</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h4 className="font-semibold text-on-surface">{project.teamName ?? 'Team'}</h4>
-                    <p className="text-xs text-on-surface-variant">
-                      {project.teamMemberCount ?? 0} members
-                      {project.teamHeadName ? ` · Head: ${project.teamHeadName}` : ''}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-body-sm text-on-surface-variant">No team assigned to this project.</p>
-              )}
-            </section>
-          </div>
-
-          <div className="space-y-4">
-            <div className="rounded-xl bg-primary text-on-primary p-5">
-              <h4 className="text-[10px] font-bold uppercase tracking-wider text-on-primary/60 mb-3">Client</h4>
-              <p className="font-bold text-lg">{project.clientName ?? '—'}</p>
-            </div>
-            <section className="bv-surface p-5 space-y-3">
-              <h4 className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Key Dates</h4>
-              <div className="flex justify-between text-sm">
-                <span className="text-on-surface-variant">Start</span>
-                <span className="font-semibold">{project.startDate ?? '—'}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-on-surface-variant">Target End</span>
-                <span className="font-semibold">{project.endDate ?? '—'}</span>
-              </div>
-            </section>
-            {project.repositoryUrl && (
-              <section className="bv-surface p-5 space-y-2">
-                <h4 className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Repository</h4>
-                <a
-                  href={
-                    project.repositoryUrl.startsWith('http')
-                      ? project.repositoryUrl
-                      : `https://github.com/${project.repositoryUrl}`
-                  }
-                  target="_blank"
-                  rel="noreferrer"
-                  className="text-sm font-semibold text-secondary hover:underline break-all"
-                >
-                  {project.repositoryUrl}
-                </a>
-              </section>
-            )}
-            <ActivityFeed title="Recent Activity" items={[]} variant="compact" framed />
-          </div>
-        </div>
-      )}
-
-      {tab === 'tasks' && (
-        <div className="space-y-4">
-          <div className="flex flex-wrap gap-3 items-center">
-            <div className="relative flex-1 min-w-[200px] max-w-sm">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
-                search
-              </span>
-              <input
-                value={taskSearch}
-                onChange={(e) => setTaskSearch(e.target.value)}
-                placeholder="Search tasks..."
-                className="w-full pl-10 pr-3 py-2 rounded-lg border border-outline-variant bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-secondary"
-              />
-            </div>
-            <Select
-              value={taskStatusFilter}
-              onChange={setTaskStatusFilter}
-              placeholder="All statuses"
-              options={taskStatusOptions.map((o) => ({ value: o.value, label: o.label }))}
-              minWidthClass="min-w-[160px]"
-            />
-            <Button
-              variant="primary"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
-              onClick={() => setCreateTaskOpen(true)}
-            >
-              New Task
-            </Button>
-          </div>
-
-          {tasksLoading && <Skeleton className="h-40 w-full" />}
-          {!tasksLoading && filteredTasks.length === 0 && (
-            <p className="text-center text-on-surface-variant py-12">No tasks match filters.</p>
-          )}
-          {!tasksLoading && filteredTasks.length > 0 && (
-            <div className="bv-surface overflow-hidden">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-outline-variant bg-surface-container-low/50">
-                    <th className="px-4 py-3 text-[11px] font-bold uppercase text-on-surface-variant">Task</th>
-                    <th className="px-4 py-3 text-[11px] font-bold uppercase text-on-surface-variant">Priority</th>
-                    <th className="px-4 py-3 text-[11px] font-bold uppercase text-on-surface-variant">Status</th>
-                    <th className="px-4 py-3 text-[11px] font-bold uppercase text-on-surface-variant">Assignee</th>
-                    <th className="px-4 py-3 text-[11px] font-bold uppercase text-on-surface-variant">Due</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-outline-variant">
-                  {filteredTasks.map((task) => (
-                    <tr
-                      key={task.id}
-                      className="cursor-pointer hover:bg-surface-container-low"
-                      onClick={() =>
-                        safeNavigate(navigate, {
-                          to: projectRoutes.taskDetailPath,
-                          params: { taskId: String(task.id) },
-                        })
-                      }
-                    >
-                      <td className="px-4 py-3 font-medium text-on-surface">{task.title}</td>
-                      <td className="px-4 py-3">
-                        <TaskPriorityLabel priority={task.priority} />
-                      </td>
-                      <td className="px-4 py-3">
-                        <TaskStatusBadge status={task.status} />
-                      </td>
-                      <td className="px-4 py-3 text-sm">{task.assigneeName ?? '—'}</td>
-                      <td className="px-4 py-3 text-sm">{task.dueDate ?? '—'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
-
-      {tab === 'timeline' && (
-        <section className="bv-surface p-6 max-w-2xl">
-          <h3 className="text-title-md font-semibold mb-6">Project status timeline</h3>
-          <ol className="relative border-l-2 border-outline-variant ml-3 space-y-8">
-            {STATUS_TIMELINE.map((s) => {
-              const reached =
-                STATUS_TIMELINE.indexOf(s) <= STATUS_TIMELINE.indexOf(project.status) &&
-                project.status !== 'CANCELLED'
-              const active = project.status === s
-              return (
-                <li key={s} className="ml-6 relative">
-                  <span
-                    className={cn(
-                      'absolute -left-[1.9rem] top-0 w-8 h-8 rounded-full flex items-center justify-center',
-                      active
-                        ? 'bg-secondary text-on-primary'
-                        : reached
-                          ? 'bg-secondary/20 text-secondary'
-                          : 'bg-surface-container text-on-surface-variant',
-                    )}
-                  >
-                    <span className="material-symbols-outlined text-sm">
-                      {s === 'COMPLETED' ? 'check' : s === 'CANCELLED' ? 'close' : 'radio_button_checked'}
-                    </span>
-                  </span>
-                  <p className={cn('font-semibold', active && 'text-secondary')}>{s.replace('_', ' ')}</p>
-                  {active && <p className="text-xs text-on-surface-variant mt-1">Current status</p>}
-                </li>
-              )
-            })}
-          </ol>
-        </section>
-      )}
-
-      {tab === 'documents' && (
-        <section className="bv-surface overflow-hidden">
-          <div className="px-5 py-4 border-b border-outline-variant flex justify-between items-center gap-3 flex-wrap">
-            <h3 className="font-semibold text-title-md">Documents</h3>
-            <UploadButton
-              onFiles={(files) => {
-                void uploadDoc
-                  .mutateAsync(files)
-                  .then(() => refetchDocs())
-                  .catch(() => {})
-              }}
-              isLoading={uploadDoc.isPending}
-            />
-          </div>
-          {uploadDoc.isError && (
-            <p className="px-5 py-2 text-body-sm text-error" role="alert">
-              Failed to upload document.
-            </p>
-          )}
-          {docsLoading ? (
-            <p className="p-8 text-center text-on-surface-variant text-sm">Loading documents…</p>
-          ) : (docsData?.items ?? []).length === 0 ? (
-            <p className="p-8 text-center text-on-surface-variant text-sm">No documents linked yet.</p>
-          ) : (
-            <ul className="divide-y divide-outline-variant">
-              {(docsData?.items ?? []).map((doc) => (
-                <li key={doc.id} className="px-5 py-3 flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm truncate">{doc.name}</p>
-                    <p className="text-xs text-on-surface-variant">{doc.sizeLabel ?? doc.type ?? '—'}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      )}
-
-      {tab === 'notes' && (
-        <NotesPanel
-          className="max-w-3xl"
-          referenceType={NoteReferenceType.PROJECT}
-          referenceId={project.id}
-          title="Project notes"
-        />
-      )}
-
-      {tab === 'repository' && (
-        <section className="bv-surface p-6 max-w-xl space-y-4">
-          <h3 className="text-title-md font-semibold">Repository</h3>
-          {isEditing ? (
-            <div>
-              <label className="text-label-sm block mb-1">Repository reference / URL</label>
-              <input
-                {...form.register('repositoryUrl')}
-                className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface"
-                placeholder="https://github.com/org/repo or org/repo"
-              />
-            </div>
-          ) : project.repositoryUrl ? (
-            <a
-              href={
-                project.repositoryUrl.startsWith('http')
-                  ? project.repositoryUrl
-                  : `https://github.com/${project.repositoryUrl}`
-              }
-              target="_blank"
-              rel="noreferrer"
-              className="text-secondary font-semibold hover:underline break-all"
-            >
-              {project.repositoryUrl}
-            </a>
-          ) : (
-            <p className="text-on-surface-variant text-sm">No repository linked.</p>
-          )}
-        </section>
-      )}
-
-      <CreateTaskModal
-        open={createTaskOpen}
-        onClose={() => setCreateTaskOpen(false)}
-        projectId={project.id}
-        projectName={project.name}
-        onCreated={() => {
-          setCreateTaskOpen(false)
-          void refetch()
-        }}
-      />
-    </div>
-  )
-}
-
-function MetricCard({
-  label,
-  value,
-  icon,
-}: {
-  label: string
-  value: string
-  icon: string
-}) {
-  return (
-    <div className="bv-surface p-4 flex flex-col gap-2">
-      <div className="flex items-center gap-2 text-on-surface-variant">
-        <span className="material-symbols-outlined text-lg">{icon}</span>
-        <span className="text-label-sm">{label}</span>
-      </div>
-      <p className="text-title-lg font-bold text-on-background">{value}</p>
-    </div>
-  )
-}
+                      size="sm"\end{parameter}>
