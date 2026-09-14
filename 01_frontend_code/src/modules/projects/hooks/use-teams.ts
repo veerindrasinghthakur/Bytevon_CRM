@@ -1,5 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getTeams, getTeam, getTeamMembers, createTeam, updateTeam } from '../api/teams'
+import {
+  getTeams,
+  getTeam,
+  getTeamMembers,
+  createTeam,
+  updateTeam,
+  type CreateTeamApiInput,
+} from '../api/teams'
 import type { Team, TeamListCache } from '../types'
 import { queryKeys } from '@/shared/lib/query-keys'
 
@@ -45,22 +52,16 @@ export function useTeamMembers(teamId: number | undefined) {
 export function useCreateTeam() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (input: {
-      name: string
-      description?: string
-      headName?: string
-      headRole?: string
-      memberNames?: string[]
-      projectId?: number
-      projectName?: string
-    }) => createTeam(input),
+    mutationFn: (input: CreateTeamApiInput) => createTeam(input),
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.teams.all })
       const previous = queryClient.getQueriesData({
         queryKey: queryKeys.teams.all,
       })
 
-      const memberCount = (input.memberNames?.length ?? 0) + (input.headName ? 1 : 0)
+      const memberCount =
+        (input.memberEmploymentIds?.length ?? input.memberNames?.length ?? 0) +
+        (input.teamHeadEmploymentId || input.headName ? 1 : 0)
       const optimistic: Team = {
         id: -Date.now(),
         name: input.name,
@@ -85,7 +86,7 @@ export function useCreateTeam() {
     onError: (_err, _input, ctx) => {
       ctx?.previous.forEach(([key, data]) => queryClient.setQueryData(key, data))
     },
-    onSuccess: (created, _input, ctx) => {
+    onSuccess: (created, input, ctx) => {
       queryClient.setQueriesData({ queryKey: queryKeys.teams.all }, (old) => {
         if (!isTeamListCache(old)) return old
         return {
@@ -94,6 +95,10 @@ export function useCreateTeam() {
         }
       })
       queryClient.setQueryData(queryKeys.teams.detail(created.id), created)
+      if (input.projectId != null) {
+        void queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(input.projectId) })
+        void queryClient.invalidateQueries({ queryKey: queryKeys.projects.all })
+      }
     },
   })
 }
@@ -106,7 +111,9 @@ export function useUpdateTeam() {
       patch,
     }: {
       id: number
-      patch: Partial<Pick<Team, 'name' | 'description' | 'department' | 'headName' | 'headRole' | 'status'>>
+      patch: Partial<
+        Pick<Team, 'name' | 'description' | 'department' | 'headName' | 'headRole' | 'status'>
+      > & { teamHeadEmploymentId?: number }
     }) => updateTeam(id, patch),
     onMutate: async ({ id, patch }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.teams.all })
