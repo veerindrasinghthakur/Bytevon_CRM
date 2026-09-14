@@ -1,3 +1,3 @@
-from app.modules.sales.services.public_service import SalesPublicService
+from app.modules.sales.dependencies import SalesPublicService
 
 __all__ = ["SalesPublicService"]
