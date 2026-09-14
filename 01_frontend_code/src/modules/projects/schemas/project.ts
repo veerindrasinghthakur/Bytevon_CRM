@@ -40,11 +40,17 @@ export const createProjectSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(120),
   code: z.string().max(32).optional(),
   description: z.string().max(2000).optional(),
+  /** Display label only — prefer clientId for API */
   clientName: z.string().max(120).optional(),
+  /** Required for real backend create (FK clients.id) */
+  clientId: z.number().int().positive().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   repositoryUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
   teamId: z.number().nullable().optional(),
+  /** employment id when assignment_type = INDIVIDUAL */
+  assignedEmploymentId: z.number().int().positive().optional().nullable(),
+  assignmentType: z.enum(['TEAM', 'INDIVIDUAL']).optional(),
 })
 
 export type CreateProjectInput = z.infer<typeof createProjectSchema>
