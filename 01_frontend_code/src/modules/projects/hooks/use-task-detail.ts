@@ -1,9 +1,13 @@
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQuery } from '@tanstack/react-query'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
-import { useState } from 'react'
+import type { EntityOption } from '@/shared/components/forms/EntitySearch'
 import { useTask, useUpdateTask } from './use-tasks'
+import { useProject } from './use-projects'
+import { getTeamMembers } from '../api/teams'
 import { TASK_PRIORITY_OPTIONS, TASK_STATUS_OPTIONS } from '../enums'
 import { taskDetailFormSchema, type TaskDetailFormInput } from '../schemas/task-detail-form'
 
@@ -13,6 +17,7 @@ export function useTaskDetail(taskId: number | undefined) {
   const task = query.data ?? null
   const { isEditing, startEditing: setEditingTrue, cancelEditing, finishEditing } = useEditMode()
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [assignee, setAssignee] = useState<EntityOption | null>(null)
 
   const form = useForm<TaskDetailFormInput>({
     resolver: zodResolver(taskDetailFormSchema),
@@ -25,6 +30,29 @@ export function useTaskDetail(taskId: number | undefined) {
       dueDate: '',
     },
   })
+
+  const projectQuery = useProject(
+    task?.projectId != null && Number.isFinite(task.projectId) ? task.projectId : undefined,
+  )
+  const teamId = projectQuery.data?.teamId ?? null
+
+  const membersQuery = useQuery({
+    queryKey: ['projects', 'team-members-for-task-detail', teamId],
+    queryFn: () => getTeamMembers(teamId!),
+    enabled: isEditing && teamId != null && Number.isFinite(teamId),
+    staleTime: 30_000,
+  })
+
+  const employeeOptions: EntityOption[] = useMemo(() => {
+    const rows = membersQuery.data ?? []
+    return rows
+      .filter((m) => m.employmentId != null && Number(m.employmentId) > 0)
+      .map((m) => ({
+        id: Number(m.employmentId),
+        label: m.name,
+        sublabel: [m.role ?? m.title, m.email].filter(Boolean).join(' · '),
+      }))
+  }, [membersQuery.data])
 
   const startEditing = () => {
     if (!task) return
@@ -54,6 +82,23 @@ export function useTaskDetail(taskId: number | undefined) {
     }
     cancelEditing()
   }
+
+  useEffect(() => {
+    if (!isEditing || !task) {
+      setAssignee(null)
+      return
+    }
+    if (task.assigneeEmploymentId != null) {
+      setAssignee({
+        id: task.assigneeEmploymentId,
+        label: task.assigneeName ?? `Employment #${task.assigneeEmploymentId}`,
+      })
+    } else if (task.assigneeName) {
+      setAssignee({ id: task.assigneeName, label: task.assigneeName })
+    } else {
+      setAssignee(null)
+    }
+  }, [isEditing, task?.id, task?.assigneeEmploymentId, task?.assigneeName])
 
   const save = async (extra?: {
     assigneeEmploymentId?: number | null
@@ -100,6 +145,24 @@ export function useTaskDetail(taskId: number | undefined) {
     }
   }
 
+  const saveWithAssignee = () => {
+    const employmentId =
+      assignee && typeof assignee.id === 'number'
+        ? Number(assignee.id)
+        : assignee && Number.isFinite(Number(assignee.id))
+          ? Number(assignee.id)
+          : null
+    if (assignee?.label) {
+      form.setValue('assigneeName', assignee.label)
+    }
+    void save({
+      assigneeEmploymentId: employmentId,
+      assigneeName: assignee?.label ?? form.getValues('assigneeName') ?? undefined,
+    })
+  }
+
+  const needsTeam = isEditing && !projectQuery.isLoading && teamId == null
+
   return {
     task,
     isLoading: query.isLoading,
@@ -110,9 +173,16 @@ export function useTaskDetail(taskId: number | undefined) {
     startEditing,
     cancelEdit,
     save,
+    saveWithAssignee,
     isSaving: updateMutation.isPending,
     saveError,
     priorityOptions: [...TASK_PRIORITY_OPTIONS],
     statusOptions: [...TASK_STATUS_OPTIONS],
+    assignee,
+    setAssignee,
+    employeeOptions,
+    membersQuery,
+    teamId,
+    needsTeam,
   }
 }
