@@ -9,6 +9,21 @@ import { paginateItems } from '@/shared/lib/list-params'
 import type { ProjectListMetrics } from '../types'
 import { computeProjectListMetrics } from '@/shared/compute/project-metrics'
 
+function normalizeProjectStatus(raw: unknown): ProjectDetail['status'] {
+  const s = String(raw ?? 'PLANNING').toUpperCase()
+  const map: Record<string, ProjectDetail['status']> = {
+    PLANNING: 'PLANNING',
+    PLANNED: 'PLANNING',
+    IN_PROGRESS: 'IN_PROGRESS',
+    ACTIVE: 'IN_PROGRESS',
+    ON_HOLD: 'ON_HOLD',
+    COMPLETED: 'COMPLETED',
+    CANCELLED: 'CANCELLED',
+    ARCHIVED: 'CANCELLED',
+  }
+  return map[s] ?? 'PLANNING'
+}
+
 function mapApiProject(row: Record<string, unknown>): ProjectDetail {
   const id = Number(row.id)
   const name = String(row.project_name ?? row.projectName ?? row.name ?? '')
@@ -16,7 +31,7 @@ function mapApiProject(row: Record<string, unknown>): ProjectDetail {
     id,
     name,
     code: (row.code as string) ?? `PRJ-${id}`,
-    status: String(row.status ?? 'PLANNING') as ProjectDetail['status'],
+    status: normalizeProjectStatus(row.status),
     clientName: (row.clientName as string) ?? (row.client_name as string) ?? null,
     startDate: (row.planned_start_date as string) ?? (row.startDate as string) ?? null,
     endDate: (row.planned_end_date as string) ?? (row.endDate as string) ?? null,
@@ -51,10 +66,15 @@ export async function getProjects(params?: {
       const items = data.map((r) => mapApiProject(r))
       return { items, total: items.length, metrics: computeProjectListMetrics(items) }
     }
+    const items = (data.items ?? []).map((row) =>
+      typeof row === 'object' && row && 'project_name' in (row as object)
+        ? mapApiProject(row as Record<string, unknown>)
+        : mapApiProject({ ...(row as object), status: (row as ProjectListItem).status }),
+    )
     return {
-      items: data.items,
-      total: data.total,
-      metrics: data.metrics ?? computeProjectListMetrics(data.items),
+      items,
+      total: data.total ?? items.length,
+      metrics: data.metrics ?? computeProjectListMetrics(items),
     }
   }
   await delay()
@@ -176,7 +196,10 @@ export async function updateProject(
       | 'teamId'
       | 'teamCount'
     >
-  >,
+  > & {
+    assignmentType?: 'TEAM' | 'INDIVIDUAL'
+    assignedToId?: number
+  },
 ): Promise<ProjectDetail> {
   if (!env.useMockApi) {
     const body: Record<string, unknown> = {}
@@ -186,6 +209,12 @@ export async function updateProject(
     if (patch.startDate !== undefined) body.planned_start_date = patch.startDate
     if (patch.endDate !== undefined) body.planned_end_date = patch.endDate
     if (patch.status != null) body.status = patch.status
+    if (patch.assignmentType != null) body.assignment_type = patch.assignmentType
+    if (patch.assignedToId != null) body.assigned_to_id = patch.assignedToId
+    if (patch.teamId != null) {
+      body.assignment_type = 'TEAM'
+      body.assigned_to_id = patch.teamId
+    }
     const { data } = await apiClient.patch<Record<string, unknown>>(`/projects/${id}`, body)
     return mapApiProject(data)
   }
