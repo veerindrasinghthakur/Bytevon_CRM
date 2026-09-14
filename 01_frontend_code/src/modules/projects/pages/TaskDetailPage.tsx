@@ -30,6 +30,7 @@ export function TaskDetailPage() {
     cancelEdit,
     save,
     isSaving,
+    saveError,
     priorityOptions,
     statusOptions,
   } = useTaskDetail(Number.isFinite(id) ? id : undefined)
@@ -85,11 +86,17 @@ export function TaskDetailPage() {
         }
         actions={
           isEditing ? (
-            <div className="flex gap-2">
-              <Button variant="ghost" size="sm" onClick={cancelEdit}>
+            <div className="flex gap-2 items-center flex-wrap">
+              <Button variant="ghost" size="sm" onClick={cancelEdit} disabled={isSaving}>
                 Cancel
               </Button>
-              <Button variant="primary" size="sm" onClick={() => void save()} isLoading={isSaving}>
+              <Button
+                type="button"
+                variant="primary"
+                size="sm"
+                onClick={() => void save()}
+                isLoading={isSaving}
+              >
                 Save
               </Button>
             </div>
@@ -99,12 +106,18 @@ export function TaskDetailPage() {
               <TaskStatusBadge status={task.status} />
               <div className="flex items-center gap-2">
                 <EditButton onClick={startEditing} />
-                <RefreshButton iconOnly onClick={() => refetch() }size={'md'} />
+                <RefreshButton iconOnly onClick={() => refetch()} size="md" />
               </div>
             </div>
           )
         }
       />
+
+      {saveError && (
+        <p className="text-body-sm text-error px-1" role="alert">
+          {saveError}
+        </p>
+      )}
 
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[11px] font-bold uppercase tracking-wider bg-surface-container px-2 py-0.5 rounded text-on-surface-variant">
@@ -131,6 +144,9 @@ export function TaskDetailPage() {
                     onKeyDown={(e) => handleEnterAdvance(e)}
                     className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-secondary"
                   />
+                  {form.formState.errors.title && (
+                    <p className="text-body-sm text-error mt-1">{form.formState.errors.title.message}</p>
+                  )}
                 </div>
                 <div>
                   <label className="text-label-sm text-on-surface-variant block mb-1" htmlFor="task-desc">
@@ -148,21 +164,22 @@ export function TaskDetailPage() {
                   <Select
                     label="Priority"
                     value={form.watch('priority')}
-                    onChange={(v) => form.setValue('priority', v as TaskPriority)}
+                    onChange={(v) => form.setValue('priority', v as TaskPriority, { shouldValidate: true })}
                     options={priorityOptions}
                   />
                   <Select
                     label="Status"
                     value={form.watch('status')}
-                    onChange={(v) => form.setValue('status', v as TaskStatus)}
+                    onChange={(v) => form.setValue('status', v as TaskStatus, { shouldValidate: true })}
                     options={statusOptions}
                   />
                   <div>
-                    <label className="text-label-sm text-on-surface-variant block mb-1">Assignee</label>
+                    <label className="text-label-sm text-on-surface-variant block mb-1">Assignee (display)</label>
                     <input
                       {...form.register('assigneeName')}
                       onKeyDown={(e) => handleEnterAdvance(e)}
                       className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface"
+                      placeholder="Name shown on task"
                     />
                   </div>
                   <div>
@@ -209,7 +226,14 @@ export function TaskDetailPage() {
                       {initials}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-on-surface">{task.assigneeName ?? 'Unassigned'}</p>
+                      <p className="text-sm font-semibold text-on-surface">
+                        {task.assigneeName ?? 'Unassigned'}
+                      </p>
+                      {task.assigneeEmploymentId != null && (
+                        <p className="text-caption text-on-surface-variant">
+                          Employment #{task.assigneeEmploymentId}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
