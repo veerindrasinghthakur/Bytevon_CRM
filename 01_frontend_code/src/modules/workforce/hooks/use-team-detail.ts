@@ -4,7 +4,7 @@ import {
   getTeam,
   getTeamMembers,
   getTeamProjects,
-} from '@/modules/projects/api/teams'
+} from '@/modules/projects/api/team'
 import type {
   Team as ProjectsTeam,
   TeamMemberRow,

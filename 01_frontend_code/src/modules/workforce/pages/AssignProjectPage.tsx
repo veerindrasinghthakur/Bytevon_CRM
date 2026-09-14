@@ -13,8 +13,8 @@ import { workforceRoutes } from '../routes'
 import { cn } from '@/shared/lib/cn'
 import { assignProjectSchema, type AssignProjectForm } from '../schemas/assign-project-form'
 import { TEAM_PROJECT_ROLE_OPTIONS } from '../schemas/enums'
-import { getProjects, updateProject } from '@/modules/projects/api/projects'
-import { getTeam } from '@/modules/projects/api/teams'
+import { getProjects, updateProject } from '@/modules/projects/api/project'
+import { getTeam } from '@/modules/projects/api/team'
 import { queryKeys } from '@/shared/lib/query-keys'
 
 function Icon({ name, className }: { name: string; className?: string }) {

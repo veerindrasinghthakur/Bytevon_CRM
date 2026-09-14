@@ -34,7 +34,7 @@ const AttendanceDayDetailPage = lazyPage(
 )
 const ChangeAssignmentPage = lazyPage(() => import('./pages/ChangeAssignmentPage'), 'ChangeAssignmentPage')
 const TeamsListPage = lazyPage(() => import('./pages/TeamsListPage'), 'TeamsListPage')
-const TeamCreatePage = lazyPage(() => import('@/modules/projects/pages/TeamCreatePage'), 'TeamCreatePage')
+const TeamCreatePage = lazyPage(() => import('@/modules/projects/pages/team/TeamCreatePage'), 'TeamCreatePage')
 const TeamDetailPage = lazyPage(() => import('./pages/TeamDetailPage'), 'TeamDetailPage')
 const TeamEditPage = lazyPage(() => import('./pages/TeamEditPage'), 'TeamEditPage')
 const TeamMembersPage = lazyPage(() => import('./pages/TeamMembersPage'), 'TeamMembersPage')
