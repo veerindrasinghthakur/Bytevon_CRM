@@ -1,4 +1,5 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate, Link, useSearch } from '@tanstack/react-router'
@@ -6,13 +7,12 @@ import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { useCreateTeam } from '../hooks/use-teams'
 import { useProject } from '../hooks/use-projects'
 import { projectRoutes } from '../routes'
-import { getDb } from '@/shared/mock/db'
+import { listEmployments } from '@/modules/workforce/api/employment'
 import { schema, type FormValues } from '../schemas/team-form'
-
-
 
 export function TeamCreatePage() {
   const navigate = useNavigate()
@@ -25,17 +25,24 @@ export function TeamCreatePage() {
     projectId != null && Number.isFinite(projectId) ? projectId : undefined,
   )
 
-  const employeeOptions: EntityOption[] = useMemo(
-    () =>
-      getDb().employees.map((e) => ({
-        id: e.id,
-        label: e.fullName,
-        sublabel: [e.role, e.department].filter(Boolean).join(' · '),
-      })),
-    [],
-  )
+  const employeesQuery = useQuery({
+    queryKey: ['workforce', 'employments', 'team-create-picker'],
+    queryFn: () => listEmployments({ page: 1, pageSize: 300 }),
+    staleTime: 60_000,
+  })
+
+  const employeeOptions: EntityOption[] = useMemo(() => {
+    const items = employeesQuery.data?.items ?? []
+    return items.map((e) => ({
+      id: e.id,
+      label: e.fullName || e.employee_code,
+      sublabel: [e.employee_code, e.departmentName, e.positionName].filter(Boolean).join(' · '),
+    }))
+  }, [employeesQuery.data])
 
   const createMutation = useCreateTeam()
+  const [formError, setFormError] = useState<string | null>(null)
+
   const {
     register,
     handleSubmit,
@@ -57,12 +64,27 @@ export function TeamCreatePage() {
       : projectRoutes.teams)
 
   const onSubmit = async (data: FormValues) => {
+    setFormError(null)
+    if (!data.head) {
+      setFormError('Select a team head.')
+      return
+    }
+    const headId = Number(data.head.id)
+    if (!Number.isFinite(headId) || headId <= 0) {
+      setFormError('Team head is invalid.')
+      return
+    }
+
     try {
       await createMutation.mutateAsync({
         name: data.name,
         description: data.description,
-        headName: data.head?.label,
-        headRole: data.head?.sublabel?.split(' · ')[0],
+        teamHeadEmploymentId: headId,
+        headName: data.head.label,
+        headRole: data.head.sublabel?.split(' · ')[0],
+        memberEmploymentIds: (data.members ?? [])
+          .map((m) => Number(m.id))
+          .filter((id) => Number.isFinite(id) && id > 0),
         memberNames: data.members?.map((m: EntityOption) => m.label) ?? [],
         projectId: projectId && Number.isFinite(projectId) ? projectId : undefined,
         projectName: project?.name,
@@ -77,13 +99,13 @@ export function TeamCreatePage() {
       } else {
         safeNavigate(navigate, { to: projectRoutes.teams })
       }
-    } catch {
-      // mutation error UI
+    } catch (err) {
+      setFormError(getApiErrorMessage(err, 'Failed to create team. Please try again.'))
     }
   }
 
   const handleHeadChange = (value: EntityOption | null) => {
-    setValue('head', value)
+    setValue('head', value, { shouldValidate: true })
   }
 
   const handleMembersChange = (value: EntityOption[]) => {
@@ -121,7 +143,7 @@ export function TeamCreatePage() {
           <div className="p-6 space-y-8 bg-background">
             <section>
               <h3 className="text-headline-md font-semibold text-on-surface mb-4 flex items-center gap-2">
-                <span className="material-symbols-outlined text-electric-blue">badge</span>
+                <span className="material-symbols-outlined text-secondary">badge</span>
                 Team Identity
               </h3>
               <div className="space-y-4 bg-surface-container-lowest p-5 rounded-lg border border-outline-variant">
@@ -132,7 +154,7 @@ export function TeamCreatePage() {
                   <input
                     id="name"
                     {...register('name')}
-                    className="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-3 py-2 text-on-surface text-body-md focus:border-electric-blue focus:ring-1 focus:ring-electric-blue outline-none"
+                    className="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-3 py-2 text-on-surface text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none"
                     placeholder="e.g., DevOps Team"
                   />
                   {errors.name && <p className="text-body-sm text-error">{errors.name.message}</p>}
@@ -145,7 +167,7 @@ export function TeamCreatePage() {
                     id="description"
                     rows={3}
                     {...register('description')}
-                    className="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-3 py-2 text-on-surface text-body-md focus:border-electric-blue focus:ring-1 focus:ring-electric-blue outline-none resize-none"
+                    className="w-full bg-surface-container-lowest border border-outline-variant rounded-md px-3 py-2 text-on-surface text-body-md focus:border-secondary focus:ring-1 focus:ring-secondary outline-none resize-none"
                     placeholder="e.g., Responsible for infrastructure and CI/CD pipelines"
                   />
                 </div>
@@ -154,24 +176,38 @@ export function TeamCreatePage() {
 
             <section>
               <h3 className="text-headline-md font-semibold text-on-surface mb-4 flex items-center gap-2">
-                <span className="material-symbols-outlined text-electric-blue">star</span>
+                <span className="material-symbols-outlined text-secondary">star</span>
                 Leadership
               </h3>
               <div className="bg-surface-container-lowest p-5 rounded-lg border border-outline-variant">
                 <EntitySearch
-                  label="Assign Team Head"
-                  placeholder="Search employees by name or role…"
+                  label="Assign Team Head *"
+                  placeholder={
+                    employeesQuery.isLoading
+                      ? 'Loading employees…'
+                      : 'Search employees by name, code, or department…'
+                  }
                   options={employeeOptions}
                   value={head}
                   onChange={handleHeadChange}
-                  emptyMessage="No employees match your search"
+                  disabled={employeesQuery.isLoading}
+                  emptyMessage={
+                    employeesQuery.isError
+                      ? 'Failed to load employees'
+                      : 'No employees match your search'
+                  }
                 />
+                {employeesQuery.isError && (
+                  <p className="text-body-sm text-error mt-2">
+                    {getApiErrorMessage(employeesQuery.error, 'Could not load employees')}
+                  </p>
+                )}
               </div>
             </section>
 
             <section>
               <h3 className="text-headline-md font-semibold text-on-surface mb-4 flex items-center gap-2">
-                <span className="material-symbols-outlined text-electric-blue">group_add</span>
+                <span className="material-symbols-outlined text-secondary">group_add</span>
                 Team Composition
               </h3>
               <div className="bg-surface-container-lowest p-5 rounded-lg border border-outline-variant">
@@ -182,13 +218,17 @@ export function TeamCreatePage() {
                   multi
                   values={members}
                   onChangeMulti={handleMembersChange}
+                  disabled={employeesQuery.isLoading}
                   emptyMessage="No employees match your search"
                 />
               </div>
             </section>
 
-            {createMutation.isError && (
-              <p className="text-body-sm text-error">Failed to create team. Please try again.</p>
+            {(formError || createMutation.isError) && (
+              <p className="text-body-sm text-error" role="alert">
+                {formError ??
+                  getApiErrorMessage(createMutation.error, 'Failed to create team. Please try again.')}
+              </p>
             )}
           </div>
 
