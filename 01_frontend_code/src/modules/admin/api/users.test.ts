@@ -1,4 +1,4 @@
-﻿import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it } from 'vitest'
 import { getDb } from '@/shared/mock/db'
 import {
   activateUser,
@@ -39,6 +39,12 @@ function firstEmploymentId(): number {
 
 function uniqueEmail(tag: string): string {
   return `test-${tag}-${Date.now()}-${Math.floor(Math.random() * 1e6)}@bytevon.test`
+}
+
+function loginIdOf(created: Record<string, unknown>): number {
+  const id = Number(created.id)
+  expect(Number.isFinite(id)).toBe(true)
+  return id
 }
 
 beforeEach(() => {
@@ -112,7 +118,7 @@ describe('createUserLogin', () => {
       temporaryPassword: 'Temp@123',
       roleId: 0,
     })
-    const detail = await getUserLogin(created.id)
+    const detail = await getUserLogin(loginIdOf(created))
     expect(detail?.display.email.toLowerCase()).toBe(email.toLowerCase())
   })
 })
@@ -126,13 +132,14 @@ describe('deactivate / activate round-trip', () => {
       temporaryPassword: 'Temp@123',
       roleId: 0,
     })
+    const id = loginIdOf(created)
 
-    await deactivateUser(created.id)
-    let detail = await getUserLogin(created.id)
+    await deactivateUser(id)
+    let detail = await getUserLogin(id)
     expect(detail?.login.status).toBe('INACTIVE')
 
-    await activateUser(created.id)
-    detail = await getUserLogin(created.id)
+    await activateUser(id)
+    detail = await getUserLogin(id)
     expect(detail?.login.status).toBe('ACTIVE')
     expect(detail?.login.failed_attempt_count).toBe(0)
     expect(detail?.login.locked_until).toBeNull()
@@ -153,7 +160,7 @@ describe('archiveUserCredentials', () => {
     const mid = await listEmploymentsWithoutLogin()
     expect(mid.some((e) => e.employmentId === employmentId)).toBe(false)
 
-    await archiveUserCredentials(created.id)
+    await archiveUserCredentials(loginIdOf(created))
 
     const after = await listEmploymentsWithoutLogin()
     expect(after.length).toBe(before.length)
