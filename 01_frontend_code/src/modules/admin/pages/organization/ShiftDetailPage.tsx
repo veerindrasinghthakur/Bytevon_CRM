@@ -22,6 +22,15 @@ import { archiveShift } from '../../api/organization'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { emptyShift } from '@/shared/mock/data/workforce'
 
+type ShiftStaffRow = {
+  employmentId: number
+  name: string
+  employeeCode: string
+  departmentName: string
+  positionName: string
+  state: string
+}
+
 function shiftsListPath(pathname: string) {
   if (pathname.startsWith('/workforce')) return '/workforce/shifts'
   return '/admin/settings/shifts'
@@ -81,7 +90,7 @@ export function ShiftDetailPage() {
     )
   }
 
-  const staff = staffQuery.data ?? []
+  const staff = (staffQuery.data ?? []) as ShiftStaffRow[]
 
   const beginEdit = () => {
     if (!shift) return
@@ -280,7 +289,7 @@ export function ShiftDetailPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant">
-                  {staff.map((e) => (
+                  {staff.map((e: ShiftStaffRow) => (
                     <tr
                       key={e.employmentId}
                       className="bv-row-hover cursor-pointer"
