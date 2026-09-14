@@ -3,14 +3,14 @@ import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 import { safeRedirectOpts } from '@/shared/lib/safeNavigate'
 
-const ProjectsListPage = lazyPage(() => import('./pages/ProjectsListPage'), 'ProjectsListPage')
-const ProjectDetailPage = lazyPage(() => import('./pages/ProjectDetailPage'), 'ProjectDetailPage')
-const ProjectCreatePage = lazyPage(() => import('./pages/ProjectCreatePage'), 'ProjectCreatePage')
-const TasksListPage = lazyPage(() => import('./pages/TasksListPage'), 'TasksListPage')
-const TaskCreatePage = lazyPage(() => import('./pages/TaskCreatePage'), 'TaskCreatePage')
-const TaskDetailPage = lazyPage(() => import('./pages/TaskDetailPage'), 'TaskDetailPage')
-const DocumentsPage = lazyPage(() => import('./pages/DocumentsPage'), 'DocumentsPage')
-const ProjectNotesPage = lazyPage(() => import('./pages/ProjectNotesPage'), 'ProjectNotesPage')
+const ProjectsListPage = lazyPage(() => import('./pages/project/ProjectsListPage'), 'ProjectsListPage')
+const ProjectDetailPage = lazyPage(() => import('./pages/project/ProjectDetailPage'), 'ProjectDetailPage')
+const ProjectCreatePage = lazyPage(() => import('./pages/project/ProjectCreatePage'), 'ProjectCreatePage')
+const TasksListPage = lazyPage(() => import('./pages/task/TasksListPage'), 'TasksListPage')
+const TaskCreatePage = lazyPage(() => import('./pages/task/TaskCreatePage'), 'TaskCreatePage')
+const TaskDetailPage = lazyPage(() => import('./pages/task/TaskDetailPage'), 'TaskDetailPage')
+const DocumentsPage = lazyPage(() => import('./pages/document/DocumentsPage'), 'DocumentsPage')
+const ProjectNotesPage = lazyPage(() => import('./pages/note/ProjectNotesPage'), 'ProjectNotesPage')
 
 /**
  * Canonical path helpers.
