@@ -3,6 +3,12 @@ import { getTasks, getTask, createTask, updateTask } from '../api/tasks'
 import type { Task, TaskPriority, TaskListCache } from '../types'
 import { queryKeys } from '@/shared/lib/query-keys'
 
+/**
+ * List tasks. Pass a filters object to fetch.
+ * - Tasks list page: useTasks({ search, status, page, pageSize })
+ * - Project detail Tasks tab: useTasks({ projectId }) when tab active
+ * - Pass undefined to skip fetch (lazy)
+ */
 export function useTasks(filters?: {
   search?: string
   status?: string
@@ -10,25 +16,12 @@ export function useTasks(filters?: {
   projectName?: string
   page?: number
   pageSize?: number
-  /** When false, skip fetch (e.g. project detail until Tasks tab). Default true if filters defined. */
-  enabled?: boolean
 }) {
-  const enabled =
-    filters?.enabled !== false &&
-    filters != null &&
-    (filters.projectId != null ||
-      filters.projectName != null ||
-      filters.search != null ||
-      filters.status != null ||
-      filters.page != null ||
-      // list page: empty filters object still means "fetch all"
-      Object.keys(filters).length === 0 ||
-      filters.enabled === true)
-
   return useQuery({
     queryKey: queryKeys.tasks.list(filters ?? {}),
     queryFn: () => getTasks(filters),
-    enabled,
+    // undefined = do not fetch (project detail before Tasks tab)
+    enabled: filters !== undefined,
   })
 }
 
