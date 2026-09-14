@@ -1,7 +1,10 @@
 """
-FastAPI dependencies for Organization module.
-"""
+FastAPI dependencies for Organization compatibility layer.
 
+OrganizationPublicService is a facade over app.modules.admin.* domain services.
+Prefer injecting domain services (DepartmentService, HolidayCalendarService, …)
+for new code.
+"""
 from __future__ import annotations
 
 from typing import Annotated
