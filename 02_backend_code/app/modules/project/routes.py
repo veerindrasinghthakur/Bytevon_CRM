@@ -1,7 +1,11 @@
 """
 Project HTTP routes (module package: project).
 
-Mounted at /api/v1/projects/* so frontend paths like /projects/teams resolve.
+Router prefix: /projects
+Frontend expects:
+  GET  /api/v1/projects           → list projects
+  GET  /api/v1/projects/teams     → list teams
+  GET  /api/v1/projects/tasks     → list tasks (optional project_id)
 """
 
 from __future__ import annotations
@@ -34,7 +38,7 @@ ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
 
 
 # ---------------------------------------------------------------------------
-# Teams
+# Teams (static paths first)
 # ---------------------------------------------------------------------------
 
 @router.post("/teams", response_model=TeamResponse, status_code=status.HTTP_201_CREATED)
@@ -104,53 +108,7 @@ async def list_team_members(
 
 
 # ---------------------------------------------------------------------------
-# Projects
-# ---------------------------------------------------------------------------
-
-@router.post(
-    "/projects",
-    response_model=ProjectResponse,
-    status_code=status.HTTP_201_CREATED,
-)
-async def create_project(
-    body: ProjectCreate, service: ProjectServiceDep, actor: ActorHeader = None
-) -> ProjectResponse:
-    return await service.create_project(body, actor_employment_id=actor)
-
-
-@router.get("/projects", response_model=list[ProjectResponse])
-async def list_projects(
-    service: ProjectServiceDep,
-    client_id: Optional[int] = Query(None),
-    limit: int = Query(100, ge=1, le=500),
-    offset: int = Query(0, ge=0),
-) -> list[ProjectResponse]:
-    return await service.list_projects(
-        client_id=client_id, limit=limit, offset=offset
-    )
-
-
-@router.get("/projects/{project_id}", response_model=ProjectResponse)
-async def get_project(
-    project_id: int, service: ProjectServiceDep
-) -> ProjectResponse:
-    return await service.get_project(project_id)
-
-
-@router.patch("/projects/{project_id}", response_model=ProjectResponse)
-async def update_project(
-    project_id: int,
-    body: ProjectUpdate,
-    service: ProjectServiceDep,
-    actor: ActorHeader = None,
-) -> ProjectResponse:
-    return await service.update_project(
-        project_id, body, actor_employment_id=actor
-    )
-
-
-# ---------------------------------------------------------------------------
-# Tasks
+# Tasks — static /tasks before /{project_id}
 # ---------------------------------------------------------------------------
 
 @router.post(
@@ -164,11 +122,17 @@ async def create_task(
     return await service.create_task(body, actor_employment_id=actor)
 
 
-@router.get("/projects/{project_id}/tasks", response_model=list[TaskResponse])
-async def list_tasks(
-    project_id: int, service: ProjectServiceDep
+@router.get("/tasks", response_model=list[TaskResponse])
+async def list_all_tasks(
+    service: ProjectServiceDep,
+    project_id: Optional[int] = Query(None),
+    limit: int = Query(200, ge=1, le=500),
+    offset: int = Query(0, ge=0),
 ) -> list[TaskResponse]:
-    return await service.list_tasks(project_id)
+    """List tasks across projects (optional project_id filter). Frontend: GET /projects/tasks."""
+    return await service.list_all_tasks(
+        project_id=project_id, limit=limit, offset=offset
+    )
 
 
 @router.get("/tasks/{task_id}", response_model=TaskResponse)
@@ -211,3 +175,86 @@ async def list_time_entries(
     task_id: int, service: ProjectServiceDep
 ) -> list[TimeEntryResponse]:
     return await service.list_time_entries(task_id)
+
+
+# ---------------------------------------------------------------------------
+# Projects — root paths match frontend GET /api/v1/projects
+# Keep /projects/* aliases for any older clients.
+# ---------------------------------------------------------------------------
+
+@router.post("", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
+async def create_project(
+    body: ProjectCreate, service: ProjectServiceDep, actor: ActorHeader = None
+) -> ProjectResponse:
+    return await service.create_project(body, actor_employment_id=actor)
+
+
+@router.get("", response_model=list[ProjectResponse])
+@router.get("/", response_model=list[ProjectResponse])
+async def list_projects(
+    service: ProjectServiceDep,
+    client_id: Optional[int] = Query(None),
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+) -> list[ProjectResponse]:
+    return await service.list_projects(
+        client_id=client_id, limit=limit, offset=offset
+    )
+
+
+# Legacy nested paths (GET/POST /projects/projects)
+@router.post(
+    "/projects",
+    response_model=ProjectResponse,
+    status_code=status.HTTP_201_CREATED,
+    include_in_schema=False,
+)
+async def create_project_nested(
+    body: ProjectCreate, service: ProjectServiceDep, actor: ActorHeader = None
+) -> ProjectResponse:
+    return await service.create_project(body, actor_employment_id=actor)
+
+
+@router.get(
+    "/projects",
+    response_model=list[ProjectResponse],
+    include_in_schema=False,
+)
+async def list_projects_nested(
+    service: ProjectServiceDep,
+    client_id: Optional[int] = Query(None),
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+) -> list[ProjectResponse]:
+    return await service.list_projects(
+        client_id=client_id, limit=limit, offset=offset
+    )
+
+
+@router.get("/projects/{project_id}/tasks", response_model=list[TaskResponse])
+async def list_project_tasks(
+    project_id: int, service: ProjectServiceDep
+) -> list[TaskResponse]:
+    return await service.list_tasks(project_id)
+
+
+@router.get("/{project_id}", response_model=ProjectResponse)
+@router.get("/projects/{project_id}", response_model=ProjectResponse)
+async def get_project(
+    project_id: int, service: ProjectServiceDep
+) -> ProjectResponse:
+    return await service.get_project(project_id)
+
+
+@router.patch("/{project_id}", response_model=ProjectResponse)
+@router.patch("/projects/{project_id}", response_model=ProjectResponse)
+async def update_project(
+    project_id: int,
+    body: ProjectUpdate,
+    service: ProjectServiceDep,
+    actor: ActorHeader = None,
+) -> ProjectResponse:
+    return await service.update_project(
+        project_id, body, actor_employment_id=actor
+    )
