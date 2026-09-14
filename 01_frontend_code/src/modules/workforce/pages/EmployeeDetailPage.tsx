@@ -493,8 +493,8 @@ export function EmployeeDetailPage() {
                   <p className="text-body-sm text-on-surface-variant">No active salary structure.</p>
                 )}
                 <Link
-                  to={payrollRoutes.employeeHistoryPath}
-                  params={{ employmentId: String(id) }}
+                  to={payrollRoutes.historyEmployeePath}
+                  params={{ employeeId: String(id) }}
                   className="text-secondary text-sm font-medium hover:underline"
                 >
                   Open payroll history
