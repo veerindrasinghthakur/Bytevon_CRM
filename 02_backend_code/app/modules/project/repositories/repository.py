@@ -4,11 +4,12 @@ ProjectRepository — domain-specific queries only.
 
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Tuple
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.db.enums import TaskStatus
 from app.core.repositories.base_repository import BaseRepository
 from app.modules.project.models import (
     Project,
@@ -48,6 +49,13 @@ class ProjectRepository(BaseRepository):
         )
         return (await self._session.execute(stmt)).scalars().all()
 
+    async def count_active_members(self, team_id: int) -> int:
+        stmt = select(func.count()).select_from(TeamMember).where(
+            TeamMember.team_id == team_id,
+            TeamMember.left_at.is_(None),
+        )
+        return int((await self._session.execute(stmt)).scalar_one() or 0)
+
     # Projects
     async def get_project_by_id(self, project_id: int) -> Optional[Project]:
         stmt = select(Project).where(Project.id == project_id)
@@ -75,6 +83,11 @@ class ProjectRepository(BaseRepository):
             )
         return (await self._session.execute(stmt)).scalars().all()
 
+    async def find_project_ids_by_name(self, name: str) -> Sequence[int]:
+        q = f"%{name.strip()}%"
+        stmt = select(Project.id).where(Project.project_name.ilike(q))
+        return (await self._session.execute(stmt)).scalars().all()
+
     # Tasks
     async def get_task_by_id(self, task_id: int) -> Optional[Task]:
         stmt = select(Task).where(Task.id == task_id)
@@ -88,6 +101,7 @@ class ProjectRepository(BaseRepository):
         self,
         *,
         project_id: Optional[int] = None,
+        project_ids: Optional[Sequence[int]] = None,
         limit: int = 200,
         offset: int = 0,
     ) -> Sequence[Task]:
@@ -100,7 +114,34 @@ class ProjectRepository(BaseRepository):
                 .limit(limit)
                 .offset(offset)
             )
+        elif project_ids is not None:
+            if not project_ids:
+                return []
+            stmt = (
+                select(Task)
+                .where(Task.project_id.in_(list(project_ids)))
+                .order_by(Task.id.desc())
+                .limit(limit)
+                .offset(offset)
+            )
         return (await self._session.execute(stmt)).scalars().all()
+
+    async def count_project_tasks(self, project_id: int) -> Tuple[int, int]:
+        """Return (total, open) where open = not COMPLETED."""
+        total_stmt = select(func.count()).select_from(Task).where(
+            Task.project_id == project_id
+        )
+        open_stmt = (
+            select(func.count())
+            .select_from(Task)
+            .where(
+                Task.project_id == project_id,
+                Task.status != TaskStatus.COMPLETED,
+            )
+        )
+        total = int((await self._session.execute(total_stmt)).scalar_one() or 0)
+        open_count = int((await self._session.execute(open_stmt)).scalar_one() or 0)
+        return total, open_count
 
     async def sum_task_minutes(self, task_id: int) -> int:
         stmt = select(func.coalesce(func.sum(TaskTimeEntry.duration_minutes), 0)).where(

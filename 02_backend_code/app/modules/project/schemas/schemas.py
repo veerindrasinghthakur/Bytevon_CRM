@@ -121,6 +121,21 @@ class ProjectResponse(BaseModel):
     changed_by: Optional[int]
 
 
+class ProjectDetailResponse(ProjectResponse):
+    """Single-call detail payload: project + computed metrics + team summary."""
+
+    client_name: Optional[str] = None
+    open_tasks: int = 0
+    task_count: int = 0
+    days_to_deadline: Optional[int] = None
+    team_count: int = 0
+    team_member_count: int = 0
+    team_id: Optional[int] = None
+    team_name: Optional[str] = None
+    team_head_name: Optional[str] = None
+    progress: int = 0
+
+
 # ===========================================================================
 # Tasks
 # ===========================================================================
@@ -168,6 +183,7 @@ class TaskResponse(BaseModel):
     updated_at: datetime
     changed_by: Optional[int]
     actual_minutes: Optional[int] = None  # derived
+    project_name: Optional[str] = None  # enriched when listing
 
 
 # ===========================================================================
