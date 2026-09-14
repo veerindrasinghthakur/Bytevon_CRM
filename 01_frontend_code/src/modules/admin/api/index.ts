@@ -1,15 +1,12 @@
-/** Admin API barrel — single entry for module consumers.
- * Until restructure-admin-module.sh is run, keep dual names:
- * users/roles/metrics still exist; user/role/attendance after rename.
- */
-export * from './users'
-export * from './roles'
-export * from './audit'
+/** Admin API barrel — domain files + legacy aliases during restructure. */
+export * from './user'
+export * from './role'
 export * from './leave'
 export * from './settings'
-export * from './security'
-export * from './metrics'
 export * from './offices'
+export * from './audit'
+export * from './attendance'
+export * from './security'
 export * from './organization'
 export * from './location'
 export * from './shift'

@@ -1,12 +1,8 @@
-/** Admin hooks barrel — dual paths until domain git mv is applied. */
-export { useUsersList } from './use-users-list'
-export { useUserDetail } from './use-user-detail'
-export { useUserCreate } from './use-user-create'
-export { useRolesList } from './use-roles-list'
-export { useRoleForm } from './use-role-form'
-export { useSecurityScore } from './use-security-score'
-export { useAttendanceSettings } from './use-attendance-settings'
-export { useHeadOffice } from './use-head-office'
+/** Admin hooks barrel — domain paths preferred; legacy paths still work. */
+export { useUsersList } from './user/use-users'
+export { useRolesList } from './role/use-roles'
+export { useSecurityScoreAnimation } from './security/use-security-score'
+export { useLocationsList, useLocationDetail, useUpdateLocation } from './location/use-locations'
 export {
   useOrganizationSettings,
   useUpdateOrganizationSettings,
@@ -15,8 +11,10 @@ export {
   useHolidayCalendars,
   useHolidays,
   usePositions,
-} from './use-organization'
-export { useLocationsList, useLocationDetail, useUpdateLocation } from './use-organization-locations'
-export { useShiftsList, useShiftDetail, useShiftStaff, useCreateShift, useUpdateShift } from './use-organization-shifts'
-export { useLeaveSettingsModal } from './use-leave-settings-modal'
+} from './settings/use-settings'
+export { useShiftFormData } from './settings/use-attendance-settings'
+// Still at hooks root until moved:
+export { useUserCreate } from './use-user-create'
+export { useUserDetail } from './use-user-detail'
+export { useRoleForm } from './use-role-form'
 export { useAdminMutation } from './use-admin-mutation'
