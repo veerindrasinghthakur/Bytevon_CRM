@@ -9,6 +9,7 @@ import { queryKeys } from '@/shared/lib/query-keys'
 import { getTeams } from '../api/teams'
 import { updateProject } from '../api/projects'
 import { projectRoutes } from '../routes'
+import { workforceRoutes } from '@/modules/workforce/routes'
 import type { Team } from '../types'
 
 type Props = {
@@ -95,7 +96,7 @@ export function ProjectTeamTab({ projectId, projectName, linkedTeam, onAssigned 
               size="sm"
               onClick={() =>
                 safeNavigate(navigate, {
-                  to: projectRoutes.teamDetailPath,
+                  to: workforceRoutes.teamDetailPath,
                   params: { teamId: String(linkedTeam.id) },
                 })
               }
@@ -134,7 +135,7 @@ export function ProjectTeamTab({ projectId, projectName, linkedTeam, onAssigned 
               size="sm"
               onClick={() =>
                 safeNavigate(navigate, {
-                  to: projectRoutes.teamNew,
+                  to: workforceRoutes.teamNew,
                   search: {
                     projectId: String(projectId),
                     returnTo: projectRoutes.projectDetail(projectId),
@@ -162,7 +163,7 @@ export function ProjectTeamTab({ projectId, projectName, linkedTeam, onAssigned 
               size="sm"
               onClick={() =>
                 safeNavigate(navigate, {
-                  to: projectRoutes.teamNew,
+                  to: workforceRoutes.teamNew,
                   search: {
                     projectId: String(projectId),
                     returnTo: projectRoutes.projectDetail(projectId),
