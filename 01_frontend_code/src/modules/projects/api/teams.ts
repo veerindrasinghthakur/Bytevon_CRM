@@ -50,7 +50,6 @@ function asTeam(row: TeamRow): Team {
   }
 }
 
-/** Resolve primary teamId for a project (explicit field or match by projectName). */
 export function resolveProjectTeamId(projectId: number): number | null {
   const db = getDb()
   const project = db.projects.find((p) => p.id === projectId) as
@@ -72,24 +71,33 @@ export async function getTeams(params?: {
   pageSize?: number
 }): Promise<{ items: Team[]; total: number }> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<
-      { items: Team[]; total: number } | Array<Record<string, unknown>>
-    >('/projects/teams', { params })
-    if (Array.isArray(data)) {
-      const items = data.map((r) => mapApiTeam(r))
-      return { items, total: items.length }
-    }
-    return {
-      items: (data.items ?? []).map((t) =>
-        typeof t === 'object' && t && 'id' in t
-          ? mapApiTeam(t as unknown as Record<string, unknown>)
-          : (t as Team),
-      ),
-      total: data.total ?? data.items?.length ?? 0,
+    try {
+      const { data } = await apiClient.get<
+        { items: Team[]; total: number } | Array<Record<string, unknown>> | null
+      >('/projects/teams', {
+        // Backend list_teams has no pagination — only pass search if used later
+        params: params?.search ? { search: params.search } : undefined,
+      })
+      if (data == null) return { items: [], total: 0 }
+      if (Array.isArray(data)) {
+        const items = data.map((r) => mapApiTeam(r))
+        return { items, total: items.length }
+      }
+      const rawItems = Array.isArray(data.items) ? data.items : []
+      return {
+        items: rawItems.map((t) =>
+          typeof t === 'object' && t && 'id' in t
+            ? mapApiTeam(t as unknown as Record<string, unknown>)
+            : (t as Team),
+        ),
+        total: data.total ?? rawItems.length,
+      }
+    } catch {
+      return { items: [], total: 0 }
     }
   }
   await delay()
-  let items = getDb().teams.map((t) => asTeam(t as TeamRow))
+  let items = (getDb().teams ?? []).map((t) => asTeam(t as TeamRow))
   if (params?.search) {
     const q = params.search.toLowerCase()
     items = items.filter(
@@ -133,7 +141,6 @@ export async function getTeam(id: number): Promise<Team | null> {
   return row ? asTeam(row as TeamRow) : null
 }
 
-/** Teams linked via assignment_type=TEAM + assigned_to_id (mock: teamId / projectName). */
 export async function getTeamsForProject(projectId: number): Promise<Team[]> {
   if (!env.useMockApi) {
     try {
@@ -158,28 +165,32 @@ export async function getTeamsForProject(projectId: number): Promise<Team[]> {
 
 export async function getTeamMembers(teamId: number): Promise<TeamMemberRow[]> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<
-      Array<Record<string, unknown>> | { items: Array<Record<string, unknown>> }
-    >(`/projects/teams/${teamId}/members`)
-    const rows = Array.isArray(data) ? data : (data.items ?? [])
-    return rows.map((r) => ({
-      id: String(r.id ?? r.employment_id ?? ''),
-      employmentId: Number(r.employment_id ?? r.employmentId ?? r.id ?? 0),
-      name: String(r.name ?? r.fullName ?? `Member ${r.employment_id ?? r.id}`),
-      title: String(r.team_role ?? r.teamRole ?? r.title ?? 'Member'),
-      role: String(r.team_role ?? r.teamRole ?? 'Member'),
-      email: String(r.email ?? ''),
-      status: r.left_at || r.leftAt ? 'Inactive' : 'Active',
-      joined: String(r.joined_at ?? r.joinedAt ?? '—'),
-      isHead: String(r.team_role ?? r.teamRole ?? '').toLowerCase().includes('head'),
-    }))
+    try {
+      const { data } = await apiClient.get<
+        Array<Record<string, unknown>> | { items: Array<Record<string, unknown>> }
+      >(`/projects/teams/${teamId}/members`)
+      const rows = Array.isArray(data) ? data : (data?.items ?? [])
+      return rows.map((r) => ({
+        id: String(r.id ?? r.employment_id ?? ''),
+        employmentId: Number(r.employment_id ?? r.employmentId ?? r.id ?? 0),
+        name: String(r.name ?? r.fullName ?? `Member ${r.employment_id ?? r.id}`),
+        title: String(r.team_role ?? r.teamRole ?? r.title ?? 'Member'),
+        role: String(r.team_role ?? r.teamRole ?? 'Member'),
+        email: String(r.email ?? ''),
+        status: r.left_at || r.leftAt ? 'Inactive' : 'Active',
+        joined: String(r.joined_at ?? r.joinedAt ?? '—'),
+        isHead: String(r.team_role ?? r.teamRole ?? '').toLowerCase().includes('head'),
+      }))
+    } catch {
+      return []
+    }
   }
   await delay()
   const db = getDb()
   const team = db.teams.find((t) => t.id === teamId) as TeamRow | undefined
   if (!team) return []
 
-  const employees = db.employees as EmployeeLike[]
+  const employees = (db.employees as EmployeeLike[]) ?? []
   const dept = (team.department ?? '').toLowerCase()
   let emps = employees.filter((e) => (e.department ?? '').toLowerCase() === dept)
   if (emps.length === 0) {
@@ -223,7 +234,7 @@ export async function getTeamProjects(teamId: number): Promise<TeamProjectRow[]>
       const { data } = await apiClient.get<TeamProjectRow[] | { items: TeamProjectRow[] }>(
         `/projects/teams/${teamId}/projects`,
       )
-      return Array.isArray(data) ? data : (data.items ?? [])
+      return Array.isArray(data) ? data : (data?.items ?? [])
     } catch {
       return []
     }
@@ -268,7 +279,7 @@ export async function getTeamCandidates(teamId: number): Promise<TeamCandidate[]
       const { data } = await apiClient.get<TeamCandidate[] | { items: TeamCandidate[] }>(
         `/projects/teams/${teamId}/candidates`,
       )
-      return Array.isArray(data) ? data : (data.items ?? [])
+      return Array.isArray(data) ? data : (data?.items ?? [])
     } catch {
       return []
     }
@@ -278,7 +289,7 @@ export async function getTeamCandidates(teamId: number): Promise<TeamCandidate[]
   const team = db.teams.find((t) => t.id === teamId) as TeamRow | undefined
   if (!team) return []
 
-  const employees = db.employees as EmployeeLike[]
+  const employees = (db.employees as EmployeeLike[]) ?? []
   const dept = (team.department ?? '').toLowerCase()
 
   const mapCandidate = (e: EmployeeLike): TeamCandidate => ({
