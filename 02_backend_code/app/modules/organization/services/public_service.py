@@ -113,19 +113,19 @@ class OrganizationPublicService:
 
     # Holiday calendars
     async def create_holiday_calendar(self, data: HolidayCalendarCreate, *, actor_employment_id: Optional[int] = None) -> HolidayCalendarResponse:
-        return await self._holidays.create_calendar(data, actor_employment_id=actor_employment_id)
+        return await self._holidays.create(data, actor_employment_id=actor_employment_id)
 
     async def get_holiday_calendar(self, calendar_id: int) -> HolidayCalendarResponse:
-        return await self._holidays.get_calendar(calendar_id)
+        return await self._holidays.get(calendar_id)
 
     async def list_holiday_calendars(self, *, include_archived: bool = False) -> list[HolidayCalendarResponse]:
-        return await self._holidays.list_calendars(include_archived=include_archived)
+        return await self._holidays.list(include_archived=include_archived)
 
     async def update_holiday_calendar(self, calendar_id: int, data: HolidayCalendarUpdate, *, actor_employment_id: Optional[int] = None) -> HolidayCalendarResponse:
-        return await self._holidays.update_calendar(calendar_id, data, actor_employment_id=actor_employment_id)
+        return await self._holidays.update(calendar_id, data, actor_employment_id=actor_employment_id)
 
     async def archive_holiday_calendar(self, calendar_id: int, *, actor_employment_id: Optional[int] = None) -> MessageResponse:
-        return await self._holidays.archive_calendar(calendar_id, actor_employment_id=actor_employment_id)
+        return await self._holidays.archive(calendar_id, actor_employment_id=actor_employment_id)
 
     async def add_holiday(self, calendar_id: int, data: HolidayCreate, *, actor_employment_id: Optional[int] = None) -> HolidayResponse:
         return await self._holidays.add_holiday(calendar_id, data, actor_employment_id=actor_employment_id)
