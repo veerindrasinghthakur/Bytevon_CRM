@@ -4,7 +4,8 @@ export const projectDetailFormSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(120),
   description: z.string().max(2000).optional(),
   clientName: z.string().max(120).optional(),
-  repositoryUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  // Backend may store git path without scheme — do not require strict URL
+  repositoryUrl: z.string().max(500).optional(),
 })
 
 export type ProjectDetailFormInput = z.infer<typeof projectDetailFormSchema>

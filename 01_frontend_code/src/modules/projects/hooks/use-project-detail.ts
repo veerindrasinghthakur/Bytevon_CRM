@@ -6,29 +6,10 @@ import { useEditMode } from '@/shared/hooks/useEditMode'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { useProject, useUpdateProject } from './use-projects'
 import { useTasks } from './use-tasks'
-import { getTeam, getTeamsForProject } from '../api/teams'
-import { auditLogs } from '@/modules/admin/data/mock'
+import { getTeam, getTeamsForProject, getTeamMembers } from '../api/teams'
 import type { ProjectDetailTab } from '../types'
 import { TaskStatusFilterOptions } from '../enums'
 import { projectDetailFormSchema, type ProjectDetailFormInput } from '../schemas/project-detail-form'
-
-function activityFromAudit(projectName?: string) {
-  const logs = auditLogs.slice(0, 8)
-  return logs.map((log) => ({
-    id: log.id,
-    title: log.action,
-    description: `${log.actor} · ${log.target}${projectName ? ` · ${projectName}` : ''}`,
-    timestamp: log.timestamp,
-    icon:
-      log.action.toLowerCase().includes('lock')
-        ? 'lock'
-        : log.action.toLowerCase().includes('permission')
-          ? 'key'
-          : log.action.toLowerCase().includes('setting')
-            ? 'settings'
-            : 'history',
-  }))
-}
 
 export function useProjectDetail(
   projectId: number | undefined,
@@ -57,6 +38,15 @@ export function useProjectDetail(
       (teamIdFromProject == null || teamByIdQuery.isError),
   })
 
+  const linkedTeam = teamByIdQuery.data ?? teamsForProjectQuery.data?.[0] ?? null
+  const linkedTeamId = linkedTeam?.id ?? null
+
+  const membersQuery = useQuery({
+    queryKey: ['projects', 'team-members', linkedTeamId],
+    queryFn: () => getTeamMembers(linkedTeamId!),
+    enabled: linkedTeamId != null && Number.isFinite(linkedTeamId),
+  })
+
   const [tab, setTab] = useState<ProjectDetailTab>(initialTab)
   const [taskStatusFilter, setTaskStatusFilter] = useState('')
   const [taskSearch, setTaskSearch] = useState('')
@@ -73,18 +63,11 @@ export function useProjectDetail(
     },
   })
 
-  const linkedTeam =
-    teamByIdQuery.data ?? teamsForProjectQuery.data?.[0] ?? null
-  const activityItems = useMemo(
-    () => activityFromAudit(project?.name),
-    [project?.name],
-  )
-
   const startEditing = () => {
     if (!project) return
     setSaveError(null)
     form.reset({
-      name: project.name,
+      name: project.name || 'Project',
       description: project.description ?? '',
       clientName: project.clientName ?? '',
       repositoryUrl: project.repositoryUrl ?? '',
@@ -96,7 +79,7 @@ export function useProjectDetail(
     setSaveError(null)
     if (project) {
       form.reset({
-        name: project.name,
+        name: project.name || 'Project',
         description: project.description ?? '',
         clientName: project.clientName ?? '',
         repositoryUrl: project.repositoryUrl ?? '',
@@ -109,15 +92,25 @@ export function useProjectDetail(
     if (!project) return
     setSaveError(null)
     const valid = await form.trigger()
-    if (!valid) return
+    if (!valid) {
+      const errs = form.formState.errors
+      const first =
+        errs.name?.message ||
+        errs.description?.message ||
+        errs.repositoryUrl?.message ||
+        errs.clientName?.message ||
+        'Please fix the form errors before saving.'
+      setSaveError(String(first))
+      return
+    }
     const data = form.getValues()
     try {
       await updateMutation.mutateAsync({
         id: project.id,
         patch: {
-          name: data.name,
-          description: data.description,
-          repositoryUrl: data.repositoryUrl || null,
+          name: data.name.trim(),
+          description: data.description?.trim() || null,
+          repositoryUrl: data.repositoryUrl?.trim() || null,
         },
       })
       finishEditing()
@@ -146,6 +139,22 @@ export function useProjectDetail(
     ? Math.max(0, Math.ceil((new Date(project.endDate).getTime() - Date.now()) / 86400000))
     : null
 
+  const teamMembers = membersQuery.data ?? []
+  const teamHead =
+    teamMembers.find((m) => m.isHead || m.role === 'Lead' || m.role?.toLowerCase().includes('head')) ??
+    (linkedTeam?.headName
+      ? {
+          id: 'head',
+          name: linkedTeam.headName,
+          title: linkedTeam.headRole ?? 'Team Head',
+          role: 'Lead',
+          email: '',
+          status: 'Active',
+          joined: '—',
+          isHead: true,
+        }
+      : null)
+
   return {
     project,
     isLoading: query.isLoading,
@@ -155,6 +164,7 @@ export function useProjectDetail(
       void tasksQuery.refetch()
       void teamByIdQuery.refetch()
       void teamsForProjectQuery.refetch()
+      void membersQuery.refetch()
     },
     tab,
     setTab,
@@ -178,7 +188,9 @@ export function useProjectDetail(
     createTaskOpen,
     setCreateTaskOpen,
     linkedTeam,
-    activityItems,
+    teamMembers,
+    teamHead,
+    teamMembersLoading: membersQuery.isLoading,
     taskStatusOptions: TaskStatusFilterOptions,
   }
 }

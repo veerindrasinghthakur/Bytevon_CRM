@@ -30,10 +30,10 @@ export function useTaskDetail(taskId: number | undefined) {
     if (!task) return
     setSaveError(null)
     form.reset({
-      title: task.title,
+      title: task.title || 'Task',
       description: task.description ?? '',
-      priority: task.priority,
-      status: task.status,
+      priority: task.priority ?? 'MEDIUM',
+      status: task.status ?? 'TODO',
       assigneeName: task.assigneeName ?? '',
       dueDate: task.dueDate ?? '',
     })
@@ -44,10 +44,10 @@ export function useTaskDetail(taskId: number | undefined) {
     setSaveError(null)
     if (task) {
       form.reset({
-        title: task.title,
+        title: task.title || 'Task',
         description: task.description ?? '',
-        priority: task.priority,
-        status: task.status,
+        priority: task.priority ?? 'MEDIUM',
+        status: task.status ?? 'TODO',
         assigneeName: task.assigneeName ?? '',
         dueDate: task.dueDate ?? '',
       })
@@ -59,21 +59,33 @@ export function useTaskDetail(taskId: number | undefined) {
     if (!task) return
     setSaveError(null)
     const valid = await form.trigger()
-    if (!valid) return
+    if (!valid) {
+      const errs = form.formState.errors
+      const first =
+        errs.title?.message ||
+        errs.description?.message ||
+        errs.priority?.message ||
+        errs.status?.message ||
+        'Please fix the form errors before saving.'
+      setSaveError(String(first))
+      return
+    }
     const data = form.getValues()
     try {
       await updateMutation.mutateAsync({
         id: task.id,
         patch: {
-          title: data.title,
-          description: data.description,
+          title: data.title.trim(),
+          description: data.description?.trim() || undefined,
           priority: data.priority,
           status: data.status,
-          assigneeName: data.assigneeName || undefined,
+          assigneeName: data.assigneeName?.trim() || undefined,
           dueDate: data.dueDate || null,
           ...(extra?.assigneeEmploymentId !== undefined
             ? { assigneeEmploymentId: extra.assigneeEmploymentId }
-            : {}),
+            : task.assigneeEmploymentId != null
+              ? { assigneeEmploymentId: task.assigneeEmploymentId }
+              : {}),
         },
       })
       finishEditing()
