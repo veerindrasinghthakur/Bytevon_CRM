@@ -2,12 +2,13 @@
 ProjectPublicService — sole public entry for Projects module.
 
 Exposes create_from_lead for Sales (callable inside Sales TX with commit=False).
+GET project returns ProjectDetailResponse (metrics + team summary in one call).
 """
 
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Optional
 
 from sqlalchemy import select
@@ -34,6 +35,7 @@ from app.modules.project.repositories.repository import ProjectRepository
 from app.modules.project.schemas.schemas import (
     MessageResponse,
     ProjectCreate,
+    ProjectDetailResponse,
     ProjectResponse,
     ProjectUpdate,
     TaskCreate,
@@ -59,16 +61,90 @@ class ProjectPublicService(BasePublicService):
     async def _require_employment(
         self, employment_id: int, *, label: str = "Employment"
     ) -> None:
-        """Ensure employment_id exists in employments (FK target for teams/members)."""
         from app.modules.workforce.models import Employment
 
         emp = await self._session.get(Employment, employment_id)
         if emp is None:
             raise NotFoundError(f"{label} not found (id={employment_id})")
 
-    async def _project_response(self, project: Project) -> ProjectResponse:
+    async def _employment_display_name(self, employment_id: int) -> Optional[str]:
+        from app.modules.workforce.models import Employment
+
+        emp = await self._session.get(Employment, employment_id)
+        if emp is None:
+            return None
+        for attr in ("display_name", "full_name", "name"):
+            val = getattr(emp, attr, None)
+            if val:
+                return str(val)
+        code = getattr(emp, "employee_code", None)
+        return str(code) if code else f"Employment #{employment_id}"
+
+    async def _client_name(self, client_id: int) -> Optional[str]:
+        try:
+            from app.modules.sales.models import Client
+
+            client = await self._session.get(Client, client_id)
+            if client is None:
+                return None
+            for attr in ("company_name", "name", "client_name"):
+                val = getattr(client, attr, None)
+                if val:
+                    return str(val)
+            return f"Client #{client_id}"
+        except Exception:
+            return None
+
+    async def _detail_response(self, project: Project) -> ProjectDetailResponse:
         await self._session.refresh(project)
-        return ProjectResponse.model_validate(project)
+        base = ProjectResponse.model_validate(project)
+
+        task_count, open_tasks = await self._repo.count_project_tasks(project.id)
+        progress = 0
+        if task_count > 0:
+            progress = int(round(100 * (task_count - open_tasks) / task_count))
+
+        days_to_deadline: Optional[int] = None
+        if project.planned_end_date is not None:
+            days_to_deadline = max(0, (project.planned_end_date - date.today()).days)
+
+        team_id: Optional[int] = None
+        team_name: Optional[str] = None
+        team_head_name: Optional[str] = None
+        team_member_count = 0
+        team_count = 0
+
+        if project.assignment_type == ProjectAssignmentType.TEAM:
+            team_id = project.assigned_to_id
+            team = await self._repo.get_team_by_id(team_id)
+            if team is not None:
+                team_count = 1
+                team_name = team.name
+                team_member_count = await self._repo.count_active_members(team.id)
+                team_head_name = await self._employment_display_name(
+                    team.team_head_employment_id
+                )
+        elif project.assignment_type == ProjectAssignmentType.INDIVIDUAL:
+            team_head_name = await self._employment_display_name(project.assigned_to_id)
+
+        client_name = await self._client_name(project.client_id)
+
+        return ProjectDetailResponse(
+            **base.model_dump(),
+            client_name=client_name,
+            open_tasks=open_tasks,
+            task_count=task_count,
+            days_to_deadline=days_to_deadline,
+            team_count=team_count,
+            team_member_count=team_member_count,
+            team_id=team_id,
+            team_name=team_name,
+            team_head_name=team_head_name,
+            progress=progress,
+        )
+
+    async def _project_response(self, project: Project) -> ProjectDetailResponse:
+        return await self._detail_response(project)
 
     async def _team_response(self, team: Team) -> TeamResponse:
         await self._session.refresh(team)
@@ -131,7 +207,6 @@ class ProjectPublicService(BasePublicService):
         *,
         actor_employment_id: Optional[int] = None,
     ) -> TeamResponse:
-        """Create team and auto-enrol head as active member (role: Team Head)."""
         if not data.name or not str(data.name).strip():
             raise DomainError("Team name is required")
 
@@ -282,7 +357,7 @@ class ProjectPublicService(BasePublicService):
         data: ProjectCreate,
         *,
         actor_employment_id: Optional[int] = None,
-    ) -> ProjectResponse:
+    ) -> ProjectDetailResponse:
         if data.lead_id is not None:
             existing = await self._repo.get_project_by_lead_id(data.lead_id)
             if existing:
@@ -308,13 +383,13 @@ class ProjectPublicService(BasePublicService):
         await self._repo.add(project)
         await self._commit()
         await self._audit("project.created", project.id, actor_employment_id)
-        return await self._project_response(project)
+        return await self._detail_response(project)
 
-    async def get_project(self, project_id: int) -> ProjectResponse:
+    async def get_project(self, project_id: int) -> ProjectDetailResponse:
         project = await self._repo.get_project_by_id(project_id)
         if project is None:
             raise NotFoundError("Project not found")
-        return ProjectResponse.model_validate(project)
+        return await self._detail_response(project)
 
     async def list_projects(
         self,
@@ -334,7 +409,7 @@ class ProjectPublicService(BasePublicService):
         data: ProjectUpdate,
         *,
         actor_employment_id: Optional[int] = None,
-    ) -> ProjectResponse:
+    ) -> ProjectDetailResponse:
         project = await self._repo.get_project_by_id(project_id)
         if project is None:
             raise NotFoundError("Project not found")
@@ -343,7 +418,7 @@ class ProjectPublicService(BasePublicService):
         project.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
         await self._audit("project.updated", project.id, actor_employment_id)
-        return await self._project_response(project)
+        return await self._detail_response(project)
 
     # ==================================================================
     # Tasks
@@ -384,15 +459,25 @@ class ProjectPublicService(BasePublicService):
         self,
         *,
         project_id: Optional[int] = None,
+        project_name: Optional[str] = None,
         limit: int = 200,
         offset: int = 0,
     ) -> list[TaskResponse]:
+        resolved_ids = None
         if project_id is not None:
             project = await self._repo.get_project_by_id(project_id)
             if project is None:
                 raise NotFoundError("Project not found")
+        elif project_name and project_name.strip():
+            resolved_ids = list(await self._repo.find_project_ids_by_name(project_name))
+            if not resolved_ids:
+                return []
+
         rows = await self._repo.list_all_tasks(
-            project_id=project_id, limit=limit, offset=offset
+            project_id=project_id,
+            project_ids=resolved_ids,
+            limit=limit,
+            offset=offset,
         )
         return [await self._task_response(t) for t in rows]
 
@@ -422,8 +507,17 @@ class ProjectPublicService(BasePublicService):
     async def _task_response(self, task: Task) -> TaskResponse:
         await self._session.refresh(task)
         minutes = await self._repo.sum_task_minutes(task.id)
+        project_name = None
+        try:
+            proj = await self._repo.get_project_by_id(task.project_id)
+            if proj is not None:
+                project_name = proj.project_name
+        except Exception:
+            pass
         base = TaskResponse.model_validate(task)
-        return base.model_copy(update={"actual_minutes": minutes})
+        return base.model_copy(
+            update={"actual_minutes": minutes, "project_name": project_name}
+        )
 
     # ==================================================================
     # Time entries (immutable; assignee only)
