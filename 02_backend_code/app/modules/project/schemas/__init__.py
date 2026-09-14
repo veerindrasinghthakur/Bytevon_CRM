@@ -1,6 +1,9 @@
+"""Compatibility — prefer domain schemas."""
+
 from app.modules.project.schemas.schemas import (
     MessageResponse,
     ProjectCreate,
+    ProjectDetailResponse,
     ProjectResponse,
     ProjectUpdate,
     TaskCreate,
@@ -25,6 +28,7 @@ __all__ = [
     "ProjectCreate",
     "ProjectUpdate",
     "ProjectResponse",
+    "ProjectDetailResponse",
     "TaskCreate",
     "TaskUpdate",
     "TaskResponse",
