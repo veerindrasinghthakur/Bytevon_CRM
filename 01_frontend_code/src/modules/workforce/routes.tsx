@@ -1,7 +1,7 @@
 /**
- * Workforce module routes (employees, departments, teams, attendance).
+ * Workforce module routes (employees, departments, attendance).
+ * Teams UI is owned by Projects — /workforce/teams* redirects to /projects/teams*.
  * Shifts are registered via organization.createWorkforceShiftRoutes.
- * Heavy pages lazy-loaded via shared lazyPage helper.
  */
 import { createRoute, redirect } from '@tanstack/react-router'
 import type { AnyRoute } from '@tanstack/react-router'
@@ -33,13 +33,6 @@ const AttendanceDayDetailPage = lazyPage(
   'AttendanceDayDetailPage',
 )
 const ChangeAssignmentPage = lazyPage(() => import('./pages/ChangeAssignmentPage'), 'ChangeAssignmentPage')
-const TeamsListPage = lazyPage(() => import('./pages/TeamsListPage'), 'TeamsListPage')
-const TeamCreatePage = lazyPage(() => import('@/modules/projects/pages/team/TeamCreatePage'), 'TeamCreatePage')
-const TeamDetailPage = lazyPage(() => import('./pages/TeamDetailPage'), 'TeamDetailPage')
-const TeamEditPage = lazyPage(() => import('./pages/TeamEditPage'), 'TeamEditPage')
-const TeamMembersPage = lazyPage(() => import('./pages/TeamMembersPage'), 'TeamMembersPage')
-const TeamProjectsPage = lazyPage(() => import('./pages/TeamProjectsPage'), 'TeamProjectsPage')
-const AssignProjectPage = lazyPage(() => import('./pages/AssignProjectPage'), 'AssignProjectPage')
 const AddMemberPage = lazyPage(() => import('./pages/AddMemberPage'), 'AddMemberPage')
 
 /** Canonical path helpers — prefer these over hard-coded strings in pages. */
@@ -57,20 +50,21 @@ export const workforceRoutes = {
   departmentNew: '/workforce/departments/new',
   departmentDetail: (id: string | number) => `/workforce/departments/${id}`,
   departmentDetailPath: '/workforce/departments/$departmentId',
-  teams: '/workforce/teams',
-  teamNew: '/workforce/teams/new',
-  teamDetail: (id: string | number) => `/workforce/teams/${id}`,
-  teamDetailPath: '/workforce/teams/$teamId',
-  teamEdit: (id: string | number) => `/workforce/teams/${id}/edit`,
-  teamEditPath: '/workforce/teams/$teamId/edit',
-  teamMembers: (id: string | number) => `/workforce/teams/${id}/members`,
-  teamMembersPath: '/workforce/teams/$teamId/members',
-  teamProjects: (id: string | number) => `/workforce/teams/${id}/projects`,
-  teamProjectsPath: '/workforce/teams/$teamId/projects',
-  teamAssignProject: (id: string | number) => `/workforce/teams/${id}/assign-project`,
-  teamAssignProjectPath: '/workforce/teams/$teamId/assign-project',
-  teamAddMember: (id: string | number) => `/workforce/teams/${id}/add-member`,
-  teamAddMemberPath: '/workforce/teams/$teamId/add-member',
+  /** Teams owned by projects — helpers alias project paths for any leftover callers */
+  teams: '/projects/teams',
+  teamNew: '/projects/teams/new',
+  teamDetail: (id: string | number) => `/projects/teams/${id}`,
+  teamDetailPath: '/projects/teams/$teamId',
+  teamEdit: (id: string | number) => `/projects/teams/${id}/edit`,
+  teamEditPath: '/projects/teams/$teamId/edit',
+  teamMembers: (id: string | number) => `/projects/teams/${id}/members`,
+  teamMembersPath: '/projects/teams/$teamId/members',
+  teamProjects: (id: string | number) => `/projects/teams/${id}/projects`,
+  teamProjectsPath: '/projects/teams/$teamId/projects',
+  teamAssignProject: (id: string | number) => `/projects/teams/${id}/assign-project`,
+  teamAssignProjectPath: '/projects/teams/$teamId/assign-project',
+  teamAddMember: (id: string | number) => `/projects/teams/${id}/add-member`,
+  teamAddMemberPath: '/projects/teams/$teamId/add-member',
   attendance: '/workforce/attendance',
   attendanceEmployees: '/workforce/attendance/employees',
   attendanceRoster: '/workforce/attendance/roster',
@@ -79,6 +73,14 @@ export const workforceRoutes = {
   attendanceDay: (employmentId: string | number) => `/workforce/attendance/day/${employmentId}`,
   attendanceDayPath: '/workforce/attendance/day/$employmentId',
 } as const
+
+function redirectToProjectsTeams(suffix = '') {
+  return ({ params }: { params: Record<string, string> }) => {
+    const teamId = params.teamId
+    const base = teamId ? `/projects/teams/${teamId}${suffix}` : `/projects/teams${suffix}`
+    throw redirect(safeRedirectOpts({ to: base as never }))
+  }
+}
 
 export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   return [
@@ -129,44 +131,97 @@ export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: 
       path: '/workforce/departments/$departmentId',
       component: DepartmentDetailPage,
     }),
+    // Legacy team paths → projects
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/teams',
-      component: TeamsListPage,
+      beforeLoad: () => {
+        throw redirect(safeRedirectOpts({ to: '/projects/teams' }))
+      },
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/teams/new',
-      component: TeamCreatePage,
+      beforeLoad: () => {
+        throw redirect(safeRedirectOpts({ to: '/projects/teams/new' }))
+      },
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/teams/$teamId',
-      component: TeamDetailPage,
+      beforeLoad: ({ params }) => {
+        throw redirect(
+          safeRedirectOpts({
+            to: '/projects/teams/$teamId',
+            params: { teamId: String(params.teamId) },
+          }),
+        )
+      },
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/teams/$teamId/edit',
-      component: TeamEditPage,
+      beforeLoad: ({ params }) => {
+        throw redirect(
+          safeRedirectOpts({
+            to: '/projects/teams/$teamId/edit',
+            params: { teamId: String(params.teamId) },
+          }),
+        )
+      },
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/teams/$teamId/members',
-      component: TeamMembersPage,
+      beforeLoad: ({ params }) => {
+        throw redirect(
+          safeRedirectOpts({
+            to: '/projects/teams/$teamId/members',
+            params: { teamId: String(params.teamId) },
+          }),
+        )
+      },
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/teams/$teamId/projects',
-      component: TeamProjectsPage,
+      beforeLoad: ({ params }) => {
+        throw redirect(
+          safeRedirectOpts({
+            to: '/projects/teams/$teamId/projects',
+            params: { teamId: String(params.teamId) },
+          }),
+        )
+      },
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/teams/$teamId/assign-project',
-      component: AssignProjectPage,
+      beforeLoad: ({ params }) => {
+        throw redirect(
+          safeRedirectOpts({
+            to: '/projects/teams/$teamId/assign-project',
+            params: { teamId: String(params.teamId) },
+          }),
+        )
+      },
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/teams/$teamId/add-member',
+      beforeLoad: ({ params }) => {
+        throw redirect(
+          safeRedirectOpts({
+            to: '/projects/teams/$teamId/add-member',
+            params: { teamId: String(params.teamId) },
+          }),
+        )
+      },
+    }),
+    // Department add-member stays under workforce
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/departments/$departmentId/add-member',
       component: AddMemberPage,
     }),
     createRoute({
