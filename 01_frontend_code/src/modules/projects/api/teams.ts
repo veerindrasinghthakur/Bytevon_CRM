@@ -1,5 +1,6 @@
 /**
  * Teams API — env.useMockApi → shared mock DB; false → /projects/teams
+ * Canonical team UI is Workforce; this module remains the API client.
  */
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
@@ -132,14 +133,18 @@ export async function getTeam(id: number): Promise<Team | null> {
   return row ? asTeam(row as TeamRow) : null
 }
 
-/** Teams linked to a project via teamId (or projectName fallback). */
+/** Teams linked via assignment_type=TEAM + assigned_to_id (mock: teamId / projectName). */
 export async function getTeamsForProject(projectId: number): Promise<Team[]> {
   if (!env.useMockApi) {
     try {
-      const { data } = await apiClient.get<{ items: Team[] } | Team[]>(
-        `/projects/${projectId}/teams`,
-      )
-      return Array.isArray(data) ? data : (data.items ?? [])
+      const { data: proj } = await apiClient.get<Record<string, unknown>>(`/projects/${projectId}`)
+      const at = String(proj.assignment_type ?? proj.assignmentType ?? '').toUpperCase()
+      const assigned = Number(proj.assigned_to_id ?? proj.assignedToId ?? 0)
+      if (at === 'TEAM' && Number.isFinite(assigned) && assigned > 0) {
+        const team = await getTeam(assigned)
+        return team ? [team] : []
+      }
+      return []
     } catch {
       return []
     }
@@ -316,7 +321,6 @@ export async function updateTeam(
 export type CreateTeamApiInput = {
   name: string
   description?: string
-  /** Required for real backend */
   teamHeadEmploymentId?: number
   headName?: string
   headRole?: string
