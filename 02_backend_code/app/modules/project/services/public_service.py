@@ -368,6 +368,22 @@ class ProjectPublicService(BasePublicService):
         rows = await self._repo.list_tasks(project_id)
         return [await self._task_response(t) for t in rows]
 
+    async def list_all_tasks(
+        self,
+        *,
+        project_id: Optional[int] = None,
+        limit: int = 200,
+        offset: int = 0,
+    ) -> list[TaskResponse]:
+        if project_id is not None:
+            project = await self._repo.get_project_by_id(project_id)
+            if project is None:
+                raise NotFoundError("Project not found")
+        rows = await self._repo.list_all_tasks(
+            project_id=project_id, limit=limit, offset=offset
+        )
+        return [await self._task_response(t) for t in rows]
+
     async def update_task(
         self,
         task_id: int,
