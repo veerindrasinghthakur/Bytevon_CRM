@@ -80,7 +80,9 @@ export async function getTeams(params?: {
     }
     return {
       items: (data.items ?? []).map((t) =>
-        typeof t === 'object' && t && 'id' in t ? mapApiTeam(t as Record<string, unknown>) : t,
+        typeof t === 'object' && t && 'id' in t
+          ? mapApiTeam(t as unknown as Record<string, unknown>)
+          : (t as Team),
       ),
       total: data.total ?? data.items?.length ?? 0,
     }
@@ -229,7 +231,7 @@ export async function getTeamProjects(teamId: number): Promise<TeamProjectRow[]>
   const linked = db.projects.filter((p) => {
     const row = p as { teamId?: number | null; name?: string }
     if (row.teamId === teamId) return true
-    if (team.projectName && row.name === team.projectName) return true
+    if (team.projectName && row.name === p.name) return true
     return false
   })
 
@@ -336,7 +338,6 @@ export async function createTeam(input: CreateTeamApiInput): Promise<Team> {
     })
     const team = mapApiTeam(data)
 
-    // Add extra members (head is auto-enrolled by backend)
     const memberIds = (input.memberEmploymentIds ?? []).filter(
       (id) => id !== input.teamHeadEmploymentId,
     )
@@ -347,11 +348,10 @@ export async function createTeam(input: CreateTeamApiInput): Promise<Team> {
           team_role: 'Member',
         })
       } catch {
-        // non-fatal; team still created
+        // non-fatal
       }
     }
 
-    // Link project → TEAM assignment
     if (input.projectId != null && Number.isFinite(input.projectId)) {
       try {
         await apiClient.patch(`/projects/${input.projectId}`, {
@@ -359,7 +359,7 @@ export async function createTeam(input: CreateTeamApiInput): Promise<Team> {
           assigned_to_id: team.id,
         })
       } catch {
-        // team created; assignment may be retried from project detail
+        // team created; assignment may be retried
       }
     }
 
