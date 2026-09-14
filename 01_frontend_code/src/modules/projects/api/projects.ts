@@ -27,21 +27,38 @@ function normalizeProjectStatus(raw: unknown): ProjectDetail['status'] {
 function mapApiProject(row: Record<string, unknown>): ProjectDetail {
   const id = Number(row.id)
   const name = String(row.project_name ?? row.projectName ?? row.name ?? '')
+  const assignmentType = String(row.assignment_type ?? row.assignmentType ?? '')
+  const assignedTo = Number(row.assigned_to_id ?? row.assignedToId ?? 0) || null
+  const teamId =
+    assignmentType === 'TEAM'
+      ? assignedTo
+      : (row.team_id as number | null) ?? (row.teamId as number | null) ?? null
+
   return {
     id,
     name,
     code: (row.code as string) ?? `PRJ-${id}`,
     status: normalizeProjectStatus(row.status),
-    clientName: (row.clientName as string) ?? (row.client_name as string) ?? null,
-    startDate: (row.planned_start_date as string) ?? (row.startDate as string) ?? null,
+    clientName:
+      (row.client_name as string) ?? (row.clientName as string) ?? null,
+    startDate:
+      (row.planned_start_date as string) ?? (row.startDate as string) ?? null,
     endDate: (row.planned_end_date as string) ?? (row.endDate as string) ?? null,
     progress: Number(row.progress ?? 0),
-    teamCount: Number(row.teamCount ?? 0),
-    taskCount: Number(row.taskCount ?? 0),
-    teamId:
-      row.assignment_type === 'TEAM' || row.assignmentType === 'TEAM'
-        ? Number(row.assigned_to_id ?? row.assignedToId ?? 0) || null
-        : (row.teamId as number | null) ?? null,
+    teamCount: Number(row.team_count ?? row.teamCount ?? (teamId ? 1 : 0)),
+    taskCount: Number(row.task_count ?? row.taskCount ?? 0),
+    openTasks: Number(row.open_tasks ?? row.openTasks ?? 0),
+    daysToDeadline:
+      row.days_to_deadline != null
+        ? Number(row.days_to_deadline)
+        : row.daysToDeadline != null
+          ? Number(row.daysToDeadline)
+          : null,
+    teamMemberCount: Number(row.team_member_count ?? row.teamMemberCount ?? 0),
+    teamName: (row.team_name as string) ?? (row.teamName as string) ?? null,
+    teamHeadName:
+      (row.team_head_name as string) ?? (row.teamHeadName as string) ?? null,
+    teamId,
     description: (row.description as string) ?? null,
     repositoryUrl:
       (row.repository_reference as string) ?? (row.repositoryUrl as string) ?? null,
@@ -67,9 +84,7 @@ export async function getProjects(params?: {
       return { items, total: items.length, metrics: computeProjectListMetrics(items) }
     }
     const items = (data.items ?? []).map((row) =>
-      typeof row === 'object' && row && 'project_name' in (row as object)
-        ? mapApiProject(row as Record<string, unknown>)
-        : mapApiProject({ ...(row as object), status: (row as ProjectListItem).status }),
+      mapApiProject(row as unknown as Record<string, unknown>),
     )
     return {
       items,
@@ -116,7 +131,6 @@ export async function getProjectById(id: number): Promise<ProjectDetail | null> 
   return (row as ProjectDetail | undefined) ?? null
 }
 
-/** Projects linked to a team via teamId. */
 export async function getProjectsForTeam(teamId: number): Promise<ProjectListItem[]> {
   const { items } = await getProjects({ teamId })
   return items
@@ -124,12 +138,9 @@ export async function getProjectsForTeam(teamId: number): Promise<ProjectListIte
 
 function toBackendCreate(input: CreateProjectInput): Record<string, unknown> {
   const assignmentType =
-    input.assignmentType ??
-    (input.teamId != null ? 'TEAM' : 'INDIVIDUAL')
+    input.assignmentType ?? (input.teamId != null ? 'TEAM' : 'INDIVIDUAL')
   const assignedToId =
-    assignmentType === 'TEAM'
-      ? input.teamId
-      : input.assignedEmploymentId ?? input.teamId
+    assignmentType === 'TEAM' ? input.teamId : input.assignedEmploymentId ?? input.teamId
 
   return {
     client_id: input.clientId,
@@ -169,6 +180,7 @@ export async function createProject(input: CreateProjectInput): Promise<ProjectD
     progress: 0,
     teamCount: input.teamId ? 1 : 0,
     taskCount: 0,
+    openTasks: 0,
     teamId: input.teamId ?? null,
     description: input.description ?? null,
     repositoryUrl: input.repositoryUrl ?? null,

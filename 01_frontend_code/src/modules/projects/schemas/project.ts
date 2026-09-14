@@ -16,7 +16,12 @@ export const projectListItemSchema = z.object({
   progress: z.number().min(0).max(100).optional().nullable(),
   teamCount: z.number().optional().nullable(),
   taskCount: z.number().optional().nullable(),
-  /** Primary assigned team (mock association). */
+  openTasks: z.number().optional().nullable(),
+  daysToDeadline: z.number().nullable().optional(),
+  teamMemberCount: z.number().optional().nullable(),
+  teamName: z.string().nullable().optional(),
+  teamHeadName: z.string().nullable().optional(),
+  /** Primary assigned team */
   teamId: z.number().nullable().optional(),
 })
 
@@ -24,12 +29,7 @@ export type ProjectListItem = z.infer<typeof projectListItemSchema>
 
 export const projectDetailSchema = projectListItemSchema.extend({
   description: z.string().optional().nullable(),
-  repositoryUrl: z
-    .string()
-    .url()
-    .optional()
-    .nullable()
-    .or(z.literal('')),
+  repositoryUrl: z.string().max(500).optional().nullable().or(z.literal('')),
   createdAt: z.string().optional().nullable(),
   updatedAt: z.string().optional().nullable(),
 })
@@ -40,15 +40,12 @@ export const createProjectSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters').max(120),
   code: z.string().max(32).optional(),
   description: z.string().max(2000).optional(),
-  /** Display label only — prefer clientId for API */
   clientName: z.string().max(120).optional(),
-  /** Required for real backend create (FK clients.id) */
   clientId: z.number().int().positive().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
-  repositoryUrl: z.string().url('Must be a valid URL').optional().or(z.literal('')),
+  repositoryUrl: z.string().max(500).optional().or(z.literal('')),
   teamId: z.number().nullable().optional(),
-  /** employment id when assignment_type = INDIVIDUAL */
   assignedEmploymentId: z.number().int().positive().optional().nullable(),
   assignmentType: z.enum(['TEAM', 'INDIVIDUAL']).optional(),
 })
@@ -60,5 +57,4 @@ export const projectListResponseSchema = z.object({
   total: z.number(),
 })
 
-/** Re-export form schema from dedicated file */
 export { projectFormSchema, type ProjectFormInput } from './project-form'
