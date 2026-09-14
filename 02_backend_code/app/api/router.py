@@ -5,6 +5,7 @@ Module package names (2026-09-09):
   authentication → auth
   employment → workforce
   developer → project
+  organization → admin (2026-09-14)
 
 Profile HTTP paths (/profile/*) are owned by the my_work package
 (same as the frontend profile feature under my-work), not a standalone module.
@@ -21,7 +22,8 @@ from app.modules.auth.routes import router as auth_router
 from app.modules.workforce.routes import router as workforce_router
 from app.modules.leave.routes import router as leave_router
 from app.modules.notifications.routes import router as notifications_router
-from app.modules.organization.routes import router as organization_router
+from app.modules.admin.routes import router as admin_router
+from app.modules.admin.routes import organization_router
 from app.modules.rbac.routes import router as rbac_router
 from app.modules.audit.routes import router as audit_router
 from app.modules.project.routes import router as project_router
@@ -35,7 +37,8 @@ from app.modules.my_work.routes import profile_router as my_work_profile_router
 api_router = APIRouter(prefix=settings.API_V1_PREFIX)
 
 api_router.include_router(auth_router)
-api_router.include_router(organization_router)
+api_router.include_router(admin_router)
+api_router.include_router(organization_router)  # legacy /organization/* paths
 api_router.include_router(workforce_router)
 api_router.include_router(rbac_router)
 api_router.include_router(approvals_router)
