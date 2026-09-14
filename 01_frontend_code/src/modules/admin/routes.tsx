@@ -1,6 +1,6 @@
 /**
  * Admin module routes — heavy pages lazy-loaded via shared lazyPage helper.
- * Organization module routes are integrated here as settings sub-routes.
+ * Paths prefer domain folders; legacy re-exports keep old imports working.
  */
 import { createRoute, redirect } from '@tanstack/react-router'
 import type { AnyRoute } from '@tanstack/react-router'
@@ -12,13 +12,13 @@ const UserDetailPage = lazyPage(() => import('./pages/UserDetailPage'), 'UserDet
 const UserCreatePage = lazyPage(() => import('./pages/UserCreatePage'), 'UserCreatePage')
 const RolesListPage = lazyPage(() => import('./pages/RolesListPage'), 'RolesListPage')
 const RoleDetailPage = lazyPage(() => import('./pages/RoleDetailPage'), 'RoleDetailPage')
-const RoleEditPage = lazyPage(() => import('./pages/RoleEditPage'), 'RoleEditPage')
-const RoleCreatePage = lazyPage(() => import('./pages/RoleCreatePage'), 'RoleCreatePage')
+const RoleEditPage = lazyPage(() => import('./pages/role/RoleEditPage'), 'RoleEditPage')
+const RoleCreatePage = lazyPage(() => import('./pages/role/RoleCreatePage'), 'RoleCreatePage')
 const AuditLogsPage = lazyPage(() => import('./pages/AuditLogsPage'), 'AuditLogsPage')
-const AdminSettingsLayout = lazyPage(() => import('./pages/AdminSettingsLayout'), 'AdminSettingsLayout')
-const LeaveSettingsLayout = lazyPage(() => import('./pages/LeaveSettingsLayout'), 'LeaveSettingsLayout')
+const AdminSettingsLayout = lazyPage(() => import('./pages/settings/AdminSettingsLayout'), 'AdminSettingsLayout')
+const LeaveSettingsLayout = lazyPage(() => import('./pages/settings/LeaveSettingsLayout'), 'LeaveSettingsLayout')
 const AttendanceSettingsLayout = lazyPage(
-  () => import('./pages/AttendanceSettingsLayout'),
+  () => import('./pages/settings/AttendanceSettingsLayout'),
   'AttendanceSettingsLayout',
 )
 const OrganizationProfileSection = lazyPage(
@@ -35,17 +35,17 @@ const AttendanceSettingsPage = lazyPage(
 )
 const LeaveSettingsPage = lazyPage(() => import('./pages/LeaveSettingsPage'), 'LeaveSettingsPage')
 const SecurityCenterPage = lazyPage(() => import('./pages/SecurityCenterPage'), 'SecurityCenterPage')
-const LeavePoliciesPage = lazyPage(() => import('./pages/LeavePoliciesPage'), 'LeavePoliciesPage')
-const LeaveLedgerPage = lazyPage(() => import('./pages/LeaveLedgerPage'), 'LeaveLedgerPage')
-const LocationsListPage = lazyPage(() => import('./pages/organization/LocationsListPage'), 'LocationsListPage')
-const LocationDetailPage = lazyPage(() => import('./pages/organization/LocationDetailPage'), 'LocationDetailPage')
-const ShiftsListPage = lazyPage(() => import('./pages/organization/ShiftsListPage'), 'ShiftsListPage')
-const ShiftDetailPage = lazyPage(() => import('./pages/organization/ShiftDetailPage'), 'ShiftDetailPage')
-const WorkingWeeksPage = lazyPage(() => import('./pages/organization/WorkingWeeksPage'), 'WorkingWeeksPage')
-const HolidayCalendarsPage = lazyPage(() => import('./pages/organization/HolidayCalendarsPage'), 'HolidayCalendarsPage')
-const HolidaysListPage = lazyPage(() => import('./pages/organization/HolidaysListPage'), 'HolidaysListPage')
-const PositionsListPage = lazyPage(() => import('./pages/organization/PositionsListPage'), 'PositionsListPage')
-const PositionDetailPage = lazyPage(() => import('./pages/organization/PositionDetailPage'), 'PositionDetailPage')
+const LeavePoliciesPage = lazyPage(() => import('./pages/settings/LeavePoliciesPage'), 'LeavePoliciesPage')
+const LeaveLedgerPage = lazyPage(() => import('./pages/settings/LeaveLedgerPage'), 'LeaveLedgerPage')
+const LocationsListPage = lazyPage(() => import('./pages/location/LocationsListPage'), 'LocationsListPage')
+const LocationDetailPage = lazyPage(() => import('./pages/location/LocationDetailPage'), 'LocationDetailPage')
+const ShiftsListPage = lazyPage(() => import('./pages/shift/ShiftsListPage'), 'ShiftsListPage')
+const ShiftDetailPage = lazyPage(() => import('./pages/shift/ShiftDetailPage'), 'ShiftDetailPage')
+const WorkingWeeksPage = lazyPage(() => import('./pages/working_week/WorkingWeeksPage'), 'WorkingWeeksPage')
+const HolidayCalendarsPage = lazyPage(() => import('./pages/holiday_calendar/HolidayCalendarsPage'), 'HolidayCalendarsPage')
+const HolidaysListPage = lazyPage(() => import('./pages/holiday_calendar/HolidaysListPage'), 'HolidaysListPage')
+const PositionsListPage = lazyPage(() => import('./pages/position/PositionsListPage'), 'PositionsListPage')
+const PositionDetailPage = lazyPage(() => import('./pages/position/PositionDetailPage'), 'PositionDetailPage')
 
 export function createAdminSettingsLayoutRoute<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   return createRoute({
