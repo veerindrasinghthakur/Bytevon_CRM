@@ -105,8 +105,6 @@ export function TeamsListPage() {
     departmentFilter,
     setDepartmentFilter,
     resetFilters,
-    createOpen,
-    setCreateOpen,
     selectionMode,
     selectedIds,
     selectedCount,
@@ -134,12 +132,15 @@ export function TeamsListPage() {
       fullRecordLabel: 'View full team',
       onOpenFull: () =>
         safeNavigate(navigate, {
-          to: workforceRoutes.teamDetail(t.id),
-          params: { teamId: t.id },
+          to: workforceRoutes.teamDetailPath,
+          params: { teamId: String(t.id) },
         }),
       widthClass: 'max-w-[520px]',
     })
   }
+
+  const goCreateTeam = () =>
+    safeNavigate(navigate, { to: workforceRoutes.teamNew })
 
   return (
     <div className="space-y-6 relative animate-fade-in">
@@ -158,7 +159,7 @@ export function TeamsListPage() {
               selectedIds={selectionMode ? Array.from(selectedIds) : undefined}
               filenameStem="teams"
             />
-            <Button variant="primary" leftIcon={<Icon name="add" />} onClick={() => setCreateOpen(true)}>
+            <Button variant="primary" leftIcon={<Icon name="add" />} onClick={goCreateTeam}>
               New Team
             </Button>
           </div>
@@ -388,70 +389,6 @@ export function TeamsListPage() {
           </>
         )}
       </div>
-
-      {createOpen && (
-        <>
-          <div
-            className="fixed inset-0 bg-on-surface/40 backdrop-blur-sm z-50"
-            onClick={() => setCreateOpen(false)}
-            aria-hidden
-          />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
-            <div
-              className="bv-surface executive-shadow w-full max-w-2xl border border-outline-variant pointer-events-auto max-h-[90vh] flex flex-col"
-              role="dialog"
-            >
-              <div className="px-6 py-5 border-b flex justify-between items-center">
-                <div>
-                  <h2 className="text-headline-lg font-semibold">Create New Team</h2>
-                  <p className="text-body-md text-on-surface-variant">Define team identity and assign members.</p>
-                </div>
-                <button
-                  type="button"
-                  className="p-2 hover:bg-surface-container rounded-full transition-colors"
-                  onClick={() => setCreateOpen(false)}
-                >
-                  <Icon name="close" />
-                </button>
-              </div>
-              <div className="p-6 overflow-y-auto space-y-6 flex-1">
-                <section>
-                  <h3 className="text-headline-md font-semibold mb-3 flex items-center gap-2">
-                    <Icon name="badge" className="text-secondary" /> Team Identity
-                  </h3>
-                  <div className="space-y-3 bg-surface p-4 rounded-lg border border-outline-variant">
-                    <div>
-                      <label className="text-label-sm block mb-1">
-                        Team Name <span className="text-error">*</span>
-                      </label>
-                      <input
-                        className="w-full border border-outline-variant rounded-md px-3 py-2 text-body-md focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
-                        placeholder="e.g., DevOps Team"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-label-sm block mb-1">Description</label>
-                      <textarea
-                        className="w-full border border-outline-variant rounded-md px-3 py-2 text-body-md resize-none focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
-                        rows={3}
-                        placeholder="e.g., Responsible for infrastructure and CI/CD pipelines"
-                      />
-                    </div>
-                  </div>
-                </section>
-              </div>
-              <div className="px-6 py-4 border-t flex justify-end gap-3">
-                <Button variant="outline" onClick={() => setCreateOpen(false)}>
-                  Cancel
-                </Button>
-                <Button variant="primary" onClick={() => setCreateOpen(false)}>
-                  Create Team
-                </Button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
     </div>
   )
 }
