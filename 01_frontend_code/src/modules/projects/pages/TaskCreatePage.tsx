@@ -1,4 +1,5 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -7,12 +8,12 @@ import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { listEmployments } from '@/modules/workforce/api/employment'
 import { useCreateTask } from '../hooks/use-tasks'
 import { useProject } from '../hooks/use-projects'
 import { projectRoutes } from '../routes'
-import { getDb } from '@/shared/mock/db'
-import {schema} from '../schemas/task-form'
-
+import { schema } from '../schemas/task-form'
 
 type FormValues = z.infer<typeof schema>
 
@@ -23,16 +24,22 @@ export function TaskCreatePage() {
   const { data: project } = useProject(
     projectId != null && Number.isFinite(projectId) ? projectId : undefined,
   )
+  const [formError, setFormError] = useState<string | null>(null)
 
-  const employeeOptions: EntityOption[] = useMemo(
-    () =>
-      getDb().employees.map((e) => ({
-        id: e.id,
-        label: e.fullName,
-        sublabel: [e.role, e.department].filter(Boolean).join(' · '),
-      })),
-    [],
-  )
+  const employeesQuery = useQuery({
+    queryKey: ['workforce', 'employments', 'task-create-picker'],
+    queryFn: () => listEmployments({ page: 1, pageSize: 300 }),
+    staleTime: 60_000,
+  })
+
+  const employeeOptions: EntityOption[] = useMemo(() => {
+    const items = employeesQuery.data?.items ?? []
+    return items.map((e) => ({
+      id: e.id,
+      label: e.fullName || e.employee_code,
+      sublabel: [e.employee_code, e.departmentName, e.positionName].filter(Boolean).join(' · '),
+    }))
+  }, [employeesQuery.data])
 
   const createMutation = useCreateTask()
   const {
@@ -55,28 +62,29 @@ export function TaskCreatePage() {
       : projectRoutes.tasks
 
   const onSubmit = async (data: FormValues) => {
+    setFormError(null)
+    if (!projectId || !Number.isFinite(projectId)) {
+      setFormError('Open create-task from a project so projectId is set.')
+      return
+    }
     try {
       await createMutation.mutateAsync({
-        ...data,
-        projectId: projectId && Number.isFinite(projectId) ? projectId : undefined,
+        title: data.title,
+        description: data.description,
+        priority: data.priority,
+        projectId,
         projectName: project?.name,
         assigneeName: data.assignee?.label,
+        assigneeEmploymentId: data.assignee ? Number(data.assignee.id) : null,
       })
-      if (projectId && Number.isFinite(projectId)) {
-        safeNavigate(navigate, {
-          to: projectRoutes.projectDetailPath,
-          params: { projectId: String(projectId) },
-        })
-      } else {
-        safeNavigate(navigate, { to: projectRoutes.tasks })
-      }
-    } catch {
-      // shown below
+      safeNavigate(navigate, {
+        to: projectRoutes.projectDetailPath,
+        params: { projectId: String(projectId) },
+        search: { tab: 'tasks' },
+      })
+    } catch (err) {
+      setFormError(getApiErrorMessage(err, 'Failed to create task. Please try again.'))
     }
-  }
-
-  const handleAssigneeChange = (value: EntityOption | null) => {
-    setValue('assignee', value)
   }
 
   return (
@@ -88,7 +96,7 @@ export function TaskCreatePage() {
       <div className="bv-surface overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-outline-variant bg-surface">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-electric-blue/10 flex items-center justify-center text-electric-blue">
+            <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center text-secondary">
               <span className="material-symbols-outlined material-icons-filled">add_task</span>
             </div>
             <div>
@@ -115,7 +123,7 @@ export function TaskCreatePage() {
           <div className="p-5 space-y-6 bg-background">
             <div className="space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b border-outline-variant">
-                <span className="material-symbols-outlined text-electric-blue text-sm">assignment</span>
+                <span className="material-symbols-outlined text-secondary text-sm">assignment</span>
                 <h3 className="text-[12px] font-bold uppercase tracking-wider text-on-surface-variant">
                   Task Identity
                 </h3>
@@ -148,27 +156,31 @@ export function TaskCreatePage() {
 
             <div className="space-y-4 pt-2">
               <div className="flex items-center gap-2 pb-2 border-b border-outline-variant">
-                <span className="material-symbols-outlined text-electric-blue text-sm">person_search</span>
+                <span className="material-symbols-outlined text-secondary text-sm">person_search</span>
                 <h3 className="text-[12px] font-bold uppercase tracking-wider text-on-surface-variant">
                   Assignment
                 </h3>
               </div>
               <EntitySearch
                 label="Assign to"
-                placeholder="Search employees by name or department…"
+                placeholder={
+                  employeesQuery.isLoading
+                    ? 'Loading employees…'
+                    : 'Search employees by name, code, or department…'
+                }
                 options={employeeOptions}
-                value={assignee}
-                onChange={handleAssigneeChange}
-                emptyMessage="No employees match your search"
+                value={assignee ?? null}
+                onChange={(v) => setValue('assignee', v)}
+                disabled={employeesQuery.isLoading}
+                emptyMessage={
+                  employeesQuery.isError ? 'Failed to load employees' : 'No employees match'
+                }
               />
-              <p className="text-body-sm text-on-surface-variant">
-                Pick who will own this work item (searches employees from mock data).
-              </p>
             </div>
 
             <div className="space-y-4 pt-2">
               <div className="flex items-center gap-2 pb-2 border-b border-outline-variant">
-                <span className="material-symbols-outlined text-electric-blue text-sm">tune</span>
+                <span className="material-symbols-outlined text-secondary text-sm">tune</span>
                 <h3 className="text-[12px] font-bold uppercase tracking-wider text-on-surface-variant">
                   Additional Details
                 </h3>
@@ -183,7 +195,7 @@ export function TaskCreatePage() {
                       onClick={() => setValue('priority', p)}
                       className={`flex-1 py-1.5 px-3 rounded text-center text-body-md font-medium transition-colors ${
                         priority === p
-                          ? 'bg-surface text-electric-blue executive-shadow'
+                          ? 'bg-surface text-secondary executive-shadow'
                           : 'text-on-surface-variant hover:bg-surface/50'
                       }`}
                     >
@@ -197,8 +209,11 @@ export function TaskCreatePage() {
               </div>
             </div>
 
-            {createMutation.isError && (
-              <p className="text-body-sm text-error">Failed to create task. Please try again.</p>
+            {(formError || createMutation.isError) && (
+              <p className="text-body-sm text-error" role="alert">
+                {formError ??
+                  getApiErrorMessage(createMutation.error, 'Failed to create task. Please try again.')}
+              </p>
             )}
           </div>
 
