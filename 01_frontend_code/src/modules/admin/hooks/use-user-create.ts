@@ -106,7 +106,7 @@ export function useUserCreate() {
     toastOnError: false,
     errorFallback: 'Could not create user login',
     onSuccess: () => {
-      clearErrors('root')
+      clearErrors()
       toast.success('User login created')
       void queryClient.invalidateQueries({ queryKey: queryKeys.admin.users.all })
       void queryClient.invalidateQueries({ queryKey: queryKeys.admin.users.withoutLogin() })
@@ -127,7 +127,8 @@ export function useUserCreate() {
 
   const onSelectEmployee = (v: string) => {
     setValue('employmentId', v, { shouldValidate: true })
-    clearErrors(['employmentId', 'root'])
+    clearErrors('employmentId')
+    clearErrors()
     const emp = candidates.find((c) => String(c.employmentId) === v)
     if (emp) {
       const slug = emp.name.toLowerCase().replace(/\s+/g, '.')
@@ -146,7 +147,7 @@ export function useUserCreate() {
     selected,
     onSelectEmployee,
     submit: form.handleSubmit((values) => {
-      clearErrors('root')
+      clearErrors()
       createMutation.mutate(values)
     }),
     isSubmitting: createMutation.isPending,
