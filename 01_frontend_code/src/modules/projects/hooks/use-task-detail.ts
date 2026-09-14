@@ -35,7 +35,7 @@ export function useTaskDetail(taskId: number | undefined) {
       priority: task.priority ?? 'MEDIUM',
       status: task.status ?? 'TODO',
       assigneeName: task.assigneeName ?? '',
-      dueDate: task.dueDate ?? '',
+      dueDate: task.dueDate ? String(task.dueDate).slice(0, 10) : '',
     })
     setEditingTrue()
   }
@@ -49,13 +49,16 @@ export function useTaskDetail(taskId: number | undefined) {
         priority: task.priority ?? 'MEDIUM',
         status: task.status ?? 'TODO',
         assigneeName: task.assigneeName ?? '',
-        dueDate: task.dueDate ?? '',
+        dueDate: task.dueDate ? String(task.dueDate).slice(0, 10) : '',
       })
     }
     cancelEditing()
   }
 
-  const save = async (extra?: { assigneeEmploymentId?: number | null }) => {
+  const save = async (extra?: {
+    assigneeEmploymentId?: number | null
+    assigneeName?: string
+  }) => {
     if (!task) return
     setSaveError(null)
     const valid = await form.trigger()
@@ -71,6 +74,8 @@ export function useTaskDetail(taskId: number | undefined) {
       return
     }
     const data = form.getValues()
+    const assigneeName =
+      extra?.assigneeName?.trim() || data.assigneeName?.trim() || undefined
     try {
       await updateMutation.mutateAsync({
         id: task.id,
@@ -79,7 +84,7 @@ export function useTaskDetail(taskId: number | undefined) {
           description: data.description?.trim() || undefined,
           priority: data.priority,
           status: data.status,
-          assigneeName: data.assigneeName?.trim() || undefined,
+          assigneeName,
           dueDate: data.dueDate || null,
           ...(extra?.assigneeEmploymentId !== undefined
             ? { assigneeEmploymentId: extra.assigneeEmploymentId }
