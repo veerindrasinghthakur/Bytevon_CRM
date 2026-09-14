@@ -12,7 +12,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import sys
-from datetime import date, datetime, timezone
+from datetime import date
 
 from sqlalchemy import select, text
 
@@ -20,22 +20,19 @@ from app.core.config import settings
 from app.core.database import AsyncSessionLocal
 from app.core.db.enums import Action, EmploymentState, EmploymentType, ScopeName
 from app.core.security.password_manager import PasswordManager
-from app.modules.authentication.models import Login, Person
-from app.modules.employment.models import Employment, Position
-from app.modules.organization.models import Department, OrganizationSettings
+from app.modules.auth.models import Login, Person
+from app.modules.workforce.models import Employment, Position
+from app.modules.admin.department.models import Department
+from app.modules.admin.settings.models import OrganizationSettings
 from app.modules.rbac.models import EmployeeRole, Permission, Resource, Role, RolePermission, Scope
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("seed")
 
-# Updated admin email to a valid domain for Pydantic EmailStr validation.
 ADMIN_EMAIL = "admin@example.com"
 ADMIN_PASSWORD = "ChangeMeAdmin!123"
 SYSTEM_EMP_ID = settings.SYSTEM_EMPLOYMENT_ID
 
-
-
-# FE-aligned resource names (shared/schema ResourceName)
 RBAC_RESOURCE_SEED = [
     ("employment", "Employees / employments"),
     ("department", "Departments"),
@@ -71,7 +68,6 @@ SCOPE_SEED = [
 
 
 async def seed_rbac_catalog(session) -> None:
-    """Idempotent resources, scopes, permissions matching frontend ResourceName."""
     for name, desc in SCOPE_SEED:
         existing = (
             await session.execute(select(Scope).where(Scope.name == name.value))
@@ -109,7 +105,6 @@ async def seed() -> None:
     pwd = PasswordManager()
     async with AsyncSessionLocal() as session:
         await seed_rbac_catalog(session)
-        # --- Organization settings singleton ---
         existing_org = (
             await session.execute(select(OrganizationSettings).limit(1))
         ).scalar_one_or_none()
@@ -122,7 +117,6 @@ async def seed() -> None:
             session.add(org)
             logger.info("Created organization_settings")
 
-        # --- Root department ---
         dept = (
             await session.execute(
                 select(Department).where(Department.name == "Administration")
@@ -134,7 +128,6 @@ async def seed() -> None:
             await session.flush()
             logger.info("Created department Administration id=%s", dept.id)
 
-        # --- Position ---
         pos = (
             await session.execute(
                 select(Position).where(Position.name == "System Administrator")
@@ -146,7 +139,6 @@ async def seed() -> None:
             await session.flush()
             logger.info("Created position id=%s", pos.id)
 
-        # --- Person + Login for super-admin ---
         person = (
             await session.execute(
                 select(Person).where(
@@ -182,28 +174,23 @@ async def seed() -> None:
             login.locked_until = None
             logger.info("Reset login id=%s for %s", login.id, ADMIN_EMAIL)
 
-        # --- Employment with fixed SYSTEM_EMPLOYMENT_ID ---
         emp = (
             await session.execute(
                 select(Employment).where(Employment.id == SYSTEM_EMP_ID)
             )
         ).scalar_one_or_none()
         if emp is None:
-            # Insert with explicit id (PostgreSQL identity still allows override)
-            emp_type = EmploymentType.FULL_TIME
-            emp_state = EmploymentState.CONFIRMED
             emp = Employment(
                 id=SYSTEM_EMP_ID,
                 person_id=person.id,
                 employee_code="SYS-001",
-                employment_type=emp_type,
-                current_state=emp_state,
+                employment_type=EmploymentType.FULL_TIME,
+                current_state=EmploymentState.CONFIRMED,
                 joining_date=date.today(),
                 changed_by=SYSTEM_EMP_ID,
             )
             session.add(emp)
             await session.flush()
-            # Ensure sequence is past SYSTEM_EMP_ID
             try:
                 await session.execute(
                     text(
@@ -217,7 +204,6 @@ async def seed() -> None:
         else:
             logger.info("System employment id=%s already exists", SYSTEM_EMP_ID)
 
-        # --- Super-Admin role ---
         role = (
             await session.execute(select(Role).where(Role.name == "Super Admin"))
         ).scalar_one_or_none()
