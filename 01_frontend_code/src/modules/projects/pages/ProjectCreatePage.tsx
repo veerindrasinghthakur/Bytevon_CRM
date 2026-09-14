@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useNavigate } from '@tanstack/react-router'
@@ -7,39 +8,79 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { Select } from '@/shared/components/ui/Select'
 import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { createProjectSchema, type CreateProjectInput } from '../schemas/project'
 import { useCreateProject } from '../hooks/use-projects'
 import { useTeams } from '../hooks/use-teams'
 import { projectRoutes } from '../routes'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
-import { createTeam } from '../api/teams'
+import { listClients } from '@/modules/sales/api/sales'
+import { listEmployments } from '@/modules/workforce/api/employment'
 import { ProjectPhaseOptions, ProjectPriorityOptions } from '../enums'
-import {AssignMode,PhaseValue,PriorityValue} from '../types'
+import type { AssignMode, PhaseValue, PriorityValue } from '../types'
 
 export function ProjectCreatePage() {
   const navigate = useNavigate()
   const createMutation = useCreateProject()
-  const { data: teamsData } = useTeams()
+  const { data: teamsData, isLoading: teamsLoading } = useTeams()
+
+  const clientsQuery = useQuery({
+    queryKey: ['sales', 'clients', 'picker', { status: 'Active' }],
+    queryFn: () => listClients({ status: 'Active', page: 1, pageSize: 200 }),
+    staleTime: 60_000,
+  })
+
+  const employeesQuery = useQuery({
+    queryKey: ['workforce', 'employments', 'picker'],
+    queryFn: () => listEmployments({ page: 1, pageSize: 200 }),
+    staleTime: 60_000,
+  })
 
   const [assignMode, setAssignMode] = useState<AssignMode>('later')
+  const [selectedClient, setSelectedClient] = useState<EntityOption | null>(null)
   const [selectedTeam, setSelectedTeam] = useState<EntityOption | null>(null)
+  const [selectedEmployee, setSelectedEmployee] = useState<EntityOption | null>(null)
+  const [formError, setFormError] = useState<string | null>(null)
   const [phase, setPhase] = useState<PhaseValue>(ProjectPhaseOptions[0]?.value ?? 'DISCOVERY')
-  const [priority, setPriority] = useState<PriorityValue>(ProjectPriorityOptions[1]?.value ?? 'MEDIUM')
+  const [priority, setPriority] = useState<PriorityValue>(
+    ProjectPriorityOptions[1]?.value ?? 'MEDIUM',
+  )
 
-  const handlePhaseChange = (value: string) => setPhase(value as typeof phase)
-  const handlePriorityChange = (value: string) => setPriority(value as typeof priority)
+  const clientOptions: EntityOption[] = useMemo(() => {
+    const items = clientsQuery.data?.items ?? []
+    return items
+      .filter((c) => (c.status ?? 'Active') !== 'Inactive')
+      .map((c) => ({
+        id: Number.isFinite(Number(c.id)) ? Number(c.id) : c.id,
+        label: c.name,
+        sublabel: [c.industry, c.country, c.type].filter(Boolean).join(' · '),
+      }))
+  }, [clientsQuery.data])
 
   const teamOptions: EntityOption[] = useMemo(
     () =>
       (teamsData?.items ?? []).map((t) => ({
         id: t.id,
         label: t.name,
-        sublabel: [t.department, t.headName ? `Head: ${t.headName}` : null, `${t.memberCount} members`]
+        sublabel: [
+          t.department,
+          t.headName ? `Head: ${t.headName}` : null,
+          `${t.memberCount} members`,
+        ]
           .filter(Boolean)
           .join(' · '),
       })),
     [teamsData],
   )
+
+  const employeeOptions: EntityOption[] = useMemo(() => {
+    const items = employeesQuery.data?.items ?? []
+    return items.map((e) => ({
+      id: e.id,
+      label: e.fullName || e.employee_code,
+      sublabel: [e.employee_code, e.departmentName, e.positionName].filter(Boolean).join(' · '),
+    }))
+  }, [employeesQuery.data])
 
   const {
     register,
@@ -63,22 +104,56 @@ export function ProjectCreatePage() {
     })
 
   const onSubmit = async (data: CreateProjectInput) => {
-    try {
-      const project = await createMutation.mutateAsync(data)
+    setFormError(null)
 
-      if (assignMode === 'existing' && selectedTeam) {
-        await createTeam({
-          name: `${selectedTeam.label} · ${project.name}`,
-          description: `Assigned from existing team ${selectedTeam.label}`,
-          projectId: project.id,
-          projectName: project.name,
-          headName: selectedTeam.sublabel?.includes('Head:')
-            ? selectedTeam.sublabel.split('Head: ')[1]?.split(' · ')[0]
-            : undefined,
-        }).catch(() => undefined)
-        goProject(project.id)
+    if (!selectedClient) {
+      setFormError('Select a client from the list.')
+      return
+    }
+    const clientId = Number(selectedClient.id)
+    if (!Number.isFinite(clientId) || clientId <= 0) {
+      setFormError('Selected client is invalid.')
+      return
+    }
+
+    if (assignMode === 'existing' && !selectedTeam) {
+      setFormError('Select a team to assign.')
+      return
+    }
+    if (assignMode === 'Individual' && !selectedEmployee) {
+      setFormError('Select an employee to assign.')
+      return
+    }
+
+    const payload: CreateProjectInput = {
+      ...data,
+      clientId,
+      clientName: selectedClient.label,
+      teamId: assignMode === 'existing' && selectedTeam ? Number(selectedTeam.id) : null,
+      assignedEmploymentId:
+        assignMode === 'Individual' && selectedEmployee ? Number(selectedEmployee.id) : null,
+      assignmentType:
+        assignMode === 'existing'
+          ? 'TEAM'
+          : assignMode === 'Individual'
+            ? 'INDIVIDUAL'
+            : 'INDIVIDUAL',
+    }
+
+    // Backend requires assigned_to_id; "later" / "new team" use employee if known, else team head placeholder via first employee
+    if (assignMode === 'later' || assignMode === 'new') {
+      const fallbackEmp = employeeOptions[0]
+      if (!payload.assignedEmploymentId && fallbackEmp) {
+        payload.assignedEmploymentId = Number(fallbackEmp.id)
+      }
+      if (!payload.assignedEmploymentId) {
+        setFormError('No employees available to hold temporary assignment. Add an employee first.')
         return
       }
+    }
+
+    try {
+      const project = await createMutation.mutateAsync(payload)
 
       if (assignMode === 'new') {
         safeNavigate(navigate, {
@@ -92,8 +167,8 @@ export function ProjectCreatePage() {
       }
 
       goProject(project.id)
-    } catch {
-      // mutation state
+    } catch (err) {
+      setFormError(getApiErrorMessage(err, 'Failed to create project. Please try again.'))
     }
   }
 
@@ -142,23 +217,32 @@ export function ProjectCreatePage() {
                   />
                   {errors.name && <p className="text-body-sm text-error">{errors.name.message}</p>}
                 </div>
+
                 <div className="space-y-1.5 md:col-span-2">
-                  <label className="text-sm font-medium text-on-background" htmlFor="clientName">
-                    Client
-                  </label>
-                  <div className="relative">
-                    <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant">
-                      search
-                    </span>
-                    <input
-                      id="clientName"
-                      {...register('clientName')}
-                      onKeyDown={(e) => handleEnterAdvance(e)}
-                      className="w-full pl-10 pr-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none bg-surface-container-lowest text-on-background"
-                      placeholder="Search and select client..."
-                    />
-                  </div>
+                  <EntitySearch
+                    label="Client *"
+                    placeholder={
+                      clientsQuery.isLoading
+                        ? 'Loading clients…'
+                        : 'Search active clients by name, industry, country…'
+                    }
+                    options={clientOptions}
+                    value={selectedClient}
+                    onChange={setSelectedClient}
+                    disabled={clientsQuery.isLoading}
+                    emptyMessage={
+                      clientsQuery.isError
+                        ? 'Failed to load clients'
+                        : 'No active clients match — create a client in Sales first'
+                    }
+                  />
+                  {clientsQuery.isError && (
+                    <p className="text-body-sm text-error">
+                      {getApiErrorMessage(clientsQuery.error, 'Could not load clients')}
+                    </p>
+                  )}
                 </div>
+
                 <div className="space-y-1.5 md:col-span-2">
                   <label className="text-sm font-medium text-on-background" htmlFor="description">
                     Project Description
@@ -196,7 +280,7 @@ export function ProjectCreatePage() {
                       {
                         id: 'Individual' as const,
                         title: 'Assign to an Individual',
-                        desc: 'Assingn the project to an individual, single person.',
+                        desc: 'Assign the project to a single employee.',
                       },
                       {
                         id: 'later' as const,
@@ -217,7 +301,10 @@ export function ProjectCreatePage() {
                         type="radio"
                         name="assignment"
                         checked={assignMode === opt.id}
-                        onChange={() => setAssignMode(opt.id)}
+                        onChange={() => {
+                          setAssignMode(opt.id)
+                          setFormError(null)
+                        }}
                         className="mt-0.5 w-4 h-4 text-secondary border-outline-variant focus:ring-secondary"
                       />
                       <div className="flex-1 min-w-0">
@@ -232,12 +319,44 @@ export function ProjectCreatePage() {
                   <div className="mt-4">
                     <EntitySearch
                       label="Search existing teams"
-                      placeholder="Type team name, department, or head…"
+                      placeholder={
+                        teamsLoading
+                          ? 'Loading teams…'
+                          : 'Type team name, department, or head…'
+                      }
                       options={teamOptions}
                       value={selectedTeam}
                       onChange={setSelectedTeam}
+                      disabled={teamsLoading}
                       emptyMessage="No teams match — try Create New Team"
                     />
+                  </div>
+                )}
+
+                {assignMode === 'Individual' && (
+                  <div className="mt-4">
+                    <EntitySearch
+                      label="Search employees"
+                      placeholder={
+                        employeesQuery.isLoading
+                          ? 'Loading employees…'
+                          : 'Type name, code, department, or role…'
+                      }
+                      options={employeeOptions}
+                      value={selectedEmployee}
+                      onChange={setSelectedEmployee}
+                      disabled={employeesQuery.isLoading}
+                      emptyMessage={
+                        employeesQuery.isError
+                          ? 'Failed to load employees'
+                          : 'No employees match'
+                      }
+                    />
+                    {employeesQuery.isError && (
+                      <p className="text-body-sm text-error mt-1">
+                        {getApiErrorMessage(employeesQuery.error, 'Could not load employees')}
+                      </p>
+                    )}
                   </div>
                 )}
 
@@ -262,6 +381,7 @@ export function ProjectCreatePage() {
                       onChange={(v) => setPhase(v as PhaseValue)}
                       options={ProjectPhaseOptions}
                       aria-label="Project phase"
+                      minWidthClass="min-w-full"
                     />
                     <Select
                       label="Priority"
@@ -269,6 +389,7 @@ export function ProjectCreatePage() {
                       onChange={(v) => setPriority(v as PriorityValue)}
                       options={ProjectPriorityOptions}
                       aria-label="Project priority"
+                      minWidthClass="min-w-full"
                     />
                   </div>
                 </section>
@@ -308,8 +429,11 @@ export function ProjectCreatePage() {
               </div>
             </div>
 
-            {createMutation.isError && (
-              <p className="text-body-sm text-error">Failed to create project. Please try again.</p>
+            {(formError || createMutation.isError) && (
+              <p className="text-body-sm text-error" role="alert">
+                {formError ??
+                  getApiErrorMessage(createMutation.error, 'Failed to create project. Please try again.')}
+              </p>
             )}
           </div>
 
