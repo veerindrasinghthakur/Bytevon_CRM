@@ -4,9 +4,9 @@ Project HTTP routes (module package: project).
 Router prefix: /projects
 Frontend expects:
   GET  /api/v1/projects           → list projects
+  GET  /api/v1/projects/{id}      → project detail + metrics (single call)
   GET  /api/v1/projects/teams     → list teams
-  GET  /api/v1/projects/tasks     → list tasks (optional project_id)
-  GET  /api/v1/projects/{id}/teams → teams linked to project
+  GET  /api/v1/projects/tasks     → list tasks (project_id | project_name)
 """
 
 from __future__ import annotations
@@ -20,6 +20,7 @@ from app.modules.project.dependencies import ProjectServiceDep
 from app.modules.project.schemas.schemas import (
     MessageResponse,
     ProjectCreate,
+    ProjectDetailResponse,
     ProjectResponse,
     ProjectUpdate,
     TaskCreate,
@@ -128,11 +129,17 @@ async def create_task(
 async def list_all_tasks(
     service: ProjectServiceDep,
     project_id: Optional[int] = Query(None),
+    project_name: Optional[str] = Query(
+        None, description="Filter tasks by project name (partial, case-insensitive)"
+    ),
     limit: int = Query(200, ge=1, le=500),
     offset: int = Query(0, ge=0),
 ) -> list[TaskResponse]:
     return await service.list_all_tasks(
-        project_id=project_id, limit=limit, offset=offset
+        project_id=project_id,
+        project_name=project_name,
+        limit=limit,
+        offset=offset,
     )
 
 
@@ -254,22 +261,22 @@ async def list_teams_for_project(
         return []
 
 
-@router.get("/{project_id}", response_model=ProjectResponse)
-@router.get("/projects/{project_id}", response_model=ProjectResponse)
+@router.get("/{project_id}", response_model=ProjectDetailResponse)
+@router.get("/projects/{project_id}", response_model=ProjectDetailResponse)
 async def get_project(
     project_id: int, service: ProjectServiceDep
-) -> ProjectResponse:
+) -> ProjectDetailResponse:
     return await service.get_project(project_id)
 
 
-@router.patch("/{project_id}", response_model=ProjectResponse)
-@router.patch("/projects/{project_id}", response_model=ProjectResponse)
+@router.patch("/{project_id}", response_model=ProjectDetailResponse)
+@router.patch("/projects/{project_id}", response_model=ProjectDetailResponse)
 async def update_project(
     project_id: int,
     body: ProjectUpdate,
     service: ProjectServiceDep,
     actor: ActorHeader = None,
-) -> ProjectResponse:
+) -> ProjectDetailResponse:
     return await service.update_project(
         project_id, body, actor_employment_id=actor
     )
