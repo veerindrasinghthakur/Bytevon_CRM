@@ -66,6 +66,18 @@ class ProjectPublicService(BasePublicService):
         if emp is None:
             raise NotFoundError(f"{label} not found (id={employment_id})")
 
+    async def _project_response(self, project: Project) -> ProjectResponse:
+        await self._session.refresh(project)
+        return ProjectResponse.model_validate(project)
+
+    async def _team_response(self, team: Team) -> TeamResponse:
+        await self._session.refresh(team)
+        return TeamResponse.model_validate(team)
+
+    async def _member_response(self, member: TeamMember) -> TeamMemberResponse:
+        await self._session.refresh(member)
+        return TeamMemberResponse.model_validate(member)
+
     # ==================================================================
     # create_from_lead (called by Sales inside TX)
     # ==================================================================
@@ -104,9 +116,9 @@ class ProjectPublicService(BasePublicService):
         if commit:
             await self._commit()
             await self._audit("project.created_from_lead", project.id, actor)
-        else:
-            await self._flush()
+            return await self._project_response(project)
 
+        await self._flush()
         return ProjectResponse.model_validate(project)
 
     # ==================================================================
@@ -162,7 +174,7 @@ class ProjectPublicService(BasePublicService):
 
         await self._commit()
         await self._audit("team.created", team.id, actor_employment_id)
-        return TeamResponse.model_validate(team)
+        return await self._team_response(team)
 
     async def list_teams(self) -> list[TeamResponse]:
         rows = await self._repo.list_teams()
@@ -198,7 +210,7 @@ class ProjectPublicService(BasePublicService):
         team.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
         await self._audit("team.updated", team.id, actor_employment_id)
-        return TeamResponse.model_validate(team)
+        return await self._team_response(team)
 
     async def add_team_member(
         self,
@@ -237,7 +249,7 @@ class ProjectPublicService(BasePublicService):
 
         await self._commit()
         await self._audit("team.member_added", team_id, actor_employment_id)
-        return TeamMemberResponse.model_validate(member)
+        return await self._member_response(member)
 
     async def remove_team_member(
         self,
@@ -296,7 +308,7 @@ class ProjectPublicService(BasePublicService):
         await self._repo.add(project)
         await self._commit()
         await self._audit("project.created", project.id, actor_employment_id)
-        return ProjectResponse.model_validate(project)
+        return await self._project_response(project)
 
     async def get_project(self, project_id: int) -> ProjectResponse:
         project = await self._repo.get_project_by_id(project_id)
@@ -331,7 +343,7 @@ class ProjectPublicService(BasePublicService):
         project.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
         await self._audit("project.updated", project.id, actor_employment_id)
-        return ProjectResponse.model_validate(project)
+        return await self._project_response(project)
 
     # ==================================================================
     # Tasks
@@ -408,6 +420,7 @@ class ProjectPublicService(BasePublicService):
         return await self._task_response(task)
 
     async def _task_response(self, task: Task) -> TaskResponse:
+        await self._session.refresh(task)
         minutes = await self._repo.sum_task_minutes(task.id)
         base = TaskResponse.model_validate(task)
         return base.model_copy(update={"actual_minutes": minutes})
@@ -446,6 +459,7 @@ class ProjectPublicService(BasePublicService):
         await self._repo.add(entry)
         await self._commit()
         await self._audit("task_time_entry.created", entry.id, actor_employment_id)
+        await self._session.refresh(entry)
         return TimeEntryResponse.model_validate(entry)
 
     async def list_time_entries(self, task_id: int) -> list[TimeEntryResponse]:
