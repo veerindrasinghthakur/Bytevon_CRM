@@ -2,12 +2,16 @@ import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
-import { listEmployments } from '@/modules/workforce/api/employment'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useCreateTask } from '../hooks/use-tasks'
+import { useProject } from '../hooks/use-projects'
+import { getTeamMembers } from '../api/teams'
+import { projectRoutes } from '../routes'
 import type { CreateTaskModalProps, CreateTaskFormValues } from '../types'
 import { createTaskSchema } from '../schemas/task-form'
 
@@ -18,25 +22,33 @@ export function CreateTaskModal({
   projectName,
   onCreated,
 }: CreateTaskModalProps) {
+  const navigate = useNavigate()
   const create = useCreateTask()
   const [assignee, setAssignee] = useState<EntityOption | null>(null)
   const [formError, setFormError] = useState<string | null>(null)
 
-  const employeesQuery = useQuery({
-    queryKey: ['workforce', 'employments', 'task-assignee-picker'],
-    queryFn: () => listEmployments({ page: 1, pageSize: 300 }),
-    staleTime: 60_000,
-    enabled: open,
+  const projectQuery = useProject(
+    open && projectId != null && Number.isFinite(projectId) ? projectId : undefined,
+  )
+  const teamId = projectQuery.data?.teamId ?? null
+
+  const membersQuery = useQuery({
+    queryKey: ['projects', 'team-members-for-task', teamId],
+    queryFn: () => getTeamMembers(teamId!),
+    enabled: open && teamId != null && Number.isFinite(teamId),
+    staleTime: 30_000,
   })
 
   const employeeOptions: EntityOption[] = useMemo(() => {
-    const items = employeesQuery.data?.items ?? []
-    return items.map((e) => ({
-      id: e.id,
-      label: e.fullName || e.employee_code,
-      sublabel: [e.employee_code, e.departmentName, e.positionName].filter(Boolean).join(' · '),
-    }))
-  }, [employeesQuery.data])
+    const rows = membersQuery.data ?? []
+    return rows
+      .filter((m) => m.employmentId != null && Number(m.employmentId) > 0)
+      .map((m) => ({
+        id: Number(m.employmentId),
+        label: m.name,
+        sublabel: [m.role ?? m.title, m.email].filter(Boolean).join(' · '),
+      }))
+  }, [membersQuery.data])
 
   const {
     register,
@@ -57,10 +69,16 @@ export function CreateTaskModal({
 
   if (!open) return null
 
+  const needsTeam = projectId != null && !projectQuery.isLoading && teamId == null
+
   const onSubmit = async (data: CreateTaskFormValues) => {
     setFormError(null)
     if (projectId == null) {
       setFormError('Project is required to create a task.')
+      return
+    }
+    if (needsTeam) {
+      setFormError('Assign a team to this project before creating tasks with an assignee.')
       return
     }
     try {
@@ -143,24 +161,56 @@ export function CreateTaskModal({
               ]}
               minWidthClass="w-full"
             />
-            <EntitySearch
-              label="Assignee"
-              placeholder={
-                employeesQuery.isLoading
-                  ? 'Loading employees…'
-                  : 'Search employees by name, code, or department…'
-              }
-              options={employeeOptions}
-              value={assignee}
-              onChange={(opt) => {
-                setAssignee(opt)
-                setValue('assigneeName', opt?.label ?? '')
-              }}
-              disabled={employeesQuery.isLoading}
-              emptyMessage={
-                employeesQuery.isError ? 'Failed to load employees' : 'No employees match'
-              }
-            />
+
+            {needsTeam ? (
+              <div className="rounded-lg border border-outline-variant bg-surface-container-low p-4 space-y-3">
+                <p className="text-body-sm text-on-surface-variant">
+                  This project has no team assigned. Assign a team first, then you can pick a
+                  team member as the task assignee.
+                </p>
+                <Button
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={() => {
+                    onClose()
+                    if (projectId != null) {
+                      safeNavigate(navigate, {
+                        to: projectRoutes.projectDetailPath,
+                        params: { projectId: String(projectId) },
+                        search: { tab: 'team' },
+                      })
+                    }
+                  }}
+                >
+                  Assign team first
+                </Button>
+              </div>
+            ) : (
+              <EntitySearch
+                label="Assignee (team members)"
+                placeholder={
+                  membersQuery.isLoading
+                    ? 'Loading team members…'
+                    : teamId
+                      ? 'Search team members…'
+                      : 'Select assignee…'
+                }
+                options={employeeOptions}
+                value={assignee}
+                onChange={(opt) => {
+                  setAssignee(opt)
+                  setValue('assigneeName', opt?.label ?? '')
+                }}
+                disabled={membersQuery.isLoading || !teamId}
+                emptyMessage={
+                  membersQuery.isError
+                    ? 'Failed to load team members'
+                    : 'No team members found'
+                }
+              />
+            )}
+
             {(formError || create.isError) && (
               <p className="text-body-sm text-error" role="alert">
                 {formError ?? getApiErrorMessage(create.error, 'Failed to create task.')}
@@ -171,7 +221,11 @@ export function CreateTaskModal({
             <Button type="button" variant="outline" onClick={onClose}>
               Cancel
             </Button>
-            <Button type="submit" variant="primary" disabled={isSubmitting || create.isPending}>
+            <Button
+              type="submit"
+              variant="primary"
+              disabled={isSubmitting || create.isPending || needsTeam}
+            >
               Create task
             </Button>
           </div>
