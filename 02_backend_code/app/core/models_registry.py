@@ -86,14 +86,10 @@ from app.modules.sales.models import (  # noqa: F401
     Platform,
 )
 
-# Developer
-from app.modules.project.models import (  # noqa: F401
-    Project,
-    Task,
-    TaskTimeEntry,
-    Team,
-    TeamMember,
-)
+# Project (domain models)
+from app.modules.project.project.models import Project  # noqa: F401
+from app.modules.project.task.models import Task, TaskTimeEntry  # noqa: F401
+from app.modules.project.team.models import Team, TeamMember  # noqa: F401
 
 # Notes & Documents
 from app.modules.notes_documents.models import (  # noqa: F401

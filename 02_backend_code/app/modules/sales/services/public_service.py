@@ -421,7 +421,7 @@ class SalesPublicService(BasePublicService):
         self, lead: Lead, client_id: int, actor: int
     ) -> Optional[int]:
         try:
-            from app.modules.project.services.public_service import ProjectPublicService
+            from app.modules.project.project.service import ProjectPublicService
 
             project_svc = ProjectPublicService(self._session)
             project = await project_svc.create_from_lead(
