@@ -5,12 +5,6 @@ export { DepartmentsListPage } from './pages/DepartmentsListPage'
 export { DepartmentCreatePage } from './pages/DepartmentCreatePage'
 export { DepartmentDetailPage } from './pages/DepartmentDetailPage'
 export { AddMemberPage } from './pages/AddMemberPage'
-export { TeamsListPage } from './pages/TeamsListPage'
-export { TeamDetailPage } from './pages/TeamDetailPage'
-export { TeamMembersPage } from './pages/TeamMembersPage'
-export { TeamProjectsPage } from './pages/TeamProjectsPage'
-export { TeamEditPage } from './pages/TeamEditPage'
-export { AssignProjectPage } from './pages/AssignProjectPage'
 export { AttendanceDashboardPage } from './pages/AttendanceDashboardPage'
 export { AttendanceEmployeesPage } from './pages/AttendanceEmployeesPage'
 export { WorkforceAttendanceDetailPage } from './pages/WorkforceAttendanceDetailPage'
@@ -51,9 +45,7 @@ export {
 
 export { useEmployeesList } from './hooks/use-employees-list'
 export { useDepartmentsList } from './hooks/use-departments-list'
-export { useTeamsList } from './hooks/use-teams-list'
 export { useDepartmentDetail } from './hooks/use-department-detail'
-export { useTeamDetail } from './hooks/use-team-detail'
 export {
   useAttendanceDashboard,
   useTodayAttendance,
