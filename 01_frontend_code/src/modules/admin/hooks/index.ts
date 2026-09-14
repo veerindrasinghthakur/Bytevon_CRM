@@ -1,12 +1,12 @@
-/** Admin hooks barrel — single entry. */
-export { useUsersList } from './user/use-users'
-export { useUserDetail } from './user/use-user-detail'
-export { useUserCreate } from './user/use-user-create'
-export { useRolesList } from './role/use-roles'
-export { useRoleForm } from './role/use-role-form'
-export { useSecurityScore } from './security/use-security-score'
-export { useAttendanceSettings } from './settings/use-attendance-settings'
-export { useHeadOffice } from './settings/use-head-office'
+/** Admin hooks barrel — dual paths until domain git mv is applied. */
+export { useUsersList } from './use-users-list'
+export { useUserDetail } from './use-user-detail'
+export { useUserCreate } from './use-user-create'
+export { useRolesList } from './use-roles-list'
+export { useRoleForm } from './use-role-form'
+export { useSecurityScore } from './use-security-score'
+export { useAttendanceSettings } from './use-attendance-settings'
+export { useHeadOffice } from './use-head-office'
 export {
   useOrganizationSettings,
   useUpdateOrganizationSettings,
@@ -15,8 +15,8 @@ export {
   useHolidayCalendars,
   useHolidays,
   usePositions,
-} from './settings/use-settings'
-export { useLocationsList, useLocationDetail, useUpdateLocation } from './location/use-locations'
-export { useShiftsList, useShiftDetail, useShiftStaff, useCreateShift, useUpdateShift } from './shift/use-shifts'
-export { useLeaveSettingsModal } from './leave/use-leave-settings'
+} from './use-organization'
+export { useLocationsList, useLocationDetail, useUpdateLocation } from './use-organization-locations'
+export { useShiftsList, useShiftDetail, useShiftStaff, useCreateShift, useUpdateShift } from './use-organization-shifts'
+export { useLeaveSettingsModal } from './use-leave-settings-modal'
 export { useAdminMutation } from './use-admin-mutation'
