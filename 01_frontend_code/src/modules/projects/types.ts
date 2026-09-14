@@ -38,14 +38,7 @@ export type TeamMemberRole = z.infer<typeof teamMemberRoleSchema>
 export type { TaskPriority, TaskStatus, TeamStatus } from './enums'
 
 /** Tabs for project detail page. */
-export type ProjectDetailTab =
-  | 'overview'
-  | 'tasks'
-  | 'team'
-  | 'timeline'
-  | 'documents'
-  | 'notes'
-  | 'repository'
+export type ProjectDetailTab = 'overview' | 'tasks' | 'documents' | 'notes'
 
 /** Parameters for filtering and paginating project lists. */
 export type ProjectListParams = {
