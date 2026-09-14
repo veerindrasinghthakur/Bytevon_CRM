@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useParams, useNavigate, useSearch } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
@@ -9,6 +9,7 @@ import { ActivityFeed } from '@/shared/components/ui/ActivityFeed'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { NotesPanel } from '@/shared/components/notes/NotesPanel'
 import { UploadButton } from '@/shared/components/forms/UploadButton'
+import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 import { NoteReferenceType } from '@/shared/schema'
@@ -21,6 +22,7 @@ import { CreateTaskModal } from '../components/CreateTaskModal'
 import { projectRoutes } from '../routes'
 import { ProjectStatus as ProjectStatusValues } from '../enums'
 import type { ProjectStatus } from '../schemas/project'
+import { getTeams } from '../api/teams'
 import { cn } from '@/shared/lib/cn'
 
 const TABS: { id: ProjectDetailTab; label: string }[] = [
@@ -49,7 +51,6 @@ export function ProjectDetailPage() {
     refetch,
     tab,
     setTab,
-    tasks,
     tasksLoading,
     filteredTasks,
     taskStatusFilter,
@@ -69,7 +70,16 @@ export function ProjectDetailPage() {
     createTaskOpen,
     setCreateTaskOpen,
     taskStatusOptions,
+    changingTeam,
+    setChangingTeam,
+    assignTeam,
+    teamAssignError,
+    isAssigningTeam,
   } = detail
+
+  const [teamOptions, setTeamOptions] = useState<EntityOption[]>([])
+  const [teamSearchLoading, setTeamSearchLoading] = useState(false)
+  const [selectedTeam, setSelectedTeam] = useState<EntityOption | null>(null)
 
   const {
     data: docsData,
@@ -94,6 +104,32 @@ export function ProjectDetailPage() {
       setTab(search.tab as ProjectDetailTab)
     }
   }, [search.tab, setTab])
+
+  const loadTeams = async (q: string) => {
+    setTeamSearchLoading(true)
+    try {
+      const { items } = await getTeams({ search: q || undefined, pageSize: 50 })
+      setTeamOptions(
+        items.map((t) => ({
+          id: String(t.id),
+          label: t.name,
+          description: t.headName ? `Head: ${t.headName}` : undefined,
+        })),
+      )
+    } catch {
+      setTeamOptions([])
+    } finally {
+      setTeamSearchLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (changingTeam) {
+      void loadTeams('')
+      setSelectedTeam(null)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [changingTeam])
 
   if (isLoading) {
     return (
@@ -126,6 +162,8 @@ export function ProjectDetailPage() {
       replace: true,
     })
   }
+
+  const hasTeam = Boolean(project.teamName || project.teamId)
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -246,6 +284,24 @@ export function ProjectDetailPage() {
                       className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-on-background focus:outline-none focus:ring-2 focus:ring-secondary resize-none"
                     />
                   </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-label-sm text-on-surface-variant block mb-1">Start date</label>
+                      <input
+                        type="date"
+                        {...form.register('startDate')}
+                        className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-label-sm text-on-surface-variant block mb-1">Target end date</label>
+                      <input
+                        type="date"
+                        {...form.register('endDate')}
+                        className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface"
+                      />
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <p className="text-body-md text-on-surface-variant leading-relaxed">
@@ -255,8 +311,62 @@ export function ProjectDetailPage() {
             </section>
 
             <section className="bv-surface p-6">
-              <h3 className="text-title-md font-semibold mb-4">Assigned Team</h3>
-              {project.teamName || project.teamId ? (
+              <div className="flex items-center justify-between gap-3 mb-4">
+                <h3 className="text-title-md font-semibold">Assigned Team</h3>
+                {!changingTeam && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setChangingTeam(true)}
+                  >
+                    {hasTeam ? 'Change team' : 'Assign team'}
+                  </Button>
+                )}
+              </div>
+
+              {changingTeam ? (
+                <div className="space-y-3">
+                  <EntitySearch
+                    label="Select team"
+                    placeholder="Search teams…"
+                    options={teamOptions}
+                    value={selectedTeam}
+                    onChange={setSelectedTeam}
+                    onSearch={(q) => void loadTeams(q)}
+                    loading={teamSearchLoading}
+                  />
+                  {teamAssignError && (
+                    <p className="text-body-sm text-error" role="alert">
+                      {teamAssignError}
+                    </p>
+                  )}
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      disabled={!selectedTeam || isAssigningTeam}
+                      isLoading={isAssigningTeam}
+                      onClick={() => {
+                        if (!selectedTeam) return
+                        void assignTeam(Number(selectedTeam.id))
+                      }}
+                    >
+                      Assign
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={isAssigningTeam}
+                      onClick={() => setChangingTeam(false)}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : hasTeam ? (
                 <div className="flex items-center gap-4 p-4 border border-outline-variant rounded-lg bg-surface-container-low">
                   <div className="w-12 h-12 rounded-lg bg-secondary/15 text-secondary flex items-center justify-center">
                     <span className="material-symbols-outlined">engineering</span>
