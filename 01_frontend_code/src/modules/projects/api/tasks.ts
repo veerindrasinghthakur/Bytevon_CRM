@@ -20,6 +20,12 @@ function mapApiTask(row: Record<string, unknown>): Task {
     BLOCKED: 'BLOCKED',
     ON_HOLD: 'ON_HOLD',
   }
+  const assigneeId = row.assignee_employment_id ?? row.assigneeEmploymentId
+  const assigneeName =
+    (row.assignee_name as string | undefined) ??
+    (row.assigneeName as string | undefined) ??
+    (row.assignee as string | undefined) ??
+    undefined
   return {
     id: Number(row.id),
     title: String(row.title ?? ''),
@@ -27,8 +33,13 @@ function mapApiTask(row: Record<string, unknown>): Task {
     priority: String(row.priority ?? 'MEDIUM').toUpperCase() as TaskPriority,
     status: statusMap[statusRaw] ?? 'TODO',
     projectId: Number(row.project_id ?? row.projectId ?? 0),
-    projectName: (row.projectName as string | undefined) ?? undefined,
-    assigneeName: (row.assigneeName as string | undefined) ?? undefined,
+    projectName:
+      (row.project_name as string | undefined) ??
+      (row.projectName as string | undefined) ??
+      undefined,
+    assigneeName: assigneeName || undefined,
+    assigneeEmploymentId:
+      assigneeId != null && Number.isFinite(Number(assigneeId)) ? Number(assigneeId) : null,
     dueDate: (row.due_date as string | null | undefined) ?? (row.dueDate as string | null) ?? null,
     createdAt: String(row.created_at ?? row.createdAt ?? new Date().toISOString()),
   }
@@ -72,7 +83,7 @@ export async function getTasks(params?: {
     let items = Array.isArray(data)
       ? data.map((r) => mapApiTask(r))
       : (data.items ?? []).map((t) =>
-          typeof t === 'object' && t && 'project_id' in (t as object)
+          typeof t === 'object' && t && ('project_id' in (t as object) || 'id' in (t as object))
             ? mapApiTask(t as unknown as Record<string, unknown>)
             : (t as Task),
         )

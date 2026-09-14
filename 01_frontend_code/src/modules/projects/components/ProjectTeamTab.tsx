@@ -1,76 +1,60 @@
-import { useMemo, useState } from 'react'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
-import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
-import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { queryKeys } from '@/shared/lib/query-keys'
-import { getTeams } from '../api/teams'
-import { updateProject } from '../api/projects'
-import { projectRoutes } from '../routes'
+import { getTeamMembers } from '../api/teams'
 import { workforceRoutes } from '@/modules/workforce/routes'
-import type { Team } from '../types'
+import type { Team, TeamMemberRow } from '../types'
 
 type Props = {
   projectId: number
   projectName?: string
   linkedTeam: Team | null
-  onAssigned?: () => void
+  /** Optional preloaded members — if omitted, fetched by team id */
+  members?: TeamMemberRow[]
+  membersLoading?: boolean
 }
 
-export function ProjectTeamTab({ projectId, projectName, linkedTeam, onAssigned }: Props) {
+/** Read-only team info for project detail: head + members. */
+export function ProjectTeamTab({
+  linkedTeam,
+  members: membersProp,
+  membersLoading: loadingProp,
+}: Props) {
   const navigate = useNavigate()
-  const queryClient = useQueryClient()
-  const [selected, setSelected] = useState<EntityOption | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [saving, setSaving] = useState(false)
+  const teamId = linkedTeam?.id
 
-  const teamsQuery = useQuery({
-    queryKey: queryKeys.teams.list({ forProjectAssign: true }),
-    queryFn: () => getTeams({ page: 1, pageSize: 200 }),
-    staleTime: 60_000,
+  const membersQuery = useQuery({
+    queryKey: ['projects', 'team-members', teamId],
+    queryFn: () => getTeamMembers(teamId!),
+    enabled: teamId != null && membersProp == null,
   })
 
-  const teamOptions: EntityOption[] = useMemo(
-    () =>
-      (teamsQuery.data?.items ?? []).map((t) => ({
-        id: t.id,
-        label: t.name,
-        sublabel: [t.department, t.headName ? `Head: ${t.headName}` : null, `${t.memberCount} members`]
-          .filter(Boolean)
-          .join(' · '),
-      })),
-    [teamsQuery.data],
-  )
+  const members = membersProp ?? membersQuery.data ?? []
+  const loading = loadingProp ?? membersQuery.isLoading
 
-  const assignTeam = async () => {
-    setError(null)
-    if (!selected) {
-      setError('Select a team to assign.')
-      return
-    }
-    const teamId = Number(selected.id)
-    if (!Number.isFinite(teamId)) {
-      setError('Invalid team.')
-      return
-    }
-    setSaving(true)
-    try {
-      await updateProject(projectId, {
-        assignmentType: 'TEAM',
-        assignedToId: teamId,
-        teamId,
-      })
-      void queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) })
-      void queryClient.invalidateQueries({ queryKey: ['projects', 'teams-for-project', projectId] })
-      setSelected(null)
-      onAssigned?.()
-    } catch (err) {
-      setError(getApiErrorMessage(err, 'Failed to assign team.'))
-    } finally {
-      setSaving(false)
-    }
+  const head =
+    members.find((m) => m.isHead || m.role === 'Lead' || String(m.role).toLowerCase().includes('head')) ??
+    null
+
+  if (!linkedTeam) {
+    return (
+      <section className="bv-surface p-6">
+        <p className="text-body-md text-on-surface-variant">
+          No team is assigned to this project yet. Assign a team from Workforce → Teams, or when
+          creating the project.
+        </p>
+        <Button
+          className="mt-4"
+          variant="outline"
+          size="sm"
+          onClick={() => safeNavigate(navigate, { to: workforceRoutes.teams })}
+        >
+          Open Teams
+        </Button>
+      </section>
+    )
   }
 
   return (
@@ -82,100 +66,108 @@ export function ProjectTeamTab({ projectId, projectName, linkedTeam, onAssigned 
               <span className="material-symbols-outlined text-2xl">groups</span>
             </div>
             <div>
-              <p className="text-lg font-bold">{linkedTeam?.name ?? 'No team assigned'}</p>
+              <p className="text-lg font-bold">{linkedTeam.name}</p>
               <p className="text-sm text-on-surface-variant">
-                {linkedTeam
-                  ? `${linkedTeam.memberCount} members · Lead: ${linkedTeam.headName ?? '—'}`
-                  : 'Assign an existing team or create a new one for this project.'}
+                {linkedTeam.memberCount} members
+                {linkedTeam.department ? ` · ${linkedTeam.department}` : ''}
               </p>
             </div>
           </div>
-          {linkedTeam && (
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() =>
-                safeNavigate(navigate, {
-                  to: workforceRoutes.teamDetailPath,
-                  params: { teamId: String(linkedTeam.id) },
-                })
-              }
-            >
-              Open team detail
-            </Button>
-          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              safeNavigate(navigate, {
+                to: workforceRoutes.teamDetailPath,
+                params: { teamId: String(linkedTeam.id) },
+              })
+            }
+          >
+            Open in Workforce
+          </Button>
         </div>
       </section>
 
-      {!linkedTeam && (
-        <section className="bv-surface p-6 space-y-4">
-          <h3 className="text-title-md font-semibold">Assign to team</h3>
-          <EntitySearch
-            label="Search teams"
-            placeholder={
-              teamsQuery.isLoading ? 'Loading teams…' : 'Type team name, department, or head…'
-            }
-            options={teamOptions}
-            value={selected}
-            onChange={setSelected}
-            disabled={teamsQuery.isLoading}
-            emptyMessage="No teams match — create a new team"
-          />
-          {error && (
-            <p className="text-body-sm text-error" role="alert">
-              {error}
-            </p>
-          )}
-          <div className="flex flex-wrap gap-3">
-            <Button variant="primary" size="sm" isLoading={saving} onClick={() => void assignTeam()}>
-              Assign selected team
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                safeNavigate(navigate, {
-                  to: workforceRoutes.teamNew,
-                  search: {
-                    projectId: String(projectId),
-                    returnTo: projectRoutes.projectDetail(projectId),
-                  },
-                })
-              }
-            >
-              Create new team
-            </Button>
+      <section className="bv-surface p-6">
+        <h3 className="text-title-md font-semibold mb-4">Team head</h3>
+        {loading && <Skeleton className="h-16 w-full" />}
+        {!loading && (head || linkedTeam.headName) && (
+          <div className="flex items-center gap-3 p-3 rounded-lg border border-outline-variant bg-surface-container-low/40">
+            <div className="w-10 h-10 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-sm font-bold">
+              {(head?.name ?? linkedTeam.headName ?? '?')
+                .split(' ')
+                .map((p) => p[0])
+                .join('')
+                .slice(0, 2)}
+            </div>
+            <div>
+              <p className="font-semibold">{head?.name ?? linkedTeam.headName}</p>
+              <p className="text-caption text-on-surface-variant">
+                {head?.title ?? linkedTeam.headRole ?? 'Team Head'}
+              </p>
+            </div>
           </div>
-          {projectName && (
-            <p className="text-body-sm text-on-surface-variant">
-              New team will be linked to <strong>{projectName}</strong> after creation.
-            </p>
-          )}
-        </section>
-      )}
+        )}
+        {!loading && !head && !linkedTeam.headName && (
+          <p className="text-body-sm text-on-surface-variant">No team head recorded.</p>
+        )}
+      </section>
 
-      {linkedTeam && (
-        <section className="bv-surface p-6">
-          <p className="text-body-sm text-on-surface-variant mb-3">Change assignment</p>
-          <div className="flex flex-wrap gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                safeNavigate(navigate, {
-                  to: workforceRoutes.teamNew,
-                  search: {
-                    projectId: String(projectId),
-                    returnTo: projectRoutes.projectDetail(projectId),
-                  },
-                })
-              }
-            >
-              Create & switch to new team
-            </Button>
+      <section className="bv-surface overflow-hidden">
+        <div className="p-5 border-b border-outline-variant">
+          <h3 className="text-title-md font-semibold">Team members</h3>
+        </div>
+        {loading && (
+          <div className="p-5">
+            <Skeleton className="h-24 w-full" />
           </div>
-        </section>
-      )}
+        )}
+        {!loading && members.length === 0 && (
+          <p className="p-5 text-body-sm text-on-surface-variant">No members returned for this team.</p>
+        )}
+        {!loading && members.length > 0 && (
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-surface-container-low/50 border-b border-outline-variant">
+                <th className="px-5 py-3 text-label-sm font-medium text-on-surface-variant uppercase">
+                  Member
+                </th>
+                <th className="px-5 py-3 text-label-sm font-medium text-on-surface-variant uppercase">
+                  Role
+                </th>
+                <th className="px-5 py-3 text-label-sm font-medium text-on-surface-variant uppercase">
+                  Status
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-outline-variant/30">
+              {members.map((m) => (
+                <tr key={String(m.id ?? m.employmentId ?? m.name)} className="zebra-row">
+                  <td className="px-5 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
+                        {m.name
+                          .split(' ')
+                          .map((p) => p[0])
+                          .join('')
+                          .slice(0, 2)}
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{m.name}</p>
+                        {m.title && (
+                          <p className="text-caption text-on-surface-variant">{m.title}</p>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-5 py-3 text-body-sm">{m.role}</td>
+                  <td className="px-5 py-3 text-body-sm">{m.status ?? '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
     </div>
   )
 }

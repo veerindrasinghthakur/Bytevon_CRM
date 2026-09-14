@@ -10,10 +10,14 @@ export function useDocuments(filters?: {
   return useQuery({
     queryKey: queryKeys.documents.list(filters ?? {}),
     queryFn: () => listDocuments(filters),
+    enabled: filters?.referenceId == null || Number.isFinite(filters.referenceId),
   })
 }
 
-export function useUploadDocument() {
+export function useUploadDocument(context?: {
+  referenceType?: string
+  referenceId?: number
+}) {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: async (files: File[]) => {
@@ -24,7 +28,10 @@ export function useUploadDocument() {
             name: f.name,
             type: f.type || 'application/octet-stream',
             sizeLabel: formatFileSize(f.size),
+            fileSize: f.size || 1,
             url: URL.createObjectURL(f),
+            referenceType: context?.referenceType,
+            referenceId: context?.referenceId,
           }),
         )
       }
