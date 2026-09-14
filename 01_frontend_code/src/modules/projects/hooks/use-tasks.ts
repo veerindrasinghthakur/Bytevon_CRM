@@ -7,12 +7,28 @@ export function useTasks(filters?: {
   search?: string
   status?: string
   projectId?: number
+  projectName?: string
   page?: number
   pageSize?: number
+  /** When false, skip fetch (e.g. project detail until Tasks tab). Default true if filters defined. */
+  enabled?: boolean
 }) {
+  const enabled =
+    filters?.enabled !== false &&
+    filters != null &&
+    (filters.projectId != null ||
+      filters.projectName != null ||
+      filters.search != null ||
+      filters.status != null ||
+      filters.page != null ||
+      // list page: empty filters object still means "fetch all"
+      Object.keys(filters).length === 0 ||
+      filters.enabled === true)
+
   return useQuery({
     queryKey: queryKeys.tasks.list(filters ?? {}),
     queryFn: () => getTasks(filters),
+    enabled,
   })
 }
 
@@ -24,7 +40,6 @@ export function useTask(id: number | undefined) {
   })
 }
 
-/** Optimistic + upsert only — no onSettled invalidate (avoids race). */
 export function useCreateTask() {
   const queryClient = useQueryClient()
   return useMutation({
