@@ -10,56 +10,12 @@ import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
-import {
-  QuickSection,
-  QuickStat,
-  QuickStatGrid,
-  QuickRelatedRow,
-  QuickPersonRow,
-} from '@/shared/components/layout/QuickOverviewParts'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { downloadFile } from '@/shared/lib/download-file'
 import { ResourceName } from '@/shared/schema'
 import { useDocuments, useUploadDocument } from '../hooks/use-documents'
+import { DocumentQuickContent, iconForMime } from '../components/DocumentQuickContent'
 import type { ProjectDocument } from '../types'
-
-function iconForMime(type: string, name: string) {
-  const t = type.toLowerCase()
-  const n = name.toLowerCase()
-  if (t.includes('pdf') || n.endsWith('.pdf')) return 'picture_as_pdf'
-  if (t.startsWith('image/') || /\.(png|jpe?g|gif|webp)$/.test(n)) return 'image'
-  if (t.includes('word') || n.endsWith('.docx') || n.endsWith('.doc')) return 'description'
-  return 'attach_file'
-}
-
-function DocumentQuickContent({ d }: { d: ProjectDocument }) {
-  return (
-    <>
-      <QuickSection title="File">
-        <QuickStatGrid>
-          <QuickStat icon={iconForMime(d.type, d.name)} value={d.sizeLabel} label="Size" />
-          <QuickStat icon="category" value={d.type} label="Type" />
-          <QuickStat icon="event" value={d.uploadedAt} label="Uploaded" />
-        </QuickStatGrid>
-      </QuickSection>
-      <QuickSection title="Uploader">
-        <QuickPersonRow
-          initials={(d.uploadedBy ?? '?')
-            .split(' ')
-            .map((p: string) => p[0])
-            .join('')
-            .slice(0, 2)}
-          roleLabel="Uploaded by"
-          name={d.uploadedBy ?? '—'}
-        />
-      </QuickSection>
-      <QuickSection title="Identity">
-        <QuickRelatedRow icon="description" label="Name" value={d.name} />
-        <QuickRelatedRow icon="tag" label="ID" value={d.id} />
-      </QuickSection>
-    </>
-  )
-}
 
 const FILTER_DEFAULTS = { type: '' }
 
