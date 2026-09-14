@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { useProject, useUpdateProject } from './use-projects'
 import { useTasks } from './use-tasks'
-import { getTeamsForProject } from '../api/teams'
+import { getTeam, getTeamsForProject } from '../api/teams'
 import { auditLogs } from '@/modules/admin/data/mock'
 import type { ProjectDetailTab } from '../types'
 import { TaskStatusFilterOptions } from '../enums'
@@ -38,10 +38,22 @@ export function useProjectDetail(
   const updateMutation = useUpdateProject()
   const { isEditing, startEditing: setEditingTrue, cancelEditing, finishEditing } = useEditMode()
 
-  const teamsQuery = useQuery({
+  const project = query.data ?? null
+  const teamIdFromProject = project?.teamId ?? null
+
+  const teamByIdQuery = useQuery({
+    queryKey: ['projects', 'team-by-id', teamIdFromProject],
+    queryFn: () => getTeam(teamIdFromProject!),
+    enabled: teamIdFromProject != null && Number.isFinite(teamIdFromProject),
+  })
+
+  const teamsForProjectQuery = useQuery({
     queryKey: ['projects', 'teams-for-project', projectId],
     queryFn: () => getTeamsForProject(projectId!),
-    enabled: projectId != null && Number.isFinite(projectId),
+    enabled:
+      projectId != null &&
+      Number.isFinite(projectId) &&
+      (teamIdFromProject == null || teamByIdQuery.isError),
   })
 
   const [tab, setTab] = useState<ProjectDetailTab>(initialTab)
@@ -59,8 +71,8 @@ export function useProjectDetail(
     },
   })
 
-  const project = query.data ?? null
-  const linkedTeam = teamsQuery.data?.[0] ?? null
+  const linkedTeam =
+    teamByIdQuery.data ?? teamsForProjectQuery.data?.[0] ?? null
   const activityItems = useMemo(
     () => activityFromAudit(project?.name),
     [project?.name],
@@ -131,7 +143,8 @@ export function useProjectDetail(
     refetch: () => {
       void query.refetch()
       void tasksQuery.refetch()
-      void teamsQuery.refetch()
+      void teamByIdQuery.refetch()
+      void teamsForProjectQuery.refetch()
     },
     tab,
     setTab,
