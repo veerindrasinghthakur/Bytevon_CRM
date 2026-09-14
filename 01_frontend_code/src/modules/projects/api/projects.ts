@@ -9,6 +9,32 @@ import { paginateItems } from '@/shared/lib/list-params'
 import type { ProjectListMetrics } from '../types'
 import { computeProjectListMetrics } from '@/shared/compute/project-metrics'
 
+function mapApiProject(row: Record<string, unknown>): ProjectDetail {
+  const id = Number(row.id)
+  const name = String(row.project_name ?? row.projectName ?? row.name ?? '')
+  return {
+    id,
+    name,
+    code: (row.code as string) ?? `PRJ-${id}`,
+    status: String(row.status ?? 'PLANNING') as ProjectDetail['status'],
+    clientName: (row.clientName as string) ?? (row.client_name as string) ?? null,
+    startDate: (row.planned_start_date as string) ?? (row.startDate as string) ?? null,
+    endDate: (row.planned_end_date as string) ?? (row.endDate as string) ?? null,
+    progress: Number(row.progress ?? 0),
+    teamCount: Number(row.teamCount ?? 0),
+    taskCount: Number(row.taskCount ?? 0),
+    teamId:
+      row.assignment_type === 'TEAM' || row.assignmentType === 'TEAM'
+        ? Number(row.assigned_to_id ?? row.assignedToId ?? 0) || null
+        : (row.teamId as number | null) ?? null,
+    description: (row.description as string) ?? null,
+    repositoryUrl:
+      (row.repository_reference as string) ?? (row.repositoryUrl as string) ?? null,
+    createdAt: (row.created_at as string) ?? (row.createdAt as string) ?? null,
+    updatedAt: (row.updated_at as string) ?? (row.updatedAt as string) ?? null,
+  }
+}
+
 export async function getProjects(params?: {
   search?: string
   status?: string
@@ -17,11 +43,14 @@ export async function getProjects(params?: {
   pageSize?: number
 }): Promise<{ items: ProjectListItem[]; total: number; metrics: ProjectListMetrics }> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<{
-      items: ProjectListItem[]
-      total: number
-      metrics?: ProjectListMetrics
-    }>('/projects', { params })
+    const { data } = await apiClient.get<
+      | { items: ProjectListItem[]; total: number; metrics?: ProjectListMetrics }
+      | Array<Record<string, unknown>>
+    >('/projects', { params })
+    if (Array.isArray(data)) {
+      const items = data.map((r) => mapApiProject(r))
+      return { items, total: items.length, metrics: computeProjectListMetrics(items) }
+    }
     return {
       items: data.items,
       total: data.total,
@@ -56,8 +85,8 @@ export async function getProjects(params?: {
 export async function getProjectById(id: number): Promise<ProjectDetail | null> {
   if (!env.useMockApi) {
     try {
-      const { data } = await apiClient.get<ProjectDetail>(`/projects/${id}`)
-      return data
+      const { data } = await apiClient.get<Record<string, unknown>>(`/projects/${id}`)
+      return mapApiProject(data)
     } catch {
       return null
     }
@@ -73,10 +102,38 @@ export async function getProjectsForTeam(teamId: number): Promise<ProjectListIte
   return items
 }
 
+function toBackendCreate(input: CreateProjectInput): Record<string, unknown> {
+  const assignmentType =
+    input.assignmentType ??
+    (input.teamId != null ? 'TEAM' : 'INDIVIDUAL')
+  const assignedToId =
+    assignmentType === 'TEAM'
+      ? input.teamId
+      : input.assignedEmploymentId ?? input.teamId
+
+  return {
+    client_id: input.clientId,
+    project_name: input.name,
+    description: input.description || null,
+    assignment_type: assignmentType,
+    assigned_to_id: assignedToId,
+    repository_reference: input.repositoryUrl || null,
+    planned_start_date: input.startDate || null,
+    planned_end_date: input.endDate || null,
+  }
+}
+
 export async function createProject(input: CreateProjectInput): Promise<ProjectDetail> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<ProjectDetail>('/projects', input)
-    return data
+    if (input.clientId == null) {
+      throw new Error('Client is required')
+    }
+    const body = toBackendCreate(input)
+    if (body.assigned_to_id == null) {
+      throw new Error('Assignee (team or employee) is required')
+    }
+    const { data } = await apiClient.post<Record<string, unknown>>('/projects', body)
+    return mapApiProject(data)
   }
   await delay(500)
   const projects = getDb().projects
@@ -122,8 +179,15 @@ export async function updateProject(
   >,
 ): Promise<ProjectDetail> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.patch<ProjectDetail>(`/projects/${id}`, patch)
-    return data
+    const body: Record<string, unknown> = {}
+    if (patch.name != null) body.project_name = patch.name
+    if (patch.description !== undefined) body.description = patch.description
+    if (patch.repositoryUrl !== undefined) body.repository_reference = patch.repositoryUrl
+    if (patch.startDate !== undefined) body.planned_start_date = patch.startDate
+    if (patch.endDate !== undefined) body.planned_end_date = patch.endDate
+    if (patch.status != null) body.status = patch.status
+    const { data } = await apiClient.patch<Record<string, unknown>>(`/projects/${id}`, body)
+    return mapApiProject(data)
   }
   await delay(400)
   const projects = getDb().projects
