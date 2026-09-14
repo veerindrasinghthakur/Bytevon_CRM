@@ -1,5 +1,6 @@
 import { Link, useParams, useSearch } from '@tanstack/react-router'
-import { useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
@@ -7,9 +8,12 @@ import { Select } from '@/shared/components/ui/Select'
 import { RefreshButton } from '@/shared/components/ui/RefreshButton'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { NotesPanel } from '@/shared/components/notes/NotesPanel'
+import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { looseLinkProps } from '@/shared/lib/safeNavigate'
 import { useTaskDetail } from '../hooks/use-task-detail'
+import { useProject } from '../hooks/use-projects'
+import { getTeamMembers } from '../api/teams'
 import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
 import { projectRoutes } from '../routes'
 import type { TaskPriority, TaskStatus } from '../types'
@@ -35,10 +39,52 @@ export function TaskDetailPage() {
     statusOptions,
   } = useTaskDetail(Number.isFinite(id) ? id : undefined)
 
+  const [assignee, setAssignee] = useState<EntityOption | null>(null)
+
+  const projectQuery = useProject(
+    task?.projectId != null && Number.isFinite(task.projectId) ? task.projectId : undefined,
+  )
+  const teamId = projectQuery.data?.teamId ?? null
+
+  const membersQuery = useQuery({
+    queryKey: ['projects', 'team-members-for-task-detail', teamId],
+    queryFn: () => getTeamMembers(teamId!),
+    enabled: isEditing && teamId != null && Number.isFinite(teamId),
+    staleTime: 30_000,
+  })
+
+  const employeeOptions: EntityOption[] = useMemo(() => {
+    const rows = membersQuery.data ?? []
+    return rows
+      .filter((m) => m.employmentId != null && Number(m.employmentId) > 0)
+      .map((m) => ({
+        id: Number(m.employmentId),
+        label: m.name,
+        sublabel: [m.role ?? m.title, m.email].filter(Boolean).join(' · '),
+      }))
+  }, [membersQuery.data])
+
   useEffect(() => {
     if (search.edit === '1' && task && !isEditing) startEditing()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search.edit, task?.id])
+
+  useEffect(() => {
+    if (!isEditing || !task) {
+      setAssignee(null)
+      return
+    }
+    if (task.assigneeEmploymentId != null) {
+      setAssignee({
+        id: task.assigneeEmploymentId,
+        label: task.assigneeName ?? `Employment #${task.assigneeEmploymentId}`,
+      })
+    } else if (task.assigneeName) {
+      setAssignee({ id: task.assigneeName, label: task.assigneeName })
+    } else {
+      setAssignee(null)
+    }
+  }, [isEditing, task?.id, task?.assigneeEmploymentId, task?.assigneeName])
 
   if (isLoading) {
     return (
@@ -67,6 +113,24 @@ export function TaskDetailPage() {
     .slice(0, 2)
     .toUpperCase()
 
+  const needsTeam = isEditing && !projectQuery.isLoading && teamId == null
+
+  const onSave = () => {
+    const employmentId =
+      assignee && typeof assignee.id === 'number'
+        ? Number(assignee.id)
+        : assignee && Number.isFinite(Number(assignee.id))
+          ? Number(assignee.id)
+          : null
+    if (assignee?.label) {
+      form.setValue('assigneeName', assignee.label)
+    }
+    void save({
+      assigneeEmploymentId: employmentId,
+      assigneeName: assignee?.label ?? form.getValues('assigneeName') ?? undefined,
+    })
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       <PageHeader
@@ -94,8 +158,9 @@ export function TaskDetailPage() {
                 type="button"
                 variant="primary"
                 size="sm"
-                onClick={() => void save()}
+                onClick={onSave}
                 isLoading={isSaving}
+                disabled={needsTeam}
               >
                 Save
               </Button>
@@ -173,14 +238,38 @@ export function TaskDetailPage() {
                     onChange={(v) => form.setValue('status', v as TaskStatus, { shouldValidate: true })}
                     options={statusOptions}
                   />
-                  <div>
-                    <label className="text-label-sm text-on-surface-variant block mb-1">Assignee (display)</label>
-                    <input
-                      {...form.register('assigneeName')}
-                      onKeyDown={(e) => handleEnterAdvance(e)}
-                      className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface"
-                      placeholder="Name shown on task"
-                    />
+                  <div className="sm:col-span-2">
+                    {needsTeam ? (
+                      <div className="rounded-lg border border-outline-variant bg-surface-container-low p-4">
+                        <p className="text-body-sm text-on-surface-variant">
+                          This project has no team assigned. Assign a team on the project first to pick
+                          an assignee from team members.
+                        </p>
+                      </div>
+                    ) : (
+                      <EntitySearch
+                        label="Assignee (team members)"
+                        placeholder={
+                          membersQuery.isLoading
+                            ? 'Loading team members…'
+                            : teamId
+                              ? 'Search team members…'
+                              : 'Select assignee…'
+                        }
+                        options={employeeOptions}
+                        value={assignee}
+                        onChange={(opt) => {
+                          setAssignee(opt)
+                          form.setValue('assigneeName', opt?.label ?? '')
+                        }}
+                        disabled={membersQuery.isLoading || !teamId}
+                        emptyMessage={
+                          membersQuery.isError
+                            ? 'Failed to load team members'
+                            : 'No team members found'
+                        }
+                      />
+                    )}
                   </div>
                   <div>
                     <label className="text-label-sm text-on-surface-variant block mb-1">Due date</label>
@@ -241,11 +330,8 @@ export function TaskDetailPage() {
               <MetaRow label="Project" value={task.projectName ?? '—'} />
               <MetaRow label="Priority" value={task.priority} />
               <MetaRow label="Status" value={task.status.replace(/_/g, ' ')} />
-              <MetaRow label="Due" value={task.dueDate ?? '—'} />
-              <MetaRow
-                label="Created"
-                value={task.createdAt ? new Date(task.createdAt).toLocaleDateString() : '—'}
-              />
+              <MetaRow label="Due" value={formatDisplayDate(task.dueDate)} />
+              <MetaRow label="Created" value={formatDisplayDate(task.createdAt)} />
               {task.projectId ? (
                 <Link
                   {...looseLinkProps({
@@ -263,6 +349,28 @@ export function TaskDetailPage() {
       </div>
     </div>
   )
+}
+
+function formatDisplayDate(value?: string | null): string {
+  if (!value) return '—'
+  const raw = String(value).slice(0, 10)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const [y, m, d] = raw.split('-').map(Number)
+    return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    })
+  }
+  try {
+    return new Date(value).toLocaleDateString(undefined, {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric',
+    })
+  } catch {
+    return value
+  }
 }
 
 function MetaRow({ label, value }: { label: string; value: string }) {
