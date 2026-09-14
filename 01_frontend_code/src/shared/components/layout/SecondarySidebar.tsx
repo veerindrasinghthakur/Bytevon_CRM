@@ -21,7 +21,6 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
       { id: 'clients', label: 'Clients', icon: 'handshake', to: '/sales/clients' },
       { id: 'sources', label: 'Manage sources', icon: 'hub', to: '/sales/sources' },
       { id: 'case-studies', label: 'Case Studies', icon: 'library_books', to: '/sales/case-studies' },
-      // { id: 'analytics', label: 'Analytics', icon: 'analytics', to: '/sales/analytics' },
     ],
   },
   projects: {
@@ -29,7 +28,8 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     title: 'Projects',
     items: [
       { id: 'all-projects', label: 'All Projects', icon: 'account_tree', to: '/projects' },
-      { id: 'teams', label: 'Teams', icon: 'groups', to: '/projects/teams' },
+      // Single Teams UI lives under Workforce
+      { id: 'teams', label: 'Teams', icon: 'groups', to: '/workforce/teams' },
       { id: 'tasks', label: 'Tasks', icon: 'assignment', to: '/projects/tasks' },
       { id: 'documents', label: 'Documents', icon: 'folder', to: '/projects/documents' },
     ],
