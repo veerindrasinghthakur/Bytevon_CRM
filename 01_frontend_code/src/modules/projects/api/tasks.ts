@@ -1,5 +1,6 @@
 /**
- * Tasks API — env.useMockApi → shared mock DB; false → /projects/tasks
+ * Tasks API — shared by Tasks list + Project detail Tasks tab.
+ * Filters: project_id and/or project_name (same backend endpoint).
  */
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
@@ -24,7 +25,6 @@ function mapApiTask(row: Record<string, unknown>): Task {
   const assigneeName =
     (row.assignee_name as string | undefined) ??
     (row.assigneeName as string | undefined) ??
-    (row.assignee as string | undefined) ??
     undefined
   return {
     id: Number(row.id),
@@ -64,6 +64,7 @@ export async function getTasks(params?: {
   search?: string
   status?: string
   projectId?: number
+  projectName?: string
   page?: number
   pageSize?: number
 }): Promise<{ items: Task[]; total: number }> {
@@ -73,6 +74,7 @@ export async function getTasks(params?: {
     >('/projects/tasks', {
       params: {
         project_id: params?.projectId,
+        project_name: params?.projectName || undefined,
         limit: params?.pageSize ?? 200,
         offset:
           params?.page != null && params?.pageSize != null
@@ -105,6 +107,10 @@ export async function getTasks(params?: {
   let items = getDb().tasks.map((t) => asTask(t as TaskRow))
   if (params?.projectId != null) {
     items = items.filter((t) => t.projectId === params.projectId)
+  }
+  if (params?.projectName) {
+    const q = params.projectName.toLowerCase()
+    items = items.filter((t) => (t.projectName ?? '').toLowerCase().includes(q))
   }
   if (params?.search) {
     const q = params.search.toLowerCase()
@@ -206,17 +212,5 @@ export async function createTask(input: {
     createdAt: new Date().toISOString(),
   }
   tasks.unshift(row)
-
-  if (input.projectId) {
-    const pIdx = db.projects.findIndex((p) => p.id === input.projectId)
-    if (pIdx !== -1) {
-      db.projects[pIdx] = {
-        ...db.projects[pIdx],
-        taskCount: (db.projects[pIdx].taskCount ?? 0) + 1,
-        updatedAt: new Date().toISOString(),
-      } as (typeof db.projects)[number]
-    }
-  }
-
   return asTask(row)
 }
