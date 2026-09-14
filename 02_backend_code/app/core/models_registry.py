@@ -17,16 +17,13 @@ from app.modules.auth.models import (  # noqa: F401
     Session,
 )
 
-# Organization
-from app.modules.organization.models import (  # noqa: F401
-    Department,
-    Holiday,
-    HolidayCalendar,
-    Location,
-    OrganizationSettings,
-    Shift,
-    WorkingWeek,
-)
+# Admin (was organization)
+from app.modules.admin.department.models import Department  # noqa: F401
+from app.modules.admin.working_week.models import WorkingWeek  # noqa: F401
+from app.modules.admin.shift.models import Shift  # noqa: F401
+from app.modules.admin.holiday_calendar.models import Holiday, HolidayCalendar  # noqa: F401
+from app.modules.admin.location.models import Location  # noqa: F401
+from app.modules.admin.settings.models import OrganizationSettings  # noqa: F401
 
 # Employment
 from app.modules.workforce.models import (  # noqa: F401
