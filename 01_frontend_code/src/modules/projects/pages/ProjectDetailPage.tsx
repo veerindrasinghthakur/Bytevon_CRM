@@ -1,30 +1,23 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { Link, useParams, useNavigate, useSearch } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
-import { Select } from '@/shared/components/ui/Select'
 import { RefreshButton } from '@/shared/components/ui/RefreshButton'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { NotesPanel } from '@/shared/components/notes/NotesPanel'
-import { UploadButton } from '@/shared/components/forms/UploadButton'
-import type { EntityOption } from '@/shared/components/forms/EntitySearch'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 import { NoteReferenceType } from '@/shared/schema'
 import { useProjectDetail } from '../hooks/use-project-detail'
 import type { ProjectDetailTab } from '../types'
-import { useDocuments, useUploadDocument } from '../hooks/use-documents'
 import { ProjectStatusBadge } from '../components/ProjectStatusBadge'
-import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
 import { CreateTaskModal } from '../components/CreateTaskModal'
-import { projectRoutes } from '../routes'
 import { PROJECT_DETAIL_TABS as TABS } from '../components/project-detail-helpers'
 import { ProjectDetailOverview } from '../components/ProjectDetailOverview'
-import { getTeams } from '../api/teams'
-import { listAuditLogs } from '@/modules/admin/api/audit'
-import type { ActivityItem } from '@/shared/types'
-import { cn } from '@/shared/lib/cn'
+import { ProjectDetailTabNav } from '../components/ProjectDetailTabNav'
+import { ProjectDetailTasksTab } from '../components/ProjectDetailTasksTab'
+import { ProjectDetailDocumentsTab } from '../components/ProjectDetailDocumentsTab'
+import { projectRoutes } from '../routes'
 
 export function ProjectDetailPage() {
   const navigate = useNavigate()
@@ -35,6 +28,7 @@ export function ProjectDetailPage() {
   const rawTab = search.tab as ProjectDetailTab | undefined
   const initialTab = (TABS.find((t) => t.id === rawTab)?.id ?? 'overview') as ProjectDetailTab
   const detail = useProjectDetail(Number.isFinite(id) ? id : undefined, initialTab)
+
   const {
     project,
     isLoading,
@@ -66,23 +60,17 @@ export function ProjectDetailPage() {
     assignTeam,
     teamAssignError,
     isAssigningTeam,
+    teamOptions,
+    selectedTeam,
+    setSelectedTeam,
+    hasTeam,
+    activityItems,
+    repoHref,
+    docsData,
+    docsLoading,
+    uploadDoc,
+    refetchDocs,
   } = detail
-
-  const [teamOptions, setTeamOptions] = useState<EntityOption[]>([])
-  const [selectedTeam, setSelectedTeam] = useState<EntityOption | null>(null)
-
-  const {
-    data: docsData,
-    refetch: refetchDocs,
-    isLoading: docsLoading,
-  } = useDocuments({
-    referenceType: 'PROJECT',
-    referenceId: project?.id,
-  })
-  const uploadDoc = useUploadDocument({
-    referenceType: 'PROJECT',
-    referenceId: project?.id,
-  })
 
   useEffect(() => {
     if (search.edit === '1' && project && !isEditing) startEditing()
@@ -94,70 +82,6 @@ export function ProjectDetailPage() {
       setTab(search.tab as ProjectDetailTab)
     }
   }, [search.tab, setTab])
-
-  const loadTeams = async () => {
-    try {
-      const { items } = await getTeams({ pageSize: 100 })
-      setTeamOptions(
-        (items ?? []).map((t) => ({
-          id: String(t.id),
-          label: t.name,
-          sublabel: t.headName ? `Head: ${t.headName}` : undefined,
-        })),
-      )
-    } catch {
-      setTeamOptions([])
-    }
-  }
-
-  useEffect(() => {
-    if (changingTeam) {
-      void loadTeams()
-      setSelectedTeam(null)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [changingTeam])
-
-  const activityQuery = useQuery({
-    queryKey: ['projects', 'activity', project?.id],
-    queryFn: () => listAuditLogs({ limit: 40 }),
-    enabled: project?.id != null,
-    staleTime: 30_000,
-  })
-
-  const activityItems: ActivityItem[] = useMemo(() => {
-    const logs = activityQuery.data ?? []
-    const pid = project?.id
-    const pname = (project?.name ?? '').toLowerCase()
-    const filtered = logs.filter((l) => {
-      if (pid != null && l.referenceId === pid) return true
-      const blob = `${l.description} ${l.target} ${l.referenceType} ${l.module}`.toLowerCase()
-      if (pname && blob.includes(pname)) return true
-      if (pid != null && blob.includes(`#${pid}`)) return true
-      return false
-    })
-    const source = filtered.length > 0 ? filtered : logs.slice(0, 8)
-    return source.slice(0, 12).map((l) => ({
-      id: l.id,
-      title: l.action.replace(/_/g, ' '),
-      description: l.description || l.target,
-      timestamp: l.timestamp,
-      actor: l.actor,
-      icon: l.action.includes('CREATE')
-        ? 'add_circle'
-        : l.action.includes('UPDATE') || l.action.includes('STATUS')
-          ? 'edit'
-          : l.action.includes('ASSIGN')
-            ? 'group'
-            : 'history',
-    }))
-  }, [activityQuery.data, project?.id, project?.name])
-
-  const repoHref = project?.repositoryUrl
-    ? project.repositoryUrl.startsWith('http')
-      ? project.repositoryUrl
-      : `https://github.com/${project.repositoryUrl}`
-    : null
 
   if (isLoading) {
     return (
@@ -190,8 +114,6 @@ export function ProjectDetailPage() {
       replace: true,
     })
   }
-
-  const hasTeam = Boolean(project.teamName || project.teamId)
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -243,30 +165,7 @@ export function ProjectDetailPage() {
         </div>
       </div>
 
-      <div className="border-b border-outline-variant">
-        <nav className="flex flex-wrap gap-1 -mb-px">
-          {TABS.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => selectTab(t.id)}
-              className={cn(
-                'px-4 py-3 text-sm font-semibold border-b-2 transition-colors',
-                tab === t.id
-                  ? 'border-secondary text-secondary'
-                  : 'border-transparent text-on-surface-variant hover:text-on-surface',
-              )}
-            >
-              {t.label}
-              {t.id === 'tasks' && (project.taskCount ?? 0) > 0 && (
-                <span className="ml-2 text-[10px] px-1.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant">
-                  {project.taskCount}
-                </span>
-              )}
-            </button>
-          ))}
-        </nav>
-      </div>
+      <ProjectDetailTabNav tab={tab} taskCount={project.taskCount} onSelect={selectTab} />
 
       {tab === 'overview' && (
         <ProjectDetailOverview
@@ -291,111 +190,25 @@ export function ProjectDetailPage() {
       )}
 
       {tab === 'tasks' && (
-        <div className="space-y-4">
-          <div className="flex flex-wrap gap-3 items-center">
-            <div className="relative flex-1 min-w-[200px] max-w-sm">
-              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-lg">
-                search
-              </span>
-              <input
-                value={taskSearch}
-                onChange={(e) => setTaskSearch(e.target.value)}
-                placeholder="Search tasks..."
-                className="w-full pl-10 pr-3 py-2 rounded-lg border border-outline-variant bg-surface text-sm focus:outline-none focus:ring-2 focus:ring-secondary"
-              />
-            </div>
-            <Select
-              value={taskStatusFilter}
-              onChange={setTaskStatusFilter}
-              placeholder="All statuses"
-              options={taskStatusOptions.map((o) => ({ value: o.value, label: o.label }))}
-              minWidthClass="min-w-[160px]"
-            />
-            <Button
-              variant="primary"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
-              onClick={() => setCreateTaskOpen(true)}
-            >
-              New Task
-            </Button>
-          </div>
-
-          {tasksLoading && <Skeleton className="h-40 w-full" />}
-          {!tasksLoading && filteredTasks.length === 0 && (
-            <p className="text-center text-on-surface-variant py-12">No tasks match filters.</p>
-          )}
-          {!tasksLoading && filteredTasks.length > 0 && (
-            <div className="bv-surface overflow-hidden">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-outline-variant bg-surface-container-low/50">
-                    <th className="px-4 py-3 text-[11px] font-bold uppercase text-on-surface-variant">Task</th>
-                    <th className="px-4 py-3 text-[11px] font-bold uppercase text-on-surface-variant">Priority</th>
-                    <th className="px-4 py-3 text-[11px] font-bold uppercase text-on-surface-variant">Status</th>
-                    <th className="px-4 py-3 text-[11px] font-bold uppercase text-on-surface-variant">Assignee</th>
-                    <th className="px-4 py-3 text-[11px] font-bold uppercase text-on-surface-variant">Due</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredTasks.map((task) => (
-                    <tr
-                      key={task.id}
-                      className="border-b border-outline-variant hover:bg-surface-container-low/40 cursor-pointer"
-                      onClick={() =>
-                        safeNavigate(navigate, {
-                          to: projectRoutes.taskDetailPath,
-                          params: { taskId: String(task.id) },
-                        })
-                      }
-                    >
-                      <td className="px-4 py-3 text-sm font-medium">{task.title}</td>
-                      <td className="px-4 py-3"><TaskPriorityLabel priority={task.priority} /></td>
-                      <td className="px-4 py-3"><TaskStatusBadge status={task.status} /></td>
-                      <td className="px-4 py-3 text-sm">{task.assigneeName ?? '—'}</td>
-                      <td className="px-4 py-3 text-sm">{task.dueDate ?? '—'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+        <ProjectDetailTasksTab
+          tasksLoading={tasksLoading}
+          filteredTasks={filteredTasks}
+          taskSearch={taskSearch}
+          setTaskSearch={setTaskSearch}
+          taskStatusFilter={taskStatusFilter}
+          setTaskStatusFilter={setTaskStatusFilter}
+          taskStatusOptions={taskStatusOptions}
+          onCreateTask={() => setCreateTaskOpen(true)}
+        />
       )}
 
       {tab === 'documents' && (
-        <section className="bv-surface overflow-hidden">
-          <div className="px-5 py-4 border-b border-outline-variant flex justify-between items-center gap-3 flex-wrap">
-            <h3 className="font-semibold text-title-md">Documents</h3>
-            <UploadButton
-              onFiles={(files) => {
-                void uploadDoc.mutateAsync(files).then(() => refetchDocs()).catch(() => {})
-              }}
-              isLoading={uploadDoc.isPending}
-            />
-          </div>
-          {uploadDoc.isError && (
-            <p className="px-5 py-2 text-body-sm text-error" role="alert">
-              Failed to upload document.
-            </p>
-          )}
-          {docsLoading ? (
-            <p className="p-8 text-center text-on-surface-variant text-sm">Loading documents…</p>
-          ) : (docsData?.items ?? []).length === 0 ? (
-            <p className="p-8 text-center text-on-surface-variant text-sm">No documents linked yet.</p>
-          ) : (
-            <ul className="divide-y divide-outline-variant">
-              {(docsData?.items ?? []).map((doc) => (
-                <li key={doc.id} className="px-5 py-3 flex items-center justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-medium text-sm truncate">{doc.name}</p>
-                    <p className="text-xs text-on-surface-variant">{doc.sizeLabel ?? doc.type ?? '—'}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        <ProjectDetailDocumentsTab
+          docsLoading={docsLoading}
+          documents={docsData?.items ?? []}
+          uploadDoc={uploadDoc}
+          onUploaded={() => void refetchDocs()}
+        />
       )}
 
       {tab === 'notes' && (
