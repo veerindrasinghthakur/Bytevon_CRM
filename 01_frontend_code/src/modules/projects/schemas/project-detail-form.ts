@@ -6,6 +6,8 @@ export const projectDetailFormSchema = z.object({
   clientName: z.string().max(120).optional(),
   // Backend may store git path without scheme — do not require strict URL
   repositoryUrl: z.string().max(500).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
 })
 
 export type ProjectDetailFormInput = z.infer<typeof projectDetailFormSchema>

@@ -26,8 +26,9 @@ export function useProjectDetail(
   const [taskSearch, setTaskSearch] = useState('')
   const [createTaskOpen, setCreateTaskOpen] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
+  const [changingTeam, setChangingTeam] = useState(false)
+  const [teamAssignError, setTeamAssignError] = useState<string | null>(null)
 
-  // Tasks: only fetch when Tasks tab is active (same API as task list + project_id filter)
   const tasksQuery = useTasks(
     projectId != null && tab === 'tasks' ? { projectId } : undefined,
   )
@@ -39,6 +40,8 @@ export function useProjectDetail(
       description: '',
       clientName: '',
       repositoryUrl: '',
+      startDate: '',
+      endDate: '',
     },
   })
 
@@ -50,6 +53,8 @@ export function useProjectDetail(
       description: project.description ?? '',
       clientName: project.clientName ?? '',
       repositoryUrl: project.repositoryUrl ?? '',
+      startDate: project.startDate ?? '',
+      endDate: project.endDate ?? '',
     })
     setEditingTrue()
   }
@@ -62,6 +67,8 @@ export function useProjectDetail(
         description: project.description ?? '',
         clientName: project.clientName ?? '',
         repositoryUrl: project.repositoryUrl ?? '',
+        startDate: project.startDate ?? '',
+        endDate: project.endDate ?? '',
       })
     }
     cancelEditing()
@@ -89,12 +96,33 @@ export function useProjectDetail(
           name: data.name.trim(),
           description: data.description?.trim() || null,
           repositoryUrl: data.repositoryUrl?.trim() || null,
+          startDate: data.startDate || null,
+          endDate: data.endDate || null,
         },
       })
       finishEditing()
       void query.refetch()
     } catch (err) {
       setSaveError(getApiErrorMessage(err, 'Could not save project'))
+    }
+  }
+
+  const assignTeam = async (teamId: number) => {
+    if (!project) return
+    setTeamAssignError(null)
+    try {
+      await updateMutation.mutateAsync({
+        id: project.id,
+        patch: {
+          teamId,
+          assignmentType: 'TEAM',
+          assignedToId: teamId,
+        },
+      })
+      setChangingTeam(false)
+      void query.refetch()
+    } catch (err) {
+      setTeamAssignError(getApiErrorMessage(err, 'Could not assign team'))
     }
   }
 
@@ -111,7 +139,6 @@ export function useProjectDetail(
     })
   }, [tasks, taskStatusFilter, taskSearch])
 
-  // Metrics from single detail API (not a second tasks fetch)
   const openTasks = project?.openTasks ?? 0
   const progress = project?.progress ?? 0
   const daysToDeadline = project?.daysToDeadline ?? null
@@ -146,5 +173,10 @@ export function useProjectDetail(
     createTaskOpen,
     setCreateTaskOpen,
     taskStatusOptions: TaskStatusFilterOptions,
+    changingTeam,
+    setChangingTeam,
+    assignTeam,
+    teamAssignError,
+    isAssigningTeam: updateMutation.isPending,
   }
 }
