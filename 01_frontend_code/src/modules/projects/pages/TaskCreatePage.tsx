@@ -1,91 +1,32 @@
-import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { useNavigate, Link, useSearch } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
-import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
-import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
+import { EntitySearch } from '@/shared/components/forms/EntitySearch'
+import { looseLinkProps } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
-import { listEmployments } from '@/modules/workforce/api/employment'
-import { useCreateTask } from '../hooks/use-tasks'
-import { useProject } from '../hooks/use-projects'
-import { projectRoutes } from '../routes'
-import { schema } from '../schemas/task-form'
-
-type FormValues = z.infer<typeof schema>
+import { useTaskCreate } from '../hooks/use-task-create'
 
 export function TaskCreatePage() {
-  const navigate = useNavigate()
-  const search = useSearch({ strict: false }) as { projectId?: string }
-  const projectId = search.projectId ? Number(search.projectId) : undefined
-  const { data: project } = useProject(
-    projectId != null && Number.isFinite(projectId) ? projectId : undefined,
-  )
-  const [formError, setFormError] = useState<string | null>(null)
+  const {
+    form,
+    project,
+    backTo,
+    formError,
+    employeeOptions,
+    employeesQuery,
+    createMutation,
+    priority,
+    assignee,
+    setAssignee,
+    setPriority,
+    onSubmit,
+    cancel,
+  } = useTaskCreate()
 
-  const employeesQuery = useQuery({
-    queryKey: ['workforce', 'employments', 'task-create-picker'],
-    queryFn: () => listEmployments({ page: 1, pageSize: 300 }),
-    staleTime: 60_000,
-  })
-
-  const employeeOptions: EntityOption[] = useMemo(() => {
-    const items = employeesQuery.data?.items ?? []
-    return items.map((e) => ({
-      id: e.id,
-      label: e.fullName || e.employee_code,
-      sublabel: [e.employee_code, e.departmentName, e.positionName].filter(Boolean).join(' · '),
-    }))
-  }, [employeesQuery.data])
-
-  const createMutation = useCreateTask()
   const {
     register,
-    handleSubmit,
-    setValue,
-    watch,
     formState: { errors, isSubmitting },
-  } = useForm<FormValues>({
-    resolver: zodResolver(schema),
-    defaultValues: { title: '', description: '', priority: 'MEDIUM', assignee: null },
-  })
-
-  const priority = watch('priority')
-  const assignee = watch('assignee')
-
-  const backTo =
-    projectId != null && Number.isFinite(projectId)
-      ? projectRoutes.projectDetail(projectId)
-      : projectRoutes.tasks
-
-  const onSubmit = async (data: FormValues) => {
-    setFormError(null)
-    if (!projectId || !Number.isFinite(projectId)) {
-      setFormError('Open create-task from a project so projectId is set.')
-      return
-    }
-    try {
-      await createMutation.mutateAsync({
-        title: data.title,
-        description: data.description,
-        priority: data.priority,
-        projectId,
-        projectName: project?.name,
-        assigneeName: data.assignee?.label,
-        assigneeEmploymentId: data.assignee ? Number(data.assignee.id) : null,
-      })
-      safeNavigate(navigate, {
-        to: projectRoutes.projectDetailPath,
-        params: { projectId: String(projectId) },
-        search: { tab: 'tasks' },
-      })
-    } catch (err) {
-      setFormError(getApiErrorMessage(err, 'Failed to create task. Please try again.'))
-    }
-  }
+  } = form
 
   return (
     <div className="max-w-2xl mx-auto animate-fade-in">
@@ -119,7 +60,7 @@ export function TaskCreatePage() {
           </Link>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={onSubmit}>
           <div className="p-5 space-y-6 bg-background">
             <div className="space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b border-outline-variant">
@@ -170,7 +111,7 @@ export function TaskCreatePage() {
                 }
                 options={employeeOptions}
                 value={assignee ?? null}
-                onChange={(v) => setValue('assignee', v)}
+                onChange={setAssignee}
                 disabled={employeesQuery.isLoading}
                 emptyMessage={
                   employeesQuery.isError ? 'Failed to load employees' : 'No employees match'
@@ -192,7 +133,7 @@ export function TaskCreatePage() {
                     <button
                       key={p}
                       type="button"
-                      onClick={() => setValue('priority', p)}
+                      onClick={() => setPriority(p)}
                       className={`flex-1 py-1.5 px-3 rounded text-center text-body-md font-medium transition-colors ${
                         priority === p
                           ? 'bg-surface text-secondary executive-shadow'
@@ -218,7 +159,7 @@ export function TaskCreatePage() {
           </div>
 
           <div className="p-5 border-t border-outline-variant bg-surface flex items-center justify-end gap-3">
-            <Button type="button" variant="outline" onClick={() => safeNavigate(navigate, { to: backTo })}>
+            <Button type="button" variant="outline" onClick={cancel}>
               Cancel
             </Button>
             <Button
