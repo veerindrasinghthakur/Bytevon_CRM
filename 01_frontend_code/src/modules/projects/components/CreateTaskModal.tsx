@@ -64,16 +64,16 @@ export function CreateTaskModal({
       return
     }
     try {
+      const assigneeName =
+        assignee?.label ?? (data.assigneeName?.trim() || undefined)
       await create.mutateAsync({
         title: data.title.trim(),
         description: data.description?.trim() || undefined,
         priority: data.priority,
         projectId,
         projectName,
-        assigneeName: assignee?.label ?? data.assigneeName?.trim() || undefined,
+        assigneeName,
         assigneeEmploymentId: assignee ? Number(assignee.id) : null,
-      } as Parameters<typeof create.mutateAsync>[0] & {
-        assigneeEmploymentId?: number | null
       })
       reset()
       setAssignee(null)
