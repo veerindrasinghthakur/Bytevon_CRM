@@ -35,6 +35,7 @@ export function useCreateTask() {
       projectId?: number
       projectName?: string
       assigneeName?: string
+      assigneeEmploymentId?: number | null
     }) => createTask(input),
     onMutate: async (input) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.tasks.all })
@@ -88,7 +89,7 @@ export function useUpdateTask() {
       id: number
       patch: Partial<
         Pick<Task, 'title' | 'description' | 'priority' | 'status' | 'assigneeName' | 'dueDate'>
-      >
+      > & { assigneeEmploymentId?: number | null }
     }) => updateTask(id, patch),
     onMutate: async ({ id, patch }) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.tasks.all })
