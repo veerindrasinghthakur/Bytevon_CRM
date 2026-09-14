@@ -6,8 +6,19 @@ import {
   createProject,
   updateProject,
 } from '../api/projects'
-import type { ProjectListMetrics, ProjectListParams, ProjectListCache } from '../types'
-import type { CreateProjectInput, ProjectDetail, ProjectListItem } from '../schemas/project'
+import type { ProjectListParams, ProjectListCache } from '../types'
+import type { CreateProjectInput, ProjectDetail } from '../schemas/project'
+
+/** Only touch list queries — never detail / teams / tasks under ['projects']. */
+const PROJECT_LIST_KEY = queryKeys.projects.listPrefix()
+
+function isListCache(old: unknown): old is ProjectListCache {
+  return (
+    !!old &&
+    typeof old === 'object' &&
+    Array.isArray((old as ProjectListCache).items)
+  )
+}
 
 /** Server-side filters + pagination; query key includes params. */
 export function useProjects(filters?: ProjectListParams) {
@@ -41,9 +52,9 @@ export function useCreateProject() {
   return useMutation({
     mutationFn: (input: CreateProjectInput) => createProject(input),
     onMutate: async (input) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.projects.all })
+      await queryClient.cancelQueries({ queryKey: PROJECT_LIST_KEY })
       const previous = queryClient.getQueriesData<ProjectListCache>({
-        queryKey: queryKeys.projects.all,
+        queryKey: PROJECT_LIST_KEY,
       })
 
       const optimistic: ProjectDetail = {
@@ -63,9 +74,9 @@ export function useCreateProject() {
         updatedAt: new Date().toISOString(),
       }
 
-      queryClient.setQueriesData<ProjectListCache>({ queryKey: queryKeys.projects.all }, (old) => {
-        if (!old) return { items: [optimistic], total: 1 }
-        return { items: [optimistic, ...old.items], total: old.total + 1 }
+      queryClient.setQueriesData<ProjectListCache>({ queryKey: PROJECT_LIST_KEY }, (old) => {
+        if (!isListCache(old)) return { items: [optimistic], total: 1 }
+        return { items: [optimistic, ...old.items], total: (old.total ?? old.items.length) + 1 }
       })
 
       return { previous, optimisticId: optimistic.id }
@@ -76,11 +87,11 @@ export function useCreateProject() {
       })
     },
     onSuccess: (created, _input, ctx) => {
-      queryClient.setQueriesData<ProjectListCache>({ queryKey: queryKeys.projects.all }, (old) => {
-        if (!old) return { items: [created], total: 1 }
+      queryClient.setQueriesData<ProjectListCache>({ queryKey: PROJECT_LIST_KEY }, (old) => {
+        if (!isListCache(old)) return { items: [created], total: 1 }
         return {
           items: old.items.map((p) => (p.id === ctx?.optimisticId ? created : p)),
-          total: old.total,
+          total: old.total ?? old.items.length,
         }
       })
       queryClient.setQueryData(queryKeys.projects.detail(created.id), created)
@@ -99,15 +110,17 @@ export function useUpdateProject() {
       patch: Parameters<typeof updateProject>[1]
     }) => updateProject(id, patch),
     onMutate: async ({ id, patch }) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.projects.all })
+      // Only cancel list + this detail — not teams/tasks under ['projects']
+      await queryClient.cancelQueries({ queryKey: PROJECT_LIST_KEY })
+      await queryClient.cancelQueries({ queryKey: queryKeys.projects.detail(id) })
 
       const previousLists = queryClient.getQueriesData<ProjectListCache>({
-        queryKey: queryKeys.projects.all,
+        queryKey: PROJECT_LIST_KEY,
       })
       const previousDetail = queryClient.getQueryData<ProjectDetail>(queryKeys.projects.detail(id))
 
-      queryClient.setQueriesData<ProjectListCache>({ queryKey: queryKeys.projects.all }, (old) => {
-        if (!old) return old
+      queryClient.setQueriesData<ProjectListCache>({ queryKey: PROJECT_LIST_KEY }, (old) => {
+        if (!isListCache(old)) return old
         return {
           ...old,
           items: old.items.map((p) => (p.id === id ? { ...p, ...patch } : p)),
@@ -118,6 +131,10 @@ export function useUpdateProject() {
         queryClient.setQueryData(queryKeys.projects.detail(id), {
           ...previousDetail,
           ...patch,
+          // team assignment fields
+          ...(patch.teamId != null
+            ? { teamId: patch.teamId, teamCount: 1 }
+            : {}),
           updatedAt: new Date().toISOString(),
         })
       }
@@ -131,9 +148,10 @@ export function useUpdateProject() {
       }
     },
     onSuccess: (updated) => {
+      if (!updated?.id) return
       queryClient.setQueryData(queryKeys.projects.detail(updated.id), updated)
-      queryClient.setQueriesData<ProjectListCache>({ queryKey: queryKeys.projects.all }, (old) => {
-        if (!old) return old
+      queryClient.setQueriesData<ProjectListCache>({ queryKey: PROJECT_LIST_KEY }, (old) => {
+        if (!isListCache(old)) return old
         return {
           ...old,
           items: old.items.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)),
