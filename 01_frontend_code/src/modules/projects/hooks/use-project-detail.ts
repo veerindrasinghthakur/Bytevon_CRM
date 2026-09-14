@@ -1,10 +1,16 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQuery } from '@tanstack/react-query'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
+import type { EntityOption } from '@/shared/components/forms/EntitySearch'
+import type { ActivityItem } from '@/shared/types'
+import { listAuditLogs } from '@/modules/admin/api/audit'
 import { useProject, useUpdateProject } from './use-projects'
 import { useTasks } from './use-tasks'
+import { useDocuments, useUploadDocument } from './use-documents'
+import { getTeams } from '../api/teams'
 import type { ProjectDetailTab } from '../types'
 import { TaskStatusFilterOptions } from '../enums'
 import { projectDetailFormSchema, type ProjectDetailFormInput } from '../schemas/project-detail-form'
@@ -28,10 +34,32 @@ export function useProjectDetail(
   const [saveError, setSaveError] = useState<string | null>(null)
   const [changingTeam, setChangingTeam] = useState(false)
   const [teamAssignError, setTeamAssignError] = useState<string | null>(null)
+  const [teamOptions, setTeamOptions] = useState<EntityOption[]>([])
+  const [selectedTeam, setSelectedTeam] = useState<EntityOption | null>(null)
 
   const tasksQuery = useTasks(
     projectId != null && tab === 'tasks' ? { projectId } : undefined,
   )
+
+  const {
+    data: docsData,
+    refetch: refetchDocs,
+    isLoading: docsLoading,
+  } = useDocuments({
+    referenceType: 'PROJECT',
+    referenceId: project?.id,
+  })
+  const uploadDoc = useUploadDocument({
+    referenceType: 'PROJECT',
+    referenceId: project?.id,
+  })
+
+  const activityQuery = useQuery({
+    queryKey: ['projects', 'activity', project?.id],
+    queryFn: () => listAuditLogs({ limit: 40 }),
+    enabled: project?.id != null,
+    staleTime: 30_000,
+  })
 
   const form = useForm<ProjectDetailFormInput>({
     resolver: zodResolver(projectDetailFormSchema),
@@ -126,6 +154,29 @@ export function useProjectDetail(
     }
   }
 
+  const loadTeams = async () => {
+    try {
+      const { items } = await getTeams({ pageSize: 100 })
+      setTeamOptions(
+        (items ?? []).map((t) => ({
+          id: String(t.id),
+          label: t.name,
+          sublabel: t.headName ? `Head: ${t.headName}` : undefined,
+        })),
+      )
+    } catch {
+      setTeamOptions([])
+    }
+  }
+
+  useEffect(() => {
+    if (changingTeam) {
+      void loadTeams()
+      setSelectedTeam(null)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [changingTeam])
+
   const tasks = tasksQuery.data?.items ?? []
   const filteredTasks = useMemo(() => {
     return tasks.filter((t) => {
@@ -139,9 +190,44 @@ export function useProjectDetail(
     })
   }, [tasks, taskStatusFilter, taskSearch])
 
+  const activityItems: ActivityItem[] = useMemo(() => {
+    const logs = activityQuery.data ?? []
+    const pid = project?.id
+    const pname = (project?.name ?? '').toLowerCase()
+    const filtered = logs.filter((l) => {
+      if (pid != null && l.referenceId === pid) return true
+      const blob = `${l.description} ${l.target} ${l.referenceType} ${l.module}`.toLowerCase()
+      if (pname && blob.includes(pname)) return true
+      if (pid != null && blob.includes(`#${pid}`)) return true
+      return false
+    })
+    const source = filtered.length > 0 ? filtered : logs.slice(0, 8)
+    return source.slice(0, 12).map((l) => ({
+      id: l.id,
+      title: l.action.replace(/_/g, ' '),
+      description: l.description || l.target,
+      timestamp: l.timestamp,
+      actor: l.actor,
+      icon: l.action.includes('CREATE')
+        ? 'add_circle'
+        : l.action.includes('UPDATE') || l.action.includes('STATUS')
+          ? 'edit'
+          : l.action.includes('ASSIGN')
+            ? 'group'
+            : 'history',
+    }))
+  }, [activityQuery.data, project?.id, project?.name])
+
+  const repoHref = project?.repositoryUrl
+    ? project.repositoryUrl.startsWith('http')
+      ? project.repositoryUrl
+      : `https://github.com/${project.repositoryUrl}`
+    : null
+
   const openTasks = project?.openTasks ?? 0
   const progress = project?.progress ?? 0
   const daysToDeadline = project?.daysToDeadline ?? null
+  const hasTeam = Boolean(project?.teamName || project?.teamId)
 
   return {
     project,
@@ -150,6 +236,7 @@ export function useProjectDetail(
     refetch: () => {
       void query.refetch()
       if (tab === 'tasks') void tasksQuery.refetch()
+      void refetchDocs()
     },
     tab,
     setTab,
@@ -178,5 +265,15 @@ export function useProjectDetail(
     assignTeam,
     teamAssignError,
     isAssigningTeam: updateMutation.isPending,
+    teamOptions,
+    selectedTeam,
+    setSelectedTeam,
+    hasTeam,
+    activityItems,
+    repoHref,
+    docsData,
+    docsLoading,
+    uploadDoc,
+    refetchDocs,
   }
 }
