@@ -84,6 +84,24 @@ class ProjectRepository(BaseRepository):
         stmt = select(Task).where(Task.project_id == project_id).order_by(Task.id)
         return (await self._session.execute(stmt)).scalars().all()
 
+    async def list_all_tasks(
+        self,
+        *,
+        project_id: Optional[int] = None,
+        limit: int = 200,
+        offset: int = 0,
+    ) -> Sequence[Task]:
+        stmt = select(Task).order_by(Task.id.desc()).limit(limit).offset(offset)
+        if project_id is not None:
+            stmt = (
+                select(Task)
+                .where(Task.project_id == project_id)
+                .order_by(Task.id.desc())
+                .limit(limit)
+                .offset(offset)
+            )
+        return (await self._session.execute(stmt)).scalars().all()
+
     async def sum_task_minutes(self, task_id: int) -> int:
         stmt = select(func.coalesce(func.sum(TaskTimeEntry.duration_minutes), 0)).where(
             TaskTimeEntry.task_id == task_id
