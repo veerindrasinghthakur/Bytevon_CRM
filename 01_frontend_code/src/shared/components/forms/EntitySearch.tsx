@@ -10,7 +10,7 @@ export type { EntityOption, EntitySearchProps }
 export function EntitySearch({
   label,
   placeholder = 'Search…',
-  options,
+  options = [],
   value = null,
   onChange,
   multi = false,
@@ -25,33 +25,34 @@ export function EntitySearch({
   const rootRef = useRef<HTMLDivElement>(null)
 
   const dispatch = useDispatch()
-  // Pull selected state from Redux when the component is uncontrolled (no callbacks).
   const reduxSelected = useSelector((state: RootState) =>
     multi ? state.entitySearch.selectedMultiple : state.entitySearch.selected,
   ) as EntityOption | EntityOption[] | null
 
+  const safeOptions = Array.isArray(options) ? options : []
+  const safeValues = Array.isArray(values) ? values : []
+
   const selectedIds = useMemo(() => {
-    // Prefer controlled props; otherwise fall back to Redux state.
     if (multi) {
-      const src = values.length ? values : (reduxSelected as EntityOption[] | null) ?? []
-      return new Set(src.map((v) => String(v.id)))
+      const src = safeValues.length ? safeValues : (reduxSelected as EntityOption[] | null) ?? []
+      return new Set((Array.isArray(src) ? src : []).map((v) => String(v.id)))
     }
     const src = value ?? (reduxSelected as EntityOption | null)
     return new Set(src ? [String(src.id)] : [])
-  }, [multi, values, value, reduxSelected])
+  }, [multi, safeValues, value, reduxSelected])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    let list = options
+    let list = safeOptions
     if (q) {
-      list = options.filter(
+      list = safeOptions.filter(
         (o) =>
           o.label.toLowerCase().includes(q) ||
-          (o.sublabel ?? '').toLowerCase().includes(q)
+          (o.sublabel ?? '').toLowerCase().includes(q),
       )
     }
     return list.slice(0, 12)
-  }, [options, query])
+  }, [safeOptions, query])
 
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
@@ -65,17 +66,15 @@ export function EntitySearch({
     if (multi) {
       const id = String(opt.id)
       if (selectedIds.has(id)) {
-        // Controlled path
         if (onChangeMulti) {
-          onChangeMulti(values.filter((v) => String(v.id) !== id))
+          onChangeMulti(safeValues.filter((v) => String(v.id) !== id))
         } else {
-          // Redux path – filter out the removed option
           const current = (reduxSelected as EntityOption[]) ?? []
           dispatch(setSelectedMultiple(current.filter((v) => String(v.id) !== id)))
         }
       } else {
         if (onChangeMulti) {
-          onChangeMulti([...values, opt])
+          onChangeMulti([...safeValues, opt])
         } else {
           const current = (reduxSelected as EntityOption[]) ?? []
           dispatch(setSelectedMultiple([...current, opt]))
@@ -108,9 +107,9 @@ export function EntitySearch({
         <label className="block text-label-sm text-on-surface-variant mb-1">{label}</label>
       )}
 
-      {multi && values.length > 0 && (
+      {multi && safeValues.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-2">
-          {values.map((v) => (
+          {safeValues.map((v) => (
             <span
               key={v.id}
               className="inline-flex items-center gap-1 pl-2.5 pr-1 py-1 rounded-full bg-electric-blue/10 text-electric-blue text-label-sm"
@@ -120,7 +119,9 @@ export function EntitySearch({
                 type="button"
                 className="p-0.5 rounded-full hover:bg-electric-blue/20"
                 aria-label={`Remove ${v.label}`}
-                onClick={() => onChangeMulti?.(values.filter((x) => String(x.id) !== String(v.id)))}
+                onClick={() =>
+                  onChangeMulti?.(safeValues.filter((x) => String(x.id) !== String(v.id)))
+                }
               >
                 <span className="material-symbols-outlined text-[16px]">close</span>
               </button>
@@ -148,7 +149,7 @@ export function EntitySearch({
             'w-full pl-10 pr-10 py-2.5 rounded-lg border border-outline-variant bg-surface-container-lowest',
             'text-body-md text-on-background placeholder:text-on-surface-variant',
             'focus:outline-none focus:ring-2 focus:ring-electric-blue focus:border-electric-blue',
-            disabled && 'opacity-60 cursor-not-allowed'
+            disabled && 'opacity-60 cursor-not-allowed',
           )}
           autoComplete="off"
         />
@@ -183,7 +184,7 @@ export function EntitySearch({
                   className={cn(
                     'w-full text-left px-3 py-2.5 flex items-start gap-3',
                     'hover:bg-surface-container',
-                    active && 'bg-electric-blue/5'
+                    active && 'bg-electric-blue/5',
                   )}
                   onClick={() => pick(opt)}
                 >
