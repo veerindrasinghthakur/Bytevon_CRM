@@ -1,1 +1,1 @@
-PLACEHOLDER
+export { LeadsListPage } from '../LeadsListPage'
