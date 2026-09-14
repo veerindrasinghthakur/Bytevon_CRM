@@ -1,15 +1,38 @@
 /**
- * Tasks API — env.useMockApi → shared mock DB; false → /projects/tasks or /tasks
+ * Tasks API — env.useMockApi → shared mock DB; false → /projects/tasks
  */
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
 import { paginateItems } from '@/shared/lib/list-params'
-import type { Task, TaskPriority, TaskStatus,TaskRow } from '../types'
+import type { Task, TaskPriority, TaskStatus, TaskRow } from '../types'
 
-export type { Task, TaskPriority, TaskStatus, } from '../types'
+export type { Task, TaskPriority, TaskStatus } from '../types'
 
-
+function mapApiTask(row: Record<string, unknown>): Task {
+  const statusRaw = String(row.status ?? 'TODO').toUpperCase()
+  const statusMap: Record<string, TaskStatus> = {
+    TODO: 'TODO',
+    IN_PROGRESS: 'IN_PROGRESS',
+    IN_REVIEW: 'IN_REVIEW',
+    DONE: 'DONE',
+    COMPLETED: 'DONE',
+    BLOCKED: 'BLOCKED',
+    ON_HOLD: 'ON_HOLD',
+  }
+  return {
+    id: Number(row.id),
+    title: String(row.title ?? ''),
+    description: (row.description as string | undefined) ?? undefined,
+    priority: String(row.priority ?? 'MEDIUM').toUpperCase() as TaskPriority,
+    status: statusMap[statusRaw] ?? 'TODO',
+    projectId: Number(row.project_id ?? row.projectId ?? 0),
+    projectName: (row.projectName as string | undefined) ?? undefined,
+    assigneeName: (row.assigneeName as string | undefined) ?? undefined,
+    dueDate: (row.due_date as string | null | undefined) ?? (row.dueDate as string | null) ?? null,
+    createdAt: String(row.created_at ?? row.createdAt ?? new Date().toISOString()),
+  }
+}
 
 function asTask(row: TaskRow): Task {
   return {
@@ -34,10 +57,38 @@ export async function getTasks(params?: {
   pageSize?: number
 }): Promise<{ items: Task[]; total: number }> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<{ items: Task[]; total: number }>('/projects/tasks', {
-      params,
+    const { data } = await apiClient.get<
+      { items: Task[]; total: number } | Array<Record<string, unknown>>
+    >('/projects/tasks', {
+      params: {
+        project_id: params?.projectId,
+        limit: params?.pageSize ?? 200,
+        offset:
+          params?.page != null && params?.pageSize != null
+            ? (Math.max(params.page, 1) - 1) * params.pageSize
+            : 0,
+      },
     })
-    return data
+    let items = Array.isArray(data)
+      ? data.map((r) => mapApiTask(r))
+      : (data.items ?? []).map((t) =>
+          typeof t === 'object' && t && 'project_id' in (t as object)
+            ? mapApiTask(t as Record<string, unknown>)
+            : (t as Task),
+        )
+    if (params?.search) {
+      const q = params.search.toLowerCase()
+      items = items.filter(
+        (t) =>
+          t.title.toLowerCase().includes(q) ||
+          t.projectName?.toLowerCase().includes(q) ||
+          t.assigneeName?.toLowerCase().includes(q),
+      )
+    }
+    if (params?.status) {
+      items = items.filter((t) => t.status === params.status)
+    }
+    return { items, total: Array.isArray(data) ? items.length : (data.total ?? items.length) }
   }
   await delay()
   let items = getDb().tasks.map((t) => asTask(t as TaskRow))
@@ -65,8 +116,8 @@ export async function getTasks(params?: {
 export async function getTask(id: number): Promise<Task | null> {
   if (!env.useMockApi) {
     try {
-      const { data } = await apiClient.get<Task>(`/projects/tasks/${id}`)
-      return data
+      const { data } = await apiClient.get<Record<string, unknown>>(`/projects/tasks/${id}`)
+      return mapApiTask(data)
     } catch {
       return null
     }
@@ -80,11 +131,19 @@ export async function updateTask(
   id: number,
   patch: Partial<
     Pick<Task, 'title' | 'description' | 'priority' | 'status' | 'assigneeName' | 'dueDate'>
-  >,
+  > & { assigneeEmploymentId?: number | null },
 ): Promise<Task> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.patch<Task>(`/projects/tasks/${id}`, patch)
-    return data
+    const body: Record<string, unknown> = {}
+    if (patch.title != null) body.title = patch.title
+    if (patch.description !== undefined) body.description = patch.description
+    if (patch.priority != null) body.priority = patch.priority
+    if (patch.status != null) body.status = patch.status
+    if (patch.dueDate !== undefined) body.due_date = patch.dueDate
+    if (patch.assigneeEmploymentId !== undefined)
+      body.assignee_employment_id = patch.assigneeEmploymentId
+    const { data } = await apiClient.patch<Record<string, unknown>>(`/projects/tasks/${id}`, body)
+    return mapApiTask(data)
   }
   await delay(400)
   const tasks = getDb().tasks as TaskRow[]
@@ -101,10 +160,24 @@ export async function createTask(input: {
   projectId?: number
   projectName?: string
   assigneeName?: string
+  assigneeEmploymentId?: number | null
 }): Promise<Task> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<Task>('/projects/tasks', input)
-    return data
+    if (input.projectId == null) {
+      throw new Error('projectId is required to create a task')
+    }
+    const { data } = await apiClient.post<Record<string, unknown>>('/projects/tasks', {
+      project_id: input.projectId,
+      title: input.title,
+      description: input.description || null,
+      priority: input.priority ?? 'MEDIUM',
+      status: 'TODO',
+      assignee_employment_id: input.assigneeEmploymentId ?? null,
+    })
+    const task = mapApiTask(data)
+    if (input.assigneeName) task.assigneeName = input.assigneeName
+    if (input.projectName) task.projectName = input.projectName
+    return task
   }
   await delay(500)
   const db = getDb()
