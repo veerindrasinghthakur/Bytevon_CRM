@@ -1,6 +1,5 @@
 import { Link, useParams, useSearch } from '@tanstack/react-router'
-import { useEffect, useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
@@ -8,16 +7,14 @@ import { Select } from '@/shared/components/ui/Select'
 import { RefreshButton } from '@/shared/components/ui/RefreshButton'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { NotesPanel } from '@/shared/components/notes/NotesPanel'
-import { EntitySearch, type EntityOption } from '@/shared/components/forms/EntitySearch'
+import { EntitySearch } from '@/shared/components/forms/EntitySearch'
 import { handleEnterAdvance } from '@/shared/lib/enter-advance'
 import { looseLinkProps } from '@/shared/lib/safeNavigate'
 import { useTaskDetail } from '../hooks/use-task-detail'
-import { useProject } from '../hooks/use-projects'
-import { getTeamMembers } from '../api/teams'
 import { TaskStatusBadge, TaskPriorityLabel } from '../components/TaskStatusBadge'
+import { TaskDetailSidebar } from '../components/TaskDetailSidebar'
 import { projectRoutes } from '../routes'
 import type { TaskPriority, TaskStatus } from '../types'
-import { cn } from '@/shared/lib/cn'
 
 export function TaskDetailPage() {
   const params = useParams({ strict: false }) as { taskId?: string }
@@ -32,59 +29,23 @@ export function TaskDetailPage() {
     form,
     startEditing,
     cancelEdit,
-    save,
+    saveWithAssignee,
     isSaving,
     saveError,
     priorityOptions,
     statusOptions,
+    assignee,
+    setAssignee,
+    employeeOptions,
+    membersQuery,
+    teamId,
+    needsTeam,
   } = useTaskDetail(Number.isFinite(id) ? id : undefined)
-
-  const [assignee, setAssignee] = useState<EntityOption | null>(null)
-
-  const projectQuery = useProject(
-    task?.projectId != null && Number.isFinite(task.projectId) ? task.projectId : undefined,
-  )
-  const teamId = projectQuery.data?.teamId ?? null
-
-  const membersQuery = useQuery({
-    queryKey: ['projects', 'team-members-for-task-detail', teamId],
-    queryFn: () => getTeamMembers(teamId!),
-    enabled: isEditing && teamId != null && Number.isFinite(teamId),
-    staleTime: 30_000,
-  })
-
-  const employeeOptions: EntityOption[] = useMemo(() => {
-    const rows = membersQuery.data ?? []
-    return rows
-      .filter((m) => m.employmentId != null && Number(m.employmentId) > 0)
-      .map((m) => ({
-        id: Number(m.employmentId),
-        label: m.name,
-        sublabel: [m.role ?? m.title, m.email].filter(Boolean).join(' · '),
-      }))
-  }, [membersQuery.data])
 
   useEffect(() => {
     if (search.edit === '1' && task && !isEditing) startEditing()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search.edit, task?.id])
-
-  useEffect(() => {
-    if (!isEditing || !task) {
-      setAssignee(null)
-      return
-    }
-    if (task.assigneeEmploymentId != null) {
-      setAssignee({
-        id: task.assigneeEmploymentId,
-        label: task.assigneeName ?? `Employment #${task.assigneeEmploymentId}`,
-      })
-    } else if (task.assigneeName) {
-      setAssignee({ id: task.assigneeName, label: task.assigneeName })
-    } else {
-      setAssignee(null)
-    }
-  }, [isEditing, task?.id, task?.assigneeEmploymentId, task?.assigneeName])
 
   if (isLoading) {
     return (
@@ -104,31 +65,6 @@ export function TaskDetailPage() {
         </Link>
       </div>
     )
-  }
-
-  const initials = (task.assigneeName ?? '?')
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
-
-  const needsTeam = isEditing && !projectQuery.isLoading && teamId == null
-
-  const onSave = () => {
-    const employmentId =
-      assignee && typeof assignee.id === 'number'
-        ? Number(assignee.id)
-        : assignee && Number.isFinite(Number(assignee.id))
-          ? Number(assignee.id)
-          : null
-    if (assignee?.label) {
-      form.setValue('assigneeName', assignee.label)
-    }
-    void save({
-      assigneeEmploymentId: employmentId,
-      assigneeName: assignee?.label ?? form.getValues('assigneeName') ?? undefined,
-    })
   }
 
   return (
@@ -158,7 +94,7 @@ export function TaskDetailPage() {
                 type="button"
                 variant="primary"
                 size="sm"
-                onClick={onSave}
+                onClick={saveWithAssignee}
                 isLoading={isSaving}
                 disabled={needsTeam}
               >
@@ -291,93 +227,8 @@ export function TaskDetailPage() {
           <NotesPanel title="Task notes" referenceType="TASK" referenceId={task.id} />
         </div>
 
-        <aside className="space-y-4">
-          <section className="bv-surface overflow-hidden">
-            <div className="p-4 border-b border-outline-variant bg-surface-container-low/50">
-              <h3 className="font-semibold flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary text-lg">info</span>
-                Task Details
-              </h3>
-            </div>
-            <div className="p-4 space-y-4">
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant block mb-2">
-                  Assignee
-                </label>
-                <div
-                  className={cn(
-                    'flex items-center justify-between p-2 rounded-lg border border-outline-variant',
-                    'bg-surface-container-low/50',
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-xs font-bold">
-                      {initials}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-on-surface">
-                        {task.assigneeName ?? 'Unassigned'}
-                      </p>
-                      {task.assigneeEmploymentId != null && (
-                        <p className="text-caption text-on-surface-variant">
-                          Employment #{task.assigneeEmploymentId}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <MetaRow label="Project" value={task.projectName ?? '—'} />
-              <MetaRow label="Priority" value={task.priority} />
-              <MetaRow label="Status" value={task.status.replace(/_/g, ' ')} />
-              <MetaRow label="Due" value={formatDisplayDate(task.dueDate)} />
-              <MetaRow label="Created" value={formatDisplayDate(task.createdAt)} />
-              {task.projectId ? (
-                <Link
-                  {...looseLinkProps({
-                    to: projectRoutes.projectDetailPath,
-                    params: { projectId: String(task.projectId) },
-                    className: 'block text-sm font-semibold text-secondary hover:underline',
-                  })}
-                >
-                  Open project →
-                </Link>
-              ) : null}
-            </div>
-          </section>
-        </aside>
+        <TaskDetailSidebar task={task} />
       </div>
-    </div>
-  )
-}
-
-function formatDisplayDate(value?: string | null): string {
-  if (!value) return '—'
-  const raw = String(value).slice(0, 10)
-  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-    const [y, m, d] = raw.split('-').map(Number)
-    return new Date(y, m - 1, d).toLocaleDateString(undefined, {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    })
-  }
-  try {
-    return new Date(value).toLocaleDateString(undefined, {
-      day: '2-digit',
-      month: 'short',
-      year: 'numeric',
-    })
-  } catch {
-    return value
-  }
-}
-
-function MetaRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex justify-between gap-3 text-sm">
-      <span className="text-on-surface-variant">{label}</span>
-      <span className="font-medium text-on-background text-right">{value}</span>
     </div>
   )
 }
