@@ -29,6 +29,9 @@ export function isSecondaryItemActive(pathname: string, to: string): boolean {
     return pathname === '/sales/dashboard' || pathname === '/sales/activity'
   }
   if (to === '/projects') return pathname === '/projects'
+  if (to === '/projects/teams') {
+    return pathname.startsWith('/projects/teams') || pathname.startsWith('/workforce/teams')
+  }
   if (to === '/projects/documents') return pathname === '/projects/documents'
   if (to === '/my-work') return pathname === '/my-work'
   if (to === '/approvals') return pathname === '/approvals'
@@ -47,15 +50,11 @@ export function isSecondaryItemActive(pathname: string, to: string): boolean {
   if (to === '/admin/attendance-settings') {
     return pathname.startsWith('/admin/attendance-settings')
   }
-  // Dashboard home is exact; employee is distinct path
   if (to === '/dashboard') return pathname === '/dashboard'
   if (to === '/dashboard/employee') return pathname === '/dashboard/employee'
   if (to === '/payroll') return pathname === '/payroll'
   if (to === '/payroll/history') {
     return pathname === '/payroll/history'
-  }
-  if (to === '/workforce/teams') {
-    return pathname.startsWith('/workforce/teams') || pathname.startsWith('/projects/teams')
   }
   if (to === '/workforce/shifts') {
     return pathname.startsWith('/workforce/shifts') || pathname.startsWith('/admin/settings/shifts')

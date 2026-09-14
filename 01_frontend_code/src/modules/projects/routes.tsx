@@ -12,10 +12,19 @@ const TaskDetailPage = lazyPage(() => import('./pages/task/TaskDetailPage'), 'Ta
 const DocumentsPage = lazyPage(() => import('./pages/document/DocumentsPage'), 'DocumentsPage')
 const ProjectNotesPage = lazyPage(() => import('./pages/note/ProjectNotesPage'), 'ProjectNotesPage')
 
+/** Teams UI is owned by Projects module */
+const TeamsListPage = lazyPage(() => import('./pages/team/TeamsListPage'), 'TeamsListPage')
+const TeamCreatePage = lazyPage(() => import('./pages/team/TeamCreatePage'), 'TeamCreatePage')
+const TeamDetailPage = lazyPage(() => import('./pages/team/TeamDetailPage'), 'TeamDetailPage')
+const TeamEditPage = lazyPage(() => import('./pages/team/TeamEditPage'), 'TeamEditPage')
+const TeamMembersPage = lazyPage(() => import('./pages/team/TeamMembersPage'), 'TeamMembersPage')
+const TeamProjectsPage = lazyPage(() => import('./pages/team/TeamProjectsPage'), 'TeamProjectsPage')
+const AssignProjectPage = lazyPage(() => import('./pages/team/AssignProjectPage'), 'AssignProjectPage')
+/** Add-member shared with workforce departments */
+const AddMemberPage = lazyPage(() => import('@/modules/workforce/pages/AddMemberPage'), 'AddMemberPage')
+
 /**
- * Canonical path helpers.
- * Teams live under Workforce (single UI). projectRoutes.team* aliases point to
- * /workforce/teams so callers do not need dual paths.
+ * Canonical path helpers. Teams live under /projects/teams.
  */
 export const projectRoutes = {
   root: '/projects',
@@ -26,26 +35,25 @@ export const projectRoutes = {
   projectNotes: (id: string | number) => `/projects/${id}/notes`,
   projectNotesPath: '/projects/$projectId/notes',
   documents: '/projects/documents',
-  /** Teams UI is workforce — these alias workforce paths */
-  teams: '/workforce/teams',
-  teamNew: '/workforce/teams/new',
-  teamDetail: (id: string | number) => `/workforce/teams/${id}`,
-  teamDetailPath: '/workforce/teams/$teamId',
-  teamMembers: (id: string | number) => `/workforce/teams/${id}/members`,
-  teamMembersPath: '/workforce/teams/$teamId/members',
-  teamAddMember: (id: string | number) => `/workforce/teams/${id}/add-member`,
-  teamAddMemberPath: '/workforce/teams/$teamId/add-member',
+  teams: '/projects/teams',
+  teamNew: '/projects/teams/new',
+  teamDetail: (id: string | number) => `/projects/teams/${id}`,
+  teamDetailPath: '/projects/teams/$teamId',
+  teamEdit: (id: string | number) => `/projects/teams/${id}/edit`,
+  teamEditPath: '/projects/teams/$teamId/edit',
+  teamMembers: (id: string | number) => `/projects/teams/${id}/members`,
+  teamMembersPath: '/projects/teams/$teamId/members',
+  teamProjects: (id: string | number) => `/projects/teams/${id}/projects`,
+  teamProjectsPath: '/projects/teams/$teamId/projects',
+  teamAssignProject: (id: string | number) => `/projects/teams/${id}/assign-project`,
+  teamAssignProjectPath: '/projects/teams/$teamId/assign-project',
+  teamAddMember: (id: string | number) => `/projects/teams/${id}/add-member`,
+  teamAddMemberPath: '/projects/teams/$teamId/add-member',
   tasks: '/projects/tasks',
   taskNew: '/projects/tasks/new',
   taskDetail: (id: string | number) => `/projects/tasks/${id}`,
   taskDetailPath: '/projects/tasks/$taskId',
 } as const
-
-function redirectTeams(to: string) {
-  return () => {
-    throw redirect(safeRedirectOpts({ to }))
-  }
-}
 
 export function createProjectsRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   return [
@@ -70,11 +78,11 @@ export function createProjectsRoutes<TParent extends AnyRoute>(appLayoutRoute: T
       path: '/projects/$projectId/notes',
       component: ProjectNotesPage,
     }),
-    // Legacy /projects/teams* → workforce (single Teams UI)
+    // Teams UI (owned by projects)
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/teams',
-      beforeLoad: redirectTeams('/workforce/teams'),
+      component: TeamsListPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
@@ -83,53 +91,37 @@ export function createProjectsRoutes<TParent extends AnyRoute>(appLayoutRoute: T
         projectId: typeof search.projectId === 'string' ? search.projectId : undefined,
         returnTo: typeof search.returnTo === 'string' ? search.returnTo : undefined,
       }),
-      beforeLoad: ({ search }) => {
-        throw redirect(
-          safeRedirectOpts({
-            to: '/workforce/teams/new',
-            search: {
-              projectId: search.projectId,
-              returnTo: search.returnTo,
-            },
-          }),
-        )
-      },
+      component: TeamCreatePage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/teams/$teamId',
-      beforeLoad: ({ params }) => {
-        throw redirect(
-          safeRedirectOpts({
-            to: '/workforce/teams/$teamId',
-            params: { teamId: String(params.teamId) },
-          }),
-        )
-      },
+      component: TeamDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/projects/teams/$teamId/edit',
+      component: TeamEditPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/teams/$teamId/members',
-      beforeLoad: ({ params }) => {
-        throw redirect(
-          safeRedirectOpts({
-            to: '/workforce/teams/$teamId/members',
-            params: { teamId: String(params.teamId) },
-          }),
-        )
-      },
+      component: TeamMembersPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
-      path: '/projects/teams/$teamId/members/add',
-      beforeLoad: ({ params }) => {
-        throw redirect(
-          safeRedirectOpts({
-            to: '/workforce/teams/$teamId/add-member',
-            params: { teamId: String(params.teamId) },
-          }),
-        )
-      },
+      path: '/projects/teams/$teamId/projects',
+      component: TeamProjectsPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/projects/teams/$teamId/assign-project',
+      component: AssignProjectPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/projects/teams/$teamId/add-member',
+      component: AddMemberPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,

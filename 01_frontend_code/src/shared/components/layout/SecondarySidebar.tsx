@@ -28,8 +28,7 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     title: 'Projects',
     items: [
       { id: 'all-projects', label: 'All Projects', icon: 'account_tree', to: '/projects' },
-      // Single Teams UI lives under Workforce
-      { id: 'teams', label: 'Teams', icon: 'groups', to: '/workforce/teams' },
+      { id: 'teams', label: 'Teams', icon: 'groups', to: '/projects/teams' },
       { id: 'tasks', label: 'Tasks', icon: 'assignment', to: '/projects/tasks' },
       { id: 'documents', label: 'Documents', icon: 'folder', to: '/projects/documents' },
     ],
@@ -40,7 +39,6 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     items: [
       { id: 'employees', label: 'Employees', icon: 'badge', to: '/workforce/employees' },
       { id: 'departments', label: 'Departments', icon: 'domain', to: '/workforce/departments' },
-      { id: 'teams', label: 'Teams', icon: 'groups', to: '/workforce/teams' },
       { id: 'shifts', label: 'Shifts', icon: 'schedule', to: '/workforce/shifts' },
       { id: 'attendance', label: 'Attendance roster', icon: 'calendar_today', to: '/workforce/attendance' },
     ],
