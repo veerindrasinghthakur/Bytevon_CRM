@@ -1,6 +1,8 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEditMode } from '@/shared/hooks/useEditMode'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { useState } from 'react'
 import { useTask, useUpdateTask } from './use-tasks'
 import { TASK_PRIORITY_OPTIONS, TASK_STATUS_OPTIONS } from '../enums'
 import { taskDetailFormSchema, type TaskDetailFormInput } from '../schemas/task-detail-form'
@@ -10,6 +12,7 @@ export function useTaskDetail(taskId: number | undefined) {
   const updateMutation = useUpdateTask()
   const task = query.data ?? null
   const { isEditing, startEditing: setEditingTrue, cancelEditing, finishEditing } = useEditMode()
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const form = useForm<TaskDetailFormInput>({
     resolver: zodResolver(taskDetailFormSchema),
@@ -25,6 +28,7 @@ export function useTaskDetail(taskId: number | undefined) {
 
   const startEditing = () => {
     if (!task) return
+    setSaveError(null)
     form.reset({
       title: task.title,
       description: task.description ?? '',
@@ -37,6 +41,7 @@ export function useTaskDetail(taskId: number | undefined) {
   }
 
   const cancelEdit = () => {
+    setSaveError(null)
     if (task) {
       form.reset({
         title: task.title,
@@ -50,23 +55,32 @@ export function useTaskDetail(taskId: number | undefined) {
     cancelEditing()
   }
 
-  const save = async () => {
+  const save = async (extra?: { assigneeEmploymentId?: number | null }) => {
     if (!task) return
-    const data = await form.handleSubmit(async (values) => values)()
-    if (!data) return
-    await updateMutation.mutateAsync({
-      id: task.id,
-      patch: {
-        title: data.title,
-        description: data.description,
-        priority: data.priority,
-        status: data.status,
-        assigneeName: data.assigneeName || undefined,
-        dueDate: data.dueDate || null,
-      },
-    })
-    finishEditing()
-    void query.refetch()
+    setSaveError(null)
+    const valid = await form.trigger()
+    if (!valid) return
+    const data = form.getValues()
+    try {
+      await updateMutation.mutateAsync({
+        id: task.id,
+        patch: {
+          title: data.title,
+          description: data.description,
+          priority: data.priority,
+          status: data.status,
+          assigneeName: data.assigneeName || undefined,
+          dueDate: data.dueDate || null,
+          ...(extra?.assigneeEmploymentId !== undefined
+            ? { assigneeEmploymentId: extra.assigneeEmploymentId }
+            : {}),
+        },
+      })
+      finishEditing()
+      void query.refetch()
+    } catch (err) {
+      setSaveError(getApiErrorMessage(err, 'Could not save task'))
+    }
   }
 
   return {
@@ -80,6 +94,7 @@ export function useTaskDetail(taskId: number | undefined) {
     cancelEdit,
     save,
     isSaving: updateMutation.isPending,
+    saveError,
     priorityOptions: [...TASK_PRIORITY_OPTIONS],
     statusOptions: [...TASK_STATUS_OPTIONS],
   }
