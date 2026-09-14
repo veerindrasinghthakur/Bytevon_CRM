@@ -6,6 +6,7 @@ Frontend expects:
   GET  /api/v1/projects           → list projects
   GET  /api/v1/projects/teams     → list teams
   GET  /api/v1/projects/tasks     → list tasks (optional project_id)
+  GET  /api/v1/projects/{id}/teams → teams linked to project
 """
 
 from __future__ import annotations
@@ -14,6 +15,7 @@ from typing import Annotated, Optional
 
 from fastapi import APIRouter, Header, Query, status
 
+from app.core.db.enums import ProjectAssignmentType
 from app.modules.project.dependencies import ProjectServiceDep
 from app.modules.project.schemas.schemas import (
     MessageResponse,
@@ -129,7 +131,6 @@ async def list_all_tasks(
     limit: int = Query(200, ge=1, le=500),
     offset: int = Query(0, ge=0),
 ) -> list[TaskResponse]:
-    """List tasks across projects (optional project_id filter). Frontend: GET /projects/tasks."""
     return await service.list_all_tasks(
         project_id=project_id, limit=limit, offset=offset
     )
@@ -178,8 +179,7 @@ async def list_time_entries(
 
 
 # ---------------------------------------------------------------------------
-# Projects — root paths match frontend GET /api/v1/projects
-# Keep /projects/* aliases for any older clients.
+# Projects
 # ---------------------------------------------------------------------------
 
 @router.post("", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
@@ -203,7 +203,6 @@ async def list_projects(
     )
 
 
-# Legacy nested paths (GET/POST /projects/projects)
 @router.post(
     "/projects",
     response_model=ProjectResponse,
@@ -237,6 +236,22 @@ async def list_project_tasks(
     project_id: int, service: ProjectServiceDep
 ) -> list[TaskResponse]:
     return await service.list_tasks(project_id)
+
+
+@router.get("/{project_id}/teams", response_model=list[TeamResponse])
+@router.get("/projects/{project_id}/teams", response_model=list[TeamResponse])
+async def list_teams_for_project(
+    project_id: int, service: ProjectServiceDep
+) -> list[TeamResponse]:
+    """Return linked team when project.assignment_type == TEAM."""
+    project = await service.get_project(project_id)
+    if project.assignment_type != ProjectAssignmentType.TEAM:
+        return []
+    try:
+        team = await service.get_team(project.assigned_to_id)
+        return [team]
+    except Exception:
+        return []
 
 
 @router.get("/{project_id}", response_model=ProjectResponse)
