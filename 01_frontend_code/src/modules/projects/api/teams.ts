@@ -5,11 +5,33 @@ import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay, getDb, nextId } from '@/shared/mock/db'
 import { paginateItems } from '@/shared/lib/list-params'
-import type { Team, TeamStatus,TeamMemberRow,TeamProjectRow,TeamCandidate,TeamRow,EmployeeLike} from '../types'
-import { teamMembersMock } from '../data/teamMembersMock'
+import type {
+  Team,
+  TeamStatus,
+  TeamMemberRow,
+  TeamProjectRow,
+  TeamCandidate,
+  TeamRow,
+  EmployeeLike,
+} from '../types'
 
 export type { Team, TeamStatus } from '../types'
 
+function mapApiTeam(row: Record<string, unknown>): Team {
+  return {
+    id: Number(row.id),
+    name: String(row.name ?? ''),
+    description: (row.description as string | null | undefined) ?? undefined,
+    department: (row.department as string | undefined) ?? undefined,
+    headName: (row.headName as string | undefined) ?? undefined,
+    headRole: (row.headRole as string | undefined) ?? undefined,
+    projectName: (row.projectName as string | undefined) ?? undefined,
+    memberCount: Number(row.memberCount ?? row.member_count ?? 0),
+    projectCount: Number(row.projectCount ?? row.project_count ?? 0),
+    status: String(row.status ?? 'ACTIVE') as TeamStatus,
+    createdAt: String(row.created_at ?? row.createdAt ?? new Date().toISOString()),
+  }
+}
 
 function asTeam(row: TeamRow): Team {
   return {
@@ -43,17 +65,25 @@ export function resolveProjectTeamId(projectId: number): number | null {
 
 export async function getTeams(params?: {
   search?: string
-  /** ACTIVE | INACTIVE or UI Active | Inactive */
   status?: string
   department?: string
   page?: number
   pageSize?: number
 }): Promise<{ items: Team[]; total: number }> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<{ items: Team[]; total: number }>('/projects/teams', {
-      params,
-    })
-    return data
+    const { data } = await apiClient.get<
+      { items: Team[]; total: number } | Array<Record<string, unknown>>
+    >('/projects/teams', { params })
+    if (Array.isArray(data)) {
+      const items = data.map((r) => mapApiTeam(r))
+      return { items, total: items.length }
+    }
+    return {
+      items: (data.items ?? []).map((t) =>
+        typeof t === 'object' && t && 'id' in t ? mapApiTeam(t as Record<string, unknown>) : t,
+      ),
+      total: data.total ?? data.items?.length ?? 0,
+    }
   }
   await delay()
   let items = getDb().teams.map((t) => asTeam(t as TeamRow))
@@ -89,8 +119,8 @@ export async function getTeams(params?: {
 export async function getTeam(id: number): Promise<Team | null> {
   if (!env.useMockApi) {
     try {
-      const { data } = await apiClient.get<Team>(`/projects/teams/${id}`)
-      return data
+      const { data } = await apiClient.get<Record<string, unknown>>(`/projects/teams/${id}`)
+      return mapApiTeam(data)
     } catch {
       return null
     }
@@ -103,10 +133,14 @@ export async function getTeam(id: number): Promise<Team | null> {
 /** Teams linked to a project via teamId (or projectName fallback). */
 export async function getTeamsForProject(projectId: number): Promise<Team[]> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<{ items: Team[] } | Team[]>(
-      `/projects/${projectId}/teams`,
-    )
-    return Array.isArray(data) ? data : (data.items ?? [])
+    try {
+      const { data } = await apiClient.get<{ items: Team[] } | Team[]>(
+        `/projects/${projectId}/teams`,
+      )
+      return Array.isArray(data) ? data : (data.items ?? [])
+    } catch {
+      return []
+    }
   }
   await delay()
   const teamId = resolveProjectTeamId(projectId)
@@ -117,10 +151,21 @@ export async function getTeamsForProject(projectId: number): Promise<Team[]> {
 
 export async function getTeamMembers(teamId: number): Promise<TeamMemberRow[]> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<TeamMemberRow[] | { items: TeamMemberRow[] }>(
-      `/projects/teams/${teamId}/members`,
-    )
-    return Array.isArray(data) ? data : (data.items ?? [])
+    const { data } = await apiClient.get<
+      Array<Record<string, unknown>> | { items: Array<Record<string, unknown>> }
+    >(`/projects/teams/${teamId}/members`)
+    const rows = Array.isArray(data) ? data : (data.items ?? [])
+    return rows.map((r) => ({
+      id: String(r.id ?? r.employment_id ?? ''),
+      employmentId: Number(r.employment_id ?? r.employmentId ?? r.id ?? 0),
+      name: String(r.name ?? r.fullName ?? `Member ${r.employment_id ?? r.id}`),
+      title: String(r.team_role ?? r.teamRole ?? r.title ?? 'Member'),
+      role: String(r.team_role ?? r.teamRole ?? 'Member'),
+      email: String(r.email ?? ''),
+      status: r.left_at || r.leftAt ? 'Inactive' : 'Active',
+      joined: String(r.joined_at ?? r.joinedAt ?? '—'),
+      isHead: String(r.team_role ?? r.teamRole ?? '').toLowerCase().includes('head'),
+    }))
   }
   await delay()
   const db = getDb()
@@ -167,10 +212,14 @@ function projectUiStatus(status: string): TeamProjectRow['status'] {
 
 export async function getTeamProjects(teamId: number): Promise<TeamProjectRow[]> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<TeamProjectRow[] | { items: TeamProjectRow[] }>(
-      `/projects/teams/${teamId}/projects`,
-    )
-    return Array.isArray(data) ? data : (data.items ?? [])
+    try {
+      const { data } = await apiClient.get<TeamProjectRow[] | { items: TeamProjectRow[] }>(
+        `/projects/teams/${teamId}/projects`,
+      )
+      return Array.isArray(data) ? data : (data.items ?? [])
+    } catch {
+      return []
+    }
   }
   await delay()
   const db = getDb()
@@ -208,10 +257,14 @@ export async function getTeamProjects(teamId: number): Promise<TeamProjectRow[]>
 
 export async function getTeamCandidates(teamId: number): Promise<TeamCandidate[]> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<TeamCandidate[] | { items: TeamCandidate[] }>(
-      `/projects/teams/${teamId}/candidates`,
-    )
-    return Array.isArray(data) ? data : (data.items ?? [])
+    try {
+      const { data } = await apiClient.get<TeamCandidate[] | { items: TeamCandidate[] }>(
+        `/projects/teams/${teamId}/candidates`,
+      )
+      return Array.isArray(data) ? data : (data.items ?? [])
+    } catch {
+      return []
+    }
   }
   await delay()
   const db = getDb()
@@ -240,11 +293,15 @@ export async function updateTeam(
   id: number,
   patch: Partial<
     Pick<Team, 'name' | 'description' | 'department' | 'headName' | 'headRole' | 'status'>
-  >,
+  > & { teamHeadEmploymentId?: number },
 ): Promise<Team> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.patch<Team>(`/projects/teams/${id}`, patch)
-    return data
+    const body: Record<string, unknown> = {}
+    if (patch.name != null) body.name = patch.name
+    if (patch.description !== undefined) body.description = patch.description
+    if (patch.teamHeadEmploymentId != null) body.team_head_employment_id = patch.teamHeadEmploymentId
+    const { data } = await apiClient.patch<Record<string, unknown>>(`/projects/teams/${id}`, body)
+    return mapApiTeam(data)
   }
   await delay(400)
   const teams = getDb().teams as TeamRow[]
@@ -254,19 +311,61 @@ export async function updateTeam(
   return asTeam(teams[idx])
 }
 
-export async function createTeam(input: {
+export type CreateTeamApiInput = {
   name: string
   description?: string
+  /** Required for real backend */
+  teamHeadEmploymentId?: number
   headName?: string
   headRole?: string
+  memberEmploymentIds?: number[]
   memberNames?: string[]
   projectId?: number
   projectName?: string
-}): Promise<Team> {
+}
+
+export async function createTeam(input: CreateTeamApiInput): Promise<Team> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<Team>('/projects/teams', input)
-    return data
+    if (input.teamHeadEmploymentId == null) {
+      throw new Error('Team head is required')
+    }
+    const { data } = await apiClient.post<Record<string, unknown>>('/projects/teams', {
+      name: input.name,
+      description: input.description || null,
+      team_head_employment_id: input.teamHeadEmploymentId,
+    })
+    const team = mapApiTeam(data)
+
+    // Add extra members (head is auto-enrolled by backend)
+    const memberIds = (input.memberEmploymentIds ?? []).filter(
+      (id) => id !== input.teamHeadEmploymentId,
+    )
+    for (const employmentId of memberIds) {
+      try {
+        await apiClient.post(`/projects/teams/${team.id}/members`, {
+          employment_id: employmentId,
+          team_role: 'Member',
+        })
+      } catch {
+        // non-fatal; team still created
+      }
+    }
+
+    // Link project → TEAM assignment
+    if (input.projectId != null && Number.isFinite(input.projectId)) {
+      try {
+        await apiClient.patch(`/projects/${input.projectId}`, {
+          assignment_type: 'TEAM',
+          assigned_to_id: team.id,
+        })
+      } catch {
+        // team created; assignment may be retried from project detail
+      }
+    }
+
+    return team
   }
+
   await delay(500)
   const db = getDb()
   const teams = db.teams as TeamRow[]
@@ -289,7 +388,6 @@ export async function createTeam(input: {
   if (input.projectId) {
     const pIdx = db.projects.findIndex((p) => p.id === input.projectId)
     if (pIdx !== -1) {
-      // Mock project rows are union-typed without teamId — patch via unknown
       const projects = db.projects as unknown as Array<Record<string, unknown>>
       const prev = (projects[pIdx] ?? {}) as Record<string, unknown>
       const next: Record<string, unknown> = {
