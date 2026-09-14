@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useEditMode } from '@/shared/hooks/useEditMode'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { useProject, useUpdateProject } from './use-projects'
 import { useTasks } from './use-tasks'
 import { getTeam, getTeamsForProject } from '../api/teams'
@@ -60,6 +61,7 @@ export function useProjectDetail(
   const [taskStatusFilter, setTaskStatusFilter] = useState('')
   const [taskSearch, setTaskSearch] = useState('')
   const [createTaskOpen, setCreateTaskOpen] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const form = useForm<ProjectDetailFormInput>({
     resolver: zodResolver(projectDetailFormSchema),
@@ -80,6 +82,7 @@ export function useProjectDetail(
 
   const startEditing = () => {
     if (!project) return
+    setSaveError(null)
     form.reset({
       name: project.name,
       description: project.description ?? '',
@@ -90,6 +93,7 @@ export function useProjectDetail(
   }
 
   const cancelEdit = () => {
+    setSaveError(null)
     if (project) {
       form.reset({
         name: project.name,
@@ -103,18 +107,24 @@ export function useProjectDetail(
 
   const save = async () => {
     if (!project) return
-    const data = await form.handleSubmit(async (values) => values)()
-    if (!data) return
-    await updateMutation.mutateAsync({
-      id: project.id,
-      patch: {
-        name: data.name,
-        description: data.description,
-        clientName: data.clientName,
-        repositoryUrl: data.repositoryUrl || null,
-      },
-    })
-    finishEditing()
+    setSaveError(null)
+    const valid = await form.trigger()
+    if (!valid) return
+    const data = form.getValues()
+    try {
+      await updateMutation.mutateAsync({
+        id: project.id,
+        patch: {
+          name: data.name,
+          description: data.description,
+          repositoryUrl: data.repositoryUrl || null,
+        },
+      })
+      finishEditing()
+      void query.refetch()
+    } catch (err) {
+      setSaveError(getApiErrorMessage(err, 'Could not save project'))
+    }
   }
 
   const tasks = tasksQuery.data?.items ?? []
@@ -164,6 +174,7 @@ export function useProjectDetail(
     save,
     cancelEdit,
     isSaving: updateMutation.isPending,
+    saveError,
     createTaskOpen,
     setCreateTaskOpen,
     linkedTeam,
