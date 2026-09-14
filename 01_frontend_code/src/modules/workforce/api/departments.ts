@@ -74,38 +74,6 @@ function mapApiDepartment(row: Record<string, unknown>): DepartmentListItem {
   }
 }
 
-function mapApiDepartmentDetail(row: Record<string, unknown>): DepartmentListItem & {
-  openPositions?: number
-  employees?: DepartmentEmployee[]
-  head?: DepartmentEmployee | null
-  updated_at?: string
-  changed_by?: number
-} {
-  const base = mapApiDepartment(row)
-  const employees = row.employees
-    ? Array.isArray(row.employees)
-      ? row.employees.map((e: Record<string, unknown>) => ({
-          employmentId: Number(e.employmentId ?? e.id ?? 0),
-          name: String(e.name ?? '—'),
-          employeeCode: String(e.employeeCode ?? '—'),
-          departmentId: Number(e.departmentId ?? base.id),
-          email: String(e.email ?? ''),
-          positionName: String(e.positionName ?? ''),
-          state: String(e.state ?? ''),
-        }))
-      : []
-    : []
-  const head = employees?.[0] ?? null
-  return {
-    ...base,
-    openPositions: Number(row.openPositions ?? 0),
-    employees,
-    head,
-    updated_at: String(row.updated_at ?? row.updatedAt ?? ''),
-    changed_by: Number(row.changed_by ?? row.changedBy ?? 0),
-  }
-}
-
 function mapApiDepartmentEmployee(e: Record<string, unknown>): DepartmentEmployee {
   return {
     employmentId: Number(e.employmentId ?? e.id ?? 0),
@@ -125,11 +93,12 @@ export async function listDepartments(
 
   if (!env.useMockApi) {
     const { data } = await apiClient.get<
-      Array<Record<string, unknown>> | {
-        items?: Array<Record<string, unknown>>
-        total?: number
-        metrics?: ReturnType<typeof buildDeptMetrics>
-      }
+      | Array<Record<string, unknown>>
+      | {
+          items?: Array<Record<string, unknown>>
+          total?: number
+          metrics?: ReturnType<typeof buildDeptMetrics>
+        }
     >('/organization/departments', {
       params: {
         include_archived: params.includeArchived ?? false,
@@ -137,8 +106,11 @@ export async function listDepartments(
     })
     const rows = (Array.isArray(data) ? data : data.items ?? []).map(mapApiDepartment)
     const filteredRows = rows.filter((row) => {
-      const matchesSearch = !search || [row.name, row.code, row.headName]
-        .some((value) => value.toLowerCase().includes(search.toLowerCase()))
+      const matchesSearch =
+        !search ||
+        [row.name, row.code, row.headName].some((value) =>
+          value.toLowerCase().includes(search.toLowerCase()),
+        )
       const matchesStatus = !status || status === 'All' || row.status === status
       return matchesSearch && matchesStatus
     })
@@ -177,10 +149,8 @@ export async function listDepartments(
 
 export async function getDepartment(id: number) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<Record<string, unknown>>(
-      `/organization/departments/${id}`,
-    )
-    return mapApiDepartmentDetail(data ?? {})
+    const { data } = await apiClient.get<Record<string, unknown>>(`/organization/departments/${id}`)
+    return mapApiDepartment(data ?? {})
   }
   await delay()
   const row = getDb().schema_departments.find((d) => d.id === id)
@@ -197,10 +167,7 @@ export async function listDepartmentEmployees(
 
   if (!env.useMockApi) {
     const { data } = await apiClient.get<
-      DepartmentEmployee[] | {
-        items?: Array<Record<string, unknown>>
-        total?: number
-      }
+      DepartmentEmployee[] | { items?: Array<Record<string, unknown>>; total?: number }
     >(`/organization/departments/${departmentId}/employees`, {
       params: { page, pageSize, search: params.search || undefined },
     })
@@ -217,8 +184,7 @@ export async function listDepartmentEmployees(
     .map((a) => a.employment_id)
 
   const logins =
-    (db as typeof db & { login_users?: { employment_id: number; email: string }[] }).login_users ??
-    []
+    (db as typeof db & { login_users?: { employment_id: number; email: string }[] }).login_users ?? []
 
   let all = empIds.map((eid) => {
     const emp = db.employments.find((e) => e.id === eid)!
@@ -288,10 +254,7 @@ export async function listEmployeesNotInDepartment(departmentId: number) {
     })
 }
 
-export async function assignEmployeeToDepartment(
-  employmentId: number,
-  departmentId: number,
-) {
+export async function assignEmployeeToDepartment(employmentId: number, departmentId: number) {
   if (!env.useMockApi) {
     await apiClient.post(`/organization/departments/${departmentId}/assign`, { employmentId })
     return { ok: true as const }
@@ -326,10 +289,7 @@ export async function assignEmployeeToDepartment(
   return { ok: true as const }
 }
 
-export async function removeEmployeeFromDepartment(
-  employmentId: number,
-  departmentId: number,
-) {
+export async function removeEmployeeFromDepartment(employmentId: number, departmentId: number) {
   if (!env.useMockApi) {
     await apiClient.post(`/organization/departments/${departmentId}/remove`, { employmentId })
     return { ok: true as const }
@@ -417,10 +377,9 @@ export async function updateDepartment(
 
 export async function listEmploymentOptionsForPicker() {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<Array<Record<string, unknown>>>(
-      '/workforce/employments',
-      { params: { limit: 500 } },
-    )
+    const { data } = await apiClient.get<Array<Record<string, unknown>>>('/workforce/employments', {
+      params: { limit: 500 },
+    })
     return (Array.isArray(data) ? data : []).map((row) => {
       const id = Number(row.id)
       const code = String(row.employee_code ?? row.employeeCode ?? id)
@@ -448,27 +407,25 @@ export async function listEmploymentOptionsForPicker() {
   })
 }
 
-/** Employees on a given shift (from active assignments). */
 export async function listEmployeesOnShift(shiftId: number) {
   if (!env.useMockApi) {
     try {
-      const { data } = await apiClient.get(
-        `/organization/shifts/${shiftId}/employees`,
-      )
-      if (Array.isArray(data)) return data as {
-        employmentId: number
-        employeeCode: string
-        name: string
-        departmentName: string
-        positionName: string
-        state: string
-      }[]
+      const { data } = await apiClient.get(`/organization/shifts/${shiftId}/employees`)
+      if (Array.isArray(data)) {
+        return data as {
+          employmentId: number
+          employeeCode: string
+          name: string
+          departmentName: string
+          positionName: string
+          state: string
+        }[]
+      }
       if (data && typeof data === 'object' && Array.isArray((data as { items?: unknown }).items)) {
-        return (data as { items: typeof data }).items as any
+        return (data as { items: typeof data }).items as never
       }
       return []
     } catch {
-      // Endpoint may not exist yet — empty staff list, no UI crash / retry spam
       return []
     }
   }
@@ -509,6 +466,6 @@ export async function archiveDepartment(id: number): Promise<void> {
   const db = getDb()
   const dept = db.schema_departments.find((d) => d.id === id)
   if (dept) {
-    dept.is_archived = true
+    ;(dept as { is_archived: boolean }).is_archived = true
   }
 }
