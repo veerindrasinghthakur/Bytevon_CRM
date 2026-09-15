@@ -19,7 +19,9 @@ from app.core.db.enums import EmploymentState, WorkMode
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
 from app.modules.auth.models import Person
-from app.modules.organization.models import Department, Location, Shift
+from app.modules.admin.department.models import Department
+from app.modules.admin.location.models import Location
+from app.modules.admin.shift.models import Shift
 from app.modules.workforce.models import (
     Employment,
     EmploymentAssignment,
@@ -502,46 +504,33 @@ class EmploymentPublicService(BasePublicService):
             EmploymentState.TERMINATED,
             EmploymentState.ALUMNI,
         }
-        if emp.current_state in terminal and data.new_state not in terminal:
+        if emp.current_state in terminal:
             raise DomainError(
-                f"Cannot move from terminal state {emp.current_state.value} to {data.new_state.value}"
+                f"Cannot transition from terminal state {emp.current_state.value}"
             )
 
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
-        previous = emp.current_state
-
         history = EmploymentStateHistory(
-            employment_id=emp.id,
-            previous_state=previous,
+            employment_id=employment_id,
+            previous_state=emp.current_state,
             new_state=data.new_state,
-            effective_date=data.effective_date,
+            effective_date=data.effective_date or date.today(),
             reason=data.reason,
             changed_by=actor,
         )
         await self._repo.add(history)
-
         emp.current_state = data.new_state
         emp.changed_by = actor
-
         await self._commit()
-        await self._audit("employment.state_changed", emp.id, actor_employment_id)
+        await self._audit("employment.state_changed", employment_id, actor_employment_id)
         await self._session.refresh(history)
         return EmploymentStateHistoryResponse.model_validate(history)
 
-    async def list_state_history(
-        self, employment_id: int, *, limit: int = 50
-    ) -> list[EmploymentStateHistoryResponse]:
-        emp = await self._repo.get_employment_by_id(employment_id)
-        if emp is None:
-            raise NotFoundError("Employment not found")
-        rows = await self._repo.list_state_history(employment_id, limit=limit)
-        return [EmploymentStateHistoryResponse.model_validate(r) for r in rows]
-
     # ==================================================================
-    # Assignments (close previous + insert new)
+    # Assignments (close + insert)
     # ==================================================================
 
-    async def create_assignment(
+    async def assign(
         self,
         employment_id: int,
         data: EmploymentAssignmentCreate,
@@ -552,8 +541,6 @@ class EmploymentPublicService(BasePublicService):
         if emp is None:
             raise NotFoundError("Employment not found")
 
-        actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
-
         dept_id, pos_id, loc_id, shift_id = await self._validate_assignment_refs(
             department_id=data.department_id,
             position_id=data.position_id,
@@ -561,15 +548,14 @@ class EmploymentPublicService(BasePublicService):
             shift_id=data.shift_id,
         )
 
-        current = await self._repo.get_current_assignment(
-            employment_id, as_of=data.effective_from
-        )
-        if current and current.effective_to is None:
-            close_to = data.effective_from - timedelta(days=1)
+        actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        effective_from = data.effective_from or date.today()
+
+        current = await self._repo.get_current_assignment(employment_id)
+        if current is not None:
+            close_to = effective_from - timedelta(days=1)
             if close_to >= current.effective_from:
-                await self._repo.close_assignment(current.id, close_to)
-            else:
-                await self._repo.close_assignment(current.id, data.effective_from)
+                current.effective_to = close_to
 
         assignment = EmploymentAssignment(
             employment_id=employment_id,
@@ -577,34 +563,20 @@ class EmploymentPublicService(BasePublicService):
             position_id=pos_id,
             location_id=loc_id,
             shift_id=shift_id,
-            work_mode=data.work_mode,
-            effective_from=data.effective_from,
+            work_mode=data.work_mode or WorkMode.OFFICE,
+            effective_from=effective_from,
             effective_to=None,
-            change_reason=data.change_reason,
+            change_reason=data.change_reason or "Assignment change",
             changed_by=actor,
         )
         await self._repo.add(assignment)
         await self._commit()
-        await self._audit("employment.assignment_created", assignment.id, actor_employment_id)
+        await self._audit("employment.assigned", employment_id, actor_employment_id)
         await self._session.refresh(assignment)
         return EmploymentAssignmentResponse.model_validate(assignment)
-
-    async def get_current_assignment(
-        self, employment_id: int, *, as_of: Optional[date] = None
-    ) -> EmploymentAssignmentResponse:
-        emp = await self._repo.get_employment_by_id(employment_id)
-        if emp is None:
-            raise NotFoundError("Employment not found")
-        asg = await self._repo.get_current_assignment(employment_id, as_of=as_of)
-        if asg is None:
-            raise NotFoundError("No current assignment found")
-        return EmploymentAssignmentResponse.model_validate(asg)
 
     async def list_assignments(
         self, employment_id: int
     ) -> list[EmploymentAssignmentResponse]:
-        emp = await self._repo.get_employment_by_id(employment_id)
-        if emp is None:
-            raise NotFoundError("Employment not found")
         rows = await self._repo.list_assignments(employment_id)
         return [EmploymentAssignmentResponse.model_validate(r) for r in rows]
