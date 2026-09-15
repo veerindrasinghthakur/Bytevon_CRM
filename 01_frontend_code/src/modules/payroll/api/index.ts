@@ -1,4 +1,4 @@
-/** Payroll API — domain modules + monolithic payroll.ts for full surface. */
+/** Payroll API — domain modules + barrel. */
 export * from './dashboard'
 export * from './monthly'
 export * from './run'
