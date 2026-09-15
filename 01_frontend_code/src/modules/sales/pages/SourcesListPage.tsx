@@ -16,7 +16,7 @@ import {
   archiveSource,
   type LeadSource,
   type SourceMetric,
-} from '../api/sources'
+} from '../api/source'
 import { salesRoutes } from '../routes'
 
 type ModalMode = 'create' | 'edit' | null

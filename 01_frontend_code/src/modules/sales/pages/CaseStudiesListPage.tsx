@@ -15,7 +15,7 @@ import {
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
 import { looseLinkProps } from '@/shared/lib/safeNavigate'
-import { useCaseStudiesList } from '../hooks/use-case-studies-list'
+import { useCaseStudiesList } from '../hooks/case-study/use-case-studies'
 import type { CaseStudy } from '../types'
 import { cn } from '@/shared/lib/cn'
 import { salesRoutes } from '../routes'
