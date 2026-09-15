@@ -1,12 +1,17 @@
 """
-Sales main router — includes domain API routers.
+Sales main router — static UI paths first, then domain API routers.
 
-UI-shaped endpoints remain in routes_ui.py and lead_ui.py (included separately).
+Static paths (/leads/filter-options, …) MUST be declared before domain
+routers that bind /leads/{lead_id} or FastAPI parses the segment as int → 422.
 """
 from __future__ import annotations
 
-from fastapi import APIRouter
+from typing import Any, Optional
 
+from fastapi import APIRouter, Query
+
+from app.core.db.enums import LeadStatus
+from app.modules.sales.dependencies import SalesServiceDep
 from app.modules.sales.lead.routes import router as lead_router
 from app.modules.sales.client.routes import router as client_router
 from app.modules.sales.source.routes import router as source_router
@@ -16,6 +21,76 @@ from app.modules.sales.dashboard.routes import router as dashboard_router
 
 router = APIRouter(prefix="/sales", tags=["Sales"])
 
+
+def _filter_lead_options(rows: list) -> dict[str, list[str]]:
+    statuses = sorted(
+        {(r.status.value if hasattr(r.status, "value") else str(r.status)) for r in rows}
+    )
+    return {
+        "statuses": ["Active", "Inactive"] + (statuses or list(LeadStatus.values())),
+        "stages": statuses or list(LeadStatus.values()),
+        "priorities": ["Critical", "High", "Medium", "Low"],
+        "sources": [
+            "LinkedIn",
+            "Website",
+            "Referral",
+            "Direct Referral",
+            "Event",
+            "Other",
+            "Manual",
+        ],
+    }
+
+
+@router.get("/meta/lead-filter-options")
+@router.get("/leads/filter-options")
+async def lead_filter_options(service: SalesServiceDep) -> dict[str, list[str]]:
+    rows = await service.list_leads(limit=500)
+    return _filter_lead_options(rows)
+
+
+@router.get("/meta/client-filter-options")
+@router.get("/clients/filter-options")
+async def client_filter_options(service: SalesServiceDep) -> dict[str, list[str]]:
+    rows = await service.list_clients(limit=500)
+    industries = sorted({(r.industry or "").strip() for r in rows if r.industry})
+    countries = sorted({(r.country or "").strip() for r in rows if r.country})
+    return {
+        "statuses": ["Active", "Inactive"],
+        "types": ["Enterprise", "SMB", "Partner", "Individual"],
+        "industries": industries or ["Technology", "Finance", "Healthcare"],
+        "countries": countries or ["India", "USA", "UK"],
+    }
+
+
+@router.get("/sales-representatives")
+async def list_sales_reps(service: SalesServiceDep) -> dict[str, Any]:
+    leads = await service.list_leads(limit=500)
+    ids = sorted(
+        {l.assigned_employment_id for l in leads if l.assigned_employment_id is not None}
+    )
+    items = [
+        {
+            "employmentId": eid,
+            "name": f"Employee #{eid}",
+            "employeeCode": f"SALES-{eid}",
+            "department": "Sales",
+        }
+        for eid in ids
+    ]
+    if not items:
+        items = [
+            {
+                "employmentId": 1,
+                "name": "Sales Rep #1",
+                "employeeCode": "SALES-1",
+                "department": "Sales",
+            }
+        ]
+    return {"items": items, "total": len(items)}
+
+
+# Domain routers (CRUD). Static paths above must stay first.
 router.include_router(lead_router)
 router.include_router(client_router)
 router.include_router(source_router)

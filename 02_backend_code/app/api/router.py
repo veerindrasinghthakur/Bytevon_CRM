@@ -27,7 +27,6 @@ from app.modules.audit.routes import router as audit_router
 from app.modules.project.routes import router as project_router
 from app.modules.notes_documents.routes import router as notes_documents_router
 from app.modules.payroll.routes import router as payroll_router
-from app.modules.sales.routes_ui import router as sales_ui_router
 from app.modules.sales.routes import router as sales_router
 from app.modules.my_work.routes import router as my_work_router
 from app.modules.my_work.routes import profile_router as my_work_profile_router
@@ -42,8 +41,6 @@ api_router.include_router(approvals_router)
 api_router.include_router(leave_router)
 api_router.include_router(attendance_router)
 api_router.include_router(notifications_router)
-# Static sales UI paths first so /leads/filter-options is not captured as {lead_id}
-api_router.include_router(sales_ui_router)
 api_router.include_router(sales_router)
 api_router.include_router(project_router)
 api_router.include_router(notes_documents_router)
