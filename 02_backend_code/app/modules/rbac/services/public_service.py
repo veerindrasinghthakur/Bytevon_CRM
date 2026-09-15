@@ -1,12 +1,4 @@
-"""
-RBACPublicService — only public entry point for RBAC.
-
-Owns the transaction.
-- resources / permissions / scopes / sensitive_fields are seeded (read-only via API).
-- roles, role_permissions, employee_roles, role_sensitive_field_permissions are admin-managed.
-- Additive only (architecture rule).
-- Always keep ≥ 1 super-admin is enforced at Employment/RBAC boundary when system role is known.
-"""
+"""RBACService — only public entry point for RBAC (compat location)."""
 
 from __future__ import annotations
 
@@ -25,8 +17,8 @@ from app.modules.rbac.models import (
     RolePermission,
     RoleSensitiveFieldPermission,
 )
-from app.modules.rbac.repositories.repository import RBACRepository
-from app.modules.rbac.schemas.schemas import (
+from app.modules.rbac.repository import RBACRepository
+from app.modules.rbac.schemas import (
     AssignRoleRequest,
     EffectivePermissionItem,
     EffectivePermissionsResponse,
@@ -55,7 +47,7 @@ SUPER_ADMIN_ROLE_NAME = "Super Admin"
 DEFAULT_SCOPE_NAME = "ORGANIZATION"
 
 
-class RBACPublicService(BasePublicService):
+class RBACService(BasePublicService):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
         self._repo = RBACRepository(session)
@@ -105,7 +97,6 @@ class RBACPublicService(BasePublicService):
     ) -> None:
         if replace:
             await self._repo.delete_all_role_permissions(role_id)
-
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         seen: set[int] = set()
         for pid in permission_ids:
@@ -171,15 +162,11 @@ class RBACPublicService(BasePublicService):
         )
 
     async def create_role(
-        self,
-        data: RoleCreate,
-        *,
-        actor_employment_id: Optional[int] = None,
+        self, data: RoleCreate, *, actor_employment_id: Optional[int] = None
     ) -> RoleResponse:
         existing = await self._repo.get_role_by_name(data.name)
         if existing:
             raise ConflictError(f"Role '{data.name}' already exists")
-
         role = Role(
             name=data.name,
             description=data.description,
@@ -188,7 +175,6 @@ class RBACPublicService(BasePublicService):
         )
         await self._repo.add(role)
         await self._session.flush()
-
         if data.permission_ids:
             scope_id = await self._resolve_default_scope_id(data.scope_id)
             await self._grant_permission_ids(
@@ -198,7 +184,6 @@ class RBACPublicService(BasePublicService):
                 actor_employment_id=actor_employment_id,
                 replace=False,
             )
-
         await self._commit()
         await self._audit("role.created", role.id, actor_employment_id)
         return RoleResponse.model_validate(role)
@@ -218,7 +203,6 @@ class RBACPublicService(BasePublicService):
         page: int = 1,
         page_size: int = 20,
     ) -> RoleListResponse:
-        """Paginated roles with usersCount + permission_keys for admin cards."""
         is_system_role: Optional[bool] = None
         if category:
             c = category.strip().lower()
@@ -226,12 +210,10 @@ class RBACPublicService(BasePublicService):
                 is_system_role = True
             elif c in ("standard",):
                 is_system_role = False
-
         total = await self._repo.count_roles(search=search, is_system_role=is_system_role)
         page = max(1, page)
         page_size = max(1, min(page_size, 200))
         skip = (page - 1) * page_size
-
         rows = await self._repo.list_roles(
             with_details=True,
             search=search,
@@ -263,18 +245,13 @@ class RBACPublicService(BasePublicService):
         return RoleListResponse(items=items, total=total, page=page, pageSize=page_size)
 
     async def update_role(
-        self,
-        role_id: int,
-        data: RoleUpdate,
-        *,
-        actor_employment_id: Optional[int] = None,
+        self, role_id: int, data: RoleUpdate, *, actor_employment_id: Optional[int] = None
     ) -> RoleResponse:
         role = await self._repo.get_role_by_id(role_id)
         if role is None:
             raise NotFoundError("Role not found")
         if role.is_system_role and data.name is not None and data.name != role.name:
             raise DomainError("Cannot rename a system role")
-
         if data.name is not None and data.name != role.name:
             clash = await self._repo.get_role_by_name(data.name)
             if clash:
@@ -283,7 +260,6 @@ class RBACPublicService(BasePublicService):
         if data.description is not None:
             role.description = data.description
         role.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
-
         if data.permission_ids is not None:
             scope_id = await self._resolve_default_scope_id(data.scope_id)
             await self._grant_permission_ids(
@@ -293,29 +269,23 @@ class RBACPublicService(BasePublicService):
                 actor_employment_id=actor_employment_id,
                 replace=True,
             )
-
         await self._commit()
         await self._audit("role.updated", role.id, actor_employment_id)
         return RoleResponse.model_validate(role)
 
     async def delete_role(
-        self,
-        role_id: int,
-        *,
-        actor_employment_id: Optional[int] = None,
+        self, role_id: int, *, actor_employment_id: Optional[int] = None
     ) -> MessageResponse:
         role = await self._repo.get_role_by_id(role_id)
         if role is None:
             raise NotFoundError("Role not found")
         if role.is_system_role:
             raise DomainError("Cannot delete a system role")
-
         assigned = await self._repo.count_employments_with_role(role_id)
         if assigned > 0:
             raise DomainError(
                 f"Role is still assigned to {assigned} employment(s); unassign first"
             )
-
         await self._session.delete(role)
         await self._commit()
         await self._audit("role.deleted", role_id, actor_employment_id)
@@ -331,20 +301,17 @@ class RBACPublicService(BasePublicService):
         role = await self._repo.get_role_by_id(role_id)
         if role is None:
             raise NotFoundError("Role not found")
-
         perm = await self._repo.get_permission_by_id(data.permission_id)
         if perm is None:
             raise NotFoundError("Permission not found")
         scope = await self._repo.get_scope_by_id(data.scope_id)
         if scope is None:
             raise NotFoundError("Scope not found")
-
         existing = await self._repo.get_role_permission(
             role_id, data.permission_id, data.scope_id
         )
         if existing:
             raise ConflictError("Permission already granted for this scope")
-
         rp = RolePermission(
             role_id=role_id,
             permission_id=data.permission_id,
@@ -367,13 +334,11 @@ class RBACPublicService(BasePublicService):
         role = await self._repo.get_role_by_id(role_id)
         if role is None:
             raise NotFoundError("Role not found")
-
         existing = await self._repo.get_role_permission(
             role_id, permission_id, scope_id
         )
         if existing is None:
             raise NotFoundError("Role permission not found")
-
         await self._repo.delete_role_permission(role_id, permission_id, scope_id)
         await self._commit()
         await self._audit("role.permission_revoked", role_id, actor_employment_id)
@@ -389,11 +354,9 @@ class RBACPublicService(BasePublicService):
         role = await self._repo.get_role_by_id(data.role_id)
         if role is None:
             raise NotFoundError("Role not found")
-
         existing = await self._repo.get_employee_role(employment_id, data.role_id)
         if existing:
             raise ConflictError("Role already assigned to this employment")
-
         er = EmployeeRole(
             employment_id=employment_id,
             role_id=data.role_id,
@@ -414,18 +377,15 @@ class RBACPublicService(BasePublicService):
         role = await self._repo.get_role_by_id(role_id)
         if role is None:
             raise NotFoundError("Role not found")
-
         existing = await self._repo.get_employee_role(employment_id, role_id)
         if existing is None:
             raise NotFoundError("Role assignment not found")
-
         if role.name == SUPER_ADMIN_ROLE_NAME or role.is_system_role:
             count = await self._repo.count_employments_with_role(role_id)
             if count <= 1:
                 raise DomainError(
                     "Cannot remove the last holder of a system / Super Admin role"
                 )
-
         await self._repo.delete_employee_role(employment_id, role_id)
         await self._commit()
         await self._audit("employee_role.unassigned", employment_id, actor_employment_id)
@@ -450,12 +410,10 @@ class RBACPublicService(BasePublicService):
         field = await self._repo.get_sensitive_field_by_id(data.sensitive_field_id)
         if field is None:
             raise NotFoundError("Sensitive field not found")
-
         existing = await self._repo.get_role_sensitive_field_permission(
             role_id, data.sensitive_field_id
         )
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
-
         if existing:
             existing.can_read = data.can_read
             existing.can_update = data.can_update
@@ -470,7 +428,6 @@ class RBACPublicService(BasePublicService):
                 changed_by=actor,
             )
             await self._repo.add(row)
-
         await self._commit()
         await self._audit(
             "role.sensitive_field_permission_set", row.id, actor_employment_id
@@ -547,3 +504,7 @@ class RBACPublicService(BasePublicService):
             scope_by_resource=scope_by_resource,
             grants=items,
         )
+
+
+# Back-compat
+RBACPublicService = RBACService
