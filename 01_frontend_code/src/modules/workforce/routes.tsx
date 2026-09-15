@@ -10,7 +10,7 @@ import { safeRedirectOpts } from '@/shared/lib/safeNavigate'
 
 const EmployeesListPage = lazyPage(() => import('./pages/EmployeesListPage'), 'EmployeesListPage')
 const EmployeeCreatePage = lazyPage(() => import('./pages/EmployeeCreatePage'), 'EmployeeCreatePage')
-const EmployeeDetailPage = lazyPage(() => import('./pages/EmployeeDetailPage'), 'EmployeeDetailPage')
+const EmployeeDetailPage = lazyPage(() => import('./pages/employee/EmployeeDetailPage'), 'EmployeeDetailPage')
 const EmployeeBankDetailsPage = lazyPage(() => import('./pages/EmployeeBankDetailsPage'), 'EmployeeBankDetailsPage')
 const DepartmentsListPage = lazyPage(() => import('./pages/DepartmentsListPage'), 'DepartmentsListPage')
 const DepartmentCreatePage = lazyPage(() => import('./pages/DepartmentCreatePage'), 'DepartmentCreatePage')
@@ -73,14 +73,6 @@ export const workforceRoutes = {
   attendanceDay: (employmentId: string | number) => `/workforce/attendance/day/${employmentId}`,
   attendanceDayPath: '/workforce/attendance/day/$employmentId',
 } as const
-
-function redirectToProjectsTeams(suffix = '') {
-  return ({ params }: { params: Record<string, string> }) => {
-    const teamId = params.teamId
-    const base = teamId ? `/projects/teams/${teamId}${suffix}` : `/projects/teams${suffix}`
-    throw redirect(safeRedirectOpts({ to: base as never }))
-  }
-}
 
 export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   return [
