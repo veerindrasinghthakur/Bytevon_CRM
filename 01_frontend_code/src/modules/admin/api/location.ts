@@ -1,0 +1,114 @@
+/**
+ * Location API — admin organization domain.
+ */
+import { env } from '@/config/env'
+import { apiClient } from '@/shared/lib/axios'
+import { delay, getDb, nextId } from '@/shared/mock/db'
+import type { LocationRow } from '@/shared/schema'
+import { asList } from './_org-helpers'
+
+export type LocationCreateInput = {
+  name: string
+  timezone: string
+  latitude: number
+  longitude: number
+  attendance_radius_meters?: number
+  allowed_ip_cidrs?: string[]
+  country: string
+  state: string
+  city: string
+  address: string
+  payroll_region?: string | null
+  currency: string
+  fiscal_year_start_month?: number
+  working_week_id?: number | null
+  holiday_calendar_id?: number | null
+}
+
+export async function getLocations(params?: { includeArchived?: boolean }) {
+  if (env.useMockApi) {
+    await delay()
+    let items = getDb().locations.map((r) => ({ ...r }))
+    if (!params?.includeArchived) items = items.filter((l) => !l.is_archived)
+    return { items, total: items.length }
+  }
+  const { data } = await apiClient.get<LocationRow[] | { items: LocationRow[]; total: number }>(
+    '/organization/locations',
+    { params: params?.includeArchived ? { include_archived: true } : undefined },
+  )
+  return asList(data)
+}
+
+export async function getLocation(id: number): Promise<LocationRow | null> {
+  if (env.useMockApi) {
+    await delay()
+    const row = getDb().locations.find((l) => l.id === id)
+    return row ? { ...row } : null
+  }
+  const { data } = await apiClient.get<LocationRow>(`/organization/locations/${id}`)
+  return data
+}
+
+export async function createLocation(input: LocationCreateInput | Record<string, unknown>): Promise<LocationRow> {
+  if (env.useMockApi) {
+    await delay(400)
+    const list = getDb().locations
+    const row: LocationRow = {
+      ...(input as any),
+      id: nextId(list),
+      is_archived: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      changed_by: 1,
+      payroll_region: (input as any).payroll_region ?? '',
+      attendance_radius_meters: (input as any).attendance_radius_meters ?? 200,
+      allowed_ip_cidrs: (input as any).allowed_ip_cidrs ?? [],
+      fiscal_year_start_month: (input as any).fiscal_year_start_month ?? 4,
+    }
+    list.push(row as any)
+    return { ...row }
+  }
+  const body: Record<string, unknown> = { ...input }
+  for (const key of ['working_week_id', 'holiday_calendar_id', 'payroll_region'] as const) {
+    const v = body[key]
+    if (v == null || v === '' || v === 0) delete body[key]
+  }
+  if (!Array.isArray(body.allowed_ip_cidrs)) body.allowed_ip_cidrs = []
+  if (body.attendance_radius_meters == null) body.attendance_radius_meters = 200
+  if (body.fiscal_year_start_month == null) body.fiscal_year_start_month = 1
+  const { data } = await apiClient.post<LocationRow>('/organization/locations', body)
+  return data
+}
+
+export async function updateLocation(id: number, patch: Partial<LocationRow> | Record<string, unknown>): Promise<LocationRow> {
+  if (env.useMockApi) {
+    await delay(400)
+    const row = getDb().locations.find((l) => l.id === id)
+    if (!row) throw new Error('Location not found')
+    Object.assign(row, patch, { updated_at: new Date().toISOString() })
+    return { ...row }
+  }
+  const body: Record<string, unknown> = { ...patch }
+  for (const key of ['working_week_id', 'holiday_calendar_id'] as const) {
+    const v = body[key]
+    if (v === 0 || v === '') body[key] = null
+  }
+  const { data } = await apiClient.patch<LocationRow>(`/organization/locations/${id}`, body)
+  return data
+}
+
+export async function archiveLocation(id: number): Promise<void> {
+  if (!env.useMockApi) {
+    await apiClient.post(`/organization/locations/${id}/archive`)
+    return
+  }
+  await delay(300)
+  const row = getDb().locations.find((l) => l.id === id) as LocationRow | undefined
+  if (!row) throw new Error('Location not found')
+  if (row.is_archived) throw new Error('Location is already archived')
+  const now = new Date().toISOString()
+  row.is_archived = true
+  row.archived_at = now
+  row.archived_by = 1
+  row.changed_by = 1
+}

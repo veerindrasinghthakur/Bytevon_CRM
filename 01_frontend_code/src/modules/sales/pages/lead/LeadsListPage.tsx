@@ -1,0 +1,1 @@
+export { LeadsListPage } from '../LeadsListPage'

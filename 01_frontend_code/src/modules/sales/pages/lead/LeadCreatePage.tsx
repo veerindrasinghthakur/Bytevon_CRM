@@ -1,0 +1,1 @@
+export { LeadCreatePage } from '../LeadCreatePage'
