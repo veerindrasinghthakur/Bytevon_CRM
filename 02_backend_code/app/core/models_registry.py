@@ -24,6 +24,7 @@ from app.modules.admin.shift.models import Shift  # noqa: F401
 from app.modules.admin.holiday_calendar.models import Holiday, HolidayCalendar  # noqa: F401
 from app.modules.admin.location.models import Location  # noqa: F401
 from app.modules.admin.settings.models import OrganizationSettings  # noqa: F401
+from app.modules.admin.audit.models import AuditLog  # noqa: F401
 
 # Employment
 from app.modules.workforce.models import (  # noqa: F401
@@ -96,9 +97,6 @@ from app.modules.notes_documents.models import (  # noqa: F401
     DocumentVersion,
     Note,
 )
-
-# Audit
-from app.modules.audit.models import AuditLog  # noqa: F401
 
 # Payroll
 from app.modules.payroll.models import (  # noqa: F401
