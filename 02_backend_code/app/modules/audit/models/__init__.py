@@ -1,3 +1,3 @@
-from app.modules.audit.models.audit_models import AuditLog
+from app.modules.admin.audit.models import AuditLog
 
 __all__ = ["AuditLog"]

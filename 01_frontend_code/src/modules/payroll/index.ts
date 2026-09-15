@@ -1,14 +1,14 @@
-export { PayrollDashboardPage } from './pages/PayrollDashboardPage'
-export { MonthlyPayrollPage } from './pages/MonthlyPayrollPage'
-export { RunPayrollPage } from './pages/RunPayrollPage'
-export { GeneratingPayrollPage } from './pages/GeneratingPayrollPage'
-export { PayrollReviewPage } from './pages/PayrollReviewPage'
-export { PayslipViewPage } from './pages/PayslipViewPage'
-export { SalaryManagementPage } from './pages/SalaryManagementPage'
-export { EmployeeSalaryDetailPage } from './pages/EmployeeSalaryDetailPage'
-export { ReviseSalaryPage } from './pages/ReviseSalaryPage'
-export { EmployeePayrollHistoryPage } from './pages/EmployeePayrollHistoryPage'
-export { PayrollHistoryPage } from './pages/PayrollHistoryPage'
+export { PayrollDashboardPage } from './pages/dashboard/PayrollDashboardPage'
+export { MonthlyPayrollPage } from './pages/monthly/MonthlyPayrollPage'
+export { RunPayrollPage } from './pages/run/RunPayrollPage'
+export { GeneratingPayrollPage } from './pages/run/GeneratingPayrollPage'
+export { PayrollReviewPage } from './pages/review/PayrollReviewPage'
+export { PayslipViewPage } from './pages/payslip/PayslipViewPage'
+export { SalaryManagementPage } from './pages/salary/SalaryManagementPage'
+export { EmployeeSalaryDetailPage } from './pages/salary/EmployeeSalaryDetailPage'
+export { ReviseSalaryPage } from './pages/salary/ReviseSalaryPage'
+export { EmployeePayrollHistoryPage } from './pages/history/EmployeePayrollHistoryPage'
+export { PayrollHistoryPage } from './pages/history/PayrollHistoryPage'
 
 export { createPayrollRoutes, payrollRoutes } from './routes'
 
@@ -33,6 +33,6 @@ export {
   useReviseSalary,
   useEmployeePayrollHistory,
   useRunPayroll,
-} from './hooks/use-payroll'
+} from './hooks'
 
 export type * from './types'

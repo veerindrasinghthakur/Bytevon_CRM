@@ -32,7 +32,7 @@ export async function getHolidayCalendar(id: number): Promise<HolidayCalendarRow
 export async function createHolidayCalendar(input: { name: string }): Promise<HolidayCalendarRow> {
   if (env.useMockApi) {
     await delay(400)
-    const list = getDb().holiday_calendars
+    const list = getDb().holiday_calendars as HolidayCalendarRow[]
     const now = new Date().toISOString()
     const row: HolidayCalendarRow = {
       id: nextId(list),
@@ -42,7 +42,7 @@ export async function createHolidayCalendar(input: { name: string }): Promise<Ho
       updated_at: now,
       changed_by: 1,
     }
-    list.push(row as any)
+    list.push(row)
     return { ...row }
   }
   const { data } = await apiClient.post<HolidayCalendarRow>('/organization/holiday-calendars', input)
@@ -55,7 +55,7 @@ export async function updateHolidayCalendar(
 ): Promise<HolidayCalendarRow> {
   if (env.useMockApi) {
     await delay(400)
-    const row = getDb().holiday_calendars.find((c) => c.id === id)
+    const row = (getDb().holiday_calendars as HolidayCalendarRow[]).find((c) => c.id === id)
     if (!row) throw new Error('Calendar not found')
     Object.assign(row, patch, { updated_at: new Date().toISOString() })
     return { ...row }
@@ -100,7 +100,7 @@ export async function createHoliday(input: {
 }): Promise<HolidayRow> {
   if (env.useMockApi) {
     await delay(400)
-    const list = getDb().holidays
+    const list = getDb().holidays as HolidayRow[]
     const row: HolidayRow = {
       id: nextId(list),
       holiday_calendar_id: input.holiday_calendar_id,
@@ -111,7 +111,7 @@ export async function createHoliday(input: {
       created_at: new Date().toISOString(),
       changed_by: 1,
     }
-    list.push(row as any)
+    list.push(row)
     return { ...row }
   }
   const { data } = await apiClient.post<HolidayRow>('/organization/holidays', input)

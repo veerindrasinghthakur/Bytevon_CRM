@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Any, Mapping, Optional
 
 from app.core.db.enums import LeadStatus
-from app.modules.sales.schemas.schemas import LeadResponse
+from app.modules.sales.lead.schemas import LeadResponse
 
 # Domain LeadStatus → UI pipeline stage labels (LeadCreatePage enums)
 _STATUS_TO_STAGE: dict[str, str] = {

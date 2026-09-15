@@ -1,19 +1,6 @@
-from app.modules.organization.models.organization_models import (
-    Department,
-    Holiday,
-    HolidayCalendar,
-    Location,
-    OrganizationSettings,
-    Shift,
-    WorkingWeek,
+"""Deprecated — import from app.modules.admin.<domain>.models."""
+raise ImportError(
+    "app.modules.organization.models is removed. "
+    "Use app.modules.admin.department.models, "
+    "app.modules.admin.location.models, etc."
 )
-
-__all__ = [
-    "Department",
-    "WorkingWeek",
-    "Shift",
-    "HolidayCalendar",
-    "Holiday",
-    "Location",
-    "OrganizationSettings",
-]

@@ -1,4 +1,5 @@
-from app.modules.audit.schemas.schemas import (
+"""Compatibility re-exports — prefer app.modules.admin.audit.schemas."""
+from app.modules.admin.audit.schemas import (
     ArchiveResult,
     AuditLogCreate,
     AuditLogResponse,

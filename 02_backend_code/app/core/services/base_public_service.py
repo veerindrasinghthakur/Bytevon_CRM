@@ -159,14 +159,14 @@ class BasePublicService:
             from app.core.config import settings
             from app.core.db.enums import AuditAction, AuditReferenceType
             from app.core.database import AsyncSessionLocal
-            from app.modules.audit.schemas.schemas import AuditLogCreate
-            from app.modules.audit.services.public_service import AuditPublicService
+            from app.modules.admin.audit.schemas import AuditLogCreate
+            from app.modules.admin.audit.service import AuditService
 
             ref_type, action = self._resolve_audit_enums(action_key)
             desc = description or action_key.replace(".", " ").replace("_", " ")
 
             async with AsyncSessionLocal() as audit_session:
-                svc = AuditPublicService(audit_session)
+                svc = AuditService(audit_session)
                 await svc.log(
                     AuditLogCreate(
                         reference_type=AuditReferenceType(ref_type),
@@ -218,11 +218,11 @@ class BasePublicService:
         try:
             from app.core.db.enums import AuditAction, AuditReferenceType
             from app.core.database import AsyncSessionLocal
-            from app.modules.audit.schemas.schemas import AuditLogCreate
-            from app.modules.audit.services.public_service import AuditPublicService
+            from app.modules.admin.audit.schemas import AuditLogCreate
+            from app.modules.admin.audit.service import AuditService
 
             async with AsyncSessionLocal() as audit_session:
-                svc = AuditPublicService(audit_session)
+                svc = AuditService(audit_session)
                 await svc.log(
                     AuditLogCreate(
                         reference_type=AuditReferenceType(reference_type),
@@ -250,17 +250,15 @@ class BasePublicService:
         body: str,
         payload: Optional[dict] = None,
     ) -> None:
-        """Best-effort IN_APP notification to one employment."""
+        """Best-effort IN_APP notification to one employment via ComposeService."""
         try:
             from app.core.database import AsyncSessionLocal
             from app.core.db.enums import NotificationRecipientType
-            from app.modules.notifications.schemas.schemas import NotifyRequest
-            from app.modules.notifications.services.public_service import (
-                NotificationPublicService,
-            )
+            from app.modules.notifications.compose.schemas import NotifyRequest
+            from app.modules.notifications.compose.service import ComposeService
 
             async with AsyncSessionLocal() as notif_session:
-                svc = NotificationPublicService(notif_session)
+                svc = ComposeService(notif_session)
                 await svc.notify(
                     NotifyRequest(
                         recipient_type=NotificationRecipientType.EMPLOYMENT,

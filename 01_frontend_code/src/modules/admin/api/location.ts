@@ -25,6 +25,27 @@ export type LocationCreateInput = {
   holiday_calendar_id?: number | null
 }
 
+function toCreateFields(input: LocationCreateInput | Record<string, unknown>): LocationCreateInput {
+  const r = input as LocationCreateInput
+  return {
+    name: String(r.name ?? ''),
+    timezone: String(r.timezone ?? 'UTC'),
+    latitude: Number(r.latitude ?? 0),
+    longitude: Number(r.longitude ?? 0),
+    attendance_radius_meters: r.attendance_radius_meters ?? 200,
+    allowed_ip_cidrs: Array.isArray(r.allowed_ip_cidrs) ? r.allowed_ip_cidrs : [],
+    country: String(r.country ?? ''),
+    state: String(r.state ?? ''),
+    city: String(r.city ?? ''),
+    address: String(r.address ?? ''),
+    payroll_region: r.payroll_region ?? '',
+    currency: String(r.currency ?? 'INR'),
+    fiscal_year_start_month: r.fiscal_year_start_month ?? 4,
+    working_week_id: r.working_week_id ?? null,
+    holiday_calendar_id: r.holiday_calendar_id ?? null,
+  }
+}
+
 export async function getLocations(params?: { includeArchived?: boolean }) {
   if (env.useMockApi) {
     await delay()
@@ -52,20 +73,21 @@ export async function getLocation(id: number): Promise<LocationRow | null> {
 export async function createLocation(input: LocationCreateInput | Record<string, unknown>): Promise<LocationRow> {
   if (env.useMockApi) {
     await delay(400)
-    const list = getDb().locations
+    const list = getDb().locations as LocationRow[]
+    const fields = toCreateFields(input)
     const row: LocationRow = {
-      ...(input as any),
+      ...fields,
       id: nextId(list),
       is_archived: false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       changed_by: 1,
-      payroll_region: (input as any).payroll_region ?? '',
-      attendance_radius_meters: (input as any).attendance_radius_meters ?? 200,
-      allowed_ip_cidrs: (input as any).allowed_ip_cidrs ?? [],
-      fiscal_year_start_month: (input as any).fiscal_year_start_month ?? 4,
+      payroll_region: fields.payroll_region ?? '',
+      attendance_radius_meters: fields.attendance_radius_meters ?? 200,
+      allowed_ip_cidrs: fields.allowed_ip_cidrs ?? [],
+      fiscal_year_start_month: fields.fiscal_year_start_month ?? 4,
     }
-    list.push(row as any)
+    list.push(row)
     return { ...row }
   }
   const body: Record<string, unknown> = { ...input }
@@ -83,7 +105,7 @@ export async function createLocation(input: LocationCreateInput | Record<string,
 export async function updateLocation(id: number, patch: Partial<LocationRow> | Record<string, unknown>): Promise<LocationRow> {
   if (env.useMockApi) {
     await delay(400)
-    const row = getDb().locations.find((l) => l.id === id)
+    const row = (getDb().locations as LocationRow[]).find((l) => l.id === id)
     if (!row) throw new Error('Location not found')
     Object.assign(row, patch, { updated_at: new Date().toISOString() })
     return { ...row }
@@ -103,7 +125,7 @@ export async function archiveLocation(id: number): Promise<void> {
     return
   }
   await delay(300)
-  const row = getDb().locations.find((l) => l.id === id) as LocationRow | undefined
+  const row = (getDb().locations as LocationRow[]).find((l) => l.id === id)
   if (!row) throw new Error('Location not found')
   if (row.is_archived) throw new Error('Location is already archived')
   const now = new Date().toISOString()

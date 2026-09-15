@@ -34,7 +34,7 @@ export async function getPosition(id: number): Promise<PositionRow | null> {
 export async function createPosition(input: { name: string }): Promise<PositionRow> {
   if (env.useMockApi) {
     await delay(400)
-    const list = getDb().positions
+    const list = getDb().positions as PositionRow[]
     const now = new Date().toISOString()
     const row: PositionRow = {
       id: nextId(list),
@@ -43,7 +43,7 @@ export async function createPosition(input: { name: string }): Promise<PositionR
       created_at: now,
       updated_at: now,
     }
-    list.push(row as any)
+    list.push(row)
     return { ...row }
   }
   const { data } = await apiClient.post<PositionRow>('/workforce/positions', input)
@@ -56,7 +56,7 @@ export async function updatePosition(
 ): Promise<PositionRow> {
   if (env.useMockApi) {
     await delay(400)
-    const row = getDb().positions.find((p) => p.id === id)
+    const row = (getDb().positions as PositionRow[]).find((p) => p.id === id)
     if (!row) throw new Error('Position not found')
     Object.assign(row, patch, { updated_at: new Date().toISOString() })
     return { ...row }

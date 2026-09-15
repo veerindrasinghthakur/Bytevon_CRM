@@ -35,13 +35,13 @@ export async function createWorkingWeek(input: {
       effective_to: null,
       created_at: new Date().toISOString(),
       created_by: 1,
-    } as WorkingWeekRow
+    }
     for (const w of list) {
       if (w.effective_to == null) {
-        ;(w as any).effective_to = input.effective_from
+        w.effective_to = input.effective_from
       }
     }
-    list.push(row as any)
+    list.push(row)
     return { ...row }
   }
   const { data } = await apiClient.post<WorkingWeekRow>('/organization/working-weeks', {
@@ -57,7 +57,7 @@ export async function archiveWorkingWeek(id: number, effectiveTo?: string): Prom
     await delay(300)
     const row = (getDb().working_weeks as WorkingWeekRow[]).find((w) => w.id === id)
     if (!row) throw new Error('Working week not found')
-    ;(row as any).effective_to = effectiveTo ?? new Date().toISOString().slice(0, 10)
+    row.effective_to = effectiveTo ?? new Date().toISOString().slice(0, 10)
     return
   }
   await apiClient.post(`/organization/working-weeks/${id}/archive`, null, {

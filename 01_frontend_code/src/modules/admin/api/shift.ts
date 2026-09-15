@@ -36,7 +36,7 @@ export async function createShift(
 ): Promise<ShiftRow> {
   if (env.useMockApi) {
     await delay(400)
-    const list = getDb().shifts
+    const list = getDb().shifts as ShiftRow[]
     const row: ShiftRow = {
       ...input,
       id: nextId(list),
@@ -45,7 +45,7 @@ export async function createShift(
       updated_at: new Date().toISOString(),
       changed_by: 1,
     }
-    list.push(row as any)
+    list.push(row)
     return { ...row }
   }
   const { data } = await apiClient.post<ShiftRow>('/organization/shifts', input)
@@ -55,7 +55,7 @@ export async function createShift(
 export async function updateShift(id: number, patch: Partial<ShiftRow>): Promise<ShiftRow> {
   if (env.useMockApi) {
     await delay(400)
-    const row = getDb().shifts.find((s) => s.id === id)
+    const row = (getDb().shifts as ShiftRow[]).find((s) => s.id === id)
     if (!row) throw new Error('Shift not found')
     Object.assign(row, patch, { updated_at: new Date().toISOString() })
     return { ...row }
@@ -67,7 +67,7 @@ export async function updateShift(id: number, patch: Partial<ShiftRow>): Promise
 export async function archiveShift(id: number): Promise<void> {
   if (env.useMockApi) {
     await delay(300)
-    const row = getDb().shifts.find((s) => s.id === id)
+    const row = (getDb().shifts as ShiftRow[]).find((s) => s.id === id)
     if (!row) throw new Error('Shift not found')
     row.is_archived = true
     return

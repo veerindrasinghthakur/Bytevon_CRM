@@ -2,29 +2,44 @@ import { createRoute } from '@tanstack/react-router'
 import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 
-const PayrollDashboardPage = lazyPage(() => import('./pages/PayrollDashboardPage'), 'PayrollDashboardPage')
-const MonthlyPayrollPage = lazyPage(() => import('./pages/MonthlyPayrollPage'), 'MonthlyPayrollPage')
-const RunPayrollPage = lazyPage(() => import('./pages/RunPayrollPage'), 'RunPayrollPage')
+const PayrollDashboardPage = lazyPage(
+  () => import('./pages/dashboard/PayrollDashboardPage'),
+  'PayrollDashboardPage',
+)
+const MonthlyPayrollPage = lazyPage(
+  () => import('./pages/monthly/MonthlyPayrollPage'),
+  'MonthlyPayrollPage',
+)
+const RunPayrollPage = lazyPage(() => import('./pages/run/RunPayrollPage'), 'RunPayrollPage')
 const GeneratingPayrollPage = lazyPage(
-  () => import('./pages/GeneratingPayrollPage'),
+  () => import('./pages/run/GeneratingPayrollPage'),
   'GeneratingPayrollPage',
 )
-const PayrollReviewPage = lazyPage(() => import('./pages/PayrollReviewPage'), 'PayrollReviewPage')
-const PayslipViewPage = lazyPage(() => import('./pages/PayslipViewPage'), 'PayslipViewPage')
+const PayrollReviewPage = lazyPage(
+  () => import('./pages/review/PayrollReviewPage'),
+  'PayrollReviewPage',
+)
+const PayslipViewPage = lazyPage(() => import('./pages/payslip/PayslipViewPage'), 'PayslipViewPage')
 const SalaryManagementPage = lazyPage(
-  () => import('./pages/SalaryManagementPage'),
+  () => import('./pages/salary/SalaryManagementPage'),
   'SalaryManagementPage',
 )
 const EmployeeSalaryDetailPage = lazyPage(
-  () => import('./pages/EmployeeSalaryDetailPage'),
+  () => import('./pages/salary/EmployeeSalaryDetailPage'),
   'EmployeeSalaryDetailPage',
 )
-const ReviseSalaryPage = lazyPage(() => import('./pages/ReviseSalaryPage'), 'ReviseSalaryPage')
+const ReviseSalaryPage = lazyPage(
+  () => import('./pages/salary/ReviseSalaryPage'),
+  'ReviseSalaryPage',
+)
 const EmployeePayrollHistoryPage = lazyPage(
-  () => import('./pages/EmployeePayrollHistoryPage'),
+  () => import('./pages/history/EmployeePayrollHistoryPage'),
   'EmployeePayrollHistoryPage',
 )
-const PayrollHistoryPage = lazyPage(() => import('./pages/PayrollHistoryPage'), 'PayrollHistoryPage')
+const PayrollHistoryPage = lazyPage(
+  () => import('./pages/history/PayrollHistoryPage'),
+  'PayrollHistoryPage',
+)
 
 /** Canonical path helpers — prefer these over hard-coded strings in pages. */
 export const payrollRoutes = {

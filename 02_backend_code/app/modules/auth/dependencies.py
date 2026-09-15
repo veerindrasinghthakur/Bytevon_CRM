@@ -1,6 +1,4 @@
-"""
-FastAPI dependencies for Authentication module.
-"""
+"""FastAPI dependencies for Authentication module."""
 
 from __future__ import annotations
 
@@ -12,19 +10,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db_session
 from app.core.security.jwt_manager import JWTManager
 from app.core.security.password_manager import PasswordManager
-from app.modules.auth.services.public_service import AuthenticationPublicService
+from app.modules.auth.service import AuthService
 
 
-def get_authentication_public_service(
+def get_auth_service(
     session: Annotated[AsyncSession, Depends(get_db_session)],
-) -> AuthenticationPublicService:
-    return AuthenticationPublicService(
+) -> AuthService:
+    return AuthService(
         session,
         jwt_manager=JWTManager(),
         password_manager=PasswordManager(),
     )
 
 
-AuthenticationServiceDep = Annotated[
-    AuthenticationPublicService, Depends(get_authentication_public_service)
-]
+AuthServiceDep = Annotated[AuthService, Depends(get_auth_service)]
+# Back-compat
+AuthenticationServiceDep = AuthServiceDep
