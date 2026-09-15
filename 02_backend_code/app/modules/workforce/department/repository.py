@@ -1,6 +1,6 @@
 """Department repository — operational queries.
 
-Uses Department model from admin.department (shared table ownership).
+Uses Department model from organization.models (shared table).
 Member listing uses employment assignments (department_id).
 """
 from __future__ import annotations
@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.repositories.base_repository import BaseRepository
-from app.modules.admin.department.models import Department
+from app.modules.organization.models import Department
 from app.modules.workforce.department.schemas import DepartmentEmployee, DepartmentEmployeeOption
 from app.modules.workforce.models import Employment, EmploymentAssignment
 
@@ -91,15 +91,11 @@ class DepartmentRepository(BaseRepository):
         self, department_id: int
     ) -> list[DepartmentEmployeeOption]:
         today = date.today()
-        # Employees whose current assignment is not this department
-        assigned = (
-            select(EmploymentAssignment.employment_id)
-            .where(
-                EmploymentAssignment.department_id == department_id,
-                EmploymentAssignment.effective_from <= today,
-                (EmploymentAssignment.effective_to.is_(None))
-                | (EmploymentAssignment.effective_to >= today),
-            )
+        assigned = select(EmploymentAssignment.employment_id).where(
+            EmploymentAssignment.department_id == department_id,
+            EmploymentAssignment.effective_from <= today,
+            (EmploymentAssignment.effective_to.is_(None))
+            | (EmploymentAssignment.effective_to >= today),
         )
         stmt = (
             select(Employment)
@@ -120,11 +116,6 @@ class DepartmentRepository(BaseRepository):
         ]
 
     async def assign_employee(self, department_id: int, employment_id: int) -> None:
-        """Soft assign: open a new assignment row pointing at this department.
-
-        Full close+insert is owned by workforce.assignment; this is a lightweight
-        operational helper for the department members UI.
-        """
         from app.core.db.enums import WorkMode
 
         today = date.today()
