@@ -19,11 +19,11 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { ResourceName } from '@/shared/schema'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { myAdminRoutes } from '../routes'
-import { useUsersList } from '../hooks/use-users-list'
-import type { AdminUserListItem } from '../types'
+import { myAdminRoutes } from '../../routes'
+import { useUsersList } from '../../hooks/user/use-users'
+import type { AdminUserListItem } from '../../types'
 import { cn } from '@/shared/lib/cn'
-import { statusBadgeClass, statusDot, userStatusOptions } from '../schemas/enums'
+import { statusBadgeClass, statusDot, userStatusOptions } from '../../schemas/enums'
 
 function UserQuickContent({ user }: { user: AdminUserListItem }) {
   return (

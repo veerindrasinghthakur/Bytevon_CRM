@@ -2,7 +2,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
-import { useUsersList } from './use-users-list'
+import { useUsersList } from './use-users'
 
 function createWrapper() {
   const client = new QueryClient({
@@ -53,3 +53,4 @@ describe('useUsersList', () => {
     )
   })
 })
+

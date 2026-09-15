@@ -7,17 +7,17 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { toast } from '@/shared/hooks/use-toast'
 import { queryKeys } from '@/shared/lib/query-keys'
-import { myAdminRoutes } from '../routes'
-import type { RoleFormMode, RolePermissionAction, RolePermissionMatrix } from '../types'
-import { emptyMatrix, matrixToPermissions, seedMatrix } from '../lib/role-matrix'
+import { myAdminRoutes } from '../../routes'
+import type { RoleFormMode, RolePermissionAction, RolePermissionMatrix } from '../../types'
+import { emptyMatrix, matrixToPermissions, seedMatrix } from '../../lib/role-matrix'
 import {
   createAdminRole,
   getAdminRole,
   listPermissionCatalog,
   updateAdminRole,
-} from '../api/roles'
-import { roleFormSchema, type RoleFormInput } from '../schemas/role-form'
-import { useAdminMutation } from './use-admin-mutation'
+} from '../../api/roles'
+import { roleFormSchema, type RoleFormInput } from '../../schemas/role-form'
+import { useAdminMutation } from '../use-admin-mutation'
 
 export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId?: string) {
   const navigate = useNavigate()

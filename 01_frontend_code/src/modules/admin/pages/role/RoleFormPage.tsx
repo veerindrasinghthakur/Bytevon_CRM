@@ -3,9 +3,9 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { cn } from '@/shared/lib/cn'
 import { myAdminRoutes } from '@/modules/admin/routes'
-import { useRoleForm } from '../hooks/use-role-form'
-import { hierarchyLevels, inheritOptions, permissionActionLabels } from '../schemas/enums'
-import type { RoleFormProps, RolePermissionAction } from '../types'
+import { useRoleForm } from '../../hooks/role/use-role-form'
+import { hierarchyLevels, inheritOptions, permissionActionLabels } from '../../schemas/enums'
+import type { RoleFormProps, RolePermissionAction } from '../../types'
 
 export function RoleFormPage({ mode, roleId, duplicateFromId }: RoleFormProps) {
   const form = useRoleForm(mode, roleId, duplicateFromId)

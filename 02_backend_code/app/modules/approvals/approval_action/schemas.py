@@ -1,7 +1,4 @@
-"""
-Pydantic v2 schemas for Approvals module.
-"""
-
+"""Approval action schemas (decide / comment)."""
 from __future__ import annotations
 
 from datetime import datetime
@@ -16,20 +13,6 @@ class MessageResponse(BaseModel):
     message: str
 
 
-# ===========================================================================
-# Create / act
-# ===========================================================================
-
-class ApprovalRequestCreate(BaseModel):
-    """Called by consumer modules (Leave, Attendance, …) inside their TX."""
-
-    request_type: str = Field(..., min_length=1, max_length=100)
-    reference_id: int
-    requester_employment_id: int
-    target: ApprovalTarget
-    target_department_id: Optional[int] = None
-
-
 class ApprovalActionRequest(BaseModel):
     remarks: Optional[str] = None
 
@@ -37,10 +20,6 @@ class ApprovalActionRequest(BaseModel):
 class CommentRequest(BaseModel):
     remarks: str = Field(..., min_length=1)
 
-
-# ===========================================================================
-# Responses
-# ===========================================================================
 
 class ApprovalActionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)

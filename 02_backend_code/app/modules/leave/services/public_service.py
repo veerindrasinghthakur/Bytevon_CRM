@@ -3,7 +3,7 @@ LeavePublicService — only public entry point for Leave.
 
 Owns local status projection on leave_requests.
 Integrates with Approvals:
-  - Submit: create leave_request + ApprovalPublicService.create_request in one TX.
+  - Submit: create leave_request + RequestService.create_request in one TX.
   - Decision: handles post-commit event from Approvals; updates local status + ledger.
 """
 
@@ -26,8 +26,10 @@ from app.core.db.enums import (
 )
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
-from app.modules.approvals.schemas.schemas import ApprovalRequestCreate
-from app.modules.approvals.services.public_service import ApprovalPublicService
+from app.modules.approvals.approval_action.schemas import ApprovalActionRequest
+from app.modules.approvals.approval_action.service import ApprovalActionService
+from app.modules.approvals.request.schemas import ApprovalRequestCreate
+from app.modules.approvals.request.service import RequestService
 from app.modules.leave.models import LeaveLedger, LeavePolicy, LeaveRequest
 from app.modules.leave.repositories.repository import LeaveRepository
 from app.modules.leave.schemas.schemas import (
@@ -86,11 +88,8 @@ class LeavePublicService(BasePublicService):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
         self._repo = LeaveRepository(session)
-        self._approvals = ApprovalPublicService(session)
-
-    # ==================================================================
-    # Policies (versioned)
-    # ==================================================================
+        self._requests = RequestService(session)
+        self._actions = ApprovalActionService(session)
 
     async def create_policy(
         self,
@@ -134,10 +133,6 @@ class LeavePublicService(BasePublicService):
             raise NotFoundError(f"No effective policy for {leave_type.value}")
         return LeavePolicyResponse.model_validate(policy)
 
-    # ==================================================================
-    # Submit leave request (consumer TX owns approval create)
-    # ==================================================================
-
     async def submit_request(
         self,
         data: LeaveRequestCreate,
@@ -157,7 +152,6 @@ class LeavePublicService(BasePublicService):
 
         days = _calendar_days(data.start_date, data.end_date)
 
-        # Balance check (LOSS_OF_PAY can go negative conceptually; skip hard block)
         if data.leave_type != LeaveType.LOSS_OF_PAY:
             balance = await self._repo.sum_balance(
                 data.employment_id, data.leave_type
@@ -180,10 +174,9 @@ class LeavePublicService(BasePublicService):
             days=days,
         )
         await self._repo.add(leave_req)
-        await self._flush()  # need leave_req.id
+        await self._flush()
 
-        # Create approval request inside same TX (commit=False)
-        approval = await self._approvals.create_request(
+        approval = await self._requests.create_request(
             ApprovalRequestCreate(
                 request_type=LEAVE_REQUEST_TYPE,
                 reference_id=leave_req.id,
@@ -234,18 +227,14 @@ class LeavePublicService(BasePublicService):
         if req.status != LeaveRequestStatus.PENDING:
             raise DomainError("Only pending leave requests can be cancelled")
         if req.employment_id != actor_employment_id:
-            # Allow system / admin later via RBAC; for now requester only
             raise DomainError("Only the requester can cancel this leave request")
 
         req.status = LeaveRequestStatus.CANCELLED
         await self._commit()
 
-        # Also cancel the linked approval if present
         if req.approval_request_id:
             try:
-                from app.modules.approvals.schemas.schemas import ApprovalActionRequest
-
-                await self._approvals.cancel(
+                await self._actions.cancel(
                     req.approval_request_id,
                     ApprovalActionRequest(remarks="Leave request cancelled by requester"),
                     actor_employment_id=actor_employment_id,
@@ -258,15 +247,7 @@ class LeavePublicService(BasePublicService):
         await self._audit("leave_request.cancelled", req.id, actor_employment_id)
         return LeaveRequestResponse.model_validate(req)
 
-    # ==================================================================
-    # Approval decision handler (called after Approvals commit)
-    # ==================================================================
-
     async def handle_approval_decision(self, event: dict) -> None:
-        """
-        Registered via register_approval_decision_handler.
-        Runs in its own TX: update local status + ledger on APPROVED.
-        """
         if event.get("request_type") != LEAVE_REQUEST_TYPE:
             return
 
@@ -281,10 +262,9 @@ class LeavePublicService(BasePublicService):
 
         if status_str == ApprovalStatus.APPROVED.value:
             if req.status == LeaveRequestStatus.APPROVED:
-                return  # idempotent
+                return
             req.status = LeaveRequestStatus.APPROVED
             days = req.days or _calendar_days(req.start_date, req.end_date)
-            # Consume balance
             if req.leave_type != LeaveType.LOSS_OF_PAY:
                 ledger = LeaveLedger(
                     employment_id=req.employment_id,
@@ -312,10 +292,6 @@ class LeavePublicService(BasePublicService):
             req.status = LeaveRequestStatus.CANCELLED
             await self._commit()
             await self._audit("leave_request.cancelled_via_approval", req.id, actor)
-
-    # ==================================================================
-    # Ledger / balance
-    # ==================================================================
 
     async def post_ledger_entry(
         self,
@@ -358,7 +334,6 @@ class LeavePublicService(BasePublicService):
             )
             for lt, total in rows
         ]
-        # Ensure all known types appear (zero if missing)
         present = {b.leave_type for b in balances}
         for lt in LeaveType:
             if lt not in present:
@@ -366,17 +341,12 @@ class LeavePublicService(BasePublicService):
         balances.sort(key=lambda b: b.leave_type.value)
         return LeaveBalanceResponse(employment_id=employment_id, balances=balances)
 
-    # ==================================================================
-    # Apply Leave page — context + working-day calculation
-    # ==================================================================
-
     async def _load_holidays(
         self,
         *,
         calendar_id: Optional[int] = None,
         year: Optional[int] = None,
     ) -> list[HolidayItem]:
-        """Load holidays via Organization public service (no direct table access)."""
         from app.modules.organization.services.public_service import OrganizationPublicService
 
         org = OrganizationPublicService(self._session)
@@ -412,7 +382,6 @@ class LeavePublicService(BasePublicService):
                         else str(h.holiday_type),
                     )
                 )
-        # Dedupe by date (prefer first calendar)
         seen: set[date] = set()
         unique: list[HolidayItem] = []
         for h in sorted(items, key=lambda x: x.date):
@@ -429,15 +398,10 @@ class LeavePublicService(BasePublicService):
         holiday_calendar_id: Optional[int] = None,
         year: Optional[int] = None,
     ) -> ApplyLeaveContextResponse:
-        """
-        Bootstrap payload for Apply Leave: holidays, leave type options, balances.
-        Frontend should treat these as authoritative (no local holiday hardcoding).
-        """
         as_of = date.today()
         y = year or as_of.year
         holidays = await self._load_holidays(calendar_id=holiday_calendar_id, year=y)
 
-        # Type options from current policies
         leave_types: list[LeaveTypeOptionItem] = []
         for lt in LeaveType:
             try:
@@ -451,7 +415,6 @@ class LeavePublicService(BasePublicService):
                     )
                 )
             except NotFoundError:
-                # Still expose the enum value with zero entitlement so UI can list it
                 leave_types.append(
                     LeaveTypeOptionItem(
                         leave_type=lt,
@@ -462,13 +425,11 @@ class LeavePublicService(BasePublicService):
                 )
 
         balance_resp = await self.get_balances(employment_id)
-        # Map ledger remaining → used/total using policy entitlement when available
         balances: list[ApplyLeaveBalanceItem] = []
         entitlement_by_type = {t.leave_type: t.annual_entitlement for t in leave_types}
         for b in balance_resp.balances:
             total = entitlement_by_type.get(b.leave_type, Decimal("0"))
             remaining = b.balance_days
-            # If ledger is the source of truth for remaining, derive used from entitlement
             used = max(Decimal("0"), total - remaining) if total > 0 else Decimal("0")
             balances.append(
                 ApplyLeaveBalanceItem(
@@ -489,7 +450,6 @@ class LeavePublicService(BasePublicService):
     async def calculate_leave_days(
         self, data: LeaveCalculateRequest
     ) -> LeaveCalculateResponse:
-        """Working-day cost + projected balance for the selected range."""
         holidays = await self._load_holidays(calendar_id=data.holiday_calendar_id)
         holiday_dates = {h.date for h in holidays}
         in_range = [
@@ -518,8 +478,3 @@ class LeavePublicService(BasePublicService):
             estimated_balance_after=estimated_after,
             holidays_in_range=in_range,
         )
-
-    # ==================================================================
-    # Helpers
-    # ==================================================================
-

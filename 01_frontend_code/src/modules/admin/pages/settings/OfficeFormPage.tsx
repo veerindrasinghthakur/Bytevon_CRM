@@ -8,14 +8,14 @@ import { Button } from '@/shared/components/ui/Button'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { cn } from '@/shared/lib/cn'
-import { createLocation, getLocation, updateLocation } from '../api/organization'
+import { createLocation, getLocation, updateLocation } from '../../api/organization'
 import {
   emptyOfficeForm,
   officeFormSchema,
   toLocationCreatePayload,
   toLocationUpdatePayload,
   type OfficeFormValues,
-} from '../schemas/offices'
+} from '../../schemas/offices'
 import { queryKeys } from '@/shared/lib/query-keys'
 
 export function OfficeFormPage() {

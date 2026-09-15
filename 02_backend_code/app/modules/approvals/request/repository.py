@@ -1,7 +1,4 @@
-"""
-ApprovalRepository — domain-specific queries only.
-"""
-
+"""Approval request repository."""
 from __future__ import annotations
 
 from typing import Optional, Sequence
@@ -15,7 +12,7 @@ from app.core.repositories.base_repository import BaseRepository
 from app.modules.approvals.models import ApprovalAction, ApprovalRequest
 
 
-class ApprovalRepository(BaseRepository):
+class RequestRepository(BaseRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
 

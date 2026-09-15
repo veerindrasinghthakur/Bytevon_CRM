@@ -5,7 +5,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
-import { useUserCreate } from '../hooks/use-user-create'
+import { useUserCreate } from '../../hooks/user/use-user-create'
 
 export function UserCreatePage() {
   const {

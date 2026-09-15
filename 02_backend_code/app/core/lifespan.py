@@ -8,7 +8,7 @@ from fastapi import FastAPI
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal, engine
-from app.modules.approvals.services.public_service import (
+from app.modules.approvals.approval_action.service import (
     register_approval_decision_handler,
 )
 
