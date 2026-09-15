@@ -7,14 +7,14 @@ import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 import { safeRedirectOpts } from '@/shared/lib/safeNavigate'
 
-const UsersListPage = lazyPage(() => import('./pages/UsersListPage'), 'UsersListPage')
-const UserDetailPage = lazyPage(() => import('./pages/UserDetailPage'), 'UserDetailPage')
-const UserCreatePage = lazyPage(() => import('./pages/UserCreatePage'), 'UserCreatePage')
-const RolesListPage = lazyPage(() => import('./pages/RolesListPage'), 'RolesListPage')
-const RoleDetailPage = lazyPage(() => import('./pages/RoleDetailPage'), 'RoleDetailPage')
+const UsersListPage = lazyPage(() => import('./pages/user/UsersListPage'), 'UsersListPage')
+const UserDetailPage = lazyPage(() => import('./pages/user/UserDetailPage'), 'UserDetailPage')
+const UserCreatePage = lazyPage(() => import('./pages/user/UserCreatePage'), 'UserCreatePage')
+const RolesListPage = lazyPage(() => import('./pages/role/RolesListPage'), 'RolesListPage')
+const RoleDetailPage = lazyPage(() => import('./pages/role/RoleDetailPage'), 'RoleDetailPage')
 const RoleEditPage = lazyPage(() => import('./pages/role/RoleEditPage'), 'RoleEditPage')
 const RoleCreatePage = lazyPage(() => import('./pages/role/RoleCreatePage'), 'RoleCreatePage')
-const AuditLogsPage = lazyPage(() => import('./pages/AuditLogsPage'), 'AuditLogsPage')
+const AuditLogsPage = lazyPage(() => import('./pages/audit/AuditLogsPage'), 'AuditLogsPage')
 const AdminSettingsLayout = lazyPage(() => import('./pages/settings/AdminSettingsLayout'), 'AdminSettingsLayout')
 const LeaveSettingsLayout = lazyPage(() => import('./pages/settings/LeaveSettingsLayout'), 'LeaveSettingsLayout')
 const AttendanceSettingsLayout = lazyPage(
@@ -28,13 +28,13 @@ const OrganizationProfileSection = lazyPage(
 const HeadOfficeSection = lazyPage(() => import('./pages/settings/HeadOfficeSection'), 'HeadOfficeSection')
 const BrandingSection = lazyPage(() => import('./pages/settings/BrandingSection'), 'BrandingSection')
 const RegionalSection = lazyPage(() => import('./pages/settings/RegionalSection'), 'RegionalSection')
-const OfficeFormPage = lazyPage(() => import('./pages/OfficeFormPage'), 'OfficeFormPage')
+const OfficeFormPage = lazyPage(() => import('./pages/settings/OfficeFormPage'), 'OfficeFormPage')
 const AttendanceSettingsPage = lazyPage(
-  () => import('./pages/AttendanceSettingsPage'),
+  () => import('./pages/settings/AttendanceSettingsPage'),
   'AttendanceSettingsPage',
 )
-const LeaveSettingsPage = lazyPage(() => import('./pages/LeaveSettingsPage'), 'LeaveSettingsPage')
-const SecurityCenterPage = lazyPage(() => import('./pages/SecurityCenterPage'), 'SecurityCenterPage')
+const LeaveSettingsPage = lazyPage(() => import('./pages/settings/LeaveSettingsPage'), 'LeaveSettingsPage')
+const SecurityCenterPage = lazyPage(() => import('./pages/security/SecurityCenterPage'), 'SecurityCenterPage')
 const LeavePoliciesPage = lazyPage(() => import('./pages/settings/LeavePoliciesPage'), 'LeavePoliciesPage')
 const LeaveLedgerPage = lazyPage(() => import('./pages/settings/LeaveLedgerPage'), 'LeaveLedgerPage')
 const LocationsListPage = lazyPage(() => import('./pages/location/LocationsListPage'), 'LocationsListPage')

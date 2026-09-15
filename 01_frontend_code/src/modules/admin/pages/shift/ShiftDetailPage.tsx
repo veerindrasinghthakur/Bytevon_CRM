@@ -17,7 +17,7 @@ import {
   useShiftDetail,
   useShiftStaff,
   useUpdateShift,
-} from '../../hooks/use-organization-shifts'
+} from '../../hooks/shift/use-shifts'
 import { archiveShift } from '../../api/organization'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { emptyShift } from '@/shared/mock/data/workforce'

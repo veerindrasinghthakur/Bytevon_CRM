@@ -16,7 +16,7 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { useLocationsList } from '../../hooks/use-organization-locations'
+import { useLocationsList } from '../../hooks/location/use-locations'
 import type { LocationRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 import { myAdminRoutes } from '../../routes'

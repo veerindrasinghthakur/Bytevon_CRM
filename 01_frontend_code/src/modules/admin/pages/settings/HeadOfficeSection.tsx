@@ -1,7 +1,7 @@
 import { Button } from '@/shared/components/ui/Button'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { cn } from '@/shared/lib/cn'
-import { useHeadOfficePicker } from '../../hooks/use-head-office'
+import { useHeadOfficePicker } from '../../hooks/settings/use-head-office'
 
 export function HeadOfficeSection() {
   const {

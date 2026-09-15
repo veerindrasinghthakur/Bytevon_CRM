@@ -7,7 +7,7 @@ import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { queryKeys } from '@/shared/lib/query-keys'
-import { myAdminRoutes } from '../routes'
+import { myAdminRoutes } from '../../routes'
 import { uploadAvatar } from '@/modules/my-work/api/profile'
 import {
   activateUser,
@@ -19,9 +19,9 @@ import {
   lockUser,
   unlockUser,
   updateUserLogin,
-} from '../api/users'
-import { userEditFormSchema, type UserEditFormValues } from '../schemas/user-form'
-import type { AdminUserStatus } from '../types'
+} from '../../api/users'
+import { userEditFormSchema, type UserEditFormValues } from '../../schemas/user-form'
+import type { AdminUserStatus } from '../../types'
 
 async function uploadUserAvatar(_userId: string, file: File) {
   return uploadAvatar(file)

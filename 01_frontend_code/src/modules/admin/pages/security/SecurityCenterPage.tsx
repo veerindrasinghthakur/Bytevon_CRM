@@ -5,12 +5,12 @@ import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { queryKeys } from '@/shared/lib/query-keys'
-import { getSecurityKpis, listSecurityEvents } from '../api/security'
-import { securityScoreDefault } from '../schemas/enums'
+import { getSecurityKpis, listSecurityEvents } from '../../api/security'
+import { securityScoreDefault } from '../../schemas/enums'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
-import { UnavailableProtocol, ProtocolRow } from '../components/SecurityProtocols'
-import { useSecurityScoreAnimation } from '../hooks/use-security-score'
-import { securityEventBadge } from '../schemas/enums'
+import { UnavailableProtocol, ProtocolRow } from '../../components/security/SecurityProtocols'
+import { useSecurityScoreAnimation } from '../../hooks/security/use-security-score'
+import { securityEventBadge } from '../../schemas/enums'
 
 export function SecurityCenterPage() {
   const [sessionTimeout, setSessionTimeout] = useState(true)

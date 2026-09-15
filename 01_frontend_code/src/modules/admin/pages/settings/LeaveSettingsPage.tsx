@@ -7,12 +7,12 @@ import { IconButton } from '@/shared/components/ui/IconButton'
 import { Modal } from '@/shared/components/ui/Modal'
 import { cn } from '@/shared/lib/cn'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
-import { useLeaveEdit } from '../context/LeaveEditContext'
-import { listLeaveTypeSettings } from '../api/leave'
-import { getLeaveAccrualPolicy, updateLeaveAccrualPolicy } from '../api/settings'
+import { useLeaveEdit } from '../../context/LeaveEditContext'
+import { listLeaveTypeSettings } from '../../api/leave'
+import { getLeaveAccrualPolicy, updateLeaveAccrualPolicy } from '../../api/settings'
 import { queryKeys } from '@/shared/lib/query-keys'
-import { leaveAccrualPolicySchema, type LeaveAccrualPolicyInput } from '../schemas/leave'
-import { leavePolicyFormSchema, type LeavePolicyFormInput } from '../schemas/leave-form'
+import { leaveAccrualPolicySchema, type LeaveAccrualPolicyInput } from '../../schemas/leave'
+import { leavePolicyFormSchema, type LeavePolicyFormInput } from '../../schemas/leave-form'
 
 /** Content only — pencil Edit lives on Accrual Policy section */
 export function LeaveSettingsPage() {

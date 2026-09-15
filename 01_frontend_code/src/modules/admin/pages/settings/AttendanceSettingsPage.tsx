@@ -12,11 +12,11 @@ import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { queryKeys } from '@/shared/lib/query-keys'
-import { getAttendanceSettings, updateAttendanceSettings } from '../api/settings'
-import { getAttendanceAdminMetrics } from '../api/metrics'
-import { getShifts, updateShift } from '../api/organization'
-import { attendanceSettingsSchema, type AttendanceSettingsInput } from '../schemas/settings'
-import { useShiftFormData } from '../hooks/use-attendance-settings'
+import { getAttendanceSettings, updateAttendanceSettings } from '../../api/settings'
+import { getAttendanceAdminMetrics } from '../../api/metrics'
+import { getShifts, updateShift } from '../../api/organization'
+import { attendanceSettingsSchema, type AttendanceSettingsInput } from '../../schemas/settings'
+import { useShiftFormData } from '../../hooks/settings/use-attendance-settings'
 
 export function AttendanceSettingsPage() {
   const navigate = useNavigate()

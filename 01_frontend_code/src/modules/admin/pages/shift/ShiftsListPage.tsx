@@ -12,7 +12,7 @@ import {
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { useShiftsList } from '../../hooks/use-organization-shifts'
+import { useShiftsList } from '../../hooks/shift/use-shifts'
 import { can } from '@/shared/rbac'
 import { Action, ResourceName } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'

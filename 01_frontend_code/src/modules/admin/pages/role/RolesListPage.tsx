@@ -18,11 +18,11 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { ResourceName } from '@/shared/schema'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { myAdminRoutes } from '../routes'
-import { useRolesList } from '../hooks/use-roles-list'
-import type { AdminRole } from '../types'
+import { myAdminRoutes } from '../../routes'
+import { useRolesList } from '../../hooks/role/use-roles'
+import type { AdminRole } from '../../types'
 import { cn } from '@/shared/lib/cn'
-import { categoryStyles } from '../schemas/enums'
+import { categoryStyles } from '../../schemas/enums'
 
 function RoleQuickContent({ role }: { role: AdminRole }) {
   return (

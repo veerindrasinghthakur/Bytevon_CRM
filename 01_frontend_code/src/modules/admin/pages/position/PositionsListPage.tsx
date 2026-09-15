@@ -1,10 +1,10 @@
-import { useNavigate } from '@tanstack/react-router'
+﻿import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { usePositions } from '../../hooks/use-organization'
+import { usePositions } from '../../hooks/position'
 import { cn } from '@/shared/lib/cn'
 
 export function PositionsListPage() {
@@ -74,3 +74,4 @@ export function PositionsListPage() {
     </div>
   )
 }
+

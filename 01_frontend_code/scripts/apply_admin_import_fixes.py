@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """Run from repo root AFTER restructure-admin-module.sh.
 Updates imports, splits organization API into domain files, writes api/hooks barrels,
 updates routes.tsx + index.ts paths, adds types/* domain re-exports.

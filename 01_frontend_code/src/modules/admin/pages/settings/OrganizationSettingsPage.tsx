@@ -12,7 +12,7 @@ import {
   useOrganizationSettings,
   useOrgLocationsForSelect,
   useUpdateOrganizationSettings,
-} from '../../hooks/use-organization'
+} from '../../hooks/settings/use-settings'
 import { organizationSettingsSchema, type OrganizationSettingsForm } from '../../schemas/settings'
 
 export function OrganizationSettingsPage() {
