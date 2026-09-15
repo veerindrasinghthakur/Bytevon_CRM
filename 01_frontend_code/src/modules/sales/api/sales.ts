@@ -28,6 +28,7 @@ import type {
   ClientFilterOptions,
   LeadFilterOptions,
   PlatformOption,
+  PipelineStage,
 } from '../types'
 
 let leadsStore: Lead[] | null = null
@@ -337,7 +338,7 @@ export async function updateLead(
  * Advance pipeline stage. WON uses POST /sales/leads/{id}/status (client create flow);
  * other stages use PATCH via updateLead.
  */
-export async function changeLeadStage(id: string, stage: string): Promise<Lead | null> {
+export async function changeLeadStage(id: string, stage: PipelineStage): Promise<Lead | null> {
   if (stage === 'Won') {
     if (!env.useMockApi) {
       await apiClient.post(`/sales/leads/${id}/status`, { status: 'WON' })

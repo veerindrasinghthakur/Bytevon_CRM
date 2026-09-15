@@ -3,20 +3,21 @@ import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 import { safeRedirectOpts } from '@/shared/lib/safeNavigate'
 
-const SalesDashboardPage = lazyPage(() => import('./pages/dashboard/SalesDashboardPage'), 'SalesDashboardPage')
-const LeadsListPage = lazyPage(() => import('./pages/lead/LeadsListPage'), 'LeadsListPage')
-const LeadCreatePage = lazyPage(() => import('./pages/lead/LeadCreatePage'), 'LeadCreatePage')
-const LeadDetailPage = lazyPage(() => import('./pages/lead/LeadDetailPage'), 'LeadDetailPage')
-const ClientsListPage = lazyPage(() => import('./pages/client/ClientsListPage'), 'ClientsListPage')
-const ClientCreatePage = lazyPage(() => import('./pages/client/ClientCreatePage'), 'ClientCreatePage')
-const ClientDetailPage = lazyPage(() => import('./pages/client/ClientDetailPage'), 'ClientDetailPage')
-const SalesAnalyticsPage = lazyPage(() => import('./pages/dashboard/SalesAnalyticsPage'), 'SalesAnalyticsPage')
+/** Page bodies live at pages/*.tsx (flat). Domain folders were temporary re-export stubs — removed. */
+const SalesDashboardPage = lazyPage(() => import('./pages/SalesDashboardPage'), 'SalesDashboardPage')
+const LeadsListPage = lazyPage(() => import('./pages/LeadsListPage'), 'LeadsListPage')
+const LeadCreatePage = lazyPage(() => import('./pages/LeadCreatePage'), 'LeadCreatePage')
+const LeadDetailPage = lazyPage(() => import('./pages/LeadDetailPage'), 'LeadDetailPage')
+const ClientsListPage = lazyPage(() => import('./pages/ClientsListPage'), 'ClientsListPage')
+const ClientCreatePage = lazyPage(() => import('./pages/ClientCreatePage'), 'ClientCreatePage')
+const ClientDetailPage = lazyPage(() => import('./pages/ClientDetailPage'), 'ClientDetailPage')
+const SalesAnalyticsPage = lazyPage(() => import('./pages/SalesAnalyticsPage'), 'SalesAnalyticsPage')
 const SalesActivityTimelinePage = lazyPage(
-  () => import('./pages/activity/SalesActivityTimelinePage'),
+  () => import('./pages/SalesActivityTimelinePage'),
   'SalesActivityTimelinePage',
 )
-const CaseStudiesListPage = lazyPage(() => import('./pages/case-study/CaseStudiesListPage'), 'CaseStudiesListPage')
-const SourcesListPage = lazyPage(() => import('./pages/source/SourcesListPage'), 'SourcesListPage')
+const CaseStudiesListPage = lazyPage(() => import('./pages/CaseStudiesListPage'), 'CaseStudiesListPage')
+const SourcesListPage = lazyPage(() => import('./pages/SourcesListPage'), 'SourcesListPage')
 
 /** Canonical path helpers — prefer these over hard-coded strings in pages. */
 export const salesRoutes = {
