@@ -27,13 +27,13 @@ export function GeneratingPayrollPage() {
       <div
         className="absolute inset-0 opacity-[0.03] pointer-events-none"
         style={{
-          backgroundImage: 'radial-gradient(#001f3f 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(var(--color-on-background) 1px, transparent 1px)',
           backgroundSize: '24px 24px',
         }}
       />
 
       <div className="w-full max-w-2xl bv-surface executive-shadow p-8 flex flex-col items-center text-center relative z-10 overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-1 bg-electric-blue w-full">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-primary w-full">
           <div
             className="h-full bg-secondary-container transition-all duration-1000 ease-in-out"
             style={{ width: `${pct}%` }}
@@ -47,7 +47,7 @@ export function GeneratingPayrollPage() {
             viewBox="0 0 100 100"
           >
             <circle
-              className="text-deep-navy"
+              className="text-on-background"
               cx="50"
               cy="50"
               fill="none"
@@ -68,7 +68,7 @@ export function GeneratingPayrollPage() {
               strokeWidth="8"
             />
             <circle
-              className="text-electric-blue transition-[stroke-dashoffset] duration-500"
+              className="text-primary transition-[stroke-dashoffset] duration-500"
               cx="60"
               cy="60"
               fill="none"
@@ -81,14 +81,14 @@ export function GeneratingPayrollPage() {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-display-lg font-bold text-deep-navy">
+            <span className="text-display-lg font-bold text-on-background">
               {pct}
               <span className="text-title-lg">%</span>
             </span>
           </div>
         </div>
 
-        <h2 className="text-headline-lg font-semibold text-deep-navy mb-2 animate-pulse">
+        <h2 className="text-headline-lg font-semibold text-on-background mb-2 animate-pulse">
           Generating Monthly Payroll...
         </h2>
         <p className="text-body-md text-on-surface-variant max-w-md mx-auto mb-8">
@@ -116,7 +116,7 @@ export function GeneratingPayrollPage() {
                       s.status === 'done' &&
                         'bg-surface-container-lowest border-2 border-secondary text-secondary shadow-sm',
                       s.status === 'active' &&
-                        'bg-electric-blue text-on-primary shadow-md ring-4 ring-secondary-fixed-dim/30',
+                        'bg-primary text-on-primary shadow-md ring-4 ring-secondary-fixed-dim/30',
                       s.status === 'pending' &&
                         'bg-surface-container-highest border-2 border-outline-variant text-outline',
                     )}
@@ -134,7 +134,7 @@ export function GeneratingPayrollPage() {
                   <span
                     className={cn(
                       'text-label-md',
-                      s.status === 'active' ? 'text-deep-navy font-bold' : 'text-on-surface',
+                      s.status === 'active' ? 'text-on-background font-bold' : 'text-on-surface',
                     )}
                   >
                     {s.label}
@@ -144,7 +144,7 @@ export function GeneratingPayrollPage() {
                   className={cn(
                     'text-label-sm',
                     s.status === 'done' && 'text-secondary bg-secondary-fixed-dim/30 px-2 py-1 rounded',
-                    s.status === 'active' && 'text-electric-blue',
+                    s.status === 'active' && 'text-primary',
                     s.status === 'pending' && 'text-outline',
                   )}
                 >
