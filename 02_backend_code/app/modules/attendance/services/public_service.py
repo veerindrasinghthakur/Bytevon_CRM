@@ -27,8 +27,8 @@ from app.core.db.enums import (
 )
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
-from app.modules.approvals.schemas.schemas import ApprovalRequestCreate
-from app.modules.approvals.services.public_service import ApprovalPublicService
+from app.modules.approvals.request.schemas import ApprovalRequestCreate
+from app.modules.approvals.request.service import RequestService
 from app.modules.attendance.models import (
     AttendanceBreak,
     AttendanceCorrection,
@@ -82,7 +82,7 @@ class AttendancePublicService(BasePublicService):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
         self._repo = AttendanceRepository(session)
-        self._approvals = ApprovalPublicService(session)
+        self._requests = RequestService(session)
 
     # ==================================================================
     # Punch
@@ -243,7 +243,7 @@ class AttendancePublicService(BasePublicService):
         await self._repo.add(correction)
         await self._flush()
 
-        approval = await self._approvals.create_request(
+        approval = await self._requests.create_request(
             ApprovalRequestCreate(
                 request_type=ATTENDANCE_CORRECTION_TYPE,
                 reference_id=correction.id,
@@ -348,8 +348,6 @@ class AttendancePublicService(BasePublicService):
         *,
         actor_employment_id: Optional[int] = None,
     ) -> AttendancePolicyResponse:
-        # Close open policy; effective_to is exclusive (= new.effective_from).
-        # Supports same-day supersede from /admin/attendance-settings saves.
         current = await self._repo.get_current_policy(as_of=data.effective_from)
         if current and current.effective_to is None:
             await self._repo.close_policy(current.id, data.effective_from)
@@ -495,13 +493,17 @@ class AttendancePublicService(BasePublicService):
         day = await self._repo.get_day_by_id(data.attendance_day_id)
         if day is None:
             raise NotFoundError("Attendance day not found")
-        open_break = await self._repo.get_open_break(day.id)
-        if open_break:
-            raise ConflictError("An open break already exists for this day")
 
+        open_break = await self._repo.get_open_break(day.id)
+        if open_break is not None:
+            raise DomainError("A break is already in progress")
+
+        now = datetime.now(timezone.utc)
         br = AttendanceBreak(
             attendance_day_id=day.id,
-            break_start=data.break_start or datetime.now(timezone.utc),
+            break_start=now,
+            break_end=None,
+            duration_minutes=None,
         )
         await self._repo.add(br)
         await self._commit()
@@ -510,16 +512,17 @@ class AttendancePublicService(BasePublicService):
 
     async def end_break(
         self,
-        break_id: int,
         data: BreakEndRequest,
         *,
         actor_employment_id: Optional[int] = None,
     ) -> BreakResponse:
-        br = await self._repo.get_break_by_id(break_id)
+        day = await self._repo.get_day_by_id(data.attendance_day_id)
+        if day is None:
+            raise NotFoundError("Attendance day not found")
+
+        br = await self._repo.get_open_break(day.id)
         if br is None:
-            raise NotFoundError("Break not found")
-        if br.break_end is not None:
-            raise DomainError("Break is already ended")
+            raise DomainError("No open break to end")
 
         end = data.break_end or datetime.now(timezone.utc)
         if end.tzinfo is None:
