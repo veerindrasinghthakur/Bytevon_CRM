@@ -5,7 +5,6 @@ from typing import Any, List, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.modules.auth.services.public_service import AuthenticationPublicService
 from app.modules.my_work.profile.repository import ProfileRepository
 from app.modules.my_work.profile.schemas import (
     ProfileActivityResponse,
@@ -18,7 +17,6 @@ class ProfileService:
     def __init__(self, session: AsyncSession) -> None:
         self._session = session
         self._repo = ProfileRepository(session)
-        self._auth = AuthenticationPublicService(session)
 
     async def get_me(
         self,
@@ -41,5 +39,6 @@ class ProfileService:
     async def activity(self, *, limit: int = 20) -> ProfileActivityResponse:
         return ProfileActivityResponse(limit=limit)
 
-    async def list_sessions(self, login_id: int) -> List[Any]:
-        return await self._auth.list_sessions(login_id)
+    async def list_sessions(self, login_id: int, auth_service: Any) -> List[Any]:
+        """Sessions owned by auth module — pass AuthenticationServiceDep."""
+        return await auth_service.list_sessions(login_id)
