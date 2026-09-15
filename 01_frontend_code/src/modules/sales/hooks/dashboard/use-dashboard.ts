@@ -1,10 +1,10 @@
 import { useMemo } from 'react'
-import {
-  useClientsQuery,
-  useLeadsQuery,
-  useSalesActivities,
-  useSalesDashboardMetrics,
-} from '../use-sales'
+import { useQuery } from '@tanstack/react-query'
+import { queryKeys } from '@/shared/lib/query-keys'
+import { useClientsQuery } from '../client/use-clients'
+import { useLeadsQuery } from '../lead/use-leads'
+import { useSalesActivities } from '../activity/use-activities'
+import { getDashboardMetrics } from '../../api/dashboard'
 import { typeIcon } from '../../schemas/enums'
 import {
   activityGroups,
@@ -16,6 +16,15 @@ import {
   topPerformers,
   wonCount,
 } from '../../lib/dashboard-compute'
+
+export function useSalesDashboardMetrics() {
+  return useQuery({
+    queryKey: queryKeys.sales.dashboardMetrics(),
+    queryFn: getDashboardMetrics,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  })
+}
 
 export function useSalesDashboard() {
   const leadsQuery = useLeadsQuery()
