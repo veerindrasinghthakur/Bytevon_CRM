@@ -11,6 +11,7 @@ from app.modules.admin.holiday_calendar.routes import router as holiday_calendar
 from app.modules.admin.settings.routes import router as settings_router
 from app.modules.admin.user.routes import router as user_router
 from app.modules.admin.position.routes import router as position_router
+from app.modules.admin.audit.routes import router as audit_router
 
 router = APIRouter(
     prefix="/admin",
@@ -25,6 +26,7 @@ router.include_router(holiday_calendar_router)
 router.include_router(settings_router)
 router.include_router(user_router)
 router.include_router(position_router)
+router.include_router(audit_router)
 
 organization_router = APIRouter(
     prefix="/organization",
