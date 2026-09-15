@@ -1,11 +1,92 @@
 import { useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { queryKeys } from '@/shared/lib/query-keys'
-import { getClientFilterOptions } from '../../api/client'
-import { useClientsQuery } from '../use-sales'
-import type { Client } from '../../types'
+import {
+  listClients,
+  getClientById,
+  createClient,
+  updateClient,
+  getClientFilterOptions,
+} from '../../api/client'
+import type { Client, ClientListParams } from '../../types'
+import {
+  findClientInCache,
+  upsertClientInLists,
+  mergeClient,
+} from '../sales-cache'
+
+export function useClientsQuery(filters?: ClientListParams) {
+  const params: ClientListParams = {
+    search: filters?.search || undefined,
+    status: filters?.status && filters.status !== 'All' ? filters.status : undefined,
+    type: filters?.type && filters.type !== 'All' ? filters.type : undefined,
+    page: filters?.page,
+    pageSize: filters?.pageSize,
+  }
+  return useQuery({
+    queryKey: queryKeys.sales.clients.list(params),
+    queryFn: () => listClients(params),
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+    placeholderData: (prev) => prev,
+  })
+}
+
+export function useClient(id: string | undefined) {
+  const qc = useQueryClient()
+  const cached = id ? findClientInCache(qc, id) : undefined
+  return useQuery({
+    queryKey: queryKeys.sales.clients.detail(id ?? ''),
+    queryFn: () => getClientById(id!),
+    enabled: Boolean(id),
+    initialData: cached,
+    staleTime: cached ? 60_000 : 0,
+    refetchOnWindowFocus: false,
+  })
+}
+
+export function useCreateClient() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: createClient,
+    onSuccess: (row) => {
+      upsertClientInLists(qc, row)
+    },
+  })
+}
+
+export function useUpdateClient() {
+  const qc = useQueryClient()
+  return useMutation<
+    Client,
+    Error,
+    { id: string; patch: Partial<Client> },
+    { previousClient?: Client }
+  >({
+    mutationFn: ({ id, patch }) => updateClient(id, patch),
+    onMutate: async ({ id, patch }) => {
+      await qc.cancelQueries({ queryKey: queryKeys.sales.clients.all })
+      const previousClient = findClientInCache(qc, id)
+      if (previousClient) {
+        const optimistic = mergeClient(previousClient, patch, id)
+        qc.setQueryData(queryKeys.sales.clients.detail(id), optimistic)
+        upsertClientInLists(qc, optimistic)
+      }
+      return { previousClient }
+    },
+    onError: (_err, { id }, context) => {
+      if (context?.previousClient) {
+        qc.setQueryData(queryKeys.sales.clients.detail(id), context.previousClient)
+        upsertClientInLists(qc, context.previousClient)
+      }
+    },
+    onSuccess: (row) => {
+      upsertClientInLists(qc, row)
+    },
+  })
+}
 
 const FILTER_DEFAULTS = {
   status: 'All',
