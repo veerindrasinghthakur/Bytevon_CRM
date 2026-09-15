@@ -1,23 +1,17 @@
 """
-Root API router. Include module routers here.
+Root API router.
 
-Module package names (2026-09-09):
-  authentication → auth
-  employment → workforce
-  developer → project
-  organization → admin (2026-09-14)
-
-Profile HTTP paths (/profile/*) are owned by the my_work package
-(same as the frontend profile feature under my-work), not a standalone module.
+Attendance:
+  /workforce/attendance/*           — HR/ops
+  /my-work/attendance/*             — self-service
+  /organization/attendance-policies — policy (admin settings)
 """
-
 from __future__ import annotations
 
 from fastapi import APIRouter
 
 from app.core.config import settings
 from app.modules.approvals.routes import router as approvals_router
-from app.modules.attendance.routes import router as attendance_router
 from app.modules.auth.routes import router as auth_router
 from app.modules.workforce.routes import router as workforce_router
 from app.modules.leave.routes import router as leave_router
@@ -42,7 +36,6 @@ api_router.include_router(workforce_router)
 api_router.include_router(rbac_router)
 api_router.include_router(approvals_router)
 api_router.include_router(leave_router)
-api_router.include_router(attendance_router)
 api_router.include_router(notifications_router)
 api_router.include_router(sales_router)
 api_router.include_router(project_router)

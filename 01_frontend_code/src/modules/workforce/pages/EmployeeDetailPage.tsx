@@ -7,7 +7,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { cn } from '@/shared/lib/cn'
-import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { safeNavigate, looseLinkProps } from '@/shared/lib/safeNavigate'
 import { getEmployeeDetail, updateEmployment } from '../api/employment'
 import type { EmployeeDetailDto } from '@/shared/schema'
 import { Can } from '@/shared/rbac'
@@ -459,14 +459,13 @@ export function EmployeeDetailPage() {
                   <ul className="space-y-2">
                     {(data.stateHistory ?? []).map((h) => (
                       <li key={h.id} className="p-3 border border-outline-variant rounded-lg text-sm">
-                        <span className="font-medium">{String(h.new_state).replace(/_/g, ' ')}</span>
-                        <span className="text-on-surface-variant"> · {h.effective_date}</span>
+                        {String(h.previous_state ?? '—')} → {String(h.new_state)} on {h.effective_date}
                         {h.reason ? <p className="text-on-surface-variant mt-1">{h.reason}</p> : null}
                       </li>
                     ))}
                   </ul>
                 )}
-                <h4 className="font-semibold pt-2">Assignments</h4>
+                <h4 className="font-semibold pt-2">Assignment history</h4>
                 {(data.assignmentHistory ?? []).length === 0 ? (
                   <p className="text-body-sm text-on-surface-variant">No assignment history.</p>
                 ) : (
@@ -493,9 +492,11 @@ export function EmployeeDetailPage() {
                   <p className="text-body-sm text-on-surface-variant">No active salary structure.</p>
                 )}
                 <Link
-                  to={payrollRoutes.historyEmployeePath}
-                  params={{ employeeId: String(id) }}
-                  className="text-secondary text-sm font-medium hover:underline"
+                  {...looseLinkProps({
+                    to: payrollRoutes.historyEmployeePath,
+                    params: { employeeId: String(id) },
+                    className: 'text-secondary text-sm font-medium hover:underline',
+                  })}
                 >
                   Open payroll history
                 </Link>
@@ -514,17 +515,27 @@ export function EmployeeDetailPage() {
               <Icon name="account_balance" className="text-lg" />
               <p className="text-label-md font-semibold uppercase tracking-wide">Quick links</p>
             </div>
-
             <Link
-              to={workforceRoutes.employeeBankDetails(id)}
-              className="flex items-center justify-between gap-3 rounded-lg border border-outline-variant bg-surface-container-low px-3 py-3 text-sm font-medium text-on-surface hover:border-secondary/60 hover:text-secondary transition-colors"
+              {...looseLinkProps({
+                to: payrollRoutes.historyEmployeePath,
+                params: { employeeId: String(id) },
+                className: 'block text-sm text-secondary hover:underline',
+              })}
             >
-              <span className="flex items-center gap-2">
-                <Icon name="account_balance_wallet" className="text-base" />
-                Bank details
-              </span>
-              <Icon name="chevron_right" className="text-base" />
+              Payroll history
             </Link>
+            <button
+              type="button"
+              className="block text-sm text-secondary hover:underline text-left cursor-pointer"
+              onClick={() =>
+                safeNavigate(navigate, {
+                  to: workforceRoutes.employeeBankPath,
+                  params: { employeeId: String(id) },
+                })
+              }
+            >
+              Bank details
+            </button>
           </div>
         </aside>
       </div>

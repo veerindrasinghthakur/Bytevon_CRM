@@ -3,6 +3,7 @@ import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 import { safeRedirectOpts } from '@/shared/lib/safeNavigate'
 
+/** Page bodies live under pages/{domain}/ — no flat re-exports. */
 const SalesDashboardPage = lazyPage(() => import('./pages/dashboard/SalesDashboardPage'), 'SalesDashboardPage')
 const LeadsListPage = lazyPage(() => import('./pages/lead/LeadsListPage'), 'LeadsListPage')
 const LeadCreatePage = lazyPage(() => import('./pages/lead/LeadCreatePage'), 'LeadCreatePage')

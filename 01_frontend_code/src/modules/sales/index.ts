@@ -8,6 +8,7 @@ export { ClientDetailPage } from './pages/client/ClientDetailPage'
 export { SalesAnalyticsPage } from './pages/dashboard/SalesAnalyticsPage'
 export { SalesActivityTimelinePage } from './pages/activity/SalesActivityTimelinePage'
 export { CaseStudiesListPage } from './pages/case-study/CaseStudiesListPage'
+export { SourcesListPage } from './pages/source/SourcesListPage'
 
 export { createSalesRoutes, salesRoutes } from './routes'
 
@@ -26,12 +27,13 @@ export {
   getLeadFilterOptions,
   getClientFilterOptions,
   listSalesRepresentatives,
-} from './api/sales'
+} from './api'
 
-export { useLeadsList } from './hooks/lead/use-leads'
-export { useClientsList } from './hooks/client/use-clients'
-export { useCaseStudiesList } from './hooks/case-study/use-case-studies'
 export {
+  useLeadsList,
+  useClientsList,
+  useCaseStudiesList,
+  useSalesDashboard,
   useLeadsQuery,
   useLead,
   useCreateLead,
@@ -43,4 +45,4 @@ export {
   useCaseStudies,
   useSalesActivities,
   useSalesDashboardMetrics,
-} from './hooks/use-sales'
+} from './hooks'

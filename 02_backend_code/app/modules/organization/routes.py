@@ -1,8 +1,8 @@
 """
 Deprecated: prefer app.modules.admin.routes (admin_router + organization_router).
 
-This module re-exports the admin legacy /organization alias so any remaining
-`from app.modules.organization.routes import router` keeps working.
+Policy masters (incl. attendance policies) live here.
+Operational departments also still exposed for legacy clients; preferred path is /workforce/departments.
 """
 from __future__ import annotations
 

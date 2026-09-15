@@ -1,1 +1,1 @@
-# Employment module
+"""Workforce module — employee + assignment domains."""
