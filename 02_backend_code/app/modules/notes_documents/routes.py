@@ -1,6 +1,4 @@
-"""
-Notes & Documents HTTP routes.
-"""
+"""Notes & Documents HTTP routes."""
 
 from __future__ import annotations
 
@@ -10,7 +8,7 @@ from fastapi import APIRouter, Header, Query, status
 
 from app.core.db.enums import DocumentLinkType, NoteReferenceType
 from app.modules.notes_documents.dependencies import NotesDocumentsServiceDep
-from app.modules.notes_documents.schemas.schemas import (
+from app.modules.notes_documents.schemas import (
     DocumentCreate,
     DocumentDetailResponse,
     DocumentLinkCreate,
@@ -30,10 +28,6 @@ router = APIRouter(prefix="/notes-documents", tags=["Notes & Documents"])
 
 ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
 
-
-# ---------------------------------------------------------------------------
-# Notes
-# ---------------------------------------------------------------------------
 
 @router.post("/notes", response_model=NoteResponse, status_code=status.HTTP_201_CREATED)
 async def create_note(
@@ -66,10 +60,6 @@ async def update_note(
     return await service.update_note(note_id, body, actor_employment_id=actor)
 
 
-# ---------------------------------------------------------------------------
-# Document types
-# ---------------------------------------------------------------------------
-
 @router.post(
     "/document-types",
     response_model=DocumentTypeResponse,
@@ -91,25 +81,17 @@ async def list_document_types(
     return await service.list_document_types(include_archived=include_archived)
 
 
-@router.patch(
-    "/document-types/{type_id}",
-    response_model=DocumentTypeResponse,
-)
+@router.patch("/document-types/{type_id}", response_model=DocumentTypeResponse)
 async def update_document_type(
     type_id: int,
     body: DocumentTypeUpdate,
     service: NotesDocumentsServiceDep,
     actor: ActorHeader = None,
 ) -> DocumentTypeResponse:
-    return await service.update_document_type(
-        type_id, body, actor_employment_id=actor
-    )
+    return await service.update_document_type(type_id, body, actor_employment_id=actor)
 
 
-@router.post(
-    "/document-types/{type_id}/archive",
-    response_model=MessageResponse,
-)
+@router.post("/document-types/{type_id}/archive", response_model=MessageResponse)
 async def archive_document_type(
     type_id: int,
     service: NotesDocumentsServiceDep,
@@ -117,10 +99,6 @@ async def archive_document_type(
 ) -> MessageResponse:
     return await service.archive_document_type(type_id, actor_employment_id=actor)
 
-
-# ---------------------------------------------------------------------------
-# Documents
-# ---------------------------------------------------------------------------
 
 @router.post(
     "/documents",
@@ -153,15 +131,10 @@ async def add_version(
     service: NotesDocumentsServiceDep,
     actor: ActorHeader = None,
 ) -> DocumentVersionResponse:
-    return await service.add_version(
-        document_id, body, actor_employment_id=actor
-    )
+    return await service.add_version(document_id, body, actor_employment_id=actor)
 
 
-@router.post(
-    "/documents/{document_id}/archive",
-    response_model=MessageResponse,
-)
+@router.post("/documents/{document_id}/archive", response_model=MessageResponse)
 async def archive_document(
     document_id: int,
     service: NotesDocumentsServiceDep,
@@ -169,10 +142,6 @@ async def archive_document(
 ) -> MessageResponse:
     return await service.archive_document(document_id, actor_employment_id=actor)
 
-
-# ---------------------------------------------------------------------------
-# Links
-# ---------------------------------------------------------------------------
 
 @router.post(
     "/links",
