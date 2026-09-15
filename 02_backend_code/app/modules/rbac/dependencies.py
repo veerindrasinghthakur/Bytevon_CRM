@@ -1,6 +1,4 @@
-"""
-FastAPI dependencies for RBAC module.
-"""
+"""FastAPI dependencies for RBAC module."""
 
 from __future__ import annotations
 
@@ -10,13 +8,13 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.modules.rbac.services.public_service import RBACPublicService
+from app.modules.rbac.service import RBACService
 
 
-def get_rbac_public_service(
+def get_rbac_service(
     session: Annotated[AsyncSession, Depends(get_db_session)],
-) -> RBACPublicService:
-    return RBACPublicService(session)
+) -> RBACService:
+    return RBACService(session)
 
 
-RBACServiceDep = Annotated[RBACPublicService, Depends(get_rbac_public_service)]
+RBACServiceDep = Annotated[RBACService, Depends(get_rbac_service)]
