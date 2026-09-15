@@ -7,10 +7,10 @@ import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 
 const MyWorkOverviewPage = lazyPage(() => import('./pages/overview/MyWorkOverviewPage'), 'MyWorkOverviewPage')
-const MyAttendancePage = lazyPage(() => import('./pages/MyAttendancePage'), 'MyAttendancePage')
-const MarkAttendancePage = lazyPage(() => import('./pages/MarkAttendancePage'), 'MarkAttendancePage')
+const MyAttendancePage = lazyPage(() => import('./pages/attendance/MyAttendancePage'), 'MyAttendancePage')
+const MarkAttendancePage = lazyPage(() => import('./pages/attendance/MarkAttendancePage'), 'MarkAttendancePage')
 const AttendanceCorrectionsPage = lazyPage(
-  () => import('./pages/AttendanceCorrectionsPage'),
+  () => import('./pages/attendance/AttendanceCorrectionsPage'),
   'AttendanceCorrectionsPage',
 )
 const AttendanceDetailPage = lazyPage(() => import('./pages/attendance/AttendanceDetailPage'), 'AttendanceDetailPage')
