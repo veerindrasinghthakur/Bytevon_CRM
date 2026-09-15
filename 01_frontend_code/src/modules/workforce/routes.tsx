@@ -8,9 +8,9 @@ import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 import { safeRedirectOpts } from '@/shared/lib/safeNavigate'
 
-const EmployeesListPage = lazyPage(() => import('./pages/EmployeesListPage'), 'EmployeesListPage')
-const EmployeeCreatePage = lazyPage(() => import('./pages/EmployeeCreatePage'), 'EmployeeCreatePage')
-const EmployeeDetailPage = lazyPage(() => import('./pages/EmployeeDetailPage'), 'EmployeeDetailPage')
+const EmployeesListPage = lazyPage(() => import('./pages/employee/EmployeesListPage'), 'EmployeesListPage')
+const EmployeeCreatePage = lazyPage(() => import('./pages/employee/EmployeeCreatePage'), 'EmployeeCreatePage')
+const EmployeeDetailPage = lazyPage(() => import('./pages/employee/EmployeeDetailPage'), 'EmployeeDetailPage')
 const EmployeeBankDetailsPage = lazyPage(() => import('./pages/EmployeeBankDetailsPage'), 'EmployeeBankDetailsPage')
 const DepartmentsListPage = lazyPage(() => import('./pages/DepartmentsListPage'), 'DepartmentsListPage')
 const DepartmentCreatePage = lazyPage(() => import('./pages/DepartmentCreatePage'), 'DepartmentCreatePage')
@@ -50,7 +50,6 @@ export const workforceRoutes = {
   departmentNew: '/workforce/departments/new',
   departmentDetail: (id: string | number) => `/workforce/departments/${id}`,
   departmentDetailPath: '/workforce/departments/$departmentId',
-  /** Teams owned by projects — helpers alias project paths for any leftover callers */
   teams: '/projects/teams',
   teamNew: '/projects/teams/new',
   teamDetail: (id: string | number) => `/projects/teams/${id}`,
@@ -73,14 +72,6 @@ export const workforceRoutes = {
   attendanceDay: (employmentId: string | number) => `/workforce/attendance/day/${employmentId}`,
   attendanceDayPath: '/workforce/attendance/day/$employmentId',
 } as const
-
-function redirectToProjectsTeams(suffix = '') {
-  return ({ params }: { params: Record<string, string> }) => {
-    const teamId = params.teamId
-    const base = teamId ? `/projects/teams/${teamId}${suffix}` : `/projects/teams${suffix}`
-    throw redirect(safeRedirectOpts({ to: base as never }))
-  }
-}
 
 export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   return [
@@ -131,7 +122,6 @@ export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: 
       path: '/workforce/departments/$departmentId',
       component: DepartmentDetailPage,
     }),
-    // Legacy team paths → projects
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/teams',
@@ -218,7 +208,6 @@ export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: 
         )
       },
     }),
-    // Department add-member stays under workforce
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/departments/$departmentId/add-member',

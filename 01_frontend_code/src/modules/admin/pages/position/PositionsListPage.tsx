@@ -4,13 +4,14 @@ import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { usePositions } from '../../hooks/position'
+import { usePositions } from '../../hooks/position/use-positions'
+import type { PositionRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 
 export function PositionsListPage() {
   const navigate = useNavigate()
   const { data, isLoading, isError, error, refetch } = usePositions(true)
-  const items = data?.items ?? []
+  const items: PositionRow[] = data?.items ?? []
 
   if (isLoading) return <PageLoadingSkeleton />
   if (isError) {
@@ -42,7 +43,7 @@ export function PositionsListPage() {
             </tr>
           </thead>
           <tbody>
-            {items.map((p) => (
+            {items.map((p: PositionRow) => (
               <tr
                 key={p.id}
                 className="border-b border-outline-variant last:border-0 bv-row-hover cursor-pointer"

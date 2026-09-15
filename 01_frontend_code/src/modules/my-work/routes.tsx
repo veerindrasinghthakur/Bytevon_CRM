@@ -15,7 +15,7 @@ const AttendanceCorrectionsPage = lazyPage(
 )
 const AttendanceDetailPage = lazyPage(() => import('./pages/AttendanceDetailPage'), 'AttendanceDetailPage')
 const TakeABreakPage = lazyPage(() => import('./pages/TakeABreakPage'), 'TakeABreakPage')
-const MyLeavePage = lazyPage(() => import('./pages/MyLeavePage'), 'MyLeavePage')
+const MyLeavePage = lazyPage(() => import('./pages/leave/MyLeavePage'), 'MyLeavePage')
 const ApplyLeavePage = lazyPage(() => import('./pages/ApplyLeavePage'), 'ApplyLeavePage')
 const LeaveDetailPage = lazyPage(() => import('./pages/LeaveDetailPage'), 'LeaveDetailPage')
 const MyTasksPage = lazyPage(() => import('./pages/MyTasksPage'), 'MyTasksPage')

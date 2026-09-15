@@ -2,13 +2,10 @@ import { useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
-import { RowActions } from '@/shared/components/ui/RowActions'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { queryKeys } from '@/shared/lib/query-keys'
-import { cn } from '@/shared/lib/cn'
 import {
   listSources,
   createSource,
@@ -18,6 +15,10 @@ import {
   type SourceMetric,
 } from '../../api/source'
 import { salesRoutes } from '../../routes'
+import { SourceMetricsCards } from '../../components/source/SourceMetricsCards'
+import { SourcesTable } from '../../components/source/SourcesTable'
+import { SourceFormModal } from '../../components/source/SourceFormModal'
+import { SourceArchiveDialog } from '../../components/source/SourceArchiveDialog'
 
 type ModalMode = 'create' | 'edit' | null
 type ConfirmKind = 'save' | 'cancel' | 'archive' | null
@@ -158,27 +159,7 @@ export function SourcesListPage() {
         }
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {(metrics.length
-          ? metrics
-          : [
-              { id: 'total', label: 'Total sources', value: '—', icon: 'hub' },
-              { id: 'top', label: 'Source with highest leads', value: '—', icon: 'emoji_events' },
-            ]
-        ).map((m) => (
-          <div key={m.id} className="bv-surface card-hover p-5">
-            <div className="flex justify-between items-start mb-2">
-              <span className="p-2 rounded-lg bg-secondary/10 text-secondary">
-                <span className="material-symbols-outlined text-xl">{m.icon ?? 'hub'}</span>
-              </span>
-            </div>
-            <p className="text-label-md text-on-surface-variant">{m.label}</p>
-            <h3 className="text-headline-md font-bold mt-0.5 text-on-background break-words">
-              {m.value}
-            </h3>
-          </div>
-        ))}
-      </div>
+      <SourceMetricsCards metrics={metrics} />
 
       <ListToolbar
         search={search}
@@ -202,7 +183,7 @@ export function SourcesListPage() {
         </label>
       </ListToolbar>
 
-      {actionError && (
+      {actionError && confirmKind !== 'archive' && (
         <p className="text-body-sm text-error" role="alert">
           {actionError}
         </p>
@@ -217,226 +198,47 @@ export function SourcesListPage() {
       )}
 
       {!query.isError && (
-        <div className="bv-surface overflow-hidden relative">
-          {(query.isLoading || query.isFetching) && (
-            <div className="absolute inset-0 z-10 bg-surface-container-lowest/70 backdrop-blur-[1px]">
-              <TableSkeleton rows={5} />
-            </div>
-          )}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-outline-variant bg-surface-container-low/50">
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                    Source
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                    Description
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                    Leads
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant">
-                {filtered.map((row) => (
-                  <tr key={row.id} className="zebra-row group">
-                    <td className="px-4 py-4">
-                      <p className="font-semibold text-on-surface">{row.name}</p>
-                      <p className="text-xs text-on-surface-variant font-mono">#{row.id}</p>
-                    </td>
-                    <td className="px-4 py-4 text-body-sm text-on-surface-variant max-w-md">
-                      {row.description || '—'}
-                    </td>
-                    <td className="px-4 py-4 font-semibold text-on-surface">{row.leadCount}</td>
-                    <td className="px-4 py-4">
-                      <span
-                        className={cn(
-                          'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase',
-                          row.isArchived
-                            ? 'status-badge status-neutral'
-                            : 'status-badge status-success',
-                        )}
-                      >
-                        {row.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      <div className="flex justify-center">
-                        <RowActions
-                          label={`Actions for ${row.name}`}
-                          actions={[
-                            {
-                              id: 'edit',
-                              label: 'Edit',
-                              icon: 'edit',
-                              onClick: () => openEdit(row),
-                              disabled: row.isArchived,
-                            },
-                            {
-                              id: 'archive',
-                              label: 'Archive',
-                              icon: 'inventory_2',
-                              onClick: () => requestArchive(row),
-                              disabled: row.isArchived,
-                            },
-                          ]}
-                        />
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {filtered.length === 0 && !query.isLoading && (
-                  <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center text-body-sm text-on-surface-variant">
-                      No sources found. Click “Add source” to create one.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <SourcesTable
+          rows={filtered}
+          isLoading={query.isLoading}
+          isFetching={query.isFetching}
+          onEdit={openEdit}
+          onArchive={requestArchive}
+        />
       )}
 
       {modalMode && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-          <div
-            className="w-full max-w-md bv-surface p-6 shadow-xl space-y-4"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="source-modal-title"
-          >
-            <h2 id="source-modal-title" className="text-title-md font-semibold text-on-background">
-              {modalMode === 'create' ? 'Add source' : 'Edit source'}
-            </h2>
-            <p className="text-body-sm text-on-surface-variant">
-              Sources map to the platforms table and appear in the lead Source picker.
-            </p>
-
-            {confirmKind === 'save' || confirmKind === 'cancel' ? (
-              <div className="space-y-4">
-                <p className="text-body-md text-on-surface">
-                  {confirmKind === 'save'
-                    ? modalMode === 'create'
-                      ? `Create source “${name.trim()}”?`
-                      : `Save changes to “${name.trim()}”?`
-                    : 'Discard changes and close?'}
-                </p>
-                <div className="flex justify-end gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={busy}
-                    onClick={() => setConfirmKind(null)}
-                  >
-                    Back
-                  </Button>
-                  {confirmKind === 'cancel' ? (
-                    <Button variant="primary" size="sm" onClick={closeModal}>
-                      Discard
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      disabled={busy}
-                      onClick={() => {
-                        if (modalMode === 'create') createMut.mutate()
-                        else updateMut.mutate()
-                      }}
-                    >
-                      {busy ? 'Saving…' : 'Confirm'}
-                    </Button>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <>
-                <div className="space-y-3">
-                  <label className="block">
-                    <span className="text-[10px] font-bold uppercase text-on-surface-variant">Name</span>
-                    <input
-                      className="mt-1 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/40"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      maxLength={150}
-                      placeholder="e.g. Website, LinkedIn"
-                      autoFocus
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="text-[10px] font-bold uppercase text-on-surface-variant">
-                      Description
-                    </span>
-                    <textarea
-                      className="mt-1 w-full rounded-lg border border-outline-variant bg-surface-container-lowest px-3 py-2 text-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-secondary/40 min-h-[80px]"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Optional notes"
-                    />
-                  </label>
-                  {formError && (
-                    <p className="text-body-sm text-error" role="alert">
-                      {formError}
-                    </p>
-                  )}
-                </div>
-                <div className="flex justify-end gap-2 pt-2">
-                  <Button variant="outline" size="sm" onClick={requestCancel} disabled={busy}>
-                    Cancel
-                  </Button>
-                  <Button variant="primary" size="sm" onClick={requestSave} disabled={busy}>
-                    Save
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
+        <SourceFormModal
+          mode={modalMode}
+          name={name}
+          description={description}
+          formError={formError}
+          confirmKind={confirmKind === 'save' || confirmKind === 'cancel' ? confirmKind : null}
+          busy={busy}
+          onNameChange={setName}
+          onDescriptionChange={setDescription}
+          onRequestSave={requestSave}
+          onRequestCancel={requestCancel}
+          onBackFromConfirm={() => setConfirmKind(null)}
+          onConfirmSave={() => {
+            if (modalMode === 'create') createMut.mutate()
+            else updateMut.mutate()
+          }}
+          onConfirmDiscard={closeModal}
+        />
       )}
 
       {confirmKind === 'archive' && archiveTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-          <div className="w-full max-w-sm bv-surface p-6 shadow-xl space-y-4" role="dialog" aria-modal="true">
-            <h2 className="text-title-md font-semibold">Archive source?</h2>
-            <p className="text-body-sm text-on-surface-variant">
-              “{archiveTarget.name}” will be hidden from new lead pickers. Existing leads keep their link.
-            </p>
-            {actionError && (
-              <p className="text-body-sm text-error" role="alert">
-                {actionError}
-              </p>
-            )}
-            <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={busy}
-                onClick={() => {
-                  setConfirmKind(null)
-                  setArchiveTarget(null)
-                }}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                disabled={busy}
-                onClick={() => archiveMut.mutate(archiveTarget.id)}
-              >
-                {busy ? 'Archiving…' : 'Confirm archive'}
-              </Button>
-            </div>
-          </div>
-        </div>
+        <SourceArchiveDialog
+          target={archiveTarget}
+          busy={busy}
+          actionError={actionError}
+          onCancel={() => {
+            setConfirmKind(null)
+            setArchiveTarget(null)
+          }}
+          onConfirm={() => archiveMut.mutate(archiveTarget.id)}
+        />
       )}
 
       <span className="sr-only">{salesRoutes.sources}</span>

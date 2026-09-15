@@ -10,80 +10,23 @@ import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { RowActions } from '@/shared/components/ui/RowActions'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
-import {
-  QuickSection,
-  QuickStat,
-  QuickStatGrid,
-  QuickMetaTile,
-  QuickRelatedRow,
-} from '@/shared/components/layout/QuickOverviewParts'
 import { ResourceName } from '@/shared/schema'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useClientsList } from '../../hooks/client/use-clients'
+import { ClientQuickContent } from '../../components/client/ClientQuickContent'
+import { ClientStatsCards } from '../../components/client/ClientStatsCards'
 import { salesRoutes } from '../../routes'
 import type { Client } from '../../types'
 import { typeStyles, RecordStatusOptions, ClientTypeOptions } from '../../schemas/enums'
 import { cn } from '@/shared/lib/cn'
 
 function formatMoney(n?: number) {
-  if (n == null) return 'â€”'
+  if (n == null) return '—'
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     maximumFractionDigits: 0,
   }).format(n)
-}
-
-function ClientQuickContent({ client }: { client: Client }) {
-  return (
-    <>
-      <QuickSection title="Quick Statistics">
-        <QuickStatGrid>
-          <QuickStat icon="folder_open" value={client.projects} label="Projects" />
-          <QuickStat icon="person_search" value={client.leads} label="Leads" />
-          <QuickStat icon="payments" value={formatMoney(client.arr ?? client.revenue)} label="ARR" />
-        </QuickStatGrid>
-      </QuickSection>
-
-      <QuickSection title="General Info">
-        <div className="grid grid-cols-2 gap-3">
-          <QuickMetaTile
-            icon="category"
-            label="Type"
-            value={
-              <span className={cn('px-2 py-0.5 rounded text-[10px] font-bold uppercase', typeStyles[client.type])}>
-                {client.type}
-              </span>
-            }
-          />
-          <QuickMetaTile icon="factory" label="Industry" value={client.industry} />
-          <QuickMetaTile icon="public" label="Country" value={client.country} />
-          <QuickMetaTile icon="payments" label="Revenue" value={formatMoney(client.arr ?? client.revenue)} />
-        </div>
-      </QuickSection>
-
-      <QuickSection title="Related Information">
-        <QuickRelatedRow icon="business" label="Client" value={client.name} />
-        <QuickRelatedRow icon="sell" label="Type" value={client.type} />
-        {client.chatLink && (
-          <QuickRelatedRow
-            icon="chat"
-            label="Chat"
-            value={
-              <a
-                href={client.chatLink}
-                target="_blank"
-                rel="noreferrer"
-                className="text-secondary font-semibold hover:underline"
-              >
-                Open conversation
-              </a>
-            }
-          />
-        )}
-      </QuickSection>
-    </>
-  )
 }
 
 export function ClientsListPage() {
@@ -140,7 +83,7 @@ export function ClientsListPage() {
   const openClientOverview = (client: Client) => {
     openPanel({
       title: client.name,
-      subtitle: [client.industry, client.country].filter(Boolean).join(' Â· '),
+      subtitle: [client.industry, client.country].filter(Boolean).join(' · '),
       icon: 'apartment',
       status: client.status,
       statusDotClass: client.status === 'Active' ? 'bg-emerald-500' : 'bg-slate-400',
@@ -192,33 +135,7 @@ export function ClientsListPage() {
         backLabel="Back to clients"
       />
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {metrics.map((m) => (
-          <div key={m.id} className="bv-surface card-hover p-5">
-            <div className="flex justify-between items-start mb-2">
-              <span className="p-2 rounded-lg bg-secondary/10 text-secondary">
-                <span className="material-symbols-outlined text-xl">{m.icon}</span>
-              </span>
-              {m.change && (
-                <span
-                  className={cn(
-                    'text-[10px] font-bold px-2 py-0.5 rounded',
-                    m.changeType === 'positive'
-                      ? 'text-emerald-700 bg-emerald-50'
-                      : m.changeType === 'negative'
-                        ? 'text-red-700 bg-red-50'
-                        : 'text-on-surface-variant bg-surface-container',
-                  )}
-                >
-                  {m.change}
-                </span>
-              )}
-            </div>
-            <p className="text-label-md text-on-surface-variant">{m.label}</p>
-            <h3 className="text-headline-md font-bold mt-0.5 text-on-background">{m.value}</h3>
-          </div>
-        ))}
-      </div>
+      <ClientStatsCards metrics={metrics} />
 
       <ListToolbar
         search={search}
@@ -233,9 +150,13 @@ export function ClientsListPage() {
           onChange={setStatusFilter}
           placeholder="All Status"
           aria-label="Filter by status"
-          options={[{ value: 'All', label: 'All Status' }, ...RecordStatusOptions, ...statuses
-            .filter((s) => !RecordStatusOptions.some((option) => option.value === s))
-            .map((s) => ({ value: s, label: s }))]}
+          options={[
+            { value: 'All', label: 'All Status' },
+            ...RecordStatusOptions,
+            ...statuses
+              .filter((s) => !RecordStatusOptions.some((option) => option.value === s))
+              .map((s) => ({ value: s, label: s })),
+          ]}
           minWidthClass="min-w-[140px]"
         />
         <Select
@@ -243,9 +164,13 @@ export function ClientsListPage() {
           onChange={setTypeFilter}
           placeholder="All Types"
           aria-label="Filter by type"
-          options={[{ value: 'All', label: 'All Types' }, ...ClientTypeOptions, ...types
-            .filter((t) => !ClientTypeOptions.some((option) => option.value === t))
-            .map((t) => ({ value: t, label: t }))]}
+          options={[
+            { value: 'All', label: 'All Types' },
+            ...ClientTypeOptions,
+            ...types
+              .filter((t) => !ClientTypeOptions.some((option) => option.value === t))
+              .map((t) => ({ value: t, label: t })),
+          ]}
           minWidthClass="min-w-[140px]"
         />
       </ListToolbar>
@@ -306,13 +231,27 @@ export function ClientsListPage() {
                       <span className="sr-only">Status</span>
                     )}
                   </th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Client</th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Type</th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Industry</th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Projects</th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">Leads</th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">ARR / Revenue</th>
-                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">Actions</th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                    Client
+                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                    Type
+                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                    Industry
+                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                    Projects
+                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                    Leads
+                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                    ARR / Revenue
+                  </th>
+                  <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
@@ -367,14 +306,21 @@ export function ClientsListPage() {
                         </div>
                       </td>
                       <td className="px-4 py-4">
-                        <span className={cn('px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase', typeStyles[client.type])}>
+                        <span
+                          className={cn(
+                            'px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase',
+                            typeStyles[client.type],
+                          )}
+                        >
                           {client.type}
                         </span>
                       </td>
                       <td className="px-4 py-4 text-body-sm text-on-surface">{client.industry}</td>
                       <td className="px-4 py-4 font-semibold text-on-surface">{client.projects}</td>
                       <td className="px-4 py-4 font-semibold text-on-surface">{client.leads}</td>
-                      <td className="px-4 py-4 font-semibold text-on-surface">{formatMoney(client.arr ?? client.revenue)}</td>
+                      <td className="px-4 py-4 font-semibold text-on-surface">
+                        {formatMoney(client.arr ?? client.revenue)}
+                      </td>
                       <td
                         className="px-4 py-4 text-center"
                         onMouseDown={(e) => e.stopPropagation()}
@@ -416,11 +362,11 @@ export function ClientsListPage() {
             <p className="text-xs text-on-surface-variant">
               Showing{' '}
               <span className="font-semibold text-on-surface">
-                {rangeFrom}â€“{rangeTo}
+                {rangeFrom}–{rangeTo}
               </span>{' '}
               of <span className="font-semibold text-on-surface">{totalCount}</span> clients
               {!selectionMode && (
-                <span className="ml-2 text-on-surface-variant/80">Â· Hold a row 3s to multi-select</span>
+                <span className="ml-2 text-on-surface-variant/80">· Hold a row 3s to multi-select</span>
               )}
             </p>
           </div>
