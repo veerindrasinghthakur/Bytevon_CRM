@@ -1,11 +1,96 @@
 import { useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { queryKeys } from '@/shared/lib/query-keys'
-import { getLeadFilterOptions } from '../../api/lead'
-import { useLeadsQuery } from '../use-sales'
-import type { Lead } from '../../types'
+import {
+  listLeads,
+  getLeadById,
+  createLead,
+  updateLead,
+  getLeadFilterOptions,
+} from '../../api/lead'
+import type { Lead, LeadListParams } from '../../types'
+import {
+  findLeadInCache,
+  upsertLeadInLists,
+  mergeLead,
+} from '../sales-cache'
+
+/** Server-side filters + pagination; query key includes params. */
+export function useLeadsQuery(filters?: LeadListParams) {
+  const params: LeadListParams = {
+    search: filters?.search || undefined,
+    status: filters?.status && filters.status !== 'All' ? filters.status : undefined,
+    stage: filters?.stage && filters.stage !== 'All' ? filters.stage : undefined,
+    priority: filters?.priority && filters.priority !== 'All' ? filters.priority : undefined,
+    source: filters?.source && filters.source !== 'All' ? filters.source : undefined,
+    page: filters?.page,
+    pageSize: filters?.pageSize,
+  }
+  return useQuery({
+    queryKey: queryKeys.sales.leads.list(params),
+    queryFn: () => listLeads(params),
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+    placeholderData: (prev) => prev,
+  })
+}
+
+export function useLead(id: string | undefined) {
+  const qc = useQueryClient()
+  const cached = id ? findLeadInCache(qc, id) : undefined
+  return useQuery({
+    queryKey: queryKeys.sales.leads.detail(id ?? ''),
+    queryFn: () => getLeadById(id!),
+    enabled: Boolean(id),
+    initialData: cached,
+    staleTime: cached ? 60_000 : 0,
+    refetchOnWindowFocus: false,
+  })
+}
+
+/** Cache strategy: upsert on success only (no onSettled invalidate). */
+export function useCreateLead() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: createLead,
+    onSuccess: (row) => {
+      upsertLeadInLists(qc, row)
+    },
+  })
+}
+
+export function useUpdateLead() {
+  const qc = useQueryClient()
+  return useMutation<
+    Lead,
+    Error,
+    { id: string; patch: Partial<Lead> },
+    { previousLead?: Lead }
+  >({
+    mutationFn: ({ id, patch }) => updateLead(id, patch),
+    onMutate: async ({ id, patch }) => {
+      await qc.cancelQueries({ queryKey: queryKeys.sales.leads.all })
+      const previousLead = findLeadInCache(qc, id)
+      if (previousLead) {
+        const optimistic = mergeLead(previousLead, patch, id)
+        qc.setQueryData(queryKeys.sales.leads.detail(id), optimistic)
+        upsertLeadInLists(qc, optimistic)
+      }
+      return { previousLead }
+    },
+    onError: (_err, { id }, context) => {
+      if (context?.previousLead) {
+        qc.setQueryData(queryKeys.sales.leads.detail(id), context.previousLead)
+        upsertLeadInLists(qc, context.previousLead)
+      }
+    },
+    onSuccess: (row) => {
+      upsertLeadInLists(qc, row)
+    },
+  })
+}
 
 const FILTER_DEFAULTS = {
   status: 'All',
