@@ -1,1 +1,396 @@
-export { LeadDetailPage } from '../LeadDetailPage'
+import { useState } from 'react'
+import { Link, useNavigate, useParams } from '@tanstack/react-router'
+import { PageHeader } from '@/shared/components/layout/PageHeader'
+import { Button } from '@/shared/components/ui/Button'
+import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
+import { StatusDot } from '@/shared/components/ui/StatusDot'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { useLead, useSalesActivities, useUpdateLead } from '../../hooks/use-sales'
+import { changeLeadStage } from '../../api/sales'
+import { salesRoutes } from '../../routes'
+import { cn } from '@/shared/lib/cn'
+import { stageStyles, priorityStyles, activityIcon, PipelineStageValues } from '../../schemas/enums'
+import type { PipelineStage } from '../../schemas/enums'
+
+/** Forward pipeline only (Lost is a side exit, not “next”). */
+const FORWARD_STAGES = PipelineStageValues.filter((s) => s !== 'Lost') as PipelineStage[]
+
+function nextPipelineStage(current: string): PipelineStage | null {
+  const idx = FORWARD_STAGES.indexOf(current as PipelineStage)
+  if (idx < 0 || idx >= FORWARD_STAGES.length - 1) return null
+  return FORWARD_STAGES[idx + 1]
+}
+
+function formatBudget(n: number) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    maximumFractionDigits: 0,
+  }).format(n)
+}
+
+export function LeadDetailPage() {
+  const navigate = useNavigate()
+  const { leadId } = useParams({ strict: false }) as { leadId: string }
+  const leadQuery = useLead(leadId)
+  const activitiesQuery = useSalesActivities()
+  const updateLead = useUpdateLead()
+  const lead = leadQuery.data ?? null
+  const timeline = (activitiesQuery.data ?? []).slice(0, 4)
+
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [stageError, setStageError] = useState<string | null>(null)
+  const [advancing, setAdvancing] = useState(false)
+
+  if (leadQuery.isLoading) return <PageLoadingSkeleton />
+
+  if (leadQuery.isError || !lead) {
+    return (
+      <ErrorState
+        title="Lead not found"
+        description="This lead could not be loaded."
+        onRetry={() => void leadQuery.refetch()}
+        onBack={() => safeNavigate(navigate, { to: salesRoutes.leads })}
+      />
+    )
+  }
+
+  const currentIdx = PipelineStageValues.indexOf(lead.stage as PipelineStage)
+  const nextStage = nextPipelineStage(lead.stage)
+  const isTerminal = lead.stage === 'Won' || lead.stage === 'Lost'
+
+  const handleAdvanceStage = async () => {
+    if (!nextStage) return
+    setStageError(null)
+    setAdvancing(true)
+    try {
+      // WON goes through dedicated status endpoint; other stages use PATCH
+      if (nextStage === 'Won') {
+        await changeLeadStage(lead.id, 'Won')
+        await leadQuery.refetch()
+      } else {
+        await updateLead.mutateAsync({
+          id: lead.id,
+          patch: { stage: nextStage, status: 'Active' },
+        })
+      }
+      setConfirmOpen(false)
+    } catch (err) {
+      setStageError(getApiErrorMessage(err, 'Could not update stage'))
+    } finally {
+      setAdvancing(false)
+    }
+  }
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <PageHeader
+        title={lead.title}
+        description={`${lead.contactName}${lead.contactTitle ? ` · ${lead.contactTitle}` : ''} at ${lead.company}`}
+        showBack
+        backTo={salesRoutes.leads}
+        backLabel="Back to leads"
+        breadcrumbs={
+          <nav className="text-body-sm text-on-surface-variant">
+            <Link {...looseLinkProps({ to: salesRoutes.root, className: 'hover:text-secondary' })}>
+              Sales
+            </Link>
+            <span className="mx-2">/</span>
+            <Link {...looseLinkProps({ to: salesRoutes.leads, className: 'hover:text-secondary' })}>
+              Leads
+            </Link>
+            <span className="mx-2">/</span>
+            <span className="text-on-surface">{lead.id}</span>
+          </nav>
+        }
+        actions={
+          <div className="flex items-center gap-3">
+            {lead.chatLink && (
+              <a
+                href={lead.chatLink}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-secondary/30 text-secondary font-semibold text-sm hover:bg-secondary/5 transition-colors"
+              >
+                <span className="material-symbols-outlined text-lg">chat</span>
+                Open chat
+              </a>
+            )}
+            <Button
+              variant="primary"
+              leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
+              onClick={() =>
+                safeNavigate(navigate, {
+                  to: salesRoutes.leadEdit(lead.id),
+                  params: { leadId: lead.id },
+                })
+              }
+            >
+              Edit lead
+            </Button>
+          </div>
+        }
+      />
+
+      <div className="flex flex-wrap items-center gap-3">
+        <span className={cn('px-2.5 py-1 rounded-full text-[11px] font-bold uppercase', stageStyles[lead.stage])}>
+          {lead.stage}
+        </span>
+        <span className={cn('text-[11px] font-bold uppercase', priorityStyles[lead.priority])}>
+          {lead.priority}
+        </span>
+        <StatusDot status={lead.status} />
+        <span className="text-xs text-on-surface-variant font-mono">{lead.id}</span>
+      </div>
+
+      <div className="bv-surface p-5 space-y-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <p className="text-[10px] font-bold uppercase text-on-surface-variant">Pipeline stage</p>
+          {!isTerminal && nextStage && (
+            <div className="flex flex-col items-end gap-2 max-w-full">
+              {!confirmOpen ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  leftIcon={<span className="material-symbols-outlined text-[18px]">moving</span>}
+                  onClick={() => {
+                    setStageError(null)
+                    setConfirmOpen(true)
+                  }}
+                >
+                  Update current status to {nextStage}
+                </Button>
+              ) : (
+                <div className="flex flex-wrap items-center gap-2 justify-end">
+                  <p className="text-body-sm text-on-surface-variant w-full text-right sm:w-auto">
+                    Move from <span className="font-semibold text-on-surface">{lead.stage}</span> to{' '}
+                    <span className="font-semibold text-on-surface">{nextStage}</span>?
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={advancing}
+                    onClick={() => {
+                      setConfirmOpen(false)
+                      setStageError(null)
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    disabled={advancing}
+                    leftIcon={
+                      <span className="material-symbols-outlined text-[18px]">
+                        {advancing ? 'progress_activity' : 'check'}
+                      </span>
+                    }
+                    onClick={() => void handleAdvanceStage()}
+                  >
+                    {advancing ? 'Updating…' : `Confirm → ${nextStage}`}
+                  </Button>
+                </div>
+              )}
+              {stageError && (
+                <p className="text-body-sm text-error text-right" role="alert">
+                  {stageError}
+                </p>
+              )}
+            </div>
+          )}
+          {isTerminal && (
+            <p className="text-body-sm text-on-surface-variant">
+              This lead is in a terminal stage ({lead.stage}). Stage can no longer be advanced.
+            </p>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {PipelineStageValues.filter((s) => s !== 'Lost').map((stage, i, arr) => {
+            const done = currentIdx >= i && lead.stage !== 'Lost'
+            const active = lead.stage === stage
+            return (
+              <div key={stage} className="flex items-center gap-2">
+                <span
+                  className={cn(
+                    'px-2.5 py-1 rounded-full text-[10px] font-bold uppercase transition-colors',
+                    active
+                      ? stageStyles[stage]
+                      : done
+                        ? 'bg-secondary/15 text-secondary'
+                        : 'bg-surface-container text-on-surface-variant',
+                  )}
+                >
+                  {stage}
+                </span>
+                {i < arr.length - 1 && (
+                  <span className="material-symbols-outlined text-on-surface-variant text-sm">chevron_right</span>
+                )}
+              </div>
+            )
+          })}
+          {lead.stage === 'Lost' && (
+            <span className={cn('px-2.5 py-1 rounded-full text-[10px] font-bold uppercase', stageStyles.Lost)}>
+              Lost
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
+          <section className="bv-surface p-6">
+            <h2 className="text-title-md font-semibold mb-4">Contact & company</h2>
+            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <dt className="text-[10px] font-bold uppercase text-on-surface-variant">Contact</dt>
+                <dd className="font-semibold text-on-surface mt-0.5">{lead.contactName}</dd>
+                {lead.contactTitle && (
+                  <dd className="text-xs text-on-surface-variant">{lead.contactTitle}</dd>
+                )}
+              </div>
+              <div>
+                <dt className="text-[10px] font-bold uppercase text-on-surface-variant">Company</dt>
+                <dd className="font-semibold text-on-surface mt-0.5">{lead.company}</dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-bold uppercase text-on-surface-variant">Industry</dt>
+                <dd className="font-semibold text-on-surface mt-0.5">{lead.industry ?? '—'}</dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-bold uppercase text-on-surface-variant">Source</dt>
+                <dd className="font-semibold text-on-surface mt-0.5">{lead.source}</dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-bold uppercase text-on-surface-variant">Email</dt>
+                <dd className="font-semibold text-on-surface mt-0.5">{lead.email ?? '—'}</dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-bold uppercase text-on-surface-variant">Phone</dt>
+                <dd className="font-semibold text-on-surface mt-0.5">{lead.phone ?? '—'}</dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-bold uppercase text-on-surface-variant">Assigned</dt>
+                <dd className="font-semibold text-on-surface mt-0.5">{lead.assignedTo ?? 'Unassigned'}</dd>
+              </div>
+              <div>
+                <dt className="text-[10px] font-bold uppercase text-on-surface-variant">Created</dt>
+                <dd className="font-semibold text-on-surface mt-0.5">{lead.createdAt}</dd>
+              </div>
+            </dl>
+          </section>
+
+          {lead.notes && (
+            <section className="bv-surface p-6">
+              <h2 className="text-title-md font-semibold mb-3">Internal notes</h2>
+              <p className="text-body-md text-on-surface italic">"{lead.notes}"</p>
+            </section>
+          )}
+
+          <section className="bv-surface p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-title-md font-semibold">Activity</h2>
+              <Link
+                {...looseLinkProps({
+                  to: salesRoutes.activity,
+                  className: 'text-secondary text-sm font-semibold hover:underline',
+                })}
+              >
+                Full timeline
+              </Link>
+            </div>
+            <div className="space-y-0 relative">
+              {timeline.map((a, idx) => (
+                <div key={a.id} className={cn('relative flex gap-4', idx < timeline.length - 1 && 'pb-6')}>
+                  {idx < timeline.length - 1 && (
+                    <span className="absolute left-[11px] top-6 bottom-0 w-0.5 bg-outline-variant" aria-hidden />
+                  )}
+                  <div className="z-10 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 bg-secondary/15 text-secondary">
+                    <span className="material-symbols-outlined text-xs">
+                      {activityIcon[a.type] ?? 'circle'}
+                    </span>
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm text-on-surface">{a.title}</p>
+                    <p className="text-body-sm text-on-surface-variant mt-0.5 line-clamp-2">{a.body}</p>
+                    <p className="text-xs text-on-surface-variant mt-1">
+                      {a.actor} · {a.time}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              {timeline.length === 0 && (
+                <p className="text-body-sm text-on-surface-variant">No recent activity.</p>
+              )}
+            </div>
+          </section>
+
+          {lead.chatLink && (
+            <section className="rounded-xl border border-secondary/30 bg-secondary/5 p-6 executive-shadow">
+              <h2 className="text-title-md font-semibold mb-2 flex items-center gap-2">
+                <span className="material-symbols-outlined text-secondary">chat</span>
+                Client chat
+              </h2>
+              <a
+                href={lead.chatLink}
+                target="_blank"
+                rel="noreferrer"
+                className="text-secondary font-semibold text-sm hover:underline inline-flex items-center gap-2"
+              >
+                {lead.chatLink}
+                <span className="material-symbols-outlined text-sm">open_in_new</span>
+              </a>
+            </section>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div className="bv-surface p-5">
+            <p className="text-[10px] font-bold uppercase text-on-surface-variant">Estimated value</p>
+            <p className="text-2xl font-bold text-on-background mt-1">{formatBudget(lead.budget)}</p>
+          </div>
+          <div className="bv-surface p-5">
+            <p className="text-[10px] font-bold uppercase text-on-surface-variant">Expected close</p>
+            <p className="text-lg font-semibold text-on-background mt-1">{lead.date ?? '—'}</p>
+          </div>
+          {lead.probability != null && (
+            <div className="bv-surface p-5">
+              <p className="text-[10px] font-bold uppercase text-on-surface-variant">Win probability</p>
+              <p className="text-lg font-semibold text-on-background mt-1">{lead.probability}%</p>
+              <div className="mt-2 h-2 rounded-full bg-surface-container overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-secondary transition-all"
+                  style={{ width: `${Math.min(100, lead.probability)}%` }}
+                />
+              </div>
+            </div>
+          )}
+          {lead.tags && lead.tags.length > 0 && (
+            <div className="bv-surface p-5">
+              <p className="text-[10px] font-bold uppercase text-on-surface-variant mb-2">Tags</p>
+              <div className="flex flex-wrap gap-1.5">
+                {lead.tags.map((t) => (
+                  <span
+                    key={t}
+                    className="bg-surface-container text-on-surface-variant px-2 py-0.5 rounded text-[10px] font-bold"
+                  >
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {lead.caseStudy && (
+            <div className="bv-surface p-5">
+              <p className="text-[10px] font-bold uppercase text-on-surface-variant mb-1">Related case study</p>
+              <p className="font-semibold text-secondary text-sm">{lead.caseStudy}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
