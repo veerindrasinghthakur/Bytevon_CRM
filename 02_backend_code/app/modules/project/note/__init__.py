@@ -1,1 +1,1 @@
-# note domain (placeholder)
+"""Note domain."""

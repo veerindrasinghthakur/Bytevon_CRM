@@ -1,6 +1,7 @@
-import type { ApprovalRow, ApprovalKpis, ApproverOption } from '../types'
+import type { ApprovalRow, ApprovalKpis } from '../types/request'
+import type { ApproverOption } from '../types/approval_action'
 
-export type { ApprovalStatus, ApprovalPriority, ApprovalRow } from '../types'
+export type { ApprovalStatus, ApprovalPriority, ApprovalRow } from '../types/request'
 
 export const approvalKpis: ApprovalKpis = {
   total: 210,

@@ -21,7 +21,6 @@ from app.modules.admin.routes import organization_router
 from app.modules.rbac.routes import router as rbac_router
 from app.modules.audit.routes import router as audit_router
 from app.modules.project.routes import router as project_router
-from app.modules.notes_documents.routes import router as notes_documents_router
 from app.modules.payroll.routes import router as payroll_router
 from app.modules.sales.routes import router as sales_router
 from app.modules.my_work.routes import router as my_work_router
@@ -39,7 +38,6 @@ api_router.include_router(leave_router)
 api_router.include_router(notifications_router)
 api_router.include_router(sales_router)
 api_router.include_router(project_router)
-api_router.include_router(notes_documents_router)
 api_router.include_router(audit_router)
 api_router.include_router(payroll_router)
 api_router.include_router(my_work_router)

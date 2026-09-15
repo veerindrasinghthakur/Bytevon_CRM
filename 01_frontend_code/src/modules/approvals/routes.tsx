@@ -8,9 +8,12 @@ import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 import { safeRedirectOpts } from '@/shared/lib/safeNavigate'
 
-const ApprovalCenterPage = lazyPage(() => import('./pages/ApprovalCenterPage'), 'ApprovalCenterPage')
-const PendingApprovalsPage = lazyPage(() => import('./pages/PendingApprovalsPage'), 'PendingApprovalsPage')
-const ApprovalDetailPage = lazyPage(() => import('./pages/ApprovalDetailPage'), 'ApprovalDetailPage')
+const ApprovalCenterPage = lazyPage(() => import('./pages/request/ApprovalCenterPage'), 'ApprovalCenterPage')
+const PendingApprovalsPage = lazyPage(
+  () => import('./pages/approval_action/PendingApprovalsPage'),
+  'PendingApprovalsPage',
+)
+const ApprovalDetailPage = lazyPage(() => import('./pages/request/ApprovalDetailPage'), 'ApprovalDetailPage')
 
 /** Path helpers — always navigate via these + safeNavigate (no string literals in pages). */
 export const approvalRoutes = {

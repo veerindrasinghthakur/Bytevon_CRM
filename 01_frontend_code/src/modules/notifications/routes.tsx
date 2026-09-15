@@ -1,38 +1,31 @@
 /**
  * Notification module routes — import and spread into the app router tree.
- * Paths:
- *   /notifications
- *   /notifications/compose
- *   /notifications/sent
- *   /notifications/settings
- *   /notifications/$notificationId
  */
 import { createRoute } from '@tanstack/react-router'
 import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 
 const NotificationCenterPage = lazyPage(
-  () => import('./pages/NotificationCenterPage'),
+  () => import('./pages/center/NotificationCenterPage'),
   'NotificationCenterPage',
 )
 const ComposeNotificationPage = lazyPage(
-  () => import('./pages/ComposeNotificationPage'),
+  () => import('./pages/compose/ComposeNotificationPage'),
   'ComposeNotificationPage',
 )
 const SentNotificationsPage = lazyPage(
-  () => import('./pages/SentNotificationsPage'),
+  () => import('./pages/sent/SentNotificationsPage'),
   'SentNotificationsPage',
 )
 const NotificationSettingsPage = lazyPage(
-  () => import('./pages/NotificationSettingsPage'),
+  () => import('./pages/settings/NotificationSettingsPage'),
   'NotificationSettingsPage',
 )
 const NotificationDetailPage = lazyPage(
-  () => import('./pages/NotificationDetailPage'),
+  () => import('./pages/center/NotificationDetailPage'),
   'NotificationDetailPage',
 )
 
-/** Canonical path helpers — prefer these over hard-coded strings in pages. */
 export const notificationRoutes = {
   center: '/notifications',
   compose: '/notifications/compose',
@@ -43,36 +36,31 @@ export const notificationRoutes = {
 } as const
 
 export function createNotificationRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
-  const notificationsRoute = createRoute({
-    getParentRoute: () => appLayoutRoute,
-    path: '/notifications',
-    component: NotificationCenterPage,
-  })
-  const notificationsComposeRoute = createRoute({
-    getParentRoute: () => appLayoutRoute,
-    path: '/notifications/compose',
-    component: ComposeNotificationPage,
-  })
-  const notificationsSentRoute = createRoute({
-    getParentRoute: () => appLayoutRoute,
-    path: '/notifications/sent',
-    component: SentNotificationsPage,
-  })
-  const notificationsSettingsRoute = createRoute({
-    getParentRoute: () => appLayoutRoute,
-    path: '/notifications/settings',
-    component: NotificationSettingsPage,
-  })
-  const notificationDetailRoute = createRoute({
-    getParentRoute: () => appLayoutRoute,
-    path: '/notifications/$notificationId',
-    component: NotificationDetailPage,
-  })
   return [
-    notificationsRoute,
-    notificationsComposeRoute,
-    notificationsSentRoute,
-    notificationsSettingsRoute,
-    notificationDetailRoute,
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/notifications',
+      component: NotificationCenterPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/notifications/compose',
+      component: ComposeNotificationPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/notifications/sent',
+      component: SentNotificationsPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/notifications/settings',
+      component: NotificationSettingsPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/notifications/$notificationId',
+      component: NotificationDetailPage,
+    }),
   ]
 }

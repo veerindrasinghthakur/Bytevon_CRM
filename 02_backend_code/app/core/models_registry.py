@@ -75,13 +75,12 @@ from app.modules.sales.models import (  # noqa: F401
 from app.modules.project.project.models import Project  # noqa: F401
 from app.modules.project.task.models import Task, TaskTimeEntry  # noqa: F401
 from app.modules.project.team.models import Team, TeamMember  # noqa: F401
-
-from app.modules.notes_documents.models import (  # noqa: F401
+from app.modules.project.note.models import Note  # noqa: F401
+from app.modules.project.document.models import (  # noqa: F401
     Document,
     DocumentLink,
     DocumentType,
     DocumentVersion,
-    Note,
 )
 
 from app.modules.audit.models import AuditLog  # noqa: F401
