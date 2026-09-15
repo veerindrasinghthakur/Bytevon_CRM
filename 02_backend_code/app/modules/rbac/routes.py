@@ -1,6 +1,4 @@
-"""
-RBAC HTTP routes.
-"""
+"""RBAC HTTP routes."""
 
 from __future__ import annotations
 
@@ -9,7 +7,7 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, Header, Query, status
 
 from app.modules.rbac.dependencies import RBACServiceDep
-from app.modules.rbac.schemas.schemas import (
+from app.modules.rbac.schemas import (
     AssignRoleRequest,
     EffectivePermissionsResponse,
     EmployeeRoleResponse,
@@ -18,7 +16,6 @@ from app.modules.rbac.schemas.schemas import (
     ResourceResponse,
     RoleCreate,
     RoleDetailResponse,
-    RoleListItemResponse,
     RoleListResponse,
     RolePermissionGrant,
     RolePermissionResponse,

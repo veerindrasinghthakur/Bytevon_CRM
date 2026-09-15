@@ -1,6 +1,4 @@
-"""
-AuthenticationRepository — domain-specific queries only.
-"""
+"""AuthRepository — domain-specific queries only."""
 
 from __future__ import annotations
 
@@ -16,13 +14,9 @@ from app.core.repositories.base_repository import BaseRepository
 from app.modules.auth.models import Login, PasswordResetToken, Person, Session
 
 
-class AuthenticationRepository(BaseRepository):
+class AuthRepository(BaseRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
-
-    # ------------------------------------------------------------------
-    # Person / Login
-    # ------------------------------------------------------------------
 
     async def get_login_by_email(self, email: str) -> Optional[Login]:
         stmt = (
@@ -44,10 +38,6 @@ class AuthenticationRepository(BaseRepository):
         stmt = select(Person).where(Person.id == person_id)
         return await self.scalar_one_or_none(stmt)
 
-    # ------------------------------------------------------------------
-    # Sessions
-    # ------------------------------------------------------------------
-
     async def get_session_by_id(self, session_id: int) -> Optional[Session]:
         stmt = select(Session).where(Session.id == session_id)
         return await self.scalar_one_or_none(stmt)
@@ -67,9 +57,6 @@ class AuthenticationRepository(BaseRepository):
         session_ids: Optional[Sequence[int]] = None,
         now: Optional[datetime] = None,
     ) -> None:
-        """
-        Mark sessions as REVOKED. If session_ids is None, revoke all active for login.
-        """
         from app.core.db.enums import SessionRevokeReason
 
         now = now or datetime.utcnow()
@@ -89,10 +76,6 @@ class AuthenticationRepository(BaseRepository):
             stmt = stmt.where(Session.id.in_(list(session_ids)))
         await self.execute(stmt)
 
-    # ------------------------------------------------------------------
-    # Password reset tokens
-    # ------------------------------------------------------------------
-
     async def get_valid_reset_token(
         self, token_hash: str, now: datetime
     ) -> Optional[PasswordResetToken]:
@@ -102,3 +85,7 @@ class AuthenticationRepository(BaseRepository):
             PasswordResetToken.expires_at > now,
         )
         return await self.scalar_one_or_none(stmt)
+
+
+# Back-compat
+AuthenticationRepository = AuthRepository

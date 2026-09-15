@@ -1,6 +1,4 @@
-"""
-RBACRepository — domain-specific queries only.
-"""
+"""RBACRepository — domain-specific queries only."""
 
 from __future__ import annotations
 
@@ -100,9 +98,7 @@ class RBACRepository(BaseRepository):
         stmt = select(Role)
         if search and search.strip():
             q = f"%{search.strip()}%"
-            stmt = stmt.where(
-                or_(Role.name.ilike(q), Role.description.ilike(q))
-            )
+            stmt = stmt.where(or_(Role.name.ilike(q), Role.description.ilike(q)))
         if is_system_role is not None:
             stmt = stmt.where(Role.is_system_role.is_(is_system_role))
         return stmt
@@ -150,7 +146,6 @@ class RBACRepository(BaseRepository):
         return int(result.scalar() or 0)
 
     async def count_employments_by_role_ids(self, role_ids: list[int]) -> dict[int, int]:
-        """Map role_id → assignment count."""
         if not role_ids:
             return {}
         stmt = (

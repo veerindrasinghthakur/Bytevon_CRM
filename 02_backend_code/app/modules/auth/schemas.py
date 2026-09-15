@@ -1,6 +1,4 @@
-"""
-Pydantic v2 schemas for Authentication module.
-"""
+"""Pydantic v2 schemas for Authentication module."""
 
 from __future__ import annotations
 
@@ -9,12 +7,8 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-from app.core.db.enums import DeviceType, SessionRevokeReason, SessionStatus
+from app.core.db.enums import DeviceType, SessionStatus
 
-
-# ---------------------------------------------------------------------------
-# Request
-# ---------------------------------------------------------------------------
 
 class LoginRequest(BaseModel):
     email: EmailStr
@@ -28,7 +22,7 @@ class RefreshRequest(BaseModel):
 
 
 class LogoutRequest(BaseModel):
-    refresh_token: Optional[str] = None  # if omitted, revoke current session only via access
+    refresh_token: Optional[str] = None
 
 
 class ChangePasswordRequest(BaseModel):
@@ -50,15 +44,11 @@ class RevokeSessionRequest(BaseModel):
     session_id: int
 
 
-# ---------------------------------------------------------------------------
-# Response
-# ---------------------------------------------------------------------------
-
 class TokenPairResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
-    expires_in: int  # seconds for access token
+    expires_in: int
 
 
 class SessionResponse(BaseModel):

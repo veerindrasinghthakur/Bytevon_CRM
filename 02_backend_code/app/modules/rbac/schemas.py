@@ -1,6 +1,4 @@
-"""
-Pydantic v2 schemas for RBAC module.
-"""
+"""Pydantic v2 schemas for RBAC module."""
 
 from __future__ import annotations
 
@@ -15,10 +13,6 @@ from app.core.db.enums import Action
 class MessageResponse(BaseModel):
     message: str
 
-
-# ===========================================================================
-# Seeded / read-only surfaces
-# ===========================================================================
 
 class ResourceResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -56,10 +50,6 @@ class SensitiveFieldResponse(BaseModel):
     created_at: datetime
 
 
-# ===========================================================================
-# Roles
-# ===========================================================================
-
 class RoleCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
     description: Optional[str] = None
@@ -87,16 +77,12 @@ class RoleResponse(BaseModel):
 
 
 class RoleListItemResponse(RoleResponse):
-    """List payload enriched for admin role cards."""
-
     usersCount: int = 0
     permission_count: int = 0
     permission_keys: List[str] = Field(default_factory=list)
 
 
 class RoleListResponse(BaseModel):
-    """Paginated roles list for admin UI."""
-
     items: List[RoleListItemResponse] = Field(default_factory=list)
     total: int = 0
     page: int = 1
@@ -104,8 +90,6 @@ class RoleListResponse(BaseModel):
 
 
 class RolePermissionDetail(BaseModel):
-    """Flattened grant for UI matrix (resource.action string + ids)."""
-
     model_config = ConfigDict(from_attributes=True)
 
     id: int
@@ -115,25 +99,6 @@ class RolePermissionDetail(BaseModel):
     action: Optional[str] = None
     scope_name: Optional[str] = None
     key: Optional[str] = None
-
-
-class RoleDetailResponse(RoleResponse):
-    permissions: List[RolePermissionResponse] = Field(default_factory=list)
-    permission_details: List[RolePermissionDetail] = Field(default_factory=list)
-    permission_keys: List[str] = Field(default_factory=list)
-    usersCount: int = 0
-    sensitive_field_permissions: List["RoleSensitiveFieldPermissionResponse"] = Field(
-        default_factory=list
-    )
-
-
-# ===========================================================================
-# Role ↔ Permission ↔ Scope
-# ===========================================================================
-
-class RolePermissionGrant(BaseModel):
-    permission_id: int
-    scope_id: int
 
 
 class RolePermissionResponse(BaseModel):
@@ -147,9 +112,20 @@ class RolePermissionResponse(BaseModel):
     changed_by: Optional[int]
 
 
-# ===========================================================================
-# Employee ↔ Role
-# ===========================================================================
+class RoleDetailResponse(RoleResponse):
+    permissions: List[RolePermissionResponse] = Field(default_factory=list)
+    permission_details: List[RolePermissionDetail] = Field(default_factory=list)
+    permission_keys: List[str] = Field(default_factory=list)
+    usersCount: int = 0
+    sensitive_field_permissions: List["RoleSensitiveFieldPermissionResponse"] = Field(
+        default_factory=list
+    )
+
+
+class RolePermissionGrant(BaseModel):
+    permission_id: int
+    scope_id: int
+
 
 class AssignRoleRequest(BaseModel):
     role_id: int
@@ -164,10 +140,6 @@ class EmployeeRoleResponse(BaseModel):
     assigned_at: datetime
     changed_by: Optional[int]
 
-
-# ===========================================================================
-# Sensitive field permissions
-# ===========================================================================
 
 class RoleSensitiveFieldPermissionSet(BaseModel):
     sensitive_field_id: int
@@ -186,10 +158,6 @@ class RoleSensitiveFieldPermissionResponse(BaseModel):
     created_at: datetime
     changed_by: Optional[int]
 
-
-# ===========================================================================
-# Effective permissions for an employment
-# ===========================================================================
 
 class EffectivePermissionItem(BaseModel):
     resource_name: str

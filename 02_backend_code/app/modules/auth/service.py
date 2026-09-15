@@ -1,5 +1,5 @@
 """
-AuthenticationPublicService — only public entry point for Auth.
+AuthService — only public entry point for Auth.
 
 Owns the transaction. After successful commit, audit (and later notification)
 are invoked best-effort; their failure must not roll back business work.
@@ -16,7 +16,7 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.db.enums import DeviceType, SessionRevokeReason, SessionStatus
+from app.core.db.enums import SessionRevokeReason, SessionStatus
 from app.core.security.jwt_manager import JWTManager
 from app.core.security.password_manager import PasswordManager
 from app.core.services.base_public_service import BasePublicService
@@ -31,8 +31,8 @@ from app.modules.auth.exceptions import (
     SessionRevokedException,
 )
 from app.modules.auth.models import Login, PasswordResetToken, Session
-from app.modules.auth.repositories.repository import AuthenticationRepository
-from app.modules.auth.schemas.schemas import (
+from app.modules.auth.repository import AuthRepository
+from app.modules.auth.schemas import (
     ChangePasswordRequest,
     ForgotPasswordRequest,
     LoginRequest,
@@ -51,7 +51,7 @@ def _hash_token(raw: str) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
-class AuthenticationPublicService(BasePublicService):
+class AuthService(BasePublicService):
     def __init__(
         self,
         session: AsyncSession,
@@ -60,20 +60,21 @@ class AuthenticationPublicService(BasePublicService):
         password_manager: Optional[PasswordManager] = None,
     ) -> None:
         super().__init__(session)
-        self._repo = AuthenticationRepository(session)
+        self._repo = AuthRepository(session)
         self._jwt = jwt_manager or JWTManager()
         self._pwd = password_manager or PasswordManager()
 
-    # ------------------------------------------------------------------
-    # Login
-    # ------------------------------------------------------------------
-
-    async def login(self, data: LoginRequest, *, ip_address: Optional[str] = None, user_agent: Optional[str] = None) -> LoginResponse:
+    async def login(
+        self,
+        data: LoginRequest,
+        *,
+        ip_address: Optional[str] = None,
+        user_agent: Optional[str] = None,
+    ) -> LoginResponse:
         now = datetime.now(timezone.utc)
 
         login = await self._repo.get_login_by_email(data.email)
         if login is None:
-            # Constant-time style: still run a dummy verify to avoid timing leaks
             self._pwd.verify("dummy", self._pwd.hash("dummy"))
             raise InvalidCredentialsException()
 
@@ -87,14 +88,12 @@ class AuthenticationPublicService(BasePublicService):
             await self._record_failed_attempt(login, now)
             raise InvalidCredentialsException()
 
-        # Success path — clear lockout counters
         login.failed_attempt_count = 0
         login.locked_until = None
 
-        # Create session + tokens inside one TX
         session_row = Session(
             login_id=login.id,
-            refresh_token_hash="",  # set after we know session id for jti binding
+            refresh_token_hash="",
             device_name=data.device_name,
             device_type=data.device_type,
             ip_address=ip_address,
@@ -104,7 +103,7 @@ class AuthenticationPublicService(BasePublicService):
             last_used_at=now,
         )
         await self._repo.add(session_row)
-        await self._flush()  # obtain session_row.id
+        await self._flush()
 
         refresh_token = self._jwt.generate_refresh_token(
             login_id=login.id,
@@ -119,8 +118,6 @@ class AuthenticationPublicService(BasePublicService):
         )
 
         await self._commit()
-
-        # After-commit side effects (best-effort)
         await self._audit_login_success(login.id)
 
         return LoginResponse(
@@ -138,11 +135,7 @@ class AuthenticationPublicService(BasePublicService):
         login.failed_attempt_count = (login.failed_attempt_count or 0) + 1
         if login.failed_attempt_count >= settings.MAX_FAILED_LOGIN_ATTEMPTS:
             login.locked_until = now + timedelta(minutes=settings.ACCOUNT_LOCKOUT_MINUTES)
-        await self._commit()  # persist lockout even on failed login
-
-    # ------------------------------------------------------------------
-    # Refresh
-    # ------------------------------------------------------------------
+        await self._commit()
 
     async def refresh(self, data: RefreshRequest) -> TokenPairResponse:
         now = datetime.now(timezone.utc)
@@ -164,7 +157,6 @@ class AuthenticationPublicService(BasePublicService):
         if login is None or not login.is_active:
             raise AccountInactiveException()
 
-        # Rotate refresh token (optional but recommended)
         new_refresh = self._jwt.generate_refresh_token(
             login_id=login.id,
             person_id=login.person_id,
@@ -185,10 +177,6 @@ class AuthenticationPublicService(BasePublicService):
             refresh_token=new_refresh,
             expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         )
-
-    # ------------------------------------------------------------------
-    # Logout / Revoke
-    # ------------------------------------------------------------------
 
     async def logout(
         self,
@@ -223,8 +211,8 @@ class AuthenticationPublicService(BasePublicService):
     ) -> MessageResponse:
         session_row = await self._repo.get_session_by_id(session_id)
         if session_row is None or session_row.login_id != actor_login_id:
-            # Prefer 404-style hiding
             from app.core.exceptions.exception import NotFoundError
+
             raise NotFoundError("Session not found")
 
         await self._repo.revoke_sessions(
@@ -234,10 +222,6 @@ class AuthenticationPublicService(BasePublicService):
         )
         await self._commit()
         return MessageResponse(message="Session revoked")
-
-    # ------------------------------------------------------------------
-    # Password change (authenticated)
-    # ------------------------------------------------------------------
 
     async def change_password(
         self, *, login_id: int, data: ChangePasswordRequest
@@ -262,14 +246,7 @@ class AuthenticationPublicService(BasePublicService):
         await self._commit()
         return MessageResponse(message="Password changed successfully")
 
-    # ------------------------------------------------------------------
-    # Forgot / Reset password
-    # ------------------------------------------------------------------
-
     async def forgot_password(self, data: ForgotPasswordRequest) -> MessageResponse:
-        """
-        Always return a generic success message (do not reveal whether email exists).
-        """
         login = await self._repo.get_login_by_email(data.email)
         if login and login.is_active:
             raw_token = secrets.token_urlsafe(32)
@@ -284,7 +261,6 @@ class AuthenticationPublicService(BasePublicService):
             )
             await self._repo.add(reset)
             await self._commit()
-            # TODO: after-commit send email with raw_token via NotificationPublicService
             logger.info("Password reset token generated for login_id=%s", login.id)
 
         return MessageResponse(
@@ -312,7 +288,6 @@ class AuthenticationPublicService(BasePublicService):
         reset.is_used = True
         reset.used_at = now
 
-        # Revoke all sessions on password reset
         await self._repo.revoke_sessions(
             login_id=login.id,
             reason=SessionRevokeReason.PASSWORD_CHANGED.value,
@@ -322,20 +297,18 @@ class AuthenticationPublicService(BasePublicService):
         await self._commit()
         return MessageResponse(message="Password has been reset successfully")
 
-    # ------------------------------------------------------------------
-    # Sessions list (for current user)
-    # ------------------------------------------------------------------
-
     async def list_sessions(self, login_id: int) -> list[SessionResponse]:
         rows = await self._repo.get_active_sessions_for_login(login_id)
         return [SessionResponse.model_validate(r) for r in rows]
 
-    # ------------------------------------------------------------------
-    # After-commit hooks (best-effort; never raise into caller)
-    # ------------------------------------------------------------------
-
     async def _audit_login_success(self, login_id: int) -> None:
-        await self._audit("login.login", login_id, description="Employee logged in successfully")
+        await self._audit(
+            "login.login", login_id, description="Employee logged in successfully"
+        )
 
     async def _audit_logout(self, login_id: int) -> None:
         await self._audit("login.logout", login_id, description="Employee logged out")
+
+
+# Back-compat
+AuthenticationPublicService = AuthService
