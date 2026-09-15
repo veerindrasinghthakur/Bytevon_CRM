@@ -4,8 +4,8 @@ import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { myWorkRoutes } from '../routes'
-import { myTaskFormSchema, type MyTaskFormValues } from '../schemas/task-form'
+import { myWorkRoutes } from '../../routes'
+import { myTaskFormSchema, type MyTaskFormValues } from '../../schemas/task-form'
 
 type FormValues = MyTaskFormValues
 
@@ -33,21 +33,14 @@ export function MyTaskCreatePage() {
 
   const onSubmit = async (_data: FormValues) => {
     await new Promise((r) => setTimeout(r, 500))
-    safeNavigate(navigate,{ to: myWorkRoutes.tasks })
+    safeNavigate(navigate, { to: myWorkRoutes.tasks })
   }
 
   return (
     <div className="space-y-6 max-w-xl animate-fade-in">
-      <PageHeader
-        title="Create task"
-        description="Add a personal or assigned task to your list."
-        showBack
-      />
+      <PageHeader title="Create task" description="Add a personal or assigned task to your list." showBack />
 
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="bv-surface overflow-hidden"
-      >
+      <form onSubmit={handleSubmit(onSubmit)} className="bv-surface overflow-hidden">
         <div className="p-6 space-y-5">
           <div>
             <label className="block text-label-md text-on-surface mb-1.5" htmlFor="name">
@@ -135,7 +128,7 @@ export function MyTaskCreatePage() {
         </div>
 
         <div className="px-6 py-4 border-t border-outline-variant bg-surface flex items-center gap-3 justify-end">
-          <Button type="button" variant="ghost" onClick={() => safeNavigate(navigate,{ to: myWorkRoutes.tasks })}>
+          <Button type="button" variant="ghost" onClick={() => safeNavigate(navigate, { to: myWorkRoutes.tasks })}>
             Cancel
           </Button>
           <Button type="submit" variant="primary" isLoading={isSubmitting}>

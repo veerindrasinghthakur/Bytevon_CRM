@@ -3,16 +3,12 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { Select } from '@/shared/components/ui/Select'
-import { useMyApprovals } from '../hooks/use-my-approvals'
+import { useMyApprovals } from '../../hooks/use-my-approvals'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { myWorkRoutes } from '../routes'
-import { statusStyles, typeIcon } from '../schemas/enums'
+import { myWorkRoutes } from '../../routes'
+import { statusStyles, typeIcon } from '../../schemas/enums'
 
-/**
- * Card view of approval-tracked items the employee submitted (leave, corrections, expense).
- * Distinct from MyRequestsPage (`/my-work/requests`) which is the full table of org requests.
- */
 export function MyApprovalsPage() {
   const navigate = useNavigate()
   const {
@@ -57,7 +53,7 @@ export function MyApprovalsPage() {
           onClick={() => setStatusFilter(statusFilter === 'Pending' ? 'All' : 'Pending')}
         >
           <p className="text-label-sm text-on-surface-variant mb-1">Pending</p>
-          <p className="text-headline-md font-bold text-amber-700">{pending}</p>
+          <p className="text-headline-md font-bold text-[var(--color-warning-amber)]">{pending}</p>
           <p className="text-[11px] text-on-surface-variant mt-1">Awaiting decision</p>
         </button>
         <button
@@ -69,7 +65,7 @@ export function MyApprovalsPage() {
           onClick={() => setStatusFilter(statusFilter === 'Approved' ? 'All' : 'Approved')}
         >
           <p className="text-label-sm text-on-surface-variant mb-1">Approved</p>
-          <p className="text-headline-md font-bold text-emerald-700">{approved}</p>
+          <p className="text-headline-md font-bold text-secondary">{approved}</p>
           <p className="text-[11px] text-on-surface-variant mt-1">This period</p>
         </button>
       </section>

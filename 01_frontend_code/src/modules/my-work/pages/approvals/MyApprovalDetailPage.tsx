@@ -4,10 +4,10 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { queryKeys } from '@/shared/lib/query-keys'
-import { listMyApprovals, getMyWorkOverview } from '../api/my-work'
-import { statusStyles, approvalTypeIcon } from '../schemas/enums'
+import { listMyApprovals, getMyWorkOverview } from '../../api/my-work'
+import { statusStyles, approvalTypeIcon } from '../../schemas/enums'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { myWorkRoutes } from '../routes'
+import { myWorkRoutes } from '../../routes'
 import { cn } from '@/shared/lib/cn'
 
 export function MyApprovalDetailPage() {

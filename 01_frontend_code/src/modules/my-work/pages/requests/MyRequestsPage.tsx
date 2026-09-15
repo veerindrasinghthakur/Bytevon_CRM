@@ -6,17 +6,11 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { myWorkRoutes } from '../routes'
-import { statusStyles } from '../schemas/enums'
-import { listMySubmittedRequests } from '../api/my-work'
-import { useRequestsPageFilter } from '../hooks/use-requests-page-filter'
-import { REQUEST_FILTERS } from '../schemas/enums'
+import { myWorkRoutes } from '../../routes'
+import { statusStyles, REQUEST_FILTERS } from '../../schemas/enums'
+import { listMySubmittedRequests } from '../../api/my-work'
+import { useRequestsPageFilter } from '../../hooks/use-requests-page-filter'
 
-/**
- * Full table of organizational requests the employee submitted.
- * Distinct from MyApprovalsPage (`/my-work/approvals`) card summary of approval-tracked items.
- * Status: UI may show In-Progress; schema ApprovalStatus is PENDING | APPROVED | REJECTED.
- */
 function StatCard({
   icon,
   iconClass,
@@ -85,12 +79,22 @@ export function MyRequestsPage() {
         />
         <StatCard
           icon="pending_actions"
-          iconClass="bg-amber-50 text-amber-700"
+          iconClass="bg-[var(--color-warning-amber)]/15 text-[var(--color-warning-amber)]"
           label="In Progress"
           value={stats.inProgress}
         />
-        <StatCard icon="verified" iconClass="bg-emerald-50 text-emerald-700" label="Approved" value={stats.approved} />
-        <StatCard icon="cancel" iconClass="bg-red-50 text-red-700" label="Rejected" value={stats.rejected} />
+        <StatCard
+          icon="verified"
+          iconClass="bg-secondary/15 text-secondary"
+          label="Approved"
+          value={stats.approved}
+        />
+        <StatCard
+          icon="cancel"
+          iconClass="bg-error-container text-on-error-container"
+          label="Rejected"
+          value={stats.rejected}
+        />
       </section>
 
       <section className="bv-surface overflow-hidden">
@@ -141,7 +145,7 @@ export function MyRequestsPage() {
                   key={row.id}
                   className="zebra-row group cursor-pointer"
                   onClick={() =>
-                    safeNavigate(navigate,{
+                    safeNavigate(navigate, {
                       to: myWorkRoutes.approvalDetail(row.id),
                       params: { requestId: row.id },
                     })
@@ -156,10 +160,10 @@ export function MyRequestsPage() {
                         className={cn(
                           'w-2 h-2 rounded-full',
                           row.status === 'Approved'
-                            ? 'bg-emerald-500'
+                            ? 'bg-secondary'
                             : row.status === 'Rejected'
-                              ? 'bg-red-500'
-                              : 'bg-amber-500',
+                              ? 'bg-error'
+                              : 'bg-[var(--color-warning-amber)]',
                         )}
                       />
                       {row.stage ?? '—'}

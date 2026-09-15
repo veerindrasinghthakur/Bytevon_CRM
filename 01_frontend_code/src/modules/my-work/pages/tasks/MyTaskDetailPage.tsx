@@ -1,9 +1,10 @@
 import { useParams, useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { myTasks, currentUser } from '../data/mock'
+import { myTasks, currentUser } from '../../data/mock'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { priorityClass, statusDot } from '../schemas/enums'
+import { priorityClass, statusDot } from '../../schemas/enums'
+import { myWorkRoutes } from '../../routes'
 
 export function MyTaskDetailPage() {
   const { taskId } = useParams({ strict: false }) as { taskId: string }
@@ -52,9 +53,7 @@ export function MyTaskDetailPage() {
               </div>
               <div className="bg-surface-container-low p-4 rounded-lg">
                 <p className="text-label-sm text-on-surface-variant">Estimated time</p>
-                <p className="text-body-lg font-bold text-on-background mt-1">
-                  {task.estimatedHours ?? '—'}
-                </p>
+                <p className="text-body-lg font-bold text-on-background mt-1">{task.estimatedHours ?? '—'}</p>
               </div>
             </div>
           </section>
@@ -107,14 +106,14 @@ export function MyTaskDetailPage() {
             <Button
               variant="primary"
               className="w-full"
-              onClick={() => safeNavigate(navigate,{ to: '/my-work/tasks/new' })}
+              onClick={() => safeNavigate(navigate, { to: myWorkRoutes.tasksNew })}
             >
               Create task
             </Button>
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => safeNavigate(navigate,{ to: '/my-work/tasks' })}
+              onClick={() => safeNavigate(navigate, { to: myWorkRoutes.tasks })}
             >
               All my tasks
             </Button>

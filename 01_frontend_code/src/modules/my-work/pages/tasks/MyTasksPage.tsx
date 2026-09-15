@@ -15,13 +15,13 @@ import {
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
 import { ExportButton } from '@/shared/components/export/ExportButton'
-import { useMyTasks } from '../hooks/use-my-tasks'
-import type { MyTask } from '../types'
+import { useMyTasks } from '../../hooks/use-my-tasks'
+import type { MyTask } from '../../types'
 import { cn } from '@/shared/lib/cn'
-import { priorityClass, statusDot } from '../schemas/enums'
+import { priorityClass, statusDot } from '../../schemas/enums'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { myWorkRoutes } from '../routes'
-import { useTasksPageFilter } from '../hooks/use-tasks-page-filter'
+import { myWorkRoutes } from '../../routes'
+import { useTasksPageFilter } from '../../hooks/use-tasks-page-filter'
 
 function TaskQuickContent({ task }: { task: MyTask }) {
   return (
