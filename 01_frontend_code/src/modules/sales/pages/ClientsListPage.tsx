@@ -19,7 +19,7 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { ResourceName } from '@/shared/schema'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { useClientsList } from '../hooks/use-clients-list'
+import { useClientsList } from '../hooks/client/use-clients'
 import { salesRoutes } from '../routes'
 import type { Client } from '../types'
 import { typeStyles, RecordStatusOptions, ClientTypeOptions } from '../schemas/enums'
@@ -117,7 +117,7 @@ export function ClientsListPage() {
     startLongPress,
     endLongPress,
     clearLongPress,
-  types,
+    types,
     statuses,
   } = useClientsList()
 
