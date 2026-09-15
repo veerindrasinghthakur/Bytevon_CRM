@@ -27,13 +27,13 @@ export {
   getLeadFilterOptions,
   getClientFilterOptions,
   listSalesRepresentatives,
-} from './api/sales'
+} from './api'
 
-export { useLeadsList } from './hooks/lead/use-leads'
-export { useClientsList } from './hooks/client/use-clients'
-export { useCaseStudiesList } from './hooks/case-study/use-case-studies'
-export { useSalesDashboard } from './hooks/dashboard/use-dashboard'
 export {
+  useLeadsList,
+  useClientsList,
+  useCaseStudiesList,
+  useSalesDashboard,
   useLeadsQuery,
   useLead,
   useCreateLead,
@@ -45,4 +45,4 @@ export {
   useCaseStudies,
   useSalesActivities,
   useSalesDashboardMetrics,
-} from './hooks/use-sales'
+} from './hooks'
