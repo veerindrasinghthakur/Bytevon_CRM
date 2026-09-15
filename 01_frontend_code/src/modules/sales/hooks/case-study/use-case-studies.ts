@@ -1,6 +1,35 @@
 import { useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { useListControls } from '@/shared/hooks/useListControls'
-import { useCaseStudiesQuery } from '../use-sales'
+import { queryKeys } from '@/shared/lib/query-keys'
+import { listCaseStudies } from '../../api/case-study'
+import type { CaseStudyListParams } from '../../types'
+
+/** @deprecated Prefer useCaseStudiesQuery with filters */
+export function useCaseStudies() {
+  return useQuery({
+    queryKey: queryKeys.sales.caseStudies.list({}),
+    queryFn: () => listCaseStudies(),
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  })
+}
+
+export function useCaseStudiesQuery(filters?: CaseStudyListParams) {
+  const params: CaseStudyListParams = {
+    search: filters?.search || undefined,
+    status: filters?.status && filters.status !== 'All' ? filters.status : undefined,
+    page: filters?.page,
+    pageSize: filters?.pageSize,
+  }
+  return useQuery({
+    queryKey: queryKeys.sales.caseStudies.list(params),
+    queryFn: () => listCaseStudies(params),
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+    placeholderData: (prev) => prev,
+  })
+}
 
 const FILTER_DEFAULTS = {
   status: 'All',
