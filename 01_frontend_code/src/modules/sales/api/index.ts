@@ -1,3 +1,8 @@
-/** Sales API — implementation is api/sales.ts (+ api/source.ts for platforms). */
-export * from './sales'
+/** Sales API — domain modules + thin sales barrel for legacy imports. */
+export * from './lead'
+export * from './client'
+export * from './case-study'
+export * from './activity'
+export * from './dashboard'
 export * from './source'
+export * from './sales'
