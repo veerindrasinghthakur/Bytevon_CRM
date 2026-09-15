@@ -1,53 +1,106 @@
 #!/usr/bin/env bash
-# Restructure sales module into domain folders (git mv preserves history).
-# Run from repo root: bash 01_frontend_code/scripts/restructure-sales-module.sh
+# Complete sales domain restructure — run from repo root (bytevon_documentation).
+# Moves page bodies into domain folders, fixes relative imports, removes thin re-exports.
+# Same pattern as projects module restructure.
 set -euo pipefail
-ROOT="01_frontend_code/src/modules/sales"
-cd "$(git rev-parse --show-toplevel)"
 
+ROOT="01_frontend_code/src/modules/sales"
 if [[ ! -d "$ROOT" ]]; then
-  echo "Missing $ROOT" >&2
+  echo "ERROR: run from repo root (directory with 01_frontend_code/)"
   exit 1
 fi
 
-mkdir -p \
-  "$ROOT/api" \
-  "$ROOT/hooks/lead" "$ROOT/hooks/client" "$ROOT/hooks/case-study" \
-  "$ROOT/hooks/dashboard" "$ROOT/hooks/activity" "$ROOT/hooks/source" \
-  "$ROOT/pages/lead" "$ROOT/pages/client" "$ROOT/pages/case-study" \
-  "$ROOT/pages/source" "$ROOT/pages/dashboard" "$ROOT/pages/activity" \
-  "$ROOT/components/lead" \
-  "$ROOT/schemas/lead" "$ROOT/schemas/client" "$ROOT/schemas/case-study" \
-  "$ROOT/schemas/activity" "$ROOT/schemas/source" \
-  "$ROOT/types"
+cd "$ROOT"
+echo "==> sales module: $(pwd)"
 
-[[ -f "$ROOT/api/sources.ts" ]] && git mv "$ROOT/api/sources.ts" "$ROOT/api/source.ts"
+# --- 1. Move flat page bodies into domain folders (overwrite thin re-export stubs) ---
+move_page() {
+  local flat="$1"
+  local domain="$2"
+  local name
+  name="$(basename "$flat")"
+  mkdir -p "pages/$domain"
+  if [[ -f "pages/$flat" ]]; then
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+      git mv -f "pages/$flat" "pages/$domain/$name" 2>/dev/null \
+        || { mv -f "pages/$flat" "pages/$domain/$name"; git add -A "pages/$domain/$name" "pages/$flat" 2>/dev/null || true; }
+    else
+      mv -f "pages/$flat" "pages/$domain/$name"
+    fi
+    echo "  moved pages/$flat -> pages/$domain/$name"
+  elif [[ -f "pages/$domain/$name" ]]; then
+    echo "  already at pages/$domain/$name"
+  else
+    echo "  WARN: missing pages/$flat"
+  fi
+}
 
-[[ -f "$ROOT/hooks/use-leads-list.ts" ]] && git mv "$ROOT/hooks/use-leads-list.ts" "$ROOT/hooks/lead/use-leads.ts"
-[[ -f "$ROOT/hooks/use-clients-list.ts" ]] && git mv "$ROOT/hooks/use-clients-list.ts" "$ROOT/hooks/client/use-clients.ts"
-[[ -f "$ROOT/hooks/use-case-studies-list.ts" ]] && git mv "$ROOT/hooks/use-case-studies-list.ts" "$ROOT/hooks/case-study/use-case-studies.ts"
-[[ -f "$ROOT/hooks/use-sales-dashboard.ts" ]] && git mv "$ROOT/hooks/use-sales-dashboard.ts" "$ROOT/hooks/dashboard/use-dashboard.ts"
+move_page LeadsListPage.tsx lead
+move_page LeadCreatePage.tsx lead
+move_page LeadDetailPage.tsx lead
+move_page ClientsListPage.tsx client
+move_page ClientCreatePage.tsx client
+move_page ClientDetailPage.tsx client
+move_page CaseStudiesListPage.tsx case-study
+move_page SourcesListPage.tsx source
+move_page SalesDashboardPage.tsx dashboard
+move_page SalesAnalyticsPage.tsx dashboard
+move_page SalesActivityTimelinePage.tsx activity
 
-[[ -f "$ROOT/pages/LeadsListPage.tsx" ]] && git mv "$ROOT/pages/LeadsListPage.tsx" "$ROOT/pages/lead/LeadsListPage.tsx"
-[[ -f "$ROOT/pages/LeadCreatePage.tsx" ]] && git mv "$ROOT/pages/LeadCreatePage.tsx" "$ROOT/pages/lead/LeadCreatePage.tsx"
-[[ -f "$ROOT/pages/LeadDetailPage.tsx" ]] && git mv "$ROOT/pages/LeadDetailPage.tsx" "$ROOT/pages/lead/LeadDetailPage.tsx"
-[[ -f "$ROOT/pages/ClientsListPage.tsx" ]] && git mv "$ROOT/pages/ClientsListPage.tsx" "$ROOT/pages/client/ClientsListPage.tsx"
-[[ -f "$ROOT/pages/ClientCreatePage.tsx" ]] && git mv "$ROOT/pages/ClientCreatePage.tsx" "$ROOT/pages/client/ClientCreatePage.tsx"
-[[ -f "$ROOT/pages/ClientDetailPage.tsx" ]] && git mv "$ROOT/pages/ClientDetailPage.tsx" "$ROOT/pages/client/ClientDetailPage.tsx"
-[[ -f "$ROOT/pages/CaseStudiesListPage.tsx" ]] && git mv "$ROOT/pages/CaseStudiesListPage.tsx" "$ROOT/pages/case-study/CaseStudiesListPage.tsx"
-[[ -f "$ROOT/pages/SourcesListPage.tsx" ]] && git mv "$ROOT/pages/SourcesListPage.tsx" "$ROOT/pages/source/SourcesListPage.tsx"
-[[ -f "$ROOT/pages/SalesDashboardPage.tsx" ]] && git mv "$ROOT/pages/SalesDashboardPage.tsx" "$ROOT/pages/dashboard/SalesDashboardPage.tsx"
-[[ -f "$ROOT/pages/SalesAnalyticsPage.tsx" ]] && git mv "$ROOT/pages/SalesAnalyticsPage.tsx" "$ROOT/pages/dashboard/SalesAnalyticsPage.tsx"
-[[ -f "$ROOT/pages/SalesActivityTimelinePage.tsx" ]] && git mv "$ROOT/pages/SalesActivityTimelinePage.tsx" "$ROOT/pages/activity/SalesActivityTimelinePage.tsx"
+# --- 2. Deepen relative imports (pages now one level deeper) ---
+deepen_imports() {
+  local f="$1"
+  [[ -f "$f" ]] || return 0
+  if command -v sed >/dev/null; then
+    if sed --version >/dev/null 2>&1; then
+      sed -i -E \
+        -e "s|from '\\.\\./(hooks|components|routes|types|schemas|api|data|lib)|from '../../\\1|g" \
+        -e 's|from "\.\./(hooks|components|routes|types|schemas|api|data|lib)|from "../../\1|g' \
+        "$f"
+    else
+      sed -i '' -E \
+        -e "s|from '\\.\\./(hooks|components|routes|types|schemas|api|data|lib)|from '../../\\1|g" \
+        -e 's|from "\.\./(hooks|components|routes|types|schemas|api|data|lib)|from "../../\1|g' \
+        "$f"
+    fi
+  fi
+  echo "  imports fixed: $f"
+}
 
-[[ -f "$ROOT/components/LeadMetricsRow.tsx" ]] && git mv "$ROOT/components/LeadMetricsRow.tsx" "$ROOT/components/lead/LeadMetricsRow.tsx"
+for f in \
+  pages/lead/*.tsx \
+  pages/client/*.tsx \
+  pages/case-study/*.tsx \
+  pages/source/*.tsx \
+  pages/dashboard/*.tsx \
+  pages/activity/*.tsx
+do
+  deepen_imports "$f"
+done
 
-[[ -f "$ROOT/schemas/lead.ts" ]] && git mv "$ROOT/schemas/lead.ts" "$ROOT/schemas/lead/lead.ts"
-[[ -f "$ROOT/schemas/lead-form.ts" ]] && git mv "$ROOT/schemas/lead-form.ts" "$ROOT/schemas/lead/lead-form.ts"
-[[ -f "$ROOT/schemas/client.ts" ]] && git mv "$ROOT/schemas/client.ts" "$ROOT/schemas/client/client.ts"
-[[ -f "$ROOT/schemas/client-form.ts" ]] && git mv "$ROOT/schemas/client-form.ts" "$ROOT/schemas/client/client-form.ts"
-[[ -f "$ROOT/schemas/case-study.ts" ]] && git mv "$ROOT/schemas/case-study.ts" "$ROOT/schemas/case-study/case-study.ts"
-[[ -f "$ROOT/schemas/case-study-form.ts" ]] && git mv "$ROOT/schemas/case-study-form.ts" "$ROOT/schemas/case-study/case-study-form.ts"
-[[ -f "$ROOT/schemas/activity.ts" ]] && git mv "$ROOT/schemas/activity.ts" "$ROOT/schemas/activity/activity.ts"
+# --- 3. routes.tsx + index.ts already on main (domain paths) — ensure present ---
+if ! grep -q "pages/lead/LeadsListPage" routes.tsx 2>/dev/null; then
+  echo "WARN: routes.tsx may still point at flat pages — pull latest main first"
+fi
 
-echo "git mv complete. Next: python3 01_frontend_code/scripts/apply_sales_import_fixes.py"
+# --- 4. Remove leftover flat page files if any ---
+for leftover in \
+  pages/LeadsListPage.tsx pages/LeadCreatePage.tsx pages/LeadDetailPage.tsx \
+  pages/ClientsListPage.tsx pages/ClientCreatePage.tsx pages/ClientDetailPage.tsx \
+  pages/CaseStudiesListPage.tsx pages/SourcesListPage.tsx \
+  pages/SalesDashboardPage.tsx pages/SalesAnalyticsPage.tsx pages/SalesActivityTimelinePage.tsx
+do
+  if [[ -f "$leftover" ]]; then
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+      git rm -f "$leftover" 2>/dev/null || rm -f "$leftover"
+    else
+      rm -f "$leftover"
+    fi
+    echo "  removed leftover $leftover"
+  fi
+done
+
+echo ""
+echo "==> Done. Review with: git status"
+echo "    Then: npx tsc -b && git add -A && git commit -m 'refactor(sales): complete domain page split (no thin re-exports)'"
+echo "    git push origin main"
