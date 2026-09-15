@@ -32,10 +32,11 @@ async def _ensure_lead_ui_columns() -> None:
 
 
 async def _leave_approval_decision_handler(event: dict) -> None:
-    from app.modules.leave.services.public_service import LeavePublicService
+    """Bridge Approvals post-commit event → Leave local status + ledger."""
+    from app.modules.leave.request.service import RequestService
 
     async with AsyncSessionLocal() as session:
-        service = LeavePublicService(session)
+        service = RequestService(session)
         await service.handle_approval_decision(event)
 
 
