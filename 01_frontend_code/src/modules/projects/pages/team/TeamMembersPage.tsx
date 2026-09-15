@@ -68,11 +68,11 @@ export function TeamMembersPage() {
               <tr key={m.id} className="zebra-row">
                 <td className="px-6 py-4">
                   <Link
-                    {...(looseLinkProps({
+                    {...looseLinkProps({
                       to: workforceRoutes.employeeDetailPath,
                       params: { employeeId: String(m.employmentId ?? m.id) },
                       className: 'flex items-center gap-3',
-                    }) as object)}
+                    })}
                   >
                     <div className="w-9 h-9 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
                       {m.name.split(' ').map((p: string) => p[0]).join('').slice(0, 2)}
