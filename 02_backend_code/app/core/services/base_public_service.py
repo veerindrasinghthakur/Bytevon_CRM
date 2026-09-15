@@ -250,17 +250,15 @@ class BasePublicService:
         body: str,
         payload: Optional[dict] = None,
     ) -> None:
-        """Best-effort IN_APP notification to one employment."""
+        """Best-effort IN_APP notification to one employment via ComposeService."""
         try:
             from app.core.database import AsyncSessionLocal
             from app.core.db.enums import NotificationRecipientType
-            from app.modules.notifications.schemas.schemas import NotifyRequest
-            from app.modules.notifications.services.public_service import (
-                NotificationPublicService,
-            )
+            from app.modules.notifications.compose.schemas import NotifyRequest
+            from app.modules.notifications.compose.service import ComposeService
 
             async with AsyncSessionLocal() as notif_session:
-                svc = NotificationPublicService(notif_session)
+                svc = ComposeService(notif_session)
                 await svc.notify(
                     NotifyRequest(
                         recipient_type=NotificationRecipientType.EMPLOYMENT,
