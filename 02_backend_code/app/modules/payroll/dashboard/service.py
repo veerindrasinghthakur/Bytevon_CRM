@@ -1,0 +1,95 @@
+"""DashboardService — KPIs, period, activity, monthly summary."""
+from __future__ import annotations
+
+from datetime import date
+from typing import Any, Optional
+
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.modules.payroll.monthly_payroll.service import MonthlyPayrollService
+
+
+def _money(r: Any, *names: str) -> float:
+    for n in names:
+        v = getattr(r, n, None)
+        if v is not None:
+            try:
+                return float(v)
+            except (TypeError, ValueError):
+                continue
+    return 0.0
+
+
+def _status_str(r: Any) -> str:
+    s = getattr(r, "status", "")
+    return s.value if hasattr(s, "value") else str(s)
+
+
+class DashboardService:
+    def __init__(self, session: AsyncSession) -> None:
+        self._monthly = MonthlyPayrollService(session)
+
+    async def kpis(
+        self, *, year: Optional[int] = None, month: Optional[int] = None
+    ) -> dict[str, Any]:
+        today = date.today()
+        y = year or today.year
+        m = month or today.month
+        rows = await self._monthly.list_payrolls(year=y, month=m, limit=500)
+        total_net = sum(_money(r, "net_salary", "net_pay") for r in rows)
+        total_gross = sum(_money(r, "gross_salary", "gross_pay") for r in rows)
+        paid = [r for r in rows if _status_str(r).upper() == "PAID"]
+        return {
+            "employees": len(rows),
+            "totalGross": total_gross,
+            "totalNet": total_net,
+            "paidCount": len(paid),
+            "pendingCount": max(0, len(rows) - len(paid)),
+            "period": f"{y}-{m:02d}",
+        }
+
+    def period(self) -> dict[str, Any]:
+        today = date.today()
+        return {
+            "year": today.year,
+            "month": today.month,
+            "label": today.strftime("%B %Y"),
+            "status": "OPEN",
+        }
+
+    async def activity(self, *, limit: int = 20) -> list[dict[str, Any]]:
+        rows = await self._monthly.list_payrolls(limit=limit)
+        out: list[dict[str, Any]] = []
+        for r in rows:
+            y = getattr(r, "year", None)
+            m = getattr(r, "month", None)
+            title = (
+                f"Payroll {y}-{int(m):02d}"
+                if y is not None and m is not None
+                else f"Payroll #{getattr(r, 'id', '')}"
+            )
+            out.append(
+                {
+                    "id": str(getattr(r, "id", "")),
+                    "title": title,
+                    "status": _status_str(r),
+                    "time": str(getattr(r, "updated_at", getattr(r, "created_at", ""))),
+                }
+            )
+        return out
+
+    async def monthly_summary(
+        self, *, year: Optional[int] = None, month: Optional[int] = None
+    ) -> dict[str, Any]:
+        today = date.today()
+        y = year or today.year
+        m = month or today.month
+        rows = await self._monthly.list_payrolls(year=y, month=m, limit=500)
+        return {
+            "year": y,
+            "month": m,
+            "employeeCount": len(rows),
+            "totalGross": sum(_money(r, "gross_salary", "gross_pay") for r in rows),
+            "totalNet": sum(_money(r, "net_salary", "net_pay") for r in rows),
+            "totalDeductions": sum(_money(r, "total_deductions") for r in rows),
+        }

@@ -1,0 +1,3 @@
+from app.modules.payroll.monthly_payroll.repository import MonthlyPayrollRepository
+
+HistoryRepository = MonthlyPayrollRepository
