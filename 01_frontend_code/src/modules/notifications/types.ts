@@ -1,4 +1,4 @@
-/** Re-export all types from schemas — single source of truth (MODULE_STANDARDS §3.4) */
+/** Barrel — prefer domain imports from types/center|sent|compose|settings. */
 
 export type {
   NotificationPriority,
@@ -7,9 +7,9 @@ export type {
   AppNotification,
   NotificationKpi,
   NotificationTab,
-} from './schemas/notification'
-
-export type { NotificationListResponse } from './schemas/notification-list-response'
+  NotificationListResponse,
+  InboxListParams,
+} from './types/center'
 
 export type {
   DeliveryChannel,
@@ -17,26 +17,23 @@ export type {
   SentNotificationRow,
   SentListResponse,
   SentKpi,
-} from './schemas/sent'
+} from './types/sent'
 
 export type {
   NotificationTrigger,
   ChannelCard,
-} from './schemas/settings'
+  BatchFrequency,
+  NotificationSettingsForm,
+} from './types/settings'
 
 export type {
   ComposeNotificationForm,
   ComposeNotificationInput,
   ComposeDeliveryResult,
-} from './schemas/notification-form'
+} from './types/compose'
 
-export type {
-  BatchFrequency,
-  NotificationSettingsForm,
-} from './schemas/settings-form'
-
-export { emptyComposeForm } from './schemas/notification-form'
-export { emptyNotificationSettingsForm } from './schemas/settings-form'
+export { emptyComposeForm } from './types/compose'
+export { emptyNotificationSettingsForm } from './types/settings'
 
 export {
   priorityDotClass,
@@ -46,16 +43,3 @@ export {
   COMPOSE_MODULE_OPTIONS,
   PRIORITY_OPTIONS,
 } from './schemas/enums'
-
-import type{NotificationTabId}  from './schemas/notification'
-
-export interface InboxListParams {
-  search?: string
-  tab?: NotificationTabId
-  typeFilter?: string
-  priorityFilter?: string
-  moduleFilter?: string
-  page?: number
-  pageSize?: number
-}
-
