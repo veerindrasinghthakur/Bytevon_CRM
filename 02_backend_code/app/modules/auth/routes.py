@@ -1,17 +1,13 @@
-"""
-Authentication HTTP routes.
-
-All business operations go through AuthenticationPublicService.
-"""
+"""Authentication HTTP routes — all ops via AuthService."""
 
 from __future__ import annotations
 
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, Header, Request, status
+from fastapi import APIRouter, Header, Request, status
 
-from app.modules.auth.dependencies import AuthenticationServiceDep
-from app.modules.auth.schemas.schemas import (
+from app.modules.auth.dependencies import AuthServiceDep
+from app.modules.auth.schemas import (
     ChangePasswordRequest,
     ForgotPasswordRequest,
     LoginRequest,
@@ -34,7 +30,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 )
 async def login(
     body: LoginRequest,
-    service: AuthenticationServiceDep,
+    service: AuthServiceDep,
     request: Request,
 ) -> LoginResponse:
     ip = request.client.host if request.client else None
@@ -49,7 +45,7 @@ async def login(
 )
 async def refresh(
     body: RefreshRequest,
-    service: AuthenticationServiceDep,
+    service: AuthServiceDep,
 ) -> TokenPairResponse:
     return await service.refresh(body)
 
@@ -60,8 +56,7 @@ async def refresh(
     summary="Logout (revoke current or all sessions)",
 )
 async def logout(
-    service: AuthenticationServiceDep,
-    # TODO: replace with real current-user dependency once RBAC/Auth middleware is ready
+    service: AuthServiceDep,
     x_login_id: Annotated[int, Header(alias="X-Login-Id")],
     session_id: Optional[int] = None,
     revoke_all: bool = False,
@@ -78,7 +73,7 @@ async def logout(
 )
 async def change_password(
     body: ChangePasswordRequest,
-    service: AuthenticationServiceDep,
+    service: AuthServiceDep,
     x_login_id: Annotated[int, Header(alias="X-Login-Id")],
 ) -> MessageResponse:
     return await service.change_password(login_id=x_login_id, data=body)
@@ -91,7 +86,7 @@ async def change_password(
 )
 async def forgot_password(
     body: ForgotPasswordRequest,
-    service: AuthenticationServiceDep,
+    service: AuthServiceDep,
 ) -> MessageResponse:
     return await service.forgot_password(body)
 
@@ -103,7 +98,7 @@ async def forgot_password(
 )
 async def reset_password(
     body: ResetPasswordRequest,
-    service: AuthenticationServiceDep,
+    service: AuthServiceDep,
 ) -> MessageResponse:
     return await service.reset_password(body)
 
@@ -114,7 +109,7 @@ async def reset_password(
     summary="List active sessions for current user",
 )
 async def list_sessions(
-    service: AuthenticationServiceDep,
+    service: AuthServiceDep,
     x_login_id: Annotated[int, Header(alias="X-Login-Id")],
 ) -> list[SessionResponse]:
     return await service.list_sessions(x_login_id)
