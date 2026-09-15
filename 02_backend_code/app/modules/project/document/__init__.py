@@ -1,1 +1,1 @@
-# document domain (placeholder)
+"""Document domain."""

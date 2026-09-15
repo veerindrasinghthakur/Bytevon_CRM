@@ -6,8 +6,8 @@ Module package names (2026-09-09):
   employment → workforce
   developer → project
 
-Profile HTTP paths (/profile/*) are owned by the my_work package
-(same as the frontend profile feature under my-work), not a standalone module.
+Notes & Documents live under project (note/ + document/ domains).
+Profile HTTP paths (/profile/*) are owned by the my_work package.
 """
 
 from __future__ import annotations
@@ -25,7 +25,6 @@ from app.modules.organization.routes import router as organization_router
 from app.modules.rbac.routes import router as rbac_router
 from app.modules.audit.routes import router as audit_router
 from app.modules.project.routes import router as project_router
-from app.modules.notes_documents.routes import router as notes_documents_router
 from app.modules.payroll.routes import router as payroll_router
 from app.modules.sales.routes_ui import router as sales_ui_router
 from app.modules.sales.routes import router as sales_router
@@ -46,7 +45,6 @@ api_router.include_router(notifications_router)
 api_router.include_router(sales_ui_router)
 api_router.include_router(sales_router)
 api_router.include_router(project_router)
-api_router.include_router(notes_documents_router)
 api_router.include_router(audit_router)
 api_router.include_router(payroll_router)
 api_router.include_router(my_work_router)
