@@ -1,67 +1,18 @@
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
-import { Select } from '@/shared/components/ui/Select'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { ResourceName } from '@/shared/schema'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
-import {
-  QuickSection,
-  QuickStat,
-  QuickStatGrid,
-  QuickMetaTile,
-  QuickRelatedRow,
-  QuickPersonRow,
-} from '@/shared/components/layout/QuickOverviewParts'
 import { useNotificationCenter } from '../../hooks/center/use-notification-center'
 import type { AppNotification } from '../../types'
 import { notificationStatusDotClass } from '../../schemas/enums'
 import { notificationRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { cn } from '@/shared/lib/cn'
-
-function NotificationQuickContent({ n }: { n: AppNotification }) {
-  return (
-    <>
-      <QuickSection title="Summary">
-        <QuickStatGrid>
-          <QuickStat icon="category" value={n.module} label="Module" />
-          <QuickStat icon="priority_high" value={n.priority} label="Priority" />
-          <QuickStat icon="schedule" value={n.timeAgo} label="When" />
-        </QuickStatGrid>
-      </QuickSection>
-      <QuickSection title="Message">
-        <p className="text-body-sm text-on-surface-variant leading-relaxed">{n.body}</p>
-      </QuickSection>
-      {n.actor && (
-        <QuickSection title="Actor">
-          <QuickPersonRow
-            initials={n.actor
-              .split(' ')
-              .map((p) => p[0])
-              .join('')
-              .slice(0, 2)}
-            roleLabel="From"
-            name={n.actor}
-          />
-        </QuickSection>
-      )}
-      {n.meta && n.meta.length > 0 && (
-        <QuickSection title="Meta">
-          <div className="grid grid-cols-2 gap-3">
-            {n.meta.map((m) => (
-              <QuickMetaTile key={m.label} icon="info" label={m.label} value={m.value} />
-            ))}
-          </div>
-        </QuickSection>
-      )}
-      {n.note && (
-        <QuickSection title="Note">
-          <QuickRelatedRow icon="sticky_note_2" label="Note" value={n.note} />
-        </QuickSection>
-      )}
-    </>
-  )
-}
+import { NotificationQuickContent } from '../../components/center/NotificationQuickContent'
+import { NotificationCard } from '../../components/center/NotificationCard'
+import { CenterKpiCards } from '../../components/center/CenterKpiCards'
+import { CenterFilterBar } from '../../components/center/CenterFilterBar'
+import { NotificationPreviewPanel } from '../../components/center/NotificationPreviewPanel'
 
 export function NotificationCenterPage() {
   const navigate = useNavigate()
@@ -154,101 +105,24 @@ export function NotificationCenterPage() {
         </div>
       </div>
 
-      <section className="grid grid-cols-2 md:grid-cols-5 gap-4">
-        {c.kpis.map((k) => (
-          <div key={k.id} className="bv-surface card-hover p-5">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-on-surface-variant text-label-md">{k.label}</span>
-              <span
-                className={cn(
-                  'material-symbols-outlined text-xl',
-                  k.hintTone === 'danger' ? 'text-error' : 'text-secondary',
-                )}
-              >
-                {k.icon}
-              </span>
-            </div>
-            <p className="text-headline-md font-semibold text-on-background">{k.value}</p>
-            <p
-              className={cn(
-                'text-[11px] font-bold mt-1',
-                k.hintTone === 'positive' && 'text-secondary',
-                k.hintTone === 'danger' && 'text-error',
-                k.hintTone === 'neutral' && 'text-on-surface-variant',
-              )}
-            >
-              {k.hint}
-            </p>
-          </div>
-        ))}
-      </section>
+      <CenterKpiCards kpis={c.kpis} />
 
-      <section className="bv-surface p-2">
-        <div className="flex items-center gap-1 border-b border-outline-variant px-2 overflow-x-auto">
-          {c.tabs.map((t) => (
-            <button
-              key={t.id}
-              type="button"
-              onClick={() => c.setTab(t.id)}
-              className={cn(
-                'px-5 py-3 text-label-md whitespace-nowrap transition-colors border-b-2',
-                c.tab === t.id
-                  ? 'border-secondary text-secondary font-bold'
-                  : 'border-transparent text-on-surface-variant hover:text-on-background',
-              )}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-        <div className="flex flex-wrap items-end gap-3 px-3 py-3">
-          <div className="flex items-center bg-surface-container rounded-lg border border-outline-variant px-3 h-11 flex-1 min-w-[160px] max-w-xs">
-            <span className="material-symbols-outlined text-on-surface-variant text-lg">search</span>
-            <input
-              className="bg-transparent border-none text-body-sm w-full outline-none"
-              placeholder="Filter notifications..."
-              value={c.query}
-              onChange={(e) => c.setQuery(e.target.value)}
-            />
-          </div>
-          <Select
-            value={c.typeFilter}
-            onChange={c.setTypeFilter}
-            minWidthClass="min-w-[130px]"
-            options={[
-              { value: 'All', label: 'Type: All' },
-              { value: 'System', label: 'System' },
-              { value: 'Approval', label: 'Approval' },
-              { value: 'Mention', label: 'Mention' },
-            ]}
-          />
-          <Select
-            value={c.priorityFilter}
-            onChange={c.setPriorityFilter}
-            minWidthClass="min-w-[130px]"
-            options={[
-              { value: 'All', label: 'Priority: All' },
-              { value: 'High', label: 'High' },
-              { value: 'Medium', label: 'Medium' },
-              { value: 'Low', label: 'Low' },
-            ]}
-          />
-          <Select
-            value={c.moduleFilter}
-            onChange={c.setModuleFilter}
-            minWidthClass="min-w-[130px]"
-            options={[
-              { value: 'All', label: 'Module: All' },
-              ...c.modules.map((m) => ({ value: m, label: m })),
-            ]}
-          />
-          {c.filtersActive && (
-            <Button variant="outline" size="sm" onClick={c.resetFilters}>
-              Reset
-            </Button>
-          )}
-        </div>
-      </section>
+      <CenterFilterBar
+        tabs={c.tabs}
+        tab={c.tab}
+        setTab={c.setTab}
+        query={c.query}
+        setQuery={c.setQuery}
+        typeFilter={c.typeFilter}
+        setTypeFilter={c.setTypeFilter}
+        priorityFilter={c.priorityFilter}
+        setPriorityFilter={c.setPriorityFilter}
+        moduleFilter={c.moduleFilter}
+        setModuleFilter={c.setModuleFilter}
+        modules={c.modules}
+        filtersActive={c.filtersActive}
+        resetFilters={c.resetFilters}
+      />
 
       {c.selectionMode && (
         <div className="flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl border border-secondary/30 bg-secondary/5 executive-shadow">
@@ -302,229 +176,13 @@ export function NotificationCenterPage() {
           )}
         </div>
 
-        <div className="flex-1 bv-surface flex flex-col self-stretch">
-          {c.selected ? (
-            <>
-              <div className="p-6 border-b border-outline-variant flex items-start justify-between gap-4 bg-surface-container-low">
-                <div className="flex items-start gap-4 min-w-0">
-                  <div className="w-12 h-12 rounded-xl bg-secondary-container flex items-center justify-center text-on-secondary shrink-0">
-                    <span
-                      className="material-symbols-outlined text-2xl"
-                      style={{ fontVariationSettings: "'FILL' 1" }}
-                    >
-                      {c.selected.icon}
-                    </span>
-                  </div>
-                  <div className="min-w-0">
-                    <h2 className="text-headline-md font-semibold text-on-background">{c.selected.title}</h2>
-                    <p className="text-label-md text-on-surface-variant mt-1">
-                      {c.selected.actor && (
-                        <span className="font-semibold text-on-background">{c.selected.actor}</span>
-                      )}
-                      {c.selected.employeeId && <> · {c.selected.employeeId}</>}
-                      {' · '}
-                      {c.selected.module}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="flex-1 p-6 space-y-6">
-                {c.selected.meta?.map((m) => (
-                  <div
-                    key={m.label}
-                    className="flex items-center justify-between text-label-md border-b border-dashed border-outline-variant pb-2"
-                  >
-                    <span className="text-on-surface-variant font-semibold">{m.label}</span>
-                    <span className="text-on-background font-medium">{m.value}</span>
-                  </div>
-                ))}
-                <p className="text-body-md text-on-surface leading-relaxed">{c.selected.body}</p>
-                {c.selected.note && (
-                  <div className="bg-surface-container-low p-5 rounded-xl border-l-4 border-secondary">
-                    <h5 className="text-label-md font-bold uppercase text-secondary mb-2 tracking-wider">Note</h5>
-                    <p className="text-body-md text-on-surface italic">&quot;{c.selected.note}&quot;</p>
-                  </div>
-                )}
-              </div>
-              <div className="p-5 border-t border-outline-variant bg-surface-container-low flex flex-wrap items-center gap-3 mt-auto">
-                <Button
-                  variant="primary"
-                  size="md"
-                  className="flex-1 min-w-[140px]"
-                  disabled={!c.selected.relatedHref}
-                  onClick={() => {
-                    if (c.selected?.relatedHref)
-                      safeNavigate(navigate, { to: c.selected.relatedHref as never })
-                  }}
-                >
-                  Open Related Record
-                </Button>
-                <Button variant="outline" size="md" onClick={() => c.markRead(c.selected!.id)}>
-                  Mark as Read
-                </Button>
-                <button
-                  type="button"
-                  className="p-3 bg-error-container text-on-error-container rounded-xl"
-                  onClick={() => c.archiveOne(c.selected!.id)}
-                  aria-label="Archive"
-                >
-                  <span className="material-symbols-outlined">delete_outline</span>
-                </button>
-              </div>
-            </>
-          ) : (
-            <div className="flex-1 flex items-center justify-center text-on-surface-variant p-12">
-              Select a notification
-            </div>
-          )}
-        </div>
+        <NotificationPreviewPanel
+          selected={c.selected}
+          onMarkRead={c.markRead}
+          onArchive={c.archiveOne}
+          onOpenRelated={(href) => safeNavigate(navigate, { to: href as never })}
+        />
       </section>
-    </div>
-  )
-}
-
-function NotificationCard({
-  n,
-  active,
-  selected,
-  selectionMode,
-  onSelect,
-  onPressStart,
-  onPressEnd,
-  onPressCancel,
-  onArchive,
-  onMarkRead,
-  onFullDetail,
-  menuOpen,
-  onMenuToggle,
-}: {
-  n: AppNotification
-  active: boolean
-  selected: boolean
-  selectionMode: boolean
-  onSelect: () => void
-  onPressStart: () => void
-  onPressEnd: () => void
-  onPressCancel: () => void
-  onArchive: () => void
-  onMarkRead: () => void
-  onFullDetail: () => void
-  menuOpen: boolean
-  onMenuToggle: () => void
-}) {
-  return (
-    <div
-      className={cn(
-        'text-left rounded-xl p-5 border transition-all relative select-none',
-        active
-          ? 'bg-surface-container-high border-2 border-secondary executive-shadow'
-          : 'bv-surface hover:border-secondary/50',
-        selected && 'ring-2 ring-secondary/40',
-        n.status === 'Read' && !active && 'opacity-80',
-      )}
-      onMouseDown={onPressStart}
-      onMouseUp={onPressEnd}
-      onMouseLeave={onPressCancel}
-      onTouchStart={onPressStart}
-      onTouchEnd={onPressEnd}
-      onTouchCancel={onPressCancel}
-      onContextMenu={(e) => e.preventDefault()}
-    >
-      {active && <span className="absolute left-0 top-0 bottom-0 w-1 bg-secondary rounded-r" />}
-      {selectionMode && (
-        <div className="absolute top-3 left-3 z-10">
-          <input
-            type="checkbox"
-            className="rounded border-outline-variant text-secondary"
-            checked={selected}
-            onChange={onSelect}
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
-      <button type="button" className="w-full text-left" onClick={onSelect}>
-        <div className={cn('flex items-start gap-4', selectionMode && 'pl-6')}>
-          <div
-            className={cn(
-              'w-12 h-12 rounded-full flex items-center justify-center shrink-0',
-              active
-                ? 'bg-secondary-container text-on-secondary'
-                : 'bg-surface-container-highest text-on-background',
-            )}
-          >
-            <span className="material-symbols-outlined text-2xl">{n.icon}</span>
-          </div>
-          <div className="flex-1 min-w-0 pr-6">
-            <div className="flex items-center justify-between mb-1 gap-2">
-              <span className="text-[10px] font-black uppercase text-secondary tracking-widest truncate">
-                {n.module}
-              </span>
-              <span className="text-[11px] text-on-surface-variant shrink-0">{n.timeAgo}</span>
-            </div>
-            <h4 className="text-title-lg font-semibold text-on-background line-clamp-1">{n.title}</h4>
-            <p className="text-body-sm text-on-surface-variant line-clamp-2 mt-1">{n.body}</p>
-            <div className="flex items-center gap-2 mt-3 flex-wrap">
-              <span
-                className={cn(
-                  'px-2 py-0.5 text-[10px] font-bold rounded uppercase',
-                  n.priority === 'Critical' || n.priority === 'High'
-                    ? 'bg-error-container text-on-error-container'
-                    : 'bg-surface-container text-on-surface-variant',
-                )}
-              >
-                {n.priority === 'Critical' ? 'Urgent' : n.priority}
-              </span>
-            </div>
-          </div>
-        </div>
-      </button>
-      <div className="absolute top-3 right-3">
-        <button
-          type="button"
-          className="p-1 rounded hover:bg-surface-container text-on-surface-variant"
-          aria-label="Actions"
-          onClick={(e) => {
-            e.stopPropagation()
-            onMenuToggle()
-          }}
-        >
-          <span className="material-symbols-outlined text-[20px]">more_vert</span>
-        </button>
-        {menuOpen && (
-          <div className="absolute right-0 top-8 z-20 w-44 rounded-lg border border-outline-variant bg-surface-container-lowest shadow-lg py-1">
-            <button
-              type="button"
-              className="w-full text-left px-3 py-2 text-body-sm hover:bg-surface-container"
-              onClick={(e) => {
-                e.stopPropagation()
-                onFullDetail()
-              }}
-            >
-              Open full detail
-            </button>
-            <button
-              type="button"
-              className="w-full text-left px-3 py-2 text-body-sm hover:bg-surface-container"
-              onClick={(e) => {
-                e.stopPropagation()
-                onMarkRead()
-              }}
-            >
-              Mark as read
-            </button>
-            <button
-              type="button"
-              className="w-full text-left px-3 py-2 text-body-sm text-error hover:bg-error/10"
-              onClick={(e) => {
-                e.stopPropagation()
-                onArchive()
-              }}
-            >
-              Archive
-            </button>
-          </div>
-        )}
-      </div>
     </div>
   )
 }
