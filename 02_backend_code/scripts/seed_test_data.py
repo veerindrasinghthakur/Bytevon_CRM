@@ -12,10 +12,9 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import date, datetime, timedelta
+from datetime import date
 
-from sqlalchemy import select, text, delete
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy import select, delete
 
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal
@@ -24,13 +23,13 @@ from app.core.security.password_manager import PasswordManager
 from app.modules.auth.models import Login, Person
 from app.modules.workforce.models import Employment, Position, EmploymentAssignment
 from app.core.db.enums import EmploymentState, EmploymentType, WorkMode
-from app.modules.organization.models import Department, OrganizationSettings, Location, Shift
+from app.modules.admin.department.models import Department
+from app.modules.admin.settings.models import OrganizationSettings
+from app.modules.admin.location.models import Location
+from app.modules.admin.shift.models import Shift
 from app.modules.rbac.models import Role, Permission, Resource, RolePermission, Scope
 from app.core.db.enums import ScopeName, Action
 from app.modules.sales.models import Client, Lead
-from app.modules.approvals.models.approval_models import ApprovalRequest, ApprovalAction
-from app.core.db.enums import ApprovalTarget, ApprovalStatus
-from app.modules.notifications.models import Notification
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("seed_test_data")
@@ -79,8 +78,6 @@ CLIENTS = [
     ("Globex Inc", "contact@globex.com", "Manufacturing"),
     ("Initech", "info@initech.com", "Software"),
 ]
-
-PROJECTS = []
 
 LEADS = [
     ("John Doe", "john.doe@acme.com", "Acme Corp", "High"),
