@@ -1,17 +1,24 @@
-export { useLeadsList } from './lead/use-leads'
-export { useClientsList } from './client/use-clients'
-export { useCaseStudiesList } from './case-study/use-case-studies'
-export { useSalesDashboard } from './dashboard/use-dashboard'
 export {
+  useLeadsList,
   useLeadsQuery,
   useLead,
   useCreateLead,
   useUpdateLead,
+} from './lead/use-leads'
+
+export {
+  useClientsList,
   useClientsQuery,
   useClient,
   useCreateClient,
   useUpdateClient,
+} from './client/use-clients'
+
+export {
+  useCaseStudiesList,
   useCaseStudies,
-  useSalesActivities,
-  useSalesDashboardMetrics,
-} from './use-sales'
+  useCaseStudiesQuery,
+} from './case-study/use-case-studies'
+
+export { useSalesActivities } from './activity/use-activities'
+export { useSalesDashboard, useSalesDashboardMetrics } from './dashboard/use-dashboard'
