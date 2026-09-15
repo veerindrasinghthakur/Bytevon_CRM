@@ -1,8 +1,4 @@
-"""Attendance operational schemas (workforce).
-
-Policy schemas stay available for admin policy editors; operational day/punch/
-correction/summary/break live here for workforce UI alignment.
-"""
+"""Attendance schemas (workforce) — operational + policy."""
 from __future__ import annotations
 
 from datetime import date, datetime
@@ -35,7 +31,6 @@ class PunchRequest(BaseModel):
 
 class PunchResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-
     id: int
     attendance_day_id: int
     punch_type: PunchType
@@ -51,7 +46,6 @@ class PunchResponse(BaseModel):
 
 class AttendanceDayResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-
     id: int
     employment_id: int
     shift_id: Optional[int] = None
@@ -76,15 +70,12 @@ class CorrectionCreate(BaseModel):
     @model_validator(mode="after")
     def at_least_one_time(self) -> "CorrectionCreate":
         if self.requested_check_in is None and self.requested_check_out is None:
-            raise ValueError(
-                "At least one of requested_check_in or requested_check_out is required"
-            )
+            raise ValueError("At least one of requested_check_in or requested_check_out is required")
         return self
 
 
 class CorrectionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-
     id: int
     attendance_day_id: int
     requested_check_in: Optional[datetime] = None
@@ -96,9 +87,41 @@ class CorrectionResponse(BaseModel):
     updated_at: datetime
 
 
+class AttendancePolicyCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=150)
+    correction_window_days: int = Field(..., ge=0)
+    max_corrections_per_month: Optional[int] = Field(None, ge=0)
+    reasons_mandatory: bool = True
+    approval_sla_hours: Optional[int] = None
+    allow_multiple_punches: bool = True
+    require_checkout_before_new_checkin: bool = False
+    auto_create_attendance_day: bool = True
+    default_grace_late_minutes: Optional[int] = None
+    max_clock_drift_seconds: Optional[int] = None
+    effective_from: date
+
+
+class AttendancePolicyResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    name: str
+    correction_window_days: int
+    max_corrections_per_month: Optional[int] = None
+    reasons_mandatory: bool
+    approval_sla_hours: Optional[int] = None
+    allow_multiple_punches: bool
+    require_checkout_before_new_checkin: bool
+    auto_create_attendance_day: bool
+    default_grace_late_minutes: Optional[int] = None
+    max_clock_drift_seconds: Optional[int] = None
+    effective_from: date
+    effective_to: Optional[date] = None
+    created_at: datetime
+    changed_by: Optional[int] = None
+
+
 class MonthlySummaryResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-
     id: int
     employment_id: int
     year: int
@@ -132,7 +155,6 @@ class BreakEndRequest(BaseModel):
 
 class BreakResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
-
     id: int
     attendance_day_id: int
     break_start: datetime

@@ -1,4 +1,5 @@
-from app.modules.attendance.models.attendance_models import (
+"""Shim — re-export workforce attendance models."""
+from app.modules.workforce.attendance.models import (
     AttendanceBreak,
     AttendanceCorrection,
     AttendanceDay,
@@ -8,10 +9,10 @@ from app.modules.attendance.models.attendance_models import (
 )
 
 __all__ = [
-    "AttendanceDay",
-    "AttendancePunch",
-    "AttendanceCorrection",
-    "MonthlyAttendanceSummary",
-    "AttendancePolicy",
     "AttendanceBreak",
+    "AttendanceCorrection",
+    "AttendanceDay",
+    "AttendancePolicy",
+    "AttendancePunch",
+    "MonthlyAttendanceSummary",
 ]

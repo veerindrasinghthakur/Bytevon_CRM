@@ -1,5 +1,4 @@
 """Application lifespan (startup / shutdown)."""
-
 from __future__ import annotations
 
 import logging
@@ -15,7 +14,6 @@ from app.modules.approvals.services.public_service import (
 
 logger = logging.getLogger(__name__)
 
-# Lightweight schema patches so ORM mapped columns do not 500 before a full migration.
 _LEAD_COLUMN_PATCHES = (
     "ALTER TABLE leads ADD COLUMN IF NOT EXISTS contact_title VARCHAR(150) NULL",
     "ALTER TABLE leads ADD COLUMN IF NOT EXISTS priority VARCHAR(20) NULL",
@@ -24,19 +22,16 @@ _LEAD_COLUMN_PATCHES = (
 
 
 async def _ensure_lead_ui_columns() -> None:
-    """Idempotent DDL so GET /sales/leads does not explode after model adds."""
     try:
         async with engine.begin() as conn:
             for stmt in _LEAD_COLUMN_PATCHES:
                 await conn.execute(text(stmt))
         logger.info("Lead UI columns ensured (contact_title, priority, chat_link)")
     except Exception:
-        # Non-fatal: SQLite/MySQL dialect differences or missing table in fresh env
         logger.exception("Could not ensure lead UI columns — run scripts/alter_leads_ui_fields.sql")
 
 
 async def _leave_approval_decision_handler(event: dict) -> None:
-    """Bridge Approvals post-commit event → Leave local status + ledger."""
     from app.modules.leave.services.public_service import LeavePublicService
 
     async with AsyncSessionLocal() as session:
@@ -45,11 +40,10 @@ async def _leave_approval_decision_handler(event: dict) -> None:
 
 
 async def _attendance_approval_decision_handler(event: dict) -> None:
-    """Bridge Approvals post-commit event → Attendance correction + day rebuild."""
-    from app.modules.attendance.services.public_service import AttendancePublicService
+    from app.modules.workforce.attendance.service import AttendanceService
 
     async with AsyncSessionLocal() as session:
-        service = AttendancePublicService(session)
+        service = AttendanceService(session)
         await service.handle_approval_decision(event)
 
 
