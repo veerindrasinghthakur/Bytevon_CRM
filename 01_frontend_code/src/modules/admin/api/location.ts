@@ -1,5 +1,5 @@
 /**
- * Location API — admin organization domain.
+ * Location API — admin domain (/admin/locations).
  */
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
@@ -54,7 +54,7 @@ export async function getLocations(params?: { includeArchived?: boolean }) {
     return { items, total: items.length }
   }
   const { data } = await apiClient.get<LocationRow[] | { items: LocationRow[]; total: number }>(
-    '/organization/locations',
+    '/admin/locations',
     { params: params?.includeArchived ? { include_archived: true } : undefined },
   )
   return asList(data)
@@ -66,7 +66,7 @@ export async function getLocation(id: number): Promise<LocationRow | null> {
     const row = getDb().locations.find((l) => l.id === id)
     return row ? { ...row } : null
   }
-  const { data } = await apiClient.get<LocationRow>(`/organization/locations/${id}`)
+  const { data } = await apiClient.get<LocationRow>(`/admin/locations/${id}`)
   return data
 }
 
@@ -103,7 +103,7 @@ export async function createLocation(input: LocationCreateInput | Record<string,
   if (!Array.isArray(body.allowed_ip_cidrs)) body.allowed_ip_cidrs = []
   if (body.attendance_radius_meters == null) body.attendance_radius_meters = 200
   if (body.fiscal_year_start_month == null) body.fiscal_year_start_month = 1
-  const { data } = await apiClient.post<LocationRow>('/organization/locations', body)
+  const { data } = await apiClient.post<LocationRow>('/admin/locations', body)
   return data
 }
 
@@ -120,13 +120,13 @@ export async function updateLocation(id: number, patch: Partial<LocationRow> | R
     const v = body[key]
     if (v === 0 || v === '') body[key] = null
   }
-  const { data } = await apiClient.patch<LocationRow>(`/organization/locations/${id}`, body)
+  const { data } = await apiClient.patch<LocationRow>(`/admin/locations/${id}`, body)
   return data
 }
 
 export async function archiveLocation(id: number): Promise<void> {
   if (!env.useMockApi) {
-    await apiClient.post(`/organization/locations/${id}/archive`)
+    await apiClient.post(`/admin/locations/${id}/archive`)
     return
   }
   await delay(300)
