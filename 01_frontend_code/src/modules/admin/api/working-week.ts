@@ -1,5 +1,5 @@
 /**
- * Working week API — admin organization domain.
+ * Working week API — admin domain (/admin/working-weeks).
  */
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
@@ -14,7 +14,7 @@ export async function getWorkingWeeks() {
     return { items, total: items.length }
   }
   const { data } = await apiClient.get<WorkingWeekRow[] | { items: WorkingWeekRow[]; total: number }>(
-    '/organization/working-weeks',
+    '/admin/working-weeks',
   )
   return asList(data)
 }
@@ -44,7 +44,7 @@ export async function createWorkingWeek(input: {
     list.push(row)
     return { ...row }
   }
-  const { data } = await apiClient.post<WorkingWeekRow>('/organization/working-weeks', {
+  const { data } = await apiClient.post<WorkingWeekRow>('/admin/working-weeks', {
     name: input.name.trim(),
     working_days_of_week: input.working_days_of_week,
     effective_from: input.effective_from,
@@ -60,7 +60,7 @@ export async function archiveWorkingWeek(id: number, effectiveTo?: string): Prom
     row.effective_to = effectiveTo ?? new Date().toISOString().slice(0, 10)
     return
   }
-  await apiClient.post(`/organization/working-weeks/${id}/archive`, null, {
+  await apiClient.post(`/admin/working-weeks/${id}/archive`, null, {
     params: effectiveTo ? { effective_to: effectiveTo } : undefined,
   })
 }
