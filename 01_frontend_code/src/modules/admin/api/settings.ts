@@ -18,7 +18,7 @@ import type {
 import { delay } from '@/shared/mock/db'
 import { listLeavePolicies } from './leave'
 
-const ORG_SETTINGS_API = '/organization/settings'
+const ORG_SETTINGS_API = '/admin/settings'
 const ATTENDANCE_POLICY_CURRENT = '/attendance/policies/current'
 const ATTENDANCE_POLICIES = '/attendance/policies'
 
@@ -239,7 +239,6 @@ export async function getAttendanceSettings(): Promise<AttendanceSettings> {
     const { data } = await apiClient.get<AttendancePolicyApi>(ATTENDANCE_POLICY_CURRENT)
     return mapPolicyToAttendanceSettings(data)
   } catch (err) {
-    // No policy yet is a valid empty state — only soft-fail 404
     if (axios.isAxiosError(err) && err.response?.status === 404) {
       return { ...DEFAULT_ATTENDANCE }
     }
