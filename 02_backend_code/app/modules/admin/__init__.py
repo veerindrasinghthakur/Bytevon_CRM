@@ -1,4 +1,4 @@
-"""Admin module — domain-split organization admin."""
-from app.modules.admin.routes import router, organization_router
+"""Admin module — domain-split organization admin under /admin."""
+from app.modules.admin.routes import router
 
-__all__ = ["router", "organization_router"]
+__all__ = ["router"]
