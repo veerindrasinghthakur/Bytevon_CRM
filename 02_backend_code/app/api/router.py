@@ -2,10 +2,9 @@
 Root API router.
 
 Attendance:
-  /workforce/attendance/*           — HR/ops
-  /my-work/attendance/*             — self-service
-  /organization/*                   — legacy org masters (locations, shifts, depts, users, settings)
-  /admin/*                          — same masters under admin prefix
+  /workforce/attendance/*  — HR/ops
+  /my-work/attendance/*    — self-service
+  /admin/*                 — org masters (locations, shifts, depts, users, settings)
 """
 from __future__ import annotations
 
@@ -18,7 +17,6 @@ from app.modules.workforce.routes import router as workforce_router
 from app.modules.leave.routes import router as leave_router
 from app.modules.notifications.routes import router as notifications_router
 from app.modules.admin.routes import router as admin_router
-from app.modules.admin.routes import organization_router
 from app.modules.rbac.routes import router as rbac_router
 from app.modules.audit.routes import router as audit_router
 from app.modules.project.routes import router as project_router
@@ -31,8 +29,6 @@ api_router = APIRouter(prefix=settings.API_V1_PREFIX)
 
 api_router.include_router(auth_router)
 api_router.include_router(admin_router)
-# Frontend still calls /organization/* for locations, shifts, departments, users, settings
-api_router.include_router(organization_router)
 api_router.include_router(workforce_router)
 api_router.include_router(rbac_router)
 api_router.include_router(approvals_router)
