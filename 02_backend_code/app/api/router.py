@@ -4,7 +4,8 @@ Root API router.
 Attendance:
   /workforce/attendance/*           — HR/ops
   /my-work/attendance/*             — self-service
-  /organization/attendance-policies — policy (admin settings)
+  /organization/*                   — legacy org masters (locations, shifts, depts, users, settings)
+  /admin/*                          — same masters under admin prefix
 """
 from __future__ import annotations
 
@@ -30,7 +31,8 @@ api_router = APIRouter(prefix=settings.API_V1_PREFIX)
 
 api_router.include_router(auth_router)
 api_router.include_router(admin_router)
-# api_router.include_router(organization_router)  # legacy /organization/* paths
+# Frontend still calls /organization/* for locations, shifts, departments, users, settings
+api_router.include_router(organization_router)
 api_router.include_router(workforce_router)
 api_router.include_router(rbac_router)
 api_router.include_router(approvals_router)
