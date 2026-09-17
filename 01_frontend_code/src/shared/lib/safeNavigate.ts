@@ -33,19 +33,7 @@ export function looseParams(params?: Record<string, string>): never {
   return (params ?? {}) as never
 }
 
-/**
- * Spread onto <Link /> so strict MakeRequiredPathParams / search never errors
- * do not block compile. Prefer this over hand-written casts on each Link.
- *
- * Returns `never` (not `any`) so the spread is accepted by Link without
- * widening the rest of the call site to any.
- */
-export function looseLinkProps(opts: {
-  to: string
-  params?: Record<string, string>
-  search?: Record<string, unknown>
-  className?: string
-  [key: string]: unknown
-}): never {
-  return { params: {}, search: {}, ...opts } as never
+/** Spread on <Link> when router types search/params strictly. */
+export function looseLinkProps<T extends { to: string; className?: string; search?: Record<string, unknown>; params?: Record<string, string> }>(props: T): Omit<T, 'search' | 'params'> & { search: never; params: never } {
+  return { ...props, search: undefined as never, params: undefined as never }
 }

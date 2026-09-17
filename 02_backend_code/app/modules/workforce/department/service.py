@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
-from app.modules.organization.models import Department
+from app.modules.admin.department.models import Department
 from app.modules.workforce.department.repository import DepartmentRepository
 from app.modules.workforce.department.schemas import (
     DepartmentCreate,

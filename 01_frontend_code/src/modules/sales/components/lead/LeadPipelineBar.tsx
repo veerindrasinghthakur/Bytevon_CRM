@@ -5,6 +5,7 @@ import { cn } from '@/shared/lib/cn'
 import { changeLeadStage } from '../../api/sales'
 import { stageStyles, PipelineStageValues, type PipelineStage } from '../../schemas/enums'
 import type { UseMutationResult } from '@tanstack/react-query'
+import type { Lead } from '../../types'
 
 const FORWARD_STAGES = PipelineStageValues.filter((s) => s !== 'Lost') as PipelineStage[]
 
@@ -15,10 +16,10 @@ function nextPipelineStage(current: string): PipelineStage | null {
 }
 
 type UpdateLeadMut = UseMutationResult<
-  unknown,
-  unknown,
-  { id: string; patch: { stage: PipelineStage; status: 'Active' } },
-  unknown
+  Lead,
+  Error,
+  { id: string; patch: Partial<Lead> },
+  { previousLead?: Lead }
 >
 
 type Props = {

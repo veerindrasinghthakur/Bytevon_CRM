@@ -1,1 +1,0 @@
-"""ByteVon temporary mock backend."""

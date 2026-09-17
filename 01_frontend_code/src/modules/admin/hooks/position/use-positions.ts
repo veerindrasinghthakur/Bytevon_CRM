@@ -24,7 +24,7 @@ export function usePositions(includeArchived = true) {
 export function usePositionDetail(id: number | undefined) {
   return withErrorMessage(
     useQuery({
-      queryKey: queryKeys.organization.positions(true).concat(String(id ?? 0)),
+      queryKey: [...queryKeys.organization.positions(true), 'detail', String(id ?? 0)],
       queryFn: () => getPosition(id!),
       enabled: id != null && Number.isFinite(id),
     }),

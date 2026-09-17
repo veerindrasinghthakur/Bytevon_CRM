@@ -1,1 +1,3 @@
 .env
+__pycache__
+02_backend_code/app/api/__pycache__/router.cpython-312.pyc

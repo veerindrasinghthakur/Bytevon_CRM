@@ -96,6 +96,7 @@ export function Header({ title, className, style }: HeaderProps) {
             'aria-current': isProfileActive ? 'page' : undefined,
             'data-active': isProfileActive ? 'true' : 'false',
           })}
+          aria-current={isProfileActive ? 'page' : undefined}
         >
           <div
             className={cn(

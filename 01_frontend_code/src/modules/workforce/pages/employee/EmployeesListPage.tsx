@@ -16,7 +16,7 @@ import { employmentStateDot } from '../../schemas/enums'
 import { EmployeeQuickContent } from '../../components/employee/EmployeeQuickContent'
 import { EmployeeStatsCards } from '../../components/employee/EmployeeStatsCards'
 import { EmployeeFilters } from '../../components/employee/EmployeeFilters'
-import { EmployeeTable } from '../../components/employee/EmployeeTable'
+import { EmployeeTable, type EmployeeListRow } from '../../components/employee/EmployeeTable'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -69,7 +69,7 @@ export function EmployeesListPage() {
 
   const goNew = () => safeNavigate(navigate, { to: workforceRoutes.employeeNew })
 
-  const openEmployeeOverview = (emp: (typeof pageItems)[number]) => {
+  const openEmployeeOverview = (emp: EmployeeListRow) => {
     openPanel({
       title: emp.fullName,
       subtitle: [emp.employee_code, emp.email].filter(Boolean).join(' · '),

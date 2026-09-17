@@ -18,14 +18,14 @@ router = APIRouter(
     tags=["Admin"],
 )
 
-router.include_router(department_router)
+# router.include_router(department_router)
 router.include_router(location_router)
 router.include_router(shift_router)
 router.include_router(working_week_router)
 router.include_router(holiday_calendar_router)
 router.include_router(settings_router)
 router.include_router(user_router)
-router.include_router(position_router)
+# router.include_router(position_router)
 router.include_router(audit_router)
 
 organization_router = APIRouter(

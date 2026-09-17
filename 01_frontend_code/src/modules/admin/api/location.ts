@@ -75,17 +75,22 @@ export async function createLocation(input: LocationCreateInput | Record<string,
     await delay(400)
     const list = getDb().locations as LocationRow[]
     const fields = toCreateFields(input)
+    const now = new Date().toISOString()
     const row: LocationRow = {
       ...fields,
       id: nextId(list),
       is_archived: false,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      created_at: now,
+      updated_at: now,
       changed_by: 1,
       payroll_region: fields.payroll_region ?? '',
       attendance_radius_meters: fields.attendance_radius_meters ?? 200,
       allowed_ip_cidrs: fields.allowed_ip_cidrs ?? [],
       fiscal_year_start_month: fields.fiscal_year_start_month ?? 4,
+      working_week_id: fields.working_week_id ?? 0,
+      holiday_calendar_id: fields.holiday_calendar_id ?? 0,
+      archived_at: null,
+      archived_by: null,
     }
     list.push(row)
     return { ...row }

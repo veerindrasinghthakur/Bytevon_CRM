@@ -18,8 +18,8 @@ from app.core.db.enums import (
 )
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
-from app.modules.approvals.schemas.schemas import ApprovalRequestCreate
-from app.modules.approvals.services.public_service import ApprovalPublicService
+from app.modules.approvals.request.schemas import ApprovalRequestCreate
+from app.modules.approvals.request.service import RequestService as ApprovalPublicService
 from app.modules.leave.models import LeaveLedger, LeaveRequest
 from app.modules.leave.request.repository import RequestRepository
 from app.modules.leave.request.schemas import LeaveRequestCreate, LeaveRequestResponse

@@ -17,7 +17,7 @@ from app.core.database import get_db_session
 from app.core.security.jwt_manager import JWTManager
 from app.core.security.token_payload import TokenPayload
 from app.modules.auth.models import Login, Session
-from app.modules.auth.repositories.repository import AuthenticationRepository
+from app.modules.auth.repository import AuthenticationRepository
 
 _bearer = HTTPBearer(auto_error=False)
 _jwt = JWTManager()

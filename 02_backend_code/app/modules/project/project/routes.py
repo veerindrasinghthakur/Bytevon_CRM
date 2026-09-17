@@ -21,7 +21,6 @@ router = APIRouter(tags=["Projects"])
 ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
 
 
-@router.post("", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
 @router.post("/", response_model=ProjectResponse, status_code=status.HTTP_201_CREATED)
 async def create_project(
     body: ProjectCreate, service: ProjectServiceDep, actor: ActorHeader = None
@@ -29,7 +28,6 @@ async def create_project(
     return await service.create_project(body, actor_employment_id=actor)
 
 
-@router.get("", response_model=list[ProjectResponse])
 @router.get("/", response_model=list[ProjectResponse])
 async def list_projects(
     service: ProjectServiceDep,
@@ -42,36 +40,7 @@ async def list_projects(
     )
 
 
-@router.post(
-    "/projects",
-    response_model=ProjectResponse,
-    status_code=status.HTTP_201_CREATED,
-    include_in_schema=False,
-)
-async def create_project_nested(
-    body: ProjectCreate, service: ProjectServiceDep, actor: ActorHeader = None
-) -> ProjectResponse:
-    return await service.create_project(body, actor_employment_id=actor)
-
-
-@router.get(
-    "/projects",
-    response_model=list[ProjectResponse],
-    include_in_schema=False,
-)
-async def list_projects_nested(
-    service: ProjectServiceDep,
-    client_id: Optional[int] = Query(None),
-    limit: int = Query(100, ge=1, le=500),
-    offset: int = Query(0, ge=0),
-) -> list[ProjectResponse]:
-    return await service.list_projects(
-        client_id=client_id, limit=limit, offset=offset
-    )
-
-
 @router.get("/{project_id}/teams", response_model=list[TeamResponse])
-@router.get("/projects/{project_id}/teams", response_model=list[TeamResponse])
 async def list_teams_for_project(
     project_id: int,
     project_service: ProjectServiceDep,
@@ -89,7 +58,6 @@ async def list_teams_for_project(
 
 
 @router.get("/{project_id}", response_model=ProjectDetailResponse)
-@router.get("/projects/{project_id}", response_model=ProjectDetailResponse)
 async def get_project(
     project_id: int, service: ProjectServiceDep
 ) -> ProjectDetailResponse:
@@ -97,7 +65,6 @@ async def get_project(
 
 
 @router.patch("/{project_id}", response_model=ProjectDetailResponse)
-@router.patch("/projects/{project_id}", response_model=ProjectDetailResponse)
 async def update_project(
     project_id: int,
     body: ProjectUpdate,

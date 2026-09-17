@@ -52,7 +52,7 @@ class Settings(BaseSettings):
 
     # CORS - allow frontend dev server origins
     # Added localhost ports 5173 and 5174 for Vite dev server.
-    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173,http://localhost:5174"
+    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173,http://localhost:5174,http://127.0.0.1:18000/"
 
     # Logging
     LOG_LEVEL: str = "INFO"

@@ -1,5 +1,0 @@
-__pycache__/
-.venv/
-*.pyc
-data/store.json
-data/store.tmp

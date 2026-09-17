@@ -12,7 +12,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.repositories.base_repository import BaseRepository
-from app.modules.organization.models import Department
+from app.modules.admin.department.models import Department
 from app.modules.workforce.department.schemas import DepartmentEmployee, DepartmentEmployeeOption
 from app.modules.workforce.models import Employment, EmploymentAssignment
 

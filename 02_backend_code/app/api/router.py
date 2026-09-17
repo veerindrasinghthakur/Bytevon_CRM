@@ -30,15 +30,15 @@ api_router = APIRouter(prefix=settings.API_V1_PREFIX)
 
 api_router.include_router(auth_router)
 api_router.include_router(admin_router)
-api_router.include_router(organization_router)  # legacy /organization/* paths
+# api_router.include_router(organization_router)  # legacy /organization/* paths
 api_router.include_router(workforce_router)
 api_router.include_router(rbac_router)
 api_router.include_router(approvals_router)
 api_router.include_router(leave_router)
 api_router.include_router(notifications_router)
 api_router.include_router(sales_router)
-api_router.include_router(project_router)
 api_router.include_router(audit_router)
 api_router.include_router(payroll_router)
 api_router.include_router(my_work_router)
 api_router.include_router(my_work_profile_router)
+api_router.include_router(project_router)

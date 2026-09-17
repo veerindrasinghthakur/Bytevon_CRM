@@ -110,7 +110,7 @@ export function NotificationCenterPage() {
       <CenterFilterBar
         tabs={c.tabs}
         tab={c.tab}
-        setTab={c.setTab}
+        setTab={(id: string) => c.setTab(id as 'all' | 'unread' | 'high' | 'mentions' | 'archived')}
         query={c.query}
         setQuery={c.setQuery}
         typeFilter={c.typeFilter}
