@@ -1,5 +1,5 @@
 /**
- * Holiday calendar + holidays API — admin organization domain.
+ * Holiday calendar + holidays API — admin domain (/admin/holiday-calendars).
  */
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
@@ -15,7 +15,7 @@ export async function getHolidayCalendars() {
   }
   const { data } = await apiClient.get<
     HolidayCalendarRow[] | { items: HolidayCalendarRow[]; total: number }
-  >('/organization/holiday-calendars')
+  >('/admin/holiday-calendars')
   return asList(data)
 }
 
@@ -25,7 +25,7 @@ export async function getHolidayCalendar(id: number): Promise<HolidayCalendarRow
     const row = getDb().holiday_calendars.find((c) => c.id === id)
     return row ? { ...row } : null
   }
-  const { data } = await apiClient.get<HolidayCalendarRow>(`/organization/holiday-calendars/${id}`)
+  const { data } = await apiClient.get<HolidayCalendarRow>(`/admin/holiday-calendars/${id}`)
   return data
 }
 
@@ -45,7 +45,7 @@ export async function createHolidayCalendar(input: { name: string }): Promise<Ho
     list.push(row)
     return { ...row }
   }
-  const { data } = await apiClient.post<HolidayCalendarRow>('/organization/holiday-calendars', input)
+  const { data } = await apiClient.post<HolidayCalendarRow>('/admin/holiday-calendars', input)
   return data
 }
 
@@ -61,7 +61,7 @@ export async function updateHolidayCalendar(
     return { ...row }
   }
   const { data } = await apiClient.patch<HolidayCalendarRow>(
-    `/organization/holiday-calendars/${id}`,
+    `/admin/holiday-calendars/${id}`,
     patch,
   )
   return data
@@ -69,7 +69,7 @@ export async function updateHolidayCalendar(
 
 export async function archiveHolidayCalendar(id: number): Promise<void> {
   if (!env.useMockApi) {
-    await apiClient.post(`/organization/holiday-calendars/${id}/archive`)
+    await apiClient.post(`/admin/holiday-calendars/${id}/archive`)
     return
   }
   return updateHolidayCalendar(id, { is_archived: true }).then(() => undefined)
@@ -84,7 +84,7 @@ export async function getHolidays(calendarId?: number) {
   }
   if (calendarId != null) {
     const { data } = await apiClient.get<HolidayRow[] | { items: HolidayRow[]; total: number }>(
-      `/organization/holiday-calendars/${calendarId}/holidays`,
+      `/admin/holiday-calendars/${calendarId}/holidays`,
     )
     return asList(data)
   }
@@ -114,7 +114,7 @@ export async function createHoliday(input: {
     list.push(row)
     return { ...row }
   }
-  const { data } = await apiClient.post<HolidayRow>('/organization/holidays', input)
+  const { data } = await apiClient.post<HolidayRow>('/admin/holidays', input)
   return data
 }
 
@@ -135,7 +135,7 @@ export async function updateHoliday(
     Object.assign(row, patch)
     return { ...row }
   }
-  const { data } = await apiClient.patch<HolidayRow>(`/organization/holidays/${id}`, patch)
+  const { data } = await apiClient.patch<HolidayRow>(`/admin/holidays/${id}`, patch)
   return data
 }
 
@@ -148,5 +148,5 @@ export async function deleteHoliday(id: number): Promise<void> {
     list.splice(idx, 1)
     return
   }
-  await apiClient.delete(`/organization/holidays/${id}`)
+  await apiClient.delete(`/admin/holidays/${id}`)
 }
