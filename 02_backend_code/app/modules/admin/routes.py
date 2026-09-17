@@ -1,4 +1,4 @@
-"""Admin module main router."""
+"""Admin module main router — all org masters under /admin only."""
 from __future__ import annotations
 
 from fastapi import APIRouter
@@ -18,26 +18,12 @@ router = APIRouter(
     tags=["Admin"],
 )
 
-# router.include_router(department_router)
+router.include_router(department_router)
 router.include_router(location_router)
 router.include_router(shift_router)
 router.include_router(working_week_router)
 router.include_router(holiday_calendar_router)
 router.include_router(settings_router)
 router.include_router(user_router)
-# router.include_router(position_router)
+router.include_router(position_router)
 router.include_router(audit_router)
-
-organization_router = APIRouter(
-    prefix="/organization",
-    tags=["Organization (legacy)"],
-)
-
-organization_router.include_router(department_router)
-organization_router.include_router(location_router)
-organization_router.include_router(shift_router)
-organization_router.include_router(working_week_router)
-organization_router.include_router(holiday_calendar_router)
-organization_router.include_router(settings_router)
-organization_router.include_router(user_router)
-organization_router.include_router(position_router)
