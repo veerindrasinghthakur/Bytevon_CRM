@@ -1,5 +1,5 @@
 /**
- * Department (schema) API — admin organization domain.
+ * Department API — admin domain (/admin/departments).
  */
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
@@ -13,7 +13,7 @@ export async function getSchemaDepartments() {
     return { items, total: items.length }
   }
   const { data } = await apiClient.get<unknown[] | { items: unknown[]; total: number }>(
-    '/organization/departments',
+    '/admin/departments',
   )
   return asList(data)
 }
