@@ -1,5 +1,5 @@
 /**
- * Shift API — admin organization domain.
+ * Shift API — admin domain (/admin/shifts).
  */
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
@@ -15,7 +15,7 @@ export async function getShifts(params?: { includeArchived?: boolean }) {
     return { items, total: items.length }
   }
   const { data } = await apiClient.get<ShiftRow[] | { items: ShiftRow[]; total: number }>(
-    '/organization/shifts',
+    '/admin/shifts',
     { params: params?.includeArchived ? { include_archived: true } : undefined },
   )
   return asList(data)
@@ -27,7 +27,7 @@ export async function getShift(id: number): Promise<ShiftRow | null> {
     const row = getDb().shifts.find((s) => s.id === id)
     return row ? { ...row } : null
   }
-  const { data } = await apiClient.get<ShiftRow>(`/organization/shifts/${id}`)
+  const { data } = await apiClient.get<ShiftRow>(`/admin/shifts/${id}`)
   return data
 }
 
@@ -48,7 +48,7 @@ export async function createShift(
     list.push(row)
     return { ...row }
   }
-  const { data } = await apiClient.post<ShiftRow>('/organization/shifts', input)
+  const { data } = await apiClient.post<ShiftRow>('/admin/shifts', input)
   return data
 }
 
@@ -60,7 +60,7 @@ export async function updateShift(id: number, patch: Partial<ShiftRow>): Promise
     Object.assign(row, patch, { updated_at: new Date().toISOString() })
     return { ...row }
   }
-  const { data } = await apiClient.patch<ShiftRow>(`/organization/shifts/${id}`, patch)
+  const { data } = await apiClient.patch<ShiftRow>(`/admin/shifts/${id}`, patch)
   return data
 }
 
@@ -72,5 +72,5 @@ export async function archiveShift(id: number): Promise<void> {
     row.is_archived = true
     return
   }
-  await apiClient.post(`/organization/shifts/${id}/archive`)
+  await apiClient.post(`/admin/shifts/${id}/archive`)
 }
