@@ -1,6 +1,7 @@
 /**
- * Organization API barrel — re-exports domain APIs + org settings.
+ * Admin org masters barrel — re-exports domain APIs + settings.
  * Prefer importing from domain files (location, shift, …) in new code.
+ * All real API paths are under /admin/*.
  */
 export { asList } from './_org-helpers'
 export {
@@ -56,7 +57,7 @@ export async function getOrganizationSettings(): Promise<OrganizationSettings> {
     if (!row) throw new Error('Organization settings not configured')
     return { ...row }
   }
-  const { data } = await apiClient.get<OrganizationSettings>('/organization/settings')
+  const { data } = await apiClient.get<OrganizationSettings>('/admin/settings')
   return data
 }
 
@@ -78,6 +79,6 @@ export async function updateOrganizationSettings(
     Object.assign(row, patch, { updated_at: new Date().toISOString() })
     return { ...row }
   }
-  const { data } = await apiClient.patch<OrganizationSettings>('/organization/settings', patch)
+  const { data } = await apiClient.patch<OrganizationSettings>('/admin/settings', patch)
   return data
 }
