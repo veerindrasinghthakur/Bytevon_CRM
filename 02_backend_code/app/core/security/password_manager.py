@@ -1,21 +1,31 @@
 """
-Password hashing and verification (bcrypt via passlib).
+Password hashing and verification.
+
+Uses the bcrypt library directly. passlib 1.7.4 assumes bcrypt.__about__,
+which was removed in bcrypt 4.1+ and can break verify/hash under some installs.
 """
 
 from __future__ import annotations
 
-from passlib.context import CryptContext
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+import bcrypt
 
 
 class PasswordManager:
-    """Stateless password utilities."""
+    """Stateless password utilities (bcrypt)."""
 
     @staticmethod
     def hash(password: str) -> str:
-        return pwd_context.hash(password)
+        # bcrypt has a 72-byte input limit
+        raw = password.encode("utf-8")[:72]
+        return bcrypt.hashpw(raw, bcrypt.gensalt()).decode("utf-8")
 
     @staticmethod
     def verify(plain_password: str, hashed_password: str) -> bool:
-        return pwd_context.verify(plain_password, hashed_password)
+        if not hashed_password:
+            return False
+        try:
+            raw = plain_password.encode("utf-8")[:72]
+            hashed = hashed_password.encode("utf-8")
+            return bcrypt.checkpw(raw, hashed)
+        except (ValueError, TypeError):
+            return False
