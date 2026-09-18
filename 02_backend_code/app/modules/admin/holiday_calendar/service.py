@@ -42,9 +42,9 @@ class HolidayCalendarService(BasePublicService):
         if existing:
             raise ConflictError(f"Holiday calendar '{data.name}' already exists")
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        # Model: Identity + Archive + Timestamp + ChangedBy — no created_by column
         row = HolidayCalendar(
             name=data.name.strip(),
-            created_by=actor,
             changed_by=actor,
         )
         await self._repo.add(row)
@@ -60,7 +60,6 @@ class HolidayCalendarService(BasePublicService):
         return HolidayCalendarResponse.model_validate(row)
 
     async def list(self, *, include_archived: bool = False) -> list[HolidayCalendarResponse]:
-        # Prefer list_calendars (canonical); fall back to list() if present
         if hasattr(self._repo, "list_calendars"):
             rows = await self._repo.list_calendars(include_archived=include_archived)
         else:
