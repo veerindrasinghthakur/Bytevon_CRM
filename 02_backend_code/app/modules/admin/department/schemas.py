@@ -21,7 +21,7 @@ class DepartmentResponse(BaseModel):
     name: str
     department_head_employment_id: Optional[int] = None
     is_archived: bool = False
-    created_at: datetime
+    created_at: Optional[datetime] = None
     created_by: Optional[int] = None
 
 class DepartmentEmployee(BaseModel):
