@@ -1,7 +1,10 @@
-"""Location schemas."""
+"""Location schemas — aligned with Location ORM."""
 from __future__ import annotations
+
 from datetime import datetime
-from typing import Optional
+from decimal import Decimal
+from typing import List, Optional
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -10,33 +13,39 @@ class MessageResponse(BaseModel):
 
 
 class LocationCreate(BaseModel):
-    name: str = Field(..., min_length=1, max_length=200)
-    code: str = Field(..., min_length=1, max_length=50)
-    address_line1: Optional[str] = None
-    address_line2: Optional[str] = None
-    city: Optional[str] = None
-    state: Optional[str] = None
-    country: Optional[str] = None
-    postal_code: Optional[str] = None
-    timezone: Optional[str] = "UTC"
+    name: str = Field(..., min_length=1, max_length=150)
+    timezone: str = "Asia/Kolkata"
     working_week_id: Optional[int] = None
     holiday_calendar_id: Optional[int] = None
-    is_head_office: bool = False
+    latitude: Decimal = Field(default=Decimal("0"))
+    longitude: Decimal = Field(default=Decimal("0"))
+    attendance_radius_meters: int = 200
+    allowed_ip_cidrs: List[str] = Field(default_factory=list)
+    country: str = "India"
+    state: str = ""
+    city: str = ""
+    address: str = ""
+    payroll_region: Optional[str] = None
+    currency: str = "INR"
+    fiscal_year_start_month: int = 4
 
 
 class LocationUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=200)
-    code: Optional[str] = Field(None, min_length=1, max_length=50)
-    address_line1: Optional[str] = None
-    address_line2: Optional[str] = None
-    city: Optional[str] = None
-    state: Optional[str] = None
-    country: Optional[str] = None
-    postal_code: Optional[str] = None
+    name: Optional[str] = Field(None, min_length=1, max_length=150)
     timezone: Optional[str] = None
     working_week_id: Optional[int] = None
     holiday_calendar_id: Optional[int] = None
-    is_head_office: Optional[bool] = None
+    latitude: Optional[Decimal] = None
+    longitude: Optional[Decimal] = None
+    attendance_radius_meters: Optional[int] = None
+    allowed_ip_cidrs: Optional[List[str]] = None
+    country: Optional[str] = None
+    state: Optional[str] = None
+    city: Optional[str] = None
+    address: Optional[str] = None
+    payroll_region: Optional[str] = None
+    currency: Optional[str] = None
+    fiscal_year_start_month: Optional[int] = None
 
 
 class LocationResponse(BaseModel):
@@ -44,17 +53,20 @@ class LocationResponse(BaseModel):
 
     id: int
     name: str
-    code: str
-    address_line1: Optional[str] = None
-    address_line2: Optional[str] = None
-    city: Optional[str] = None
-    state: Optional[str] = None
-    country: Optional[str] = None
-    postal_code: Optional[str] = None
-    timezone: Optional[str] = None
+    timezone: str
     working_week_id: Optional[int] = None
     holiday_calendar_id: Optional[int] = None
-    is_head_office: bool = False
+    latitude: Optional[Decimal] = None
+    longitude: Optional[Decimal] = None
+    attendance_radius_meters: Optional[int] = None
+    allowed_ip_cidrs: List[str] = Field(default_factory=list)
+    country: Optional[str] = None
+    state: Optional[str] = None
+    city: Optional[str] = None
+    address: Optional[str] = None
+    payroll_region: Optional[str] = None
+    currency: Optional[str] = None
+    fiscal_year_start_month: Optional[int] = None
     is_archived: bool = False
     archived_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
