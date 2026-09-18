@@ -34,6 +34,69 @@ function leads(): Lead[] {
   return leadsStore
 }
 
+/** Map FastAPI LeadResponse (snake or mixed) → UI Lead. */
+function mapApiLead(row: Record<string, unknown>): Lead {
+  const id = String(row.id ?? '')
+  const contactName = String(
+    row.contactName ?? row.contact_name ?? row.title ?? row.lead_title ?? '—',
+  )
+  const stageRaw = String(row.stage ?? row.status ?? 'New')
+  const stageMap: Record<string, Lead['stage']> = {
+    NEW: 'New',
+    CHAT_OPEN: 'Contacted',
+    CONTACTED: 'Contacted',
+    MEETING: 'Qualified',
+    QUALIFIED: 'Qualified',
+    PROPOSAL_SENT: 'Proposal',
+    PROPOSAL: 'Proposal',
+    PAYMENT_DISCUSSION: 'Negotiation',
+    NEGOTIATION: 'Negotiation',
+    WON: 'Won',
+    LOST: 'Lost',
+    FOLLOW_UP: 'Contacted',
+    CLOSED: 'Lost',
+  }
+  const stage =
+    (stageMap[stageRaw.toUpperCase().replace(/\s+/g, '_')] as Lead['stage'] | undefined) ??
+    (['New', 'Contacted', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Lost'].includes(stageRaw)
+      ? (stageRaw as Lead['stage'])
+      : 'New')
+  const statusRaw = String(row.recordStatus ?? row.record_status ?? row.status ?? 'Active')
+  const status: Lead['status'] =
+    statusRaw.toUpperCase() === 'INACTIVE' || statusRaw === 'Inactive' || stage === 'Won' || stage === 'Lost'
+      ? 'Inactive'
+      : 'Active'
+  const priorityRaw = String(row.priority ?? 'Medium')
+  const priority = (['Critical', 'High', 'Medium', 'Low'].includes(priorityRaw)
+    ? priorityRaw
+    : 'Medium') as Lead['priority']
+  const budget = Number(row.budget ?? row.quotation ?? 0) || 0
+  const assigned =
+    row.assignedTo ??
+    row.assigned_to ??
+    (row.assigned_employment_id != null ? `Employee #${row.assigned_employment_id}` : undefined)
+  return {
+    id: id.startsWith('LD-') ? id : `LD-${id}`,
+    title: String(row.title ?? row.lead_title ?? contactName),
+    company: String(row.company ?? row.client_name ?? ''),
+    contactName,
+    contactTitle: String(row.contactTitle ?? row.contact_title ?? '') || undefined,
+    industry: (row.industry as string | undefined) ?? undefined,
+    email: (row.email as string | undefined) ?? undefined,
+    phone: (row.phone as string | undefined) ?? undefined,
+    source: String(row.source ?? row.platform_name ?? 'Manual'),
+    priority,
+    status,
+    stage,
+    budget,
+    createdAt: String(row.createdAt ?? row.created_at ?? '').slice(0, 10) || undefined,
+    date: String(row.date ?? row.expected_close_date ?? row.created_at ?? '').slice(0, 10) || undefined,
+    assignedTo: assigned != null ? String(assigned) : undefined,
+    notes: (row.notes as string | undefined) ?? (row.description as string | undefined),
+    chatLink: (row.chatLink as string | undefined) ?? (row.chat_link as string | undefined),
+  }
+}
+
 export async function listPlatforms(includeArchived = false): Promise<PlatformOption[]> {
   if (env.useMockApi) {
     await delay()
@@ -109,14 +172,16 @@ export async function listLeads(params?: {
   pageSize?: number
 }): Promise<{ items: Lead[]; total: number; metrics: SalesMetric[] }> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<{ items: Lead[]; total: number; metrics: SalesMetric[] }>(
-      '/sales/leads',
-      { params },
-    )
-    if (Array.isArray(data)) {
-      return { items: data as unknown as Lead[], total: data.length, metrics: [] }
-    }
-    return data
+    const { data } = await apiClient.get<
+      | Lead[]
+      | Array<Record<string, unknown>>
+      | { items: Array<Record<string, unknown>>; total: number; metrics?: SalesMetric[] }
+    >('/sales/leads', { params })
+    const raw = Array.isArray(data) ? data : (data.items ?? [])
+    const items = raw.map((r) => mapApiLead(r as Record<string, unknown>))
+    const total = Array.isArray(data) ? items.length : Number(data.total ?? items.length)
+    const metrics = Array.isArray(data) ? [] : (data.metrics ?? [])
+    return { items, total, metrics }
   }
   await delay()
   let items = [...leads()]
@@ -124,10 +189,10 @@ export async function listLeads(params?: {
     const q = params.search.toLowerCase()
     items = items.filter(
       (l) =>
-        l.contactName.toLowerCase().includes(q) ||
-        l.title.toLowerCase().includes(q) ||
-        l.id.toLowerCase().includes(q) ||
-        l.company.toLowerCase().includes(q),
+        (l.contactName ?? '').toLowerCase().includes(q) ||
+        (l.title ?? '').toLowerCase().includes(q) ||
+        (l.id ?? '').toLowerCase().includes(q) ||
+        (l.company ?? '').toLowerCase().includes(q),
     )
   }
   if (params?.status && params.status !== 'All') items = items.filter((l) => l.status === params.status)
@@ -145,9 +210,10 @@ export async function listLeads(params?: {
 export async function getLeadById(id: string): Promise<Lead | null> {
   if (!env.useMockApi) {
     try {
-      const { data } = await apiClient.get<Lead & { detail?: string }>(`/sales/leads/${id}`)
+      const numeric = id.replace(/^LD-/i, '')
+      const { data } = await apiClient.get<Record<string, unknown>>(`/sales/leads/${numeric}`)
       if ((data as { detail?: string }).detail) return null
-      return data
+      return mapApiLead(data)
     } catch {
       return null
     }
@@ -221,8 +287,8 @@ function toBackendLeadCreate(input: CreateLeadInput): Record<string, unknown> {
 
 export async function createLead(input: CreateLeadInput): Promise<Lead> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<Lead>('/sales/leads', toBackendLeadCreate(input))
-    return data
+    const { data } = await apiClient.post<Record<string, unknown>>('/sales/leads', toBackendLeadCreate(input))
+    return mapApiLead(data)
   }
   await delay(400)
   const list = leads()
@@ -282,8 +348,9 @@ export async function updateLead(
     if (patch.stage != null || patch.status != null) {
       body.status = mapStageToLeadStatus(patch.stage, patch.status)
     }
-    const { data } = await apiClient.patch<Lead>(`/sales/leads/${id}`, body)
-    return data
+    const numeric = id.replace(/^LD-/i, '')
+    const { data } = await apiClient.patch<Record<string, unknown>>(`/sales/leads/${numeric}`, body)
+    return mapApiLead(data)
   }
   await delay(350)
   const list = leads()
@@ -293,14 +360,11 @@ export async function updateLead(
   return list[idx]
 }
 
-/**
- * Advance pipeline stage. WON uses POST /sales/leads/{id}/status (client create flow);
- * other stages use PATCH via updateLead.
- */
 export async function changeLeadStage(id: string, stage: PipelineStage): Promise<Lead | null> {
   if (stage === 'Won') {
     if (!env.useMockApi) {
-      await apiClient.post(`/sales/leads/${id}/status`, { status: 'WON' })
+      const numeric = id.replace(/^LD-/i, '')
+      await apiClient.post(`/sales/leads/${numeric}/status`, { status: 'WON' })
       return getLeadById(id)
     }
     await delay(350)
