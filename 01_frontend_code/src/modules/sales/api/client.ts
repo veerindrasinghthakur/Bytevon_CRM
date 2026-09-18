@@ -21,6 +21,52 @@ function clients(): Client[] {
   return clientsStore
 }
 
+function mapApiClient(row: Record<string, unknown>): Client {
+  const id = String(row.id ?? '')
+  const name = String(row.name ?? row.client_name ?? row.company_name ?? '—')
+  const initials =
+    String(row.logoInitials ?? row.logo_initials ?? '').trim() ||
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((p) => p[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase() ||
+    '—'
+  const statusRaw = String(row.status ?? 'Active')
+  const status: Client['status'] =
+    statusRaw.toUpperCase() === 'INACTIVE' || statusRaw === 'Inactive' ? 'Inactive' : 'Active'
+  const typeRaw = String(row.type ?? row.client_type ?? 'SMB')
+  const type = (['Enterprise', 'SMB', 'Partner', 'Individual'].includes(typeRaw)
+    ? typeRaw
+    : 'SMB') as Client['type']
+  return {
+    id: id.startsWith('c') || id.startsWith('C') ? id : `c${id}`,
+    name,
+    legalName: (row.legalName as string | undefined) ?? (row.legal_name as string | undefined),
+    type,
+    status,
+    industry: String(row.industry ?? '—'),
+    website: (row.website as string | undefined) ?? undefined,
+    country: String(row.country ?? '—'),
+    address: (row.address as string | undefined) ?? undefined,
+    taxId: (row.taxId as string | undefined) ?? (row.tax_id as string | undefined),
+    founded: (row.founded as string | undefined) ?? undefined,
+    chatLink: (row.chatLink as string | undefined) ?? (row.chat_link as string | undefined),
+    primaryContact:
+      (row.primaryContact as string | undefined) ??
+      (row.primary_contact as string | undefined) ??
+      undefined,
+    email: (row.email as string | undefined) ?? undefined,
+    phone: (row.phone as string | undefined) ?? undefined,
+    projects: Number(row.projects ?? 0),
+    leads: Number(row.leads ?? 0),
+    logoInitials: initials,
+    clientSince: String(row.clientSince ?? row.client_since ?? row.created_at ?? '').slice(0, 10) || undefined,
+  }
+}
+
 export async function getClientFilterOptions(): Promise<ClientFilterOptions> {
   if (env.useMockApi) {
     await delay()
@@ -50,14 +96,16 @@ export async function listClients(params?: {
   pageSize?: number
 }): Promise<{ items: Client[]; total: number; metrics: SalesMetric[] }> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<{ items: Client[]; total: number; metrics: SalesMetric[] }>(
-      '/sales/clients',
-      { params },
-    )
-    if (Array.isArray(data)) {
-      return { items: data as unknown as Client[], total: data.length, metrics: [] }
-    }
-    return data
+    const { data } = await apiClient.get<
+      | Client[]
+      | Array<Record<string, unknown>>
+      | { items: Array<Record<string, unknown>>; total: number; metrics?: SalesMetric[] }
+    >('/sales/clients', { params })
+    const raw = Array.isArray(data) ? data : (data.items ?? [])
+    const items = raw.map((r) => mapApiClient(r as Record<string, unknown>))
+    const total = Array.isArray(data) ? items.length : Number(data.total ?? items.length)
+    const metrics = Array.isArray(data) ? [] : (data.metrics ?? [])
+    return { items, total, metrics }
   }
   await delay()
   let items = [...clients()]
@@ -65,10 +113,10 @@ export async function listClients(params?: {
     const q = params.search.toLowerCase()
     items = items.filter(
       (c) =>
-        c.name.toLowerCase().includes(q) ||
-        c.industry.toLowerCase().includes(q) ||
+        (c.name ?? '').toLowerCase().includes(q) ||
+        (c.industry ?? '').toLowerCase().includes(q) ||
         (c.primaryContact?.toLowerCase().includes(q) ?? false) ||
-        c.id.toLowerCase().includes(q),
+        (c.id ?? '').toLowerCase().includes(q),
     )
   }
   if (params?.status && params.status !== 'All') items = items.filter((c) => c.status === params.status)
@@ -83,9 +131,10 @@ export async function listClients(params?: {
 export async function getClientById(id: string): Promise<Client | null> {
   if (!env.useMockApi) {
     try {
-      const { data } = await apiClient.get<Client & { detail?: string }>(`/sales/clients/${id}`)
+      const numeric = id.replace(/^c/i, '')
+      const { data } = await apiClient.get<Record<string, unknown>>(`/sales/clients/${numeric}`)
       if ((data as { detail?: string }).detail) return null
-      return data
+      return mapApiClient(data)
     } catch {
       return null
     }
@@ -96,8 +145,8 @@ export async function getClientById(id: string): Promise<Client | null> {
 
 export async function createClient(input: CreateClientInput): Promise<Client> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<Client>('/sales/clients', input)
-    return data
+    const { data } = await apiClient.post<Record<string, unknown>>('/sales/clients', input)
+    return mapApiClient(data)
   }
   await delay(400)
   const list = clients()
@@ -119,7 +168,7 @@ export async function createClient(input: CreateClientInput): Promise<Client> {
     phone: input.phone,
     projects: 0,
     leads: 0,
-    logoInitials: input.name.slice(0, 2).toUpperCase(),
+    logoInitials: (input.name ?? '—').slice(0, 2).toUpperCase(),
     clientSince: new Date().toISOString().slice(0, 10),
   }
   list.unshift(row)
@@ -128,8 +177,9 @@ export async function createClient(input: CreateClientInput): Promise<Client> {
 
 export async function updateClient(id: string, patch: Partial<Client>): Promise<Client> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.patch<Client>(`/sales/clients/${id}`, patch)
-    return data
+    const numeric = id.replace(/^c/i, '')
+    const { data } = await apiClient.patch<Record<string, unknown>>(`/sales/clients/${numeric}`, patch)
+    return mapApiClient(data)
   }
   await delay(350)
   const list = clients()
