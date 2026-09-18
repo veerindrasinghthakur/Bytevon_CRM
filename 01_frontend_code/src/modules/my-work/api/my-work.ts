@@ -83,6 +83,58 @@ function mockCountWorkingDays(
   return days
 }
 
+const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
+
+/** Backend returns WeekHoursResponse { days: [{ date, status, minutes }] }; UI needs WeekHourBar[]. */
+function mapWeekHoursPayload(data: unknown): WeekHourBar[] {
+  if (Array.isArray(data)) {
+    // Already UI-shaped or list of day objects
+    return data.map((raw) => mapOneWeekDay(raw as Record<string, unknown>))
+  }
+  if (data && typeof data === 'object' && Array.isArray((data as { days?: unknown }).days)) {
+    return ((data as { days: unknown[] }).days).map((raw) =>
+      mapOneWeekDay(raw as Record<string, unknown>),
+    )
+  }
+  return []
+}
+
+function mapOneWeekDay(raw: Record<string, unknown>): WeekHourBar {
+  // Already WeekHourBar-like
+  if (typeof raw.day === 'string' && typeof raw.hours === 'number') {
+    return {
+      day: String(raw.day),
+      hours: Number(raw.hours),
+      pct: Number(raw.pct ?? Math.min(100, (Number(raw.hours) / 8) * 100)),
+      isToday: Boolean(raw.isToday),
+      isWeekend: Boolean(raw.isWeekend),
+      breakMarkers: Array.isArray(raw.breakMarkers) ? (raw.breakMarkers as WeekHourBar['breakMarkers']) : undefined,
+    }
+  }
+  const dateStr = String(raw.date ?? '')
+  const mins = Number(raw.minutes ?? 0)
+  const hours = mins / 60
+  let dow = 0
+  let isWeekend = false
+  let isToday = false
+  if (dateStr) {
+    const dt = new Date(dateStr + 'T12:00:00')
+    if (!Number.isNaN(dt.getTime())) {
+      dow = dt.getDay()
+      isWeekend = dow === 0 || dow === 6
+      const todayIso = new Date().toISOString().slice(0, 10)
+      isToday = dateStr === todayIso
+    }
+  }
+  return {
+    day: DAY_NAMES[dow] ?? '—',
+    hours,
+    pct: Math.min(100, (hours / 8) * 100),
+    isToday,
+    isWeekend,
+  }
+}
+
 export async function getMyWorkOverview(): Promise<MyWorkOverview> {
   if (env.useMockApi) {
     await delay()
@@ -149,10 +201,6 @@ export async function listLeaveTypeOptions(): Promise<LeaveTypeOption[]> {
   return data
 }
 
-/**
- * Bootstrap Apply Leave page: holidays + types + balances in one call.
- * Real path maps to Leave GET /leave/apply-context/{employmentId}.
- */
 export async function getApplyLeaveContext(): Promise<ApplyLeaveContext> {
   if (env.useMockApi) {
     await delay()
@@ -166,10 +214,6 @@ export async function getApplyLeaveContext(): Promise<ApplyLeaveContext> {
   return data
 }
 
-/**
- * Working-day cost + projected balance — calculated on the server (or mock).
- * Real path maps to Leave POST /leave/calculate.
- */
 export async function calculateLeaveDays(
   input: LeaveCalculateInput,
 ): Promise<LeaveCalculateResult> {
@@ -207,8 +251,53 @@ export async function listMyAttendance(
   const pageSize = params.pageSize ?? DEFAULT_LIST_PAGE_SIZE
 
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<AttendanceListResponse>('/my-work/attendance', { params })
-    return data
+    try {
+      const { data } = await apiClient.get<
+        AttendanceListResponse | unknown[] | { items?: unknown[]; total?: number }
+      >('/my-work/attendance', { params })
+      if (Array.isArray(data)) {
+        return { items: data as AttendanceRecord[], total: data.length, page, pageSize }
+      }
+      const items = ((data as { items?: AttendanceRecord[] }).items ?? []) as AttendanceRecord[]
+      return {
+        items,
+        total: Number((data as { total?: number }).total ?? items.length),
+        page,
+        pageSize,
+      }
+    } catch {
+      // Fallback: map /my-work/attendance/days when list endpoint missing
+      try {
+        const { data: days } = await apiClient.get<Array<Record<string, unknown>>>(
+          '/my-work/attendance/days',
+        )
+        const items: AttendanceRecord[] = (Array.isArray(days) ? days : []).map((d) => {
+          const statusRaw = String(d.status ?? 'Present')
+          const status =
+            statusRaw === 'ABSENT'
+              ? 'Absent'
+              : statusRaw === 'HALF_DAY'
+                ? 'Half Day'
+                : statusRaw === 'ON_LEAVE'
+                  ? 'On Leave'
+                  : statusRaw === 'HOLIDAY'
+                    ? 'Holiday'
+                    : 'Present'
+          const hours = d.working_hours != null ? String(d.working_hours) : undefined
+          return {
+            id: String(d.id ?? d.attendance_date ?? ''),
+            date: String(d.attendance_date ?? d.date ?? ''),
+            status: status as AttendanceRecord['status'],
+            totalHours: hours,
+            note: (d.note as string | undefined) ?? undefined,
+          }
+        })
+        const sliced = paginateItems(items, page, pageSize)
+        return { ...sliced, page, pageSize }
+      } catch {
+        return { items: [], total: 0, page, pageSize }
+      }
+    }
   }
 
   await delay()
@@ -229,13 +318,17 @@ export async function listMyAttendance(
   return { ...sliced, page, pageSize }
 }
 
-/** Current user context for the attendance page (today label + shift). */
 export async function getMyWorkTodayInfo(): Promise<{ todayLabel: string; shift: string }> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<{ todayLabel: string; shift: string }>(
-      '/my-work/attendance/today-info',
-    )
-    return data
+    const { data } = await apiClient.get<{
+      todayLabel?: string
+      shift?: string
+      today_label?: string
+    }>('/my-work/attendance/today-info')
+    return {
+      todayLabel: data.todayLabel ?? data.today_label ?? 'Today',
+      shift: data.shift ?? '—',
+    }
   }
   await delay()
   return { todayLabel: currentUser.todayLabel, shift: currentUser.shift }
@@ -244,14 +337,13 @@ export async function getMyWorkTodayInfo(): Promise<{ todayLabel: string; shift:
 /** Weekly hour bars for the attendance chart. */
 export async function getMyWeekHours(): Promise<WeekHourBar[]> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<WeekHourBar[]>('/my-work/attendance/week-hours')
-    return data
+    const { data } = await apiClient.get<unknown>('/my-work/attendance/week-hours')
+    return mapWeekHoursPayload(data)
   }
   await delay()
   return weekHours.map((w) => ({ ...w }))
 }
 
-/** Attendance rows eligible for correction requests (half day / absent / noted). */
 export async function listCorrectionCandidates(): Promise<AttendanceRecord[]> {
   if (env.useMockApi) {
     await delay()
@@ -307,7 +399,6 @@ export async function listMyApprovals(
   return { ...sliced, page, pageSize }
 }
 
-/** Requests the current employee submitted (org-wide approval tracker rows). */
 export async function listMySubmittedRequests(
   params: MyWorkListParams = {},
 ): Promise<{ items: ApprovalRow[]; total: number }> {
@@ -417,7 +508,6 @@ export async function listApproverDirectory(): Promise<ApproverOption[]> {
   return data
 }
 
-// Fetch holidays from the mock backend (or API in the future)
 export const fetchHolidays = async (): Promise<Record<string, string>> => {
   if (env.useMockApi) {
     await delay()
