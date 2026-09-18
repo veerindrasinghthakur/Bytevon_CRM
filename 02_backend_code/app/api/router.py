@@ -5,6 +5,7 @@ Attendance:
   /workforce/attendance/*  — HR/ops
   /my-work/attendance/*    — self-service
   /admin/*                 — org masters (locations, shifts, depts, users, settings)
+  /dashboard/*             — executive / employee views (stubs OK)
 """
 from __future__ import annotations
 
@@ -24,6 +25,7 @@ from app.modules.payroll.routes import router as payroll_router
 from app.modules.sales.routes import router as sales_router
 from app.modules.my_work.routes import router as my_work_router
 from app.modules.my_work.routes import profile_router as my_work_profile_router
+from app.modules.dashboard.routes import router as dashboard_router
 
 api_router = APIRouter(prefix=settings.API_V1_PREFIX)
 
@@ -40,3 +42,4 @@ api_router.include_router(payroll_router)
 api_router.include_router(my_work_router)
 api_router.include_router(my_work_profile_router)
 api_router.include_router(project_router)
+api_router.include_router(dashboard_router)
