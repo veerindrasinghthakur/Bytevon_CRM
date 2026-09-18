@@ -1,6 +1,6 @@
 /**
  * Department API — schema_departments in mock DB.
- * env.useMockApi → local mock; false → /organization/departments
+ * env.useMockApi → local mock; false → /admin/departments
  */
 
 import { env } from '@/config/env'
@@ -12,6 +12,8 @@ import { WorkMode } from '@/shared/schema'
 import type { DepartmentListItem, DepartmentEmployee } from '../types'
 
 export type { DepartmentListItem, DepartmentEmployee }
+
+const DEPTS = '/admin/departments'
 
 function staffCountFor(departmentId: number): number {
   const db = getDb()
@@ -99,7 +101,7 @@ export async function listDepartments(
           total?: number
           metrics?: ReturnType<typeof buildDeptMetrics>
         }
-    >('/organization/departments', {
+    >(DEPTS, {
       params: {
         include_archived: params.includeArchived ?? false,
       },
@@ -149,7 +151,7 @@ export async function listDepartments(
 
 export async function getDepartment(id: number) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<Record<string, unknown>>(`/organization/departments/${id}`)
+    const { data } = await apiClient.get<Record<string, unknown>>(`${DEPTS}/${id}`)
     return mapApiDepartment(data ?? {})
   }
   await delay()
@@ -166,15 +168,19 @@ export async function listDepartmentEmployees(
   const pageSize = params.pageSize ?? 200
 
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<
-      DepartmentEmployee[] | { items?: Array<Record<string, unknown>>; total?: number }
-    >(`/organization/departments/${departmentId}/employees`, {
-      params: { page, pageSize, search: params.search || undefined },
-    })
-    if (Array.isArray(data)) {
-      return data.map((e) => mapApiDepartmentEmployee(e as unknown as Record<string, unknown>))
+    try {
+      const { data } = await apiClient.get<
+        DepartmentEmployee[] | { items?: Array<Record<string, unknown>>; total?: number }
+      >(`${DEPTS}/${departmentId}/employees`, {
+        params: { page, pageSize, search: params.search || undefined },
+      })
+      if (Array.isArray(data)) {
+        return data.map((e) => mapApiDepartmentEmployee(e as unknown as Record<string, unknown>))
+      }
+      return (data.items ?? []).map(mapApiDepartmentEmployee)
+    } catch {
+      return []
     }
-    return (data.items ?? []).map(mapApiDepartmentEmployee)
   }
 
   await delay()
@@ -223,10 +229,14 @@ export async function listDepartmentEmployees(
 
 export async function listEmployeesNotInDepartment(departmentId: number) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<{ value: string; label: string; meta?: string }[]>(
-      `/organization/departments/${departmentId}/employees-available`,
-    )
-    return data
+    try {
+      const { data } = await apiClient.get<{ value: string; label: string; meta?: string }[]>(
+        `${DEPTS}/${departmentId}/employees-available`,
+      )
+      return data
+    } catch {
+      return []
+    }
   }
   await delay(150)
   const db = getDb()
@@ -256,7 +266,7 @@ export async function listEmployeesNotInDepartment(departmentId: number) {
 
 export async function assignEmployeeToDepartment(employmentId: number, departmentId: number) {
   if (!env.useMockApi) {
-    await apiClient.post(`/organization/departments/${departmentId}/assign`, { employmentId })
+    await apiClient.post(`${DEPTS}/${departmentId}/assign`, { employmentId })
     return { ok: true as const }
   }
   await delay(350)
@@ -291,7 +301,7 @@ export async function assignEmployeeToDepartment(employmentId: number, departmen
 
 export async function removeEmployeeFromDepartment(employmentId: number, departmentId: number) {
   if (!env.useMockApi) {
-    await apiClient.post(`/organization/departments/${departmentId}/remove`, { employmentId })
+    await apiClient.post(`${DEPTS}/${departmentId}/remove`, { employmentId })
     return { ok: true as const }
   }
   await delay(300)
@@ -322,13 +332,13 @@ export async function createDepartment(input: {
   isArchived?: boolean
 }) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<Record<string, unknown>>('/organization/departments', {
+    const { data } = await apiClient.post<Record<string, unknown>>(DEPTS, {
       name: input.name,
       department_head_employment_id: input.headEmploymentId ?? null,
     })
     const created = mapApiDepartment(data)
     if (input.isArchived && !created.isArchived) {
-      await apiClient.post(`/organization/departments/${created.id}/archive`)
+      await apiClient.post(`${DEPTS}/${created.id}/archive`)
       return { ...created, isArchived: true, status: 'Inactive' as const }
     }
     return created
@@ -359,10 +369,7 @@ export async function updateDepartment(
     if (patch.headEmploymentId !== undefined) {
       body.department_head_employment_id = patch.headEmploymentId
     }
-    const { data } = await apiClient.patch<Record<string, unknown>>(
-      `/organization/departments/${id}`,
-      body,
-    )
+    const { data } = await apiClient.patch<Record<string, unknown>>(`${DEPTS}/${id}`, body)
     return mapApiDepartment(data)
   }
   await delay(300)
@@ -410,7 +417,7 @@ export async function listEmploymentOptionsForPicker() {
 export async function listEmployeesOnShift(shiftId: number) {
   if (!env.useMockApi) {
     try {
-      const { data } = await apiClient.get(`/organization/shifts/${shiftId}/employees`)
+      const { data } = await apiClient.get(`/admin/shifts/${shiftId}/employees`)
       if (Array.isArray(data)) {
         return data as {
           employmentId: number
@@ -459,7 +466,7 @@ export async function listEmployeesOnShift(shiftId: number) {
 
 export async function archiveDepartment(id: number): Promise<void> {
   if (!env.useMockApi) {
-    await apiClient.post(`/organization/departments/${id}/archive`)
+    await apiClient.post(`${DEPTS}/${id}/archive`)
     return
   }
   await delay()
