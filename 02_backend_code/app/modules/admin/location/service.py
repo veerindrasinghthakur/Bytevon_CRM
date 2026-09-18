@@ -3,12 +3,13 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime, timezone
+from decimal import Decimal
 from typing import Any, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
+from app.core.exceptions.exception import DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
 from app.modules.admin.location.models import Location
 from app.modules.admin.location.repository import LocationRepository
@@ -37,24 +38,28 @@ class LocationService(BasePublicService):
         await self._session.refresh(obj)
         return obj
 
-    async def create(self, data: LocationCreate, *, actor_employment_id: Optional[int] = None) -> LocationResponse:
-        existing = await self._repo.get_by_code(data.code)
-        if existing:
-            raise ConflictError(f"Location code '{data.code}' already exists")
+    async def create(
+        self, data: LocationCreate, *, actor_employment_id: Optional[int] = None
+    ) -> LocationResponse:
+        actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         loc = Location(
             name=data.name.strip(),
-            code=data.code.strip().upper(),
-            address_line1=data.address_line1,
-            address_line2=getattr(data, "address_line2", None),
-            city=data.city,
-            state=getattr(data, "state", None),
-            country=data.country,
-            postal_code=getattr(data, "postal_code", None),
-            timezone=getattr(data, "timezone", None) or "UTC",
-            working_week_id=_optional_id(getattr(data, "working_week_id", None)),
-            holiday_calendar_id=_optional_id(getattr(data, "holiday_calendar_id", None)),
-            is_head_office=bool(getattr(data, "is_head_office", False)),
-            created_by=actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID,
+            timezone=data.timezone or "Asia/Kolkata",
+            working_week_id=_optional_id(data.working_week_id),
+            holiday_calendar_id=_optional_id(data.holiday_calendar_id),
+            latitude=data.latitude if data.latitude is not None else Decimal("0"),
+            longitude=data.longitude if data.longitude is not None else Decimal("0"),
+            attendance_radius_meters=data.attendance_radius_meters or 200,
+            allowed_ip_cidrs=list(data.allowed_ip_cidrs or []),
+            country=data.country or "India",
+            state=data.state or "",
+            city=data.city or "",
+            address=data.address or "",
+            payroll_region=data.payroll_region,
+            currency=data.currency or "INR",
+            fiscal_year_start_month=data.fiscal_year_start_month or 4,
+            created_by=actor,
+            changed_by=actor,
         )
         await self._repo.add(loc)
         await self._commit()
@@ -73,7 +78,11 @@ class LocationService(BasePublicService):
         return [LocationResponse.model_validate(r) for r in rows]
 
     async def update(
-        self, location_id: int, data: LocationUpdate, *, actor_employment_id: Optional[int] = None
+        self,
+        location_id: int,
+        data: LocationUpdate,
+        *,
+        actor_employment_id: Optional[int] = None,
     ) -> LocationResponse:
         loc = await self._repo.get_by_id(location_id, include_archived=True)
         if loc is None:
@@ -81,29 +90,39 @@ class LocationService(BasePublicService):
         if loc.is_archived:
             raise DomainError("Cannot update archived location")
         payload = data.model_dump(exclude_unset=True)
-        if "code" in payload and payload["code"] is not None:
-            code = payload["code"].strip().upper()
-            existing = await self._repo.get_by_code(code)
-            if existing and existing.id != location_id:
-                raise ConflictError(f"Location code '{code}' already exists")
-            loc.code = code
         for field in (
-            "name", "address_line1", "address_line2", "city", "state", "country",
-            "postal_code", "timezone", "is_head_office",
+            "name",
+            "timezone",
+            "country",
+            "state",
+            "city",
+            "address",
+            "payroll_region",
+            "currency",
+            "latitude",
+            "longitude",
+            "attendance_radius_meters",
+            "allowed_ip_cidrs",
+            "fiscal_year_start_month",
         ):
             if field in payload and payload[field] is not None:
-                setattr(loc, field, payload[field].strip() if isinstance(payload[field], str) else payload[field])
+                val = payload[field]
+                if isinstance(val, str):
+                    val = val.strip()
+                setattr(loc, field, val)
         if "working_week_id" in payload:
             loc.working_week_id = _optional_id(payload["working_week_id"])
         if "holiday_calendar_id" in payload:
             loc.holiday_calendar_id = _optional_id(payload["holiday_calendar_id"])
-        loc.updated_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        loc.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
         await self._audit("location.updated", location_id, actor_employment_id)
         await self._refresh(loc)
         return LocationResponse.model_validate(loc)
 
-    async def archive(self, location_id: int, *, actor_employment_id: Optional[int] = None) -> MessageResponse:
+    async def archive(
+        self, location_id: int, *, actor_employment_id: Optional[int] = None
+    ) -> MessageResponse:
         loc = await self._repo.get_by_id(location_id, include_archived=True)
         if loc is None:
             raise NotFoundError("Location not found")
@@ -111,7 +130,7 @@ class LocationService(BasePublicService):
             return MessageResponse(message="Location already archived")
         loc.is_archived = True
         loc.archived_at = datetime.now(timezone.utc)
-        loc.updated_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        loc.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
         await self._audit("location.archived", location_id, actor_employment_id)
         return MessageResponse(message="Location archived")
