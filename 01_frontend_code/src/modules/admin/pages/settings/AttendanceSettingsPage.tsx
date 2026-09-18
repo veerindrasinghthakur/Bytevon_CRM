@@ -46,13 +46,30 @@ export function AttendanceSettingsPage() {
 
   const form = useForm<AttendanceSettingsInput>({
     resolver: zodResolver(attendanceSettingsSchema),
-    defaultValues: getFormValues(),
+    defaultValues: {
+      shiftStart: '09:00',
+      shiftEnd: '18:00',
+      graceMinutes: 15,
+      earlyOutMinutes: 30,
+      otMinMinutes: 60,
+      allowRemoteCheckIn: true,
+      correctionWindowDays: 7,
+      maxCorrectionsPerMonth: null,
+      reasonsMandatory: true,
+      approvalSlaHours: null,
+      allowMultiplePunches: true,
+      requireCheckoutBeforeNewCheckin: false,
+      autoCreateAttendanceDay: true,
+      maxClockDriftSeconds: null,
+    },
   })
 
+  // Reset only when data sources change — never depend on `form` or unstable getFormValues
   useEffect(() => {
     if (isEditing) return
     form.reset(getFormValues())
-  }, [isEditing, selectedShiftId, shifts, policy, form, getFormValues])
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: form identity is unstable
+  }, [isEditing, selectedShiftId, shifts, policy])
 
   const save = useMutation({
     mutationFn: async () => {
@@ -289,7 +306,7 @@ export function AttendanceSettingsPage() {
             <ToggleField
               label="Allow remote check-in"
               editing={isEditing}
-              checked={formValues.allowRemoteCheckIn}
+              checked={!!formValues.allowRemoteCheckIn}
               onToggle={() =>
                 form.setValue('allowRemoteCheckIn', !form.getValues().allowRemoteCheckIn, {
                   shouldValidate: true,
@@ -361,7 +378,7 @@ export function AttendanceSettingsPage() {
             <ToggleField
               label="Reasons mandatory on correction"
               editing={isEditing}
-              checked={formValues.reasonsMandatory}
+              checked={!!formValues.reasonsMandatory}
               onToggle={() =>
                 form.setValue('reasonsMandatory', !form.getValues().reasonsMandatory, {
                   shouldValidate: true,
@@ -371,7 +388,7 @@ export function AttendanceSettingsPage() {
             <ToggleField
               label="Allow multiple punches"
               editing={isEditing}
-              checked={formValues.allowMultiplePunches}
+              checked={!!formValues.allowMultiplePunches}
               onToggle={() =>
                 form.setValue('allowMultiplePunches', !form.getValues().allowMultiplePunches, {
                   shouldValidate: true,
@@ -381,7 +398,7 @@ export function AttendanceSettingsPage() {
             <ToggleField
               label="Require checkout before new check-in"
               editing={isEditing}
-              checked={formValues.requireCheckoutBeforeNewCheckin}
+              checked={!!formValues.requireCheckoutBeforeNewCheckin}
               onToggle={() =>
                 form.setValue(
                   'requireCheckoutBeforeNewCheckin',
@@ -393,7 +410,7 @@ export function AttendanceSettingsPage() {
             <ToggleField
               label="Auto-create attendance day"
               editing={isEditing}
-              checked={formValues.autoCreateAttendanceDay}
+              checked={!!formValues.autoCreateAttendanceDay}
               onToggle={() =>
                 form.setValue(
                   'autoCreateAttendanceDay',
@@ -484,17 +501,10 @@ function ToggleField({
           className="disabled:cursor-default cursor-pointer"
           aria-label={label}
         >
-          <input
-            type="checkbox"
-            role="switch"
-            checked={checked}
-            disabled={!editing}
-            className="w-10 h-6 appearance-none rounded-full bg-outline-variant checked:bg-secondary relative after:absolute after:top-1 after:left-1 after:w-4 after:h-4 after:bg-white after:rounded-full after:transition-all checked:after:left-5"
-            readOnly
-          />
+          <input type="checkbox" role="switch" checked={checked} readOnly className="pointer-events-none" />
         </button>
       </div>
-      {hint && <p className="text-[11px] text-on-surface-variant px-1">{hint}</p>}
+      {hint && <p className="text-[11px] text-on-surface-variant">{hint}</p>}
     </div>
   )
 }
