@@ -60,7 +60,11 @@ class HolidayCalendarService(BasePublicService):
         return HolidayCalendarResponse.model_validate(row)
 
     async def list(self, *, include_archived: bool = False) -> list[HolidayCalendarResponse]:
-        rows = await self._repo.list(include_archived=include_archived)
+        # Prefer list_calendars (canonical); fall back to list() if present
+        if hasattr(self._repo, "list_calendars"):
+            rows = await self._repo.list_calendars(include_archived=include_archived)
+        else:
+            rows = await self._repo.list(include_archived=include_archived)
         return [HolidayCalendarResponse.model_validate(r) for r in rows]
 
     async def update(
