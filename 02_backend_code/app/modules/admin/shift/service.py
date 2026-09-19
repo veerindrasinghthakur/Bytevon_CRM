@@ -34,6 +34,7 @@ class ShiftService(BasePublicService):
     async def create(
         self, data: ShiftCreate, *, actor_employment_id: Optional[int] = None
     ) -> ShiftResponse:
+        actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         row = Shift(
             name=data.name.strip(),
             start_time=data.start_time,
@@ -43,8 +44,7 @@ class ShiftService(BasePublicService):
             flexible_end=bool(getattr(data, "flexible_end", False)),
             break_duration_minutes=getattr(data, "break_duration_minutes", None)
             or getattr(data, "break_minutes", None),
-            created_by=actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID,
-            changed_by=actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID,
+            changed_by=actor,
         )
         await self._repo.add(row)
         await self._commit()
@@ -75,7 +75,6 @@ class ShiftService(BasePublicService):
         if row.is_archived:
             raise DomainError("Cannot update archived shift")
         payload = data.model_dump(exclude_unset=True)
-        # Map alternate field names from older clients
         if "break_minutes" in payload and "break_duration_minutes" not in payload:
             payload["break_duration_minutes"] = payload.pop("break_minutes")
         for field in (
