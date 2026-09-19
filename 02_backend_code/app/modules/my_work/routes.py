@@ -2,11 +2,11 @@
 My-work main routers.
 
   attendance → /my-work/attendance/* + /my-work/approvers
-  leave    → /my-work/leave/*
-  tasks    → /my-work/tasks
-  requests → /my-work/requests
-  approvals → /my-work/approvals
-  profile  → /profile/*  (exported as profile_router for api/router)
+  leave      → /my-work/leave/*
+  tasks      → /my-work/tasks
+  requests   → /my-work/requests
+  approvals  → /my-work/approvals
+  profile    → /profile/*  (exported as profile_router for api/router only)
 """
 from __future__ import annotations
 
@@ -25,6 +25,6 @@ router.include_router(tasks_router)
 router.include_router(requests_router)
 router.include_router(approvals_router)
 router.include_router(attendance_router)
-router.include_router(profile_router)
+# profile_router is mounted once from app.api.router — do not include here
 
 __all__ = ["router", "profile_router"]
