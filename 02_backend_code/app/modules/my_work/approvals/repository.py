@@ -1,7 +1,7 @@
 """My Work Approvals repository — stub."""
 from __future__ import annotations
 
-from typing import List, Optional, Sequence
+from collections.abc import Sequence
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -14,19 +14,19 @@ class MyWorkApprovalsRepository(BaseRepository):
 
     async def list_my_approvals(
         self,
-        employment_id: Optional[int],
+        employment_id: int | None,
         *,
-        status: Optional[str] = None,
-        search: Optional[str] = None,
+        status: str | None = None,
+        search: str | None = None,
         limit: int = 20,
     ) -> Sequence[dict]:
         return []
 
     async def count_my_approvals(
         self,
-        employment_id: Optional[int],
+        employment_id: int | None,
         *,
-        status: Optional[str] = None,
-        search: Optional[str] = None,
+        status: str | None = None,
+        search: str | None = None,
     ) -> int:
         return 0

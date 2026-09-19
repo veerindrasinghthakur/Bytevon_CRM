@@ -1,7 +1,7 @@
 """CaseStudyService — V1 list stub."""
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,7 +17,7 @@ class CaseStudyService(BasePublicService):
     async def list(
         self,
         *,
-        search: Optional[str] = None,
+        search: str | None = None,
         page: int = 1,
         page_size: int = 20,
     ) -> dict[str, Any]:

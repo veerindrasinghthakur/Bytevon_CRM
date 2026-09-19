@@ -13,7 +13,7 @@ Locked rules:
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy import (
     Boolean,
@@ -46,11 +46,11 @@ class NotificationTemplate(Base, IdentityMixin, TimestampMixin):
     code: Mapped[str] = mapped_column(String(100), nullable=False)
     title_template: Mapped[str] = mapped_column(Text, nullable=False)
     body_template: Mapped[str] = mapped_column(Text, nullable=False)
-    variables: Mapped[Optional[dict[str, Any]]] = mapped_column(JSONB, nullable=True)
+    variables: Mapped[dict[str, Any] | None] = mapped_column(JSONB, nullable=True)
     is_active: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=True, server_default="true"
     )
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class Notification(Base, IdentityMixin, CreatedAtMixin):
@@ -58,7 +58,7 @@ class Notification(Base, IdentityMixin, CreatedAtMixin):
 
     recipient_type: Mapped[NotificationRecipientType] = mapped_column(nullable=False)
     recipient_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
-    template_id: Mapped[Optional[int]] = mapped_column(
+    template_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("notification_templates.id"), nullable=True
     )
     title: Mapped[str] = mapped_column(Text, nullable=False)
@@ -75,17 +75,17 @@ class Notification(Base, IdentityMixin, CreatedAtMixin):
     status: Mapped[NotificationStatus] = mapped_column(
         nullable=False, default=NotificationStatus.UNREAD
     )
-    read_at: Mapped[Optional[datetime]] = mapped_column(
+    read_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
-    archived_at: Mapped[Optional[datetime]] = mapped_column(
+    archived_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
-    expires_at: Mapped[Optional[datetime]] = mapped_column(
+    expires_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
 
-    template: Mapped[Optional["NotificationTemplate"]] = relationship(
+    template: Mapped[NotificationTemplate | None] = relationship(
         "NotificationTemplate"
     )
 

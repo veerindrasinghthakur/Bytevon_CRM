@@ -1,7 +1,7 @@
 """Document repository."""
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,7 +23,7 @@ class DocumentRepository(BaseRepository):
 
     async def get_type_by_id(
         self, type_id: int, *, include_archived: bool = False
-    ) -> Optional[DocumentType]:
+    ) -> DocumentType | None:
         stmt = select(DocumentType).where(DocumentType.id == type_id)
         if not include_archived:
             stmt = stmt.where(DocumentType.is_archived.is_(False))
@@ -37,7 +37,7 @@ class DocumentRepository(BaseRepository):
 
     async def get_by_id(
         self, document_id: int, *, with_versions: bool = False
-    ) -> Optional[Document]:
+    ) -> Document | None:
         stmt = select(Document).where(Document.id == document_id)
         if with_versions:
             stmt = stmt.options(selectinload(Document.versions))
@@ -68,7 +68,7 @@ class DocumentRepository(BaseRepository):
         document_id: int,
         entity_type: DocumentLinkType,
         entity_id: int,
-    ) -> Optional[DocumentLink]:
+    ) -> DocumentLink | None:
         stmt = select(DocumentLink).where(
             DocumentLink.document_id == document_id,
             DocumentLink.entity_type == entity_type,

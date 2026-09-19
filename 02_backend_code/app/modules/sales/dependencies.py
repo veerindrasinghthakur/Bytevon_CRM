@@ -1,19 +1,19 @@
 """Sales module dependencies — domain services + UI facade."""
 from __future__ import annotations
 
-from typing import Annotated, Optional
+from typing import Annotated
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.core.db.enums import LeadStatus
-from app.modules.sales.client.service import ClientService
-from app.modules.sales.lead.service import LeadService
-from app.modules.sales.source.service import SourceService
 from app.modules.sales.activity.service import ActivityService
 from app.modules.sales.case_study.service import CaseStudyService
+from app.modules.sales.client.service import ClientService
 from app.modules.sales.dashboard.service import DashboardService
+from app.modules.sales.lead.service import LeadService
+from app.modules.sales.source.service import SourceService
 
 
 def get_client_service(session: Annotated[AsyncSession, Depends(get_db_session)]) -> ClientService:
@@ -65,8 +65,8 @@ class SalesPublicService:
     async def list_leads(
         self,
         *,
-        status: Optional[LeadStatus] = None,
-        assigned_employment_id: Optional[int] = None,
+        status: LeadStatus | None = None,
+        assigned_employment_id: int | None = None,
         limit: int = 500,
         offset: int = 0,
     ):

@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -24,7 +24,7 @@ from app.modules.admin.department.schemas import (
 logger = logging.getLogger(__name__)
 
 
-def _optional_id(value: Optional[int]) -> Optional[int]:
+def _optional_id(value: int | None) -> int | None:
     if value is None or value <= 0:
         return None
     return value
@@ -40,7 +40,7 @@ class DepartmentService(BasePublicService):
         return obj
 
     async def create(
-        self, data: DepartmentCreate, *, actor_employment_id: Optional[int] = None
+        self, data: DepartmentCreate, *, actor_employment_id: int | None = None
     ) -> DepartmentResponse:
         existing = await self._repo.get_by_name(data.name)
         if existing:
@@ -72,7 +72,7 @@ class DepartmentService(BasePublicService):
         department_id: int,
         data: DepartmentUpdate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> DepartmentResponse:
         dept = await self._repo.get_by_id(department_id, include_archived=True)
         if dept is None:
@@ -96,7 +96,7 @@ class DepartmentService(BasePublicService):
         return DepartmentResponse.model_validate(dept)
 
     async def archive(
-        self, department_id: int, *, actor_employment_id: Optional[int] = None
+        self, department_id: int, *, actor_employment_id: int | None = None
     ) -> MessageResponse:
         dept = await self._repo.get_by_id(department_id, include_archived=True)
         if dept is None:
@@ -104,7 +104,7 @@ class DepartmentService(BasePublicService):
         if dept.is_archived:
             return MessageResponse(message="Department already archived")
         dept.is_archived = True
-        dept.archived_at = datetime.now(timezone.utc)
+        dept.archived_at = datetime.now(UTC)
         await self._commit()
         await self._audit("department.archived", department_id, actor_employment_id)
         return MessageResponse(message="Department archived")
@@ -115,7 +115,7 @@ class DepartmentService(BasePublicService):
         *,
         page: int = 1,
         page_size: int = 50,
-        search: Optional[str] = None,
+        search: str | None = None,
     ) -> DepartmentEmployeeListResponse:
         dept = await self._repo.get_by_id(department_id, include_archived=True)
         if dept is None:
@@ -138,7 +138,7 @@ class DepartmentService(BasePublicService):
         department_id: int,
         employment_id: int,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> MessageResponse:
         dept = await self._repo.get_by_id(department_id, include_archived=False)
         if dept is None:
@@ -153,7 +153,7 @@ class DepartmentService(BasePublicService):
         department_id: int,
         employment_id: int,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> MessageResponse:
         dept = await self._repo.get_by_id(department_id, include_archived=True)
         if dept is None:

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -12,12 +11,12 @@ class ApprovalRow(BaseModel):
     type: str
     reason: str = ""
     status: str
-    submitted_on: Optional[date] = None
-    approver: Optional[str] = None
+    submitted_on: date | None = None
+    approver: str | None = None
 
 
 class RequestListResponse(BaseModel):
-    items: List[ApprovalRow]
+    items: list[ApprovalRow]
     total: int
     page: int = 1
     pageSize: int = 20

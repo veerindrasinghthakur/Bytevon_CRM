@@ -1,12 +1,13 @@
 """MinIO client for audit archive and document file storage."""
 
-from datetime import datetime
-from typing import Optional
+
+import logging
+from io import BytesIO
 
 import aiofiles
 from minio import Minio
 from minio.error import MinioException
-import logging
+
 from app.core.config import settings
 
 
@@ -26,14 +27,13 @@ async def upload_file(
     data: str,
     *,
     content_type: str = "application/jsonl",
-) -> Optional[str]:
+) -> str | None:
     """Upload a string payload to MinIO bucket.
 
     Returns the object path on success, None on failure.
     """
     try:
         # Ensure bucket exists
-        from fastapi import FastAPI
 
         # Minio client is created per-request; bucket creation is handled
         # at application startup via lifespan or migration scripts.
@@ -43,22 +43,19 @@ async def upload_file(
         logger.error("MinIO upload error: %s", e)
         return None
 
-    async with aiofiles.open("/dev/null", "w") as f:
+    async with aiofiles.open("/dev/null", "w") as _f:
         pass  # placeholder - actual upload handled by Minio SDK sync call
 
     # Sync upload via Minio SDK
     client = get_minio_client()
     try:
-        # Minio SDK put_object expects bytes-like or file-like
-        if isinstance(data, str):
-            data_bytes = data.encode("utf-8")
-        else:
-            data_bytes = data
+        # Minio SDK put_object expects a binary stream
+        data_bytes = data.encode("utf-8") if isinstance(data, str) else bytes(data)
 
         client.put_object(
             bucket_name=bucket_name,
             object_name=object_name,
-            data=data_bytes,
+            data=BytesIO(data_bytes),
             length=len(data_bytes),
             content_type=content_type,
         )

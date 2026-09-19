@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,7 +21,7 @@ def _money(r: Any, *names: str) -> float:
 
 
 def _status_str(r: Any) -> str:
-    s = getattr(r, "status", "")
+    s: Any = getattr(r, "status", "")
     return s.value if hasattr(s, "value") else str(s)
 
 
@@ -30,7 +30,7 @@ class DashboardService:
         self._monthly = MonthlyPayrollService(session)
 
     async def kpis(
-        self, *, year: Optional[int] = None, month: Optional[int] = None
+        self, *, year: int | None = None, month: int | None = None
     ) -> dict[str, Any]:
         today = date.today()
         y = year or today.year
@@ -79,7 +79,7 @@ class DashboardService:
         return out
 
     async def monthly_summary(
-        self, *, year: Optional[int] = None, month: Optional[int] = None
+        self, *, year: int | None = None, month: int | None = None
     ) -> dict[str, Any]:
         today = date.today()
         y = year or today.year

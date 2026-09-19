@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import date, timedelta
-from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -24,7 +23,7 @@ class PolicyService(BasePublicService):
         self,
         data: LeavePolicyCreate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> LeavePolicyResponse:
         current = await self._repo.get_current_policy(
             data.leave_type, as_of=data.effective_from
@@ -49,13 +48,13 @@ class PolicyService(BasePublicService):
         return LeavePolicyResponse.model_validate(policy)
 
     async def list_policies(
-        self, *, leave_type: Optional[LeaveType] = None
+        self, *, leave_type: LeaveType | None = None
     ) -> list[LeavePolicyResponse]:
         rows = await self._repo.list_policies(leave_type=leave_type)
         return [LeavePolicyResponse.model_validate(r) for r in rows]
 
     async def get_current_policy(
-        self, leave_type: LeaveType, *, as_of: Optional[date] = None
+        self, leave_type: LeaveType, *, as_of: date | None = None
     ) -> LeavePolicyResponse:
         policy = await self._repo.get_current_policy(leave_type, as_of=as_of)
         if policy is None:

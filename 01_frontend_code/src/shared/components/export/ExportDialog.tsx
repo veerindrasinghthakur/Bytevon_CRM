@@ -79,7 +79,7 @@ export function ExportDialog({
 
         <div className="p-6 space-y-4">
           <p className="text-body-sm text-on-surface-variant">
-            You're downloading the data. Please select a format.
+            You&apos;re downloading the data. Please select a format.
             {contextLabel ? (
               <>
                 {' '}

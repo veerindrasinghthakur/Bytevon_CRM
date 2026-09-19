@@ -1,7 +1,7 @@
 """Note repository."""
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +15,7 @@ class NoteRepository(BaseRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
 
-    async def get_by_id(self, note_id: int) -> Optional[Note]:
+    async def get_by_id(self, note_id: int) -> Note | None:
         stmt = select(Note).where(Note.id == note_id)
         return await self.scalar_one_or_none(stmt)
 

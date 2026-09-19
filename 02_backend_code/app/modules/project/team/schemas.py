@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -15,13 +14,13 @@ class MessageResponse(BaseModel):
 class TeamCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
     team_head_employment_id: int
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class TeamUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=150)
-    team_head_employment_id: Optional[int] = None
-    description: Optional[str] = None
+    name: str | None = Field(None, min_length=1, max_length=150)
+    team_head_employment_id: int | None = None
+    description: str | None = None
 
 
 class TeamResponse(BaseModel):
@@ -30,10 +29,10 @@ class TeamResponse(BaseModel):
     id: int
     name: str
     team_head_employment_id: int
-    description: Optional[str]
+    description: str | None
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int]
+    changed_by: int | None
 
 
 class TeamMemberAdd(BaseModel):
@@ -49,4 +48,4 @@ class TeamMemberResponse(BaseModel):
     employment_id: int
     team_role: str
     joined_at: datetime
-    left_at: Optional[datetime]
+    left_at: datetime | None

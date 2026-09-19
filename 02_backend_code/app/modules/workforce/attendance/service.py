@@ -2,9 +2,8 @@
 from __future__ import annotations
 
 import logging
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from decimal import Decimal
-from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -48,7 +47,7 @@ logger = logging.getLogger(__name__)
 ATTENDANCE_CORRECTION_TYPE = "ATTENDANCE_CORRECTION"
 
 
-def _compute_working_hours(punches: list) -> Optional[Decimal]:
+def _compute_working_hours(punches: list) -> Decimal | None:
     total_seconds = 0.0
     last_in = None
     for p in sorted(punches, key=lambda x: x.punch_time):
@@ -72,11 +71,11 @@ class AttendanceService(BasePublicService):
         self._repo = AttendanceRepository(session)
         self._approvals = ApprovalPublicService(session)
 
-    async def punch(self, data: PunchRequest, *, client_ip: str, actor_employment_id: Optional[int] = None) -> PunchResponse:
-        now = datetime.now(timezone.utc)
+    async def punch(self, data: PunchRequest, *, client_ip: str, actor_employment_id: int | None = None) -> PunchResponse:
+        now = datetime.now(UTC)
         punch_time = data.punch_time or now
         if punch_time.tzinfo is None:
-            punch_time = punch_time.replace(tzinfo=timezone.utc)
+            punch_time = punch_time.replace(tzinfo=UTC)
         att_date = data.attendance_date or punch_time.date()
         policy = await self._repo.get_current_policy(as_of=att_date)
         day = await self._repo.get_day_by_employment_date(data.employment_id, att_date)
@@ -115,7 +114,7 @@ class AttendanceService(BasePublicService):
             raise NotFoundError("Attendance day not found")
         return AttendanceDayDetailResponse(**AttendanceDayResponse.model_validate(day).model_dump(), punches=[PunchResponse.model_validate(p) for p in day.punches])
 
-    async def list_days(self, employment_id: int, *, from_date: Optional[date] = None, to_date: Optional[date] = None) -> list[AttendanceDayResponse]:
+    async def list_days(self, employment_id: int, *, from_date: date | None = None, to_date: date | None = None) -> list[AttendanceDayResponse]:
         rows = await self._repo.list_days(employment_id, from_date=from_date, to_date=to_date)
         return [AttendanceDayResponse.model_validate(r) for r in rows]
 
@@ -142,6 +141,7 @@ class AttendanceService(BasePublicService):
         approval = await self._approvals.create_request(ApprovalRequestCreate(request_type=ATTENDANCE_CORRECTION_TYPE, reference_id=correction.id, requester_employment_id=actor_employment_id, target=ApprovalTarget.DEPARTMENT_HEAD, target_department_id=data.target_department_id), actor_employment_id=actor_employment_id, commit=False)
         correction.approval_request_id = approval.id
         await self._commit()
+        await self._session.refresh(correction)
         await self._audit("attendance_correction.submitted", correction.id, actor_employment_id)
         return CorrectionResponse.model_validate(correction)
 
@@ -157,6 +157,9 @@ class AttendanceService(BasePublicService):
         status_str = event.get("status")
         reference_id = event.get("reference_id")
         actor = event.get("actor_employment_id") or settings.SYSTEM_EMPLOYMENT_ID
+        if status_str is None or reference_id is None:
+            logger.warning("Attendance approval event missing status/reference: %s", event)
+            return
         correction = await self._repo.get_correction_by_id(int(reference_id))
         if correction is None:
             logger.warning("Attendance correction %s not found for approval event", reference_id)
@@ -186,7 +189,7 @@ class AttendanceService(BasePublicService):
             await self._commit()
             await self._audit("attendance_correction.rejected", correction.id, actor)
 
-    async def create_policy(self, data: AttendancePolicyCreate, *, actor_employment_id: Optional[int] = None) -> AttendancePolicyResponse:
+    async def create_policy(self, data: AttendancePolicyCreate, *, actor_employment_id: int | None = None) -> AttendancePolicyResponse:
         current = await self._repo.get_current_policy(as_of=data.effective_from)
         if current and current.effective_to is None:
             await self._repo.close_policy(current.id, data.effective_from)
@@ -200,7 +203,7 @@ class AttendanceService(BasePublicService):
         rows = await self._repo.list_policies()
         return [AttendancePolicyResponse.model_validate(r) for r in rows]
 
-    async def get_current_policy(self, *, as_of: Optional[date] = None) -> AttendancePolicyResponse:
+    async def get_current_policy(self, *, as_of: date | None = None) -> AttendancePolicyResponse:
         policy = await self._repo.get_current_policy(as_of=as_of)
         if policy is None:
             raise NotFoundError("No effective attendance policy")
@@ -212,7 +215,7 @@ class AttendanceService(BasePublicService):
             raise NotFoundError("Monthly summary not found; rebuild first")
         return MonthlySummaryResponse.model_validate(row)
 
-    async def rebuild_monthly_summary(self, employment_id: int, year: int, month: int, *, actor_employment_id: Optional[int] = None) -> MonthlySummaryResponse:
+    async def rebuild_monthly_summary(self, employment_id: int, year: int, month: int, *, actor_employment_id: int | None = None) -> MonthlySummaryResponse:
         existing = await self._repo.get_monthly_summary(employment_id, year, month)
         if existing and existing.is_locked:
             raise DomainError("Monthly summary is locked and cannot be rebuilt")
@@ -237,7 +240,7 @@ class AttendanceService(BasePublicService):
                 working_hours += d.working_hours
         expected = present + absent + half
         pct = (present / expected * 100).quantize(Decimal("0.01")) if expected > 0 else None
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         actor = actor_employment_id
         if existing:
             existing.present_days = present
@@ -258,37 +261,48 @@ class AttendanceService(BasePublicService):
         await self._audit("attendance.monthly_summary_rebuilt", row.id, actor)
         return MonthlySummaryResponse.model_validate(row)
 
-    async def lock_monthly_summary(self, employment_id: int, year: int, month: int, *, actor_employment_id: Optional[int] = None) -> MonthlySummaryResponse:
+    async def lock_monthly_summary(self, employment_id: int, year: int, month: int, *, actor_employment_id: int | None = None) -> MonthlySummaryResponse:
         row = await self._repo.get_monthly_summary(employment_id, year, month)
         if row is None:
             raise NotFoundError("Monthly summary not found")
         row.is_locked = True
         row.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
+        await self._session.refresh(row)
         await self._audit("attendance.monthly_summary_locked", row.id, actor_employment_id)
         return MonthlySummaryResponse.model_validate(row)
 
-    async def start_break(self, data: BreakStartRequest, *, actor_employment_id: Optional[int] = None) -> BreakResponse:
+    async def start_break(self, data: BreakStartRequest, *, actor_employment_id: int | None = None) -> BreakResponse:
         day = await self._repo.get_day_by_id(data.attendance_day_id)
         if day is None:
             raise NotFoundError("Attendance day not found")
         if await self._repo.get_open_break(day.id):
             raise ConflictError("An open break already exists for this day")
-        br = AttendanceBreak(attendance_day_id=day.id, break_start=data.break_start or datetime.now(timezone.utc))
+        br = AttendanceBreak(attendance_day_id=day.id, break_start=data.break_start or datetime.now(UTC))
         await self._repo.add(br)
         await self._commit()
         await self._audit("attendance.break_started", br.id, actor_employment_id)
         return BreakResponse.model_validate(br)
 
-    async def end_break(self, break_id: int, data: BreakEndRequest, *, actor_employment_id: Optional[int] = None) -> BreakResponse:
+    async def get_break_owner_employment(self, break_id: int) -> int:
+        """Owning employment of a break (for SELF ownership checks)."""
+        br = await self._repo.get_break_by_id(break_id)
+        if br is None:
+            raise NotFoundError("Break not found")
+        day = await self._repo.get_day_by_id(br.attendance_day_id)
+        if day is None:
+            raise NotFoundError("Break not found")
+        return day.employment_id
+
+    async def end_break(self, break_id: int, data: BreakEndRequest, *, actor_employment_id: int | None = None) -> BreakResponse:
         br = await self._repo.get_break_by_id(break_id)
         if br is None:
             raise NotFoundError("Break not found")
         if br.break_end is not None:
             raise DomainError("Break is already ended")
-        end = data.break_end or datetime.now(timezone.utc)
+        end = data.break_end or datetime.now(UTC)
         if end.tzinfo is None:
-            end = end.replace(tzinfo=timezone.utc)
+            end = end.replace(tzinfo=UTC)
         br.break_end = end
         br.duration_minutes = max(0, int((end - br.break_start).total_seconds() // 60))
         await self._commit()

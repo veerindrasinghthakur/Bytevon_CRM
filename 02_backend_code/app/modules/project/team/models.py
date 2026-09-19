@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Optional
 
 from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -18,10 +17,10 @@ class Team(Base, IdentityMixin, TimestampMixin):
     team_head_employment_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("employments.id"), nullable=False
     )
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    members: Mapped[List["TeamMember"]] = relationship(
+    members: Mapped[list[TeamMember]] = relationship(
         "TeamMember", back_populates="team", cascade="all, delete-orphan"
     )
 
@@ -46,8 +45,8 @@ class TeamMember(Base, IdentityMixin):
     joined_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
-    left_at: Mapped[Optional[datetime]] = mapped_column(
+    left_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
 
-    team: Mapped["Team"] = relationship("Team", back_populates="members")
+    team: Mapped[Team] = relationship("Team", back_populates="members")

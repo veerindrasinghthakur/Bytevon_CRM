@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -34,4 +33,4 @@ class BankAccountResponse(BaseModel):
     is_active: bool
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int]
+    changed_by: int | None

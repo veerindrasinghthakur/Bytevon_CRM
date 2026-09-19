@@ -1,8 +1,6 @@
 """Lead repository."""
 from __future__ import annotations
 
-from typing import Optional
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -19,14 +17,14 @@ class LeadRepository:
         await self._session.flush()
         return lead
 
-    async def get(self, lead_id: int) -> Optional[Lead]:
+    async def get(self, lead_id: int) -> Lead | None:
         return await self._session.get(Lead, lead_id)
 
     async def list(
         self,
         *,
-        status: Optional[LeadStatus] = None,
-        assigned_employment_id: Optional[int] = None,
+        status: LeadStatus | None = None,
+        assigned_employment_id: int | None = None,
         limit: int = 500,
         offset: int = 0,
     ) -> list[Lead]:

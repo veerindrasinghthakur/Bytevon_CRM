@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -39,7 +39,7 @@ class ComposeService(BasePublicService):
         super().__init__(session)
         self._repo = ComposeRepository(session)
 
-    async def notify(self, data: NotifyRequest) -> Optional[NotificationResponse]:
+    async def notify(self, data: NotifyRequest) -> NotificationResponse | None:
         try:
             if data.recipient_type == NotificationRecipientType.EMPLOYMENT:
                 enabled = await self._repo.is_channel_enabled(
@@ -104,7 +104,7 @@ class ComposeService(BasePublicService):
 
     async def _resolve_content(
         self, data: NotifyRequest
-    ) -> tuple[str, str, Optional[int]]:
+    ) -> tuple[str, str, int | None]:
         if data.template_code:
             tpl = await self._repo.get_template_by_code(data.template_code)
             if tpl is None:

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -10,9 +9,8 @@ from app.core.config import settings
 from app.core.db.enums import ClientType, LeadStatus
 from app.core.exceptions.exception import DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
-from app.modules.sales.models import Client, Lead
-from app.modules.sales.lead.repository import LeadRepository
 from app.modules.sales.client.repository import ClientRepository
+from app.modules.sales.lead.repository import LeadRepository
 from app.modules.sales.lead.schemas import (
     LeadCreate,
     LeadResponse,
@@ -20,6 +18,7 @@ from app.modules.sales.lead.schemas import (
     LeadUpdate,
     LeadWonResponse,
 )
+from app.modules.sales.models import Client, Lead
 
 logger = logging.getLogger(__name__)
 _TERMINAL = {LeadStatus.WON, LeadStatus.LOST, LeadStatus.CLOSED}
@@ -31,7 +30,7 @@ class LeadService(BasePublicService):
         self._repo = LeadRepository(session)
         self._clients = ClientRepository(session)
 
-    async def create(self, data: LeadCreate, *, actor_employment_id: Optional[int] = None) -> LeadResponse:
+    async def create(self, data: LeadCreate, *, actor_employment_id: int | None = None) -> LeadResponse:
         lead = Lead(
             lead_title=data.lead_title,
             platform_id=data.platform_id,
@@ -64,8 +63,8 @@ class LeadService(BasePublicService):
     async def list(
         self,
         *,
-        status: Optional[LeadStatus] = None,
-        assigned_employment_id: Optional[int] = None,
+        status: LeadStatus | None = None,
+        assigned_employment_id: int | None = None,
         limit: int = 500,
         offset: int = 0,
     ) -> list[LeadResponse]:
@@ -78,7 +77,7 @@ class LeadService(BasePublicService):
         return [LeadResponse.model_validate(r) for r in rows]
 
     async def update(
-        self, lead_id: int, data: LeadUpdate, *, actor_employment_id: Optional[int] = None
+        self, lead_id: int, data: LeadUpdate, *, actor_employment_id: int | None = None
     ) -> LeadResponse:
         lead = await self._repo.get(lead_id)
         if lead is None:
@@ -94,7 +93,7 @@ class LeadService(BasePublicService):
         return LeadResponse.model_validate(lead)
 
     async def change_status(
-        self, lead_id: int, data: LeadStatusChange, *, actor_employment_id: Optional[int] = None
+        self, lead_id: int, data: LeadStatusChange, *, actor_employment_id: int | None = None
     ):
         lead = await self._repo.get(lead_id)
         if lead is None:
@@ -110,7 +109,7 @@ class LeadService(BasePublicService):
         await self._session.refresh(lead)
         return LeadResponse.model_validate(lead)
 
-    async def _win_lead(self, lead: Lead, *, actor_employment_id: Optional[int] = None) -> LeadWonResponse:
+    async def _win_lead(self, lead: Lead, *, actor_employment_id: int | None = None) -> LeadWonResponse:
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         client_id = lead.client_id
         if client_id is None:
@@ -132,7 +131,7 @@ class LeadService(BasePublicService):
             lead=LeadResponse.model_validate(lead), client_id=client_id, project_id=project_id
         )
 
-    async def _try_create_project(self, lead: Lead, client_id: int, actor: int) -> Optional[int]:
+    async def _try_create_project(self, lead: Lead, client_id: int, actor: int) -> int | None:
         try:
             from app.modules.project.project.service import ProjectPublicService
 

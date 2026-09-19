@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
@@ -16,50 +15,50 @@ class MessageResponse(BaseModel):
 
 class LeadCreate(BaseModel):
     lead_title: str = Field(..., min_length=1, max_length=255)
-    platform_id: Optional[int] = None
+    platform_id: int | None = None
     contact_name: str = Field(..., min_length=1, max_length=150)
-    contact_title: Optional[str] = Field(None, max_length=150)
-    email: Optional[EmailStr] = None
-    phone: Optional[str] = None
-    quotation: Optional[Decimal] = None
-    expected_close_date: Optional[date] = None
-    assigned_employment_id: Optional[int] = None
+    contact_title: str | None = Field(None, max_length=150)
+    email: EmailStr | None = None
+    phone: str | None = None
+    quotation: Decimal | None = None
+    expected_close_date: date | None = None
+    assigned_employment_id: int | None = None
     status: LeadStatus = LeadStatus.NEW
-    priority: Optional[str] = Field(None, max_length=20)
-    description: Optional[str] = None
-    chat_link: Optional[str] = Field(None, max_length=500)
-    client_id: Optional[int] = None
+    priority: str | None = Field(None, max_length=20)
+    description: str | None = None
+    chat_link: str | None = Field(None, max_length=500)
+    client_id: int | None = None
     auto_create_project: bool = True
     client_type: ClientType = ClientType.COMPANY
-    client_name: Optional[str] = None
+    client_name: str | None = None
 
 
 class LeadUpdate(BaseModel):
-    lead_title: Optional[str] = Field(None, min_length=1, max_length=255)
-    platform_id: Optional[int] = None
-    contact_name: Optional[str] = None
-    contact_title: Optional[str] = Field(None, max_length=150)
-    email: Optional[EmailStr] = None
-    phone: Optional[str] = None
-    quotation: Optional[Decimal] = None
-    expected_close_date: Optional[date] = None
-    assigned_employment_id: Optional[int] = None
-    priority: Optional[str] = Field(None, max_length=20)
-    description: Optional[str] = None
-    chat_link: Optional[str] = Field(None, max_length=500)
-    client_id: Optional[int] = None
-    auto_create_project: Optional[bool] = None
-    status: Optional[LeadStatus] = None
-    client_type: Optional[ClientType] = None
-    client_name: Optional[str] = None
+    lead_title: str | None = Field(None, min_length=1, max_length=255)
+    platform_id: int | None = None
+    contact_name: str | None = None
+    contact_title: str | None = Field(None, max_length=150)
+    email: EmailStr | None = None
+    phone: str | None = None
+    quotation: Decimal | None = None
+    expected_close_date: date | None = None
+    assigned_employment_id: int | None = None
+    priority: str | None = Field(None, max_length=20)
+    description: str | None = None
+    chat_link: str | None = Field(None, max_length=500)
+    client_id: int | None = None
+    auto_create_project: bool | None = None
+    status: LeadStatus | None = None
+    client_type: ClientType | None = None
+    client_name: str | None = None
 
 
 class LeadStatusChange(BaseModel):
     status: LeadStatus
-    client_id: Optional[int] = None
-    client_type: Optional[ClientType] = None
-    client_name: Optional[str] = None
-    auto_create_project: Optional[bool] = None
+    client_id: int | None = None
+    client_type: ClientType | None = None
+    client_name: str | None = None
+    auto_create_project: bool | None = None
 
 
 class LeadResponse(BaseModel):
@@ -67,23 +66,23 @@ class LeadResponse(BaseModel):
 
     id: int
     lead_title: str
-    platform_id: Optional[int]
+    platform_id: int | None
     contact_name: str
-    contact_title: Optional[str] = None
-    email: Optional[str]
-    phone: Optional[str]
-    quotation: Optional[Decimal]
-    expected_close_date: Optional[date]
-    assigned_employment_id: Optional[int]
+    contact_title: str | None = None
+    email: str | None
+    phone: str | None
+    quotation: Decimal | None
+    expected_close_date: date | None
+    assigned_employment_id: int | None
     status: LeadStatus
-    priority: Optional[str] = None
-    description: Optional[str]
-    chat_link: Optional[str] = None
-    client_id: Optional[int]
+    priority: str | None = None
+    description: str | None
+    chat_link: str | None = None
+    client_id: int | None
     auto_create_project: bool
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int]
+    changed_by: int | None
 
 
 class LeadDetailResponse(LeadResponse):
@@ -93,4 +92,4 @@ class LeadDetailResponse(LeadResponse):
 class LeadWonResponse(BaseModel):
     lead: LeadResponse
     client_id: int
-    project_id: Optional[int] = None
+    project_id: int | None = None

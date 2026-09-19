@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Optional, Sequence, Tuple
+from collections.abc import Sequence
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,18 +17,18 @@ class ProjectRepository(BaseRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
 
-    async def get_project_by_id(self, project_id: int) -> Optional[Project]:
+    async def get_project_by_id(self, project_id: int) -> Project | None:
         stmt = select(Project).where(Project.id == project_id)
         return await self.scalar_one_or_none(stmt)
 
-    async def get_project_by_lead_id(self, lead_id: int) -> Optional[Project]:
+    async def get_project_by_lead_id(self, lead_id: int) -> Project | None:
         stmt = select(Project).where(Project.lead_id == lead_id)
         return await self.scalar_one_or_none(stmt)
 
     async def list_projects(
         self,
         *,
-        client_id: Optional[int] = None,
+        client_id: int | None = None,
         limit: int = 100,
         offset: int = 0,
     ) -> Sequence[Project]:
@@ -48,7 +48,7 @@ class ProjectRepository(BaseRepository):
         stmt = select(Project.id).where(Project.project_name.ilike(q))
         return (await self._session.execute(stmt)).scalars().all()
 
-    async def count_project_tasks(self, project_id: int) -> Tuple[int, int]:
+    async def count_project_tasks(self, project_id: int) -> tuple[int, int]:
         """Return (total, open) where open = not COMPLETED."""
         total_stmt = select(func.count()).select_from(Task).where(
             Task.project_id == project_id

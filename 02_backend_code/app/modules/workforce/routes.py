@@ -14,10 +14,10 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from app.modules.workforce.employee.routes import router as employee_router
 from app.modules.workforce.assignment.routes import router as assignment_router
-from app.modules.workforce.department.routes import router as department_router
 from app.modules.workforce.attendance.routes import router as attendance_router
+from app.modules.workforce.department.routes import router as department_router
+from app.modules.workforce.employee.routes import router as employee_router
 
 router = APIRouter(prefix="/workforce", tags=["Workforce"])
 

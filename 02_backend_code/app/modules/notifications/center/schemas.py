@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict
 
@@ -25,14 +25,14 @@ class NotificationResponse(BaseModel):
     id: int
     recipient_type: NotificationRecipientType
     recipient_id: int
-    template_id: Optional[int]
+    template_id: int | None
     title: str
     body: str
-    payload: Dict[str, Any]
+    payload: dict[str, Any]
     channel: NotificationChannel
     action: NotificationAction
     status: NotificationStatus
-    read_at: Optional[datetime]
-    archived_at: Optional[datetime]
-    expires_at: Optional[datetime]
+    read_at: datetime | None
+    archived_at: datetime | None
+    expires_at: datetime | None
     created_at: datetime

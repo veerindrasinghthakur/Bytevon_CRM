@@ -1,7 +1,7 @@
 """ProfileService — profile me / activity / sessions."""
 from __future__ import annotations
 
-from typing import Any, List, Optional
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,8 +21,8 @@ class ProfileService:
     async def get_me(
         self,
         *,
-        login_id: Optional[int] = None,
-        employment_id: Optional[int] = None,
+        login_id: int | None = None,
+        employment_id: int | None = None,
     ) -> ProfileMeResponse:
         data = await self._repo.get_profile_stub(
             login_id=login_id, employment_id=employment_id
@@ -39,6 +39,6 @@ class ProfileService:
     async def activity(self, *, limit: int = 20) -> ProfileActivityResponse:
         return ProfileActivityResponse(limit=limit)
 
-    async def list_sessions(self, login_id: int, auth_service: Any) -> List[Any]:
+    async def list_sessions(self, login_id: int, auth_service: Any) -> list[Any]:
         """Sessions owned by auth module — pass AuthenticationServiceDep."""
         return await auth_service.list_sessions(login_id)

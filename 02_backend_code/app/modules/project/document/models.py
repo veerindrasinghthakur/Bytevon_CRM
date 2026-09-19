@@ -1,8 +1,6 @@
 """Document ORM models — types, documents, versions, links."""
 from __future__ import annotations
 
-from typing import List, Optional
-
 from sqlalchemy import BigInteger, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -20,8 +18,8 @@ class DocumentType(Base, IdentityMixin, ArchiveMixin, TimestampMixin):
     __tablename__ = "document_types"
 
     name: Mapped[str] = mapped_column(String(150), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class Document(Base, IdentityMixin, TimestampMixin):
@@ -30,22 +28,22 @@ class Document(Base, IdentityMixin, TimestampMixin):
     document_type_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("document_types.id"), nullable=False, index=True
     )
-    current_version_id: Mapped[Optional[int]] = mapped_column(
+    current_version_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("document_versions.id", use_alter=True), nullable=True
     )
     status: Mapped[DocumentStatus] = mapped_column(
         nullable=False, default=DocumentStatus.ACTIVE
     )
-    title: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    title: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    versions: Mapped[List["DocumentVersion"]] = relationship(
+    versions: Mapped[list[DocumentVersion]] = relationship(
         "DocumentVersion",
         back_populates="document",
         foreign_keys="DocumentVersion.document_id",
         cascade="all, delete-orphan",
     )
-    links: Mapped[List["DocumentLink"]] = relationship(
+    links: Mapped[list[DocumentLink]] = relationship(
         "DocumentLink",
         back_populates="document",
         cascade="all, delete-orphan",
@@ -65,9 +63,9 @@ class DocumentVersion(Base, IdentityMixin, CreatedAtMixin):
     file_name: Mapped[str] = mapped_column(String(255), nullable=False)
     mime_type: Mapped[str] = mapped_column(String(100), nullable=False)
     file_size: Mapped[int] = mapped_column(BigInteger, nullable=False)
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    document: Mapped["Document"] = relationship(
+    document: Mapped[Document] = relationship(
         "Document",
         back_populates="versions",
         foreign_keys=[document_id],
@@ -85,4 +83,4 @@ class DocumentLink(Base, IdentityMixin, CreatedAtMixin):
     entity_type: Mapped[DocumentLinkType] = mapped_column(nullable=False, index=True)
     entity_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
 
-    document: Mapped["Document"] = relationship("Document", back_populates="links")
+    document: Mapped[Document] = relationship("Document", back_populates="links")

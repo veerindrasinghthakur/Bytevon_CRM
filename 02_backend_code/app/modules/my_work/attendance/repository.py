@@ -1,8 +1,8 @@
 """My-work attendance repository — thin reads over workforce attendance data."""
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import date
-from typing import Optional, Sequence
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,8 +21,8 @@ class MyWorkAttendanceRepository:
         self,
         employment_id: int,
         *,
-        from_date: Optional[date] = None,
-        to_date: Optional[date] = None,
+        from_date: date | None = None,
+        to_date: date | None = None,
     ) -> Sequence[AttendanceDay]:
         return await self._wf.list_days(
             employment_id, from_date=from_date, to_date=to_date

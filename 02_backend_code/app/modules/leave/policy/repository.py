@@ -1,8 +1,8 @@
 """Leave policy repository."""
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import date
-from typing import Optional, Sequence
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,13 +16,13 @@ class PolicyRepository(BaseRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
 
-    async def get_policy_by_id(self, policy_id: int) -> Optional[LeavePolicy]:
+    async def get_policy_by_id(self, policy_id: int) -> LeavePolicy | None:
         stmt = select(LeavePolicy).where(LeavePolicy.id == policy_id)
         return await self.scalar_one_or_none(stmt)
 
     async def get_current_policy(
-        self, leave_type: LeaveType, *, as_of: Optional[date] = None
-    ) -> Optional[LeavePolicy]:
+        self, leave_type: LeaveType, *, as_of: date | None = None
+    ) -> LeavePolicy | None:
         as_of = as_of or date.today()
         stmt = (
             select(LeavePolicy)
@@ -38,7 +38,7 @@ class PolicyRepository(BaseRepository):
         return await self.scalar_one_or_none(stmt)
 
     async def list_policies(
-        self, *, leave_type: Optional[LeaveType] = None
+        self, *, leave_type: LeaveType | None = None
     ) -> Sequence[LeavePolicy]:
         stmt = select(LeavePolicy).order_by(
             LeavePolicy.leave_type, LeavePolicy.effective_from.desc()

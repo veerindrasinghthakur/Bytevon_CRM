@@ -2,8 +2,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,16 +11,10 @@ from app.core.config import settings
 from app.core.db.enums import EmploymentState, WorkMode
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
-from app.modules.auth.models import Person
 from app.modules.admin.department.models import Department
 from app.modules.admin.location.models import Location
 from app.modules.admin.shift.models import Shift
-from app.modules.workforce.models import (
-    Employment,
-    EmploymentAssignment,
-    EmploymentStateHistory,
-    Position,
-)
+from app.modules.auth.models import Person
 from app.modules.workforce.employee.repository import EmployeeRepository
 from app.modules.workforce.employee.schemas import (
     EmployeeCreate,
@@ -39,11 +32,17 @@ from app.modules.workforce.employee.schemas import (
     PositionResponse,
     PositionUpdate,
 )
+from app.modules.workforce.models import (
+    Employment,
+    EmploymentAssignment,
+    EmploymentStateHistory,
+    Position,
+)
 
 logger = logging.getLogger(__name__)
 
 
-def _optional_id(value: Optional[int]) -> Optional[int]:
+def _optional_id(value: int | None) -> int | None:
     if value is None or value <= 0:
         return None
     return value
@@ -77,11 +76,11 @@ class EmployeeService(BasePublicService):
     async def _validate_assignment_refs(
         self,
         *,
-        department_id: Optional[int],
-        position_id: Optional[int],
-        location_id: Optional[int],
-        shift_id: Optional[int],
-    ) -> tuple[Optional[int], Optional[int], Optional[int], Optional[int]]:
+        department_id: int | None,
+        position_id: int | None,
+        location_id: int | None,
+        shift_id: int | None,
+    ) -> tuple[int | None, int | None, int | None, int | None]:
         department_id = _optional_id(department_id)
         position_id = _optional_id(position_id)
         location_id = _optional_id(location_id)
@@ -107,7 +106,7 @@ class EmployeeService(BasePublicService):
 
     # Persons
     async def create_person(
-        self, data: PersonCreate, *, actor_employment_id: Optional[int] = None, commit: bool = True
+        self, data: PersonCreate, *, actor_employment_id: int | None = None, commit: bool = True
     ) -> Person:
         person = Person(
             first_name=data.first_name.strip(),
@@ -126,7 +125,7 @@ class EmployeeService(BasePublicService):
         return person
 
     async def create_person_response(
-        self, data: PersonCreate, *, actor_employment_id: Optional[int] = None
+        self, data: PersonCreate, *, actor_employment_id: int | None = None
     ) -> PersonResponse:
         person = await self.create_person(data, actor_employment_id=actor_employment_id)
         return await self._person_response(person)
@@ -146,7 +145,7 @@ class EmployeeService(BasePublicService):
         return [PersonResponse.model_validate(r) for r in rows]
 
     async def update_person(
-        self, person_id: int, data: PersonUpdate, *, actor_employment_id: Optional[int] = None
+        self, person_id: int, data: PersonUpdate, *, actor_employment_id: int | None = None
     ) -> PersonResponse:
         person = await self._require_person(person_id)
         payload = data.model_dump(exclude_unset=True)
@@ -162,7 +161,7 @@ class EmployeeService(BasePublicService):
 
     # Positions
     async def create_position(
-        self, data: PositionCreate, *, actor_employment_id: Optional[int] = None
+        self, data: PositionCreate, *, actor_employment_id: int | None = None
     ) -> PositionResponse:
         if await self._repo.get_position_by_name(data.name):
             raise ConflictError(f"Position '{data.name}' already exists")
@@ -184,7 +183,7 @@ class EmployeeService(BasePublicService):
         return [PositionResponse.model_validate(r) for r in rows]
 
     async def update_position(
-        self, position_id: int, data: PositionUpdate, *, actor_employment_id: Optional[int] = None
+        self, position_id: int, data: PositionUpdate, *, actor_employment_id: int | None = None
     ) -> PositionResponse:
         pos = await self._repo.get_position_by_id(position_id)
         if pos is None:
@@ -200,7 +199,7 @@ class EmployeeService(BasePublicService):
         return PositionResponse.model_validate(pos)
 
     async def archive_position(
-        self, position_id: int, *, actor_employment_id: Optional[int] = None
+        self, position_id: int, *, actor_employment_id: int | None = None
     ) -> MessageResponse:
         pos = await self._repo.get_position_by_id(position_id)
         if pos is None:
@@ -208,7 +207,7 @@ class EmployeeService(BasePublicService):
         if pos.is_archived:
             raise DomainError("Position is already archived")
         pos.is_archived = True
-        pos.archived_at = datetime.now(timezone.utc)
+        pos.archived_at = datetime.now(UTC)
         pos.archived_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
         await self._audit("position.archived", pos.id, actor_employment_id)
@@ -216,7 +215,7 @@ class EmployeeService(BasePublicService):
 
     # Employments
     async def create_employee(
-        self, data: EmployeeCreate, *, actor_employment_id: Optional[int] = None
+        self, data: EmployeeCreate, *, actor_employment_id: int | None = None
     ) -> EmploymentDetailResponse:
         person = await self.create_person(
             PersonCreate(
@@ -266,8 +265,8 @@ class EmployeeService(BasePublicService):
         self,
         data: EmploymentCreate,
         *,
-        actor_employment_id: Optional[int] = None,
-        person: Optional[Person] = None,
+        actor_employment_id: int | None = None,
+        person: Person | None = None,
     ) -> EmploymentDetailResponse:
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         if person is None:
@@ -353,7 +352,7 @@ class EmployeeService(BasePublicService):
         )
 
     async def list_employments(
-        self, *, state: Optional[EmploymentState] = None, limit: int = 100, offset: int = 0
+        self, *, state: EmploymentState | None = None, limit: int = 100, offset: int = 0
     ) -> list[EmploymentResponse]:
         rows = await self._repo.list_employments(
             state=state.value if state else None, limit=limit, offset=offset
@@ -365,7 +364,7 @@ class EmployeeService(BasePublicService):
         return [EmploymentResponse.model_validate(r) for r in rows]
 
     async def update_employment(
-        self, employment_id: int, data: EmploymentUpdate, *, actor_employment_id: Optional[int] = None
+        self, employment_id: int, data: EmploymentUpdate, *, actor_employment_id: int | None = None
     ) -> EmploymentResponse:
         emp = await self._repo.get_employment_by_id(employment_id)
         if emp is None:

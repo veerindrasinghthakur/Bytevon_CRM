@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
 from sqlalchemy import DateTime, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
@@ -18,9 +17,9 @@ class AuditLog(Base, IdentityMixin):
     reference_id: Mapped[int] = mapped_column(Integer, nullable=False, index=True)
     action: Mapped[AuditAction] = mapped_column(nullable=False, index=True)
     description: Mapped[str] = mapped_column(Text, nullable=False)
-    employment_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True, index=True)
-    ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
-    user_agent: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    employment_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    ip_address: Mapped[str | None] = mapped_column(String(45), nullable=True)
+    user_agent: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,

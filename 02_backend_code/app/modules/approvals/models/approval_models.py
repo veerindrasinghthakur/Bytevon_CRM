@@ -11,16 +11,11 @@ Locked rules:
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import List, Optional
-
 from sqlalchemy import (
-    DateTime,
     ForeignKey,
     Integer,
     String,
     Text,
-    func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -47,14 +42,14 @@ class ApprovalRequest(Base, IdentityMixin, TimestampMixin):
         Integer, ForeignKey("employments.id"), nullable=False, index=True
     )
     target: Mapped[ApprovalTarget] = mapped_column(nullable=False)
-    target_department_id: Mapped[Optional[int]] = mapped_column(
+    target_department_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("departments.id"), nullable=True, index=True
     )
     status: Mapped[ApprovalStatus] = mapped_column(
         nullable=False, default=ApprovalStatus.PENDING
     )
 
-    actions: Mapped[List["ApprovalAction"]] = relationship(
+    actions: Mapped[list[ApprovalAction]] = relationship(
         "ApprovalAction",
         back_populates="approval_request",
         order_by="ApprovalAction.created_at",
@@ -74,8 +69,8 @@ class ApprovalAction(Base, IdentityMixin, CreatedAtMixin):
         Integer, ForeignKey("employments.id"), nullable=False, index=True
     )
     action: Mapped[ApprovalActionType] = mapped_column(nullable=False)
-    remarks: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    remarks: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    approval_request: Mapped["ApprovalRequest"] = relationship(
+    approval_request: Mapped[ApprovalRequest] = relationship(
         "ApprovalRequest", back_populates="actions"
     )

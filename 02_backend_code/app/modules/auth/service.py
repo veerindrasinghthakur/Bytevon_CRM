@@ -10,13 +10,16 @@ from __future__ import annotations
 import hashlib
 import logging
 import secrets
-from datetime import datetime, timedelta, timezone
-from typing import Optional
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.db.enums import SessionRevokeReason, SessionStatus
+from app.core.db.enums import (
+    EmploymentState,
+    SessionRevokeReason,
+    SessionStatus,
+)
 from app.core.security.jwt_manager import JWTManager
 from app.core.security.password_manager import PasswordManager
 from app.core.services.base_public_service import BasePublicService
@@ -43,6 +46,7 @@ from app.modules.auth.schemas import (
     SessionResponse,
     TokenPairResponse,
 )
+from app.modules.workforce.models import Employment
 
 logger = logging.getLogger(__name__)
 
@@ -51,13 +55,39 @@ def _hash_token(raw: str) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
+_TERMINAL_EMPLOYMENT_STATES = frozenset(
+    {
+        EmploymentState.RESIGNED,
+        EmploymentState.TERMINATED,
+        EmploymentState.ALUMNI,
+    }
+)
+
+
+async def _resolve_primary_employment_id(session: AsyncSession, person_id: int) -> int | None:
+    """Primary employment for JWT claims: first non-terminal, else first, else None."""
+    from sqlalchemy import select
+
+    rows = (
+        await session.execute(
+            select(Employment).where(Employment.person_id == person_id).order_by(Employment.id)
+        )
+    ).scalars().all()
+    if not rows:
+        return None
+    for emp in rows:
+        if emp.current_state not in _TERMINAL_EMPLOYMENT_STATES:
+            return emp.id
+    return rows[0].id
+
+
 class AuthService(BasePublicService):
     def __init__(
         self,
         session: AsyncSession,
         *,
-        jwt_manager: Optional[JWTManager] = None,
-        password_manager: Optional[PasswordManager] = None,
+        jwt_manager: JWTManager | None = None,
+        password_manager: PasswordManager | None = None,
     ) -> None:
         super().__init__(session)
         self._repo = AuthRepository(session)
@@ -68,10 +98,10 @@ class AuthService(BasePublicService):
         self,
         data: LoginRequest,
         *,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
     ) -> LoginResponse:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         login = await self._repo.get_login_by_email(data.email)
         if login is None:
@@ -109,12 +139,17 @@ class AuthService(BasePublicService):
             login_id=login.id,
             person_id=login.person_id,
             session_id=session_row.id,
+            employment_id=await _resolve_primary_employment_id(self._session, login.person_id),
         )
         session_row.refresh_token_hash = _hash_token(refresh_token)
 
+        primary_employment_id = await _resolve_primary_employment_id(
+            self._session, login.person_id
+        )
         access_token = self._jwt.generate_access_token(
             login_id=login.id,
             person_id=login.person_id,
+            employment_id=primary_employment_id,
         )
 
         await self._commit()
@@ -128,6 +163,7 @@ class AuthService(BasePublicService):
             ),
             login_id=login.id,
             person_id=login.person_id,
+            employment_id=primary_employment_id,
             email=login.email,
         )
 
@@ -138,7 +174,7 @@ class AuthService(BasePublicService):
         await self._commit()
 
     async def refresh(self, data: RefreshRequest) -> TokenPairResponse:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         payload = self._jwt.decode_refresh_token(data.refresh_token)
 
         session_row = await self._repo.get_session_by_id(int(payload.jti or 0))
@@ -161,6 +197,7 @@ class AuthService(BasePublicService):
             login_id=login.id,
             person_id=login.person_id,
             session_id=session_row.id,
+            employment_id=await _resolve_primary_employment_id(self._session, login.person_id),
         )
         session_row.refresh_token_hash = _hash_token(new_refresh)
         session_row.last_used_at = now
@@ -168,6 +205,7 @@ class AuthService(BasePublicService):
         access_token = self._jwt.generate_access_token(
             login_id=login.id,
             person_id=login.person_id,
+            employment_id=await _resolve_primary_employment_id(self._session, login.person_id),
         )
 
         await self._commit()
@@ -182,10 +220,10 @@ class AuthService(BasePublicService):
         self,
         *,
         login_id: int,
-        session_id: Optional[int] = None,
+        session_id: int | None = None,
         revoke_all: bool = False,
     ) -> MessageResponse:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         if revoke_all:
             await self._repo.revoke_sessions(
                 login_id=login_id,
@@ -251,7 +289,7 @@ class AuthService(BasePublicService):
         if login and login.is_active:
             raw_token = secrets.token_urlsafe(32)
             token_hash = _hash_token(raw_token)
-            expires = datetime.now(timezone.utc) + timedelta(
+            expires = datetime.now(UTC) + timedelta(
                 minutes=settings.PASSWORD_RESET_TOKEN_EXPIRE_MINUTES
             )
             reset = PasswordResetToken(
@@ -268,7 +306,7 @@ class AuthService(BasePublicService):
         )
 
     async def reset_password(self, data: ResetPasswordRequest) -> MessageResponse:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         token_hash = _hash_token(data.token)
         reset = await self._repo.get_valid_reset_token(token_hash, now)
 

@@ -4,7 +4,7 @@ Core domain and HTTP-mappable exceptions.
 
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 
 class AppException(Exception):
@@ -16,7 +16,7 @@ class AppException(Exception):
         *,
         code: str = "app_error",
         status_code: int = 400,
-        details: Optional[Any] = None,
+        details: Any | None = None,
     ) -> None:
         self.message = message
         self.code = code

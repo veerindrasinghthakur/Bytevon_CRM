@@ -2,10 +2,11 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Header
+from fastapi import APIRouter, Depends
 
+from app.core.authorization import AuthContext, enforce_owner_or_grant, require_permission
 from app.modules.approvals.approval_action.schemas import (
     ApprovalActionRequest,
     ApprovalActionResponse,
@@ -16,8 +17,6 @@ from app.modules.approvals.approval_action.schemas import (
 from app.modules.approvals.dependencies import ApprovalActionServiceDep
 
 router = APIRouter(prefix="/approvals", tags=["Approvals — Actions"])
-
-ActorHeader = Annotated[int, Header(alias="X-Employment-Id")]
 
 _TYPE_ICON = {
     "LEAVE": "event_busy",
@@ -62,11 +61,11 @@ def _ui_row(r: ApprovalRequestResponse) -> dict[str, Any]:
 async def approve_ui(
     request_id: int,
     service: ApprovalActionServiceDep,
-    actor: ActorHeader,
-    body: Optional[ApprovalActionRequest] = None,
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "APPROVE", "DEPARTMENT"))],
+    body: ApprovalActionRequest | None = None,
 ) -> dict[str, Any]:
     data = body or ApprovalActionRequest()
-    detail = await service.approve(request_id, data, actor_employment_id=actor)
+    detail = await service.approve(request_id, data, actor_employment_id=auth.employment_id)
     return _ui_row(detail)
 
 
@@ -74,11 +73,11 @@ async def approve_ui(
 async def reject_ui(
     request_id: int,
     service: ApprovalActionServiceDep,
-    actor: ActorHeader,
-    body: Optional[ApprovalActionRequest] = None,
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "APPROVE", "DEPARTMENT"))],
+    body: ApprovalActionRequest | None = None,
 ) -> dict[str, Any]:
     data = body or ApprovalActionRequest()
-    detail = await service.reject(request_id, data, actor_employment_id=actor)
+    detail = await service.reject(request_id, data, actor_employment_id=auth.employment_id)
     return _ui_row(detail)
 
 
@@ -90,9 +89,9 @@ async def approve(
     request_id: int,
     body: ApprovalActionRequest,
     service: ApprovalActionServiceDep,
-    actor: ActorHeader,
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "APPROVE", "DEPARTMENT"))],
 ) -> ApprovalRequestDetailResponse:
-    return await service.approve(request_id, body, actor_employment_id=actor)
+    return await service.approve(request_id, body, actor_employment_id=auth.employment_id)
 
 
 @router.post(
@@ -103,9 +102,9 @@ async def reject(
     request_id: int,
     body: ApprovalActionRequest,
     service: ApprovalActionServiceDep,
-    actor: ActorHeader,
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "APPROVE", "DEPARTMENT"))],
 ) -> ApprovalRequestDetailResponse:
-    return await service.reject(request_id, body, actor_employment_id=actor)
+    return await service.reject(request_id, body, actor_employment_id=auth.employment_id)
 
 
 @router.post(
@@ -116,9 +115,11 @@ async def cancel(
     request_id: int,
     body: ApprovalActionRequest,
     service: ApprovalActionServiceDep,
-    actor: ActorHeader,
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "UPDATE", "CUSTOM"))],
 ) -> ApprovalRequestDetailResponse:
-    return await service.cancel(request_id, body, actor_employment_id=actor)
+    current = await service.get_request(request_id)
+    enforce_owner_or_grant(auth, "approval", "UPDATE", owner_employment_id=current.requester_employment_id)
+    return await service.cancel(request_id, body, actor_employment_id=auth.employment_id)
 
 
 @router.post(
@@ -130,6 +131,8 @@ async def comment(
     request_id: int,
     body: CommentRequest,
     service: ApprovalActionServiceDep,
-    actor: ActorHeader,
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "UPDATE", "CUSTOM"))],
 ) -> ApprovalActionResponse:
-    return await service.comment(request_id, body, actor_employment_id=actor)
+    current = await service.get_request(request_id)
+    enforce_owner_or_grant(auth, "approval", "UPDATE", owner_employment_id=current.requester_employment_id)
+    return await service.comment(request_id, body, actor_employment_id=auth.employment_id)

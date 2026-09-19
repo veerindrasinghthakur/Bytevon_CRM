@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Optional
+from typing import Annotated
 
 from fastapi import APIRouter, Header, Request, status
 
+from app.core.dependencies import CurrentLoginDep
+from app.core.exceptions.exception import ForbiddenError
+from app.core.ip_utils import normalize_ip_address
 from app.modules.auth.dependencies import AuthServiceDep
 from app.modules.auth.schemas import (
     ChangePasswordRequest,
@@ -33,7 +36,7 @@ async def login(
     service: AuthServiceDep,
     request: Request,
 ) -> LoginResponse:
-    ip = request.client.host if request.client else None
+    ip = normalize_ip_address(request.client.host if request.client else None)
     ua = request.headers.get("user-agent")
     return await service.login(body, ip_address=ip, user_agent=ua)
 
@@ -57,10 +60,13 @@ async def refresh(
 )
 async def logout(
     service: AuthServiceDep,
+    login: CurrentLoginDep,
     x_login_id: Annotated[int, Header(alias="X-Login-Id")],
-    session_id: Optional[int] = None,
+    session_id: int | None = None,
     revoke_all: bool = False,
 ) -> MessageResponse:
+    if x_login_id != login.id:
+        raise ForbiddenError("Cannot act on another login's sessions")
     return await service.logout(
         login_id=x_login_id, session_id=session_id, revoke_all=revoke_all
     )
@@ -74,8 +80,11 @@ async def logout(
 async def change_password(
     body: ChangePasswordRequest,
     service: AuthServiceDep,
+    login: CurrentLoginDep,
     x_login_id: Annotated[int, Header(alias="X-Login-Id")],
 ) -> MessageResponse:
+    if x_login_id != login.id:
+        raise ForbiddenError("Cannot change another login's password")
     return await service.change_password(login_id=x_login_id, data=body)
 
 
@@ -110,6 +119,9 @@ async def reset_password(
 )
 async def list_sessions(
     service: AuthServiceDep,
+    login: CurrentLoginDep,
     x_login_id: Annotated[int, Header(alias="X-Login-Id")],
 ) -> list[SessionResponse]:
+    if x_login_id != login.id:
+        raise ForbiddenError("Cannot list another login's sessions")
     return await service.list_sessions(x_login_id)

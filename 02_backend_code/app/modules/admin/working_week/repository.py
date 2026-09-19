@@ -1,8 +1,8 @@
 """Working week repository."""
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import date
-from typing import Optional, Sequence
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,12 +17,12 @@ class WorkingWeekRepository(BaseRepository):
 
     async def get_by_id(
         self, week_id: int, *, include_archived: bool = True
-    ) -> Optional[WorkingWeek]:
+    ) -> WorkingWeek | None:
         return await self.scalar_one_or_none(
             select(WorkingWeek).where(WorkingWeek.id == week_id)
         )
 
-    async def get_current(self, *, as_of: Optional[date] = None, on_date: Optional[date] = None) -> Optional[WorkingWeek]:
+    async def get_current(self, *, as_of: date | None = None, on_date: date | None = None) -> WorkingWeek | None:
         as_of = as_of or on_date or date.today()
         stmt = (
             select(WorkingWeek)

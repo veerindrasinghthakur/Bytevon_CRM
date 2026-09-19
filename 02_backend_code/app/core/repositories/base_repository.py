@@ -7,7 +7,8 @@ Each module repository implements the exact queries it needs.
 
 from __future__ import annotations
 
-from typing import Any, Sequence, TypeVar
+from collections.abc import Sequence
+from typing import Any, TypeVar
 
 from sqlalchemy import Result, Select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,7 +34,7 @@ class BaseRepository:
         self._session.add_all(instances)
         return instances
 
-    async def delete(self, instance: ModelT) -> None:
+    async def delete(self, instance: DeclarativeBase) -> None:
         """
         Hard delete. Prefer archive in almost all cases.
         Only use when the domain explicitly allows hard delete.

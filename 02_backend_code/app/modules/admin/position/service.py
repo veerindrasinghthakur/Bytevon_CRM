@@ -1,22 +1,28 @@
 """PositionService — admin CRUD for job positions."""
 from __future__ import annotations
-from datetime import datetime, timezone
-from typing import Optional
+
+from datetime import UTC, datetime
+
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
-from app.modules.workforce.models import Position
 from app.modules.admin.position.repository import PositionRepository
 from app.modules.admin.position.schemas import (
-    MessageResponse, PositionCreate, PositionResponse, PositionUpdate,
+    MessageResponse,
+    PositionCreate,
+    PositionResponse,
+    PositionUpdate,
 )
+from app.modules.workforce.models import Position
+
 
 class PositionService(BasePublicService):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
         self._repo = PositionRepository(session)
 
-    async def create(self, data: PositionCreate, *, actor_employment_id: Optional[int] = None) -> PositionResponse:
+    async def create(self, data: PositionCreate, *, actor_employment_id: int | None = None) -> PositionResponse:
         existing = await self._repo.get_by_name(data.name.strip())
         if existing:
             raise ConflictError(f"Position '{data.name}' already exists")
@@ -38,7 +44,7 @@ class PositionService(BasePublicService):
         return [PositionResponse.model_validate(r) for r in rows]
 
     async def update(
-        self, position_id: int, data: PositionUpdate, *, actor_employment_id: Optional[int] = None
+        self, position_id: int, data: PositionUpdate, *, actor_employment_id: int | None = None
     ) -> PositionResponse:
         pos = await self._repo.get_by_id(position_id, include_archived=True)
         if pos is None:
@@ -56,14 +62,14 @@ class PositionService(BasePublicService):
         await self._session.refresh(pos)
         return PositionResponse.model_validate(pos)
 
-    async def archive(self, position_id: int, *, actor_employment_id: Optional[int] = None) -> MessageResponse:
+    async def archive(self, position_id: int, *, actor_employment_id: int | None = None) -> MessageResponse:
         pos = await self._repo.get_by_id(position_id, include_archived=True)
         if pos is None:
             raise NotFoundError("Position not found")
         if pos.is_archived:
             raise DomainError("Position is already archived")
         pos.is_archived = True
-        pos.archived_at = datetime.now(timezone.utc)
+        pos.archived_at = datetime.now(UTC)
         await self._commit()
         await self._audit("position.archived", position_id, actor_employment_id)
         return MessageResponse(message="Position archived")

@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -52,7 +51,7 @@ class TeamService(BasePublicService):
         self,
         data: TeamCreate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> TeamResponse:
         if not data.name or not str(data.name).strip():
             raise DomainError("Team name is required")
@@ -113,7 +112,7 @@ class TeamService(BasePublicService):
         team_id: int,
         data: TeamUpdate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> TeamResponse:
         team = await self._repo.get_team_by_id(team_id)
         if team is None:
@@ -139,7 +138,7 @@ class TeamService(BasePublicService):
         team_id: int,
         data: TeamMemberAdd,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> TeamMemberResponse:
         team = await self._repo.get_team_by_id(team_id)
         if team is None:
@@ -178,12 +177,12 @@ class TeamService(BasePublicService):
         team_id: int,
         employment_id: int,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> MessageResponse:
         member = await self._repo.get_active_member(team_id, employment_id)
         if member is None:
             raise NotFoundError("Active team membership not found")
-        member.left_at = datetime.now(timezone.utc)
+        member.left_at = datetime.now(UTC)
         await self._commit()
         await self._audit("team.member_removed", team_id, actor_employment_id)
         return MessageResponse(message="Team member removed")

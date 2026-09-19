@@ -1,8 +1,6 @@
 """Client repository."""
 from __future__ import annotations
 
-from typing import Optional
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,7 +15,7 @@ class ClientRepository:
         self._session.add(obj)
         await self._session.flush()
 
-    async def get_client(self, client_id: int, *, include_archived: bool = False) -> Optional[Client]:
+    async def get_client(self, client_id: int, *, include_archived: bool = False) -> Client | None:
         client = await self._session.get(Client, client_id)
         if client is None:
             return None

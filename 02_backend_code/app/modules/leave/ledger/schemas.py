@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -19,8 +18,8 @@ class LeaveLedgerCreate(BaseModel):
     leave_type: LeaveType
     transaction_type: str = Field(..., min_length=1, max_length=50)
     days: Decimal
-    reference_type: Optional[str] = None
-    reference_id: Optional[int] = None
+    reference_type: str | None = None
+    reference_id: int | None = None
 
 
 class LeaveLedgerResponse(BaseModel):
@@ -31,10 +30,10 @@ class LeaveLedgerResponse(BaseModel):
     leave_type: LeaveType
     transaction_type: str
     days: Decimal
-    reference_type: Optional[str]
-    reference_id: Optional[int]
+    reference_type: str | None
+    reference_id: int | None
     created_at: datetime
-    changed_by: Optional[int]
+    changed_by: int | None
 
 
 class LeaveBalanceItem(BaseModel):
@@ -44,7 +43,7 @@ class LeaveBalanceItem(BaseModel):
 
 class LeaveBalanceResponse(BaseModel):
     employment_id: int
-    balances: List[LeaveBalanceItem]
+    balances: list[LeaveBalanceItem]
 
 
 class HolidayItem(BaseModel):
@@ -57,7 +56,7 @@ class LeaveTypeOptionItem(BaseModel):
     leave_type: LeaveType
     name: str
     annual_entitlement: Decimal
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class ApplyLeaveBalanceItem(BaseModel):
@@ -69,9 +68,9 @@ class ApplyLeaveBalanceItem(BaseModel):
 
 class ApplyLeaveContextResponse(BaseModel):
     employment_id: int
-    holidays: List[HolidayItem]
-    leave_types: List[LeaveTypeOptionItem]
-    balances: List[ApplyLeaveBalanceItem]
+    holidays: list[HolidayItem]
+    leave_types: list[LeaveTypeOptionItem]
+    balances: list[ApplyLeaveBalanceItem]
 
 
 class LeaveCalculateRequest(BaseModel):
@@ -80,10 +79,10 @@ class LeaveCalculateRequest(BaseModel):
     start_date: date
     end_date: date
     half_day: bool = False
-    holiday_calendar_id: Optional[int] = None
+    holiday_calendar_id: int | None = None
 
     @model_validator(mode="after")
-    def validate_dates(self) -> "LeaveCalculateRequest":
+    def validate_dates(self) -> LeaveCalculateRequest:
         if self.end_date < self.start_date:
             raise ValueError("end_date must be on or after start_date")
         return self
@@ -91,6 +90,6 @@ class LeaveCalculateRequest(BaseModel):
 
 class LeaveCalculateResponse(BaseModel):
     day_cost: Decimal
-    balance_remaining: Optional[Decimal] = None
-    estimated_balance_after: Optional[Decimal] = None
-    holidays_in_range: List[HolidayItem] = Field(default_factory=list)
+    balance_remaining: Decimal | None = None
+    estimated_balance_after: Decimal | None = None
+    holidays_in_range: list[HolidayItem] = Field(default_factory=list)

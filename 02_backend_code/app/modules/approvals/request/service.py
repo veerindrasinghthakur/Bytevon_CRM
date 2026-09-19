@@ -1,8 +1,6 @@
 """RequestService — create / list / get approval requests."""
 from __future__ import annotations
 
-from typing import Optional
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db.enums import ApprovalStatus
@@ -27,7 +25,7 @@ class RequestService(BasePublicService):
         self,
         data: ApprovalRequestCreate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
         commit: bool = True,
     ) -> ApprovalRequestResponse:
         if data.target.value == "DEPARTMENT" and data.target_department_id is None:
@@ -83,10 +81,10 @@ class RequestService(BasePublicService):
     async def list_requests(
         self,
         *,
-        status: Optional[ApprovalStatus] = None,
-        request_type: Optional[str] = None,
-        requester_employment_id: Optional[int] = None,
-        target_department_id: Optional[int] = None,
+        status: ApprovalStatus | None = None,
+        request_type: str | None = None,
+        requester_employment_id: int | None = None,
+        target_department_id: int | None = None,
         limit: int = 100,
         offset: int = 0,
     ) -> list[ApprovalRequestResponse]:

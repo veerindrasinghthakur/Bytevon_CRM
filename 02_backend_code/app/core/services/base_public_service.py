@@ -9,7 +9,6 @@ Notification and Audit are called *after* successful commit (best-effort).
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -143,11 +142,11 @@ class BasePublicService:
         self,
         action_key: str,
         entity_id: int,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
         *,
-        description: Optional[str] = None,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
+        description: str | None = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
     ) -> None:
         """
         Best-effort audit after business commit.
@@ -157,8 +156,8 @@ class BasePublicService:
         """
         try:
             from app.core.config import settings
-            from app.core.db.enums import AuditAction, AuditReferenceType
             from app.core.database import AsyncSessionLocal
+            from app.core.db.enums import AuditAction, AuditReferenceType
             from app.modules.admin.audit.schemas import AuditLogCreate
             from app.modules.admin.audit.service import AuditService
 
@@ -210,14 +209,14 @@ class BasePublicService:
         reference_id: int,
         action: str,
         description: str,
-        employment_id: Optional[int] = None,
-        ip_address: Optional[str] = None,
-        user_agent: Optional[str] = None,
+        employment_id: int | None = None,
+        ip_address: str | None = None,
+        user_agent: str | None = None,
     ) -> None:
         """Explicit enum-based audit (preferred when caller knows enums)."""
         try:
-            from app.core.db.enums import AuditAction, AuditReferenceType
             from app.core.database import AsyncSessionLocal
+            from app.core.db.enums import AuditAction, AuditReferenceType
             from app.modules.admin.audit.schemas import AuditLogCreate
             from app.modules.admin.audit.service import AuditService
 
@@ -248,7 +247,7 @@ class BasePublicService:
         employment_id: int,
         title: str,
         body: str,
-        payload: Optional[dict] = None,
+        payload: dict | None = None,
     ) -> None:
         """Best-effort IN_APP notification to one employment via ComposeService."""
         try:

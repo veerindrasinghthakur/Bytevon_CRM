@@ -10,9 +10,9 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
+from app.modules.leave.ledger.routes import router as ledger_router
 from app.modules.leave.policy.routes import router as policy_router
 from app.modules.leave.request.routes import router as request_router
-from app.modules.leave.ledger.routes import router as ledger_router
 
 router = APIRouter(prefix="/leave", tags=["Leave"])
 

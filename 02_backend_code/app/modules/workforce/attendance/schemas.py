@@ -3,9 +3,8 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.core.db.enums import (
     AttendanceCorrectionStatus,
@@ -21,12 +20,12 @@ class MessageResponse(BaseModel):
 class PunchRequest(BaseModel):
     employment_id: int
     punch_type: PunchType
-    punch_time: Optional[datetime] = None
-    attendance_date: Optional[date] = None
-    shift_id: Optional[int] = None
-    latitude: Optional[Decimal] = None
-    longitude: Optional[Decimal] = None
-    accuracy_meters: Optional[int] = None
+    punch_time: datetime | None = None
+    attendance_date: date | None = None
+    shift_id: int | None = None
+    latitude: Decimal | None = None
+    longitude: Decimal | None = None
+    accuracy_meters: int | None = None
 
 
 class PunchResponse(BaseModel):
@@ -35,40 +34,46 @@ class PunchResponse(BaseModel):
     attendance_day_id: int
     punch_type: PunchType
     punch_time: datetime
-    latitude: Optional[Decimal] = None
-    longitude: Optional[Decimal] = None
-    accuracy_meters: Optional[int] = None
+    latitude: Decimal | None = None
+    longitude: Decimal | None = None
+    accuracy_meters: int | None = None
     client_ip: str
     is_valid_punch: bool
-    validation_message: Optional[str] = None
+    validation_message: str | None = None
     created_at: datetime
+
+    @field_validator("client_ip", mode="before")
+    @classmethod
+    def coerce_ip_to_str(cls, v: object) -> object:
+        # asyncpg returns INET columns as ipaddress objects; API emits strings.
+        return str(v) if v is not None else v
 
 
 class AttendanceDayResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     employment_id: int
-    shift_id: Optional[int] = None
+    shift_id: int | None = None
     attendance_date: date
     status: AttendanceStatus
-    working_hours: Optional[Decimal] = None
+    working_hours: Decimal | None = None
     created_at: datetime
     updated_at: datetime
 
 
 class AttendanceDayDetailResponse(AttendanceDayResponse):
-    punches: List[PunchResponse] = Field(default_factory=list)
+    punches: list[PunchResponse] = Field(default_factory=list)
 
 
 class CorrectionCreate(BaseModel):
     attendance_day_id: int
-    requested_check_in: Optional[datetime] = None
-    requested_check_out: Optional[datetime] = None
+    requested_check_in: datetime | None = None
+    requested_check_out: datetime | None = None
     reason: str = Field(..., min_length=1)
-    target_department_id: Optional[int] = None
+    target_department_id: int | None = None
 
     @model_validator(mode="after")
-    def at_least_one_time(self) -> "CorrectionCreate":
+    def at_least_one_time(self) -> CorrectionCreate:
         if self.requested_check_in is None and self.requested_check_out is None:
             raise ValueError("At least one of requested_check_in or requested_check_out is required")
         return self
@@ -78,10 +83,10 @@ class CorrectionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id: int
     attendance_day_id: int
-    requested_check_in: Optional[datetime] = None
-    requested_check_out: Optional[datetime] = None
+    requested_check_in: datetime | None = None
+    requested_check_out: datetime | None = None
     reason: str
-    approval_request_id: Optional[int] = None
+    approval_request_id: int | None = None
     status: AttendanceCorrectionStatus
     created_at: datetime
     updated_at: datetime
@@ -90,14 +95,14 @@ class CorrectionResponse(BaseModel):
 class AttendancePolicyCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
     correction_window_days: int = Field(..., ge=0)
-    max_corrections_per_month: Optional[int] = Field(None, ge=0)
+    max_corrections_per_month: int | None = Field(None, ge=0)
     reasons_mandatory: bool = True
-    approval_sla_hours: Optional[int] = None
+    approval_sla_hours: int | None = None
     allow_multiple_punches: bool = True
     require_checkout_before_new_checkin: bool = False
     auto_create_attendance_day: bool = True
-    default_grace_late_minutes: Optional[int] = None
-    max_clock_drift_seconds: Optional[int] = None
+    default_grace_late_minutes: int | None = None
+    max_clock_drift_seconds: int | None = None
     effective_from: date
 
 
@@ -106,18 +111,18 @@ class AttendancePolicyResponse(BaseModel):
     id: int
     name: str
     correction_window_days: int
-    max_corrections_per_month: Optional[int] = None
+    max_corrections_per_month: int | None = None
     reasons_mandatory: bool
-    approval_sla_hours: Optional[int] = None
+    approval_sla_hours: int | None = None
     allow_multiple_punches: bool
     require_checkout_before_new_checkin: bool
     auto_create_attendance_day: bool
-    default_grace_late_minutes: Optional[int] = None
-    max_clock_drift_seconds: Optional[int] = None
+    default_grace_late_minutes: int | None = None
+    max_clock_drift_seconds: int | None = None
     effective_from: date
-    effective_to: Optional[date] = None
+    effective_to: date | None = None
     created_at: datetime
-    changed_by: Optional[int] = None
+    changed_by: int | None = None
 
 
 class MonthlySummaryResponse(BaseModel):
@@ -133,24 +138,24 @@ class MonthlySummaryResponse(BaseModel):
     week_off_days: Decimal
     on_leave_days: Decimal
     working_hours: Decimal
-    overtime_hours: Optional[Decimal] = None
-    late_count: Optional[int] = None
-    early_departure_count: Optional[int] = None
-    attendance_percentage: Optional[Decimal] = None
+    overtime_hours: Decimal | None = None
+    late_count: int | None = None
+    early_departure_count: int | None = None
+    attendance_percentage: Decimal | None = None
     rebuilt_at: datetime
     is_locked: bool
-    changed_by: Optional[int] = None
+    changed_by: int | None = None
     created_at: datetime
     updated_at: datetime
 
 
 class BreakStartRequest(BaseModel):
     attendance_day_id: int
-    break_start: Optional[datetime] = None
+    break_start: datetime | None = None
 
 
 class BreakEndRequest(BaseModel):
-    break_end: Optional[datetime] = None
+    break_end: datetime | None = None
 
 
 class BreakResponse(BaseModel):
@@ -158,6 +163,6 @@ class BreakResponse(BaseModel):
     id: int
     attendance_day_id: int
     break_start: datetime
-    break_end: Optional[datetime] = None
-    duration_minutes: Optional[int] = None
+    break_end: datetime | None = None
+    duration_minutes: int | None = None
     created_at: datetime

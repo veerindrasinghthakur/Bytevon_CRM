@@ -2,9 +2,9 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from decimal import Decimal
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -23,7 +23,7 @@ from app.modules.admin.location.schemas import (
 logger = logging.getLogger(__name__)
 
 
-def _optional_id(value: Optional[int]) -> Optional[int]:
+def _optional_id(value: int | None) -> int | None:
     if value is None or value <= 0:
         return None
     return value
@@ -39,7 +39,7 @@ class LocationService(BasePublicService):
         return obj
 
     async def create(
-        self, data: LocationCreate, *, actor_employment_id: Optional[int] = None
+        self, data: LocationCreate, *, actor_employment_id: int | None = None
     ) -> LocationResponse:
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         loc = Location(
@@ -81,7 +81,7 @@ class LocationService(BasePublicService):
         location_id: int,
         data: LocationUpdate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> LocationResponse:
         loc = await self._repo.get_by_id(location_id, include_archived=True)
         if loc is None:
@@ -120,7 +120,7 @@ class LocationService(BasePublicService):
         return LocationResponse.model_validate(loc)
 
     async def archive(
-        self, location_id: int, *, actor_employment_id: Optional[int] = None
+        self, location_id: int, *, actor_employment_id: int | None = None
     ) -> MessageResponse:
         loc = await self._repo.get_by_id(location_id, include_archived=True)
         if loc is None:
@@ -128,7 +128,7 @@ class LocationService(BasePublicService):
         if loc.is_archived:
             return MessageResponse(message="Location already archived")
         loc.is_archived = True
-        loc.archived_at = datetime.now(timezone.utc)
+        loc.archived_at = datetime.now(UTC)
         loc.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
         await self._audit("location.archived", location_id, actor_employment_id)

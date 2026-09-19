@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Awaitable, Callable, Optional
+from collections.abc import Awaitable, Callable
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -36,6 +36,17 @@ class ApprovalActionService(BasePublicService):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
         self._repo = ApprovalActionRepository(session)
+
+    async def get_request(self, request_id: int) -> ApprovalRequestDetailResponse:
+        """Read-only fetch for ownership checks (no state change)."""
+        req = await self._repo.get_request_by_id(request_id, with_actions=True)
+        if req is None:
+            raise NotFoundError("Approval request not found")
+        actions = await self._repo.list_actions(req.id)
+        return ApprovalRequestDetailResponse(
+            **ApprovalRequestResponse.model_validate(req).model_dump(),
+            actions=[ApprovalActionResponse.model_validate(a) for a in actions],
+        )
 
     async def approve(
         self,
@@ -113,7 +124,7 @@ class ApprovalActionService(BasePublicService):
         *,
         action: ApprovalActionType,
         new_status: ApprovalStatus,
-        remarks: Optional[str],
+        remarks: str | None,
         actor_employment_id: int,
         allow_requester: bool = False,
     ) -> ApprovalRequestDetailResponse:
@@ -140,6 +151,9 @@ class ApprovalActionService(BasePublicService):
         req.status = new_status
 
         await self._commit()
+        # Status mutation issues an UPDATE on commit, postfetch-expiring
+        # server-computed columns; refresh before sync validation.
+        await self._refresh(req)
         await self._audit(
             f"approval_request.{new_status.value.lower()}",
             req.id,

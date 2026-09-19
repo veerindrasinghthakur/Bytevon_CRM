@@ -3,9 +3,8 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from app.core.db.enums import DeviceType, SessionStatus
 
@@ -13,7 +12,7 @@ from app.core.db.enums import DeviceType, SessionStatus
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8)
-    device_name: Optional[str] = None
+    device_name: str | None = None
     device_type: DeviceType = DeviceType.OTHER
 
 
@@ -22,7 +21,7 @@ class RefreshRequest(BaseModel):
 
 
 class LogoutRequest(BaseModel):
-    refresh_token: Optional[str] = None
+    refresh_token: str | None = None
 
 
 class ChangePasswordRequest(BaseModel):
@@ -55,19 +54,26 @@ class SessionResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    device_name: Optional[str]
+    device_name: str | None
     device_type: DeviceType
-    ip_address: Optional[str]
+    ip_address: str | None
     status: SessionStatus
-    last_used_at: Optional[datetime]
+    last_used_at: datetime | None
     expires_at: datetime
     created_at: datetime
+
+    @field_validator("ip_address", mode="before")
+    @classmethod
+    def coerce_ip_to_str(cls, v: object) -> object:
+        # asyncpg returns INET columns as ipaddress objects; API emits strings.
+        return str(v) if v is not None else v
 
 
 class LoginResponse(BaseModel):
     tokens: TokenPairResponse
     login_id: int
     person_id: int
+    employment_id: int | None = None
     email: str
 
 

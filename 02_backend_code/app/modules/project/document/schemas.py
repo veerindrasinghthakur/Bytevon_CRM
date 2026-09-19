@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -15,12 +14,12 @@ class MessageResponse(BaseModel):
 
 class DocumentTypeCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
-    description: Optional[str] = None
+    description: str | None = None
 
 
 class DocumentTypeUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=150)
-    description: Optional[str] = None
+    name: str | None = Field(None, min_length=1, max_length=150)
+    description: str | None = None
 
 
 class DocumentTypeResponse(BaseModel):
@@ -28,24 +27,24 @@ class DocumentTypeResponse(BaseModel):
 
     id: int
     name: str
-    description: Optional[str]
+    description: str | None
     is_archived: bool
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int]
+    changed_by: int | None
 
 
 class DocumentCreate(BaseModel):
     """Create logical document with first version metadata (file already in storage)."""
 
     document_type_id: int
-    title: Optional[str] = None
+    title: str | None = None
     file_reference: str = Field(..., min_length=1)
     file_name: str = Field(..., min_length=1, max_length=255)
     mime_type: str = Field(..., min_length=1, max_length=100)
     file_size: int = Field(..., gt=0)
-    link_entity_type: Optional[DocumentLinkType] = None
-    link_entity_id: Optional[int] = None
+    link_entity_type: DocumentLinkType | None = None
+    link_entity_id: int | None = None
 
 
 class DocumentVersionCreate(BaseModel):
@@ -66,7 +65,7 @@ class DocumentVersionResponse(BaseModel):
     mime_type: str
     file_size: int
     created_at: datetime
-    changed_by: Optional[int]
+    changed_by: int | None
 
 
 class DocumentResponse(BaseModel):
@@ -74,17 +73,17 @@ class DocumentResponse(BaseModel):
 
     id: int
     document_type_id: int
-    current_version_id: Optional[int]
+    current_version_id: int | None
     status: DocumentStatus
-    title: Optional[str]
+    title: str | None
     created_at: datetime
     updated_at: datetime
-    changed_by: Optional[int]
+    changed_by: int | None
 
 
 class DocumentDetailResponse(DocumentResponse):
-    current_version: Optional[DocumentVersionResponse] = None
-    versions: List[DocumentVersionResponse] = Field(default_factory=list)
+    current_version: DocumentVersionResponse | None = None
+    versions: list[DocumentVersionResponse] = Field(default_factory=list)
 
 
 class DocumentLinkCreate(BaseModel):

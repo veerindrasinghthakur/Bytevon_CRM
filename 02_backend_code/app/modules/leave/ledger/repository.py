@@ -1,8 +1,9 @@
 """Leave ledger repository."""
 from __future__ import annotations
 
+from collections.abc import Sequence
 from decimal import Decimal
-from typing import Optional, Sequence
+from typing import Any
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,7 +21,7 @@ class LedgerRepository(BaseRepository):
         self,
         employment_id: int,
         *,
-        leave_type: Optional[LeaveType] = None,
+        leave_type: LeaveType | None = None,
         limit: int = 200,
     ) -> Sequence[LeaveLedger]:
         stmt = (
@@ -46,7 +47,7 @@ class LedgerRepository(BaseRepository):
 
     async def sum_balances_by_type(
         self, employment_id: int
-    ) -> Sequence[tuple]:
+    ) -> Sequence[Any]:
         stmt = (
             select(LeaveLedger.leave_type, func.coalesce(func.sum(LeaveLedger.days), 0))
             .where(LeaveLedger.employment_id == employment_id)

@@ -12,8 +12,9 @@ from app.modules.project.team.routes import router as team_router
 
 router = APIRouter(prefix="/projects", tags=["Projects"])
 
+# Static paths first: /{project_id} would otherwise shadow /notes, /links, etc.
 router.include_router(team_router)
 router.include_router(task_router)
-router.include_router(project_router)
 router.include_router(note_router)
 router.include_router(document_router)
+router.include_router(project_router)

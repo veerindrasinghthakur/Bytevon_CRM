@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Any, Mapping, Optional
+from collections.abc import Mapping
+from typing import Any
 
 from app.core.db.enums import LeadStatus
 from app.modules.sales.lead.schemas import LeadResponse
@@ -40,7 +41,7 @@ _STAGE_TO_STATUS: dict[str, LeadStatus] = {
 }
 
 
-def domain_status_value(status: object) -> str:
+def domain_status_value(status: Any) -> str:
     return status.value if hasattr(status, "value") else str(status)
 
 
@@ -49,7 +50,7 @@ def stage_label(status: object) -> str:
     return _STATUS_TO_STAGE.get(raw, raw.replace("_", " ").title())
 
 
-def parse_stage_or_status(raw: Optional[str]) -> Optional[LeadStatus]:
+def parse_stage_or_status(raw: str | None) -> LeadStatus | None:
     if not raw:
         return None
     key = raw.strip().upper().replace(" ", "_")
@@ -68,9 +69,9 @@ def parse_stage_or_status(raw: Optional[str]) -> Optional[LeadStatus]:
 def lead_to_ui(
     r: LeadResponse,
     *,
-    client_name: Optional[str] = None,
-    platform_name: Optional[str] = None,
-    assignee_name: Optional[str] = None,
+    client_name: str | None = None,
+    platform_name: str | None = None,
+    assignee_name: str | None = None,
 ) -> dict[str, Any]:
     st = domain_status_value(r.status)
     company = "—"

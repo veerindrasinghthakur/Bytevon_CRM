@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import List, Optional
 
 from sqlalchemy import (
     Boolean,
@@ -54,26 +53,26 @@ class AttendanceDay(Base, IdentityMixin, TimestampMixin):
     employment_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("employments.id"), nullable=False, index=True
     )
-    shift_id: Mapped[Optional[int]] = mapped_column(
+    shift_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("shifts.id"), nullable=True
     )
     attendance_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
     status: Mapped[AttendanceStatus] = mapped_column(nullable=False)
-    working_hours: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 2), nullable=True)
+    working_hours: Mapped[Decimal | None] = mapped_column(Numeric(5, 2), nullable=True)
 
-    punches: Mapped[List["AttendancePunch"]] = relationship(
+    punches: Mapped[list[AttendancePunch]] = relationship(
         "AttendancePunch",
         back_populates="attendance_day",
         order_by="AttendancePunch.punch_time",
         cascade="all, delete-orphan",
     )
-    breaks: Mapped[List["AttendanceBreak"]] = relationship(
+    breaks: Mapped[list[AttendanceBreak]] = relationship(
         "AttendanceBreak",
         back_populates="attendance_day",
         order_by="AttendanceBreak.break_start",
         cascade="all, delete-orphan",
     )
-    corrections: Mapped[List["AttendanceCorrection"]] = relationship(
+    corrections: Mapped[list[AttendanceCorrection]] = relationship(
         "AttendanceCorrection",
         back_populates="attendance_day",
         cascade="all, delete-orphan",
@@ -88,16 +87,16 @@ class AttendancePunch(Base, IdentityMixin, CreatedAtMixin):
     )
     punch_type: Mapped[PunchType] = mapped_column(nullable=False)
     punch_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
-    latitude: Mapped[Optional[Decimal]] = mapped_column(Numeric(10, 7), nullable=True)
-    longitude: Mapped[Optional[Decimal]] = mapped_column(Numeric(10, 7), nullable=True)
-    accuracy_meters: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    latitude: Mapped[Decimal | None] = mapped_column(Numeric(10, 7), nullable=True)
+    longitude: Mapped[Decimal | None] = mapped_column(Numeric(10, 7), nullable=True)
+    accuracy_meters: Mapped[int | None] = mapped_column(Integer, nullable=True)
     client_ip: Mapped[str] = mapped_column(INET, nullable=False)
     is_valid_punch: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=True, server_default="true"
     )
-    validation_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    validation_message: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    attendance_day: Mapped["AttendanceDay"] = relationship(
+    attendance_day: Mapped[AttendanceDay] = relationship(
         "AttendanceDay", back_populates="punches"
     )
 
@@ -108,21 +107,21 @@ class AttendanceCorrection(Base, IdentityMixin, TimestampMixin):
     attendance_day_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("attendance_days.id"), nullable=False, index=True
     )
-    requested_check_in: Mapped[Optional[datetime]] = mapped_column(
+    requested_check_in: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
-    requested_check_out: Mapped[Optional[datetime]] = mapped_column(
+    requested_check_out: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
     reason: Mapped[str] = mapped_column(Text, nullable=False)
-    approval_request_id: Mapped[Optional[int]] = mapped_column(
+    approval_request_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("approval_requests.id"), nullable=True, index=True
     )
     status: Mapped[AttendanceCorrectionStatus] = mapped_column(
         nullable=False, default=AttendanceCorrectionStatus.PENDING
     )
 
-    attendance_day: Mapped["AttendanceDay"] = relationship(
+    attendance_day: Mapped[AttendanceDay] = relationship(
         "AttendanceDay", back_populates="corrections"
     )
 
@@ -150,16 +149,16 @@ class MonthlyAttendanceSummary(Base, IdentityMixin, TimestampMixin):
     week_off_days: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=0)
     on_leave_days: Mapped[Decimal] = mapped_column(Numeric(5, 2), nullable=False, default=0)
     working_hours: Mapped[Decimal] = mapped_column(Numeric(8, 2), nullable=False, default=0)
-    overtime_hours: Mapped[Optional[Decimal]] = mapped_column(Numeric(8, 2), nullable=True)
-    late_count: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    early_departure_count: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    attendance_percentage: Mapped[Optional[Decimal]] = mapped_column(
+    overtime_hours: Mapped[Decimal | None] = mapped_column(Numeric(8, 2), nullable=True)
+    late_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    early_departure_count: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    attendance_percentage: Mapped[Decimal | None] = mapped_column(
         Numeric(5, 2), nullable=True
     )
     rebuilt_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
     is_locked: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, server_default="false"
     )
@@ -170,11 +169,11 @@ class AttendancePolicy(Base, IdentityMixin, EffectiveDatingMixin, CreatedAtMixin
 
     name: Mapped[str] = mapped_column(String(150), nullable=False)
     correction_window_days: Mapped[int] = mapped_column(Integer, nullable=False)
-    max_corrections_per_month: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    max_corrections_per_month: Mapped[int | None] = mapped_column(Integer, nullable=True)
     reasons_mandatory: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=True, server_default="true"
     )
-    approval_sla_hours: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    approval_sla_hours: Mapped[int | None] = mapped_column(Integer, nullable=True)
     allow_multiple_punches: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=True, server_default="true"
     )
@@ -184,9 +183,9 @@ class AttendancePolicy(Base, IdentityMixin, EffectiveDatingMixin, CreatedAtMixin
     auto_create_attendance_day: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=True, server_default="true"
     )
-    default_grace_late_minutes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    max_clock_drift_seconds: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    default_grace_late_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    max_clock_drift_seconds: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class AttendanceBreak(Base, IdentityMixin, CreatedAtMixin):
@@ -198,11 +197,11 @@ class AttendanceBreak(Base, IdentityMixin, CreatedAtMixin):
     break_start: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False
     )
-    break_end: Mapped[Optional[datetime]] = mapped_column(
+    break_end: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
-    duration_minutes: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    duration_minutes: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    attendance_day: Mapped["AttendanceDay"] = relationship(
+    attendance_day: Mapped[AttendanceDay] = relationship(
         "AttendanceDay", back_populates="breaks"
     )

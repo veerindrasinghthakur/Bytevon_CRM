@@ -10,7 +10,7 @@ from __future__ import annotations
 from enum import Enum
 
 
-class StrEnum(str, Enum):
+class StrEnum(str, Enum):  # noqa: UP042 -- intentional backport: adds values() helper used by sales routes; stdlib StrEnum lacks it
     def __str__(self) -> str:
         return self.value
 

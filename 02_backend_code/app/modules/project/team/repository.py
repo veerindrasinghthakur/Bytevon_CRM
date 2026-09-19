@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +15,7 @@ class TeamRepository(BaseRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
 
-    async def get_team_by_id(self, team_id: int) -> Optional[Team]:
+    async def get_team_by_id(self, team_id: int) -> Team | None:
         stmt = select(Team).where(Team.id == team_id)
         return await self.scalar_one_or_none(stmt)
 
@@ -25,7 +25,7 @@ class TeamRepository(BaseRepository):
 
     async def get_active_member(
         self, team_id: int, employment_id: int
-    ) -> Optional[TeamMember]:
+    ) -> TeamMember | None:
         stmt = select(TeamMember).where(
             TeamMember.team_id == team_id,
             TeamMember.employment_id == employment_id,

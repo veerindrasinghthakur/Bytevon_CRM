@@ -7,7 +7,6 @@ Loaded from environment variables / .env file.
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import List
 
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -65,7 +64,7 @@ class Settings(BaseSettings):
         return v
 
     @property
-    def cors_origins_list(self) -> List[str]:
+    def cors_origins_list(self) -> list[str]:
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
 
     @property
@@ -93,7 +92,9 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    # Required fields are supplied at runtime via .env/environment (pydantic-settings);
+    # the static checker cannot observe that source.
+    return Settings()  # pyright: ignore[reportCallIssue]
 
 
 settings = get_settings()

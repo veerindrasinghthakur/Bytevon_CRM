@@ -1,10 +1,11 @@
 """Document HTTP routes under /projects."""
 from __future__ import annotations
 
-from typing import Annotated, Optional
+from typing import Annotated
 
-from fastapi import APIRouter, Header, Query, status
+from fastapi import APIRouter, Depends, Query, status
 
+from app.core.authorization import AuthContext, require_permission
 from app.core.db.enums import DocumentLinkType
 from app.modules.project.dependencies import DocumentServiceDep
 from app.modules.project.document.schemas import (
@@ -22,8 +23,6 @@ from app.modules.project.document.schemas import (
 
 router = APIRouter(tags=["Documents"])
 
-ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
-
 
 @router.post(
     "/document-types",
@@ -33,12 +32,12 @@ ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
 async def create_document_type(
     body: DocumentTypeCreate,
     service: DocumentServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("document", "CREATE", "ORGANIZATION"))],
 ) -> DocumentTypeResponse:
-    return await service.create_type(body, actor_employment_id=actor)
+    return await service.create_type(body, actor_employment_id=auth.employment_id)
 
 
-@router.get("/document-types", response_model=list[DocumentTypeResponse])
+@router.get("/document-types", response_model=list[DocumentTypeResponse], dependencies=[Depends(require_permission("document", "VIEW", "ORGANIZATION"))])
 async def list_document_types(
     service: DocumentServiceDep,
     include_archived: bool = Query(False),
@@ -51,18 +50,18 @@ async def update_document_type(
     type_id: int,
     body: DocumentTypeUpdate,
     service: DocumentServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("document", "UPDATE", "ORGANIZATION"))],
 ) -> DocumentTypeResponse:
-    return await service.update_type(type_id, body, actor_employment_id=actor)
+    return await service.update_type(type_id, body, actor_employment_id=auth.employment_id)
 
 
 @router.post("/document-types/{type_id}/archive", response_model=MessageResponse)
 async def archive_document_type(
     type_id: int,
     service: DocumentServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("document", "UPDATE", "ORGANIZATION"))],
 ) -> MessageResponse:
-    return await service.archive_type(type_id, actor_employment_id=actor)
+    return await service.archive_type(type_id, actor_employment_id=auth.employment_id)
 
 
 @router.post(
@@ -73,12 +72,12 @@ async def archive_document_type(
 async def create_document(
     body: DocumentCreate,
     service: DocumentServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("document", "CREATE", "ORGANIZATION"))],
 ) -> DocumentDetailResponse:
-    return await service.create(body, actor_employment_id=actor)
+    return await service.create(body, actor_employment_id=auth.employment_id)
 
 
-@router.get("/documents/{document_id}", response_model=DocumentDetailResponse)
+@router.get("/documents/{document_id}", response_model=DocumentDetailResponse, dependencies=[Depends(require_permission("document", "VIEW", "ORGANIZATION"))])
 async def get_document(
     document_id: int, service: DocumentServiceDep
 ) -> DocumentDetailResponse:
@@ -94,18 +93,18 @@ async def add_version(
     document_id: int,
     body: DocumentVersionCreate,
     service: DocumentServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("document", "CREATE", "ORGANIZATION"))],
 ) -> DocumentVersionResponse:
-    return await service.add_version(document_id, body, actor_employment_id=actor)
+    return await service.add_version(document_id, body, actor_employment_id=auth.employment_id)
 
 
 @router.post("/documents/{document_id}/archive", response_model=MessageResponse)
 async def archive_document(
     document_id: int,
     service: DocumentServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("document", "UPDATE", "ORGANIZATION"))],
 ) -> MessageResponse:
-    return await service.archive(document_id, actor_employment_id=actor)
+    return await service.archive(document_id, actor_employment_id=auth.employment_id)
 
 
 @router.post(
@@ -116,12 +115,12 @@ async def archive_document(
 async def link_document(
     body: DocumentLinkCreate,
     service: DocumentServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("document", "CREATE", "ORGANIZATION"))],
 ) -> DocumentLinkResponse:
-    return await service.link(body, actor_employment_id=actor)
+    return await service.link(body, actor_employment_id=auth.employment_id)
 
 
-@router.get("/links/by-entity", response_model=list[DocumentLinkResponse])
+@router.get("/links/by-entity", response_model=list[DocumentLinkResponse], dependencies=[Depends(require_permission("document", "VIEW", "ORGANIZATION"))])
 async def list_links_for_entity(
     service: DocumentServiceDep,
     entity_type: DocumentLinkType = Query(...),
@@ -133,6 +132,7 @@ async def list_links_for_entity(
 @router.get(
     "/documents/{document_id}/links",
     response_model=list[DocumentLinkResponse],
+    dependencies=[Depends(require_permission("document", "VIEW", "ORGANIZATION"))],
 )
 async def list_links_for_document(
     document_id: int, service: DocumentServiceDep

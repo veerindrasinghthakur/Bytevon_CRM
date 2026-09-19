@@ -1,10 +1,11 @@
 """Source routes — prefix /sources (+ legacy /platforms)."""
 from __future__ import annotations
 
-from typing import Annotated, Optional
+from typing import Annotated
 
-from fastapi import APIRouter, Header, Query, status
+from fastapi import APIRouter, Depends, Query, status
 
+from app.core.authorization import AuthContext, require_permission
 from app.modules.sales.dependencies import SourceServiceDep
 from app.modules.sales.source.schemas import (
     MessageResponse,
@@ -14,19 +15,18 @@ from app.modules.sales.source.schemas import (
 )
 
 router = APIRouter(tags=["Sales Sources"])
-ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
 
 
 @router.post("/sources", response_model=SourceResponse, status_code=status.HTTP_201_CREATED)
 async def create_source(
     body: SourceCreate,
     service: SourceServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("client", "CREATE", "ORGANIZATION"))],
 ) -> SourceResponse:
-    return await service.create(body, actor_employment_id=actor)
+    return await service.create(body, actor_employment_id=auth.employment_id)
 
 
-@router.get("/sources", response_model=list[SourceResponse])
+@router.get("/sources", response_model=list[SourceResponse], dependencies=[Depends(require_permission("client", "VIEW", "ORGANIZATION"))])
 async def list_sources(
     service: SourceServiceDep,
     include_archived: bool = Query(False),
@@ -34,7 +34,7 @@ async def list_sources(
     return await service.list(include_archived=include_archived)
 
 
-@router.get("/sources/{source_id}", response_model=SourceResponse)
+@router.get("/sources/{source_id}", response_model=SourceResponse, dependencies=[Depends(require_permission("client", "VIEW", "ORGANIZATION"))])
 async def get_source(source_id: int, service: SourceServiceDep) -> SourceResponse:
     return await service.get(source_id)
 
@@ -44,26 +44,26 @@ async def update_source(
     source_id: int,
     body: SourceUpdate,
     service: SourceServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("client", "UPDATE", "ORGANIZATION"))],
 ) -> SourceResponse:
-    return await service.update(source_id, body, actor_employment_id=actor)
+    return await service.update(source_id, body, actor_employment_id=auth.employment_id)
 
 
 @router.post("/sources/{source_id}/archive", response_model=MessageResponse)
 async def archive_source(
     source_id: int,
     service: SourceServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("client", "UPDATE", "ORGANIZATION"))],
 ) -> MessageResponse:
-    return await service.archive(source_id, actor_employment_id=actor)
+    return await service.archive(source_id, actor_employment_id=auth.employment_id)
 
 
 # Legacy platform paths
 @router.post("/platforms", response_model=SourceResponse, status_code=status.HTTP_201_CREATED)
-async def create_platform(body: SourceCreate, service: SourceServiceDep, actor: ActorHeader = None) -> SourceResponse:
-    return await service.create(body, actor_employment_id=actor)
+async def create_platform(body: SourceCreate, service: SourceServiceDep, auth: Annotated[AuthContext, Depends(require_permission("client", "CREATE", "ORGANIZATION"))]) -> SourceResponse:
+    return await service.create(body, actor_employment_id=auth.employment_id)
 
 
-@router.get("/platforms", response_model=list[SourceResponse])
+@router.get("/platforms", response_model=list[SourceResponse], dependencies=[Depends(require_permission("client", "VIEW", "ORGANIZATION"))])
 async def list_platforms(service: SourceServiceDep, include_archived: bool = Query(False)) -> list[SourceResponse]:
     return await service.list(include_archived=include_archived)

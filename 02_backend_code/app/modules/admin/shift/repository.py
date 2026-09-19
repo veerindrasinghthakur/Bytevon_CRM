@@ -1,7 +1,7 @@
 """Shift repository."""
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,7 +16,7 @@ class ShiftRepository(BaseRepository):
 
     async def get_by_id(
         self, shift_id: int, *, include_archived: bool = False
-    ) -> Optional[Shift]:
+    ) -> Shift | None:
         stmt = select(Shift).where(Shift.id == shift_id)
         if not include_archived:
             stmt = stmt.where(Shift.is_archived.is_(False))

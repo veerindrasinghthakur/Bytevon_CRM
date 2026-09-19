@@ -2,10 +2,12 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Annotated, Optional
+from typing import Annotated
 
-from fastapi import APIRouter, Header, Query, Request, status
+from fastapi import APIRouter, Depends, Query, Request, status
 
+from app.core.authorization import AuthContext, require_permission
+from app.core.ip_utils import normalize_ip_address
 from app.modules.my_work.attendance.schemas import (
     ApproverOption,
     CorrectionCandidate,
@@ -25,8 +27,6 @@ from app.modules.workforce.attendance.schemas import (
 
 router = APIRouter(prefix="/my-work", tags=["My Work — Attendance"])
 
-EmploymentHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
-
 
 @router.post(
     "/attendance/punch",
@@ -37,14 +37,15 @@ async def my_punch(
     body: PunchRequest,
     service: MyWorkAttendanceServiceDep,
     request: Request,
-    x_employment_id: EmploymentHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "CREATE", "SELF"))],
 ) -> PunchResponse:
-    client_ip = request.client.host if request.client else "0.0.0.0"
+    raw_ip = request.client.host if request.client else None
     forwarded = request.headers.get("x-forwarded-for")
     if forwarded:
-        client_ip = forwarded.split(",")[0].strip()
+        raw_ip = forwarded
+    client_ip = normalize_ip_address(raw_ip) or "0.0.0.0"
     return await service.punch(
-        body, client_ip=client_ip, employment_id=x_employment_id
+        body, client_ip=client_ip, employment_id=auth.employment_id
     )
 
 
@@ -56,9 +57,9 @@ async def my_punch(
 async def my_start_break(
     body: BreakStartRequest,
     service: MyWorkAttendanceServiceDep,
-    x_employment_id: EmploymentHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "CREATE", "SELF"))],
 ) -> BreakResponse:
-    return await service.start_break(body, employment_id=x_employment_id)
+    return await service.start_break(body, employment_id=auth.employment_id)
 
 
 @router.post("/attendance/breaks/{break_id}/end", response_model=BreakResponse)
@@ -66,48 +67,48 @@ async def my_end_break(
     break_id: int,
     body: BreakEndRequest,
     service: MyWorkAttendanceServiceDep,
-    x_employment_id: EmploymentHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "CREATE", "SELF"))],
 ) -> BreakResponse:
-    return await service.end_break(break_id, body, employment_id=x_employment_id)
+    return await service.end_break(break_id, body, employment_id=auth.employment_id)
 
 
 @router.get("/attendance/days", response_model=list[AttendanceDayResponse])
 async def my_days(
     service: MyWorkAttendanceServiceDep,
-    x_employment_id: EmploymentHeader = None,
-    from_date: Optional[date] = Query(None),
-    to_date: Optional[date] = Query(None),
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF"))],
+    from_date: date | None = Query(None),
+    to_date: date | None = Query(None),
 ) -> list[AttendanceDayResponse]:
     return await service.list_days(
-        x_employment_id, from_date=from_date, to_date=to_date
+        auth.employment_id, from_date=from_date, to_date=to_date
     )
 
 
 @router.get("/attendance/today-info", response_model=TodayInfoResponse)
 async def today_info(
     service: MyWorkAttendanceServiceDep,
-    x_employment_id: EmploymentHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF"))],
 ) -> TodayInfoResponse:
-    return await service.today_info(x_employment_id)
+    return await service.today_info(auth.employment_id)
 
 
 @router.get("/attendance/week-hours", response_model=WeekHoursResponse)
 async def week_hours(
     service: MyWorkAttendanceServiceDep,
-    x_employment_id: EmploymentHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF"))],
 ) -> WeekHoursResponse:
-    return await service.week_hours(x_employment_id)
+    return await service.week_hours(auth.employment_id)
 
 
 @router.get("/attendance/corrections", response_model=CorrectionListResponse)
 async def list_corrections(
     service: MyWorkAttendanceServiceDep,
-    x_employment_id: EmploymentHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF"))],
     page: int = Query(1, ge=1),
     pageSize: int = Query(20, ge=1, le=100),
 ) -> CorrectionListResponse:
     return await service.list_corrections(
-        x_employment_id, page=page, page_size=pageSize
+        auth.employment_id, page=page, page_size=pageSize
     )
 
 
@@ -117,14 +118,14 @@ async def list_corrections(
 )
 async def correction_candidates(
     service: MyWorkAttendanceServiceDep,
-    x_employment_id: EmploymentHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF"))],
 ) -> list[CorrectionCandidate]:
-    return await service.correction_candidates(x_employment_id)
+    return await service.correction_candidates(auth.employment_id)
 
 
 @router.get("/approvers", response_model=list[ApproverOption])
 async def list_approvers(
     service: MyWorkAttendanceServiceDep,
-    x_employment_id: EmploymentHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "VIEW", "SELF"))],
 ) -> list[ApproverOption]:
-    return await service.list_approvers(x_employment_id)
+    return await service.list_approvers(auth.employment_id)

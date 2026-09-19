@@ -172,7 +172,7 @@ export async function listLeaveLedger(
     params: { limit: params?.pageSize ?? 200 },
   })
   const raw = Array.isArray(data) ? data : data.items ?? []
-  let items: LeaveLedgerRow[] = raw.map((r) => ({
+  const items: LeaveLedgerRow[] = raw.map((r) => ({
     id: Number(r.id),
     leave_type: String(r.leave_type ?? ''),
     transaction_type: String(r.transaction_type ?? ''),

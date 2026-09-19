@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import datetime
-from typing import Optional, Sequence
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,7 +18,7 @@ class AuthRepository(BaseRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
 
-    async def get_login_by_email(self, email: str) -> Optional[Login]:
+    async def get_login_by_email(self, email: str) -> Login | None:
         stmt = (
             select(Login)
             .where(Login.email == email)
@@ -26,7 +26,7 @@ class AuthRepository(BaseRepository):
         )
         return await self.scalar_one_or_none(stmt)
 
-    async def get_login_by_id(self, login_id: int) -> Optional[Login]:
+    async def get_login_by_id(self, login_id: int) -> Login | None:
         stmt = (
             select(Login)
             .where(Login.id == login_id)
@@ -34,11 +34,11 @@ class AuthRepository(BaseRepository):
         )
         return await self.scalar_one_or_none(stmt)
 
-    async def get_person_by_id(self, person_id: int) -> Optional[Person]:
+    async def get_person_by_id(self, person_id: int) -> Person | None:
         stmt = select(Person).where(Person.id == person_id)
         return await self.scalar_one_or_none(stmt)
 
-    async def get_session_by_id(self, session_id: int) -> Optional[Session]:
+    async def get_session_by_id(self, session_id: int) -> Session | None:
         stmt = select(Session).where(Session.id == session_id)
         return await self.scalar_one_or_none(stmt)
 
@@ -54,8 +54,8 @@ class AuthRepository(BaseRepository):
         *,
         login_id: int,
         reason: str,
-        session_ids: Optional[Sequence[int]] = None,
-        now: Optional[datetime] = None,
+        session_ids: Sequence[int] | None = None,
+        now: datetime | None = None,
     ) -> None:
         from app.core.db.enums import SessionRevokeReason
 
@@ -78,7 +78,7 @@ class AuthRepository(BaseRepository):
 
     async def get_valid_reset_token(
         self, token_hash: str, now: datetime
-    ) -> Optional[PasswordResetToken]:
+    ) -> PasswordResetToken | None:
         stmt = select(PasswordResetToken).where(
             PasswordResetToken.token_hash == token_hash,
             PasswordResetToken.is_used.is_(False),

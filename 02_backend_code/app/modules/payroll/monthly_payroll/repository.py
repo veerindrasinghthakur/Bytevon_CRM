@@ -1,10 +1,10 @@
 """Monthly payroll repository."""
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import date
-from typing import Optional, Sequence
 
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -17,8 +17,8 @@ class MonthlyPayrollRepository(BaseRepository):
         super().__init__(session)
 
     async def get_current_salary(
-        self, employment_id: int, *, as_of: Optional[date] = None
-    ) -> Optional[EmployeeSalary]:
+        self, employment_id: int, *, as_of: date | None = None
+    ) -> EmployeeSalary | None:
         as_of = as_of or date.today()
         stmt = (
             select(EmployeeSalary)
@@ -36,7 +36,7 @@ class MonthlyPayrollRepository(BaseRepository):
 
     async def get_payroll(
         self, employment_id: int, year: int, month: int, *, with_items: bool = False
-    ) -> Optional[MonthlyPayroll]:
+    ) -> MonthlyPayroll | None:
         stmt = select(MonthlyPayroll).where(
             MonthlyPayroll.employment_id == employment_id,
             MonthlyPayroll.year == year,
@@ -48,7 +48,7 @@ class MonthlyPayrollRepository(BaseRepository):
 
     async def get_payroll_by_id(
         self, payroll_id: int, *, with_items: bool = False
-    ) -> Optional[MonthlyPayroll]:
+    ) -> MonthlyPayroll | None:
         stmt = select(MonthlyPayroll).where(MonthlyPayroll.id == payroll_id)
         if with_items:
             stmt = stmt.options(selectinload(MonthlyPayroll.items))
@@ -57,14 +57,17 @@ class MonthlyPayrollRepository(BaseRepository):
     async def list_payrolls(
         self,
         *,
-        employment_id: Optional[int] = None,
-        year: Optional[int] = None,
-        month: Optional[int] = None,
+        employment_id: int | None = None,
+        year: int | None = None,
+        month: int | None = None,
         limit: int = 100,
+        with_items: bool = False,
     ) -> Sequence[MonthlyPayroll]:
         stmt = select(MonthlyPayroll).order_by(
             MonthlyPayroll.year.desc(), MonthlyPayroll.month.desc()
         )
+        if with_items:
+            stmt = stmt.options(selectinload(MonthlyPayroll.items))
         if employment_id is not None:
             stmt = stmt.where(MonthlyPayroll.employment_id == employment_id)
         if year is not None:

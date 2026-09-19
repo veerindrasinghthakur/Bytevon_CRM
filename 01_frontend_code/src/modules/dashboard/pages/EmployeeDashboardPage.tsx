@@ -39,16 +39,16 @@ type EmployeeMeta = {
 export function EmployeeDashboardPage() {
   const navigate = useNavigate()
   const { kpis, tasks, leaveSummary, meta, quickActions, isLoading } = useEmployeeDashboard()
+  const typedMeta = meta as EmployeeMeta | undefined
+  const { weekBarElements } = useWeekBars({ weekBars: typedMeta?.weekBars ?? [], todayIndex: 4 })
 
-  if (isLoading || !meta) {
+  if (isLoading || !meta || !typedMeta) {
     return (
       <div className="py-16 text-center text-body-sm text-on-surface-variant">Loading dashboard…</div>
     )
   }
 
-  const typedMeta = meta as EmployeeMeta
   const displayName = typedMeta.name ?? 'there'
-  const { weekBarElements } = useWeekBars({ weekBars: typedMeta.weekBars, todayIndex: 4 })
 
   return (
     <div className="space-y-8 animate-fade-in">

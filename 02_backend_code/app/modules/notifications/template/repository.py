@@ -1,7 +1,7 @@
 """Template repository."""
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,7 +16,7 @@ class TemplateRepository(BaseRepository):
 
     async def get_template_by_id(
         self, template_id: int
-    ) -> Optional[NotificationTemplate]:
+    ) -> NotificationTemplate | None:
         stmt = select(NotificationTemplate).where(
             NotificationTemplate.id == template_id
         )
@@ -24,7 +24,7 @@ class TemplateRepository(BaseRepository):
 
     async def get_template_by_code(
         self, code: str
-    ) -> Optional[NotificationTemplate]:
+    ) -> NotificationTemplate | None:
         stmt = select(NotificationTemplate).where(
             NotificationTemplate.code == code
         )

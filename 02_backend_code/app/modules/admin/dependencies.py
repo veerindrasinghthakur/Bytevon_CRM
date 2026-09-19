@@ -7,15 +7,15 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
-from app.modules.admin.department.service import DepartmentService
-from app.modules.admin.location.service import LocationService
-from app.modules.admin.shift.service import ShiftService
-from app.modules.admin.working_week.service import WorkingWeekService
-from app.modules.admin.holiday_calendar.service import HolidayCalendarService
-from app.modules.admin.settings.service import SettingsService
-from app.modules.admin.user.service import UserService
-from app.modules.admin.position.service import PositionService
 from app.modules.admin.audit.service import AuditService
+from app.modules.admin.department.service import DepartmentService
+from app.modules.admin.holiday_calendar.service import HolidayCalendarService
+from app.modules.admin.location.service import LocationService
+from app.modules.admin.position.service import PositionService
+from app.modules.admin.settings.service import SettingsService
+from app.modules.admin.shift.service import ShiftService
+from app.modules.admin.user.service import UserService
+from app.modules.admin.working_week.service import WorkingWeekService
 
 
 def get_department_service(session: Annotated[AsyncSession, Depends(get_db_session)]) -> DepartmentService:

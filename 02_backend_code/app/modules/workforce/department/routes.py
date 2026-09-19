@@ -1,11 +1,11 @@
 """Department operational routes under /workforce/departments."""
 from __future__ import annotations
 
-from typing import Annotated, Optional
+from typing import Annotated
 
-from fastapi import APIRouter, Header, Query, status
+from fastapi import APIRouter, Depends, Query, status
 
-from app.modules.workforce.dependencies import DepartmentServiceDep
+from app.core.authorization import AuthContext, require_permission
 from app.modules.workforce.department.schemas import (
     DepartmentAssignRequest,
     DepartmentCreate,
@@ -15,26 +15,26 @@ from app.modules.workforce.department.schemas import (
     DepartmentUpdate,
     MessageResponse,
 )
+from app.modules.workforce.dependencies import DepartmentServiceDep
 
 router = APIRouter(prefix="/departments", tags=["Workforce Departments"])
-ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
 
 
 @router.post("", response_model=DepartmentResponse, status_code=status.HTTP_201_CREATED)
 async def create_department(
-    body: DepartmentCreate, service: DepartmentServiceDep, actor: ActorHeader = None
+    body: DepartmentCreate, service: DepartmentServiceDep, auth: Annotated[AuthContext, Depends(require_permission("department", "CREATE", "ORGANIZATION"))]
 ) -> DepartmentResponse:
-    return await service.create(body, actor_employment_id=actor)
+    return await service.create(body, actor_employment_id=auth.employment_id)
 
 
-@router.get("", response_model=list[DepartmentResponse])
+@router.get("", response_model=list[DepartmentResponse], dependencies=[Depends(require_permission("department", "VIEW", "ORGANIZATION"))])
 async def list_departments(
     service: DepartmentServiceDep, include_archived: bool = Query(False)
 ) -> list[DepartmentResponse]:
     return await service.list(include_archived=include_archived)
 
 
-@router.get("/{department_id}", response_model=DepartmentResponse)
+@router.get("/{department_id}", response_model=DepartmentResponse, dependencies=[Depends(require_permission("department", "VIEW", "ORGANIZATION"))])
 async def get_department(
     department_id: int, service: DepartmentServiceDep
 ) -> DepartmentResponse:
@@ -46,25 +46,25 @@ async def update_department(
     department_id: int,
     body: DepartmentUpdate,
     service: DepartmentServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("department", "UPDATE", "ORGANIZATION"))],
 ) -> DepartmentResponse:
-    return await service.update(department_id, body, actor_employment_id=actor)
+    return await service.update(department_id, body, actor_employment_id=auth.employment_id)
 
 
 @router.post("/{department_id}/archive", response_model=MessageResponse)
 async def archive_department(
-    department_id: int, service: DepartmentServiceDep, actor: ActorHeader = None
+    department_id: int, service: DepartmentServiceDep, auth: Annotated[AuthContext, Depends(require_permission("department", "UPDATE", "ORGANIZATION"))]
 ) -> MessageResponse:
-    return await service.archive(department_id, actor_employment_id=actor)
+    return await service.archive(department_id, actor_employment_id=auth.employment_id)
 
 
-@router.get("/{department_id}/employees", response_model=DepartmentEmployeeListResponse)
+@router.get("/{department_id}/employees", response_model=DepartmentEmployeeListResponse, dependencies=[Depends(require_permission("department", "VIEW", "DEPARTMENT"))])
 async def list_department_employees(
     department_id: int,
     service: DepartmentServiceDep,
     page: int = Query(1, ge=1),
     pageSize: int = Query(50, ge=1, le=200),
-    search: Optional[str] = Query(None),
+    search: str | None = Query(None),
 ) -> DepartmentEmployeeListResponse:
     return await service.list_employees(
         department_id, page=page, page_size=pageSize, search=search
@@ -74,6 +74,7 @@ async def list_department_employees(
 @router.get(
     "/{department_id}/employees-available",
     response_model=list[DepartmentEmployeeOption],
+    dependencies=[Depends(require_permission("department", "VIEW", "DEPARTMENT"))],
 )
 async def list_available(
     department_id: int, service: DepartmentServiceDep
@@ -86,10 +87,10 @@ async def assign(
     department_id: int,
     body: DepartmentAssignRequest,
     service: DepartmentServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("department", "UPDATE", "DEPARTMENT"))],
 ) -> MessageResponse:
     return await service.assign(
-        department_id, body.employmentId, actor_employment_id=actor
+        department_id, body.employmentId, actor_employment_id=auth.employment_id
     )
 
 
@@ -98,8 +99,8 @@ async def remove(
     department_id: int,
     body: DepartmentAssignRequest,
     service: DepartmentServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("department", "UPDATE", "DEPARTMENT"))],
 ) -> MessageResponse:
     return await service.remove(
-        department_id, body.employmentId, actor_employment_id=actor
+        department_id, body.employmentId, actor_employment_id=auth.employment_id
     )

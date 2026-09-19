@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -34,7 +34,7 @@ class PayrollRunService:
         ]
 
     async def preview(
-        self, *, year: Optional[int] = None, month: Optional[int] = None
+        self, *, year: int | None = None, month: int | None = None
     ) -> dict[str, Any]:
         today = date.today()
         y = year or today.year
@@ -61,7 +61,7 @@ class PayrollRunService:
         }
 
     async def run(
-        self, body: RunPayrollBody, *, actor_employment_id: Optional[int] = None
+        self, body: RunPayrollBody, *, actor_employment_id: int | None = None
     ) -> MessageResponse:
         if body.employment_id is not None:
             await self._monthly.calculate_payroll(

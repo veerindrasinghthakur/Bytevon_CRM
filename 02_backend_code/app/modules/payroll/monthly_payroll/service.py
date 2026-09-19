@@ -5,7 +5,6 @@ import logging
 from calendar import monthrange
 from datetime import date
 from decimal import Decimal
-from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -57,10 +56,10 @@ class MonthlyPayrollService(BasePublicService):
         self,
         data: PayrollCalculateRequest,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> MonthlyPayrollResponse:
         existing = await self._repo.get_payroll(
-            data.employment_id, data.year, data.month
+            data.employment_id, data.year, data.month, with_items=True
         )
         if existing and existing.status == PayrollStatus.PAID:
             raise DomainError("Payroll already PAID; cannot recalculate")
@@ -169,12 +168,14 @@ class MonthlyPayrollService(BasePublicService):
 
         await self._commit()
         payroll = await self._repo.get_payroll_by_id(payroll.id, with_items=True)
+        if payroll is None:
+            raise NotFoundError("Payroll run not found after calculate")
         await self._audit("payroll.calculated", payroll.id, actor)
         return _payroll_response(payroll)
 
     async def _attendance_metrics(
         self, employment_id: int, year: int, month: int
-    ) -> tuple[Optional[Decimal], Optional[Decimal]]:
+    ) -> tuple[Decimal | None, Decimal | None]:
         try:
             from app.modules.workforce.attendance.service import AttendanceService
 
@@ -198,7 +199,7 @@ class MonthlyPayrollService(BasePublicService):
             return None, None
 
     async def approve_payroll(
-        self, payroll_id: int, *, actor_employment_id: Optional[int] = None
+        self, payroll_id: int, *, actor_employment_id: int | None = None
     ) -> MonthlyPayrollResponse:
         payroll = await self._repo.get_payroll_by_id(payroll_id, with_items=True)
         if payroll is None:
@@ -208,6 +209,7 @@ class MonthlyPayrollService(BasePublicService):
         payroll.status = PayrollStatus.APPROVED
         payroll.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
+        await self._session.refresh(payroll)
         await self._audit("payroll.approved", payroll.id, actor_employment_id)
         return _payroll_response(payroll)
 
@@ -216,7 +218,7 @@ class MonthlyPayrollService(BasePublicService):
         payroll_id: int,
         data: PayrollPaymentRequest,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> MonthlyPayrollResponse:
         payroll = await self._repo.get_payroll_by_id(payroll_id, with_items=True)
         if payroll is None:
@@ -230,6 +232,7 @@ class MonthlyPayrollService(BasePublicService):
         payroll.payment_date = data.payment_date or date.today()
         payroll.changed_by = actor
         await self._commit()
+        await self._session.refresh(payroll)
         await self._audit("payroll.paid", payroll.id, actor)
         try:
             from app.modules.workforce.attendance.service import AttendanceService
@@ -257,12 +260,13 @@ class MonthlyPayrollService(BasePublicService):
     async def list_payrolls(
         self,
         *,
-        employment_id: Optional[int] = None,
-        year: Optional[int] = None,
-        month: Optional[int] = None,
+        employment_id: int | None = None,
+        year: int | None = None,
+        month: int | None = None,
         limit: int = 100,
     ) -> list[MonthlyPayrollResponse]:
         rows = await self._repo.list_payrolls(
-            employment_id=employment_id, year=year, month=month, limit=limit
+            employment_id=employment_id, year=year, month=month, limit=limit,
+            with_items=True,
         )
         return [_payroll_response(r) for r in rows]

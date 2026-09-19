@@ -11,21 +11,18 @@ Locked rules:
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date
 from decimal import Decimal
-from typing import List, Optional
 
 from sqlalchemy import (
     Date,
-    DateTime,
     ForeignKey,
     Integer,
     Numeric,
     String,
     Text,
-    func,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.base import (
     Base,
@@ -45,10 +42,10 @@ class LeavePolicy(Base, IdentityMixin, EffectiveDatingMixin, CreatedAtMixin):
     name: Mapped[str] = mapped_column(String(150), nullable=False)
     leave_type: Mapped[LeaveType] = mapped_column(nullable=False, index=True)
     annual_entitlement: Mapped[Decimal] = mapped_column(Numeric(6, 2), nullable=False)
-    carry_forward_limit: Mapped[Optional[Decimal]] = mapped_column(
+    carry_forward_limit: Mapped[Decimal | None] = mapped_column(
         Numeric(6, 2), nullable=True
     )
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
 
 class LeaveRequest(Base, IdentityMixin, TimestampMixin):
@@ -65,14 +62,14 @@ class LeaveRequest(Base, IdentityMixin, TimestampMixin):
     leave_type: Mapped[LeaveType] = mapped_column(nullable=False)
     start_date: Mapped[date] = mapped_column(Date, nullable=False)
     end_date: Mapped[date] = mapped_column(Date, nullable=False)
-    reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    approval_request_id: Mapped[Optional[int]] = mapped_column(
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    approval_request_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("approval_requests.id"), nullable=True, index=True
     )
     status: Mapped[LeaveRequestStatus] = mapped_column(
         nullable=False, default=LeaveRequestStatus.PENDING
     )
-    days: Mapped[Optional[Decimal]] = mapped_column(
+    days: Mapped[Decimal | None] = mapped_column(
         Numeric(6, 2),
         nullable=True,
         comment="Cached duration in days; derived at submit time",
@@ -94,6 +91,6 @@ class LeaveLedger(Base, IdentityMixin, CreatedAtMixin):
         nullable=False,
         comment="Positive = credit, negative = debit",
     )
-    reference_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    reference_id: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    reference_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    reference_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)

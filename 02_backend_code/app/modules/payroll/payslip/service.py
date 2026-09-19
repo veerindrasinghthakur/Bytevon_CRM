@@ -1,8 +1,6 @@
 """PayslipService — get detail + mark paid."""
 from __future__ import annotations
 
-from typing import Optional
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.modules.payroll.monthly_payroll.schemas import (
@@ -24,7 +22,7 @@ class PayslipService:
         payroll_id: int,
         data: PayrollPaymentRequest,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> MonthlyPayrollResponse:
         return await self._monthly.mark_paid(
             payroll_id, data, actor_employment_id=actor_employment_id

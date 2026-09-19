@@ -1,8 +1,6 @@
 """My Work Approvals Service."""
 from __future__ import annotations
 
-from typing import Optional
-
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.services.base_public_service import BasePublicService
@@ -17,10 +15,10 @@ class MyWorkApprovalsService(BasePublicService):
 
     async def list_my_approvals(
         self,
-        employment_id: Optional[int] = None,
+        employment_id: int | None = None,
         *,
-        status: Optional[str] = None,
-        search: Optional[str] = None,
+        status: str | None = None,
+        search: str | None = None,
         limit: int = 20,
     ) -> ApprovalListResponse:
         return ApprovalListResponse(items=[], total=0, page=1, pageSize=max(1, limit))

@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -16,7 +15,7 @@ class MessageResponse(BaseModel):
 class EmploymentStateChangeRequest(BaseModel):
     new_state: EmploymentState
     effective_date: date
-    reason: Optional[str] = None
+    reason: str | None = None
 
 
 class EmploymentStateHistoryResponse(BaseModel):
@@ -24,19 +23,19 @@ class EmploymentStateHistoryResponse(BaseModel):
 
     id: int
     employment_id: int
-    previous_state: Optional[EmploymentState] = None
+    previous_state: EmploymentState | None = None
     new_state: EmploymentState
     effective_date: date
-    reason: Optional[str] = None
+    reason: str | None = None
     created_at: datetime
-    changed_by: Optional[int] = None
+    changed_by: int | None = None
 
 
 class EmploymentAssignmentCreate(BaseModel):
-    department_id: Optional[int] = None
-    position_id: Optional[int] = None
-    location_id: Optional[int] = None
-    shift_id: Optional[int] = None
+    department_id: int | None = None
+    position_id: int | None = None
+    location_id: int | None = None
+    shift_id: int | None = None
     work_mode: WorkMode
     effective_from: date
     change_reason: str = Field(..., min_length=1, max_length=100)
@@ -47,13 +46,13 @@ class EmploymentAssignmentResponse(BaseModel):
 
     id: int
     employment_id: int
-    department_id: Optional[int] = None
-    position_id: Optional[int] = None
-    location_id: Optional[int] = None
-    shift_id: Optional[int] = None
+    department_id: int | None = None
+    position_id: int | None = None
+    location_id: int | None = None
+    shift_id: int | None = None
     work_mode: WorkMode
     effective_from: date
-    effective_to: Optional[date] = None
+    effective_to: date | None = None
     change_reason: str
     created_at: datetime
-    changed_by: Optional[int] = None
+    changed_by: int | None = None

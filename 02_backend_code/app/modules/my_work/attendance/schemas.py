@@ -2,21 +2,20 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
 
 class TodayInfoResponse(BaseModel):
-    employmentId: Optional[int] = None
+    employmentId: int | None = None
     todayLabel: str = "Today"
     shift: str = "—"
     status: str = "UNKNOWN"
-    checkIn: Optional[str] = None
-    checkOut: Optional[str] = None
+    checkIn: str | None = None
+    checkOut: str | None = None
     workedMinutes: int = 0
     breakMinutes: int = 0
-    dayId: Optional[int] = None
+    dayId: int | None = None
 
 
 class WeekDayHours(BaseModel):
@@ -26,8 +25,8 @@ class WeekDayHours(BaseModel):
 
 
 class WeekHoursResponse(BaseModel):
-    employmentId: Optional[int] = None
-    days: List[WeekDayHours] = Field(default_factory=list)
+    employmentId: int | None = None
+    days: list[WeekDayHours] = Field(default_factory=list)
     totalMinutes: int = 0
 
 
@@ -36,11 +35,11 @@ class CorrectionListItem(BaseModel):
     attendanceDayId: int
     status: str
     reason: str = ""
-    createdAt: Optional[datetime] = None
+    createdAt: datetime | None = None
 
 
 class CorrectionListResponse(BaseModel):
-    items: List[CorrectionListItem] = Field(default_factory=list)
+    items: list[CorrectionListItem] = Field(default_factory=list)
     total: int = 0
     page: int = 1
     pageSize: int = 20

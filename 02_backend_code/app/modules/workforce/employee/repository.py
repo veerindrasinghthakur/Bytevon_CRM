@@ -1,8 +1,8 @@
 """Employee / employment / position repository."""
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import date
-from typing import Optional, Sequence
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,13 +23,13 @@ class EmployeeRepository(BaseRepository):
 
     async def get_position_by_id(
         self, position_id: int, *, include_archived: bool = False
-    ) -> Optional[Position]:
+    ) -> Position | None:
         stmt = select(Position).where(Position.id == position_id)
         if not include_archived:
             stmt = stmt.where(Position.is_archived.is_(False))
         return await self.scalar_one_or_none(stmt)
 
-    async def get_position_by_name(self, name: str) -> Optional[Position]:
+    async def get_position_by_name(self, name: str) -> Position | None:
         stmt = select(Position).where(
             Position.name == name, Position.is_archived.is_(False)
         )
@@ -43,7 +43,7 @@ class EmployeeRepository(BaseRepository):
 
     async def get_employment_by_id(
         self, employment_id: int, *, with_relations: bool = False
-    ) -> Optional[Employment]:
+    ) -> Employment | None:
         stmt = select(Employment).where(Employment.id == employment_id)
         if with_relations:
             stmt = stmt.options(
@@ -52,7 +52,7 @@ class EmployeeRepository(BaseRepository):
             )
         return await self.scalar_one_or_none(stmt)
 
-    async def get_employment_by_code(self, employee_code: str) -> Optional[Employment]:
+    async def get_employment_by_code(self, employee_code: str) -> Employment | None:
         stmt = select(Employment).where(Employment.employee_code == employee_code)
         return await self.scalar_one_or_none(stmt)
 
@@ -65,7 +65,7 @@ class EmployeeRepository(BaseRepository):
         return await self.scalars(stmt)
 
     async def list_employments(
-        self, *, state: Optional[str] = None, limit: int = 100, offset: int = 0
+        self, *, state: str | None = None, limit: int = 100, offset: int = 0
     ) -> Sequence[Employment]:
         stmt = select(Employment).order_by(Employment.employee_code)
         if state is not None:
@@ -88,8 +88,8 @@ class EmployeeRepository(BaseRepository):
         return await self.scalars(stmt)
 
     async def get_current_assignment(
-        self, employment_id: int, *, as_of: Optional[date] = None
-    ) -> Optional[EmploymentAssignment]:
+        self, employment_id: int, *, as_of: date | None = None
+    ) -> EmploymentAssignment | None:
         as_of = as_of or date.today()
         stmt = (
             select(EmploymentAssignment)

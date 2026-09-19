@@ -7,8 +7,8 @@ Refresh tokens are stored only as hashes on sessions.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime, timedelta
+from typing import Any
 from uuid import uuid4
 
 from jose import ExpiredSignatureError, JWTError, jwt
@@ -25,7 +25,7 @@ class JWTManager:
         self._refresh_days = settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS
 
     def _encode(self, claims: dict[str, Any], expires_delta: timedelta) -> str:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         payload = {
             **claims,
             "iat": now,
@@ -41,7 +41,7 @@ class JWTManager:
         *,
         login_id: int,
         person_id: int,
-        employment_id: Optional[int] = None,
+        employment_id: int | None = None,
     ) -> str:
         claims = {
             "sub": str(login_id),
@@ -62,7 +62,7 @@ class JWTManager:
         login_id: int,
         person_id: int,
         session_id: int,
-        employment_id: Optional[int] = None,
+        employment_id: int | None = None,
     ) -> str:
         claims = {
             "sub": str(login_id),

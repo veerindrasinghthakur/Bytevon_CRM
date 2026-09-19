@@ -111,7 +111,7 @@ export function LeadDetailPage() {
           {lead.notes && (
             <section className="bv-surface p-6">
               <h2 className="text-title-md font-semibold mb-3">Internal notes</h2>
-              <p className="text-body-md text-on-surface italic">"{lead.notes}"</p>
+              <p className="text-body-md text-on-surface italic">&ldquo;{lead.notes}&rdquo;</p>
             </section>
           )}
 

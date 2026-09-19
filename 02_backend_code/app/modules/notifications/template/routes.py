@@ -1,10 +1,11 @@
 """Template routes."""
 from __future__ import annotations
 
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Header, Query, status
+from fastapi import APIRouter, Depends, Query, status
 
+from app.core.authorization import AuthContext, require_permission
 from app.modules.notifications.dependencies import TemplateServiceDep
 from app.modules.notifications.template.schemas import (
     NotificationTemplateCreate,
@@ -13,8 +14,6 @@ from app.modules.notifications.template.schemas import (
 )
 
 router = APIRouter(prefix="/notifications", tags=["Notifications — Templates"])
-
-ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
 
 
 @router.post(
@@ -25,12 +24,12 @@ ActorHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
 async def create_template(
     body: NotificationTemplateCreate,
     service: TemplateServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("notification", "CREATE", "ORGANIZATION"))],
 ) -> NotificationTemplateResponse:
-    return await service.create_template(body, actor_employment_id=actor)
+    return await service.create_template(body, actor_employment_id=auth.employment_id)
 
 
-@router.get("/templates", response_model=list[NotificationTemplateResponse])
+@router.get("/templates", response_model=list[NotificationTemplateResponse], dependencies=[Depends(require_permission("notification", "VIEW", "ORGANIZATION"))])
 async def list_templates(
     service: TemplateServiceDep,
     active_only: bool = Query(False),
@@ -38,7 +37,7 @@ async def list_templates(
     return await service.list_templates(active_only=active_only)
 
 
-@router.get("/templates/{template_id}", response_model=NotificationTemplateResponse)
+@router.get("/templates/{template_id}", response_model=NotificationTemplateResponse, dependencies=[Depends(require_permission("notification", "VIEW", "ORGANIZATION"))])
 async def get_template(
     template_id: int,
     service: TemplateServiceDep,
@@ -54,14 +53,14 @@ async def update_template(
     template_id: int,
     body: NotificationTemplateUpdate,
     service: TemplateServiceDep,
-    actor: ActorHeader = None,
+    auth: Annotated[AuthContext, Depends(require_permission("notification", "UPDATE", "ORGANIZATION"))],
 ) -> NotificationTemplateResponse:
     return await service.update_template(
-        template_id, body, actor_employment_id=actor
+        template_id, body, actor_employment_id=auth.employment_id
     )
 
 
-@router.get("/triggers")
+@router.get("/triggers", dependencies=[Depends(require_permission("notification", "VIEW", "ORGANIZATION"))])
 async def list_triggers(service: TemplateServiceDep) -> list[dict[str, Any]]:
     templates = await service.list_templates(active_only=False)
     out: list[dict[str, Any]] = []

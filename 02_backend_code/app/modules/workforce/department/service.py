@@ -1,8 +1,8 @@
 """DepartmentService — operational CRUD + members (workforce)."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,7 +21,7 @@ from app.modules.workforce.department.schemas import (
 )
 
 
-def _optional_id(value: Optional[int]) -> Optional[int]:
+def _optional_id(value: int | None) -> int | None:
     if value is None or value <= 0:
         return None
     return value
@@ -37,7 +37,7 @@ class DepartmentService(BasePublicService):
         return obj
 
     async def create(
-        self, data: DepartmentCreate, *, actor_employment_id: Optional[int] = None
+        self, data: DepartmentCreate, *, actor_employment_id: int | None = None
     ) -> DepartmentResponse:
         if await self._repo.get_by_name(data.name):
             raise ConflictError(f"Department '{data.name}' already exists")
@@ -67,7 +67,7 @@ class DepartmentService(BasePublicService):
         department_id: int,
         data: DepartmentUpdate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> DepartmentResponse:
         dept = await self._repo.get_by_id(department_id, include_archived=True)
         if dept is None:
@@ -85,15 +85,13 @@ class DepartmentService(BasePublicService):
             dept.department_head_employment_id = _optional_id(
                 payload["department_head_employment_id"]
             )
-        if hasattr(dept, "updated_by"):
-            dept.updated_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
         await self._audit("department.updated", department_id, actor_employment_id)
         await self._refresh(dept)
         return DepartmentResponse.model_validate(dept)
 
     async def archive(
-        self, department_id: int, *, actor_employment_id: Optional[int] = None
+        self, department_id: int, *, actor_employment_id: int | None = None
     ) -> MessageResponse:
         dept = await self._repo.get_by_id(department_id, include_archived=True)
         if dept is None:
@@ -102,7 +100,7 @@ class DepartmentService(BasePublicService):
             return MessageResponse(message="Department already archived")
         dept.is_archived = True
         if hasattr(dept, "archived_at"):
-            dept.archived_at = datetime.now(timezone.utc)
+            dept.archived_at = datetime.now(UTC)
         await self._commit()
         await self._audit("department.archived", department_id, actor_employment_id)
         return MessageResponse(message="Department archived")
@@ -113,7 +111,7 @@ class DepartmentService(BasePublicService):
         *,
         page: int = 1,
         page_size: int = 50,
-        search: Optional[str] = None,
+        search: str | None = None,
     ) -> DepartmentEmployeeListResponse:
         if await self._repo.get_by_id(department_id, include_archived=True) is None:
             raise NotFoundError("Department not found")
@@ -134,7 +132,7 @@ class DepartmentService(BasePublicService):
         department_id: int,
         employment_id: int,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> MessageResponse:
         if await self._repo.get_by_id(department_id, include_archived=False) is None:
             raise NotFoundError("Department not found")
@@ -148,7 +146,7 @@ class DepartmentService(BasePublicService):
         department_id: int,
         employment_id: int,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> MessageResponse:
         if await self._repo.get_by_id(department_id, include_archived=True) is None:
             raise NotFoundError("Department not found")

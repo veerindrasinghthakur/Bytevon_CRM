@@ -4,7 +4,6 @@ from __future__ import annotations
 import logging
 from datetime import date
 from decimal import Decimal
-from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,12 +17,14 @@ from app.core.db.enums import (
 )
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
+from app.modules.approvals.approval_action.schemas import ApprovalActionRequest
+from app.modules.approvals.approval_action.service import ApprovalActionService
 from app.modules.approvals.request.schemas import ApprovalRequestCreate
 from app.modules.approvals.request.service import RequestService as ApprovalPublicService
+from app.modules.leave.ledger.repository import LedgerRepository
 from app.modules.leave.models import LeaveLedger, LeaveRequest
 from app.modules.leave.request.repository import RequestRepository
 from app.modules.leave.request.schemas import LeaveRequestCreate, LeaveRequestResponse
-from app.modules.leave.ledger.repository import LedgerRepository
 
 logger = logging.getLogger(__name__)
 
@@ -40,12 +41,13 @@ class RequestService(BasePublicService):
         self._repo = RequestRepository(session)
         self._ledger_repo = LedgerRepository(session)
         self._approvals = ApprovalPublicService(session)
+        self._approval_actions = ApprovalActionService(session)
 
     async def submit_request(
         self,
         data: LeaveRequestCreate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> LeaveRequestResponse:
         if data.end_date < data.start_date:
             raise DomainError("end_date must be on or after start_date")
@@ -98,6 +100,10 @@ class RequestService(BasePublicService):
         leave_req.approval_request_id = approval.id
 
         await self._commit()
+        # The approval_request_id assignment issues an UPDATE on commit, which
+        # postfetch-expires server-computed columns (updated_at); refresh before
+        # sync validation to avoid MissingGreenlet.
+        await self._refresh(leave_req)
         await self._audit("leave_request.submitted", leave_req.id, actor)
         return LeaveRequestResponse.model_validate(leave_req)
 
@@ -110,8 +116,8 @@ class RequestService(BasePublicService):
     async def list_requests(
         self,
         *,
-        employment_id: Optional[int] = None,
-        status: Optional[LeaveRequestStatus] = None,
+        employment_id: int | None = None,
+        status: LeaveRequestStatus | None = None,
         limit: int = 100,
         offset: int = 0,
     ) -> list[LeaveRequestResponse]:
@@ -139,12 +145,12 @@ class RequestService(BasePublicService):
 
         req.status = LeaveRequestStatus.CANCELLED
         await self._commit()
+        # UPDATE postfetch-expires server-computed columns; refresh before validation.
+        await self._refresh(req)
 
         if req.approval_request_id:
             try:
-                from app.modules.approvals.schemas.schemas import ApprovalActionRequest
-
-                await self._approvals.cancel(
+                await self._approval_actions.cancel(
                     req.approval_request_id,
                     ApprovalActionRequest(remarks="Leave request cancelled by requester"),
                     actor_employment_id=actor_employment_id,
@@ -165,6 +171,9 @@ class RequestService(BasePublicService):
         reference_id = event.get("reference_id")
         actor = event.get("actor_employment_id") or settings.SYSTEM_EMPLOYMENT_ID
 
+        if status_str is None or reference_id is None:
+            logger.warning("Leave approval event missing status/reference: %s", event)
+            return
         req = await self._repo.get_request_by_id(int(reference_id))
         if req is None:
             logger.warning("Leave request %s not found for approval event", reference_id)

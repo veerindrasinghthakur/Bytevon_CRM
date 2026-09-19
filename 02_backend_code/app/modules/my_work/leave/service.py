@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from datetime import date, datetime, timedelta
 from decimal import Decimal
-from typing import List, Optional
 from uuid import uuid4
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -29,10 +28,10 @@ class MyWorkLeaveService(BasePublicService):
 
     async def list_requests(
         self,
-        employment_id: Optional[int] = None,
+        employment_id: int | None = None,
         *,
-        status: Optional[str] = None,
-        search: Optional[str] = None,
+        status: str | None = None,
+        search: str | None = None,
         limit: int = 20,
         offset: int = 1,
     ) -> LeaveListResponse:
@@ -40,10 +39,10 @@ class MyWorkLeaveService(BasePublicService):
         page_size = max(1, limit)
         return LeaveListResponse(items=[], total=0, page=page, pageSize=page_size)
 
-    async def get_balances(self, employment_id: Optional[int] = None) -> List[LeaveBalance]:
+    async def get_balances(self, employment_id: int | None = None) -> list[LeaveBalance]:
         return []
 
-    async def get_types(self) -> List[LeaveTypeOption]:
+    async def get_types(self) -> list[LeaveTypeOption]:
         rows = await self._repo.get_types()
         return [
             LeaveTypeOption(
@@ -55,7 +54,7 @@ class MyWorkLeaveService(BasePublicService):
         ]
 
     async def get_apply_context(
-        self, employment_id: Optional[int] = None
+        self, employment_id: int | None = None
     ) -> ApplyLeaveContext:
         return ApplyLeaveContext(
             holidays=[],
@@ -65,7 +64,7 @@ class MyWorkLeaveService(BasePublicService):
 
     async def calculate_days(
         self,
-        employment_id: Optional[int] = None,
+        employment_id: int | None = None,
         *,
         input: LeaveCalculateInput,
     ) -> LeaveCalculateResult:
@@ -93,7 +92,7 @@ class MyWorkLeaveService(BasePublicService):
 
     async def submit_request(
         self,
-        employment_id: Optional[int] = None,
+        employment_id: int | None = None,
         *,
         input: CreateLeaveRequestInput,
     ) -> LeaveRequest:

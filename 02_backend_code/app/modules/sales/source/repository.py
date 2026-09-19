@@ -1,8 +1,6 @@
 """Source repository (platforms table)."""
 from __future__ import annotations
 
-from typing import Optional
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,7 +16,7 @@ class SourceRepository:
         await self._session.flush()
         return row
 
-    async def get(self, platform_id: int, *, include_archived: bool = False) -> Optional[Platform]:
+    async def get(self, platform_id: int, *, include_archived: bool = False) -> Platform | None:
         row = await self._session.get(Platform, platform_id)
         if row is None:
             return None
@@ -26,7 +24,7 @@ class SourceRepository:
             return None
         return row
 
-    async def get_by_name(self, name: str) -> Optional[Platform]:
+    async def get_by_name(self, name: str) -> Platform | None:
         stmt = select(Platform).where(Platform.name == name)
         return (await self._session.execute(stmt)).scalar_one_or_none()
 

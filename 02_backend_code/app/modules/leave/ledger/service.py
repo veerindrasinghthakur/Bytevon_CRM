@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 from decimal import Decimal
-from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,7 +10,6 @@ from app.core.config import settings
 from app.core.db.enums import LeaveType
 from app.core.exceptions.exception import NotFoundError
 from app.core.services.base_public_service import BasePublicService
-from app.modules.leave.models import LeaveLedger
 from app.modules.leave.ledger.repository import LedgerRepository
 from app.modules.leave.ledger.schemas import (
     ApplyLeaveBalanceItem,
@@ -25,6 +23,7 @@ from app.modules.leave.ledger.schemas import (
     LeaveLedgerResponse,
     LeaveTypeOptionItem,
 )
+from app.modules.leave.models import LeaveLedger
 from app.modules.leave.policy.service import PolicyService
 
 
@@ -58,7 +57,7 @@ class LedgerService(BasePublicService):
         self,
         data: LeaveLedgerCreate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> LeaveLedgerResponse:
         entry = LeaveLedger(
             employment_id=data.employment_id,
@@ -78,7 +77,7 @@ class LedgerService(BasePublicService):
         self,
         employment_id: int,
         *,
-        leave_type: Optional[LeaveType] = None,
+        leave_type: LeaveType | None = None,
         limit: int = 200,
     ) -> list[LeaveLedgerResponse]:
         rows = await self._repo.list_ledger(
@@ -102,12 +101,12 @@ class LedgerService(BasePublicService):
     async def _load_holidays(
         self,
         *,
-        calendar_id: Optional[int] = None,
-        year: Optional[int] = None,
+        calendar_id: int | None = None,
+        year: int | None = None,
     ) -> list[HolidayItem]:
-        from app.modules.organization.services.public_service import OrganizationPublicService
+        from app.modules.admin.holiday_calendar.service import HolidayCalendarService
 
-        org = OrganizationPublicService(self._session)
+        org = HolidayCalendarService(self._session)
         items: list[HolidayItem] = []
         if calendar_id is not None:
             rows = await org.list_holidays(calendar_id)
@@ -118,14 +117,12 @@ class LedgerService(BasePublicService):
                     HolidayItem(
                         date=h.date,
                         name=h.name,
-                        holiday_type=h.holiday_type.value
-                        if hasattr(h.holiday_type, "value")
-                        else str(h.holiday_type),
+                        holiday_type=h.holiday_type or "",
                     )
                 )
             return items
 
-        calendars = await org.list_holiday_calendars(include_archived=False)
+        calendars = await org.list(include_archived=False)
         for cal in calendars:
             rows = await org.list_holidays(cal.id)
             for h in rows:
@@ -135,9 +132,7 @@ class LedgerService(BasePublicService):
                     HolidayItem(
                         date=h.date,
                         name=h.name,
-                        holiday_type=h.holiday_type.value
-                        if hasattr(h.holiday_type, "value")
-                        else str(h.holiday_type),
+                        holiday_type=h.holiday_type or "",
                     )
                 )
         seen: set[date] = set()
@@ -153,8 +148,8 @@ class LedgerService(BasePublicService):
         self,
         employment_id: int,
         *,
-        holiday_calendar_id: Optional[int] = None,
-        year: Optional[int] = None,
+        holiday_calendar_id: int | None = None,
+        year: int | None = None,
     ) -> ApplyLeaveContextResponse:
         as_of = date.today()
         y = year or as_of.year
@@ -218,8 +213,8 @@ class LedgerService(BasePublicService):
             half_day=data.half_day,
         )
 
-        balance_remaining: Optional[Decimal] = None
-        estimated_after: Optional[Decimal] = None
+        balance_remaining: Decimal | None = None
+        estimated_after: Decimal | None = None
         if data.leave_type != LeaveType.LOSS_OF_PAY:
             balance_remaining = await self._repo.sum_balance(
                 data.employment_id, data.leave_type

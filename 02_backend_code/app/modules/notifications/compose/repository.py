@@ -1,8 +1,6 @@
 """Compose repository — templates + preferences checks for notify."""
 from __future__ import annotations
 
-from typing import Optional
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,7 +13,7 @@ class ComposeRepository(BaseRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
 
-    async def get_template_by_code(self, code: str) -> Optional[NotificationTemplate]:
+    async def get_template_by_code(self, code: str) -> NotificationTemplate | None:
         stmt = select(NotificationTemplate).where(
             NotificationTemplate.code == code,
             NotificationTemplate.is_active.is_(True),
@@ -24,7 +22,7 @@ class ComposeRepository(BaseRepository):
 
     async def get_preference(
         self, employment_id: int, channel: NotificationChannel
-    ) -> Optional[NotificationPreference]:
+    ) -> NotificationPreference | None:
         stmt = select(NotificationPreference).where(
             NotificationPreference.employment_id == employment_id,
             NotificationPreference.channel == channel,

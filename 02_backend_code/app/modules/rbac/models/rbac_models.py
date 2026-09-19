@@ -12,7 +12,6 @@ Seeded tables (resources, permissions, scopes, sensitive_fields) are read-mostly
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Optional
 
 from sqlalchemy import (
     Boolean,
@@ -29,7 +28,6 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.base import Base, CreatedAtMixin, IdentityMixin
 from app.core.db.enums import Action
 
-
 # ---------------------------------------------------------------------------
 # resources 🟪 (seeded)
 # ---------------------------------------------------------------------------
@@ -38,12 +36,12 @@ class Resource(Base, IdentityMixin, CreatedAtMixin):
     __tablename__ = "resources"
 
     name: Mapped[str] = mapped_column(String(150), nullable=False, unique=True)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    permissions: Mapped[List["Permission"]] = relationship(
+    permissions: Mapped[list[Permission]] = relationship(
         "Permission", back_populates="resource"
     )
-    sensitive_fields: Mapped[List["SensitiveField"]] = relationship(
+    sensitive_fields: Mapped[list[SensitiveField]] = relationship(
         "SensitiveField", back_populates="resource"
     )
 
@@ -63,7 +61,7 @@ class Permission(Base, IdentityMixin, CreatedAtMixin):
     )
     action: Mapped[Action] = mapped_column(nullable=False)
 
-    resource: Mapped["Resource"] = relationship("Resource", back_populates="permissions")
+    resource: Mapped[Resource] = relationship("Resource", back_populates="permissions")
 
 
 # ---------------------------------------------------------------------------
@@ -74,7 +72,7 @@ class Scope(Base, IdentityMixin, CreatedAtMixin):
     __tablename__ = "scopes"
 
     name: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 # ---------------------------------------------------------------------------
@@ -86,23 +84,23 @@ class Role(Base, IdentityMixin, CreatedAtMixin):
     __table_args__ = (UniqueConstraint("name", name="uq_roles_name"),)
 
     name: Mapped[str] = mapped_column(String(150), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
     is_system_role: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, server_default="false"
     )
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    role_permissions: Mapped[List["RolePermission"]] = relationship(
+    role_permissions: Mapped[list[RolePermission]] = relationship(
         "RolePermission",
         back_populates="role",
         cascade="all, delete-orphan",
     )
-    employee_roles: Mapped[List["EmployeeRole"]] = relationship(
+    employee_roles: Mapped[list[EmployeeRole]] = relationship(
         "EmployeeRole",
         back_populates="role",
         cascade="all, delete-orphan",
     )
-    sensitive_field_permissions: Mapped[List["RoleSensitiveFieldPermission"]] = relationship(
+    sensitive_field_permissions: Mapped[list[RoleSensitiveFieldPermission]] = relationship(
         "RoleSensitiveFieldPermission",
         back_populates="role",
         cascade="all, delete-orphan",
@@ -136,11 +134,11 @@ class RolePermission(Base, CreatedAtMixin):
     scope_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("scopes.id"), nullable=False, index=True
     )
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    role: Mapped["Role"] = relationship("Role", back_populates="role_permissions")
-    permission: Mapped["Permission"] = relationship("Permission")
-    scope: Mapped["Scope"] = relationship("Scope")
+    role: Mapped[Role] = relationship("Role", back_populates="role_permissions")
+    permission: Mapped[Permission] = relationship("Permission")
+    scope: Mapped[Scope] = relationship("Scope")
 
 
 # ---------------------------------------------------------------------------
@@ -166,9 +164,9 @@ class EmployeeRole(Base):
     assigned_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    role: Mapped["Role"] = relationship("Role", back_populates="employee_roles")
+    role: Mapped[Role] = relationship("Role", back_populates="employee_roles")
 
 
 # ---------------------------------------------------------------------------
@@ -186,7 +184,7 @@ class SensitiveField(Base, IdentityMixin, CreatedAtMixin):
         Integer, ForeignKey("resources.id"), nullable=False, index=True
     )
 
-    resource: Mapped["Resource"] = relationship(
+    resource: Mapped[Resource] = relationship(
         "Resource", back_populates="sensitive_fields"
     )
 
@@ -219,9 +217,9 @@ class RoleSensitiveFieldPermission(Base, CreatedAtMixin):
     can_update: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, server_default="false"
     )
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    role: Mapped["Role"] = relationship(
+    role: Mapped[Role] = relationship(
         "Role", back_populates="sensitive_field_permissions"
     )
-    sensitive_field: Mapped["SensitiveField"] = relationship("SensitiveField")
+    sensitive_field: Mapped[SensitiveField] = relationship("SensitiveField")

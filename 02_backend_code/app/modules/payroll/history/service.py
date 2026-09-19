@@ -1,7 +1,7 @@
 """HistoryService — paid payroll history."""
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,7 +20,7 @@ def _money(r: Any, *names: str) -> float:
 
 
 def _status_str(r: Any) -> str:
-    s = getattr(r, "status", "")
+    s: Any = getattr(r, "status", "")
     return s.value if hasattr(s, "value") else str(s)
 
 
@@ -31,8 +31,8 @@ class HistoryService:
     async def list_history(
         self,
         *,
-        year: Optional[int] = None,
-        search: Optional[str] = None,
+        year: int | None = None,
+        search: str | None = None,
         limit: int = 100,
     ) -> list[dict[str, Any]]:
         rows = await self._monthly.list_payrolls(year=year, limit=limit)

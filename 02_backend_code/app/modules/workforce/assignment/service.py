@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import date, timedelta
-from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,7 +12,6 @@ from app.core.services.base_public_service import BasePublicService
 from app.modules.admin.department.models import Department
 from app.modules.admin.location.models import Location
 from app.modules.admin.shift.models import Shift
-from app.modules.workforce.models import EmploymentAssignment, EmploymentStateHistory
 from app.modules.workforce.assignment.repository import AssignmentRepository
 from app.modules.workforce.assignment.schemas import (
     EmploymentAssignmentCreate,
@@ -21,9 +19,10 @@ from app.modules.workforce.assignment.schemas import (
     EmploymentStateChangeRequest,
     EmploymentStateHistoryResponse,
 )
+from app.modules.workforce.models import EmploymentAssignment, EmploymentStateHistory
 
 
-def _optional_id(value: Optional[int]) -> Optional[int]:
+def _optional_id(value: int | None) -> int | None:
     if value is None or value <= 0:
         return None
     return value
@@ -37,11 +36,11 @@ class AssignmentService(BasePublicService):
     async def _validate_assignment_refs(
         self,
         *,
-        department_id: Optional[int],
-        position_id: Optional[int],
-        location_id: Optional[int],
-        shift_id: Optional[int],
-    ) -> tuple[Optional[int], Optional[int], Optional[int], Optional[int]]:
+        department_id: int | None,
+        position_id: int | None,
+        location_id: int | None,
+        shift_id: int | None,
+    ) -> tuple[int | None, int | None, int | None, int | None]:
         department_id = _optional_id(department_id)
         position_id = _optional_id(position_id)
         location_id = _optional_id(location_id)
@@ -65,7 +64,7 @@ class AssignmentService(BasePublicService):
         employment_id: int,
         data: EmploymentStateChangeRequest,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> EmploymentStateHistoryResponse:
         emp = await self._repo.get_employment_by_id(employment_id)
         if emp is None:
@@ -111,7 +110,7 @@ class AssignmentService(BasePublicService):
         employment_id: int,
         data: EmploymentAssignmentCreate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> EmploymentAssignmentResponse:
         if await self._repo.get_employment_by_id(employment_id) is None:
             raise NotFoundError("Employment not found")
@@ -150,7 +149,7 @@ class AssignmentService(BasePublicService):
         return EmploymentAssignmentResponse.model_validate(assignment)
 
     async def get_current_assignment(
-        self, employment_id: int, *, as_of: Optional[date] = None
+        self, employment_id: int, *, as_of: date | None = None
     ) -> EmploymentAssignmentResponse:
         if await self._repo.get_employment_by_id(employment_id) is None:
             raise NotFoundError("Employment not found")

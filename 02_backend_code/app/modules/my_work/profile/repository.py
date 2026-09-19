@@ -1,7 +1,7 @@
 """Profile repository — placeholder for person/login reads."""
 from __future__ import annotations
 
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,8 +13,8 @@ class ProfileRepository:
     async def get_profile_stub(
         self,
         *,
-        login_id: Optional[int] = None,
-        employment_id: Optional[int] = None,
+        login_id: int | None = None,
+        employment_id: int | None = None,
     ) -> dict[str, Any]:
         return {
             "loginId": login_id,

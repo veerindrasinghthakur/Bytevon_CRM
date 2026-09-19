@@ -1,7 +1,8 @@
 """Shift schemas — aligned with Shift ORM model."""
 from __future__ import annotations
+
 from datetime import datetime, time
-from typing import Optional
+
 from pydantic import BaseModel, ConfigDict, Field
 
 
@@ -16,20 +17,20 @@ class ShiftCreate(BaseModel):
     is_overnight: bool = False
     grace_late_minutes: int = 0
     flexible_end: bool = False
-    break_duration_minutes: Optional[int] = None
+    break_duration_minutes: int | None = None
     # Accepted from older clients; mapped in service
-    break_minutes: Optional[int] = None
+    break_minutes: int | None = None
 
 
 class ShiftUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    start_time: Optional[time] = None
-    end_time: Optional[time] = None
-    is_overnight: Optional[bool] = None
-    grace_late_minutes: Optional[int] = None
-    flexible_end: Optional[bool] = None
-    break_duration_minutes: Optional[int] = None
-    break_minutes: Optional[int] = None
+    name: str | None = Field(None, min_length=1, max_length=100)
+    start_time: time | None = None
+    end_time: time | None = None
+    is_overnight: bool | None = None
+    grace_late_minutes: int | None = None
+    flexible_end: bool | None = None
+    break_duration_minutes: int | None = None
+    break_minutes: int | None = None
 
 
 class ShiftResponse(BaseModel):
@@ -41,8 +42,8 @@ class ShiftResponse(BaseModel):
     is_overnight: bool = False
     grace_late_minutes: int = 0
     flexible_end: bool = False
-    break_duration_minutes: Optional[int] = None
+    break_duration_minutes: int | None = None
     is_archived: bool = False
-    archived_at: Optional[datetime] = None
-    created_at: Optional[datetime] = None
-    updated_at: Optional[datetime] = None
+    archived_at: datetime | None = None
+    created_at: datetime | None = None
+    updated_at: datetime | None = None

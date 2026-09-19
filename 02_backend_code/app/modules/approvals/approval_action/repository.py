@@ -1,7 +1,7 @@
 """Approval action repository — reuses request queries for decide path."""
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,7 +17,7 @@ class ApprovalActionRepository(BaseRepository):
 
     async def get_request_by_id(
         self, request_id: int, *, with_actions: bool = False
-    ) -> Optional[ApprovalRequest]:
+    ) -> ApprovalRequest | None:
         stmt = select(ApprovalRequest).where(ApprovalRequest.id == request_id)
         if with_actions:
             stmt = stmt.options(selectinload(ApprovalRequest.actions))

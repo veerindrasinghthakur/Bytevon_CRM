@@ -5,8 +5,8 @@ Member listing uses employment assignments (department_id).
 """
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import date
-from typing import Optional, Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,7 +23,7 @@ class DepartmentRepository(BaseRepository):
 
     async def get_by_id(
         self, department_id: int, *, include_archived: bool = False
-    ) -> Optional[Department]:
+    ) -> Department | None:
         stmt = select(Department).where(Department.id == department_id)
         if not include_archived:
             stmt = stmt.where(Department.is_archived.is_(False))
@@ -35,7 +35,7 @@ class DepartmentRepository(BaseRepository):
             stmt = stmt.where(Department.is_archived.is_(False))
         return await self.scalars(stmt)
 
-    async def get_by_name(self, name: str) -> Optional[Department]:
+    async def get_by_name(self, name: str) -> Department | None:
         stmt = select(Department).where(
             Department.name == name, Department.is_archived.is_(False)
         )
@@ -47,7 +47,7 @@ class DepartmentRepository(BaseRepository):
         *,
         page: int = 1,
         page_size: int = 50,
-        search: Optional[str] = None,
+        search: str | None = None,
     ) -> tuple[list[DepartmentEmployee], int]:
         today = date.today()
         stmt = (

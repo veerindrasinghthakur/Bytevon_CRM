@@ -1,7 +1,8 @@
 """Department repository."""
 from __future__ import annotations
 
-from typing import Any, Optional, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,7 +17,7 @@ class DepartmentRepository(BaseRepository):
 
     async def get_by_id(
         self, department_id: int, *, include_archived: bool = False
-    ) -> Optional[Department]:
+    ) -> Department | None:
         stmt = select(Department).where(Department.id == department_id)
         if not include_archived:
             stmt = stmt.where(Department.is_archived.is_(False))
@@ -31,7 +32,7 @@ class DepartmentRepository(BaseRepository):
     async def list(self, *, include_archived: bool = False) -> Sequence[Department]:
         return await self.list_all(include_archived=include_archived)
 
-    async def get_by_name(self, name: str) -> Optional[Department]:
+    async def get_by_name(self, name: str) -> Department | None:
         stmt = select(Department).where(
             Department.name == name, Department.is_archived.is_(False)
         )
@@ -43,7 +44,7 @@ class DepartmentRepository(BaseRepository):
         *,
         page: int = 1,
         page_size: int = 50,
-        search: Optional[str] = None,
+        search: str | None = None,
     ) -> tuple[list[Any], int]:
         return [], 0
 

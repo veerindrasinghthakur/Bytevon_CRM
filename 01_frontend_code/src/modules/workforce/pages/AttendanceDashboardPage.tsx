@@ -170,7 +170,7 @@ export function AttendanceDashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <section className="lg:col-span-2 bv-surface overflow-hidden">
           <div className="p-4 border-b border-outline-variant/30 flex flex-wrap gap-3 items-center justify-between">
-            <h2 className="text-title-md font-semibold">Today's attendance</h2>
+            <h2 className="text-title-md font-semibold">Today&apos;s attendance</h2>
             <div className="flex flex-wrap items-center gap-2 min-w-0 flex-1 justify-end">
               <div className="relative min-w-[160px] flex-1 max-w-xs">
                 <Icon
@@ -277,7 +277,7 @@ export function AttendanceDashboardPage() {
                   <span className="text-body-sm font-medium">{c.name}</span>
                   <span className="text-caption text-on-surface-variant">{c.ago}</span>
                 </div>
-                <p className="text-caption text-on-surface-variant mt-1">"{c.note}"</p>
+                <p className="text-caption text-on-surface-variant mt-1">&ldquo;{c.note}&rdquo;</p>
                 <div className="mt-2 flex gap-2">
                   <Button variant="primary" className="!py-1 !px-2 !text-[11px]">Approve</Button>
                   <Button variant="outline" className="!py-1 !px-2 !text-[11px]">Reject</Button>

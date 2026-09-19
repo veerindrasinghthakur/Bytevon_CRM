@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -20,7 +19,7 @@ class ApprovalRequestCreate(BaseModel):
     reference_id: int
     requester_employment_id: int
     target: ApprovalTarget
-    target_department_id: Optional[int] = None
+    target_department_id: int | None = None
 
 
 class ApprovalActionResponse(BaseModel):
@@ -30,7 +29,7 @@ class ApprovalActionResponse(BaseModel):
     approval_request_id: int
     employment_id: int
     action: ApprovalActionType
-    remarks: Optional[str]
+    remarks: str | None
     created_at: datetime
 
 
@@ -42,11 +41,11 @@ class ApprovalRequestResponse(BaseModel):
     reference_id: int
     requester_employment_id: int
     target: ApprovalTarget
-    target_department_id: Optional[int]
+    target_department_id: int | None
     status: ApprovalStatus
     created_at: datetime
     updated_at: datetime
 
 
 class ApprovalRequestDetailResponse(ApprovalRequestResponse):
-    actions: List[ApprovalActionResponse] = Field(default_factory=list)
+    actions: list[ApprovalActionResponse] = Field(default_factory=list)

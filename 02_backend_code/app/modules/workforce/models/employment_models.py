@@ -10,19 +10,15 @@ persons lives in Authentication module; referenced by Integer FK.
 
 from __future__ import annotations
 
-from datetime import date, datetime
-from typing import List, Optional
+from datetime import date
 
 from sqlalchemy import (
-    Boolean,
     Date,
-    DateTime,
     ForeignKey,
     Integer,
     String,
     Text,
     UniqueConstraint,
-    func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -34,7 +30,6 @@ from app.core.base import (
     TimestampMixin,
 )
 from app.core.db.enums import EmploymentState, EmploymentType, WorkMode
-
 
 # ---------------------------------------------------------------------------
 # positions 🟨
@@ -69,17 +64,17 @@ class Employment(Base, IdentityMixin, TimestampMixin):
     employment_type: Mapped[EmploymentType] = mapped_column(nullable=False)
     current_state: Mapped[EmploymentState] = mapped_column(nullable=False)
     joining_date: Mapped[date] = mapped_column(Date, nullable=False)
-    changed_by: Mapped[Optional[int]] = mapped_column(
+    changed_by: Mapped[int | None] = mapped_column(
         Integer, nullable=True, comment="Employment ID or SYSTEM_EMPLOYMENT_ID"
     )
 
-    state_history: Mapped[List["EmploymentStateHistory"]] = relationship(
+    state_history: Mapped[list[EmploymentStateHistory]] = relationship(
         "EmploymentStateHistory",
         back_populates="employment",
         order_by="EmploymentStateHistory.effective_date",
         cascade="all, delete-orphan",
     )
-    assignments: Mapped[List["EmploymentAssignment"]] = relationship(
+    assignments: Mapped[list[EmploymentAssignment]] = relationship(
         "EmploymentAssignment",
         back_populates="employment",
         order_by="EmploymentAssignment.effective_from",
@@ -97,13 +92,13 @@ class EmploymentStateHistory(Base, IdentityMixin, CreatedAtMixin):
     employment_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("employments.id"), nullable=False, index=True
     )
-    previous_state: Mapped[Optional[EmploymentState]] = mapped_column(nullable=True)
+    previous_state: Mapped[EmploymentState | None] = mapped_column(nullable=True)
     new_state: Mapped[EmploymentState] = mapped_column(nullable=False)
     effective_date: Mapped[date] = mapped_column(Date, nullable=False)
-    reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    employment: Mapped["Employment"] = relationship(
+    employment: Mapped[Employment] = relationship(
         "Employment", back_populates="state_history"
     )
 
@@ -123,24 +118,24 @@ class EmploymentAssignment(Base, IdentityMixin, CreatedAtMixin):
     employment_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("employments.id"), nullable=False, index=True
     )
-    department_id: Mapped[Optional[int]] = mapped_column(
+    department_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("departments.id"), nullable=True
     )
-    position_id: Mapped[Optional[int]] = mapped_column(
+    position_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("positions.id"), nullable=True
     )
-    location_id: Mapped[Optional[int]] = mapped_column(
+    location_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("locations.id"), nullable=True
     )
-    shift_id: Mapped[Optional[int]] = mapped_column(
+    shift_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("shifts.id"), nullable=True
     )
     work_mode: Mapped[WorkMode] = mapped_column(nullable=False)
     effective_from: Mapped[date] = mapped_column(Date, nullable=False)
-    effective_to: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
+    effective_to: Mapped[date | None] = mapped_column(Date, nullable=True)
     change_reason: Mapped[str] = mapped_column(String(100), nullable=False)
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    employment: Mapped["Employment"] = relationship(
+    employment: Mapped[Employment] = relationship(
         "Employment", back_populates="assignments"
     )

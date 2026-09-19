@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -36,7 +36,7 @@ class HolidayCalendarService(BasePublicService):
         return obj
 
     async def create(
-        self, data: HolidayCalendarCreate, *, actor_employment_id: Optional[int] = None
+        self, data: HolidayCalendarCreate, *, actor_employment_id: int | None = None
     ) -> HolidayCalendarResponse:
         existing = await self._repo.get_by_name(data.name)
         if existing:
@@ -71,7 +71,7 @@ class HolidayCalendarService(BasePublicService):
         calendar_id: int,
         data: HolidayCalendarUpdate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> HolidayCalendarResponse:
         row = await self._repo.get_by_id(calendar_id, include_archived=True)
         if row is None:
@@ -92,7 +92,7 @@ class HolidayCalendarService(BasePublicService):
         return HolidayCalendarResponse.model_validate(row)
 
     async def archive(
-        self, calendar_id: int, *, actor_employment_id: Optional[int] = None
+        self, calendar_id: int, *, actor_employment_id: int | None = None
     ) -> MessageResponse:
         row = await self._repo.get_by_id(calendar_id, include_archived=True)
         if row is None:
@@ -100,7 +100,7 @@ class HolidayCalendarService(BasePublicService):
         if row.is_archived:
             return MessageResponse(message="Holiday calendar already archived")
         row.is_archived = True
-        row.archived_at = datetime.now(timezone.utc)
+        row.archived_at = datetime.now(UTC)
         row.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
         await self._audit("holiday_calendar.archived", calendar_id, actor_employment_id)
@@ -111,12 +111,12 @@ class HolidayCalendarService(BasePublicService):
         calendar_id: int,
         data: HolidayCreate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> HolidayResponse:
         cal = await self._repo.get_by_id(calendar_id, include_archived=False)
         if cal is None:
             raise NotFoundError("Holiday calendar not found")
-        holiday_type = HolidayType.OPTIONAL if data.is_optional else HolidayType.PUBLIC
+        holiday_type = HolidayType.OPTIONAL if data.is_optional else HolidayType.NATIONAL
         h = Holiday(
             holiday_calendar_id=calendar_id,
             name=data.name.strip(),
@@ -149,7 +149,7 @@ class HolidayCalendarService(BasePublicService):
         holiday_id: int,
         data: HolidayUpdate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> HolidayResponse:
         row = await self._repo.get_holiday(holiday_id)
         if row is None:
@@ -161,7 +161,7 @@ class HolidayCalendarService(BasePublicService):
             row.date = payload["holiday_date"]
         if "is_optional" in payload and payload["is_optional"] is not None:
             row.holiday_type = (
-                HolidayType.OPTIONAL if payload["is_optional"] else HolidayType.PUBLIC
+                HolidayType.OPTIONAL if payload["is_optional"] else HolidayType.NATIONAL
             )
         if "recurring_flag" in payload and payload["recurring_flag"] is not None:
             row.recurring_flag = payload["recurring_flag"]
@@ -172,7 +172,7 @@ class HolidayCalendarService(BasePublicService):
         return HolidayResponse.model_validate(row)
 
     async def delete_holiday(
-        self, holiday_id: int, *, actor_employment_id: Optional[int] = None
+        self, holiday_id: int, *, actor_employment_id: int | None = None
     ) -> MessageResponse:
         row = await self._repo.get_holiday(holiday_id)
         if row is None:

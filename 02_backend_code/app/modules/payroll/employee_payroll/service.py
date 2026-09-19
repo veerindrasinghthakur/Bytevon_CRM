@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -30,7 +30,7 @@ def _money(r: Any, *names: str) -> float:
 
 
 def _status_str(r: Any) -> str:
-    s = getattr(r, "status", "")
+    s: Any = getattr(r, "status", "")
     return s.value if hasattr(s, "value") else str(s)
 
 
@@ -43,11 +43,11 @@ class EmployeePayrollService(BasePublicService):
     async def list_employees(
         self,
         *,
-        year: Optional[int] = None,
-        month: Optional[int] = None,
+        year: int | None = None,
+        month: int | None = None,
         page: int = 1,
         page_size: int = 20,
-        search: Optional[str] = None,
+        search: str | None = None,
     ) -> dict[str, Any]:
         today = date.today()
         y = year or today.year
@@ -100,7 +100,7 @@ class EmployeePayrollService(BasePublicService):
         self,
         data: BankAccountCreate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> BankAccountResponse:
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         if data.is_primary:

@@ -28,7 +28,7 @@ export function DocumentUpload({
     // Validate size first.
     const tooBig = next.find((f) => f.size > maxBytes)
     if (tooBig) {
-      setError(`\"${tooBig.name}\" exceeds ${maxSizeMb}MB limit.`)
+      setError(`"${tooBig.name}" exceeds ${maxSizeMb}MB limit.`)
       return
     }
     // Validate MIME type against the accepted extensions list.
@@ -38,7 +38,7 @@ export function DocumentUpload({
       return !acceptedExt.includes(ext)
     })
     if (invalid) {
-      setError(`\"${invalid.name}\" is not an allowed file type.`)
+      setError(`"${invalid.name}" is not an allowed file type.`)
       return
     }
     setError(null)

@@ -1,8 +1,8 @@
 """Leave request repository."""
 from __future__ import annotations
 
+from collections.abc import Sequence
 from datetime import date
-from typing import Optional, Sequence
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,13 +16,13 @@ class RequestRepository(BaseRepository):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
 
-    async def get_request_by_id(self, request_id: int) -> Optional[LeaveRequest]:
+    async def get_request_by_id(self, request_id: int) -> LeaveRequest | None:
         stmt = select(LeaveRequest).where(LeaveRequest.id == request_id)
         return await self.scalar_one_or_none(stmt)
 
     async def get_request_by_approval_id(
         self, approval_request_id: int
-    ) -> Optional[LeaveRequest]:
+    ) -> LeaveRequest | None:
         stmt = select(LeaveRequest).where(
             LeaveRequest.approval_request_id == approval_request_id
         )
@@ -31,8 +31,8 @@ class RequestRepository(BaseRepository):
     async def list_requests(
         self,
         *,
-        employment_id: Optional[int] = None,
-        status: Optional[LeaveRequestStatus] = None,
+        employment_id: int | None = None,
+        status: LeaveRequestStatus | None = None,
         limit: int = 100,
         offset: int = 0,
     ) -> Sequence[LeaveRequest]:
@@ -50,7 +50,7 @@ class RequestRepository(BaseRepository):
         start_date: date,
         end_date: date,
         *,
-        exclude_id: Optional[int] = None,
+        exclude_id: int | None = None,
     ) -> bool:
         stmt = select(LeaveRequest.id).where(
             LeaveRequest.employment_id == employment_id,

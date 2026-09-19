@@ -1,8 +1,7 @@
 """SourceService — lead sources (platforms table)."""
 from __future__ import annotations
 
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -24,7 +23,7 @@ class SourceService(BasePublicService):
         super().__init__(session)
         self._repo = SourceRepository(session)
 
-    async def create(self, data: SourceCreate, *, actor_employment_id: Optional[int] = None) -> SourceResponse:
+    async def create(self, data: SourceCreate, *, actor_employment_id: int | None = None) -> SourceResponse:
         existing = await self._repo.get_by_name(data.name.strip())
         if existing:
             raise ConflictError(f"Source '{data.name}' already exists")
@@ -50,7 +49,7 @@ class SourceService(BasePublicService):
         return [SourceResponse.model_validate(r) for r in rows]
 
     async def update(
-        self, source_id: int, data: SourceUpdate, *, actor_employment_id: Optional[int] = None
+        self, source_id: int, data: SourceUpdate, *, actor_employment_id: int | None = None
     ) -> SourceResponse:
         row = await self._repo.get(source_id, include_archived=True)
         if row is None:
@@ -72,14 +71,14 @@ class SourceService(BasePublicService):
         await self._session.refresh(row)
         return SourceResponse.model_validate(row)
 
-    async def archive(self, source_id: int, *, actor_employment_id: Optional[int] = None) -> MessageResponse:
+    async def archive(self, source_id: int, *, actor_employment_id: int | None = None) -> MessageResponse:
         row = await self._repo.get(source_id, include_archived=True)
         if row is None:
             raise NotFoundError("Source not found")
         if row.is_archived:
             return MessageResponse(message="Source already archived")
         row.is_archived = True
-        row.archived_at = datetime.now(timezone.utc)
+        row.archived_at = datetime.now(UTC)
         row.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
         await self._audit("platform.archived", source_id, actor_employment_id)

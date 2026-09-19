@@ -3,8 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
-from typing import Optional
+from datetime import UTC, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -51,7 +50,7 @@ class TaskService(BasePublicService):
         self,
         data: TaskCreate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> TaskResponse:
         project = await self._project_repo.get_project_by_id(data.project_id)
         if project is None:
@@ -81,8 +80,8 @@ class TaskService(BasePublicService):
     async def list_all_tasks(
         self,
         *,
-        project_id: Optional[int] = None,
-        project_name: Optional[str] = None,
+        project_id: int | None = None,
+        project_name: str | None = None,
         limit: int = 200,
         offset: int = 0,
     ) -> list[TaskResponse]:
@@ -111,7 +110,7 @@ class TaskService(BasePublicService):
         task_id: int,
         data: TaskUpdate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> TaskResponse:
         task = await self._repo.get_task_by_id(task_id)
         if task is None:
@@ -121,7 +120,7 @@ class TaskService(BasePublicService):
         for field, value in payload.items():
             setattr(task, field, value)
         if new_status == TaskStatus.COMPLETED and task.completed_at is None:
-            task.completed_at = datetime.now(timezone.utc)
+            task.completed_at = datetime.now(UTC)
         elif new_status and new_status != TaskStatus.COMPLETED:
             task.completed_at = None
         task.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID

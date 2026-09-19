@@ -12,12 +12,12 @@ Frontend expects:
 """
 from __future__ import annotations
 
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Header, Query
 
 router = APIRouter(prefix="/my-work", tags=["My Work — Stubs"])
-EmploymentHeader = Annotated[Optional[int], Header(alias="X-Employment-Id")]
+EmploymentHeader = Annotated[int | None, Header(alias="X-Employment-Id")]
 
 
 @router.get("/overview")
@@ -44,8 +44,8 @@ async def overview(x_employment_id: EmploymentHeader = None) -> dict[str, Any]:
 async def attendance_list(
     page: int = Query(1, ge=1),
     pageSize: int = Query(20, ge=1, le=100),
-    status: Optional[str] = None,
-    search: Optional[str] = None,
+    status: str | None = None,
+    search: str | None = None,
     x_employment_id: EmploymentHeader = None,
 ) -> dict[str, Any]:
     return {"items": [], "total": 0, "page": page, "pageSize": pageSize}
@@ -55,8 +55,8 @@ async def attendance_list(
 async def leave_list(
     page: int = Query(1, ge=1),
     pageSize: int = Query(20, ge=1, le=100),
-    status: Optional[str] = None,
-    search: Optional[str] = None,
+    status: str | None = None,
+    search: str | None = None,
 ) -> dict[str, Any]:
     return {"items": [], "total": 0, "page": page, "pageSize": pageSize}
 
@@ -80,8 +80,8 @@ async def leave_apply_context() -> dict[str, Any]:
 async def tasks_list(
     page: int = Query(1, ge=1),
     pageSize: int = Query(20, ge=1, le=100),
-    status: Optional[str] = None,
-    search: Optional[str] = None,
+    status: str | None = None,
+    search: str | None = None,
 ) -> dict[str, Any]:
     return {"items": [], "total": 0, "page": page, "pageSize": pageSize}
 
@@ -90,7 +90,7 @@ async def tasks_list(
 async def requests_list(
     page: int = Query(1, ge=1),
     pageSize: int = Query(20, ge=1, le=100),
-    status: Optional[str] = None,
+    status: str | None = None,
 ) -> dict[str, Any]:
     return {"items": [], "total": 0}
 
@@ -99,6 +99,6 @@ async def requests_list(
 async def approvals_list(
     page: int = Query(1, ge=1),
     pageSize: int = Query(20, ge=1, le=100),
-    status: Optional[str] = None,
+    status: str | None = None,
 ) -> dict[str, Any]:
     return {"items": [], "total": 0, "page": page, "pageSize": pageSize}

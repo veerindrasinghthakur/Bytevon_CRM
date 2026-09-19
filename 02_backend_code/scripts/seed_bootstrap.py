@@ -28,7 +28,7 @@ from app.modules.admin.settings.models import OrganizationSettings
 from app.modules.admin.working_week.models import WorkingWeek
 from app.modules.admin.shift.models import Shift
 from app.modules.admin.location.models import Location
-from app.modules.rbac.models import EmployeeRole, Permission, Resource, Role, RolePermission, Scope
+from app.modules.rbac.models import EmployeeRole, Permission, Resource, Role, RolePermission, Scope, SensitiveField
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("seed")
@@ -77,6 +77,13 @@ SCOPE_SEED = [
     (ScopeName.ORGANIZATION, "Entire organization"),
 ]
 
+# (resource_name, field_key) — consumed by app.core.serialization SEC-008 filtering.
+SENSITIVE_FIELD_SEED = [
+    ("salary", "gross_salary"),
+    ("salary", "account_number"),
+    ("salary", "ifsc_code"),
+]
+
 
 async def seed_rbac_catalog(session) -> None:
     for name, desc in SCOPE_SEED:
@@ -108,6 +115,20 @@ async def seed_rbac_catalog(session) -> None:
             ).scalar_one_or_none()
             if existing is None:
                 session.add(Permission(resource_id=res.id, action=action))
+    await session.flush()
+
+    resources_by_name = {res.name: res for res in resources}
+    for resource_name, field_key in SENSITIVE_FIELD_SEED:
+        res = resources_by_name.get(resource_name)
+        if res is None:
+            continue
+        existing = (
+            await session.execute(
+                select(SensitiveField).where(SensitiveField.field_key == field_key)
+            )
+        ).scalar_one_or_none()
+        if existing is None:
+            session.add(SensitiveField(field_key=field_key, resource_id=res.id))
     await session.flush()
     logger.info("RBAC catalog seeded (%s resources)", len(resources))
 

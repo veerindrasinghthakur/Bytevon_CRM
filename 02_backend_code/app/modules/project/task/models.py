@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING
 
 from sqlalchemy import (
     Date,
@@ -32,8 +32,8 @@ class Task(Base, IdentityMixin, TimestampMixin):
         Integer, ForeignKey("projects.id"), nullable=False, index=True
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    assignee_employment_id: Mapped[Optional[int]] = mapped_column(
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    assignee_employment_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("employments.id"), nullable=True, index=True
     )
     priority: Mapped[TaskPriority] = mapped_column(
@@ -42,19 +42,19 @@ class Task(Base, IdentityMixin, TimestampMixin):
     status: Mapped[TaskStatus] = mapped_column(
         nullable=False, default=TaskStatus.TODO
     )
-    start_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
-    due_date: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
-    estimated_hours: Mapped[Optional[Decimal]] = mapped_column(
+    start_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    due_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    estimated_hours: Mapped[Decimal | None] = mapped_column(
         Numeric(6, 2), nullable=True
     )
-    completed_at: Mapped[Optional[datetime]] = mapped_column(
+    completed_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
-    commit_reference: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-    changed_by: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    commit_reference: Mapped[str | None] = mapped_column(Text, nullable=True)
+    changed_by: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    project: Mapped["Project"] = relationship("Project", back_populates="tasks")
-    time_entries: Mapped[List["TaskTimeEntry"]] = relationship(
+    project: Mapped[Project] = relationship("Project", back_populates="tasks")
+    time_entries: Mapped[list[TaskTimeEntry]] = relationship(
         "TaskTimeEntry", back_populates="task", cascade="all, delete-orphan"
     )
 
@@ -80,6 +80,6 @@ class TaskTimeEntry(Base, IdentityMixin, CreatedAtMixin):
     )
     work_date: Mapped[date] = mapped_column(Date, nullable=False)
     duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
-    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
-    task: Mapped["Task"] = relationship("Task", back_populates="time_entries")
+    task: Mapped[Task] = relationship("Task", back_populates="time_entries")

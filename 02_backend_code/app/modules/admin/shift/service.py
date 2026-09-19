@@ -2,8 +2,8 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timezone
-from typing import Any, Optional
+from datetime import UTC, datetime
+from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -32,7 +32,7 @@ class ShiftService(BasePublicService):
         return obj
 
     async def create(
-        self, data: ShiftCreate, *, actor_employment_id: Optional[int] = None
+        self, data: ShiftCreate, *, actor_employment_id: int | None = None
     ) -> ShiftResponse:
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         row = Shift(
@@ -67,7 +67,7 @@ class ShiftService(BasePublicService):
         shift_id: int,
         data: ShiftUpdate,
         *,
-        actor_employment_id: Optional[int] = None,
+        actor_employment_id: int | None = None,
     ) -> ShiftResponse:
         row = await self._repo.get_by_id(shift_id, include_archived=True)
         if row is None:
@@ -98,7 +98,7 @@ class ShiftService(BasePublicService):
         return ShiftResponse.model_validate(row)
 
     async def archive(
-        self, shift_id: int, *, actor_employment_id: Optional[int] = None
+        self, shift_id: int, *, actor_employment_id: int | None = None
     ) -> MessageResponse:
         row = await self._repo.get_by_id(shift_id, include_archived=True)
         if row is None:
@@ -106,7 +106,7 @@ class ShiftService(BasePublicService):
         if row.is_archived:
             return MessageResponse(message="Shift already archived")
         row.is_archived = True
-        row.archived_at = datetime.now(timezone.utc)
+        row.archived_at = datetime.now(UTC)
         row.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
         await self._audit("shift.archived", shift_id, actor_employment_id)

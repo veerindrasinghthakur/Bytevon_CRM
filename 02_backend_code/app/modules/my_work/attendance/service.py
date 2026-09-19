@@ -6,7 +6,6 @@ owns today-info / week-hours / corrections list shapes for the my-work UI.
 from __future__ import annotations
 
 from datetime import date
-from typing import Any, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -43,7 +42,7 @@ class MyWorkAttendanceService:
         body: PunchRequest,
         *,
         client_ip: str,
-        employment_id: Optional[int] = None,
+        employment_id: int | None = None,
     ) -> PunchResponse:
         if employment_id is not None:
             body = body.model_copy(update={"employment_id": employment_id})
@@ -52,7 +51,7 @@ class MyWorkAttendanceService:
         )
 
     async def start_break(
-        self, body: BreakStartRequest, *, employment_id: Optional[int] = None
+        self, body: BreakStartRequest, *, employment_id: int | None = None
     ) -> BreakResponse:
         return await self._wf.start_break(body, actor_employment_id=employment_id)
 
@@ -61,7 +60,7 @@ class MyWorkAttendanceService:
         break_id: int,
         body: BreakEndRequest,
         *,
-        employment_id: Optional[int] = None,
+        employment_id: int | None = None,
     ) -> BreakResponse:
         return await self._wf.end_break(
             break_id, body, actor_employment_id=employment_id
@@ -69,10 +68,10 @@ class MyWorkAttendanceService:
 
     async def list_days(
         self,
-        employment_id: Optional[int],
+        employment_id: int | None,
         *,
-        from_date: Optional[date] = None,
-        to_date: Optional[date] = None,
+        from_date: date | None = None,
+        to_date: date | None = None,
     ) -> list[AttendanceDayResponse]:
         if employment_id is None:
             return []
@@ -80,7 +79,7 @@ class MyWorkAttendanceService:
             employment_id, from_date=from_date, to_date=to_date
         )
 
-    async def today_info(self, employment_id: Optional[int]) -> TodayInfoResponse:
+    async def today_info(self, employment_id: int | None) -> TodayInfoResponse:
         if employment_id is None:
             return TodayInfoResponse()
         today = date.today()
@@ -112,7 +111,7 @@ class MyWorkAttendanceService:
             dayId=day.id,
         )
 
-    async def week_hours(self, employment_id: Optional[int]) -> WeekHoursResponse:
+    async def week_hours(self, employment_id: int | None) -> WeekHoursResponse:
         if employment_id is None:
             return WeekHoursResponse()
         today = date.today()
@@ -139,7 +138,7 @@ class MyWorkAttendanceService:
 
     async def list_corrections(
         self,
-        employment_id: Optional[int],
+        employment_id: int | None,
         *,
         page: int = 1,
         page_size: int = 20,
@@ -148,12 +147,12 @@ class MyWorkAttendanceService:
         return CorrectionListResponse(page=page, pageSize=page_size)
 
     async def correction_candidates(
-        self, employment_id: Optional[int]
+        self, employment_id: int | None
     ) -> list[CorrectionCandidate]:
         return []
 
     async def list_approvers(
-        self, employment_id: Optional[int]
+        self, employment_id: int | None
     ) -> list[ApproverOption]:
         return []
 
