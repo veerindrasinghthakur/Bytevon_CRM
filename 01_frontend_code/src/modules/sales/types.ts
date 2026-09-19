@@ -138,6 +138,8 @@ export type LeadListParams = {
   source?: string
   page?: number
   pageSize?: number
+  dateFrom?: string
+  dateTo?: string
 }
 
 export type ClientListParams = {
@@ -146,6 +148,8 @@ export type ClientListParams = {
   type?: string
   page?: number
   pageSize?: number
+  dateFrom?: string
+  dateTo?: string
 }
 
 export type CaseStudyListParams = {

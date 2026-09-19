@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.db.enums import AuditAction, AuditReferenceType
 from app.core.exceptions.exception import NotFoundError
 from app.core.services.base_public_service import BasePublicService
+from app.core.storage.minio import get_minio_client
 from app.modules.admin.audit.models import AuditLog
 from app.modules.admin.audit.repository import AuditRepository
 from app.modules.admin.audit.schemas import ArchiveResult, AuditLogCreate, AuditLogResponse
@@ -138,19 +139,25 @@ class AuditService(BasePublicService):
 
         try:
             lines = "\n".join(json.dumps(item, default=str) for item in payload)
+            minio_client = get_minio_client()
+            await minio_client.upload_file(
+                bucket_name="audit-archives",
+                object_name=storage_path,
+                data=lines,
+            )
             logger.info(
-                "AUDIT ARCHIVE export path=%s rows=%s bytes≈%s",
+                "AUDIT ARCHIVE uploaded to MinIO path=%s rows=%s bytes≈%s",
                 storage_path,
                 len(payload),
                 len(lines),
             )
         except Exception:
-            logger.exception("Audit archive export failed; PG rows NOT deleted")
+            logger.exception("Audit archive MinIO upload failed; PG rows NOT deleted")
             return ArchiveResult(
                 exported_count=0,
                 deleted_count=0,
                 storage_path=None,
-                message="Export failed; nothing deleted",
+                message="MinIO upload failed; nothing deleted",
             )
 
         deleted = await self._repo.delete_older_than(cutoff)

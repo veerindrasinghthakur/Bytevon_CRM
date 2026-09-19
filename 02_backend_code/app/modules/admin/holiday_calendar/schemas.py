@@ -52,3 +52,15 @@ class HolidayResponse(BaseModel):
     holiday_type: Optional[str] = None
     recurring_flag: bool = False
     created_at: Optional[datetime] = None
+
+
+class MessageResponse(BaseModel):
+    message: str
+
+
+class RecurringHolidayOption(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    id: int
+    name: str
+    date: date
+    holiday_type: Optional[str] = None

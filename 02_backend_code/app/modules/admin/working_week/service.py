@@ -31,6 +31,11 @@ class WorkingWeekService(BasePublicService):
         return obj
 
     async def create(self, data: WorkingWeekCreate, *, actor_employment_id: Optional[int] = None) -> WorkingWeekResponse:
+        # Auto-close the previous open working week before creating a new one
+        current = await self._repo.get_current(on_date=data.effective_from)
+        if current and not current.is_archived:
+            await self.archive(current.id, actor_employment_id=actor_employment_id)
+
         row = WorkingWeek(
             name=data.name.strip(),
             effective_from=data.effective_from,

@@ -52,7 +52,7 @@ class Settings(BaseSettings):
 
     # CORS - allow frontend dev server origins
     # Added localhost ports 5173 and 5174 for Vite dev server.
-    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173,http://localhost:5174,http://127.0.0.1:18000/"
+    CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173,http://localhost:5174,http://127.0.0.1:18000"
 
     # Logging
     LOG_LEVEL: str = "INFO"
@@ -71,6 +71,24 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.APP_ENV.lower() == "production"
+
+    # MinIO storage
+    MINIO_ENDPOINT: str = Field(
+        default="minio:9000",
+        description="MinIO endpoint host:port",
+    )
+    MINIO_ACCESS_KEY: str = Field(
+        default="minioadmin",
+        description="MinIO access key",
+    )
+    MINIO_SECRET_KEY: str = Field(
+        default="minioadmin",
+        description="MinIO secret key",
+    )
+    MINIO_SECURE: bool = Field(
+        default=False,
+        description="Use HTTPS for MinIO connection",
+    )
 
 
 @lru_cache

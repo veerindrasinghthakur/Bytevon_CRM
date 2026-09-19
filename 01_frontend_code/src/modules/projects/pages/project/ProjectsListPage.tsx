@@ -1,3 +1,4 @@
+import { DateRangeFilter } from '@/shared/components/forms/DateRangeFilter'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
@@ -34,6 +35,8 @@ export function ProjectsListPage() {
     setSearch,
     status,
     setStatus,
+    dateFilter,
+    setDateFilter,
     page,
     setPage,
     filtersActive,
@@ -134,7 +137,13 @@ export function ProjectsListPage() {
           onChange={setStatus}
           placeholder="Project Status"
           aria-label="Filter by project status"
-          options={[{ value: '', label: 'All statuses' }, ...ProjectStatusOptions]}
+          options={[{ value: '', label: 'All statuses' }, ...ProjectStatusOptions.map((s) => ({ value: s, label: s }))]}
+        />
+        <DateRangeFilter
+          value={{ from: dateFilter?.from, to: dateFilter?.to }}
+          onChange={setDateFilter}
+          label="Date"
+          placeholder="Date"
         />
       </ListToolbar>
 

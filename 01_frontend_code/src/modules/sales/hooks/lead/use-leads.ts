@@ -25,6 +25,8 @@ export function useLeadsQuery(filters?: LeadListParams) {
     stage: filters?.stage && filters.stage !== 'All' ? filters.stage : undefined,
     priority: filters?.priority && filters.priority !== 'All' ? filters.priority : undefined,
     source: filters?.source && filters.source !== 'All' ? filters.source : undefined,
+    dateFrom: filters?.dateFrom || undefined,
+    dateTo: filters?.dateTo || undefined,
     page: filters?.page,
     pageSize: filters?.pageSize,
   }
@@ -97,6 +99,8 @@ const FILTER_DEFAULTS = {
   stage: 'All',
   priority: 'All',
   source: 'All',
+  dateFrom: '',
+  dateTo: '',
 }
 
 export function useLeadsList() {
@@ -159,6 +163,11 @@ export function useLeadsList() {
     setPriorityFilter: (v: string) => controls.setFilter('priority', v),
     sourceFilter: controls.filters.source,
     setSourceFilter: (v: string) => controls.setFilter('source', v),
+    dateFilter: controls.filters.dateFrom ? { from: controls.filters.dateFrom, to: controls.filters.dateTo } : undefined,
+    setDateFilter: (v: { from: string; to: string }) => {
+      controls.setFilter('dateFrom', v.from)
+      controls.setFilter('dateTo', v.to)
+    },
     stages: filterOptionsQuery.data?.stages ?? [],
     priorities: filterOptionsQuery.data?.priorities ?? [],
     sources: filterOptionsQuery.data?.sources ?? [],

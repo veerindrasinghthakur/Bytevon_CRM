@@ -47,6 +47,8 @@ export type ProjectListParams = {
   teamId?: number
   page?: number
   pageSize?: number
+  dateFrom?: string
+  dateTo?: string
 }
 
 /** Cached project list response structure. */

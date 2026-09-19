@@ -1,3 +1,4 @@
+import { DateRangeFilter } from '@/shared/components/forms/DateRangeFilter'
 import { useRef } from 'react'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { useNavigate } from '@tanstack/react-router'
@@ -218,6 +219,12 @@ export function LeadsListPage() {
           aria-label="Filter by source"
           options={[{ value: 'All', label: 'All Sources' }, ...sources.map((s) => ({ value: s, label: s }))]}
           minWidthClass="min-w-[140px]"
+        />
+        <DateRangeFilter
+          value={{ from: dateFilter?.from, to: dateFilter?.to }}
+          onChange={setDateFilter}
+          label="Date"
+          placeholder="Date"
         />
       </ListToolbar>
       {selectionMode && (

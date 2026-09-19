@@ -22,6 +22,8 @@ export function useClientsQuery(filters?: ClientListParams) {
     search: filters?.search || undefined,
     status: filters?.status && filters.status !== 'All' ? filters.status : undefined,
     type: filters?.type && filters.type !== 'All' ? filters.type : undefined,
+    dateFrom: filters?.dateFrom || undefined,
+    dateTo: filters?.dateTo || undefined,
     page: filters?.page,
     pageSize: filters?.pageSize,
   }
@@ -91,6 +93,8 @@ export function useUpdateClient() {
 const FILTER_DEFAULTS = {
   status: 'All',
   type: 'All',
+  dateFrom: '',
+  dateTo: '',
 }
 
 export function useClientsList() {
@@ -145,6 +149,11 @@ export function useClientsList() {
     setStatusFilter: (v: string) => controls.setFilter('status', v),
     typeFilter: controls.filters.type,
     setTypeFilter: (v: string) => controls.setFilter('type', v),
+    dateFilter: controls.filters.dateFrom ? { from: controls.filters.dateFrom, to: controls.filters.dateTo } : undefined,
+    setDateFilter: (v: { from: string; to: string }) => {
+      controls.setFilter('dateFrom', v.from)
+      controls.setFilter('dateTo', v.to)
+    },
     types: filterOptionsQuery.data?.types ?? [],
     statuses: filterOptionsQuery.data?.statuses ?? [],
     industries: filterOptionsQuery.data?.industries ?? [],

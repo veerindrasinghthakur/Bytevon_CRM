@@ -1,4 +1,4 @@
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo,useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useVirtualizer } from '@tanstack/react-virtual'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
@@ -157,6 +157,101 @@ export function AuditLogsPage() {
     )
   }
 
+  async function moveLogsToCloud(retentionDays: number = 10) {
+    try {
+      const result = await fetch("/api/v1/audit/archive", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ retention_days: retentionDays }),
+      })
+      const data = await result.json()
+      if (result.ok) {
+        return { confirmed: true, ...data }
+      }
+      throw new Error(data.message || "Archive failed")
+    } catch (error) {
+      console.error("Move logs to cloud failed:", error)
+      return { confirmed: false }
+    }
+  }
+
+  function MoveLogsToCloudPanel() {
+    const [retentionDays, setRetentionDays] = useState(10)
+
+    return (
+      <div className="space-y-4">
+        <p className="text-body-sm text-on-surface">
+          Export audit logs older than {retentionDays} days to MinIO storage and delete from PG.
+        </p>
+        <DateRangeFilter
+          value={{ from: undefined, to: undefined }}
+          onChange={({ from }) => {
+            // Calculate days from date
+            if (from) {
+              const fromDate = new Date(from)
+              const today = new Date()
+              const diffDays = Math.ceil((today.getTime() - fromDate.getTime()) / (1000 * 60 * 60 * 24))
+              setRetentionDays(diffDays)
+            }
+          }}
+          label="Retention cutoff date"
+          placeholder="Select date"
+        />
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setRetentionDays(10)}
+          >
+            10 days
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setRetentionDays(30)}
+          >
+            30 days
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setRetentionDays(90)}
+          >
+            90 days
+          </Button>
+        </div>
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={async () => {
+            const result = await moveLogsToCloud(retentionDays)
+            if (result.confirmed) {
+              openPanel({
+                content: "hii",
+                title: "Archive completed",
+                subtitle: `${result.exported_count} logs exported, ${result.deleted_count} deleted`,
+                icon: "check-circle",
+                status: "success",
+              })
+            } else {
+              openPanel({
+                content: 'hii',
+                title: "Archive failed",
+                subtitle: result.message || "Unknown error",
+                icon: "error",
+                status: "error",
+              })
+            }
+          }}
+        >
+          Archive logs
+        </Button>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6 relative animate-fade-in">
       <PageHeader
@@ -166,6 +261,26 @@ export function AuditLogsPage() {
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => void logsQuery.refetch()}>
               Refresh
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={async () => {
+                const result = await openPanel({
+                  title: "Move logs to cloud",
+                  subtitle: "Archive audit logs older than",
+                  icon: "cloud",
+                  status: "info",
+                  content: <MoveLogsToCloudPanel />,
+                  widthClass: 'max-w-[400px]',
+                })
+                if (result?.confirmed) {
+                  // Trigger archive via query
+                  await logsQuery.refetch()
+                }
+              }}
+            >
+              Move to cloud
             </Button>
             <ExportButton
               resource={ResourceName.AUDIT}

@@ -1,3 +1,4 @@
+import { DateRangeFilter } from '@/shared/components/forms/DateRangeFilter'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
@@ -46,6 +47,8 @@ export function ClientsListPage() {
     setStatusFilter,
     typeFilter,
     setTypeFilter,
+    dateFilter,
+    setDateFilter,
     resetFilters,
     filtersActive,
     page,
@@ -130,9 +133,6 @@ export function ClientsListPage() {
             </Button>
           </div>
         }
-        showBack
-        backTo={salesRoutes.clients}
-        backLabel="Back to clients"
       />
 
       <ClientStatsCards metrics={metrics} />
@@ -172,6 +172,12 @@ export function ClientsListPage() {
               .map((t) => ({ value: t, label: t })),
           ]}
           minWidthClass="min-w-[140px]"
+        />
+        <DateRangeFilter
+          value={{ from: dateFilter?.from, to: dateFilter?.to }}
+          onChange={setDateFilter}
+          label="Date"
+          placeholder="Date"
         />
       </ListToolbar>
 

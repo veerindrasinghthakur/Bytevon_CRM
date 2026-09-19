@@ -26,6 +26,8 @@ export function useProjects(filters?: ProjectListParams) {
     search: filters?.search || undefined,
     status: filters?.status || undefined,
     teamId: filters?.teamId,
+    dateFrom: filters?.dateFrom || undefined,
+    dateTo: filters?.dateTo || undefined,
     page: filters?.page,
     pageSize: filters?.pageSize,
   }
@@ -165,7 +167,7 @@ export function useUpdateProject() {
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
 
-const FILTER_DEFAULTS = { status: '' }
+const FILTER_DEFAULTS = { status: '', dateFrom: '', dateTo: '' }
 
 export function useProjectsList() {
   const controls = useListControls({
@@ -193,6 +195,11 @@ export function useProjectsList() {
     setSearch: controls.setSearch,
     status: controls.filters.status,
     setStatus: (v: string) => controls.setFilter('status', v),
+    dateFilter: controls.filters.dateFrom ? { from: controls.filters.dateFrom, to: controls.filters.dateTo } : undefined,
+    setDateFilter: (v: { from: string; to: string }) => {
+      controls.setFilter('dateFrom', v.from)
+      controls.setFilter('dateTo', v.to)
+    },
     page: controls.page,
     setPage: controls.setPage,
     pageSize: controls.pageSize,

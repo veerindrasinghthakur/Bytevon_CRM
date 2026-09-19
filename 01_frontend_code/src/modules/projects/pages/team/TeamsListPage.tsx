@@ -1,3 +1,4 @@
+import { DateRangeFilter } from '@/shared/components/forms/DateRangeFilter'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
@@ -83,8 +84,8 @@ export function TeamsListPage() {
     setSearch,
     status,
     setStatus,
-    department,
-    setDepartment,
+    dateFilter,
+    setDateFilter,
     resetFilters,
   } = useTeamsList()
 
@@ -163,21 +164,12 @@ export function TeamsListPage() {
             options={[{ value: '', label: 'All Statuses' }, ...TeamStatusOptions]}
             minWidthClass="min-w-[140px]"
           />
-          <Select
-            value={department}
-            onChange={setDepartment}
-            placeholder="Department"
-            options={[{ value: '', label: 'All Departments' }]}
-            minWidthClass="min-w-[160px]"
+          <DateRangeFilter
+            value={{ from: dateFilter?.from, to: dateFilter?.to }}
+            onChange={setDateFilter}
+            label="Date"
+            placeholder="Date"
           />
-          <button
-            type="button"
-            className="p-2 text-secondary border border-outline-variant rounded-lg hover:bg-secondary/5"
-            onClick={resetFilters}
-            aria-label="Reset filters"
-          >
-            <Icon name="restart_alt" className="text-lg" />
-          </button>
         </div>
 
         {isLoading && (

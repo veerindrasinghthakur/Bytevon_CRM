@@ -183,6 +183,8 @@ function applyClientFilters(items: AuditLog[], params?: AuditListParams): AuditL
   return out
 }
 
+
+// list logs
 export async function listAuditLogs(params?: AuditListParams): Promise<AuditLog[]> {
   if (env.useMockApi) {
     await delay()
@@ -218,7 +220,8 @@ export async function listAuditLogs(params?: AuditListParams): Promise<AuditLog[
   return applyClientFilters(items, params)
 }
 
-/** Best-effort only — must never fail the caller. */
+
+// create logs
 export async function recordAuditEvent(input: RecordAuditInput): Promise<void> {
   try {
     if (env.useMockApi) {

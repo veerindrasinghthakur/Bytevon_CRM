@@ -6,24 +6,6 @@ import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay } from '@/shared/mock/db'
 import { DEFAULT_LIST_PAGE, DEFAULT_LIST_PAGE_SIZE, paginateItems } from '@/shared/lib/list-params'
-import {
-  attendanceHistory,
-  currentUser,
-  holidaysSeed,
-  leaveBalances,
-  leaveRequests,
-  myApprovals,
-  myTasks,
-  myWorkMetrics,
-  myWorkQuickActions,
-  recentNotifications,
-  todayAttendance,
-  upcomingEvents,
-  weekHours,
-  correctionRequestsSeed,
-  leaveTypeOptions,
-  approverDirectory,
-} from '@/shared/mock/data/my-work'
 import type {
   ApprovalListResponse,
   ApprovalRequest,
@@ -45,7 +27,6 @@ import type {
   ApproverOption,
   WeekHourBar,
 } from '../types'
-import { myRequests } from '@/modules/approvals/data/mock'
 import type { ApprovalRow } from '@/modules/approvals/types'
 
 export interface MyWorkListParams {
@@ -55,6 +36,8 @@ export interface MyWorkListParams {
   pageSize?: number
   sortBy?: string
   sortOrder?: 'asc' | 'desc'
+  dateFrom?: string
+  dateTo?: string
 }
 
 function toISO(y: number, m: number, d: number) {
@@ -166,7 +149,20 @@ export async function listMyLeaveRequests(
   }
 
   await delay()
-  let items = leaveRequests.map((r) => ({ ...r }))
+  // Mock fallback - in production this would be replaced by real API
+  let items = [
+    {
+      id: 'LV-20240101',
+      type: 'Annual',
+      from: '2024-01-01',
+      to: '2024-01-05',
+      days: 5,
+      reason: 'Vacation',
+      status: 'Approved',
+      appliedOn: '2024-01-01',
+      approver: 'Manager',
+    },
+  ]
   if (params.status && params.status !== 'All') {
     items = items.filter((r) => r.status === params.status)
   }
@@ -184,29 +180,39 @@ export async function listMyLeaveRequests(
 }
 
 export async function listMyLeaveBalances(): Promise<LeaveBalance[]> {
-  if (env.useMockApi) {
-    await delay()
-    return leaveBalances.map((b) => ({ ...b }))
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<LeaveBalance[]>('/my-work/leave/balances')
+    return data
   }
-  const { data } = await apiClient.get<LeaveBalance[]>('/my-work/leave/balances')
-  return data
+  await delay()
+  return leaveBalances.map((b) => ({ ...b }))
 }
 
 export async function listLeaveTypeOptions(): Promise<LeaveTypeOption[]> {
-  if (env.useMockApi) {
-    await delay()
-    return leaveTypeOptions.map((o) => ({ ...o }))
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<LeaveTypeOption[]>('/my-work/leave/types')
+    return data
   }
-  const { data } = await apiClient.get<LeaveTypeOption[]>('/my-work/leave/types')
-  return data
+  await delay()
+  return [
+    { value: 'Annual', label: 'Annual Leave', requires_approval: true },
+    { value: 'Sick', label: 'Sick Leave', requires_approval: false },
+    { value: 'Personal', label: 'Personal Day', requires_approval: true },
+    { value: 'Parental', label: 'Parental Leave', requires_approval: true },
+  ]
 }
 
 export async function getApplyLeaveContext(): Promise<ApplyLeaveContext> {
   if (env.useMockApi) {
     await delay()
     return {
-      holidays: holidaysSeed.map((h) => ({ ...h })),
-      leaveTypes: leaveTypeOptions.map((o) => ({ ...o })),
+      holidays: [],
+      leaveTypes: [
+        { value: 'Annual', label: 'Annual Leave', requires_approval: true },
+        { value: 'Sick', label: 'Sick Leave', requires_approval: false },
+        { value: 'Personal', label: 'Personal Day', requires_approval: true },
+        { value: 'Parental', label: 'Parental Leave', requires_approval: true },
+      ],
       balances: leaveBalances.map((b) => ({ ...b })),
     }
   }
@@ -217,31 +223,31 @@ export async function getApplyLeaveContext(): Promise<ApplyLeaveContext> {
 export async function calculateLeaveDays(
   input: LeaveCalculateInput,
 ): Promise<LeaveCalculateResult> {
-  if (env.useMockApi) {
-    await delay(80)
-    const holidayDates = new Set(holidaysSeed.map((h) => h.date))
-    const dayCost = mockCountWorkingDays(
-      input.from,
-      input.to,
-      Boolean(input.halfDay),
-      holidayDates,
-    )
-    const bal = leaveBalances.find((b) => b.type === input.type)
-    const remaining = bal?.remaining ?? null
-    const estimated =
-      remaining == null ? null : Math.max(0, remaining - dayCost)
-    const holidaysInRange = holidaysSeed.filter(
-      (h) => h.date >= input.from && h.date <= input.to,
-    )
-    return {
-      dayCost,
-      balanceRemaining: remaining,
-      estimatedBalanceAfter: estimated,
-      holidaysInRange,
-    }
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<LeaveCalculateResult>('/my-work/leave/calculate', input)
+    return data
   }
-  const { data } = await apiClient.post<LeaveCalculateResult>('/my-work/leave/calculate', input)
-  return data
+  await delay(80)
+  const holidayDates = new Set(holidaysSeed.map((h) => h.date))
+  const dayCost = mockCountWorkingDays(
+    input.from,
+    input.to,
+    Boolean(input.halfDay),
+    holidayDates,
+  )
+  const bal = leaveBalances.find((b) => b.type === input.type)
+  const remaining = bal?.remaining ?? null
+  const estimated =
+    remaining == null ? null : Math.max(0, remaining - dayCost)
+  const holidaysInRange = holidaysSeed.filter(
+    (h) => h.date >= input.from && h.date <= input.to,
+  )
+  return {
+    dayCost,
+    balanceRemaining: remaining,
+    estimatedBalanceAfter: estimated,
+    holidaysInRange,
+  }
 }
 
 export async function listMyAttendance(
@@ -266,56 +272,12 @@ export async function listMyAttendance(
         pageSize,
       }
     } catch {
-      // Fallback: map /my-work/attendance/days when list endpoint missing
-      try {
-        const { data: days } = await apiClient.get<Array<Record<string, unknown>>>(
-          '/my-work/attendance/days',
-        )
-        const items: AttendanceRecord[] = (Array.isArray(days) ? days : []).map((d) => {
-          const statusRaw = String(d.status ?? 'Present')
-          const status =
-            statusRaw === 'ABSENT'
-              ? 'Absent'
-              : statusRaw === 'HALF_DAY'
-                ? 'Half Day'
-                : statusRaw === 'ON_LEAVE'
-                  ? 'On Leave'
-                  : statusRaw === 'HOLIDAY'
-                    ? 'Holiday'
-                    : 'Present'
-          const hours = d.working_hours != null ? String(d.working_hours) : undefined
-          return {
-            id: String(d.id ?? d.attendance_date ?? ''),
-            date: String(d.attendance_date ?? d.date ?? ''),
-            status: status as AttendanceRecord['status'],
-            totalHours: hours,
-            note: (d.note as string | undefined) ?? undefined,
-          }
-        })
-        const sliced = paginateItems(items, page, pageSize)
-        return { ...sliced, page, pageSize }
-      } catch {
-        return { items: [], total: 0, page, pageSize }
-      }
+      return { items: [], total: 0, page, pageSize }
     }
   }
 
   await delay()
-  let items = attendanceHistory.map((r) => ({ ...r })) as AttendanceRecord[]
-  if (params.search) {
-    const q = params.search.toLowerCase()
-    items = items.filter(
-      (r) =>
-        r.date.includes(q) ||
-        (r.status ?? '').toLowerCase().includes(q) ||
-        (r.note ?? '').toLowerCase().includes(q),
-    )
-  }
-  if (params.status && params.status !== 'All') {
-    items = items.filter((r) => r.status === params.status)
-  }
-  const sliced = paginateItems(items, page, pageSize)
-  return { ...sliced, page, pageSize }
+  return { items: [], total: 0, page, pageSize }
 }
 
 export async function getMyWorkTodayInfo(): Promise<{ todayLabel: string; shift: string }> {
@@ -391,6 +353,7 @@ export async function listMyApprovals(
   }
 
   await delay()
+  // Mock fallback
   let items = myApprovals.map((a) => ({ ...a })) as ApprovalRequest[]
   if (params.status && params.status !== 'All') {
     items = items.filter((a) => a.status === params.status)
