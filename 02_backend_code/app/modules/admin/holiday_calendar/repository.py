@@ -71,4 +71,4 @@ class HolidayCalendarRepository(BaseRepository):
         return holiday
 
     async def delete_holiday(self, holiday: Holiday) -> None:
-        await self.session.delete(holiday)
+        await self.delete(holiday)
