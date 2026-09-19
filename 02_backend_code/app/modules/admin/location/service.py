@@ -58,7 +58,6 @@ class LocationService(BasePublicService):
             payroll_region=data.payroll_region,
             currency=data.currency or "INR",
             fiscal_year_start_month=data.fiscal_year_start_month or 4,
-            created_by=actor,
             changed_by=actor,
         )
         await self._repo.add(loc)
