@@ -1,11 +1,15 @@
-"""My Work Leave schemas."""
+"""My Work Leave schemas (self-service API shapes)."""
 from __future__ import annotations
 
 from datetime import date
-from typing import List, Optional
 from decimal import Decimal
+from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
+
+
+class MessageResponse(BaseModel):
+    message: str
 
 
 class LeaveBalance(BaseModel):
@@ -61,9 +65,11 @@ class LeaveCalculateInput(BaseModel):
     to: str
     half_day: bool = False
 
+    model_config = {"populate_by_name": True}
+
 
 class LeaveCalculateResult(BaseModel):
     day_cost: Decimal
     balance_remaining: Optional[Decimal] = None
     estimated_balance_after: Optional[Decimal] = None
-    holidays_in_range: List[dict]
+    holidays_in_range: List[dict] = Field(default_factory=list)
