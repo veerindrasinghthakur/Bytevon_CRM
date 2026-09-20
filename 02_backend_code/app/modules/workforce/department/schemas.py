@@ -1,4 +1,4 @@
-"""Department operational schemas (workforce)."""
+"""Department operational schemas (workforce — canonical owner)."""
 from __future__ import annotations
 
 from datetime import datetime
@@ -29,6 +29,19 @@ class DepartmentResponse(BaseModel):
     is_archived: bool = False
     created_at: datetime
     created_by: int | None = None
+
+
+class DepartmentMetrics(BaseModel):
+    total: int = 0
+    active: int = 0
+    archived: int = 0
+    staffing: int = 0
+
+
+class DepartmentListResponse(BaseModel):
+    items: list[DepartmentResponse]
+    total: int = 0
+    metrics: DepartmentMetrics = Field(default_factory=DepartmentMetrics)
 
 
 class DepartmentEmployee(BaseModel):

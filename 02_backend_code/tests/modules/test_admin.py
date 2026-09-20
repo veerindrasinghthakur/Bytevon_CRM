@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from sqlalchemy import select
 
-from app.modules.admin.department.models import Department
+from app.modules.workforce.department.models import Department
 from app.modules.admin.holiday_calendar.models import HolidayCalendar
 from app.modules.admin.location.models import Location
 from app.modules.admin.settings.models import OrganizationSettings
@@ -12,15 +12,6 @@ from app.modules.admin.working_week.models import WorkingWeek
 from tests.modules.helpers import db_scalar, record_coverage, table_count
 
 COVERED = [
-    ("POST", "/api/v1/admin/departments"),
-    ("GET", "/api/v1/admin/departments"),
-    ("GET", "/api/v1/admin/departments/{department_id}"),
-    ("PATCH", "/api/v1/admin/departments/{department_id}"),
-    ("POST", "/api/v1/admin/departments/{department_id}/archive"),
-    ("GET", "/api/v1/admin/departments/{department_id}/employees"),
-    ("GET", "/api/v1/admin/departments/{department_id}/employees-available"),
-    ("POST", "/api/v1/admin/departments/{department_id}/assign"),
-    ("POST", "/api/v1/admin/departments/{department_id}/remove"),
     ("POST", "/api/v1/admin/locations"),
     ("GET", "/api/v1/admin/locations"),
     ("GET", "/api/v1/admin/locations/{location_id}"),
@@ -59,11 +50,6 @@ COVERED = [
     ("POST", "/api/v1/admin/users/{login_id}/unlock"),
     ("POST", "/api/v1/admin/users/{login_id}/archive"),
     ("DELETE", "/api/v1/admin/users/{login_id}"),
-    ("POST", "/api/v1/admin/positions"),
-    ("GET", "/api/v1/admin/positions"),
-    ("GET", "/api/v1/admin/positions/{position_id}"),
-    ("PATCH", "/api/v1/admin/positions/{position_id}"),
-    ("POST", "/api/v1/admin/positions/{position_id}/archive"),
     ("POST", "/api/v1/admin/audit/logs"),
     ("GET", "/api/v1/admin/audit/logs"),
     ("GET", "/api/v1/admin/audit/logs/{log_id}"),
@@ -79,66 +65,12 @@ def _sa(factory):
     return factory.super_admin()
 
 
-def test_admin_department_lifecycle(client, factory):
+def test_admin_department_moved_to_workforce(client, factory):
+    # Department ownership moved to Workforce; admin route must be gone.
     sa = _sa(factory)
     h = sa["headers"]
-    actor = factory.actor("adm")
-    before = table_count(client, "departments")
-    created = client.post(
-        "/api/v1/admin/departments", json={"name": "Logistics"}, headers=h
-    )
-    assert created.status_code == 201, created.text
-    dept_id = created.json()["id"]
-    assert table_count(client, "departments") == before + 1
-
-    assert client.get("/api/v1/admin/departments", headers=h).status_code == 200
-    assert (
-        client.get(f"/api/v1/admin/departments/{dept_id}", headers=h).status_code
-        == 200
-    )
-    updated = client.patch(
-        f"/api/v1/admin/departments/{dept_id}", json={"name": "Logistics EU"}, headers=h
-    )
-    assert updated.status_code == 200, updated.text
-    assert (
-        db_scalar(client, select(Department.name).where(Department.id == dept_id))
-        == "Logistics EU"
-    )
-    assert (
-        client.get(f"/api/v1/admin/departments/{dept_id}/employees", headers=h).status_code
-        == 200
-    )
-    assert (
-        client.get(
-            f"/api/v1/admin/departments/{dept_id}/employees-available", headers=h
-        ).status_code
-        == 200
-    )
-    assert (
-        client.post(
-            f"/api/v1/admin/departments/{dept_id}/assign",
-            json={"employmentId": actor["employment_id"]},
-            headers=h,
-        ).status_code
-        == 200
-    )
-    assert (
-        client.post(
-            f"/api/v1/admin/departments/{dept_id}/remove",
-            json={"employmentId": actor["employment_id"]},
-            headers=h,
-        ).status_code
-        == 200
-    )
-    archived = client.post(
-        f"/api/v1/admin/departments/{dept_id}/archive", headers=h
-    )
-    assert archived.status_code == 200, archived.text
-    assert (
-        db_scalar(client, select(Department.is_archived).where(Department.id == dept_id))
-        is True
-    )
-    record_coverage("test_admin_department_lifecycle", COVERED[:9])
+    assert client.get("/api/v1/admin/departments", headers=h).status_code == 404
+    assert client.get("/api/v1/workforce/departments", headers=h).status_code == 200
 
 
 def test_admin_location_shift_week_lifecycle(client, factory):
@@ -371,9 +303,20 @@ def test_admin_settings_and_users(client, factory):
         == 200
     )
     assert (
-        client.post(f"/api/v1/admin/users/{login_id}/archive", headers=h).status_code
+        client.delete(f"/api/v1/admin/users/{login_id}", headers=h).status_code
         == 200
     )
+    # Soft-delete: login row remains with is_archived=true, excluded from lists
+    from app.modules.auth.models import Login as _Login
+
+    assert (
+        db_scalar(client, select(_Login.is_archived).where(_Login.id == login_id))
+        is True
+    )
+    listed_users = client.get("/api/v1/admin/users", headers=h).json()
+    listed_items = listed_users["items"] if isinstance(listed_users, dict) else listed_users
+    assert all(u["id"] != login_id for u in listed_items)
+    assert client.get(f"/api/v1/admin/users/{login_id}", headers=h).status_code == 404
     person2 = client.post(
         "/api/v1/workforce/persons",
         json={"first_name": "Gone", "last_name": "Soon"},
@@ -404,24 +347,7 @@ def test_admin_settings_and_users(client, factory):
         == 200
     )
 
-    pos = client.post(
-        "/api/v1/admin/positions", json={"name": "Admin Position"}, headers=h
-    )
-    assert pos.status_code == 201, pos.text
-    pos_id = pos.json()["id"]
-    assert client.get("/api/v1/admin/positions", headers=h).status_code == 200
-    assert client.get(f"/api/v1/admin/positions/{pos_id}", headers=h).status_code == 200
-    assert (
-        client.patch(
-            f"/api/v1/admin/positions/{pos_id}", json={"name": "Admin Position 2"}, headers=h
-        ).status_code
-        == 200
-    )
-    assert (
-        client.post(f"/api/v1/admin/positions/{pos_id}/archive", headers=h).status_code
-        == 200
-    )
-    record_coverage("test_admin_settings_and_users", COVERED[33:52])
+    record_coverage("test_admin_settings_and_users", COVERED[33:])
 
 
 def test_audit_endpoints(client, factory):

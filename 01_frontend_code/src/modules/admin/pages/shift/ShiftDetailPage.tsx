@@ -1,10 +1,9 @@
 import { useState } from 'react'
 import { useNavigate, useParams, useRouterState } from '@tanstack/react-router'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
-import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
+import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
@@ -14,12 +13,11 @@ import { can } from '@/shared/rbac'
 import { Action, ResourceName, type ShiftRow } from '@/shared/schema'
 import {
   useCreateShift,
+  useDeleteShift,
   useShiftDetail,
   useShiftStaff,
   useUpdateShift,
 } from '../../hooks/shift/use-shifts'
-import { archiveShift } from '../../api/organization'
-import { queryKeys } from '@/shared/lib/query-keys'
 import { emptyShift } from '@/shared/mock/data/workforce'
 
 type ShiftStaffRow = {
@@ -52,18 +50,20 @@ export function ShiftDetailPage() {
   const staffQuery = useShiftStaff(id, !isNew)
   const createMut = useCreateShift()
   const updateMut = useUpdateShift(id)
-  const qc = useQueryClient()
-  const archiveMut = useMutation({
-    mutationFn: () => archiveShift(id),
-    onSuccess: async () => {
-      setActionError(null)
-      await qc.invalidateQueries({ queryKey: queryKeys.organization.shifts.all })
-      safeNavigate(navigate, { to: listTo })
-    },
-    onError: (e: unknown) => {
-      setActionError(getApiErrorMessage(e, 'Could not archive shift'))
-    },
-  })
+  const deleteMut = useDeleteShift()
+
+  const handleDelete = () => {
+    setActionError(null)
+    deleteMut.mutate(id, {
+      onSuccess: () => {
+        setActionError(null)
+        safeNavigate(navigate, { to: listTo })
+      },
+      onError: (e: unknown) => {
+        setActionError(getApiErrorMessage(e, 'Could not delete shift'))
+      },
+    })
+  }
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(isNew)
 
   const shift = isNew ? emptyShift : detailQuery.data ?? null
@@ -203,12 +203,11 @@ export function ShiftDetailPage() {
           <div className="flex gap-2">
             {canUpdate && <EditButton variant="primary" onClick={beginEdit} />}
             {!isNew && shift && !shift.is_archived && (
-              <ArchiveButton
+              <DeleteButton
+                iconOnly
                 entityLabel={shift.name}
-                mode="archive"
-                label="Archive"
-                isLoading={archiveMut.isPending}
-                onConfirm={() => archiveMut.mutateAsync()}
+                isLoading={deleteMut.isPending}
+                onConfirm={handleDelete}
               />
             )}
           </div>

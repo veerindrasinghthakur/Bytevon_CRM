@@ -119,7 +119,7 @@ class ChangedByMixin:
 
 
 class ArchiveMixin:
-    """Soft-archive support. Prefer archive over hard DELETE."""
+    """Canonical soft-delete support. DELETE sets is_archived=true; never hard-delete business records."""
 
     is_archived: Mapped[bool] = mapped_column(
         Boolean,

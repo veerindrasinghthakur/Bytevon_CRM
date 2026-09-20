@@ -168,6 +168,23 @@ export function RoleFormPage({ mode, roleId, duplicateFromId }: RoleFormProps) {
                   {mode === 'create' ? 'Permission Matrix' : 'Module Permissions Matrix'}
                 </h3>
               </div>
+              <label className="flex items-center gap-2 text-body-sm text-on-surface-variant">
+                Scope
+                <select
+                  value={form.scopeId != null ? String(form.scopeId) : ''}
+                  onChange={(e) =>
+                    form.setScopeId(e.target.value ? Number(e.target.value) : null)
+                  }
+                  className="bg-surface-container-lowest border border-outline-variant rounded-md px-2 py-1.5 text-body-sm outline-none"
+                  aria-label="Grant scope"
+                >
+                  {form.scopes.map((s) => (
+                    <option key={s.id} value={String(s.id)}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
               {mode === 'create' && (
                 <div className="flex gap-4">
                   <button type="button" className="text-label-sm text-secondary hover:underline" onClick={form.expandAll}>

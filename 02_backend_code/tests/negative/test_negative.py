@@ -157,7 +157,7 @@ def test_boundaries_and_404s(client, factory):
         "/api/v1/workforce/attendance/days/999999",
         "/api/v1/payroll/999999",
         "/api/v1/projects/tasks/999999",
-        "/api/v1/admin/departments/999999",
+        "/api/v1/workforce/departments/999999",
         "/api/v1/sales/leads/999999",
     ):
         resp = client.get(path, headers=h)

@@ -106,6 +106,19 @@ class HolidayCalendarService(BasePublicService):
         await self._audit("holiday_calendar.archived", calendar_id, actor_employment_id)
         return MessageResponse(message="Holiday calendar archived")
 
+    async def delete(
+        self, calendar_id: int, *, actor_employment_id: int | None = None
+    ) -> MessageResponse:
+        row = await self._repo.get_by_id(calendar_id, include_archived=True)
+        if row is None or bool(getattr(row, "is_archived", False)):
+            raise NotFoundError("Holiday calendar not found")
+        row.is_archived = True
+        row.archived_at = datetime.now(UTC)
+        row.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        await self._commit()
+        await self._audit("holiday_calendar.deleted", calendar_id, actor_employment_id)
+        return MessageResponse(message="Holiday calendar deleted")
+
     async def add_holiday(
         self,
         calendar_id: int,

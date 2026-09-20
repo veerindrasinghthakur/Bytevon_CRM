@@ -17,7 +17,7 @@ export type OrganizationProfileInput = z.infer<typeof organizationProfileSchema>
 /**
  * Form state for /admin/attendance-settings.
  * Shift times map to organization/shifts; policy fields map to AttendancePolicyCreate
- * (POST /organization/attendance-policies).
+ * (POST /admin/attendance-policies).
  */
 export const attendanceSettingsSchema = z.object({
   // Shift (organization/shifts when a shift is selected)
@@ -25,7 +25,7 @@ export const attendanceSettingsSchema = z.object({
   shiftEnd: z.string().min(1),
   // AttendancePolicy.default_grace_late_minutes (+ shift.grace_late_minutes)
   graceMinutes: z.coerce.number().int().min(0).max(180),
-  // Policy fields (POST /organization/attendance-policies)
+  // Policy fields (POST /admin/attendance-policies)
   correctionWindowDays: z.coerce.number().int().min(0).max(90),
   maxCorrectionsPerMonth: z.coerce.number().int().min(0).max(100).nullable(),
   reasonsMandatory: z.boolean(),

@@ -34,6 +34,12 @@ async def get_shift(shift_id: int, service: ServiceDep) -> ShiftResponse:
 async def update_shift(shift_id: int, body: ShiftUpdate, service: ServiceDep, auth: Annotated[AuthContext, Depends(require_permission("shift", "UPDATE", "ORGANIZATION"))]) -> ShiftResponse:
     return await service.update(shift_id, body, actor_employment_id=auth.employment_id)
 
-@router.post("/{shift_id}/archive", response_model=MessageResponse)
+@router.delete("/{shift_id}", response_model=MessageResponse)
+async def delete_shift(shift_id: int, service: ServiceDep, auth: Annotated[AuthContext, Depends(require_permission("shift", "UPDATE", "ORGANIZATION"))]) -> MessageResponse:
+    return await service.delete(shift_id, actor_employment_id=auth.employment_id)
+
+
+# Deprecated alias — old POST .../archive callers keep working
+@router.post("/{shift_id}/archive", response_model=MessageResponse, include_in_schema=False)
 async def archive_shift(shift_id: int, service: ServiceDep, auth: Annotated[AuthContext, Depends(require_permission("shift", "UPDATE", "ORGANIZATION"))]) -> MessageResponse:
-    return await service.archive(shift_id, actor_employment_id=auth.employment_id)
+    return await service.delete(shift_id, actor_employment_id=auth.employment_id)

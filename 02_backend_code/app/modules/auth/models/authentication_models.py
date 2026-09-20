@@ -25,7 +25,7 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import INET
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.base import Base, CreatedAtMixin, IdentityMixin, TimestampMixin
+from app.core.base import ArchiveMixin, Base, CreatedAtMixin, IdentityMixin, TimestampMixin
 from app.core.db.enums import DeviceType, SessionRevokeReason, SessionStatus
 
 
@@ -54,7 +54,7 @@ class Person(Base, IdentityMixin, TimestampMixin):
     )
 
 
-class Login(Base, IdentityMixin):
+class Login(Base, IdentityMixin, ArchiveMixin):
     """
     Authentication credentials for a person.
     One login per person. Email is the only credential and is immutable.

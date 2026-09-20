@@ -1,18 +1,19 @@
-"""Department repository — operational queries.
+"""Department repository — operational queries (canonical owner: workforce).
 
-Uses Department model from organization.models (shared table).
+Uses Department model from workforce.department.models (shared table).
 Member listing uses employment assignments (department_id).
+Soft-delete: normal queries exclude is_archived=True rows.
 """
 from __future__ import annotations
 
 from collections.abc import Sequence
 from datetime import date
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.repositories.base_repository import BaseRepository
-from app.modules.admin.department.models import Department
+from app.modules.workforce.department.models import Department
 from app.modules.workforce.department.schemas import DepartmentEmployee, DepartmentEmployeeOption
 from app.modules.workforce.models import Employment, EmploymentAssignment
 
@@ -40,6 +41,16 @@ class DepartmentRepository(BaseRepository):
             Department.name == name, Department.is_archived.is_(False)
         )
         return await self.scalar_one_or_none(stmt)
+
+    async def count_active(self) -> int:
+        stmt = select(func.count(Department.id)).where(Department.is_archived.is_(False))
+        res = await self._session.execute(stmt)
+        return int(res.scalar() or 0)
+
+    async def count_archived(self) -> int:
+        stmt = select(func.count(Department.id)).where(Department.is_archived.is_(True))
+        res = await self._session.execute(stmt)
+        return int(res.scalar() or 0)
 
     async def list_employees(
         self,

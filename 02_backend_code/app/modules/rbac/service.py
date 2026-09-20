@@ -275,8 +275,10 @@ class RBACService(BasePublicService):
     async def delete_role(
         self, role_id: int, *, actor_employment_id: int | None = None
     ) -> MessageResponse:
-        role = await self._repo.get_role_by_id(role_id)
-        if role is None:
+        from datetime import UTC, datetime
+
+        role = await self._repo.get_role_by_id(role_id, include_archived=True)
+        if role is None or bool(getattr(role, "is_archived", False)):
             raise NotFoundError("Role not found")
         if role.is_system_role:
             raise DomainError("Cannot delete a system role")
@@ -285,7 +287,10 @@ class RBACService(BasePublicService):
             raise DomainError(
                 f"Role is still assigned to {assigned} employment(s); unassign first"
             )
-        await self._session.delete(role)
+        role.is_archived = True
+        role.archived_at = datetime.now(UTC)
+        if hasattr(role, "archived_by"):
+            role.archived_by = actor_employment_id
         await self._commit()
         await self._audit("role.deleted", role_id, actor_employment_id)
         return MessageResponse(message="Role deleted")

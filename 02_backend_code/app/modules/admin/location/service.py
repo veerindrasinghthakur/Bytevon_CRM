@@ -134,5 +134,18 @@ class LocationService(BasePublicService):
         await self._audit("location.archived", location_id, actor_employment_id)
         return MessageResponse(message="Location archived")
 
+    async def delete(
+        self, location_id: int, *, actor_employment_id: int | None = None
+    ) -> MessageResponse:
+        loc = await self._repo.get_by_id(location_id, include_archived=True)
+        if loc is None or bool(getattr(loc, "is_archived", False)):
+            raise NotFoundError("Location not found")
+        loc.is_archived = True
+        loc.archived_at = datetime.now(UTC)
+        loc.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        await self._commit()
+        await self._audit("location.deleted", location_id, actor_employment_id)
+        return MessageResponse(message="Location deleted")
+
 
 LocationPublicService = LocationService

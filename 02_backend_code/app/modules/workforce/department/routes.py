@@ -1,4 +1,4 @@
-"""Department operational routes under /workforce/departments."""
+"""Department operational routes under /workforce/departments (canonical owner)."""
 from __future__ import annotations
 
 from typing import Annotated
@@ -11,6 +11,7 @@ from app.modules.workforce.department.schemas import (
     DepartmentCreate,
     DepartmentEmployeeListResponse,
     DepartmentEmployeeOption,
+    DepartmentListResponse,
     DepartmentResponse,
     DepartmentUpdate,
     MessageResponse,
@@ -27,11 +28,13 @@ async def create_department(
     return await service.create(body, actor_employment_id=auth.employment_id)
 
 
-@router.get("", response_model=list[DepartmentResponse], dependencies=[Depends(require_permission("department", "VIEW", "ORGANIZATION"))])
+@router.get("", response_model=DepartmentListResponse, dependencies=[Depends(require_permission("department", "VIEW", "ORGANIZATION"))])
 async def list_departments(
-    service: DepartmentServiceDep, include_archived: bool = Query(False)
-) -> list[DepartmentResponse]:
-    return await service.list(include_archived=include_archived)
+    service: DepartmentServiceDep,
+    include_archived: bool = Query(False),
+    include_deleted: bool = Query(False),
+) -> DepartmentListResponse:
+    return await service.list(include_archived=include_archived, include_deleted=include_deleted)
 
 
 @router.get("/{department_id}", response_model=DepartmentResponse, dependencies=[Depends(require_permission("department", "VIEW", "ORGANIZATION"))])
@@ -51,11 +54,19 @@ async def update_department(
     return await service.update(department_id, body, actor_employment_id=auth.employment_id)
 
 
-@router.post("/{department_id}/archive", response_model=MessageResponse)
-async def archive_department(
+@router.delete("/{department_id}", response_model=MessageResponse)
+async def delete_department(
     department_id: int, service: DepartmentServiceDep, auth: Annotated[AuthContext, Depends(require_permission("department", "UPDATE", "ORGANIZATION"))]
 ) -> MessageResponse:
-    return await service.archive(department_id, actor_employment_id=auth.employment_id)
+    return await service.delete(department_id, actor_employment_id=auth.employment_id)
+
+
+# Deprecated alias — old clients/tests calling POST .../archive keep working
+@router.post("/{department_id}/archive", response_model=MessageResponse, include_in_schema=False)
+async def archive_department_alias(
+    department_id: int, service: DepartmentServiceDep, auth: Annotated[AuthContext, Depends(require_permission("department", "UPDATE", "ORGANIZATION"))]
+) -> MessageResponse:
+    return await service.delete(department_id, actor_employment_id=auth.employment_id)
 
 
 @router.get("/{department_id}/employees", response_model=DepartmentEmployeeListResponse, dependencies=[Depends(require_permission("department", "VIEW", "DEPARTMENT"))])

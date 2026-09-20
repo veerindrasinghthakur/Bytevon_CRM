@@ -11,7 +11,7 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { useHolidays } from '../../hooks/settings/use-settings'
 import { createHoliday, getHolidayCalendar, getHolidays, deleteHoliday } from '../../api/organization'
-import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
+import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 import type { HolidayRow } from '@/shared/schema'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { holidayTypes as TYPES } from '../../schemas/enums'
@@ -263,11 +263,9 @@ export function HolidaysListPage() {
                   <td className="px-5 py-3 text-body-sm">{h.holiday_type}</td>
                   <td className="px-5 py-3 text-body-sm">{h.recurring_flag ? 'Yes' : 'No'}</td>
                   <td className="px-5 py-3 text-right">
-                    <ArchiveButton
+                    <DeleteButton
+                      iconOnly
                       entityLabel={`${h.name} (${h.date})`}
-                      mode="delete"
-                      label="Delete"
-                      size="sm"
                       isLoading={deleteMut.isPending}
                       onConfirm={() => deleteMut.mutateAsync(h.id)}
                     />

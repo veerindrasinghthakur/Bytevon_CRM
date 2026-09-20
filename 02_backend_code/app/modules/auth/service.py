@@ -104,7 +104,7 @@ class AuthService(BasePublicService):
         now = datetime.now(UTC)
 
         login = await self._repo.get_login_by_email(data.email)
-        if login is None:
+        if login is None or bool(getattr(login, "is_archived", False)):
             self._pwd.verify("dummy", self._pwd.hash("dummy"))
             raise InvalidCredentialsException()
 
@@ -190,7 +190,7 @@ class AuthService(BasePublicService):
             raise InvalidSessionException()
 
         login = await self._repo.get_login_by_id(session_row.login_id)
-        if login is None or not login.is_active:
+        if login is None or bool(getattr(login, "is_archived", False)) or not login.is_active:
             raise AccountInactiveException()
 
         new_refresh = self._jwt.generate_refresh_token(
@@ -265,7 +265,7 @@ class AuthService(BasePublicService):
         self, *, login_id: int, data: ChangePasswordRequest
     ) -> MessageResponse:
         login = await self._repo.get_login_by_id(login_id)
-        if login is None:
+        if login is None or bool(getattr(login, "is_archived", False)):
             raise InvalidCredentialsException()
 
         if not self._pwd.verify(data.current_password, login.password_hash):
@@ -286,7 +286,7 @@ class AuthService(BasePublicService):
 
     async def forgot_password(self, data: ForgotPasswordRequest) -> MessageResponse:
         login = await self._repo.get_login_by_email(data.email)
-        if login and login.is_active:
+        if login and login.is_active and not bool(getattr(login, "is_archived", False)):
             raw_token = secrets.token_urlsafe(32)
             token_hash = _hash_token(raw_token)
             expires = datetime.now(UTC) + timedelta(
@@ -316,7 +316,7 @@ class AuthService(BasePublicService):
             raise PasswordResetAlreadyUsedException()
 
         login = await self._repo.get_login_by_id(reset.login_id)
-        if login is None or not login.is_active:
+        if login is None or bool(getattr(login, "is_archived", False)) or not login.is_active:
             raise InvalidPasswordResetTokenException()
 
         login.password_hash = self._pwd.hash(data.new_password)

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from sqlalchemy import select
 
-from app.modules.admin.department.models import Department
+from app.modules.workforce.department.models import Department
 from tests.modules.helpers import db_scalar, grant, record_coverage, table_count
 
 COVERED = [
@@ -11,7 +11,7 @@ COVERED = [
     ("GET", "/api/v1/workforce/departments"),
     ("GET", "/api/v1/workforce/departments/{department_id}"),
     ("PATCH", "/api/v1/workforce/departments/{department_id}"),
-    ("POST", "/api/v1/workforce/departments/{department_id}/archive"),
+    ("DELETE", "/api/v1/workforce/departments/{department_id}"),
     ("GET", "/api/v1/workforce/departments/{department_id}/employees"),
     ("GET", "/api/v1/workforce/departments/{department_id}/employees-available"),
     ("POST", "/api/v1/workforce/departments/{department_id}/assign"),
@@ -21,6 +21,11 @@ COVERED = [
     ("POST", "/api/v1/workforce/employments/{employment_id}/assignments"),
     ("GET", "/api/v1/workforce/employments/{employment_id}/assignments/current"),
     ("GET", "/api/v1/workforce/employments/{employment_id}/assignments"),
+    ("POST", "/api/v1/workforce/positions"),
+    ("GET", "/api/v1/workforce/positions"),
+    ("GET", "/api/v1/workforce/positions/{position_id}"),
+    ("PATCH", "/api/v1/workforce/positions/{position_id}"),
+    ("DELETE", "/api/v1/workforce/positions/{position_id}"),
     ("POST", "/api/v1/workforce/attendance/punch"),
     ("GET", "/api/v1/workforce/attendance/days/{day_id}"),
     ("GET", "/api/v1/workforce/attendance/days/by-employment/{employment_id}"),
@@ -51,7 +56,11 @@ def test_department_lifecycle(client, factory):
 
     listed = client.get("/api/v1/workforce/departments", headers=h)
     assert listed.status_code == 200
-    assert any(r["id"] == dept_id for r in listed.json())
+    payload = listed.json()
+    rows = payload["items"] if isinstance(payload, dict) else payload
+    assert any(r["id"] == dept_id for r in rows)
+    if isinstance(payload, dict):
+        assert "metrics" in payload and "total" in payload
 
     got = client.get(f"/api/v1/workforce/departments/{dept_id}", headers=h)
     assert got.status_code == 200
@@ -89,15 +98,48 @@ def test_department_lifecycle(client, factory):
     )
     assert removed.status_code == 200, removed.text
 
-    archived = client.post(
-        f"/api/v1/workforce/departments/{dept_id}/archive", headers=h
+    deleted = client.delete(
+        f"/api/v1/workforce/departments/{dept_id}", headers=h
     )
-    assert archived.status_code == 200, archived.text
+    assert deleted.status_code == 200, deleted.text
     assert (
         db_scalar(client, select(Department.is_archived).where(Department.id == dept_id))
         is True
     )
+    # Deleted rows excluded from normal list
+    relisted = client.get("/api/v1/workforce/departments", headers=h).json()
+    relisted_rows = relisted["items"] if isinstance(relisted, dict) else relisted
+    assert all(r["id"] != dept_id for r in relisted_rows)
     record_coverage("test_department_lifecycle", COVERED[:9])
+
+
+def test_position_lifecycle(client, factory):
+    from app.modules.workforce.models import Position
+
+    h = _sa(factory)["headers"]
+    created = client.post(
+        "/api/v1/workforce/positions", json={"name": "QA Engineer"}, headers=h
+    )
+    assert created.status_code == 201, created.text
+    pos_id = created.json()["id"]
+
+    assert client.get("/api/v1/workforce/positions", headers=h).status_code == 200
+    assert client.get(f"/api/v1/workforce/positions/{pos_id}", headers=h).status_code == 200
+    updated = client.patch(
+        f"/api/v1/workforce/positions/{pos_id}", json={"name": "Senior QA Engineer"}, headers=h
+    )
+    assert updated.status_code == 200, updated.text
+
+    deleted = client.delete(f"/api/v1/workforce/positions/{pos_id}", headers=h)
+    assert deleted.status_code == 200, deleted.text
+    assert (
+        db_scalar(client, select(Position.is_archived).where(Position.id == pos_id))
+        is True
+    )
+    listed = client.get("/api/v1/workforce/positions", headers=h).json()
+    rows = listed if isinstance(listed, list) else listed.get("items", [])
+    assert all(r["id"] != pos_id for r in rows)
+    record_coverage("test_position_lifecycle", COVERED[9:14])
 
 
 def test_assignment_and_state_flow(client, factory):

@@ -1,14 +1,12 @@
 import { useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { ExportButton } from '@/shared/components/export/ExportButton'
-import { queryKeys } from '@/shared/lib/query-keys'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../../routes'
 import { statusStyles, REQUEST_FILTERS } from '../../schemas/enums'
-import { listMySubmittedRequests } from '../../api/my-work'
+import { useMyRequests } from '../../hooks/use-my-requests'
 import { useRequestsPageFilter } from '../../hooks/use-requests-page-filter'
 
 function StatCard({
@@ -37,11 +35,8 @@ export function MyRequestsPage() {
   const navigate = useNavigate()
   const { filter, setFilter } = useRequestsPageFilter()
 
-  const requestsQuery = useQuery({
-    queryKey: queryKeys.myWork.requests.list({}),
-    queryFn: () => listMySubmittedRequests({}),
-  })
-  const myRequests = requestsQuery.data?.items ?? []
+  const requestsQuery = useMyRequests()
+  const myRequests = requestsQuery.items
 
   const stats = useMemo(() => {
     const total = myRequests.length

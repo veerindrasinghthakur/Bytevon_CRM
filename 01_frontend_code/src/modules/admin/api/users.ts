@@ -207,7 +207,7 @@ export async function listDepartments(): Promise<DepartmentOption[]> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<
       { items?: Array<{ id: number; name: string }> } | Array<{ id: number; name: string }>
-    >('/admin/departments')
+    >('/workforce/departments')
     const rows = Array.isArray(data) ? data : data?.items ?? []
     return rows.map((d) => ({ id: Number(d.id), name: d.name }))
   }
@@ -342,12 +342,12 @@ export async function activateUser(loginId: number) {
   return updateUserLogin(loginId, { status: 'ACTIVE', failed_attempt_count: 0, locked_until: null })
 }
 
-export async function archiveUserCredentials(loginId: number) {
+export async function deleteUserCredentials(loginId: number) {
   if (!env.useMockApi) {
     try {
-      return (await apiClient.post(`${USERS_API}/${loginId}/archive`)).data
+      return (await apiClient.delete(`${USERS_API}/${loginId}`)).data
     } catch (err) {
-      throw new Error(extractApiErrorMessage(err, 'Could not archive user'))
+      throw new Error(extractApiErrorMessage(err, 'Could not delete user'))
     }
   }
   const logins = ensureLoginUsers()
@@ -355,6 +355,11 @@ export async function archiveUserCredentials(loginId: number) {
   if (idx < 0) throw new Error('User not found')
   const [removed] = logins.splice(idx, 1)
   return { ok: true, employmentId: removed.employment_id }
+}
+
+/** @deprecated Use deleteUserCredentials (DELETE verb + soft-delete). */
+export async function archiveUserCredentials(loginId: number) {
+  return deleteUserCredentials(loginId)
 }
 
 export async function getUserLogin(loginId: number) {

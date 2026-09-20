@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate, useParams } from '@tanstack/react-router'
@@ -6,39 +6,24 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
-import { getSchemaDepartments, getLocations, getPositions, getShifts } from '@/modules/admin'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { WorkMode } from '@/shared/schema'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { workforceRoutes } from '../routes'
 import { changeAssignmentSchema, type ChangeAssignmentForm } from '../schemas/change-assignment-form'
 import { WORK_MODE_OPTIONS } from '../schemas/enums'
-import type { IdName } from '../types'
-
-function asIdNameList(raw: unknown): IdName[] {
-  if (Array.isArray(raw)) {
-    return raw
-      .map((row) => {
-        const r = row as Record<string, unknown>
-        const id = Number(r.id)
-        const name = String(r.name ?? '')
-        return Number.isFinite(id) ? { id, name } : null
-      })
-      .filter((x): x is IdName => x != null)
-  }
-  if (raw && typeof raw === 'object' && 'items' in raw) {
-    return asIdNameList((raw as { items: unknown }).items)
-  }
-  return []
-}
+import { useChangeAssignment } from '../hooks/assignment/use-change-assignment'
 
 export function ChangeAssignmentPage() {
   const { employeeId } = useParams({ strict: false }) as { employeeId: string }
   const navigate = useNavigate()
-  const [departments, setDepartments] = useState<IdName[]>([])
-  const [positions, setPositions] = useState<IdName[]>([])
-  const [locations, setLocations] = useState<IdName[]>([])
-  const [shifts, setShifts] = useState<IdName[]>([])
-  const [saving, setSaving] = useState(false)
+  const {
+    masters,
+    saveAssignment,
+    isSaving: saving,
+    saveError,
+  } = useChangeAssignment(Number(employeeId))
+  const { departments, positions, locations, shifts } = masters
 
   const form = useForm<ChangeAssignmentForm>({
     resolver: zodResolver(changeAssignmentSchema),
@@ -54,29 +39,18 @@ export function ChangeAssignmentPage() {
   })
 
   useEffect(() => {
-    void Promise.all([getSchemaDepartments(), getPositions(), getLocations(), getShifts()]).then(
-      ([d, p, l, s]) => {
-        const deps = asIdNameList(d)
-        const pos = asIdNameList(p)
-        const locs = asIdNameList(l)
-        const sh = asIdNameList(s)
-        setDepartments(deps)
-        setPositions(pos)
-        setLocations(locs)
-        setShifts(sh)
-        form.reset({
-          department_id: deps[0] ? String(deps[0].id) : '',
-          position_id: pos[0] ? String(pos[0].id) : '',
-          location_id: locs[0] ? String(locs[0].id) : '',
-          shift_id: sh[0] ? String(sh[0].id) : '',
-          work_mode: WorkMode.OFFICE,
-          effective_from: new Date().toISOString().slice(0, 10),
-          change_reason: '',
-        })
-      },
-    )
+    if (departments.length === 0 && positions.length === 0) return
+    form.reset({
+      department_id: departments[0] ? String(departments[0].id) : '',
+      position_id: positions[0] ? String(positions[0].id) : '',
+      location_id: locations[0] ? String(locations[0].id) : '',
+      shift_id: shifts[0] ? String(shifts[0].id) : '',
+      work_mode: WorkMode.OFFICE,
+      effective_from: new Date().toISOString().slice(0, 10),
+      change_reason: '',
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [departments.length, positions.length, locations.length, shifts.length])
 
   const deptOptions = useMemo(
     () => departments.map((o) => ({ value: String(o.id), label: o.name })),
@@ -95,14 +69,24 @@ export function ChangeAssignmentPage() {
     [shifts],
   )
 
-  const onSubmit = form.handleSubmit(async () => {
-    setSaving(true)
-    await new Promise((r) => setTimeout(r, 400))
-    setSaving(false)
-    safeNavigate(navigate, {
-      to: workforceRoutes.employeeDetailPath,
-      params: { employeeId },
-    })
+  const onSubmit = form.handleSubmit(async (values) => {
+    try {
+      await saveAssignment({
+        departmentId: values.department_id ? Number(values.department_id) : undefined,
+        positionId: values.position_id ? Number(values.position_id) : undefined,
+        locationId: values.location_id ? Number(values.location_id) : undefined,
+        shiftId: values.shift_id ? Number(values.shift_id) : undefined,
+        workMode: values.work_mode,
+        effectiveFrom: values.effective_from,
+        changeReason: values.change_reason,
+      })
+      safeNavigate(navigate, {
+        to: workforceRoutes.employeeDetailPath,
+        params: { employeeId },
+      })
+    } catch {
+      /* error surfaces via saveError below */
+    }
   })
 
   return (
@@ -195,6 +179,11 @@ export function ChangeAssignmentPage() {
             <p className="text-xs text-error mt-1">{form.formState.errors.change_reason.message}</p>
           )}
         </div>
+        {saveError && (
+          <p className="text-xs text-error" role="alert">
+            {getApiErrorMessage(saveError, 'Could not save assignment')}
+          </p>
+        )}
         <Button type="submit" variant="primary" isLoading={saving}>
           Save assignment
         </Button>

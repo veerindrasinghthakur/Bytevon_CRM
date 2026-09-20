@@ -30,12 +30,22 @@ export type AdminRoleStatus = 'Active' | 'Archived'
 export type AdminRoleCategory = 'Core Role' | 'Operational' | 'Financial' | 'Standard'
 export type SecurityEventStatus = 'Success' | 'Blocked' | 'Warning'
 
+export interface RoleGrantDetail {
+  key: string
+  resource: string
+  action: string
+  scope: string
+  permission_id: number
+  scope_id: number
+}
+
 export interface AdminRole {
   id: string
   name: string
   description: string
   usersCount: number
   permissions: string[]
+  permissionDetails?: RoleGrantDetail[]
   status: AdminRoleStatus
   category: AdminRoleCategory
   coveragePct: number

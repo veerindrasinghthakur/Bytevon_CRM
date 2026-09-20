@@ -1,6 +1,6 @@
 /**
- * Department API — schema_departments in mock DB.
- * env.useMockApi → local mock; false → /admin/departments
+ * Department API — workforce canonical owner (/workforce/departments).
+ * env.useMockApi → local mock; false → real backend.
  */
 
 import { env } from '@/config/env'
@@ -13,7 +13,7 @@ import type { DepartmentListItem, DepartmentEmployee } from '../types'
 
 export type { DepartmentListItem, DepartmentEmployee }
 
-const DEPTS = '/admin/departments'
+const DEPTS = '/workforce/departments'
 
 function staffCountFor(departmentId: number): number {
   const db = getDb()
@@ -99,13 +99,14 @@ export async function listDepartments(
       | {
           items?: Array<Record<string, unknown>>
           total?: number
-          metrics?: ReturnType<typeof buildDeptMetrics>
+          metrics?: { total: number; active: number; archived: number; staffing: number }
         }
     >(DEPTS, {
       params: {
         include_archived: params.includeArchived ?? false,
       },
     })
+    const payloadMetrics = !Array.isArray(data) ? data.metrics : undefined
     const rows = (Array.isArray(data) ? data : data.items ?? []).map(mapApiDepartment)
     const filteredRows = rows.filter((row) => {
       const matchesSearch =
@@ -118,10 +119,19 @@ export async function listDepartments(
     })
     const start = (Number(page) - 1) * Number(pageSize)
     const items = filteredRows.slice(start, start + Number(pageSize))
+    // Prefer backend-computed metrics when available; fall back to local build
+    const metrics = payloadMetrics
+      ? {
+          total: Number(payloadMetrics.total ?? filteredRows.length),
+          active: Number(payloadMetrics.active ?? 0),
+          inactive: Number(payloadMetrics.archived ?? 0),
+          staffing: Number(payloadMetrics.staffing ?? 0),
+        }
+      : buildDeptMetrics(filteredRows)
     return {
       items,
       total: filteredRows.length,
-      metrics: buildDeptMetrics(filteredRows),
+      metrics,
     }
   }
 
@@ -338,7 +348,7 @@ export async function createDepartment(input: {
     })
     const created = mapApiDepartment(data)
     if (input.isArchived && !created.isArchived) {
-      await apiClient.post(`${DEPTS}/${created.id}/archive`)
+      await apiClient.delete(`${DEPTS}/${created.id}`)
       return { ...created, isArchived: true, status: 'Inactive' as const }
     }
     return created
@@ -464,9 +474,9 @@ export async function listEmployeesOnShift(shiftId: number) {
   })
 }
 
-export async function archiveDepartment(id: number): Promise<void> {
+export async function deleteDepartment(id: number): Promise<void> {
   if (!env.useMockApi) {
-    await apiClient.post(`${DEPTS}/${id}/archive`)
+    await apiClient.delete(`${DEPTS}/${id}`)
     return
   }
   await delay()
@@ -475,4 +485,9 @@ export async function archiveDepartment(id: number): Promise<void> {
   if (dept) {
     ;(dept as { is_archived: boolean }).is_archived = true
   }
+}
+
+/** @deprecated Use deleteDepartment (DELETE verb + soft-delete). Kept for transition. */
+export async function archiveDepartment(id: number): Promise<void> {
+  return deleteDepartment(id)
 }

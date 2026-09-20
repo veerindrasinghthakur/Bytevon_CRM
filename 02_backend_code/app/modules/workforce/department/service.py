@@ -1,4 +1,7 @@
-"""DepartmentService — operational CRUD + members (workforce)."""
+"""DepartmentService — operational CRUD + members (workforce, canonical owner).
+
+Soft-delete: DELETE sets is_archived=true; rows are never hard-deleted.
+"""
 from __future__ import annotations
 
 from datetime import UTC, datetime
@@ -9,12 +12,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import settings
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
-from app.modules.admin.department.models import Department
+from app.modules.workforce.department.models import Department
 from app.modules.workforce.department.repository import DepartmentRepository
 from app.modules.workforce.department.schemas import (
     DepartmentCreate,
     DepartmentEmployeeListResponse,
     DepartmentEmployeeOption,
+    DepartmentListResponse,
+    DepartmentMetrics,
     DepartmentResponse,
     DepartmentUpdate,
     MessageResponse,
@@ -54,13 +59,28 @@ class DepartmentService(BasePublicService):
 
     async def get(self, department_id: int) -> DepartmentResponse:
         dept = await self._repo.get_by_id(department_id, include_archived=True)
-        if dept is None:
+        if dept is None or bool(getattr(dept, "is_archived", False)):
             raise NotFoundError("Department not found")
         return DepartmentResponse.model_validate(dept)
 
-    async def list(self, *, include_archived: bool = False) -> list[DepartmentResponse]:
-        rows = await self._repo.list(include_archived=include_archived)
-        return [DepartmentResponse.model_validate(r) for r in rows]
+    async def list(
+        self, *, include_archived: bool = False, include_deleted: bool = False
+    ) -> DepartmentListResponse:
+        # include_deleted kept as compat alias for include_archived
+        show = bool(include_archived or include_deleted)
+        rows = await self._repo.list(include_archived=show)
+        items = [DepartmentResponse.model_validate(r) for r in rows]
+        active = sum(1 for i in items if not i.is_archived)
+        archived = sum(1 for i in items if i.is_archived)
+        metrics = DepartmentMetrics(total=len(items), active=active, archived=archived, staffing=0)
+        return DepartmentListResponse(items=items, total=len(items), metrics=metrics)
+
+    # Back-compat: old callers expect list[...] — expose list_items
+    async def list_items(
+        self, *, include_archived: bool = False
+    ) -> list[DepartmentResponse]:
+        res = await self.list(include_archived=include_archived)
+        return res.items
 
     async def update(
         self,
@@ -70,10 +90,8 @@ class DepartmentService(BasePublicService):
         actor_employment_id: int | None = None,
     ) -> DepartmentResponse:
         dept = await self._repo.get_by_id(department_id, include_archived=True)
-        if dept is None:
+        if dept is None or bool(getattr(dept, "is_archived", False)):
             raise NotFoundError("Department not found")
-        if getattr(dept, "is_archived", False):
-            raise DomainError("Cannot update archived department")
         payload = data.model_dump(exclude_unset=True)
         if "name" in payload and payload["name"] is not None:
             name = payload["name"].strip()
@@ -90,20 +108,26 @@ class DepartmentService(BasePublicService):
         await self._refresh(dept)
         return DepartmentResponse.model_validate(dept)
 
-    async def archive(
+    async def delete(
         self, department_id: int, *, actor_employment_id: int | None = None
     ) -> MessageResponse:
         dept = await self._repo.get_by_id(department_id, include_archived=True)
-        if dept is None:
+        if dept is None or bool(getattr(dept, "is_archived", False)):
             raise NotFoundError("Department not found")
-        if getattr(dept, "is_archived", False):
-            return MessageResponse(message="Department already archived")
         dept.is_archived = True
         if hasattr(dept, "archived_at"):
             dept.archived_at = datetime.now(UTC)
+        if hasattr(dept, "archived_by"):
+            dept.archived_by = actor_employment_id
         await self._commit()
-        await self._audit("department.archived", department_id, actor_employment_id)
-        return MessageResponse(message="Department archived")
+        await self._audit("department.deleted", department_id, actor_employment_id)
+        return MessageResponse(message="Department deleted")
+
+    # Deprecated alias — kept so old POST .../archive clients/tests keep working
+    async def archive(
+        self, department_id: int, *, actor_employment_id: int | None = None
+    ) -> MessageResponse:
+        return await self.delete(department_id, actor_employment_id=actor_employment_id)
 
     async def list_employees(
         self,
@@ -113,7 +137,8 @@ class DepartmentService(BasePublicService):
         page_size: int = 50,
         search: str | None = None,
     ) -> DepartmentEmployeeListResponse:
-        if await self._repo.get_by_id(department_id, include_archived=True) is None:
+        dept = await self._repo.get_by_id(department_id, include_archived=True)
+        if dept is None or bool(getattr(dept, "is_archived", False)):
             raise NotFoundError("Department not found")
         items, total = await self._repo.list_employees(
             department_id, page=page, page_size=page_size, search=search
@@ -123,7 +148,8 @@ class DepartmentService(BasePublicService):
         )
 
     async def list_available(self, department_id: int) -> list[DepartmentEmployeeOption]:
-        if await self._repo.get_by_id(department_id, include_archived=True) is None:
+        dept = await self._repo.get_by_id(department_id, include_archived=True)
+        if dept is None or bool(getattr(dept, "is_archived", False)):
             raise NotFoundError("Department not found")
         return await self._repo.list_available_employees(department_id)
 
@@ -148,7 +174,8 @@ class DepartmentService(BasePublicService):
         *,
         actor_employment_id: int | None = None,
     ) -> MessageResponse:
-        if await self._repo.get_by_id(department_id, include_archived=True) is None:
+        dept = await self._repo.get_by_id(department_id, include_archived=True)
+        if dept is None or bool(getattr(dept, "is_archived", False)):
             raise NotFoundError("Department not found")
         await self._repo.remove_employee(department_id, employment_id)
         await self._commit()

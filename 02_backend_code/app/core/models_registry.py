@@ -3,7 +3,6 @@ from __future__ import annotations
 
 from app.core.base import Base  # noqa: F401
 from app.modules.admin.models import (  # noqa: F401
-    Department,
     Holiday,
     HolidayCalendar,
     Location,
@@ -11,6 +10,7 @@ from app.modules.admin.models import (  # noqa: F401
     Shift,
     WorkingWeek,
 )
+from app.modules.workforce.department.models import Department  # noqa: F401
 from app.modules.approvals.models import (  # noqa: F401
     ApprovalAction,
     ApprovalRequest,

@@ -124,18 +124,23 @@ export async function updateLocation(id: number, patch: Partial<LocationRow> | R
   return data
 }
 
-export async function archiveLocation(id: number): Promise<void> {
+export async function deleteLocation(id: number): Promise<void> {
   if (!env.useMockApi) {
-    await apiClient.post(`/admin/locations/${id}/archive`)
+    await apiClient.delete(`/admin/locations/${id}`)
     return
   }
   await delay(300)
   const row = (getDb().locations as LocationRow[]).find((l) => l.id === id)
   if (!row) throw new Error('Location not found')
-  if (row.is_archived) throw new Error('Location is already archived')
+  if (row.is_archived) throw new Error('Location is already deleted')
   const now = new Date().toISOString()
   row.is_archived = true
   row.archived_at = now
   row.archived_by = 1
   row.changed_by = 1
+}
+
+/** @deprecated Use deleteLocation (DELETE verb + soft-delete). */
+export async function archiveLocation(id: number): Promise<void> {
+  return deleteLocation(id)
 }

@@ -103,9 +103,10 @@ export async function listPlatforms(includeArchived = false): Promise<PlatformOp
     return MOCK_PLATFORMS.map((p) => ({ ...p }))
   }
   const { data } = await apiClient.get<
-    Array<{ id: number; name: string; description?: string | null; is_archived?: boolean }>
-  >('/sales/platforms', { params: { include_archived: includeArchived } })
-  const rows = Array.isArray(data) ? data : []
+    | Array<{ id: number; name: string; description?: string | null; is_archived?: boolean }>
+    | { items?: Array<{ id: number; name: string; description?: string | null; is_archived?: boolean }> }
+  >('/sales/sources', { params: { include_archived: includeArchived } })
+  const rows = Array.isArray(data) ? data : (data.items ?? [])
   return rows
     .filter((r) => includeArchived || !r.is_archived)
     .map((r) => ({

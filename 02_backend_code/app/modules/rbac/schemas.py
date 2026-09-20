@@ -71,6 +71,7 @@ class RoleResponse(BaseModel):
     name: str
     description: str | None
     is_system_role: bool
+    is_archived: bool = False
     created_at: datetime
     changed_by: int | None
 

@@ -43,9 +43,15 @@ async def get_holiday_calendar(calendar_id: int, service: ServiceDep) -> Holiday
 async def update_holiday_calendar(calendar_id: int, body: HolidayCalendarUpdate, service: ServiceDep, auth: Annotated[AuthContext, Depends(require_permission("holiday", "UPDATE", "ORGANIZATION"))]) -> HolidayCalendarResponse:
     return await service.update(calendar_id, body, actor_employment_id=auth.employment_id)
 
-@router.post("/{calendar_id}/archive", response_model=MessageResponse)
+@router.delete("/{calendar_id}", response_model=MessageResponse)
+async def delete_holiday_calendar(calendar_id: int, service: ServiceDep, auth: Annotated[AuthContext, Depends(require_permission("holiday", "UPDATE", "ORGANIZATION"))]) -> MessageResponse:
+    return await service.delete(calendar_id, actor_employment_id=auth.employment_id)
+
+
+# Deprecated alias — old POST .../archive callers keep working
+@router.post("/{calendar_id}/archive", response_model=MessageResponse, include_in_schema=False)
 async def archive_holiday_calendar(calendar_id: int, service: ServiceDep, auth: Annotated[AuthContext, Depends(require_permission("holiday", "UPDATE", "ORGANIZATION"))]) -> MessageResponse:
-    return await service.archive(calendar_id, actor_employment_id=auth.employment_id)
+    return await service.delete(calendar_id, actor_employment_id=auth.employment_id)
 
 @router.post("/{calendar_id}/holidays", response_model=HolidayResponse, status_code=status.HTTP_201_CREATED)
 async def create_holiday(calendar_id: int, body: HolidayCreate, service: ServiceDep, auth: Annotated[AuthContext, Depends(require_permission("holiday", "CREATE", "ORGANIZATION"))]) -> HolidayResponse:

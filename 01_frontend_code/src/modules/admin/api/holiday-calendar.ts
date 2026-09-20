@@ -67,12 +67,17 @@ export async function updateHolidayCalendar(
   return data
 }
 
-export async function archiveHolidayCalendar(id: number): Promise<void> {
+export async function deleteHolidayCalendar(id: number): Promise<void> {
   if (!env.useMockApi) {
-    await apiClient.post(`/admin/holiday-calendars/${id}/archive`)
+    await apiClient.delete(`/admin/holiday-calendars/${id}`)
     return
   }
   return updateHolidayCalendar(id, { is_archived: true }).then(() => undefined)
+}
+
+/** @deprecated Use deleteHolidayCalendar (DELETE verb + soft-delete). */
+export async function archiveHolidayCalendar(id: number): Promise<void> {
+  return deleteHolidayCalendar(id)
 }
 
 export async function getHolidays(calendarId?: number) {

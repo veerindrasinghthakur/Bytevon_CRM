@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
@@ -5,12 +6,37 @@ import { useRunPayroll } from '../../hooks/run/use-run-payroll'
 import { payrollRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
+import { toast } from '@/shared/hooks/use-toast'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import type { PayrollEmployeeRow } from '../../types'
+
+const MONTHS = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+]
 
 export function RunPayrollPage() {
   const navigate = useNavigate()
-  const { checks, previewMetrics, previewRows, estimatedNet, employeeCount, formatMoney } =
+  const { checks, previewMetrics, previewRows, estimatedNet, employeeCount, formatMoney, runMut, isRunning } =
     useRunPayroll()
+  const now = new Date()
+  const [month, setMonth] = useState(String(now.getMonth() + 1))
+  const [year, setYear] = useState(String(now.getFullYear()))
+
+  const handleGenerate = () => {
+    runMut.mutate(
+      { year: Number(year), month: Number(month) },
+      {
+        onSuccess: () => {
+          toast.success('Payroll run started')
+          safeNavigate(navigate, { to: payrollRoutes.generating })
+        },
+        onError: (err) => {
+          toast.error(getApiErrorMessage(err, 'Could not start payroll run'))
+        },
+      },
+    )
+  }
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -61,17 +87,30 @@ export function RunPayrollPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
                 <label className="text-label-bold text-on-surface-variant uppercase">Month</label>
-                <select className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-2 pl-3 pr-8 text-body-md focus:ring-2 focus:ring-secondary/30 outline-none transition-colors">
-                  <option>October</option>
-                  <option>November</option>
-                  <option>December</option>
+                <select
+                  value={month}
+                  onChange={(e) => setMonth(e.target.value)}
+                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-2 pl-3 pr-8 text-body-md focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
+                >
+                  {MONTHS.map((m, i) => (
+                    <option key={m} value={String(i + 1)}>
+                      {m}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="space-y-1">
                 <label className="text-label-bold text-on-surface-variant uppercase">Year</label>
-                <select className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-2 pl-3 pr-8 text-body-md focus:ring-2 focus:ring-secondary/30 outline-none transition-colors">
-                  <option>2023</option>
-                  <option>2024</option>
+                <select
+                  value={year}
+                  onChange={(e) => setYear(e.target.value)}
+                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg py-2 pl-3 pr-8 text-body-md focus:ring-2 focus:ring-secondary/30 outline-none transition-colors"
+                >
+                  {[now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1].map((y) => (
+                    <option key={y} value={String(y)}>
+                      {y}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -192,11 +231,12 @@ export function RunPayrollPage() {
             </div>
             <button
               type="button"
-              onClick={() => safeNavigate(navigate, { to: payrollRoutes.generating })}
-              className="w-full md:w-auto flex items-center justify-center gap-2 font-semibold text-body-md px-8 py-4 rounded-xl bg-primary text-on-primary hover:opacity-90 executive-shadow transition-all"
+              onClick={handleGenerate}
+              disabled={isRunning}
+              className="w-full md:w-auto flex items-center justify-center gap-2 font-semibold text-body-md px-8 py-4 rounded-xl bg-primary text-on-primary hover:opacity-90 executive-shadow transition-all disabled:opacity-50"
             >
               <span className="material-symbols-outlined">play_arrow</span>
-              Generate Payroll
+              {isRunning ? 'Starting…' : 'Generate Payroll'}
             </button>
           </section>
         </div>

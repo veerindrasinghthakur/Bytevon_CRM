@@ -64,7 +64,7 @@ export async function updateShift(id: number, patch: Partial<ShiftRow>): Promise
   return data
 }
 
-export async function archiveShift(id: number): Promise<void> {
+export async function deleteShift(id: number): Promise<void> {
   if (env.useMockApi) {
     await delay(300)
     const row = (getDb().shifts as ShiftRow[]).find((s) => s.id === id)
@@ -72,5 +72,10 @@ export async function archiveShift(id: number): Promise<void> {
     row.is_archived = true
     return
   }
-  await apiClient.post(`/admin/shifts/${id}/archive`)
+  await apiClient.delete(`/admin/shifts/${id}`)
+}
+
+/** @deprecated Use deleteShift (DELETE verb + soft-delete). */
+export async function archiveShift(id: number): Promise<void> {
+  return deleteShift(id)
 }

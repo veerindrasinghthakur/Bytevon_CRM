@@ -39,6 +39,12 @@ async def get_location(location_id: int, service: ServiceDep) -> LocationRespons
 async def update_location(location_id: int, body: LocationUpdate, service: ServiceDep, auth: Annotated[AuthContext, Depends(require_permission("location", "UPDATE", "ORGANIZATION"))]) -> LocationResponse:
     return await service.update(location_id, body, actor_employment_id=auth.employment_id)
 
-@router.post("/{location_id}/archive", response_model=MessageResponse)
+@router.delete("/{location_id}", response_model=MessageResponse)
+async def delete_location(location_id: int, service: ServiceDep, auth: Annotated[AuthContext, Depends(require_permission("location", "UPDATE", "ORGANIZATION"))]) -> MessageResponse:
+    return await service.delete(location_id, actor_employment_id=auth.employment_id)
+
+
+# Deprecated alias — old POST .../archive callers keep working
+@router.post("/{location_id}/archive", response_model=MessageResponse, include_in_schema=False)
 async def archive_location(location_id: int, service: ServiceDep, auth: Annotated[AuthContext, Depends(require_permission("location", "UPDATE", "ORGANIZATION"))]) -> MessageResponse:
-    return await service.archive(location_id, actor_employment_id=auth.employment_id)
+    return await service.delete(location_id, actor_employment_id=auth.employment_id)

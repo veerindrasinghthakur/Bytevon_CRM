@@ -74,9 +74,11 @@ class RBACRepository(BaseRepository):
         return await self.scalar_one_or_none(stmt)
 
     async def get_role_by_id(
-        self, role_id: int, *, with_details: bool = False
+        self, role_id: int, *, with_details: bool = False, include_archived: bool = False
     ) -> Role | None:
         stmt = select(Role).where(Role.id == role_id)
+        if not include_archived:
+            stmt = stmt.where(Role.is_archived.is_(False))
         if with_details:
             stmt = stmt.options(
                 selectinload(Role.role_permissions)
@@ -88,7 +90,7 @@ class RBACRepository(BaseRepository):
         return await self.scalar_one_or_none(stmt)
 
     async def get_role_by_name(self, name: str) -> Role | None:
-        stmt = select(Role).where(Role.name == name)
+        stmt = select(Role).where(Role.name == name, Role.is_archived.is_(False))
         return await self.scalar_one_or_none(stmt)
 
     def _role_filter_stmt(
@@ -97,7 +99,7 @@ class RBACRepository(BaseRepository):
         search: str | None = None,
         is_system_role: bool | None = None,
     ):
-        stmt = select(Role)
+        stmt = select(Role).where(Role.is_archived.is_(False))
         if search and search.strip():
             q = f"%{search.strip()}%"
             stmt = stmt.where(or_(Role.name.ilike(q), Role.description.ilike(q)))

@@ -8,10 +8,10 @@ type Props = {
   isLoading: boolean
   isFetching: boolean
   onEdit: (row: LeadSource) => void
-  onArchive: (row: LeadSource) => void
+  onDelete: (row: LeadSource) => void
 }
 
-export function SourcesTable({ rows, isLoading, isFetching, onEdit, onArchive }: Props) {
+export function SourcesTable({ rows, isLoading, isFetching, onEdit, onDelete }: Props) {
   return (
     <div className="bv-surface overflow-hidden relative">
       {(isLoading || isFetching) && (
@@ -76,10 +76,10 @@ export function SourcesTable({ rows, isLoading, isFetching, onEdit, onArchive }:
                           disabled: row.isArchived,
                         },
                         {
-                          id: 'archive',
-                          label: 'Archive',
-                          icon: 'inventory_2',
-                          onClick: () => onArchive(row),
+                          id: 'delete',
+                          label: 'Delete',
+                          icon: 'delete',
+                          onClick: () => onDelete(row),
                           disabled: row.isArchived,
                         },
                       ]}

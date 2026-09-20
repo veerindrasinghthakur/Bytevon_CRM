@@ -20,6 +20,7 @@ export {
   listDepartmentEmployees,
   createDepartment,
   updateDepartment,
+  deleteDepartment,
   assignEmployeeToDepartment,
   removeEmployeeFromDepartment,
   listEmploymentOptionsForPicker,
@@ -44,8 +45,14 @@ export {
 } from './api/attendance'
 
 export { useEmployeesList } from './hooks/use-employees-list'
-export { useDepartmentsList } from './hooks/use-departments-list'
-export { useDepartmentDetail } from './hooks/use-department-detail'
+export { usePersons, usePerson } from './hooks/person/use-persons'
+export {
+  useDepartments,
+  useDepartment,
+  DEPARTMENTS_LIST_KEY,
+  departmentDetailKey,
+  departmentStaffKey,
+} from './hooks/department/use-departments'
 export {
   useAttendanceDashboard,
   useTodayAttendance,

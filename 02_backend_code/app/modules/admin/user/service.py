@@ -33,6 +33,8 @@ class UserService(BasePublicService):
 
     def _status_label(self, login: Any) -> str:
         now = datetime.now(UTC)
+        if bool(getattr(login, "is_archived", False)):
+            return "Archived"
         locked_until = getattr(login, "locked_until", None)
         if locked_until and locked_until > now:
             return "Locked"
@@ -42,7 +44,7 @@ class UserService(BasePublicService):
 
     async def _employment_enrichment(self, person_id: int) -> dict[str, Any]:
         """Employment + org enrichment for a person (batched per call)."""
-        from app.modules.admin.department.models import Department
+        from app.modules.workforce.department.models import Department
         from app.modules.auth.models import Person
         from app.modules.workforce.models import (
             Employment,
@@ -124,7 +126,13 @@ class UserService(BasePublicService):
     ) -> AdminUserListResponse:
         from app.modules.auth.models import Login
 
-        rows = (await self._session.execute(select(Login).order_by(Login.id.desc()))).scalars().all()
+        rows = (
+            await self._session.execute(
+                select(Login)
+                .where(Login.is_archived.is_(False))
+                .order_by(Login.id.desc())
+            )
+        ).scalars().all()
         items: list[AdminUserListItem] = []
         locked = 0
         active = 0
@@ -172,7 +180,7 @@ class UserService(BasePublicService):
         from app.modules.auth.models import Login
 
         login = await self._session.get(Login, login_id)
-        if login is None:
+        if login is None or bool(getattr(login, "is_archived", False)):
             raise NotFoundError("User not found")
         email = getattr(login, "email", "") or ""
         label = self._status_label(login)
@@ -377,15 +385,22 @@ class UserService(BasePublicService):
     async def archive_admin_user(
         self, login_id: int, *, actor_employment_id: int | None = None
     ) -> MessageResponse:
+        from datetime import UTC, datetime
+
         from app.modules.auth.models import Login
 
         login = await self._session.get(Login, login_id)
-        if login is None:
+        if login is None or bool(getattr(login, "is_archived", False)):
             raise NotFoundError("User not found")
-        await self._session.delete(login)
+        # Soft-delete only: never hard-delete login rows (FKs + history).
+        login.is_active = False
+        login.is_archived = True
+        login.archived_at = datetime.now(UTC)
+        if hasattr(login, "archived_by"):
+            login.archived_by = actor_employment_id
         await self._commit()
-        await self._audit("login.archived", login_id, actor_employment_id)
-        return MessageResponse(message="User credentials archived")
+        await self._audit("login.deleted", login_id, actor_employment_id)
+        return MessageResponse(message="User deleted")
 
     async def list_employments_without_login(self) -> list[EmploymentWithoutLogin]:
         from app.modules.auth.models import Login, Person

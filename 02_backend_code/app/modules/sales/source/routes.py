@@ -1,4 +1,4 @@
-"""Source routes — prefix /sources (+ legacy /platforms)."""
+"""Source routes — prefix /sources (+ legacy /platforms). Soft-delete via DELETE."""
 from __future__ import annotations
 
 from typing import Annotated
@@ -10,6 +10,7 @@ from app.modules.sales.dependencies import SourceServiceDep
 from app.modules.sales.source.schemas import (
     MessageResponse,
     SourceCreate,
+    SourceListResponse,
     SourceResponse,
     SourceUpdate,
 )
@@ -26,12 +27,13 @@ async def create_source(
     return await service.create(body, actor_employment_id=auth.employment_id)
 
 
-@router.get("/sources", response_model=list[SourceResponse], dependencies=[Depends(require_permission("client", "VIEW", "ORGANIZATION"))])
+@router.get("/sources", response_model=SourceListResponse, dependencies=[Depends(require_permission("client", "VIEW", "ORGANIZATION"))])
 async def list_sources(
     service: SourceServiceDep,
     include_archived: bool = Query(False),
-) -> list[SourceResponse]:
-    return await service.list(include_archived=include_archived)
+    include_deleted: bool = Query(False),
+) -> SourceListResponse:
+    return await service.list(include_archived=include_archived, include_deleted=include_deleted)
 
 
 @router.get("/sources/{source_id}", response_model=SourceResponse, dependencies=[Depends(require_permission("client", "VIEW", "ORGANIZATION"))])
@@ -49,13 +51,23 @@ async def update_source(
     return await service.update(source_id, body, actor_employment_id=auth.employment_id)
 
 
-@router.post("/sources/{source_id}/archive", response_model=MessageResponse)
-async def archive_source(
+@router.delete("/sources/{source_id}", response_model=MessageResponse)
+async def delete_source(
     source_id: int,
     service: SourceServiceDep,
     auth: Annotated[AuthContext, Depends(require_permission("client", "UPDATE", "ORGANIZATION"))],
 ) -> MessageResponse:
-    return await service.archive(source_id, actor_employment_id=auth.employment_id)
+    return await service.delete(source_id, actor_employment_id=auth.employment_id)
+
+
+# Deprecated alias — old POST .../archive clients keep working
+@router.post("/sources/{source_id}/archive", response_model=MessageResponse, include_in_schema=False)
+async def archive_source_alias(
+    source_id: int,
+    service: SourceServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("client", "UPDATE", "ORGANIZATION"))],
+) -> MessageResponse:
+    return await service.delete(source_id, actor_employment_id=auth.employment_id)
 
 
 # Legacy platform paths
@@ -64,6 +76,19 @@ async def create_platform(body: SourceCreate, service: SourceServiceDep, auth: A
     return await service.create(body, actor_employment_id=auth.employment_id)
 
 
-@router.get("/platforms", response_model=list[SourceResponse], dependencies=[Depends(require_permission("client", "VIEW", "ORGANIZATION"))])
-async def list_platforms(service: SourceServiceDep, include_archived: bool = Query(False)) -> list[SourceResponse]:
-    return await service.list(include_archived=include_archived)
+@router.get("/platforms", response_model=SourceListResponse, dependencies=[Depends(require_permission("client", "VIEW", "ORGANIZATION"))])
+async def list_platforms(
+    service: SourceServiceDep,
+    include_archived: bool = Query(False),
+    include_deleted: bool = Query(False),
+) -> SourceListResponse:
+    return await service.list(include_archived=include_archived, include_deleted=include_deleted)
+
+
+@router.delete("/platforms/{source_id}", response_model=MessageResponse, include_in_schema=False)
+async def delete_platform(
+    source_id: int,
+    service: SourceServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("client", "UPDATE", "ORGANIZATION"))],
+) -> MessageResponse:
+    return await service.delete(source_id, actor_employment_id=auth.employment_id)

@@ -3,7 +3,7 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
-import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
+import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
@@ -83,7 +83,7 @@ export function UserDetailPage() {
           <div className="flex-1">
             <p className="font-semibold text-on-background">Account deactivated</p>
             <p className="text-on-surface-variant">
-              Login is disabled. Activate to restore sign-in, or archive to remove credentials.
+              Login is disabled. Activate to restore sign-in, or delete to remove credentials.
             </p>
           </div>
           <Can action={Action.UPDATE} resource={ResourceName.USER}>
@@ -178,12 +178,11 @@ export function UserDetailPage() {
             </Button>
           )}
 
-          <ArchiveButton
+          <DeleteButton
+            iconOnly
             entityLabel={name}
-            mode="archive"
-            label="Archive"
-            isLoading={d.hardArchiveMutation.isPending}
-            onConfirm={() => d.hardArchiveMutation.mutateAsync()}
+            isLoading={d.deleteMutation.isPending}
+            onConfirm={() => d.deleteMutation.mutateAsync()}
           />
 
           {d.isEditing ? (
@@ -288,7 +287,7 @@ export function UserDetailPage() {
             <p className="text-body-sm text-on-surface-variant mt-3">
               <strong>Deactivate</strong> keeps credentials but blocks sign-in (reversible).
               <br />
-              <strong>Archive</strong> removes login credentials; the employment appears under users
+              <strong>Delete</strong> removes login credentials (soft-delete); the employment appears under users
               without credentials.
             </p>
           </Section>

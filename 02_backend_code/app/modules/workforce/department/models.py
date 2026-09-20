@@ -1,4 +1,8 @@
-"""Department ORM model."""
+"""Department ORM model — canonical owner is Workforce.
+
+Table: departments (shared). Soft-delete uses is_archived (canonical).
+DELETE API sets is_archived=true; rows are never hard-deleted.
+"""
 from __future__ import annotations
 
 from sqlalchemy import Integer, String

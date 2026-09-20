@@ -11,7 +11,7 @@ from app.core.config import settings
 from app.core.db.enums import EmploymentState, WorkMode
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
-from app.modules.admin.department.models import Department
+from app.modules.workforce.department.models import Department
 from app.modules.admin.location.models import Location
 from app.modules.admin.shift.models import Shift
 from app.modules.auth.models import Person
@@ -201,17 +201,20 @@ class EmployeeService(BasePublicService):
     async def archive_position(
         self, position_id: int, *, actor_employment_id: int | None = None
     ) -> MessageResponse:
+        return await self.delete_position(position_id, actor_employment_id=actor_employment_id)
+
+    async def delete_position(
+        self, position_id: int, *, actor_employment_id: int | None = None
+    ) -> MessageResponse:
         pos = await self._repo.get_position_by_id(position_id)
-        if pos is None:
+        if pos is None or bool(getattr(pos, "is_archived", False)):
             raise NotFoundError("Position not found")
-        if pos.is_archived:
-            raise DomainError("Position is already archived")
         pos.is_archived = True
         pos.archived_at = datetime.now(UTC)
         pos.archived_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
-        await self._audit("position.archived", pos.id, actor_employment_id)
-        return MessageResponse(message="Position archived")
+        await self._audit("position.deleted", pos.id, actor_employment_id)
+        return MessageResponse(message="Position deleted")
 
     # Employments
     async def create_employee(

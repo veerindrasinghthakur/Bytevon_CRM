@@ -1,7 +1,10 @@
 """Phase 4: RBAC catalog, roles, grants, effective permissions."""
 from __future__ import annotations
 
-from tests.modules.helpers import record_coverage, table_count
+from sqlalchemy import select as _select
+
+from app.modules.rbac.models import Role as _Role
+from tests.modules.helpers import db_scalar, record_coverage, table_count
 
 COVERED = [
     ("GET", "/api/v1/rbac/resources"),
@@ -128,5 +131,9 @@ def test_role_lifecycle_with_grants(client, factory):
 
     deleted = client.delete(f"/api/v1/rbac/roles/{role_id}", headers=h)
     assert deleted.status_code == 200, deleted.text
-    assert table_count(client, "roles") == before
+    # Soft-delete: row remains with is_archived=true, excluded from lists
+    assert db_scalar(client, _select(_Role.is_archived).where(_Role.id == role_id)) is True
+    relisted = client.get("/api/v1/rbac/roles", headers=h).json()
+    assert all(r["id"] != role_id for r in relisted["items"])
+    assert client.get(f"/api/v1/rbac/roles/{role_id}", headers=h).status_code == 404
     record_coverage("test_role_lifecycle_with_grants", COVERED[4:])

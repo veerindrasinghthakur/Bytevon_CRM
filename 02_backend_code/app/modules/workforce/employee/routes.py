@@ -102,13 +102,23 @@ async def update_position(
     return await service.update_position(position_id, body, actor_employment_id=auth.employment_id)
 
 
-@router.post("/positions/{position_id}/archive", response_model=MessageResponse)
+@router.delete("/positions/{position_id}", response_model=MessageResponse)
+async def delete_position(
+    position_id: int,
+    service: EmployeeServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "UPDATE", "ORGANIZATION"))],
+) -> MessageResponse:
+    return await service.delete_position(position_id, actor_employment_id=auth.employment_id)
+
+
+# Deprecated alias — old POST .../archive callers keep working
+@router.post("/positions/{position_id}/archive", response_model=MessageResponse, include_in_schema=False)
 async def archive_position(
     position_id: int,
     service: EmployeeServiceDep,
     auth: Annotated[AuthContext, Depends(require_permission("employment", "UPDATE", "ORGANIZATION"))],
 ) -> MessageResponse:
-    return await service.archive_position(position_id, actor_employment_id=auth.employment_id)
+    return await service.delete_position(position_id, actor_employment_id=auth.employment_id)
 
 
 @router.post(

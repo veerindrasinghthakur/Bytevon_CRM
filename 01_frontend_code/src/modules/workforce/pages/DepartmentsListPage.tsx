@@ -19,12 +19,12 @@ import {
   QuickPersonRow,
 } from '@/shared/components/layout/QuickOverviewParts'
 import { ResourceName } from '@/shared/schema'
-import { useDepartmentsList } from '../hooks/use-departments-list'
+import { useDepartments } from '../hooks/department/use-departments'
 import { workforceRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 import { DEPARTMENT_STATUS_OPTIONS } from '../schemas/enums'
-import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
+import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -121,7 +121,9 @@ export function DepartmentsListPage() {
     page,
     setPage,
     reload,
-  } = useDepartmentsList()
+    deleteDepartment,
+    isMutating,
+  } = useDepartments()
 
   const selection = useListSelection({
     items: pageItems,
@@ -157,10 +159,6 @@ export function DepartmentsListPage() {
       onOpenFull: () => goDetail(d.id),
       widthClass: 'max-w-[520px]',
     })
-  }
-
-  const archiveDepartment = (id: number) => {
-    // TODO: Implement archive logic
   }
 
   if (loading) return <PageLoadingSkeleton />
@@ -200,7 +198,7 @@ export function DepartmentsListPage() {
         <MetricCard label="Total Departments" value={String(metrics.total)} icon="domain" />
         <MetricCard label="Total Staffing" value={String(metrics.staffing)} icon="groups" />
         <MetricCard label="Active" value={String(metrics.active)} icon="check_circle" valueClassName="text-secondary" />
-        <MetricCard label="Inactive / Archived" value={String(metrics.inactive)} icon="archive" />
+        <MetricCard label="Deleted" value={String(metrics.inactive)} icon="delete" />
       </section>
 
       {selection.selectionMode && (
@@ -351,14 +349,23 @@ export function DepartmentsListPage() {
                         onMouseDown={(e) => e.stopPropagation()}
                         onClick={(e) => e.stopPropagation()}
                       >
-                        <button
-                          type="button"
-                          className="p-2 hover:bg-secondary/10 rounded-lg text-on-surface-variant transition-colors"
-                          onClick={() => openDeptOverview(d)}
-                          aria-label={`Quick view ${d.name}`}
-                        >
-                          <Icon name="visibility" className="text-lg" />
-                        </button>
+                        <div className="flex items-center justify-end gap-1">
+                          <button
+                            type="button"
+                            className="p-2 hover:bg-secondary/10 rounded-lg text-on-surface-variant transition-colors"
+                            onClick={() => openDeptOverview(d)}
+                            aria-label={`Quick view ${d.name}`}
+                            title={`Quick view ${d.name}`}
+                          >
+                            <Icon name="visibility" className="text-lg" />
+                          </button>
+                          <DeleteButton
+                            iconOnly
+                            entityLabel={d.name}
+                            disabled={isMutating}
+                            onConfirm={() => deleteDepartment(d.id)}
+                          />
+                        </div>
                       </td>
                     </tr>
                   )

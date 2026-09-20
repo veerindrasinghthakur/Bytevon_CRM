@@ -11,7 +11,7 @@ import { myAdminRoutes } from '../../routes'
 import { uploadAvatar } from '@/modules/my-work/api/profile'
 import {
   activateUser,
-  archiveUserCredentials,
+  deleteUserCredentials,
   deactivateUser,
   getUserLogin,
   listDepartments,
@@ -181,8 +181,8 @@ export function useUserDetail(userId?: string) {
     },
   })
 
-  const hardArchiveMutation = useMutation({
-    mutationFn: () => archiveUserCredentials(loginId),
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteUserCredentials(loginId),
     onSuccess: async () => {
       setActionError(null)
       await qc.invalidateQueries({ queryKey: queryKeys.admin.users.all })
@@ -190,9 +190,12 @@ export function useUserDetail(userId?: string) {
       safeNavigate(navigate, { to: myAdminRoutes.usersList })
     },
     onError: (e: unknown) => {
-      setActionError(getApiErrorMessage(e, 'Could not archive credentials'))
+      setActionError(getApiErrorMessage(e, 'Could not delete user'))
     },
   })
+
+  // Deprecated alias
+  const hardArchiveMutation = deleteMutation
 
   const resetMutation = useMutation({
     mutationFn: () =>
@@ -280,6 +283,7 @@ export function useUserDetail(userId?: string) {
     lockMutation,
     deactivateMutation,
     activateMutation,
+    deleteMutation,
     hardArchiveMutation,
     resetMutation,
     onAvatarPick,

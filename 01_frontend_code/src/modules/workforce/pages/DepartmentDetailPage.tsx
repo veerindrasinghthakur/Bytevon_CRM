@@ -10,12 +10,12 @@ import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Can } from '@/shared/rbac'
 import { Action, ResourceName } from '@/shared/schema'
 import type { DepartmentEmployee } from '../api/departments'
-import { useDepartmentDetail } from '../hooks/use-department-detail'
+import { useDepartment } from '../hooks/department/use-departments'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
 import { workforceRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
-import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
+import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -37,12 +37,13 @@ export function DepartmentDetailPage() {
     isError,
     refetch,
     updateDepartment,
+    deleteDepartment,
     assignEmployee,
     removeEmployee,
     isMutating,
     listCandidates,
     listHeadOptions,
-  } = useDepartmentDetail(id)
+  } = useDepartment(id)
 
   const [addOpen, setAddOpen] = useState(false)
   const [mode, setMode] = useState<'choose' | 'existing'>('choose')
@@ -133,12 +134,10 @@ export function DepartmentDetailPage() {
     }
   }
 
-  const { archiveDepartment: archiveMutation } = useDepartmentDetail(id)
-
-  const handleArchiveDepartment = async () => {
+  const handleDeleteDepartment = async () => {
     if (!d) return
     try {
-      await archiveMutation(d.id)
+      await deleteDepartment()
       safeNavigate(navigate, { to: workforceRoutes.departments })
     } catch {
       /* error handling */
@@ -165,7 +164,7 @@ export function DepartmentDetailPage() {
         <BackButton to={workforceRoutes.departments} label="Back to departments" />
         <ErrorState
           title="Department not found"
-          description="This department may have been archived or the link is invalid."
+          description="This department may have been deleted or the link is invalid."
           showBack={false}
           onBack={() => safeNavigate(navigate, { to: workforceRoutes.departments })}
         />
@@ -232,10 +231,10 @@ export function DepartmentDetailPage() {
                   >
                     Edit
                   </Button>
-                  <ArchiveButton
+                  <DeleteButton
+                    iconOnly
                     entityLabel={d?.name}
-                    mode="archive"
-                    onConfirm={handleArchiveDepartment}
+                    onConfirm={handleDeleteDepartment}
                     disabled={isMutating}
                     isLoading={isMutating}
                   />

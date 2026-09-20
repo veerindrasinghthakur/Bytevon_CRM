@@ -7,10 +7,11 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { usePositions } from '../../hooks/position/use-positions'
 import type { PositionRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
+import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 
 export function PositionsListPage() {
   const navigate = useNavigate()
-  const { data, isLoading, isError, error, refetch } = usePositions(true)
+  const { data, isLoading, isError, error, refetch, deletePosition, isMutating } = usePositions(true)
   const items: PositionRow[] = data?.items ?? []
 
   if (isLoading) return <PageLoadingSkeleton />
@@ -40,6 +41,7 @@ export function PositionsListPage() {
             <tr className="bg-surface-container-low border-b border-outline-variant">
               <th className="px-5 py-3 text-label-sm uppercase text-on-surface-variant">Name</th>
               <th className="px-5 py-3 text-label-sm uppercase text-on-surface-variant">Status</th>
+              <th className="px-5 py-3 text-label-sm uppercase text-on-surface-variant text-right">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -66,6 +68,19 @@ export function PositionsListPage() {
                   >
                     {p.is_archived ? 'ARCHIVED' : 'ACTIVE'}
                   </span>
+                </td>
+                <td
+                  className="px-5 py-3 text-right"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {!p.is_archived && (
+                    <DeleteButton
+                      iconOnly
+                      entityLabel={p.name}
+                      disabled={isMutating}
+                      onConfirm={() => deletePosition(p.id)}
+                    />
+                  )}
                 </td>
               </tr>
             ))}

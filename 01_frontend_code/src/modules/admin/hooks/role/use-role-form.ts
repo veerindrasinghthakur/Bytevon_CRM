@@ -14,6 +14,7 @@ import {
   createAdminRole,
   getAdminRole,
   listPermissionCatalog,
+  listScopes,
   updateAdminRole,
 } from '../../api/roles'
 import { roleFormSchema, type RoleFormInput } from '../../schemas/role-form'
@@ -27,6 +28,15 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
     queryKey: queryKeys.admin.rbac.permissionCatalog(),
     queryFn: listPermissionCatalog,
   })
+  const scopesQuery = useQuery({
+    queryKey: [...queryKeys.admin.rbac.permissionCatalog(), 'scopes'],
+    queryFn: listScopes,
+    staleTime: 300_000,
+  })
+  const scopes = scopesQuery.data ?? []
+  const [scopeId, setScopeId] = useState<number | null>(null)
+  const resolvedScopeId =
+    scopeId ?? scopes.find((s) => s.name === 'ORGANIZATION')?.id ?? scopes[0]?.id ?? null
 
   const modules = catalogQuery.data?.modules ?? []
   const actions = (catalogQuery.data?.actions ?? []) as RolePermissionAction[]
@@ -170,6 +180,7 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
           description: values.description ?? '',
           status: values.active ? 'Active' : 'Archived',
           permissions,
+          scopeId: resolvedScopeId,
         })
       }
       return updateAdminRole(roleId as string, {
@@ -177,6 +188,7 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
         description: values.description ?? '',
         status: values.active ? 'Active' : 'Archived',
         permissions,
+        scopeId: resolvedScopeId,
       })
     },
     toastOnError: false,
@@ -242,6 +254,9 @@ export function useRoleForm(mode: RoleFormMode, roleId?: string, duplicateFromId
     active: values.active,
     setActive: (v: boolean) => form.setValue('active', v),
     matrix,
+    scopes,
+    scopeId: resolvedScopeId,
+    setScopeId,
     toggleCell,
     toggleRowAll,
     toggleColAll,

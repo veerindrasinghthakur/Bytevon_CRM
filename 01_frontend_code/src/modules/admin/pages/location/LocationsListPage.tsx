@@ -16,11 +16,11 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { useLocationsList } from '../../hooks/location/use-locations'
+import { useDeleteLocation, useLocationsList } from '../../hooks/location/use-locations'
 import type { LocationRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 import { myAdminRoutes } from '../../routes'
-import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
+import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 
 function LocationQuickContent({ loc }: { loc: LocationRow }) {
   return (
@@ -54,6 +54,7 @@ export function LocationsListPage() {
   const navigate = useNavigate()
   const { openPanel } = useQuickOverview()
   const { data, isLoading, isFetching, isError, error, refetch } = useLocationsList(true)
+  const deleteMut = useDeleteLocation()
   const controls = useListControls({ filterDefaults: {} })
   const items = data?.items ?? []
 
@@ -91,9 +92,9 @@ export function LocationsListPage() {
     })
   }
 
-  const archiveLocation = async (id: number) => {
+  const deleteLocationById = async (id: number) => {
     try {
-      // API: wire archiveLocation from api/location when ready
+      await deleteMut.mutateAsync(id)
       await refetch()
     } catch {
       /* error handling */
@@ -204,13 +205,12 @@ export function LocationsListPage() {
                         >
                           <span className="material-symbols-outlined">edit</span>
                         </Button>
-                        <ArchiveButton
+                        <DeleteButton
+                          iconOnly
                           entityLabel={loc.name}
-                          mode="archive"
-                          onConfirm={() => archiveLocation(loc.id)}
-                          disabled={isFetching}
-                          isLoading={isFetching}
-                          size="sm"
+                          onConfirm={() => deleteLocationById(loc.id)}
+                          disabled={isFetching || deleteMut.isPending}
+                          isLoading={deleteMut.isPending}
                         />
                     </div>
                   </td>

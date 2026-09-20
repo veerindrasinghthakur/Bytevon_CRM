@@ -9,7 +9,7 @@ from app.core.config import settings
 from app.core.db.enums import EmploymentState
 from app.core.exceptions.exception import DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
-from app.modules.admin.department.models import Department
+from app.modules.workforce.department.models import Department
 from app.modules.admin.location.models import Location
 from app.modules.admin.shift.models import Shift
 from app.modules.workforce.assignment.repository import AssignmentRepository

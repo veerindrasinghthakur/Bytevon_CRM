@@ -1,6 +1,5 @@
 export * from './attendance'
 export * from './audit'
-export * from './department'
 export * from './holiday-calendar'
 export * from './leave'
 export * from './location'

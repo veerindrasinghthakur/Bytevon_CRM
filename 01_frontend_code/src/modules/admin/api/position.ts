@@ -65,6 +65,15 @@ export async function updatePosition(
   return data
 }
 
-export async function archivePosition(id: number): Promise<void> {
+export async function deletePosition(id: number): Promise<void> {
+  if (!env.useMockApi) {
+    await apiClient.delete(`/workforce/positions/${id}`)
+    return
+  }
   return updatePosition(id, { is_archived: true }).then(() => undefined)
+}
+
+/** @deprecated Use deletePosition. */
+export async function archivePosition(id: number): Promise<void> {
+  return deletePosition(id)
 }

@@ -7,10 +7,10 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
-import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
-import { getAdminRole, deleteAdminRole } from '../../api/roles'
+import { getAdminRole, deleteAdminRole, revokeRolePermission } from '../../api/roles'
+import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 import { listAdminUsers } from '../../api/users'
 import { cn } from '@/shared/lib/cn'
 import { queryKeys } from '@/shared/lib/query-keys'
@@ -31,6 +31,18 @@ export function RoleDetailPage() {
     },
     onError: (e: unknown) => {
       setActionError(getApiErrorMessage(e, 'Could not delete role'))
+    },
+  })
+
+  const revokeMutation = useMutation({
+    mutationFn: (input: { permission_id: number; scope_id: number }) =>
+      revokeRolePermission(roleId as string, input),
+    onSuccess: async () => {
+      setActionError(null)
+      await qc.invalidateQueries({ queryKey: queryKeys.admin.roles.detail(roleId as string) })
+    },
+    onError: (e: unknown) => {
+      setActionError(getApiErrorMessage(e, 'Could not revoke permission'))
     },
   })
 
@@ -141,10 +153,9 @@ export function RoleDetailPage() {
           >
             Edit Role
           </Button>
-          <ArchiveButton
+          <DeleteButton
+            iconOnly
             entityLabel={role.name}
-            mode="delete"
-            label="Delete"
             isLoading={deleteMutation.isPending}
             onConfirm={() => deleteMutation.mutateAsync()}
           />
@@ -197,13 +208,47 @@ export function RoleDetailPage() {
             <p className="text-body-sm text-on-surface-variant">No permissions listed for this role.</p>
           ) : (
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {role.permissions.map((p) => (
+              {(role.permissionDetails && role.permissionDetails.length > 0
+                ? role.permissionDetails.map((d) => ({
+                    key: d.key || `${d.resource}.${d.action}`.toLowerCase(),
+                    label: d.key || `${d.resource}.${d.action}`.toLowerCase(),
+                    scope: d.scope,
+                    permission_id: d.permission_id,
+                    scope_id: d.scope_id,
+                  }))
+                : role.permissions.map((p) => ({
+                    key: p,
+                    label: p,
+                    scope: null as string | null,
+                    permission_id: 0,
+                    scope_id: 0,
+                  }))
+              ).map((g) => (
                 <li
-                  key={p}
+                  key={`${g.key}-${g.scope ?? ''}`}
                   className="flex items-center gap-3 px-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant"
                 >
                   <span className="material-symbols-outlined text-secondary text-[18px]">check_circle</span>
-                  <span className="text-body-sm font-mono text-on-background">{p}</span>
+                  <span className="text-body-sm font-mono text-on-background flex-1 truncate">{g.label}</span>
+                  {g.scope && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-secondary/10 text-secondary">
+                      {g.scope}
+                    </span>
+                  )}
+                  {g.permission_id > 0 && g.scope_id > 0 && (
+                    <DeleteButton
+                      iconOnly
+                      entityLabel={`${g.label} (${g.scope})`}
+                      disabled={revokeMutation.isPending}
+                      isLoading={revokeMutation.isPending}
+                      onConfirm={() =>
+                        revokeMutation.mutate({
+                          permission_id: g.permission_id,
+                          scope_id: g.scope_id,
+                        })
+                      }
+                    />
+                  )}
                 </li>
               ))}
             </ul>

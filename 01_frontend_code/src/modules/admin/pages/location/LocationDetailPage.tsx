@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { useNavigate, useParams } from '@tanstack/react-router'
-import { useMutation } from '@tanstack/react-query'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
@@ -8,10 +7,9 @@ import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
-import { useLocationDetail, useUpdateLocation } from '../../hooks/location/use-locations'
-import { archiveLocation } from '../../api/organization'
+import { useDeleteLocation, useLocationDetail, useUpdateLocation } from '../../hooks/location/use-locations'
 import type { LocationRow } from '@/shared/schema'
-import { ArchiveButton } from '@/shared/components/ui/ArchiveButton'
+import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 
 export function LocationDetailPage() {
   const { locationId } = useParams({ strict: false }) as { locationId: string }
@@ -22,21 +20,20 @@ export function LocationDetailPage() {
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
   const [actionError, setActionError] = useState<string | null>(null)
 
-  const archiveMut = useMutation({
-    mutationFn: archiveLocation,
-    onSuccess: () => {
-      setActionError(null)
-      safeNavigate(navigate, { to: '/admin/settings/locations' })
-    },
-    onError: (e: unknown) => {
-      setActionError(getApiErrorMessage(e, 'Could not archive location'))
-    },
-  })
+  const deleteMut = useDeleteLocation()
 
-  const handleArchive = () => {
+  const handleDelete = () => {
     if (!loc) return
     setActionError(null)
-    archiveMut.mutate(loc.id)
+    deleteMut.mutate(loc.id, {
+      onSuccess: () => {
+        setActionError(null)
+        safeNavigate(navigate, { to: '/admin/settings/locations' })
+      },
+      onError: (e: unknown) => {
+        setActionError(getApiErrorMessage(e, 'Could not delete location'))
+      },
+    })
   }
   const [draft, setDraft] = useState<Partial<LocationRow>>({})
 
@@ -135,12 +132,12 @@ export function LocationDetailPage() {
             >
               Edit
             </Button>
-            <ArchiveButton
+            <DeleteButton
+              iconOnly
               entityLabel={loc?.name}
-              mode="archive"
-              onConfirm={handleArchive}
-              disabled={updateMut.isPending || archiveMut.isPending}
-              isLoading={archiveMut.isPending}
+              onConfirm={handleDelete}
+              disabled={updateMut.isPending || deleteMut.isPending}
+              isLoading={deleteMut.isPending}
             />
           </div>
         )}

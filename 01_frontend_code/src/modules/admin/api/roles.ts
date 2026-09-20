@@ -60,12 +60,24 @@ function normalizeRole(role: Record<string, any>): AdminRole {
     category = 'Core Role'
   }
 
+  const permissionDetails = Array.isArray(role.permission_details)
+    ? (role.permission_details as Array<Record<string, unknown>>).map((d) => ({
+        key: String(d.key ?? ''),
+        resource: String(d.resource_name ?? ''),
+        action: String(d.action ?? ''),
+        scope: String(d.scope_name ?? ''),
+        permission_id: Number(d.permission_id ?? 0),
+        scope_id: Number(d.scope_id ?? 0),
+      }))
+    : []
+
   return {
     id: String(role.id),
     name: role.name ?? 'Unnamed role',
     description: role.description ?? '',
     usersCount,
     permissions,
+    permissionDetails,
     status,
     category,
     coveragePct: typeof role.coveragePct === 'number' ? role.coveragePct : coverage.pct,
@@ -73,6 +85,45 @@ function normalizeRole(role: Record<string, any>): AdminRole {
     created,
     updated: formatDate(role.updated ?? role.updated_at ?? role.created_at) || created,
   }
+}
+
+export type ScopeOption = { id: number; name: string }
+
+export async function listScopes(): Promise<ScopeOption[]> {
+  if (env.useMockApi) {
+    await delay()
+    return [
+      { id: 1, name: 'ORGANIZATION' },
+      { id: 2, name: 'DEPARTMENT' },
+      { id: 3, name: 'SELF' },
+    ]
+  }
+  const { data } = await apiClient.get<Array<{ id: number; name: string }>>('/rbac/scopes')
+  return (Array.isArray(data) ? data : []).map((s) => ({ id: Number(s.id), name: String(s.name) }))
+}
+
+export async function grantRolePermission(
+  roleId: string,
+  input: { permission_id: number; scope_id: number },
+): Promise<void> {
+  if (env.useMockApi) {
+    await delay(250)
+    return
+  }
+  await apiClient.post(`/rbac/roles/${roleId}/permissions`, input)
+}
+
+export async function revokeRolePermission(
+  roleId: string,
+  input: { permission_id: number; scope_id: number },
+): Promise<void> {
+  if (env.useMockApi) {
+    await delay(250)
+    return
+  }
+  await apiClient.delete(
+    `/rbac/roles/${roleId}/permissions/${input.permission_id}/scopes/${input.scope_id}`,
+  )
 }
 
 export function computeCoverage(permissions: string[]): { pct: number; label: string } {
@@ -248,6 +299,7 @@ export async function createAdminRole(payload: {
   description: string
   status: 'Active' | 'Archived'
   permissions?: string[]
+  scopeId?: number | null
 }): Promise<AdminRole> {
   if (env.useMockApi) {
     await delay(300)
@@ -279,6 +331,7 @@ export async function createAdminRole(payload: {
     description: payload.description,
     is_system_role: false,
     permission_ids,
+    ...(payload.scopeId != null ? { scope_id: payload.scopeId } : {}),
   })
   const detail = await getAdminRole(String(data.id))
   if (detail) return detail
@@ -287,7 +340,9 @@ export async function createAdminRole(payload: {
 
 export async function updateAdminRole(
   roleId: string,
-  payload: Partial<Pick<AdminRole, 'name' | 'description' | 'status' | 'permissions'>>,
+  payload: Partial<Pick<AdminRole, 'name' | 'description' | 'status' | 'permissions'>> & {
+    scopeId?: number | null
+  },
 ): Promise<AdminRole> {
   if (env.useMockApi) {
     await delay(300)
@@ -312,6 +367,7 @@ export async function updateAdminRole(
   if (payload.permissions != null) {
     body.permission_ids = await permissionKeysToIds(payload.permissions)
   }
+  if (payload.scopeId != null) body.scope_id = payload.scopeId
   await apiClient.patch(`/rbac/roles/${roleId}`, body)
   const detail = await getAdminRole(roleId)
   if (detail) return detail

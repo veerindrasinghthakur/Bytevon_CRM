@@ -9,6 +9,7 @@ export {
   getLocation,
   createLocation,
   updateLocation,
+  deleteLocation,
   archiveLocation,
   type LocationCreateInput,
 } from './location'
@@ -17,6 +18,7 @@ export {
   getShift,
   createShift,
   updateShift,
+  deleteShift,
   archiveShift,
 } from './shift'
 export {
@@ -30,6 +32,7 @@ export {
   getHolidayCalendar,
   createHolidayCalendar,
   updateHolidayCalendar,
+  deleteHolidayCalendar,
   archiveHolidayCalendar,
   getHolidays,
   createHoliday,
@@ -41,9 +44,10 @@ export {
   getPosition,
   createPosition,
   updatePosition,
+  deletePosition,
   archivePosition,
 } from './position'
-export { getSchemaDepartments } from './department'
+export { listDepartments as getSchemaDepartments } from '@/modules/workforce/api/departments'
 
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'

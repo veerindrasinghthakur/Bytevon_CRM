@@ -6,7 +6,8 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
 import { BackButton } from '@/shared/components/layout/BackButton'
-import { createDepartment, listEmploymentOptionsForPicker } from '../api/departments'
+import { listEmploymentOptionsForPicker } from '../api/departments'
+import { useDepartments } from '../hooks/department/use-departments'
 import {
   departmentFormSchema,
   emptyDepartmentForm,
@@ -31,6 +32,7 @@ const inputClass =
 
 export function DepartmentCreatePage() {
   const navigate = useNavigate()
+  const { createDepartment } = useDepartments()
   const [headOptions, setHeadOptions] = useState<{ value: string; label: string; meta?: string }[]>(
     [],
   )

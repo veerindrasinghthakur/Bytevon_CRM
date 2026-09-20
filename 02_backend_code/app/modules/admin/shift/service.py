@@ -112,5 +112,18 @@ class ShiftService(BasePublicService):
         await self._audit("shift.archived", shift_id, actor_employment_id)
         return MessageResponse(message="Shift archived")
 
+    async def delete(
+        self, shift_id: int, *, actor_employment_id: int | None = None
+    ) -> MessageResponse:
+        row = await self._repo.get_by_id(shift_id, include_archived=True)
+        if row is None or bool(getattr(row, "is_archived", False)):
+            raise NotFoundError("Shift not found")
+        row.is_archived = True
+        row.archived_at = datetime.now(UTC)
+        row.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        await self._commit()
+        await self._audit("shift.deleted", shift_id, actor_employment_id)
+        return MessageResponse(message="Shift deleted")
+
 
 ShiftPublicService = ShiftService

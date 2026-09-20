@@ -531,16 +531,22 @@ export async function updateEmployment(
 export async function getOrgMastersForEmployeeForm() {
   if (!env.useMockApi) {
     const [depts, positions, locations, shifts] = await Promise.all([
-      apiClient.get<Array<{ id: number; name: string }>>('/organization/departments'),
+      apiClient.get<
+        | Array<{ id: number; name: string }>
+        | { items?: Array<{ id: number; name: string }> }
+      >('/workforce/departments'),
       apiClient.get<Array<{ id: number; name: string }>>('/workforce/positions'),
-      apiClient.get<Array<{ id: number; name: string }>>('/organization/locations'),
-      apiClient.get<Array<{ id: number; name: string }>>('/organization/shifts'),
+      apiClient.get<Array<{ id: number; name: string }>>('/admin/locations'),
+      apiClient.get<Array<{ id: number; name: string }>>('/admin/shifts'),
     ])
+    const asArray = (
+      data: Array<{ id: number; name: string }> | { items?: Array<{ id: number; name: string }> },
+    ) => (Array.isArray(data) ? data : (data.items ?? []))
     return {
-      departments: depts.data,
-      positions: positions.data,
-      locations: locations.data,
-      shifts: shifts.data,
+      departments: asArray(depts.data),
+      positions: asArray(positions.data),
+      locations: asArray(locations.data),
+      shifts: asArray(shifts.data),
     }
   }
   await delay(200)
@@ -550,19 +556,6 @@ export async function getOrgMastersForEmployeeForm() {
     positions: db.positions.filter((p) => !p.is_archived).map((p) => ({ ...p })),
     locations: db.locations.filter((l) => !l.is_archived).map((l) => ({ ...l })),
     shifts: db.shifts.filter((s) => !s.is_archived).map((s) => ({ ...s })),
-  }
-}
-
-export async function archivePosition(id: number): Promise<void> {
-  if (!env.useMockApi) {
-    await apiClient.post(`/workforce/positions/${id}/archive`)
-    return
-  }
-  await delay()
-  const db = getDb()
-  const position = db.positions.find((p) => p.id === id)
-  if (position) {
-    ;(position as { is_archived: boolean }).is_archived = true
   }
 }
 
@@ -624,9 +617,12 @@ export async function createEmploymentAssignment(
     locationId?: number
     shiftId?: number
     workMode?: string
+    effectiveFrom?: string
     changeReason?: string
   },
 ): Promise<void> {
+  const effectiveFrom =
+    assignmentData.effectiveFrom || new Date().toISOString().slice(0, 10)
   if (!env.useMockApi) {
     await apiClient.post(
       `/workforce/employments/${employmentId}/assignments`,
@@ -636,7 +632,7 @@ export async function createEmploymentAssignment(
         location_id: assignmentData.locationId,
         shift_id: assignmentData.shiftId,
         work_mode: assignmentData.workMode || 'OFFICE',
-        effective_from: new Date().toISOString().slice(0, 10),
+        effective_from: effectiveFrom,
         change_reason: assignmentData.changeReason || 'Assignment update',
       },
     )
@@ -654,7 +650,7 @@ export async function createEmploymentAssignment(
     location_id: assignmentData.locationId,
     shift_id: assignmentData.shiftId,
     work_mode: assignmentData.workMode ?? 'OFFICE',
-    effective_from: now.slice(0, 10),
+    effective_from: effectiveFrom,
     effective_to: null,
     change_reason: assignmentData.changeReason ?? 'New assignment',
     created_at: now,

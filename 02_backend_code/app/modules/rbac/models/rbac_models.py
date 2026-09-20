@@ -25,7 +25,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.base import Base, CreatedAtMixin, IdentityMixin
+from app.core.base import ArchiveMixin, Base, CreatedAtMixin, IdentityMixin
 from app.core.db.enums import Action
 
 # ---------------------------------------------------------------------------
@@ -79,7 +79,7 @@ class Scope(Base, IdentityMixin, CreatedAtMixin):
 # roles 🟨
 # ---------------------------------------------------------------------------
 
-class Role(Base, IdentityMixin, CreatedAtMixin):
+class Role(Base, IdentityMixin, ArchiveMixin, CreatedAtMixin):
     __tablename__ = "roles"
     __table_args__ = (UniqueConstraint("name", name="uq_roles_name"),)
 

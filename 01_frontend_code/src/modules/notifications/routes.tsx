@@ -25,12 +25,22 @@ const NotificationDetailPage = lazyPage(
   () => import('./pages/center/NotificationDetailPage'),
   'NotificationDetailPage',
 )
+const TemplatesListPage = lazyPage(
+  () => import('./pages/template/TemplatesListPage'),
+  'TemplatesListPage',
+)
+const NotificationPreferencesPage = lazyPage(
+  () => import('./pages/preference/NotificationPreferencesPage'),
+  'NotificationPreferencesPage',
+)
 
 export const notificationRoutes = {
   center: '/notifications',
   compose: '/notifications/compose',
   sent: '/notifications/sent',
   settings: '/notifications/settings',
+  templates: '/notifications/templates',
+  preferences: '/notifications/preferences',
   detailPath: '/notifications/$notificationId',
   detail: (notificationId: string) => `/notifications/${notificationId}`,
 } as const
@@ -61,6 +71,16 @@ export function createNotificationRoutes<TParent extends AnyRoute>(appLayoutRout
       getParentRoute: () => appLayoutRoute,
       path: '/notifications/$notificationId',
       component: NotificationDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/notifications/templates',
+      component: TemplatesListPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/notifications/preferences',
+      component: NotificationPreferencesPage,
     }),
   ]
 }
