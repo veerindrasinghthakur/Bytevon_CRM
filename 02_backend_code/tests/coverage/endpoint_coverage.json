@@ -12,16 +12,20 @@
   "test_person_lifecycle"
  ],
  "POST /api/v1/workforce/positions": [
-  "test_position_lifecycle"
+  "test_position_lifecycle",
+  "test_attendance_ops_flow"
  ],
  "GET /api/v1/workforce/positions": [
-  "test_position_lifecycle"
+  "test_position_lifecycle",
+  "test_attendance_ops_flow"
  ],
  "GET /api/v1/workforce/positions/{position_id}": [
-  "test_position_lifecycle"
+  "test_position_lifecycle",
+  "test_attendance_ops_flow"
  ],
  "PATCH /api/v1/workforce/positions/{position_id}": [
-  "test_position_lifecycle"
+  "test_position_lifecycle",
+  "test_attendance_ops_flow"
  ],
  "POST /api/v1/workforce/positions/{position_id}/archive": [
   "test_position_lifecycle"
@@ -72,19 +76,26 @@
   "test_department_lifecycle"
  ],
  "POST /api/v1/workforce/employments/{employment_id}/state": [
-  "test_assignment_and_state_flow"
+  "test_assignment_and_state_flow",
+  "test_position_lifecycle",
+  "test_q2_separation_cascade"
  ],
  "GET /api/v1/workforce/employments/{employment_id}/state-history": [
-  "test_assignment_and_state_flow"
+  "test_assignment_and_state_flow",
+  "test_position_lifecycle"
  ],
  "POST /api/v1/workforce/employments/{employment_id}/assignments": [
-  "test_assignment_and_state_flow"
+  "test_assignment_and_state_flow",
+  "test_q1_overlapping_assignment_rejected",
+  "test_position_lifecycle"
  ],
  "GET /api/v1/workforce/employments/{employment_id}/assignments/current": [
-  "test_assignment_and_state_flow"
+  "test_assignment_and_state_flow",
+  "test_position_lifecycle"
  ],
  "GET /api/v1/workforce/employments/{employment_id}/assignments": [
-  "test_assignment_and_state_flow"
+  "test_assignment_and_state_flow",
+  "test_position_lifecycle"
  ],
  "POST /api/v1/workforce/attendance/punch": [
   "test_attendance_ops_flow"
@@ -605,7 +616,8 @@
   "test_lead_lifecycle"
  ],
  "POST /api/v1/sales/leads/{lead_id}/status": [
-  "test_lead_lifecycle"
+  "test_lead_lifecycle",
+  "test_q12_lead_won_opt_in_project"
  ],
  "GET /api/v1/payroll/kpis": [
   "test_payroll_reads_and_bank_accounts"
@@ -641,7 +653,8 @@
   "test_payroll_calculate_approve_pay"
  ],
  "POST /api/v1/payroll/run": [
-  "test_payroll_calculate_approve_pay"
+  "test_payroll_calculate_approve_pay",
+  "test_q11_bulk_run_does_real_work"
  ],
  "POST /api/v1/payroll/salaries": [
   "test_payroll_calculate_approve_pay"
@@ -858,5 +871,29 @@
  ],
  "GET /api/v1/auth/sessions": [
   "tests/authentication/test_auth.py::test_028_logout_single_session"
+ ],
+ "POST /api/v1/payroll/{payroll_id}/reject": [
+  "test_q4_payroll_reject_and_paid_terminal"
+ ],
+ "POST /api/v1/leave/requests/{request_id}/request-cancel": [
+  "test_q5_approved_leave_cancel_reversal"
+ ],
+ "POST /api/v1/rbac/roles/{role_id}/restore": [
+  "test_q6_role_name_reserved_after_archive"
+ ],
+ "POST /api/v1/workforce/attendance/summaries/{employment_id}/{year}/{month}/unlock": [
+  "test_q8_attendance_unlock_and_paid_block"
+ ],
+ "POST /api/v1/workforce/departments/{department_id}/restore": [
+  "test_q16_department_restore_and_clash"
+ ],
+ "DELETE /api/v1/workforce/positions/{position_id}": [
+  "test_attendance_ops_flow"
+ ],
+ "POST /api/v1/workforce/employments/{employment_id}/rehire": [
+  "test_q7_rehire_and_single_active_guard"
+ ],
+ "DELETE /api/v1/workforce/departments/{department_id}": [
+  "test_department_lifecycle"
  ]
 }

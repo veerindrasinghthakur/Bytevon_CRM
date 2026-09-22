@@ -132,7 +132,7 @@ def test_department_approver_can_decide_and_requester_cannot_self_approve(
     assert resp.json()["status"] == "APPROVED"
     # Requester approving own request violates business rules (400), not auth.
     leave2 = factory.leave_for(
-        actors["B"], start_date="2030-02-09", end_date="2030-02-09"
+        actors["B"], start_date="2030-02-11", end_date="2030-02-11"
     )
     _setup_grant(
         client, "Dept Approver", actors["B"]["employment_id"],

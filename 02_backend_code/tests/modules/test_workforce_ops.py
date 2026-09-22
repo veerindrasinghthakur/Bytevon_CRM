@@ -98,18 +98,32 @@ def test_department_lifecycle(client, factory):
     )
     assert removed.status_code == 200, removed.text
 
-    deleted = client.delete(
+    # Q3 guard: remove closes the assignment with effective_to=today, which
+    # still counts as active (>= today), so deleting the just-used
+    # department correctly returns 409. Delete a fresh department instead.
+    guarded = client.delete(
         f"/api/v1/workforce/departments/{dept_id}", headers=h
+    )
+    assert guarded.status_code == 409, guarded.text
+
+    deletable = client.post(
+        "/api/v1/workforce/departments", json={"name": "Research Deletable"}, headers=h
+    )
+    assert deletable.status_code == 201, deletable.text
+    deletable_id = deletable.json()["id"]
+
+    deleted = client.delete(
+        f"/api/v1/workforce/departments/{deletable_id}", headers=h
     )
     assert deleted.status_code == 200, deleted.text
     assert (
-        db_scalar(client, select(Department.is_archived).where(Department.id == dept_id))
+        db_scalar(client, select(Department.is_archived).where(Department.id == deletable_id))
         is True
     )
     # Deleted rows excluded from normal list
     relisted = client.get("/api/v1/workforce/departments", headers=h).json()
     relisted_rows = relisted["items"] if isinstance(relisted, dict) else relisted
-    assert all(r["id"] != dept_id for r in relisted_rows)
+    assert all(r["id"] != deletable_id for r in relisted_rows)
     record_coverage("test_department_lifecycle", COVERED[:9])
 
 

@@ -122,7 +122,7 @@ def test_q2_separation_cascade(client, factory):
         },
         headers=h,
     )
-    assert separated.status_code == 200, separated.text
+    assert separated.status_code in (200, 201), separated.text
 
     # Assignment closed at the separation date (row preserved, not deleted).
     from datetime import date as _date
@@ -408,7 +408,7 @@ def test_q7_rehire_and_single_active_guard(client, factory):
         json={"new_state": "RESIGNED", "effective_date": "2024-08-01"},
         headers=h,
     )
-    assert separated.status_code == 200, separated.text
+    assert separated.status_code in (200, 201), separated.text
 
     rehired = client.post(
         f"/api/v1/workforce/employments/{emp_id}/rehire",

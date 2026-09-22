@@ -31,7 +31,7 @@ def _setup(factory, client):
     req = factory.actor("apr")
     appr = factory.actor("apv")
     grant(client, sa["headers"], appr["employment_id"], "approval", "APPROVE", "DEPARTMENT", "Approver")
-    leave = factory.leave_for(req, start_date="2030-06-02", end_date="2030-06-02")
+    leave = factory.leave_for(req, start_date="2030-06-03", end_date="2030-06-03")
     return sa, req, appr, leave
 
 
@@ -117,7 +117,7 @@ def test_approval_decisions_and_cancel_comment(client, factory):
     )
     assert ui_approved.status_code == 200, ui_approved.text
 
-    leave4 = factory.leave_for(req, start_date="2030-06-23", end_date="2030-06-23")
+    leave4 = factory.leave_for(req, start_date="2030-06-24", end_date="2030-06-24")
     ui_rejected = client.post(
         f"/api/v1/approvals/{leave4['approval_id']}/reject",
         json={"remarks": "ui reject"},
@@ -125,7 +125,7 @@ def test_approval_decisions_and_cancel_comment(client, factory):
     )
     assert ui_rejected.status_code == 200, ui_rejected.text
 
-    leave5 = factory.leave_for(req, start_date="2030-06-30", end_date="2030-06-30")
+    leave5 = factory.leave_for(req, start_date="2030-07-01", end_date="2030-07-01")
     comment = client.post(
         f"/api/v1/approvals/requests/{leave5['approval_id']}/comment",
         json={"remarks": "please expedite"},

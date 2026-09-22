@@ -67,10 +67,20 @@ def test_conflicts(client, factory):
     assert _err_shape(dup) == "conflict"
 
     me = factory.actor("neg")
+    # Q7 guard: `me` already owns an active employment, so a second one for
+    # the same person correctly returns 409. Use a fresh person for the
+    # duplicate employee-code conflict pair.
+    fresh_person = client.post(
+        "/api/v1/workforce/persons",
+        json={"first_name": "Dup", "last_name": "Person"},
+        headers=h,
+    )
+    assert fresh_person.status_code == 201, fresh_person.text
+    fresh_person_id = fresh_person.json()["id"]
     emp = client.post(
         "/api/v1/workforce/employments",
         json={
-            "person_id": me["person_id"],
+            "person_id": fresh_person_id,
             "employee_code": "EMP-DUP-1",
             "employment_type": "FULL_TIME",
             "joining_date": "2024-01-01",
@@ -78,10 +88,16 @@ def test_conflicts(client, factory):
         headers=h,
     )
     assert emp.status_code == 201, emp.text
+    fresh_person2 = client.post(
+        "/api/v1/workforce/persons",
+        json={"first_name": "Dup", "last_name": "Person2"},
+        headers=h,
+    )
+    assert fresh_person2.status_code == 201, fresh_person2.text
     emp2 = client.post(
         "/api/v1/workforce/employments",
         json={
-            "person_id": me["person_id"],
+            "person_id": fresh_person2.json()["id"],
             "employee_code": "EMP-DUP-1",
             "employment_type": "FULL_TIME",
             "joining_date": "2024-01-01",
@@ -126,7 +142,7 @@ def test_state_transition_guards(client, factory):
     req = factory.actor("neg2")
     appr = factory.actor("neg3")
     grant(client, h, appr["employment_id"], "approval", "APPROVE", "DEPARTMENT", "Neg Appr")
-    leave = factory.leave_for(req, start_date="2030-10-06", end_date="2030-10-06")
+    leave = factory.leave_for(req, start_date="2030-10-07", end_date="2030-10-07")
     aid = leave["approval_id"]
     ok = client.post(
         f"/api/v1/approvals/requests/{aid}/approve",
