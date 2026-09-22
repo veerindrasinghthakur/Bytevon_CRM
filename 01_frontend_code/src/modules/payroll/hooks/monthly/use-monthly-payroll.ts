@@ -57,6 +57,7 @@ export function useMonthlyPayroll() {
     allCount: total,
     isLoading: employeesQuery.isLoading || summaryQuery.isLoading,
     isError: employeesQuery.isError || summaryQuery.isError,
+    error: employeesQuery.error ?? summaryQuery.error,
     refetch: () => {
       void employeesQuery.refetch()
       void summaryQuery.refetch()

@@ -1,7 +1,12 @@
 import { useParams, useNavigate } from '@tanstack/react-router'
+import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { myTasks, currentUser } from '../../data/mock'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
+import { getMyTask } from '../../api/my-work'
+import { queryKeys } from '@/shared/lib/query-keys'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { priorityClass, statusDot } from '../../schemas/enums'
 import { myWorkRoutes } from '../../routes'
@@ -9,13 +14,37 @@ import { myWorkRoutes } from '../../routes'
 export function MyTaskDetailPage() {
   const { taskId } = useParams({ strict: false }) as { taskId: string }
   const navigate = useNavigate()
-  const task = myTasks.find((t) => t.id === taskId) ?? myTasks[0]
+  const {
+    data: task,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: queryKeys.myWork.tasks.detail(taskId),
+    queryFn: () => getMyTask(taskId),
+    enabled: Boolean(taskId),
+  })
 
-  if (!task) {
+  if (isLoading) {
     return (
       <div className="animate-fade-in">
         <PageHeader title="Task details" showBack />
-        <p className="text-body-md text-on-surface-variant">Task not found.</p>
+        <PageLoadingSkeleton />
+      </div>
+    )
+  }
+
+  if (isError || !task) {
+    return (
+      <div className="animate-fade-in">
+        <PageHeader title="Task details" showBack />
+        <ErrorState
+          title="Task not found"
+          description={getApiErrorMessage(error, 'This task does not exist or you do not have access to it.')}
+          onRetry={() => void refetch()}
+          onBack={() => safeNavigate(navigate, { to: myWorkRoutes.tasks })}
+        />
       </div>
     )
   }
@@ -61,7 +90,7 @@ export function MyTaskDetailPage() {
           <section className="bv-surface p-6">
             <h3 className="text-title-lg text-on-background mb-3">Activity</h3>
             <p className="text-body-md text-on-surface-variant">
-              No comments or status changes in mock data yet. Wire to task activity feed when backend is ready.
+              No comments or status changes yet.
             </p>
           </section>
         </div>
@@ -90,7 +119,7 @@ export function MyTaskDetailPage() {
             </div>
             <div>
               <p className="text-label-sm text-on-surface-variant">Assignee</p>
-              <p className="text-body-md text-on-surface mt-0.5">{currentUser.name}</p>
+              <p className="text-body-md text-on-surface mt-0.5">{task.assignee ?? '—'}</p>
             </div>
             <div>
               <p className="text-label-sm text-on-surface-variant">Due</p>

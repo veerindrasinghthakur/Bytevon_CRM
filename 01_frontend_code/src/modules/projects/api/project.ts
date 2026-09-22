@@ -122,7 +122,7 @@ export async function getProjects(params?: {
     const { data } = await apiClient.get<
       | { items: ProjectListItem[]; total: number; metrics?: ProjectListMetrics }
       | Array<Record<string, unknown>>
-    >('/projects', {
+    >('/projects/', {
       params: {
         search: params?.search,
         status: params?.status,
@@ -229,7 +229,7 @@ export async function createProject(input: CreateProjectInput): Promise<ProjectD
     if (body.assigned_to_id == null) {
       throw new Error('Assignee (team or employee) is required')
     }
-    const { data } = await apiClient.post<Record<string, unknown>>('/projects', body)
+    const { data } = await apiClient.post<Record<string, unknown>>('/projects/', body)
     return mapApiProject(data)
   }
   await delay(500)

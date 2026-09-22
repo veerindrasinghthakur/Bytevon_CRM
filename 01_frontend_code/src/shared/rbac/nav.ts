@@ -1,26 +1,15 @@
 /**
  * Navigation filtering helpers — modules/AppShell opt in when ready.
  * Does not mutate DEFAULT_RAIL_ITEMS; returns filtered copies.
+ *
+ * Resource names are backend strings (see resource-map.ts) — never an enum.
  */
 import type { RailItem, SecondaryNavGroup, SecondaryNavItem } from '@/shared/types'
-import type { ResourceName } from '@/shared/schema'
-import { ResourceName as R } from '@/shared/schema'
 import type { EffectiveAuthorization } from './types'
 import { canWith } from './can'
+import { RAIL_RESOURCE_BY_ID, SECONDARY_RESOURCE_BY_ID } from './resource-map'
 
-/** Map primary rail module id → resource used for VIEW gate */
-export const RAIL_RESOURCE_BY_ID: Record<string, ResourceName | null> = {
-  dashboard: null, // always visible when authenticated
-  'my-work': null, // self-service always visible
-  sales: R.LEAD,
-  projects: R.PROJECT,
-  workforce: R.EMPLOYMENT,
-  payroll: R.PAYROLL,
-  approvals: R.APPROVAL,
-  admin: R.ROLE,
-  notifications: R.NOTIFICATION,
-  profile: null,
-}
+export { RAIL_RESOURCE_BY_ID, SECONDARY_RESOURCE_BY_ID }
 
 export function filterRailItems(
   items: RailItem[],
@@ -41,11 +30,12 @@ export function filterRailItems(
 export function filterSecondaryNavItems(
   items: SecondaryNavItem[],
   auth: EffectiveAuthorization | null | undefined,
-  resourceForItem: (item: SecondaryNavItem) => ResourceName | null,
+  resourceForItem?: (item: SecondaryNavItem) => string | null,
 ): SecondaryNavItem[] {
+  const resolve = resourceForItem ?? ((item) => SECONDARY_RESOURCE_BY_ID[item.id] ?? null)
   return items.filter((item) => {
     if (item.visible === false) return false
-    const resource = resourceForItem(item)
+    const resource = resolve(item)
     if (resource == null) return true
     return canWith(auth, { action: 'VIEW', resource })
   })
@@ -54,7 +44,7 @@ export function filterSecondaryNavItems(
 export function filterSecondaryNavGroups(
   groups: SecondaryNavGroup[],
   auth: EffectiveAuthorization | null | undefined,
-  resourceForItem: (item: SecondaryNavItem) => ResourceName | null,
+  resourceForItem?: (item: SecondaryNavItem) => string | null,
 ): SecondaryNavGroup[] {
   return groups
     .map((g) => ({

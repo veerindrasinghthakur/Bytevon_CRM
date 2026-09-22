@@ -10,7 +10,6 @@ from app.modules.admin.models import (  # noqa: F401
     Shift,
     WorkingWeek,
 )
-from app.modules.workforce.department.models import Department  # noqa: F401
 from app.modules.approvals.models import (  # noqa: F401
     ApprovalAction,
     ApprovalRequest,
@@ -75,6 +74,7 @@ from app.modules.workforce.attendance.models import (  # noqa: F401
     AttendancePunch,
     MonthlyAttendanceSummary,
 )
+from app.modules.workforce.department.models import Department  # noqa: F401
 from app.modules.workforce.models import (  # noqa: F401
     Employment,
     EmploymentAssignment,

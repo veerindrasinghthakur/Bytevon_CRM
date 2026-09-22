@@ -4,7 +4,6 @@ import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { MetricCard } from '@/shared/components/ui/MetricCard'
 import { ExportButton } from '@/shared/components/export/ExportButton'
-import { ResourceName } from '@/shared/schema'
 import { Pagination, DEFAULT_PAGE_SIZE } from '@/shared/components/ui/Pagination'
 import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
@@ -15,6 +14,7 @@ import { BulkSelectionBar } from '@/shared/components/layout/BulkSelectionBar'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { Can, useRbac } from '@/shared/rbac'
 import { useTasksList } from '../../hooks/task/use-tasks'
 import { projectRoutes } from '../../routes'
 import { TaskStatusBadge, TaskPriorityLabel } from '../../components/task/TaskStatusBadge'
@@ -28,6 +28,8 @@ import { TaskPriorityOptions, TaskStatusOptions } from '../../enums'
 export function TasksListPage() {
   const navigate = useNavigate()
   const { openPanel } = useQuickOverview()
+  const { can } = useRbac()
+  const canCreateTask = can('CREATE', 'task')
   const [createOpen, setCreateOpen] = useState(false)
 
   const {
@@ -92,15 +94,17 @@ export function TasksListPage() {
           </p>
         </div>
         <div className="flex items-center gap-3 flex-wrap">
-          <ExportButton resource={ResourceName.TASK} query={search} filters={{ status, priority }} filenameStem="tasks" />
-          <Button
-            variant="primary"
-            size="sm"
-            leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-            onClick={() => setCreateOpen(true)}
-          >
-            New Task
-          </Button>
+          <ExportButton resource={'task'} query={search} filters={{ status, priority }} filenameStem="tasks" />
+          <Can action="CREATE" resource="task">
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+              onClick={() => setCreateOpen(true)}
+            >
+              New Task
+            </Button>
+          </Can>
         </div>
       </section>
 
@@ -148,7 +152,7 @@ export function TasksListPage() {
           onCancel={selection.exitSelectionMode}
         >
           <ExportButton
-            resource={ResourceName.TASK}
+            resource={'task'}
             selectedIds={Array.from(selection.selectedIds)}
             filenameStem="tasks-selected"
             label="Export selected"
@@ -169,8 +173,8 @@ export function TasksListPage() {
           icon="assignment"
           title="No tasks found"
           description="Adjust filters or create a task."
-          actionLabel="New Task"
-          onAction={() => setCreateOpen(true)}
+          actionLabel={canCreateTask ? 'New Task' : undefined}
+          onAction={canCreateTask ? () => setCreateOpen(true) : undefined}
         />
       )}
 

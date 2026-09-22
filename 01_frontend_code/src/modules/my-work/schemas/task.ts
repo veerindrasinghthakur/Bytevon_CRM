@@ -20,6 +20,7 @@ export const myTaskSchema = z.object({
   dueDate: z.string(),
   status: taskStatusSchema,
   estimatedHours: z.string().optional(),
+  assignee: z.string().optional(),
 })
 export type MyTask = z.infer<typeof myTaskSchema>
 

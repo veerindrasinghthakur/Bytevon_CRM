@@ -1,7 +1,8 @@
 /**
  * Local permission checks against EffectiveAuthorization (no network).
+ * Resource names are backend strings — never a frontend enum.
  */
-import type { Action, ResourceName, ScopeName } from '@/shared/schema'
+import type { Action, ScopeName } from '@/shared/schema'
 import type { EffectiveAuthorization, PermissionActionKey } from './types'
 import { actionToKey } from './types'
 
@@ -16,7 +17,7 @@ const SCOPE_RANK: Record<string, number> = {
 
 export type CanArgs = {
   action: Action | string
-  resource: ResourceName | string
+  resource: string
   minScope?: ScopeName | string
 }
 
@@ -27,7 +28,7 @@ export function canWith(
   if (!auth) return false
   if (auth.isSuperAdmin) return true
 
-  const resource = args.resource as ResourceName
+  const resource = args.resource
   const key = actionToKey(args.action) as PermissionActionKey
   const allowed = auth.permissions[resource]?.[key] === true
   if (!allowed) return false
@@ -39,7 +40,7 @@ export function canWith(
 
 export function hasPermission(
   auth: EffectiveAuthorization | null | undefined,
-  resource: ResourceName | string,
+  resource: string,
   action: Action | string,
 ): boolean {
   return canWith(auth, { resource, action })

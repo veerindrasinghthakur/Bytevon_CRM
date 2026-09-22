@@ -119,7 +119,7 @@ export function useLeadsList() {
   })
 
   /** Server-side filter + page — API receives page/pageSize/search/filters */
-  const { data, isLoading, isError, refetch, isFetching } = useLeadsQuery({
+  const { data, isLoading, isError, error, refetch, isFetching } = useLeadsQuery({
     search: controls.debouncedSearch.trim() || undefined,
     status: controls.filters.status,
     stage: controls.filters.stage,
@@ -151,6 +151,7 @@ export function useLeadsList() {
     pageItems,
     isLoading: isLoading || filterOptionsQuery.isLoading,
     isError,
+    error,
     refetch,
     isFetching,
     search: controls.search,

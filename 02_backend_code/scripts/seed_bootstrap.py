@@ -21,14 +21,21 @@ from app.core.config import settings
 from app.core.database import AsyncSessionLocal
 from app.core.db.enums import Action, EmploymentState, EmploymentType, ScopeName
 from app.core.security.password_manager import PasswordManager
-from app.modules.auth.models import Login, Person
-from app.modules.workforce.models import Employment, Position
-from app.modules.admin.department.models import Department
-from app.modules.admin.settings.models import OrganizationSettings
-from app.modules.admin.working_week.models import WorkingWeek
-from app.modules.admin.shift.models import Shift
 from app.modules.admin.location.models import Location
-from app.modules.rbac.models import EmployeeRole, Permission, Resource, Role, RolePermission, Scope, SensitiveField
+from app.modules.admin.settings.models import OrganizationSettings
+from app.modules.admin.shift.models import Shift
+from app.modules.admin.working_week.models import WorkingWeek
+from app.modules.auth.models import Login, Person
+from app.modules.rbac.models import (
+    EmployeeRole,
+    Permission,
+    Resource,
+    Role,
+    Scope,
+    SensitiveField,
+)
+from app.modules.workforce.department.models import Department
+from app.modules.workforce.models import Employment, Position
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("seed")

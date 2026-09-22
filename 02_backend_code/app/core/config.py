@@ -33,11 +33,11 @@ class Settings(BaseSettings):
     )
     DATABASE_ECHO: bool = False
 
-    # JWT / Auth V1
+    # JWT / Auth V1 — names match .env / .env.example contract.
     JWT_SECRET_KEY: str = Field(..., min_length=32)
     JWT_ALGORITHM: str = "HS256"
-    JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    JWT_REFRESH_TOKEN_EXPIRE_DAYS: int = 30
+    JWT_ACCESS_TTL_MINUTES: int = 30
+    JWT_REFRESH_TTL_DAYS: int = 30
 
     # Password reset
     PASSWORD_RESET_TOKEN_EXPIRE_MINUTES: int = 10
@@ -87,6 +87,52 @@ class Settings(BaseSettings):
     MINIO_SECURE: bool = Field(
         default=False,
         description="Use HTTPS for MinIO connection",
+    )
+
+    # Email (SMTP) — Gmail defaults; credentials live in .env (never committed).
+    # Gmail requires an App Password (Google Account → Security → 2-Step
+    # Verification → App passwords), NOT the regular account password.
+    EMAIL_ENABLED: bool = Field(
+        default=False,
+        description="Master kill-switch for outbound email. When false, sends are skipped (logged).",
+    )
+    SMTP_HOST: str = Field(
+        default="smtp.gmail.com",
+        description="SMTP hostname (Gmail: smtp.gmail.com)",
+    )
+    SMTP_PORT: int = Field(
+        default=587,
+        description="SMTP port (Gmail: 587 with STARTTLS)",
+    )
+    SMTP_USE_TLS: bool = Field(
+        default=True,
+        description="Use STARTTLS on connect (Gmail: true)",
+    )
+    SMTP_USERNAME: str = Field(
+        default="",
+        description="SMTP username (Gmail: full address, e.g. you@gmail.com)",
+    )
+    SMTP_PASSWORD: str = Field(
+        default="",
+        description="SMTP password (Gmail: 16-char App Password, no spaces)",
+    )
+    SMTP_FROM_EMAIL: str = Field(
+        default="",
+        description="Default From address (Gmail: usually same as SMTP_USERNAME)",
+    )
+    SMTP_FROM_NAME: str = Field(
+        default="ByteVon CRM",
+        description="Default From display name",
+    )
+    SMTP_TIMEOUT_SECONDS: int = Field(
+        default=15,
+        description="SMTP connect/send timeout",
+    )
+
+    # Frontend base URL used to build links inside emails (e.g. password reset).
+    FRONTEND_URL: str = Field(
+        default="http://localhost:5173",
+        description="Public frontend base URL for email links",
     )
 
 

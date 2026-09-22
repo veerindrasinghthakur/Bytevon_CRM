@@ -20,7 +20,7 @@ import {
 import { workforceRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { can } from '@/shared/rbac'
-import { Action, ResourceName, EmploymentType } from '@/shared/schema'
+import { Action, EmploymentType } from '@/shared/schema'
 import type { AdminRoleOption } from '@/modules/admin/types'
 import { cn } from '@/shared/lib/cn'
 import { GENDER_OPTIONS } from '../../schemas/enums'
@@ -68,7 +68,7 @@ const inputClass =
 
 export function EmployeeCreatePage() {
   const navigate = useNavigate()
-  const canCreateUser = can({ action: Action.CREATE, resource: ResourceName.USER })
+  const canCreateUser = can({ action: Action.CREATE, resource: 'user' })
 
   const [step, setStep] = useState<EmployeeCreateStep>('profile')
   const [saving, setSaving] = useState(false)
@@ -159,7 +159,10 @@ export function EmployeeCreatePage() {
         const r = await listRoles()
         setRoles(r as AdminRoleOption[])
         const empRole = r.find((x) => x.name === 'Employee') ?? r[0]
-        if (empRole) setRoleId(String(empRole.id))
+        if (empRole) {
+          setRoleId(String(empRole.id))
+          form.setValue('loginRoleId', String(empRole.id))
+        }
       }
     })()
   }, [canCreateUser, form])
@@ -196,7 +199,9 @@ export function EmployeeCreatePage() {
       setCreatedName(fullName)
       const slug = fullName.toLowerCase().replace(/\s+/g, '.')
       setWorkEmail(workContactEmail || `${slug}@bytevon.com`)
-      if (canCreateUser) {
+      if (payload.create_login) {
+        setStep('done')
+      } else if (canCreateUser) {
         setStep('auth')
       } else {
         setStep('done')
@@ -463,6 +468,57 @@ export function EmployeeCreatePage() {
               />
             </Field>
           </div>
+        </section>
+        <section className="bv-surface p-6 space-y-4 mb-6">
+          <div className="flex items-center gap-2 text-secondary mb-2">
+            <Icon name="key" />
+            <h3 className="text-title-lg font-bold text-on-background">Login Access</h3>
+          </div>
+          <Controller
+            name="createLogin"
+            control={form.control}
+            render={({ field }) => (
+              <label className="flex items-center gap-2 text-body-md text-on-surface">
+                <input
+                  type="checkbox"
+                  checked={Boolean(field.value)}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                />
+                Create login access
+              </label>
+            )}
+          />
+          {form.watch('createLogin') ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Login Email" error={errors.loginEmail?.message}>
+                <input className={inputClass} type="email" {...form.register('loginEmail')} />
+              </Field>
+              <Field label="Temporary Password" hint="Minimum 8 characters.">
+                <input
+                  className={inputClass}
+                  type="text"
+                  {...form.register('loginTemporaryPassword')}
+                  placeholder="TempSecure1!"
+                />
+              </Field>
+              <Field label="Login Role">
+                <Controller
+                  name="loginRoleId"
+                  control={form.control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value ?? ''}
+                      onChange={field.onChange}
+                      options={roleOptions}
+                      placeholder="Select role…"
+                      minWidthClass="w-full"
+                      aria-label="Login Role"
+                    />
+                  )}
+                />
+              </Field>
+            </div>
+          ) : null}
         </section>
         <div className="fixed bottom-0 right-0 left-0 md:left-[var(--shell-left,0)] z-30 bg-surface-container-lowest/95 backdrop-blur-md border-t border-outline-variant px-6 py-4 flex justify-between items-center executive-shadow">
           <Button type="button" variant="ghost" onClick={goList}>

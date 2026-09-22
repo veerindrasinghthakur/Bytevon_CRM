@@ -12,7 +12,7 @@ import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { downloadFile } from '@/shared/lib/download-file'
-import { ResourceName } from '@/shared/schema'
+import { Can } from '@/shared/rbac'
 import { useDocuments, useUploadDocument } from '../../hooks/document/use-documents'
 import { DocumentQuickContent, iconForMime } from '../../components/DocumentQuickContent'
 import type { ProjectDocument } from '../../types'
@@ -89,12 +89,14 @@ export function DocumentsPage() {
         actions={
           <div className="flex flex-wrap gap-2">
             <RefreshButton onClick={() => void refetch()} isLoading={isFetching} iconOnly />
-            <ExportButton resource={ResourceName.DOCUMENT} query={search} selectedIds={[]} filenameStem="documents" />
-            <UploadButton
-              label="Upload"
-              onFiles={(files) => void uploadMutation.mutateAsync(files)}
-              disabled={uploadMutation.isPending}
-            />
+            <ExportButton resource={'document'} query={search} selectedIds={[]} filenameStem="documents" />
+            <Can action="CREATE" resource="document">
+              <UploadButton
+                label="Upload"
+                onFiles={(files) => void uploadMutation.mutateAsync(files)}
+                disabled={uploadMutation.isPending}
+              />
+            </Can>
           </div>
         }
       />

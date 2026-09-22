@@ -17,7 +17,6 @@ import {
   QuickRelatedRow,
   QuickPersonRow,
 } from '@/shared/components/layout/QuickOverviewParts'
-import { ResourceName } from '@/shared/schema'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myAdminRoutes } from '../../routes'
 import { useUsersList } from '../../hooks/user/use-users'
@@ -150,7 +149,7 @@ export function UsersListPage() {
         actions={
           <div className="flex gap-2">
             <ExportButton
-              resource={ResourceName.USER}
+              resource={'user'}
               query={search.trim() || undefined}
               filters={{
                 status: statusFilter !== 'All' ? statusFilter : undefined,
@@ -249,7 +248,7 @@ export function UsersListPage() {
           onCancel={exitSelectionMode}
         >
           <ExportButton
-            resource={ResourceName.USER}
+            resource={'user'}
             selectedIds={Array.from(selectedIds)}
             filenameStem="users-selected"
             label="Export selected"

@@ -7,6 +7,8 @@ import { canWith } from './can'
 import type { EffectiveAuthorization } from './types'
 import { fetchEffectiveAuthorization } from './api'
 import { getCurrentEmploymentId } from './session'
+import { queryClient } from '@/shared/lib/query-client'
+import { queryKeys } from '@/shared/lib/query-keys'
 
 export type RequirePermissionOpts = {
   action: Action | string
@@ -17,7 +19,13 @@ export type RequirePermissionOpts = {
 
 export async function requirePermission(opts: RequirePermissionOpts): Promise<EffectiveAuthorization> {
   const employmentId = getCurrentEmploymentId()
-  const auth = await fetchEffectiveAuthorization(employmentId)
+  // Cached via React Query (staleTime Infinity, invalidated on login/logout/
+  // expiry) so route guards don't add a request per navigation.
+  const auth = await queryClient.fetchQuery({
+    queryKey: queryKeys.rbac.effective(employmentId),
+    queryFn: () => fetchEffectiveAuthorization(employmentId),
+    staleTime: Infinity,
+  })
 
   if (!canWith(auth, opts)) {
     throw redirect({

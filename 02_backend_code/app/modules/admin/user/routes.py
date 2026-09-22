@@ -62,9 +62,10 @@ async def get_user(
     login_id: int,
     service: ServiceDep,
     auth: Annotated[AuthContext, Depends(require_permission("user", "VIEW", "CUSTOM"))],
+    include_archived: bool = Query(False),
 ) -> AdminUserDetailResponse:
     enforce_owner_or_grant(auth, "user", "VIEW", owner_login_id=login_id)
-    return await service.get_admin_user(login_id)
+    return await service.get_admin_user(login_id, include_archived=include_archived)
 
 
 @router.post("/users", response_model=AdminUserDetailResponse, status_code=status.HTTP_201_CREATED)
@@ -140,3 +141,13 @@ async def delete_user(
 ) -> MessageResponse:
     enforce_owner_or_grant(auth, "user", "DELETE", owner_login_id=login_id)
     return await service.archive_admin_user(login_id, actor_employment_id=auth.employment_id)
+
+
+@router.post("/users/{login_id}/restore", response_model=MessageResponse)
+async def restore_user(
+    login_id: int,
+    service: ServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("user", "UPDATE", "ORGANIZATION"))],
+) -> MessageResponse:
+    """Q16: restore an archived login (reactivate access)."""
+    return await service.restore_admin_user(login_id, actor_employment_id=auth.employment_id)

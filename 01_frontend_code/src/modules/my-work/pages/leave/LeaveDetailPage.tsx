@@ -1,11 +1,11 @@
 import { useParams, useNavigate } from '@tanstack/react-router'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
-import { queryKeys } from '@/shared/lib/query-keys'
-import { listMyLeaveRequests, listMyLeaveBalances, getMyWorkOverview } from '../../api/my-work'
+import { queryKeys, invalidate } from '@/shared/lib/query-keys'
+import { listMyLeaveRequests, listMyLeaveBalances, getMyWorkOverview, requestLeaveCancel } from '../../api/my-work'
 import { statusStyles } from '../../schemas/enums'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../../routes'
@@ -14,6 +14,11 @@ import { cn } from '@/shared/lib/cn'
 export function LeaveDetailPage() {
   const { leaveId } = useParams({ strict: false }) as { leaveId: string }
   const navigate = useNavigate()
+  const qc = useQueryClient()
+  const requestCancelMut = useMutation({
+    mutationFn: (id: string) => requestLeaveCancel(id),
+    onSuccess: () => invalidate.myWorkLeave(qc),
+  })
 
   const listQuery = useQuery({
     queryKey: queryKeys.myWork.leave.list({ pageSize: 100 }),
@@ -83,6 +88,21 @@ export function LeaveDetailPage() {
                 Withdraw
               </Button>
             )}
+            {req.status === 'Approved' &&
+              req.from >= new Date().toISOString().slice(0, 10) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={requestCancelMut.isPending}
+                  leftIcon={<span className="material-symbols-outlined text-base">cancel</span>}
+                  onClick={() => {
+                    if (!window.confirm(`Request cancellation for ${req.id}?`)) return
+                    requestCancelMut.mutate(req.id)
+                  }}
+                >
+                  {requestCancelMut.isPending ? 'Requesting…' : 'Request cancellation'}
+                </Button>
+              )}
           </div>
         }
       />

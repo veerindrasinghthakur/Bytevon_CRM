@@ -23,6 +23,7 @@ export const leadFormSchema = z.object({
   assignedEmploymentId: z.string().optional().or(z.literal('')),
   notes: z.string().optional().or(z.literal('')),
   chatLink: z.string().optional().or(z.literal('')),
+  autoCreateProject: z.boolean().optional().default(false),
 })
 
 export type LeadFormSchemaInput = z.infer<typeof leadFormSchema>
@@ -45,6 +46,7 @@ export const emptyLeadForm = (): LeadForm => ({
   assignedEmploymentId: '',
   notes: '',
   chatLink: '',
+  autoCreateProject: false,
 })
 
 export function optTrim(value: string | undefined | null): string | undefined {

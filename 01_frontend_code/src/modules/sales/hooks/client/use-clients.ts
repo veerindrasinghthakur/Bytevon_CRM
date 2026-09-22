@@ -112,7 +112,7 @@ export function useClientsList() {
     refetchOnReconnect: false,
   })
 
-  const { data, isLoading, isError, refetch, isFetching } = useClientsQuery({
+  const { data, isLoading, isError, error, refetch, isFetching } = useClientsQuery({
     search: controls.debouncedSearch.trim() || undefined,
     status: controls.filters.status,
     type: controls.filters.type,
@@ -141,6 +141,7 @@ export function useClientsList() {
     pageItems,
     isLoading: isLoading || filterOptionsQuery.isLoading,
     isError,
+    error,
     refetch,
     isFetching,
     search: controls.search,

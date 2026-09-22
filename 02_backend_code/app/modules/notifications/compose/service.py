@@ -120,9 +120,70 @@ class ComposeService(BasePublicService):
         return data.title, data.body, None
 
     async def _enqueue_email(self, notif: Notification) -> None:
-        logger.info(
-            "EMAIL enqueue notification_id=%s recipient=%s/%s",
-            notif.id,
-            notif.recipient_type.value,
-            notif.recipient_id,
-        )
+        """Deliver an EMAIL-channel notification via SMTP (fail-soft).
+
+        Only EMPLOYMENT recipients are email-addressable in V1; DEPARTMENT/TEAM
+        recipients keep their persisted in-app notification and are skipped here.
+        Never raises — failures are logged so business work is unaffected.
+        """
+        from sqlalchemy import select
+
+        from app.core.email import EmailClient
+        from app.modules.auth.models import Login
+        from app.modules.workforce.models import Employment
+
+        try:
+            if notif.recipient_type != NotificationRecipientType.EMPLOYMENT:
+                logger.info(
+                    "EMAIL skipped (recipient type %s has no direct address): "
+                    "notification_id=%s",
+                    notif.recipient_type.value,
+                    notif.id,
+                )
+                return
+
+            employment = (
+                await self._session.execute(
+                    select(Employment).where(Employment.id == notif.recipient_id)
+                )
+            ).scalar_one_or_none()
+            if employment is None:
+                logger.warning(
+                    "EMAIL skipped (employment not found): notification_id=%s recipient_id=%s",
+                    notif.id,
+                    notif.recipient_id,
+                )
+                return
+
+            login = (
+                await self._session.execute(
+                    select(Login).where(
+                        Login.person_id == employment.person_id,
+                        Login.is_active.is_(True),
+                    )
+                )
+            ).scalar_one_or_none()
+            if login is None or not login.email:
+                logger.warning(
+                    "EMAIL skipped (no active login email): notification_id=%s employment_id=%s",
+                    notif.id,
+                    notif.recipient_id,
+                )
+                return
+
+            result = await EmailClient().send_email(
+                to=login.email,
+                subject=notif.title,
+                text_body=notif.body,
+            )
+            logger.info(
+                "EMAIL notification_id=%s to employment=%s status=%s",
+                notif.id,
+                notif.recipient_id,
+                result.status,
+            )
+        except Exception:
+            logger.exception(
+                "EMAIL delivery failed (fail-soft): notification_id=%s",
+                notif.id,
+            )

@@ -60,14 +60,30 @@ export async function getLocations(params?: { includeArchived?: boolean }) {
   return asList(data)
 }
 
-export async function getLocation(id: number): Promise<LocationRow | null> {
+export async function getLocation(
+  id: number,
+  opts?: { includeArchived?: boolean },
+): Promise<LocationRow | null> {
   if (env.useMockApi) {
     await delay()
     const row = getDb().locations.find((l) => l.id === id)
     return row ? { ...row } : null
   }
-  const { data } = await apiClient.get<LocationRow>(`/admin/locations/${id}`)
-  return data
+  try {
+    const { data } = await apiClient.get<LocationRow>(`/admin/locations/${id}`, {
+      params: opts?.includeArchived ? { include_archived: true } : undefined,
+    })
+    return data
+  } catch (err) {
+    // Archived rows 404 by default — retry with include_archived before giving up.
+    if (!opts?.includeArchived && isNotFound(err)) {
+      const { data } = await apiClient.get<LocationRow>(`/admin/locations/${id}`, {
+        params: { include_archived: true },
+      })
+      return data
+    }
+    throw err
+  }
 }
 
 export async function createLocation(input: LocationCreateInput | Record<string, unknown>): Promise<LocationRow> {
@@ -138,6 +154,28 @@ export async function deleteLocation(id: number): Promise<void> {
   row.archived_at = now
   row.archived_by = 1
   row.changed_by = 1
+}
+
+/** Q16: restore an archived location (real backend only). */
+export async function restoreLocation(id: number): Promise<LocationRow> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<LocationRow>(`/admin/locations/${id}/restore`)
+    return data
+  }
+  await delay(300)
+  const row = (getDb().locations as LocationRow[]).find((l) => l.id === id)
+  if (!row) throw new Error('Location not found')
+  row.is_archived = false
+  return { ...row }
+}
+
+function isNotFound(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'response' in err &&
+    (err as { response?: { status?: number } }).response?.status === 404
+  )
 }
 
 /** @deprecated Use deleteLocation (DELETE verb + soft-delete). */

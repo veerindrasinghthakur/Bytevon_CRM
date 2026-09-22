@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { createShift, deleteShift, getShift, getShifts, updateShift } from '../../api/organization'
+import { createShift, deleteShift, getShift, getShifts, restoreShift, updateShift } from '../../api/organization'
 import { listEmployeesOnShift } from '@/modules/workforce/api/departments'
 import type { ShiftRow } from '@/shared/schema'
 import { queryKeys, invalidate } from '@/shared/lib/query-keys'
@@ -57,6 +57,16 @@ export function useDeleteShift() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: number) => deleteShift(id),
+    onSuccess: () => {
+      invalidate.orgShifts(qc)
+    },
+  })
+}
+
+export function useRestoreShift() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => restoreShift(id),
     onSuccess: () => {
       invalidate.orgShifts(qc)
     },

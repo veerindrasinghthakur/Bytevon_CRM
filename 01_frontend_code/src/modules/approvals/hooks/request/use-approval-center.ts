@@ -31,5 +31,11 @@ export function useApprovalCenter() {
     showingCount,
     pendingTotal: kpis?.pending ?? pending.length,
     isLoading: kpisQuery.isLoading || pendingQuery.isLoading,
+    isError: kpisQuery.isError || pendingQuery.isError,
+    error: kpisQuery.error ?? pendingQuery.error,
+    refetch: () => {
+      void kpisQuery.refetch()
+      void pendingQuery.refetch()
+    },
   }
 }

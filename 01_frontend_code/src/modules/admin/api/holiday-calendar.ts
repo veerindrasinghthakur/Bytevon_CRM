@@ -7,26 +7,46 @@ import { delay, getDb, nextId } from '@/shared/mock/db'
 import type { HolidayCalendarRow, HolidayRow } from '@/shared/schema'
 import { asList } from './_org-helpers'
 
-export async function getHolidayCalendars() {
+export async function getHolidayCalendars(params?: { includeArchived?: boolean }) {
   if (env.useMockApi) {
     await delay()
-    const items = getDb().holiday_calendars.map((r) => ({ ...r }) as HolidayCalendarRow)
+    let items = getDb().holiday_calendars.map((r) => ({ ...r }) as HolidayCalendarRow)
+    if (!params?.includeArchived) items = items.filter((c) => !c.is_archived)
     return { items, total: items.length }
   }
   const { data } = await apiClient.get<
     HolidayCalendarRow[] | { items: HolidayCalendarRow[]; total: number }
-  >('/admin/holiday-calendars')
+  >('/admin/holiday-calendars', {
+    params: params?.includeArchived ? { include_archived: true } : undefined,
+  })
   return asList(data)
 }
 
-export async function getHolidayCalendar(id: number): Promise<HolidayCalendarRow | null> {
+export async function getHolidayCalendar(
+  id: number,
+  opts?: { includeArchived?: boolean },
+): Promise<HolidayCalendarRow | null> {
   if (env.useMockApi) {
     await delay()
     const row = getDb().holiday_calendars.find((c) => c.id === id)
     return row ? { ...row } : null
   }
-  const { data } = await apiClient.get<HolidayCalendarRow>(`/admin/holiday-calendars/${id}`)
-  return data
+  try {
+    const { data } = await apiClient.get<HolidayCalendarRow>(`/admin/holiday-calendars/${id}`, {
+      params: opts?.includeArchived ? { include_archived: true } : undefined,
+    })
+    return data
+  } catch (err) {
+    // Archived rows 404 by default — retry with include_archived before giving up.
+    if (!opts?.includeArchived && isNotFound(err)) {
+      const { data } = await apiClient.get<HolidayCalendarRow>(
+        `/admin/holiday-calendars/${id}`,
+        { params: { include_archived: true } },
+      )
+      return data
+    }
+    throw err
+  }
 }
 
 export async function createHolidayCalendar(input: { name: string }): Promise<HolidayCalendarRow> {
@@ -73,6 +93,29 @@ export async function deleteHolidayCalendar(id: number): Promise<void> {
     return
   }
   return updateHolidayCalendar(id, { is_archived: true }).then(() => undefined)
+}
+
+/** Q16: restore an archived holiday calendar (real backend only). */
+export async function restoreCalendar(id: number): Promise<HolidayCalendarRow> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<HolidayCalendarRow>(
+      `/admin/holiday-calendars/${id}/restore`,
+    )
+    return data
+  }
+  return updateHolidayCalendar(id, { is_archived: false })
+}
+
+/** Alias kept for symmetry with deleteHolidayCalendar. */
+export const restoreHolidayCalendar = restoreCalendar
+
+function isNotFound(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'response' in err &&
+    (err as { response?: { status?: number } }).response?.status === 404
+  )
 }
 
 /** @deprecated Use deleteHolidayCalendar (DELETE verb + soft-delete). */

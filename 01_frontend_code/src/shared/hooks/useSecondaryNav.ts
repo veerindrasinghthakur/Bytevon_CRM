@@ -1,6 +1,8 @@
 import { useRouterState } from '@tanstack/react-router'
 import { SECONDARY_NAV } from '@/shared/components/layout/SecondarySidebar'
 import type { SecondaryNavGroup, SecondaryNavItem } from '@/shared/types'
+import { useRbac } from '@/shared/rbac'
+import { filterSecondaryNavItems } from '@/shared/rbac'
 
 export function getActiveModule(pathname: string): string {
   if (pathname.startsWith('/sales')) return 'sales'
@@ -82,7 +84,11 @@ export function useSecondaryNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const moduleId = getActiveModule(pathname)
   const group: SecondaryNavGroup | undefined = SECONDARY_NAV[moduleId]
-  const items: SecondaryNavItem[] = (group?.items ?? []).filter((i) => i.visible !== false)
+  const { auth, isLoading } = useRbac()
+  const baseItems: SecondaryNavItem[] = (group?.items ?? []).filter((i) => i.visible !== false)
+  // While permissions load, fall back to the static visible flag so the
+  // sidebar never flashes empty on refresh. Once loaded, RBAC decides.
+  const items = isLoading ? baseItems : filterSecondaryNavItems(baseItems, auth)
 
   return {
     pathname,

@@ -144,7 +144,14 @@ class DepartmentRepository(BaseRepository):
         if current and current.department_id == department_id:
             return
         if current and current.effective_to is None:
-            current.effective_to = today
+            # Q1 canonical temporal model: predecessor ends the day before the
+            # new row starts so active periods never overlap.
+            from datetime import timedelta as _td
+
+            close_to = today - _td(days=1)
+            current.effective_to = (
+                close_to if close_to >= current.effective_from else today
+            )
         asg = EmploymentAssignment(
             employment_id=employment_id,
             department_id=department_id,

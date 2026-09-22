@@ -159,10 +159,22 @@ export async function listDepartments(
   return { items: rows, total: rows.length, metrics }
 }
 
-export async function getDepartment(id: number) {
+export async function getDepartment(id: number, opts?: { includeArchived?: boolean }) {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<Record<string, unknown>>(`${DEPTS}/${id}`)
-    return mapApiDepartment(data ?? {})
+    const params = opts?.includeArchived ? { include_archived: true } : undefined
+    try {
+      const { data } = await apiClient.get<Record<string, unknown>>(`${DEPTS}/${id}`, { params })
+      return mapApiDepartment(data ?? {})
+    } catch (err) {
+      // Archived rows 404 by default — retry with include_archived before giving up.
+      if (!opts?.includeArchived && isNotFound(err)) {
+        const { data } = await apiClient.get<Record<string, unknown>>(`${DEPTS}/${id}`, {
+          params: { include_archived: true },
+        })
+        return mapApiDepartment(data ?? {})
+      }
+      throw err
+    }
   }
   await delay()
   const row = getDb().schema_departments.find((d) => d.id === id)
@@ -487,7 +499,30 @@ export async function deleteDepartment(id: number): Promise<void> {
   }
 }
 
+/** Q16: restore an archived department (real backend only). */
+export async function restoreDepartment(id: number) {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<Record<string, unknown>>(`${DEPTS}/${id}/restore`)
+    return mapApiDepartment(data ?? { id })
+  }
+  await delay()
+  const row = getDb().schema_departments.find((d) => d.id === id)
+  if (!row) throw new Error('Department not found')
+  ;(row as { is_archived: boolean }).is_archived = false
+  return toListItem(row as DepartmentRow)
+}
+
 /** @deprecated Use deleteDepartment (DELETE verb + soft-delete). Kept for transition. */
 export async function archiveDepartment(id: number): Promise<void> {
   return deleteDepartment(id)
+}
+
+/** True when the backend answered 404 (archived rows 404 by default). */
+function isNotFound(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'response' in err &&
+    (err as { response?: { status?: number } }).response?.status === 404
+  )
 }

@@ -146,12 +146,21 @@ def require_permission(
             return ctx
         grant_scope = (ctx.scopes.get(resource) or "").upper()
         if SCOPE_RANK.get(grant_scope, 0) < required_rank:
-            raise NotFoundError("Resource not found")
+            # Authenticated but not permitted: keep 404 status (hide existence)
+            # while the code/message tell the UI it's a permission issue,
+            # never a session/expiry problem.
+            raise NotFoundError(
+                "You don't have permission to access this resource",
+                code="insufficient_permission",
+            )
         # Action-level check via permission matrix when present.
         permissions = effective.permissions or {}
         resource_perms = permissions.get(resource)
         if resource_perms is not None and not resource_perms.get(action.lower(), False):
-            raise NotFoundError("Resource not found")
+            raise NotFoundError(
+                "You don't have permission to perform this action",
+                code="insufficient_permission",
+            )
         return ctx
 
     # Give the dependency a stable, debuggable name per endpoint.
@@ -183,4 +192,7 @@ def enforce_owner_or_grant(
     grant_scope = (ctx.scopes.get(resource) or "").upper()
     if SCOPE_RANK.get(grant_scope, 0) >= CUSTOM_NON_OWNER_MIN_RANK:
         return
-    raise NotFoundError("Resource not found")
+    raise NotFoundError(
+        "You don't have permission to access this resource",
+        code="insufficient_permission",
+    )

@@ -98,6 +98,22 @@ class AttendanceRepository(BaseRepository):
         )
         return await self.scalar_one_or_none(stmt)
 
+    async def list_corrections_by_employment(
+        self, employment_id: int, *, limit: int = 50
+    ) -> Sequence[AttendanceCorrection]:
+        """Q14: corrections for one employment (joins the day owner)."""
+        stmt = (
+            select(AttendanceCorrection)
+            .join(
+                AttendanceDay,
+                AttendanceDay.id == AttendanceCorrection.attendance_day_id,
+            )
+            .where(AttendanceDay.employment_id == employment_id)
+            .order_by(AttendanceCorrection.id.desc())
+            .limit(limit)
+        )
+        return await self.scalars(stmt)
+
     async def count_corrections_in_month(
         self, employment_id: int, year: int, month: int
     ) -> int:

@@ -3,8 +3,8 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Pagination } from '@/shared/components/ui/Pagination'
-import { ResourceName } from '@/shared/schema'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { useSalaryList } from '../../hooks/salary/use-salary-list'
 import { payrollRoutes } from '../../routes'
 
@@ -22,6 +22,7 @@ export function SalaryManagementPage() {
     formatMoney,
     isLoading,
     isError,
+    error,
     refetch,
   } = useSalaryList()
 
@@ -29,7 +30,7 @@ export function SalaryManagementPage() {
     return (
       <ErrorState
         title="Failed to load salaries"
-        description="Could not load salary management data."
+        description={getApiErrorMessage(error, 'Could not load salary management data.')}
         onRetry={() => void refetch()}
         onBack={() => safeNavigate(navigate, { to: payrollRoutes.root })}
       />
@@ -43,7 +44,7 @@ export function SalaryManagementPage() {
         description="View and manage employee gross salary configurations."
         actions={
           <ExportButton
-            resource={ResourceName.SALARY}
+            resource={'salary'}
             filenameStem="salary-management"
             query={search}
             label="Export"

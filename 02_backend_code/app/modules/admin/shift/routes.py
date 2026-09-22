@@ -26,6 +26,15 @@ async def create_shift(body: ShiftCreate, service: ServiceDep, auth: Annotated[A
 async def list_shifts(service: ServiceDep, include_archived: bool = Query(False)) -> list[ShiftResponse]:
     return await service.list(include_archived=include_archived)
 
+@router.get("/{shift_id}/employees", dependencies=[Depends(require_permission("shift", "VIEW", "ORGANIZATION"))])
+async def list_shift_employees(
+    shift_id: int,
+    service: ServiceDep,
+) -> list[dict]:
+    """Current assignments on this shift (fixes frontend 404 on shift detail)."""
+    return await service.list_employees(shift_id)
+
+
 @router.get("/{shift_id}", response_model=ShiftResponse, dependencies=[Depends(require_permission("shift", "VIEW", "ORGANIZATION"))])
 async def get_shift(shift_id: int, service: ServiceDep) -> ShiftResponse:
     return await service.get(shift_id)
@@ -43,3 +52,8 @@ async def delete_shift(shift_id: int, service: ServiceDep, auth: Annotated[AuthC
 @router.post("/{shift_id}/archive", response_model=MessageResponse, include_in_schema=False)
 async def archive_shift(shift_id: int, service: ServiceDep, auth: Annotated[AuthContext, Depends(require_permission("shift", "UPDATE", "ORGANIZATION"))]) -> MessageResponse:
     return await service.delete(shift_id, actor_employment_id=auth.employment_id)
+
+@router.post("/{shift_id}/restore", response_model=ShiftResponse)
+async def restore_shift(shift_id: int, service: ServiceDep, auth: Annotated[AuthContext, Depends(require_permission("shift", "UPDATE", "ORGANIZATION"))]) -> ShiftResponse:
+    """Q16: restore an archived shift."""
+    return await service.restore(shift_id, actor_employment_id=auth.employment_id)

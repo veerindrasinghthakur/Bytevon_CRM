@@ -6,6 +6,7 @@ import { createRoute, redirect } from '@tanstack/react-router'
 import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 import { safeRedirectOpts } from '@/shared/lib/safeNavigate'
+import { requirePermission, requireView } from '@/shared/rbac/require-permission'
 
 const UsersListPage = lazyPage(() => import('./pages/user/UsersListPage'), 'UsersListPage')
 const UserDetailPage = lazyPage(() => import('./pages/user/UserDetailPage'), 'UserDetailPage')
@@ -51,6 +52,7 @@ export function createAdminSettingsLayoutRoute<TParent extends AnyRoute>(appLayo
   return createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/admin/settings',
+    beforeLoad: requireView('org_settings'),
     component: AdminSettingsLayout,
   })
 }
@@ -75,9 +77,24 @@ export function createAdminOrganizationSettingsRoutes<TParent extends AnyRoute>(
 
 export function createWorkforceShiftRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   return [
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/shifts', component: ShiftsListPage }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/shifts/new', component: ShiftDetailPage }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/workforce/shifts/$shiftId', component: ShiftDetailPage }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/shifts',
+      beforeLoad: requireView('shift'),
+      component: ShiftsListPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/shifts/new',
+      beforeLoad: requireView('shift'),
+      component: ShiftDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/shifts/$shiftId',
+      beforeLoad: requireView('shift'),
+      component: ShiftDetailPage,
+    }),
   ]
 }
 
@@ -148,11 +165,13 @@ export function createAdminRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
   const attendanceLayout = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/admin/attendance-settings',
+    beforeLoad: requireView('attendance'),
     component: AttendanceSettingsLayout,
   })
   const leaveLayout = createRoute({
     getParentRoute: () => appLayoutRoute,
     path: '/admin/leave-settings',
+    beforeLoad: requireView('leave_policy'),
     component: LeaveSettingsLayout,
   })
 
@@ -167,36 +186,43 @@ export function createAdminRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/admin/users',
+      beforeLoad: requireView('user'),
       component: UsersListPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/admin/users/new',
+      beforeLoad: () => requirePermission({ action: 'CREATE', resource: 'user' }),
       component: UserCreatePage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/admin/users/$userId',
+      beforeLoad: requireView('user'),
       component: UserDetailPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/admin/roles',
+      beforeLoad: requireView('role'),
       component: RolesListPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/admin/roles/new',
+      beforeLoad: () => requirePermission({ action: 'CREATE', resource: 'role' }),
       component: RoleCreatePage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/admin/roles/$roleId',
+      beforeLoad: requireView('role'),
       component: RoleDetailPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/admin/roles/$roleId/edit',
+      beforeLoad: () => requirePermission({ action: 'UPDATE', resource: 'role' }),
       component: RoleEditPage,
     }),
     createRoute({
@@ -252,11 +278,13 @@ export function createAdminRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/admin/audit',
+      beforeLoad: requireView('audit'),
       component: AuditLogsPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/admin/security',
+      beforeLoad: requireView('org_settings'),
       component: SecurityCenterPage,
     }),
     createRoute({

@@ -1,13 +1,13 @@
 """LedgerService — balances, ledger posts, apply-context, day calculation."""
 from __future__ import annotations
 
-from datetime import date, timedelta
+from datetime import date
 from decimal import Decimal
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.db.enums import LeaveType
+from app.core.db.enums import LeaveType, leave_type_label
 from app.core.exceptions.exception import NotFoundError
 from app.core.services.base_public_service import BasePublicService
 from app.modules.leave.ledger.repository import LedgerRepository
@@ -34,17 +34,10 @@ def _working_days(
     holiday_dates: set[date],
     half_day: bool = False,
 ) -> Decimal:
-    if end < start:
-        return Decimal("0")
-    days = 0
-    cur = start
-    while cur <= end:
-        if cur.weekday() < 5 and cur not in holiday_dates:
-            days += 1
-        cur += timedelta(days=1)
-    if half_day and days >= 1:
-        return max(Decimal("0.5"), Decimal(days) - Decimal("0.5"))
-    return Decimal(days)
+    # Q13: delegate to the canonical calculator so preview and submit agree.
+    from app.modules.leave.leave_days import working_days as _canonical
+
+    return _canonical(start, end, holiday_dates=holiday_dates, half_day=half_day)
 
 
 class LedgerService(BasePublicService):
@@ -171,7 +164,7 @@ class LedgerService(BasePublicService):
                 leave_types.append(
                     LeaveTypeOptionItem(
                         leave_type=lt,
-                        name=lt.value.replace("_", " ").title(),
+                        name=leave_type_label(lt),
                         annual_entitlement=Decimal("0"),
                         description=None,
                     )

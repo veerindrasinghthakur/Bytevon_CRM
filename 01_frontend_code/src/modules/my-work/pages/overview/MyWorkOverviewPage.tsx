@@ -1,7 +1,10 @@
 import { useNavigate } from '@tanstack/react-router'
 import { useMyWorkOverview } from '../../hooks/use-my-work-overview'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { myWorkRoutes } from '../../routes'
+import { MY_WORK_QUICK_ACTIONS } from '../../quick-actions'
 import { priorityClass, statusDot } from '../../schemas/enums'
 import type { MyTask } from '../../types'
 
@@ -10,6 +13,8 @@ export function MyWorkOverviewPage() {
     data,
     isLoading,
     isError,
+    error,
+    refetch,
     todayAttendance,
     weekHours,
     leaveBalances,
@@ -20,19 +25,24 @@ export function MyWorkOverviewPage() {
   } = useMyWorkOverview()
   const navigate = useNavigate()
 
-  const myWorkQuickActions = [
-    { label: 'Apply Leave', to: myWorkRoutes.leaveApply, icon: 'event_available' },
-    { label: 'Mark Attendance', to: myWorkRoutes.attendanceMark, icon: 'calendar_today' },
-    { label: 'View Tasks', to: myWorkRoutes.tasks, icon: 'task_alt' },
-    { label: 'Request Approval', to: myWorkRoutes.requests, icon: 'approval' },
-    { label: 'Update Bank Details', to: myWorkRoutes.root, icon: 'account_balance' },
-  ]
+  const myWorkQuickActions = MY_WORK_QUICK_ACTIONS
 
   if (isLoading || isError) {
+    if (isError) {
+      return (
+        <div className="animate-fade-in">
+          <ErrorState
+            title="Could not load your workspace"
+            description={getApiErrorMessage(error, 'We could not load your workspace data.')}
+            onRetry={() => void refetch()}
+          />
+        </div>
+      )
+    }
     return (
       <div className="animate-fade-in">
         <div className="h-96 flex items-center justify-center bg-surface-container-lowest text-on-surface-variant">
-          {isLoading ? 'Loading...' : 'Error loading data. Retry?'}
+          Loading...
         </div>
       </div>
     )

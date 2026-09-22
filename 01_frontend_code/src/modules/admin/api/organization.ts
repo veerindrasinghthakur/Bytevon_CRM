@@ -10,6 +10,7 @@ export {
   createLocation,
   updateLocation,
   deleteLocation,
+  restoreLocation,
   archiveLocation,
   type LocationCreateInput,
 } from './location'
@@ -19,6 +20,7 @@ export {
   createShift,
   updateShift,
   deleteShift,
+  restoreShift,
   archiveShift,
 } from './shift'
 export {
@@ -33,6 +35,8 @@ export {
   createHolidayCalendar,
   updateHolidayCalendar,
   deleteHolidayCalendar,
+  restoreCalendar,
+  restoreHolidayCalendar,
   archiveHolidayCalendar,
   getHolidays,
   createHoliday,
@@ -45,6 +49,7 @@ export {
   createPosition,
   updatePosition,
   deletePosition,
+  restorePosition,
   archivePosition,
 } from './position'
 export { listDepartments as getSchemaDepartments } from '@/modules/workforce/api/departments'

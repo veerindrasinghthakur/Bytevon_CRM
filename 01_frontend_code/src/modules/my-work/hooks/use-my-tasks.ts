@@ -52,6 +52,7 @@ export function useMyTasks() {
     isLoading: query.isLoading,
     isFetching: query.isFetching,
     isError: query.isError,
+    error: query.error,
     refetch: query.refetch,
     selectionMode: selection.selectionMode,
     selectedIds: selection.selectedIds,

@@ -61,11 +61,11 @@ export const holidaysSeed: HolidayItem[] = [
 ]
 
 export const leaveTypeOptions: LeaveTypeOption[] = [
-  { id: 'lt-casual', name: 'Casual', code: 'CASUAL', annualEntitlement: 10, description: 'Personal / unplanned' },
-  { id: 'lt-sick', name: 'Sick', code: 'SICK', annualEntitlement: 8, description: 'Medical' },
-  { id: 'lt-earned', name: 'Earned', code: 'EARNED', annualEntitlement: 12, description: 'Accrued paid leave' },
-  { id: 'lt-unpaid', name: 'Unpaid', code: 'LOSS_OF_PAY', annualEntitlement: 0, description: 'Without pay' },
-  { id: 'lt-comp', name: 'Comp Off', code: 'COMP_OFF', annualEntitlement: 0, description: 'Compensatory off' },
+  { value: 'CASUAL', label: 'Casual', requires_approval: true },
+  { value: 'SICK', label: 'Sick', requires_approval: true },
+  { value: 'EARNED', label: 'Earned', requires_approval: true },
+  { value: 'LOSS_OF_PAY', label: 'Unpaid', requires_approval: true },
+  { value: 'COMP_OFF', label: 'Comp Off', requires_approval: true },
 ]
 
 export const leaveBalances: LeaveBalance[] = [

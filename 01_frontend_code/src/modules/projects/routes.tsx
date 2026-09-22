@@ -2,6 +2,14 @@ import { createRoute, redirect } from '@tanstack/react-router'
 import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 import { safeRedirectOpts } from '@/shared/lib/safeNavigate'
+import { requirePermission, requireView } from '@/shared/rbac/require-permission'
+
+/** Variable grants: any VIEW opens a page; CREATE/UPDATE gates forms. Data is scope-filtered server-side. */
+const requireProjectView = () => requireView('project')
+const requireTaskView = () => requireView('task')
+const requireProjectCreate = () => requirePermission({ action: 'CREATE', resource: 'project' })
+const requireProjectUpdate = () => requirePermission({ action: 'UPDATE', resource: 'project' })
+const requireTaskCreate = () => requirePermission({ action: 'CREATE', resource: 'task' })
 
 const ProjectsListPage = lazyPage(() => import('./pages/project/ProjectsListPage'), 'ProjectsListPage')
 const ProjectDetailPage = lazyPage(() => import('./pages/project/ProjectDetailPage'), 'ProjectDetailPage')
@@ -57,36 +65,47 @@ export const projectRoutes = {
 
 export function createProjectsRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   return [
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/projects', component: ProjectsListPage }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/projects',
+      beforeLoad: requireProjectView,
+      component: ProjectsListPage,
+    }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/new',
+      beforeLoad: requireProjectCreate,
       component: ProjectCreatePage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/documents',
+      beforeLoad: requireView('document'),
       component: DocumentsPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/$projectId',
+      beforeLoad: requireProjectView,
       component: ProjectDetailPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/$projectId/notes',
+      beforeLoad: requireProjectView,
       component: ProjectNotesPage,
     }),
     // Teams UI (owned by projects)
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/teams',
+      beforeLoad: requireProjectView,
       component: TeamsListPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/teams/new',
+      beforeLoad: requireProjectCreate,
       validateSearch: (search: Record<string, unknown>) => ({
         projectId: typeof search.projectId === 'string' ? search.projectId : undefined,
         returnTo: typeof search.returnTo === 'string' ? search.returnTo : undefined,
@@ -96,46 +115,55 @@ export function createProjectsRoutes<TParent extends AnyRoute>(appLayoutRoute: T
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/teams/$teamId',
+      beforeLoad: requireProjectView,
       component: TeamDetailPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/teams/$teamId/edit',
+      beforeLoad: requireProjectUpdate,
       component: TeamEditPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/teams/$teamId/members',
+      beforeLoad: requireProjectUpdate,
       component: TeamMembersPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/teams/$teamId/projects',
+      beforeLoad: requireProjectUpdate,
       component: TeamProjectsPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/teams/$teamId/assign-project',
+      beforeLoad: requireProjectUpdate,
       component: AssignProjectPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/teams/$teamId/add-member',
+      beforeLoad: requireProjectUpdate,
       component: AddMemberPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/tasks',
+      beforeLoad: requireTaskView,
       component: TasksListPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/tasks/new',
+      beforeLoad: requireTaskCreate,
       component: TaskCreatePage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/projects/tasks/$taskId',
+      beforeLoad: requireTaskView,
       component: TaskDetailPage,
     }),
   ]

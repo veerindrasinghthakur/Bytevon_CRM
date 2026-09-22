@@ -11,9 +11,10 @@ import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { RowActions } from '@/shared/components/ui/RowActions'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
-import { ResourceName } from '@/shared/schema'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { Can } from '@/shared/rbac'
 import { useLeadsList } from '../../hooks/lead/use-leads'
 import { LeadMetricsRow } from '../../components/lead/LeadMetricsRow'
 import { LeadQuickContent } from '../../components/lead/LeadQuickContent'
@@ -62,6 +63,7 @@ export function LeadsListPage() {
     filtered,
     isLoading,
     isError,
+    error: leadsError,
     isFetching,
     refetch,
     search,
@@ -74,6 +76,8 @@ export function LeadsListPage() {
     setPriorityFilter,
     sourceFilter,
     setSourceFilter,
+    dateFilter,
+    setDateFilter,
     stages,
     priorities,
     sources,
@@ -150,7 +154,7 @@ export function LeadsListPage() {
               Import
             </Button>
             <ExportButton
-              resource={ResourceName.LEAD}
+              resource={'lead'}
               query={search}
               filters={{
                 status: statusFilter,
@@ -161,14 +165,16 @@ export function LeadsListPage() {
               selectedIds={selectionMode ? Array.from(selectedIds) : undefined}
               filenameStem="leads"
             />
-            <Button
-              variant="primary"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-              onClick={goNew}
-            >
-              New Lead
-            </Button>
+            <Can action="CREATE" resource="lead">
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+                onClick={goNew}
+              >
+                New Lead
+              </Button>
+            </Can>
           </div>
         }
       />
@@ -221,7 +227,7 @@ export function LeadsListPage() {
           minWidthClass="min-w-[140px]"
         />
         <DateRangeFilter
-          value={{ from: dateFilter?.from, to: dateFilter?.to }}
+          value={{ from: dateFilter?.from ?? '', to: dateFilter?.to ?? '' }}
           onChange={setDateFilter}
           label="Date"
           placeholder="Date"
@@ -241,7 +247,7 @@ export function LeadsListPage() {
             Cancel
           </Button>
           <ExportButton
-            resource={ResourceName.LEAD}
+            resource={'lead'}
             selectedIds={Array.from(selectedIds)}
             filenameStem="leads-selected"
             label="Export selected"
@@ -254,7 +260,7 @@ export function LeadsListPage() {
       {isError && (
         <ErrorState
           title="Failed to load leads"
-          description="We could not load the leads list. Check your connection and try again."
+          description={getApiErrorMessage(leadsError, 'We could not load the leads list. Check your connection and try again.')}
           onRetry={() => void refetch()}
           onBack={() => safeNavigate(navigate, { to: salesRoutes.leads })}
         />

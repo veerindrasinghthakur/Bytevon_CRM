@@ -2,12 +2,12 @@
  * Home (/dashboard) catalog — quick actions, KPIs, sections gated by RBAC.
  * Employee self-service is primarily under My Work; a few self tiles may still appear.
  */
-import { Action, ResourceName } from '@/shared/schema'
-import type { Action as ActionType, ResourceName as ResourceNameType } from '@/shared/schema'
+import { Action } from '@/shared/schema'
+import type { Action as ActionType } from '@/shared/schema'
 
 export type DashboardGate = {
-  /** null = always visible when authenticated */
-  resource: ResourceNameType | null
+  /** null = always visible when authenticated; else backend resource name */
+  resource: string | null
   action?: ActionType | string
   /** Optional minimum scope (e.g. TEAM for team attendance) */
   minScope?: string
@@ -63,7 +63,7 @@ export const HOME_QUICK_ACTIONS: DashboardQuickAction[] = [
     icon: 'event_available',
     to: '/my-work/leave/apply',
     priority: 20,
-    resource: ResourceName.LEAVE_REQUEST,
+    resource: 'leave_request',
     action: Action.CREATE,
   },
   {
@@ -81,7 +81,7 @@ export const HOME_QUICK_ACTIONS: DashboardQuickAction[] = [
     icon: 'person_search',
     to: '/sales/leads/new',
     priority: 40,
-    resource: ResourceName.LEAD,
+    resource: 'lead',
     action: Action.CREATE,
   },
   {
@@ -90,7 +90,7 @@ export const HOME_QUICK_ACTIONS: DashboardQuickAction[] = [
     icon: 'domain_add',
     to: '/sales/clients/new',
     priority: 50,
-    resource: ResourceName.CLIENT,
+    resource: 'client',
     action: Action.CREATE,
   },
   {
@@ -99,7 +99,7 @@ export const HOME_QUICK_ACTIONS: DashboardQuickAction[] = [
     icon: 'create_new_folder',
     to: '/projects/new',
     priority: 60,
-    resource: ResourceName.PROJECT,
+    resource: 'project',
     action: Action.CREATE,
   },
   {
@@ -108,7 +108,7 @@ export const HOME_QUICK_ACTIONS: DashboardQuickAction[] = [
     icon: 'assignment',
     to: '/projects/tasks/new',
     priority: 70,
-    resource: ResourceName.TASK,
+    resource: 'task',
     action: Action.CREATE,
   },
   {
@@ -117,7 +117,7 @@ export const HOME_QUICK_ACTIONS: DashboardQuickAction[] = [
     icon: 'person_add',
     to: '/workforce/employees/new',
     priority: 80,
-    resource: ResourceName.EMPLOYMENT,
+    resource: 'employment',
     action: Action.CREATE,
   },
   {
@@ -126,7 +126,7 @@ export const HOME_QUICK_ACTIONS: DashboardQuickAction[] = [
     icon: 'fact_check',
     to: '/approvals/pending',
     priority: 90,
-    resource: ResourceName.APPROVAL,
+    resource: 'approval',
     action: Action.VIEW,
   },
   {
@@ -135,7 +135,7 @@ export const HOME_QUICK_ACTIONS: DashboardQuickAction[] = [
     icon: 'payments',
     to: '/payroll',
     priority: 100,
-    resource: ResourceName.PAYROLL,
+    resource: 'payroll',
     action: Action.VIEW,
   },
   {
@@ -144,7 +144,7 @@ export const HOME_QUICK_ACTIONS: DashboardQuickAction[] = [
     icon: 'groups',
     to: '/workforce/employees',
     priority: 110,
-    resource: ResourceName.EMPLOYMENT,
+    resource: 'employment',
     action: Action.VIEW,
   },
   {
@@ -153,7 +153,7 @@ export const HOME_QUICK_ACTIONS: DashboardQuickAction[] = [
     icon: 'how_to_reg',
     to: '/workforce/attendance',
     priority: 120,
-    resource: ResourceName.ATTENDANCE,
+    resource: 'attendance',
     action: Action.VIEW,
   },
 ]
@@ -163,28 +163,28 @@ export const HOME_KPI_DEFS: DashboardKpiDef[] = [
     id: 'employees',
     label: 'Employees',
     icon: 'groups',
-    resource: ResourceName.EMPLOYMENT,
+    resource: 'employment',
     action: Action.VIEW,
   },
   {
     id: 'attendance',
     label: 'Attendance',
     icon: 'how_to_reg',
-    resource: ResourceName.ATTENDANCE,
+    resource: 'attendance',
     action: Action.VIEW,
   },
   {
     id: 'leave',
     label: 'Leave Requests',
     icon: 'event_busy',
-    resource: ResourceName.LEAVE_REQUEST,
+    resource: 'leave_request',
     action: Action.VIEW,
   },
   {
     id: 'tasks',
     label: 'Open Tasks',
     icon: 'task_alt',
-    resource: ResourceName.TASK,
+    resource: 'task',
     action: Action.VIEW,
   },
   // Replaces generic "Revenue" with sales-shaped metric when lead VIEW
@@ -192,14 +192,14 @@ export const HOME_KPI_DEFS: DashboardKpiDef[] = [
     id: 'pipeline',
     label: 'Pipeline',
     icon: 'trending_up',
-    resource: ResourceName.LEAD,
+    resource: 'lead',
     action: Action.VIEW,
   },
   {
     id: 'payroll',
     label: 'Payroll',
     icon: 'payments',
-    resource: ResourceName.PAYROLL,
+    resource: 'payroll',
     action: Action.VIEW,
   },
 ]
@@ -208,19 +208,19 @@ export const HOME_SECTIONS: DashboardSectionDef[] = [
   {
     id: 'attendance_trend',
     title: 'Attendance trend',
-    resource: ResourceName.ATTENDANCE,
+    resource: 'attendance',
     action: Action.VIEW,
   },
   {
     id: 'pipeline_trend',
     title: 'Pipeline trend',
-    resource: ResourceName.LEAD,
+    resource: 'lead',
     action: Action.VIEW,
   },
   {
     id: 'pending_approvals',
     title: 'Pending approvals',
-    resource: ResourceName.APPROVAL,
+    resource: 'approval',
     action: Action.VIEW,
   },
   {

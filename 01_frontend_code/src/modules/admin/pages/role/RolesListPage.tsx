@@ -16,7 +16,6 @@ import {
   QuickMetaTile,
   QuickRelatedRow,
 } from '@/shared/components/layout/QuickOverviewParts'
-import { ResourceName } from '@/shared/schema'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myAdminRoutes } from '../../routes'
 import { useRolesList } from '../../hooks/role/use-roles'
@@ -172,7 +171,7 @@ export function RolesListPage() {
         actions={
           <div className="flex gap-2">
             <ExportButton
-              resource={ResourceName.ROLE}
+              resource={'role'}
               query={search.trim() || undefined}
               filters={{
                 status: statusFilter !== 'All' ? statusFilter : undefined,
@@ -257,7 +256,7 @@ export function RolesListPage() {
           onCancel={exitSelectionMode}
         >
           <ExportButton
-            resource={ResourceName.ROLE}
+            resource={'role'}
             selectedIds={Array.from(selectedIds)}
             filenameStem="roles-selected"
             label="Export selected"

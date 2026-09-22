@@ -27,6 +27,14 @@ function todayISO() {
 }
 
 export const leaveTypeIcons: Record<string, string> = {
+  CASUAL: 'sunny',
+  SICK: 'medical_services',
+  EARNED: 'event_available',
+  LOSS_OF_PAY: 'money_off',
+  COMP_OFF: 'swap_horiz',
+  MATERNITY: 'child_care',
+  PATERNITY: 'family_restroom',
+  // Legacy display-label keys (back-compat for old cached contexts).
   Casual: 'sunny',
   Sick: 'medical_services',
   Earned: 'event_available',

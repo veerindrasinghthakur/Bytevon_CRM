@@ -1,6 +1,13 @@
 import { createRoute } from '@tanstack/react-router'
 import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
+import { requirePermission, requireView } from '@/shared/rbac/require-permission'
+
+/** Variable grants: any VIEW opens a page; CREATE/UPDATE gates actions. Data is scope-filtered server-side. */
+const requirePayrollView = () => requireView('payroll')
+const requireSalaryView = () => requireView('salary')
+const requirePayrollCreate = () => requirePermission({ action: 'CREATE', resource: 'payroll' })
+const requireSalaryUpdate = () => requirePermission({ action: 'UPDATE', resource: 'salary' })
 
 const PayrollDashboardPage = lazyPage(
   () => import('./pages/dashboard/PayrollDashboardPage'),
@@ -63,51 +70,71 @@ export const payrollRoutes = {
 
 export function createPayrollRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   return [
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/payroll', component: PayrollDashboardPage }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/payroll',
+      beforeLoad: requirePayrollView,
+      component: PayrollDashboardPage,
+    }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/payroll/monthly',
+      beforeLoad: requirePayrollView,
       component: MonthlyPayrollPage,
     }),
-    createRoute({ getParentRoute: () => appLayoutRoute, path: '/payroll/run', component: RunPayrollPage }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/payroll/run',
+      beforeLoad: requirePayrollCreate,
+      component: RunPayrollPage,
+    }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/payroll/generating',
+      beforeLoad: requirePayrollCreate,
       component: GeneratingPayrollPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/payroll/review/$employeeId',
+      beforeLoad: requirePayrollView,
       component: PayrollReviewPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/payroll/payslip/$employeeId',
+      // Payslip detail is CUSTOM owner-or-grant on the backend — action gate only here
+      beforeLoad: requirePayrollView,
       component: PayslipViewPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/payroll/salary',
+      beforeLoad: requireSalaryView,
       component: SalaryManagementPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/payroll/salary/$employeeId',
+      beforeLoad: requireSalaryView,
       component: EmployeeSalaryDetailPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/payroll/salary/$employeeId/revise',
+      beforeLoad: requireSalaryUpdate,
       component: ReviseSalaryPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/payroll/history',
+      beforeLoad: requirePayrollView,
       component: PayrollHistoryPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/payroll/history/$employeeId',
+      beforeLoad: requirePayrollView,
       component: EmployeePayrollHistoryPage,
     }),
   ]

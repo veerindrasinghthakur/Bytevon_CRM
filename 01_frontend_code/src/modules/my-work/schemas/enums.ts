@@ -1,4 +1,6 @@
 /** Central enum-style maps for my-work — semantic tokens only (no raw palette utilities). */
+import { leaveTypeOptions } from '@/shared/schema/enums'
+import { taskStatusSchema } from './task'
 
 export const priorityClass: Record<string, string> = {
   Critical: 'status-badge status-error',
@@ -61,14 +63,10 @@ export const LEAVE_STATUS_OPTIONS = [
   { value: 'Cancelled', label: 'Cancelled' },
 ]
 
-/** Leave type filter options (LeaveHistoryTab). */
+/** Leave type filter options — derived from shared LeaveType enum (single source). */
 export const LEAVE_TYPE_OPTIONS = [
   { value: 'All', label: 'All Types' },
-  { value: 'Casual', label: 'Casual' },
-  { value: 'Sick', label: 'Sick' },
-  { value: 'Earned', label: 'Earned' },
-  { value: 'Unpaid', label: 'Unpaid' },
-  { value: 'Comp Off', label: 'Comp Off' },
+  ...leaveTypeOptions(),
 ]
 
 /** Attendance correction status filter options (AttendanceCorrectionsPage). */
@@ -98,5 +96,11 @@ export const REQUEST_FILTERS = [
   'Approved',
   'Rejected',
 ] as const
+
+/** Task status dropdown options — derived from taskStatusSchema (single source). */
+export const TASK_STATUS_OPTIONS = [
+  { value: 'All', label: 'All status' },
+  ...taskStatusSchema.options.map((s) => ({ value: s, label: s })),
+]
 
 export type TaskFilter = 'open' | 'inProgress' | 'high' | null

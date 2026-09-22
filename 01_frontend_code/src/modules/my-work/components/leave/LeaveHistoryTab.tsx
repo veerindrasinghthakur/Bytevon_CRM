@@ -6,6 +6,12 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { myWorkRoutes } from '../../routes'
 import { statusStyles, LEAVE_STATUS_OPTIONS, LEAVE_TYPE_OPTIONS } from '../../schemas/enums'
 import {LeaveHistoryRow} from '../../types'
+import { useRequestLeaveCancel } from '../../hooks/use-my-leave'
+
+function isFutureDated(from: string): boolean {
+  const today = new Date().toISOString().slice(0, 10)
+  return from >= today
+}
 
 
 
@@ -29,6 +35,7 @@ export function LeaveHistoryTab({
   setTypeFilter: (v: string) => void
 }) {
   const navigate = useNavigate()
+  const requestCancelMut = useRequestLeaveCancel()
 
   return (
     <div className="space-y-4">
@@ -109,6 +116,7 @@ export function LeaveHistoryTab({
                   <th className="px-6 py-3 font-semibold">Reason</th>
                   <th className="px-6 py-3 font-semibold">Status</th>
                   <th className="px-6 py-3 font-semibold">Applied</th>
+                  <th className="px-6 py-3 font-semibold text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
@@ -140,6 +148,23 @@ export function LeaveHistoryTab({
                     </td>
                     <td className="px-6 py-4 text-label-md text-on-surface-variant">
                       {req.appliedOn}
+                    </td>
+                    <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                      {req.status === 'Approved' && isFutureDated(req.from) ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={requestCancelMut.isPending}
+                          onClick={() => {
+                            if (!window.confirm(`Request cancellation for ${req.id}?`)) return
+                            requestCancelMut.mutate(req.id)
+                          }}
+                        >
+                          {requestCancelMut.isPending ? 'Requesting…' : 'Request cancellation'}
+                        </Button>
+                      ) : (
+                        <span className="text-label-sm text-on-surface-variant">—</span>
+                      )}
                     </td>
                   </tr>
                 ))}

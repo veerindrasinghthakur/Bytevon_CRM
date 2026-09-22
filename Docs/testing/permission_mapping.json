@@ -22,12 +22,12 @@
   "resource_vocabulary": "scripts/seed_bootstrap.py RBAC_RESOURCE_SEED (22 resources)"
  },
  "counts": {
-  "TOTAL_ENDPOINTS": 278,
+  "TOTAL_ENDPOINTS": 276,
   "PUBLIC_ENDPOINTS": 4,
-  "PROTECTED_ENDPOINTS": 274,
-  "REQUIRE_PERMISSION_ENDPOINTS": 270,
+  "PROTECTED_ENDPOINTS": 272,
+  "REQUIRE_PERMISSION_ENDPOINTS": 268,
   "ACCOUNT_SELF_ENDPOINTS": 4,
-  "CUSTOM_SCOPE_ENDPOINTS": 33,
+  "CUSTOM_SCOPE_ENDPOINTS": 32,
   "RECLASSIFIED_TO_PROTECTED": 5
  },
  "scope_policy": "SELF=self-service/own records; ORGANIZATION=admin/reference-data default (least-privilege refined via role grants, not endpoints); DEPARTMENT=departmental authority (approvals, membership); CUSTOM=owner-or-grant item rule enforced at handler + require_permission(CUSTOM) dependency; TEAM/LOCATION unused by current handler semantics - no endpoint exhibited team- or location-bound authority; Super Admin bypasses all scope checks per contract.",
@@ -55,18 +55,11 @@
  ],
  "custom_scope_endpoints": [
   {
-   "method": "GET",
-   "path": "/api/v1/admin/positions/{position_id}",
-   "resource": "employment",
-   "action": "VIEW",
-   "rationale": "resource=employment by path prefix. action=VIEW: method GET is read-only. scope=CUSTOM: item endpoint over personal-domain resource requires owner-or-(resource,action,DEPARTMENT/ORGANIZATION-grant) rule; horizontal access must 403/404 (DG-01..DG-04 class). note: no position resource in RBAC catalog; workforce family."
-  },
-  {
-   "method": "PATCH",
-   "path": "/api/v1/admin/positions/{position_id}",
-   "resource": "employment",
-   "action": "UPDATE",
-   "rationale": "resource=employment by path prefix. action=UPDATE: method PATCH mutates resource state. scope=CUSTOM: item endpoint over personal-domain resource requires owner-or-(resource,action,DEPARTMENT/ORGANIZATION-grant) rule; horizontal access must 403/404 (DG-01..DG-04 class). note: no position resource in RBAC catalog; workforce family."
+   "method": "DELETE",
+   "path": "/api/v1/admin/users/{login_id}",
+   "resource": "user",
+   "action": "DELETE",
+   "rationale": "resource=user by path prefix. action=DELETE: hard-delete removes the row. scope=CUSTOM: item endpoint over personal-domain resource requires owner-or-(resource,action,DEPARTMENT/ORGANIZATION-grant) rule; horizontal access must 403/404 (DG-01..DG-04 class)."
   },
   {
    "method": "GET",
@@ -81,13 +74,6 @@
    "resource": "user",
    "action": "UPDATE",
    "rationale": "resource=user by path prefix. action=UPDATE: method PATCH mutates resource state. scope=CUSTOM: item endpoint over personal-domain resource requires owner-or-(resource,action,DEPARTMENT/ORGANIZATION-grant) rule; horizontal access must 403/404 (DG-01..DG-04 class)."
-  },
-  {
-   "method": "DELETE",
-   "path": "/api/v1/admin/users/{login_id}",
-   "resource": "user",
-   "action": "DELETE",
-   "rationale": "resource=user by path prefix. action=DELETE: method DELETE removes resource/membership. scope=CUSTOM: item endpoint over personal-domain resource requires owner-or-(resource,action,DEPARTMENT/ORGANIZATION-grant) rule; horizontal access must 403/404 (DG-01..DG-04 class)."
   },
   {
    "method": "GET",
@@ -155,6 +141,13 @@
   {
    "method": "POST",
    "path": "/api/v1/leave/requests/{request_id}/cancel",
+   "resource": "leave_request",
+   "action": "UPDATE",
+   "rationale": "resource=leave_request by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=CUSTOM: item endpoint over personal-domain resource requires owner-or-(resource,action,DEPARTMENT/ORGANIZATION-grant) rule; horizontal access must 403/404 (DG-01..DG-04 class)."
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/leave/requests/{request_id}/request-cancel",
    "resource": "leave_request",
    "action": "UPDATE",
    "rationale": "resource=leave_request by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=CUSTOM: item endpoint over personal-domain resource requires owner-or-(resource,action,DEPARTMENT/ORGANIZATION-grant) rule; horizontal access must 403/404 (DG-01..DG-04 class)."
@@ -337,114 +330,6 @@
   },
   {
    "method": "GET",
-   "path": "/api/v1/admin/departments",
-   "auth": "PROTECTED",
-   "resource": "department",
-   "action": "VIEW",
-   "scope": "ORGANIZATION",
-   "enforcement": "require_permission",
-   "handler": "list_departments",
-   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/department/routes.py",
-   "rationale": "resource=department by path prefix. action=VIEW: method GET is read-only. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
-  },
-  {
-   "method": "POST",
-   "path": "/api/v1/admin/departments",
-   "auth": "PROTECTED",
-   "resource": "department",
-   "action": "CREATE",
-   "scope": "ORGANIZATION",
-   "enforcement": "require_permission",
-   "handler": "create_department",
-   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/department/routes.py",
-   "rationale": "resource=department by path prefix. action=CREATE: POST creates a new record/event. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
-  },
-  {
-   "method": "GET",
-   "path": "/api/v1/admin/departments/{department_id}",
-   "auth": "PROTECTED",
-   "resource": "department",
-   "action": "VIEW",
-   "scope": "ORGANIZATION",
-   "enforcement": "require_permission",
-   "handler": "get_department",
-   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/department/routes.py",
-   "rationale": "resource=department by path prefix. action=VIEW: method GET is read-only. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
-  },
-  {
-   "method": "PATCH",
-   "path": "/api/v1/admin/departments/{department_id}",
-   "auth": "PROTECTED",
-   "resource": "department",
-   "action": "UPDATE",
-   "scope": "ORGANIZATION",
-   "enforcement": "require_permission",
-   "handler": "update_department",
-   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/department/routes.py",
-   "rationale": "resource=department by path prefix. action=UPDATE: method PATCH mutates resource state. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
-  },
-  {
-   "method": "POST",
-   "path": "/api/v1/admin/departments/{department_id}/archive",
-   "auth": "PROTECTED",
-   "resource": "department",
-   "action": "UPDATE",
-   "scope": "ORGANIZATION",
-   "enforcement": "require_permission",
-   "handler": "archive_department",
-   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/department/routes.py",
-   "rationale": "resource=department by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
-  },
-  {
-   "method": "POST",
-   "path": "/api/v1/admin/departments/{department_id}/assign",
-   "auth": "PROTECTED",
-   "resource": "department",
-   "action": "UPDATE",
-   "scope": "DEPARTMENT",
-   "enforcement": "require_permission",
-   "handler": "assign_employee",
-   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/department/routes.py",
-   "rationale": "resource=department by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=DEPARTMENT: department membership managed within department."
-  },
-  {
-   "method": "GET",
-   "path": "/api/v1/admin/departments/{department_id}/employees",
-   "auth": "PROTECTED",
-   "resource": "department",
-   "action": "VIEW",
-   "scope": "DEPARTMENT",
-   "enforcement": "require_permission",
-   "handler": "list_department_employees",
-   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/department/routes.py",
-   "rationale": "resource=department by path prefix. action=VIEW: method GET is read-only. scope=DEPARTMENT: department membership managed within department."
-  },
-  {
-   "method": "GET",
-   "path": "/api/v1/admin/departments/{department_id}/employees-available",
-   "auth": "PROTECTED",
-   "resource": "department",
-   "action": "VIEW",
-   "scope": "DEPARTMENT",
-   "enforcement": "require_permission",
-   "handler": "list_available_employees",
-   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/department/routes.py",
-   "rationale": "resource=department by path prefix. action=VIEW: method GET is read-only. scope=DEPARTMENT: department membership managed within department."
-  },
-  {
-   "method": "POST",
-   "path": "/api/v1/admin/departments/{department_id}/remove",
-   "auth": "PROTECTED",
-   "resource": "department",
-   "action": "UPDATE",
-   "scope": "DEPARTMENT",
-   "enforcement": "require_permission",
-   "handler": "remove_employee",
-   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/department/routes.py",
-   "rationale": "resource=department by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=DEPARTMENT: department membership managed within department."
-  },
-  {
-   "method": "GET",
    "path": "/api/v1/admin/employments-without-login",
    "auth": "PROTECTED",
    "resource": "user",
@@ -489,7 +374,7 @@
    "enforcement": "require_permission",
    "handler": "delete_holiday",
    "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/holiday_calendar/routes.py",
-   "rationale": "resource=holiday by path prefix. action=DELETE: method DELETE removes resource/membership. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
+   "rationale": "resource=holiday by path prefix. action=DELETE: hard-delete removes the row. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
   },
   {
    "method": "PATCH",
@@ -502,6 +387,18 @@
    "handler": "update_holiday",
    "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/holiday_calendar/routes.py",
    "rationale": "resource=holiday by path prefix. action=UPDATE: method PATCH mutates resource state. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/admin/holiday-calendars/{calendar_id}",
+   "auth": "PROTECTED",
+   "resource": "holiday",
+   "action": "UPDATE",
+   "scope": "ORGANIZATION",
+   "enforcement": "require_permission",
+   "handler": "delete_holiday_calendar",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/holiday_calendar/routes.py",
+   "rationale": "resource=holiday by path prefix. action=UPDATE: soft-delete performs an update (is_archived flip). scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
   },
   {
    "method": "GET",
@@ -528,18 +425,6 @@
    "rationale": "resource=holiday by path prefix. action=UPDATE: method PATCH mutates resource state. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
   },
   {
-   "method": "POST",
-   "path": "/api/v1/admin/holiday-calendars/{calendar_id}/archive",
-   "auth": "PROTECTED",
-   "resource": "holiday",
-   "action": "UPDATE",
-   "scope": "ORGANIZATION",
-   "enforcement": "require_permission",
-   "handler": "archive_holiday_calendar",
-   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/holiday_calendar/routes.py",
-   "rationale": "resource=holiday by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
-  },
-  {
    "method": "GET",
    "path": "/api/v1/admin/holiday-calendars/{calendar_id}/holidays",
    "auth": "PROTECTED",
@@ -564,6 +449,18 @@
    "rationale": "resource=holiday by path prefix. action=CREATE: POST creates a new record/event. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
   },
   {
+   "method": "POST",
+   "path": "/api/v1/admin/holiday-calendars/{calendar_id}/restore",
+   "auth": "PROTECTED",
+   "resource": "holiday",
+   "action": "UPDATE",
+   "scope": "ORGANIZATION",
+   "enforcement": "require_permission",
+   "handler": "restore_holiday_calendar",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/holiday_calendar/routes.py",
+   "rationale": "resource=holiday by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
+  },
+  {
    "method": "GET",
    "path": "/api/v1/admin/locations",
    "auth": "PROTECTED",
@@ -586,6 +483,18 @@
    "handler": "create_location",
    "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/location/routes.py",
    "rationale": "resource=location by path prefix. action=CREATE: POST creates a new record/event. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
+  },
+  {
+   "method": "DELETE",
+   "path": "/api/v1/admin/locations/{location_id}",
+   "auth": "PROTECTED",
+   "resource": "location",
+   "action": "UPDATE",
+   "scope": "ORGANIZATION",
+   "enforcement": "require_permission",
+   "handler": "delete_location",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/location/routes.py",
+   "rationale": "resource=location by path prefix. action=UPDATE: soft-delete performs an update (is_archived flip). scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
   },
   {
    "method": "GET",
@@ -613,75 +522,15 @@
   },
   {
    "method": "POST",
-   "path": "/api/v1/admin/locations/{location_id}/archive",
+   "path": "/api/v1/admin/locations/{location_id}/restore",
    "auth": "PROTECTED",
    "resource": "location",
    "action": "UPDATE",
    "scope": "ORGANIZATION",
    "enforcement": "require_permission",
-   "handler": "archive_location",
+   "handler": "restore_location",
    "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/location/routes.py",
    "rationale": "resource=location by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
-  },
-  {
-   "method": "GET",
-   "path": "/api/v1/admin/positions",
-   "auth": "PROTECTED",
-   "resource": "employment",
-   "action": "VIEW",
-   "scope": "ORGANIZATION",
-   "enforcement": "require_permission",
-   "handler": "list_positions",
-   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/position/routes.py",
-   "rationale": "resource=employment by path prefix. action=VIEW: method GET is read-only. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope. note: no position resource in RBAC catalog; workforce family."
-  },
-  {
-   "method": "POST",
-   "path": "/api/v1/admin/positions",
-   "auth": "PROTECTED",
-   "resource": "employment",
-   "action": "CREATE",
-   "scope": "ORGANIZATION",
-   "enforcement": "require_permission",
-   "handler": "create_position",
-   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/position/routes.py",
-   "rationale": "resource=employment by path prefix. action=CREATE: POST creates a new record/event. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope. note: no position resource in RBAC catalog; workforce family."
-  },
-  {
-   "method": "GET",
-   "path": "/api/v1/admin/positions/{position_id}",
-   "auth": "PROTECTED",
-   "resource": "employment",
-   "action": "VIEW",
-   "scope": "CUSTOM",
-   "enforcement": "require_permission",
-   "handler": "get_position",
-   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/position/routes.py",
-   "rationale": "resource=employment by path prefix. action=VIEW: method GET is read-only. scope=CUSTOM: item endpoint over personal-domain resource requires owner-or-(resource,action,DEPARTMENT/ORGANIZATION-grant) rule; horizontal access must 403/404 (DG-01..DG-04 class). note: no position resource in RBAC catalog; workforce family."
-  },
-  {
-   "method": "PATCH",
-   "path": "/api/v1/admin/positions/{position_id}",
-   "auth": "PROTECTED",
-   "resource": "employment",
-   "action": "UPDATE",
-   "scope": "CUSTOM",
-   "enforcement": "require_permission",
-   "handler": "update_position",
-   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/position/routes.py",
-   "rationale": "resource=employment by path prefix. action=UPDATE: method PATCH mutates resource state. scope=CUSTOM: item endpoint over personal-domain resource requires owner-or-(resource,action,DEPARTMENT/ORGANIZATION-grant) rule; horizontal access must 403/404 (DG-01..DG-04 class). note: no position resource in RBAC catalog; workforce family."
-  },
-  {
-   "method": "POST",
-   "path": "/api/v1/admin/positions/{position_id}/archive",
-   "auth": "PROTECTED",
-   "resource": "employment",
-   "action": "UPDATE",
-   "scope": "ORGANIZATION",
-   "enforcement": "require_permission",
-   "handler": "archive_position",
-   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/position/routes.py",
-   "rationale": "resource=employment by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope. note: no position resource in RBAC catalog; workforce family."
   },
   {
    "method": "GET",
@@ -744,6 +593,18 @@
    "rationale": "resource=shift by path prefix. action=CREATE: POST creates a new record/event. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
   },
   {
+   "method": "DELETE",
+   "path": "/api/v1/admin/shifts/{shift_id}",
+   "auth": "PROTECTED",
+   "resource": "shift",
+   "action": "UPDATE",
+   "scope": "ORGANIZATION",
+   "enforcement": "require_permission",
+   "handler": "delete_shift",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/shift/routes.py",
+   "rationale": "resource=shift by path prefix. action=UPDATE: soft-delete performs an update (is_archived flip). scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
+  },
+  {
    "method": "GET",
    "path": "/api/v1/admin/shifts/{shift_id}",
    "auth": "PROTECTED",
@@ -769,13 +630,13 @@
   },
   {
    "method": "POST",
-   "path": "/api/v1/admin/shifts/{shift_id}/archive",
+   "path": "/api/v1/admin/shifts/{shift_id}/restore",
    "auth": "PROTECTED",
    "resource": "shift",
    "action": "UPDATE",
    "scope": "ORGANIZATION",
    "enforcement": "require_permission",
-   "handler": "archive_shift",
+   "handler": "restore_shift",
    "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/shift/routes.py",
    "rationale": "resource=shift by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
   },
@@ -813,7 +674,7 @@
    "enforcement": "require_permission",
    "handler": "delete_user",
    "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/user/routes.py",
-   "rationale": "resource=user by path prefix. action=DELETE: method DELETE removes resource/membership. scope=CUSTOM: item endpoint over personal-domain resource requires owner-or-(resource,action,DEPARTMENT/ORGANIZATION-grant) rule; horizontal access must 403/404 (DG-01..DG-04 class)."
+   "rationale": "resource=user by path prefix. action=DELETE: hard-delete removes the row. scope=CUSTOM: item endpoint over personal-domain resource requires owner-or-(resource,action,DEPARTMENT/ORGANIZATION-grant) rule; horizontal access must 403/404 (DG-01..DG-04 class)."
   },
   {
    "method": "GET",
@@ -884,6 +745,18 @@
    "scope": "ORGANIZATION",
    "enforcement": "require_permission",
    "handler": "lock_user",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/user/routes.py",
+   "rationale": "resource=user by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/admin/users/{login_id}/restore",
+   "auth": "PROTECTED",
+   "resource": "user",
+   "action": "UPDATE",
+   "scope": "ORGANIZATION",
+   "enforcement": "require_permission",
+   "handler": "restore_user",
    "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/admin/user/routes.py",
    "rationale": "resource=user by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
   },
@@ -1424,6 +1297,18 @@
    "scope": "CUSTOM",
    "enforcement": "require_permission",
    "handler": "cancel_request",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/leave/request/routes.py",
+   "rationale": "resource=leave_request by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=CUSTOM: item endpoint over personal-domain resource requires owner-or-(resource,action,DEPARTMENT/ORGANIZATION-grant) rule; horizontal access must 403/404 (DG-01..DG-04 class)."
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/leave/requests/{request_id}/request-cancel",
+   "auth": "PROTECTED",
+   "resource": "leave_request",
+   "action": "UPDATE",
+   "scope": "CUSTOM",
+   "enforcement": "require_permission",
+   "handler": "request_approved_cancel",
    "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/leave/request/routes.py",
    "rationale": "resource=leave_request by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=CUSTOM: item endpoint over personal-domain resource requires owner-or-(resource,action,DEPARTMENT/ORGANIZATION-grant) rule; horizontal access must 403/404 (DG-01..DG-04 class)."
   },
@@ -2148,6 +2033,18 @@
    "rationale": "resource=payroll by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
   },
   {
+   "method": "POST",
+   "path": "/api/v1/payroll/{payroll_id}/reject",
+   "auth": "PROTECTED",
+   "resource": "payroll",
+   "action": "APPROVE",
+   "scope": "ORGANIZATION",
+   "enforcement": "require_permission",
+   "handler": "reject_payroll",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/payroll/review/routes.py",
+   "rationale": "resource=payroll by path prefix. action=APPROVE: approval decision verb maps to Action.APPROVE. scope=ORGANIZATION: payroll execution is org-level financial control."
+  },
+  {
    "method": "GET",
    "path": "/api/v1/profile/activity",
    "auth": "PROTECTED",
@@ -2553,7 +2450,7 @@
    "enforcement": "require_permission",
    "handler": "remove_team_member",
    "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/project/team/routes.py",
-   "rationale": "resource=project by path prefix. action=DELETE: method DELETE removes resource/membership. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope. note: project-team membership."
+   "rationale": "resource=project by path prefix. action=DELETE: hard-delete removes the row. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope. note: project-team membership."
   },
   {
    "method": "POST",
@@ -2649,7 +2546,7 @@
    "enforcement": "require_permission",
    "handler": "unassign_role",
    "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
-   "rationale": "resource=role by path prefix. action=DELETE: method DELETE removes resource/membership. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
+   "rationale": "resource=role by path prefix. action=DELETE: hard-delete removes the row. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
   },
   {
    "method": "GET",
@@ -2709,7 +2606,7 @@
    "enforcement": "require_permission",
    "handler": "delete_role",
    "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
-   "rationale": "resource=role by path prefix. action=DELETE: method DELETE removes resource/membership. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
+   "rationale": "resource=role by path prefix. action=DELETE: hard-delete removes the row. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
   },
   {
    "method": "GET",
@@ -2757,7 +2654,19 @@
    "enforcement": "require_permission",
    "handler": "revoke_permission",
    "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
-   "rationale": "resource=role by path prefix. action=DELETE: method DELETE removes resource/membership. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
+   "rationale": "resource=role by path prefix. action=DELETE: hard-delete removes the row. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/rbac/roles/{role_id}/restore",
+   "auth": "PROTECTED",
+   "resource": "role",
+   "action": "UPDATE",
+   "scope": "ORGANIZATION",
+   "enforcement": "require_permission",
+   "handler": "restore_role",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/rbac/routes.py",
+   "rationale": "resource=role by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
   },
   {
    "method": "PUT",
@@ -3120,6 +3029,18 @@
    "rationale": "resource=client by path prefix. action=CREATE: POST creates a new record/event. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope. note: sales master data; client family."
   },
   {
+   "method": "DELETE",
+   "path": "/api/v1/sales/sources/{source_id}",
+   "auth": "PROTECTED",
+   "resource": "client",
+   "action": "UPDATE",
+   "scope": "ORGANIZATION",
+   "enforcement": "require_permission",
+   "handler": "delete_source",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/source/routes.py",
+   "rationale": "resource=client by path prefix. action=UPDATE: soft-delete performs an update (is_archived flip). scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope. note: sales master data; client family."
+  },
+  {
    "method": "GET",
    "path": "/api/v1/sales/sources/{source_id}",
    "auth": "PROTECTED",
@@ -3145,13 +3066,13 @@
   },
   {
    "method": "POST",
-   "path": "/api/v1/sales/sources/{source_id}/archive",
+   "path": "/api/v1/sales/sources/{source_id}/restore",
    "auth": "PROTECTED",
    "resource": "client",
    "action": "UPDATE",
    "scope": "ORGANIZATION",
    "enforcement": "require_permission",
-   "handler": "archive_source",
+   "handler": "restore_source",
    "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/sales/source/routes.py",
    "rationale": "resource=client by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope. note: sales master data; client family."
   },
@@ -3276,6 +3197,18 @@
    "rationale": "resource=attendance by path prefix. action=CREATE: POST creates a new record/event. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
   },
   {
+   "method": "POST",
+   "path": "/api/v1/workforce/attendance/summaries/{employment_id}/{year}/{month}/unlock",
+   "auth": "PROTECTED",
+   "resource": "attendance",
+   "action": "UNLOCK",
+   "scope": "ORGANIZATION",
+   "enforcement": "require_permission",
+   "handler": "unlock_monthly_summary",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/attendance/routes.py",
+   "rationale": "resource=attendance by path prefix. action=UNLOCK: explicit unlock verb maps to Action.UNLOCK. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
+  },
+  {
    "method": "GET",
    "path": "/api/v1/workforce/departments",
    "auth": "PROTECTED",
@@ -3300,6 +3233,18 @@
    "rationale": "resource=department by path prefix. action=CREATE: POST creates a new record/event. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
   },
   {
+   "method": "DELETE",
+   "path": "/api/v1/workforce/departments/{department_id}",
+   "auth": "PROTECTED",
+   "resource": "department",
+   "action": "UPDATE",
+   "scope": "ORGANIZATION",
+   "enforcement": "require_permission",
+   "handler": "delete_department",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/department/routes.py",
+   "rationale": "resource=department by path prefix. action=UPDATE: soft-delete performs an update (is_archived flip). scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
+  },
+  {
    "method": "GET",
    "path": "/api/v1/workforce/departments/{department_id}",
    "auth": "PROTECTED",
@@ -3322,18 +3267,6 @@
    "handler": "update_department",
    "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/department/routes.py",
    "rationale": "resource=department by path prefix. action=UPDATE: method PATCH mutates resource state. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
-  },
-  {
-   "method": "POST",
-   "path": "/api/v1/workforce/departments/{department_id}/archive",
-   "auth": "PROTECTED",
-   "resource": "department",
-   "action": "UPDATE",
-   "scope": "ORGANIZATION",
-   "enforcement": "require_permission",
-   "handler": "archive_department",
-   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/department/routes.py",
-   "rationale": "resource=department by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
   },
   {
    "method": "POST",
@@ -3382,6 +3315,18 @@
    "handler": "remove",
    "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/department/routes.py",
    "rationale": "resource=department by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=DEPARTMENT: department membership managed within department."
+  },
+  {
+   "method": "POST",
+   "path": "/api/v1/workforce/departments/{department_id}/restore",
+   "auth": "PROTECTED",
+   "resource": "department",
+   "action": "UPDATE",
+   "scope": "ORGANIZATION",
+   "enforcement": "require_permission",
+   "handler": "restore_department",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/department/routes.py",
+   "rationale": "resource=department by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
   },
   {
    "method": "POST",
@@ -3493,6 +3438,18 @@
   },
   {
    "method": "POST",
+   "path": "/api/v1/workforce/employments/{employment_id}/rehire",
+   "auth": "PROTECTED",
+   "resource": "employment",
+   "action": "CREATE",
+   "scope": "ORGANIZATION",
+   "enforcement": "require_permission",
+   "handler": "rehire_employment",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "rationale": "resource=employment by path prefix. action=CREATE: POST creates a new record/event. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope."
+  },
+  {
+   "method": "POST",
    "path": "/api/v1/workforce/employments/{employment_id}/state",
    "auth": "PROTECTED",
    "resource": "employment",
@@ -3588,6 +3545,18 @@
    "rationale": "resource=employment by path prefix. action=CREATE: POST creates a new record/event. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope. note: no position resource in RBAC catalog; workforce family."
   },
   {
+   "method": "DELETE",
+   "path": "/api/v1/workforce/positions/{position_id}",
+   "auth": "PROTECTED",
+   "resource": "employment",
+   "action": "UPDATE",
+   "scope": "ORGANIZATION",
+   "enforcement": "require_permission",
+   "handler": "delete_position",
+   "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
+   "rationale": "resource=employment by path prefix. action=UPDATE: soft-delete performs an update (is_archived flip). scope=ORGANIZATION: reference-data delete is org-gated. note: no position resource in RBAC catalog; workforce family."
+  },
+  {
    "method": "GET",
    "path": "/api/v1/workforce/positions/{position_id}",
    "auth": "PROTECTED",
@@ -3613,13 +3582,13 @@
   },
   {
    "method": "POST",
-   "path": "/api/v1/workforce/positions/{position_id}/archive",
+   "path": "/api/v1/workforce/positions/{position_id}/restore",
    "auth": "PROTECTED",
    "resource": "employment",
    "action": "UPDATE",
    "scope": "ORGANIZATION",
    "enforcement": "require_permission",
-   "handler": "archive_position",
+   "handler": "restore_position",
    "source_file": "Z:/bytevon extra/Bytevon_frontend/bytevon_documentation/02_backend_code/app/modules/workforce/employee/routes.py",
    "rationale": "resource=employment by path prefix. action=UPDATE: state-transition verb mutates without creating. scope=ORGANIZATION: administrative/reference-data endpoint gated at organization scope. note: no position resource in RBAC catalog; workforce family."
   }

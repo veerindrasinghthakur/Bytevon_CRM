@@ -3,9 +3,12 @@ import { useNavigate } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { cn } from '@/shared/lib/cn'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { Can } from '@/shared/rbac'
 import { myWorkRoutes } from '../../routes'
 
 import {
@@ -107,6 +110,10 @@ export function MyAttendancePage() {
   const currentUser = todayInfoQuery.data
   const weekHours = weekHoursQuery.data ?? []
   const attendanceHistory = historyQuery.data?.items ?? []
+  const queriesError =
+    todayInfoQuery.error ?? weekHoursQuery.error ?? historyQuery.error
+  const allFailed =
+    todayInfoQuery.isError && weekHoursQuery.isError && historyQuery.isError
 
   useEffect(() => {
     const refresh = () => setTick((t) => t + 1)
@@ -141,28 +148,50 @@ export function MyAttendancePage() {
     })
   }, [session, todayBreaks, tick])
 
+  if (allFailed) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <PageHeader
+          title="My Attendance"
+          description="Mark attendance, review daily hours, and track history."
+        />
+        <ErrorState
+          title="Could not load attendance"
+          description={getApiErrorMessage(queriesError, 'We could not load your attendance data.')}
+          onRetry={() => {
+            void todayInfoQuery.refetch()
+            void weekHoursQuery.refetch()
+            void historyQuery.refetch()
+          }}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6 animate-fade-in">
       <PageHeader
         title="My Attendance"
         description="Mark attendance, review daily hours, and track history."
         actions={
-          <div className="flex items-center gap-2">
-            <Button
-              leftIcon={<span className="material-symbols-outlined text-lg">edit_calendar</span>}
-              variant="outline"
-              onClick={() => safeNavigate(navigate, { to: myWorkRoutes.attendanceCorrections })}
-            >
-              Corrections
-            </Button>
-            <Button
-              variant="primary"
-              leftIcon={<span className="material-symbols-outlined text-lg">fingerprint</span>}
-              onClick={() => safeNavigate(navigate, { to: myWorkRoutes.attendanceMark })}
-            >
-              Mark Attendance
-            </Button>
-          </div>
+          <Can action="CREATE" resource="attendance" minScope="SELF">
+            <div className="flex items-center gap-2">
+              <Button
+                leftIcon={<span className="material-symbols-outlined text-lg">edit_calendar</span>}
+                variant="outline"
+                onClick={() => safeNavigate(navigate, { to: myWorkRoutes.attendanceCorrections })}
+              >
+                Corrections
+              </Button>
+              <Button
+                variant="primary"
+                leftIcon={<span className="material-symbols-outlined text-lg">fingerprint</span>}
+                onClick={() => safeNavigate(navigate, { to: myWorkRoutes.attendanceMark })}
+              >
+                Mark Attendance
+              </Button>
+            </div>
+          </Can>
         }
       />
 

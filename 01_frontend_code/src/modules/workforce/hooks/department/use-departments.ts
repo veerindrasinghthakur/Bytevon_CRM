@@ -11,6 +11,7 @@ import {
   listEmployeesNotInDepartment,
   listEmploymentOptionsForPicker,
   removeEmployeeFromDepartment,
+  restoreDepartment,
   updateDepartment,
 } from '../../api/departments'
 import type { DeptListResult, DeptMetrics } from '../../types'
@@ -68,6 +69,10 @@ export function useDepartments() {
     mutationFn: (id: number) => deleteDepartment(id),
     onSuccess: () => void invalidateAll(),
   })
+  const restoreMut = useMutation({
+    mutationFn: (id: number) => restoreDepartment(id),
+    onSuccess: () => void invalidateAll(),
+  })
 
   const items = listQuery.data?.items ?? []
   const metrics: DeptMetrics = listQuery.data?.metrics ?? {
@@ -102,7 +107,8 @@ export function useDepartments() {
     createDepartment: createMut.mutateAsync,
     updateDepartment: updateMut.mutateAsync,
     deleteDepartment: deleteMut.mutateAsync,
-    isMutating: createMut.isPending || updateMut.isPending || deleteMut.isPending,
+    restoreDepartment: restoreMut.mutateAsync,
+    isMutating: createMut.isPending || updateMut.isPending || deleteMut.isPending || restoreMut.isPending,
   }
 }
 
@@ -137,6 +143,10 @@ export function useDepartment(id: number) {
     mutationFn: () => deleteDepartment(id),
     onSuccess: () => void invalidateOne(),
   })
+  const restoreMut = useMutation({
+    mutationFn: () => restoreDepartment(id),
+    onSuccess: () => void invalidateOne(),
+  })
   const assignMut = useMutation({
     mutationFn: (employmentId: number) => assignEmployeeToDepartment(employmentId, id),
     onSuccess: () => void invalidateOne(),
@@ -158,10 +168,15 @@ export function useDepartment(id: number) {
     deleteDepartment: deleteMut.mutateAsync,
     // Deprecated alias — use deleteDepartment
     archiveDepartment: deleteMut.mutateAsync,
+    restoreDepartment: restoreMut.mutateAsync,
     assignEmployee: assignMut.mutateAsync,
     removeEmployee: removeMut.mutateAsync,
     isMutating:
-      updateMut.isPending || deleteMut.isPending || assignMut.isPending || removeMut.isPending,
+      updateMut.isPending ||
+      deleteMut.isPending ||
+      restoreMut.isPending ||
+      assignMut.isPending ||
+      removeMut.isPending,
     listCandidates: () => listEmployeesNotInDepartment(id),
     listHeadOptions: listEmploymentOptionsForPicker,
   }

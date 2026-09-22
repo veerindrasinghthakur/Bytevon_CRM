@@ -66,8 +66,9 @@ def test_request_lifecycle_with_cancel(client, factory):
         json={
             "employment_id": emp_id,
             "leave_type": "LOSS_OF_PAY",
-            "start_date": "2030-04-06",
-            "end_date": "2030-04-07",
+            # Mon/Tue: canonical working-day count rejects weekend-only ranges
+            "start_date": "2030-04-08",
+            "end_date": "2030-04-09",
             "reason": "family trip",
         },
         headers=actor["headers"],

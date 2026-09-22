@@ -14,6 +14,7 @@ from app.modules.my_work.attendance.repository import MyWorkAttendanceRepository
 from app.modules.my_work.attendance.schemas import (
     ApproverOption,
     CorrectionCandidate,
+    CorrectionListItem,
     CorrectionListResponse,
     TodayInfoResponse,
     WeekDayHours,
@@ -143,18 +144,82 @@ class MyWorkAttendanceService:
         page: int = 1,
         page_size: int = 20,
     ) -> CorrectionListResponse:
-        # Wired when correction list query is exposed on workforce repo
-        return CorrectionListResponse(page=page, pageSize=page_size)
+        # Q14: real domain data (no stub).
+        if employment_id is None:
+            return CorrectionListResponse(page=page, pageSize=page_size)
+        rows = await self._wf.list_corrections_by_employment(
+            employment_id, limit=page * page_size
+        )
+        items = [
+            CorrectionListItem(
+                id=r.id,
+                attendanceDayId=r.attendance_day_id,
+                status=r.status.value if hasattr(r.status, "value") else str(r.status),
+                reason=r.reason or "",
+                createdAt=r.created_at,
+            )
+            for r in rows
+        ]
+        total = len(items)
+        start = (max(1, page) - 1) * max(1, page_size)
+        return CorrectionListResponse(
+            items=items[start : start + max(1, page_size)],
+            total=total,
+            page=page,
+            pageSize=page_size,
+        )
 
     async def correction_candidates(
         self, employment_id: int | None
     ) -> list[CorrectionCandidate]:
-        return []
+        # Q14: recent attendance days are the correctable candidates.
+        if employment_id is None:
+            return []
+        today = date.today()
+        start = date.fromordinal(max(1, today.toordinal() - 30))
+        days = await self._wf.list_days(employment_id, from_date=start, to_date=today)
+        out: list[CorrectionCandidate] = []
+        for d in days:
+            st = d.status.value if hasattr(d.status, "value") else str(d.status)
+            out.append(
+                CorrectionCandidate(
+                    attendanceDayId=d.id,
+                    date=d.attendance_date,
+                    status=st,
+                    label=f"{d.attendance_date.isoformat()} — {st}",
+                )
+            )
+        return out
 
     async def list_approvers(
         self, employment_id: int | None
     ) -> list[ApproverOption]:
-        return []
+        # Q10: approver resolved from the manager hierarchy (department head
+        # of the requester's current department).
+        if employment_id is None:
+            return []
+        try:
+            from app.modules.workforce.department.models import Department
+            from app.modules.workforce.employee.repository import EmployeeRepository
+
+            asg = await EmployeeRepository(self._session).get_current_assignment(
+                employment_id
+            )
+            if asg is None or asg.department_id is None:
+                return []
+            dept = await self._session.get(Department, asg.department_id)
+            head_id = getattr(dept, "department_head_employment_id", None)
+            if not head_id:
+                return []
+            return [
+                ApproverOption(
+                    employmentId=int(head_id),
+                    name=f"Emp #{int(head_id)}",
+                    role="Department Head",
+                )
+            ]
+        except Exception:
+            return []
 
 
 # Canonical name for my_work domain

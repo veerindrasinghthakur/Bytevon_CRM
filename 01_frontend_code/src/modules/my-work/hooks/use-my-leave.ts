@@ -1,7 +1,7 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useListControls } from '@/shared/hooks/useListControls'
-import { queryKeys } from '@/shared/lib/query-keys'
-import { listMyLeaveBalances, listMyLeaveRequests } from '../api/my-work'
+import { queryKeys, invalidate } from '@/shared/lib/query-keys'
+import { listMyLeaveBalances, listMyLeaveRequests, requestLeaveCancel } from '../api/my-work'
 
 const FILTER_DEFAULTS = {
   status: 'All',
@@ -62,10 +62,19 @@ export function useMyLeave() {
     resetFilters: controls.resetAll,
     isLoading: requestsQuery.isLoading || balancesQuery.isLoading,
     isFetching: requestsQuery.isFetching,
-    isError: requestsQuery.isError,
+    isError: requestsQuery.isError || balancesQuery.isError,
+    error: requestsQuery.error ?? balancesQuery.error,
     refetch: () => {
       void requestsQuery.refetch()
       void balancesQuery.refetch()
     },
   }
+}
+
+export function useRequestLeaveCancel() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => requestLeaveCancel(id),
+    onSuccess: () => invalidate.myWorkLeave(qc),
+  })
 }

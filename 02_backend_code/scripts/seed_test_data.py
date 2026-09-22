@@ -14,22 +14,20 @@ import asyncio
 import logging
 from datetime import date
 
-from sqlalchemy import select, delete
+from sqlalchemy import delete, select
 
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal
+from app.core.db.enums import Action, EmploymentState, EmploymentType, ScopeName, WorkMode
 from app.core.security.password_manager import PasswordManager
-
-from app.modules.auth.models import Login, Person
-from app.modules.workforce.models import Employment, Position, EmploymentAssignment
-from app.core.db.enums import EmploymentState, EmploymentType, WorkMode
-from app.modules.admin.department.models import Department
-from app.modules.admin.settings.models import OrganizationSettings
 from app.modules.admin.location.models import Location
+from app.modules.admin.settings.models import OrganizationSettings
 from app.modules.admin.shift.models import Shift
-from app.modules.rbac.models import Role, Permission, Resource, RolePermission, Scope
-from app.core.db.enums import ScopeName, Action
+from app.modules.auth.models import Login, Person
+from app.modules.rbac.models import Permission, Resource, Role, RolePermission, Scope
 from app.modules.sales.models import Client, Lead
+from app.modules.workforce.department.models import Department
+from app.modules.workforce.models import Employment, EmploymentAssignment, Position
 
 logging.basicConfig(level=logging.INFO)
 log = logging.getLogger("seed_test_data")

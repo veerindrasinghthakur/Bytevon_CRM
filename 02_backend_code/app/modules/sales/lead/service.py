@@ -101,7 +101,9 @@ class LeadService(BasePublicService):
         if lead.status in _TERMINAL:
             raise DomainError(f"Lead already in terminal status {lead.status}")
         if data.status == LeadStatus.WON:
-            return await self._win_lead(lead, actor_employment_id=actor_employment_id)
+            return await self._win_lead(
+                lead, data, actor_employment_id=actor_employment_id
+            )
         lead.status = data.status
         lead.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
@@ -109,20 +111,52 @@ class LeadService(BasePublicService):
         await self._session.refresh(lead)
         return LeadResponse.model_validate(lead)
 
-    async def _win_lead(self, lead: Lead, *, actor_employment_id: int | None = None) -> LeadWonResponse:
+    async def _win_lead(
+        self,
+        lead: Lead,
+        data: LeadStatusChange,
+        *,
+        actor_employment_id: int | None = None,
+    ) -> LeadWonResponse:
+        """Q12: WON converts to Client; project creation is opt-in.
+
+        Honors the status payload: explicit client_id reuse, client_name /
+        client_type for the auto-created client, and auto_create_project
+        (payload wins over the stored lead flag; default false).
+        """
+        from app.core.exceptions.exception import NotFoundError as _NotFound
+
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
-        client_id = lead.client_id
+        client_id = data.client_id or lead.client_id
         if client_id is None:
-            name = (lead.contact_name or lead.lead_title or "Client").strip()
-            client = Client(client_type=ClientType.COMPANY, client_name=name, changed_by=actor)
+            name = (
+                data.client_name or lead.contact_name or lead.lead_title or "Client"
+            ).strip()
+            client = Client(
+                client_type=data.client_type or ClientType.COMPANY,
+                client_name=name,
+                changed_by=actor,
+            )
             await self._clients.add(client)
             await self._session.flush()
             client_id = client.id
             lead.client_id = client_id
+        else:
+            existing_client = await self._clients.get_client(
+                client_id, include_archived=True
+            )
+            if existing_client is None:
+                raise _NotFound(f"Client not found (id={client_id})")
+            lead.client_id = client_id
         lead.status = LeadStatus.WON
         lead.changed_by = actor
         project_id = None
-        if getattr(lead, "auto_create_project", True):
+        auto_project = (
+            data.auto_create_project
+            if data.auto_create_project is not None
+            else bool(getattr(lead, "auto_create_project", False))
+        )
+        if auto_project:
             project_id = await self._try_create_project(lead, client_id, actor)
         await self._commit()
         await self._audit("lead.won", lead.id, actor_employment_id)

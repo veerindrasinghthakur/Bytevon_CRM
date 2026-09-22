@@ -100,7 +100,7 @@ def test_approval_decisions_and_cancel_comment(client, factory):
     assert approved.status_code == 200, approved.text
     assert approved.json()["status"] == "APPROVED"
 
-    leave2 = factory.leave_for(req, start_date="2030-06-09", end_date="2030-06-09")
+    leave2 = factory.leave_for(req, start_date="2030-06-10", end_date="2030-06-10")
     rejected = client.post(
         f"/api/v1/approvals/requests/{leave2['approval_id']}/reject",
         json={"remarks": "no capacity"},
@@ -109,7 +109,7 @@ def test_approval_decisions_and_cancel_comment(client, factory):
     assert rejected.status_code == 200, rejected.text
     assert rejected.json()["status"] == "REJECTED"
 
-    leave3 = factory.leave_for(req, start_date="2030-06-16", end_date="2030-06-16")
+    leave3 = factory.leave_for(req, start_date="2030-06-17", end_date="2030-06-17")
     ui_approved = client.post(
         f"/api/v1/approvals/{leave3['approval_id']}/approve",
         json={"remarks": "ui approve"},

@@ -3,9 +3,11 @@ import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { KpiCard } from '@/shared/components/ui/KpiCard'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useApprovalCenter } from '../../hooks/request/use-approval-center'
 import { approvalRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { cn } from '@/shared/lib/cn'
 import {
   approvalPriorityStyles,
@@ -15,9 +17,25 @@ import {
 
 export function ApprovalCenterPage() {
   const navigate = useNavigate()
-  const { kpis, rows, showingCount, pendingTotal } = useApprovalCenter()
+  const { kpis, rows, showingCount, pendingTotal, isError, error, refetch } = useApprovalCenter()
 
   const goPending = () => safeNavigate(navigate, { to: approvalRoutes.pending })
+
+  if (isError) {
+    return (
+      <div className="space-y-6 animate-fade-in">
+        <PageHeader
+          title="Approval Center"
+          description="Manage and process organizational requests."
+        />
+        <ErrorState
+          title="Could not load approvals"
+          description={getApiErrorMessage(error, 'We could not load approval requests.')}
+          onRetry={() => refetch()}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">

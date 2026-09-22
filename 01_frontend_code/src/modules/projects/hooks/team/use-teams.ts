@@ -162,7 +162,7 @@ export function useUpdateTeam() {
 // --- list controls (merged from *-list) ---
 import { useListControls } from '@/shared/hooks/useListControls'
 
-const FILTER_DEFAULTS = { status: '', department: '' }
+const FILTER_DEFAULTS = { status: '', department: '', dateFrom: '', dateTo: '' }
 
 export function useTeamsList() {
   const controls = useListControls({
@@ -177,7 +177,7 @@ export function useTeamsList() {
     pageSize: controls.pageSize,
   }
 
-  const { data, isLoading, isFetching, isError, refetch } = useTeams(filters)
+  const { data, isLoading, isFetching, isError, error, refetch } = useTeams(filters)
 
   const items = data?.items ?? []
   const total = data?.total ?? items.length
@@ -198,9 +198,17 @@ export function useTeamsList() {
     page: controls.page,
     setPage: controls.setPage,
     pageSize: controls.pageSize,
+    dateFilter: controls.filters.dateFrom
+      ? { from: controls.filters.dateFrom, to: controls.filters.dateTo }
+      : undefined,
+    setDateFilter: (v: { from: string; to: string }) => {
+      controls.setFilter('dateFrom', v.from)
+      controls.setFilter('dateTo', v.to)
+    },
     isLoading,
     isFetching,
     isError,
+    error,
     refetch,
   }
 }

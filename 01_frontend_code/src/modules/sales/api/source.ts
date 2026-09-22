@@ -193,6 +193,34 @@ export async function updateSource(
   return mapRow(data)
 }
 
+export async function getSource(
+  id: number,
+  opts?: { includeArchived?: boolean },
+): Promise<LeadSource | null> {
+  if (env.useMockApi) {
+    await delay()
+    const row = mockSources.find((s) => s.id === id)
+    if (!row) return null
+    if (row.isArchived && !opts?.includeArchived) return null
+    return { ...row }
+  }
+  try {
+    const { data } = await apiClient.get<Record<string, unknown>>(`/sales/sources/${id}`, {
+      params: opts?.includeArchived ? { include_archived: true } : undefined,
+    })
+    return mapRow(data ?? {})
+  } catch (err) {
+    // Archived rows 404 by default — retry with include_archived before giving up.
+    if (!opts?.includeArchived && isNotFound(err)) {
+      const { data } = await apiClient.get<Record<string, unknown>>(`/sales/sources/${id}`, {
+        params: { include_archived: true },
+      })
+      return mapRow(data ?? {})
+    }
+    throw err
+  }
+}
+
 export async function deleteSource(id: number): Promise<void> {
   if (env.useMockApi) {
     await delay(300)
@@ -202,6 +230,28 @@ export async function deleteSource(id: number): Promise<void> {
     return
   }
   await apiClient.delete(`/sales/sources/${id}`)
+}
+
+/** Q16: restore an archived source (real backend only). */
+export async function restoreSource(id: number): Promise<LeadSource> {
+  if (env.useMockApi) {
+    await delay(300)
+    const idx = mockSources.findIndex((s) => s.id === id)
+    if (idx < 0) throw new Error('Source not found')
+    mockSources[idx] = { ...mockSources[idx], isArchived: false, status: 'Active' }
+    return mockSources[idx]
+  }
+  const { data } = await apiClient.post<Record<string, unknown>>(`/sales/sources/${id}/restore`)
+  return mapRow(data ?? {})
+}
+
+function isNotFound(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'response' in err &&
+    (err as { response?: { status?: number } }).response?.status === 404
+  )
 }
 
 /** @deprecated Use deleteSource (DELETE verb + soft-delete). */

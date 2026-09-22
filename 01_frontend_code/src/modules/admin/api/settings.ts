@@ -19,8 +19,8 @@ import { delay } from '@/shared/mock/db'
 import { listLeavePolicies } from './leave'
 
 const ORG_SETTINGS_API = '/admin/settings'
-const ATTENDANCE_POLICY_CURRENT = '/attendance/policies/current'
-const ATTENDANCE_POLICIES = '/attendance/policies'
+const ATTENDANCE_POLICY_CURRENT = '/workforce/attendance/policy/current'
+const ATTENDANCE_POLICIES = '/workforce/attendance/policies'
 
 type OrgSettingsApi = {
   id?: number

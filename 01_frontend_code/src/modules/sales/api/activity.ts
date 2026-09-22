@@ -10,7 +10,7 @@ import type { SalesActivity } from '../types'
 
 export async function listSalesActivities(): Promise<SalesActivity[]> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<SalesActivity[]>('/sales/activities')
+    const { data } = await apiClient.get<SalesActivity[]>('/sales/activity')
     return Array.isArray(data) ? data : []
   }
   await delay()

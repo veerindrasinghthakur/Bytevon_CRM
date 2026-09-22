@@ -14,7 +14,7 @@ export {
 } from './types'
 
 export { getCurrentEmploymentId, setCurrentEmploymentId } from './session'
-export { fetchEffectiveAuthorization } from './api'
+export { fetchEffectiveAuthorization, fetchResources, type BackendResource } from './api'
 export { buildEffectiveAuthorization } from './build-effective'
 export { canWith, hasPermission, type CanArgs } from './can'
 export { useRbac, invalidateRbac, type UseRbacResult } from './use-rbac'
@@ -26,6 +26,7 @@ export {
   filterSecondaryNavItems,
   filterSecondaryNavGroups,
   RAIL_RESOURCE_BY_ID,
+  SECONDARY_RESOURCE_BY_ID,
 } from './nav'
 export {
   dataScope,

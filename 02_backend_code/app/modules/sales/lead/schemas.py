@@ -28,7 +28,8 @@ class LeadCreate(BaseModel):
     description: str | None = None
     chat_link: str | None = Field(None, max_length=500)
     client_id: int | None = None
-    auto_create_project: bool = True
+    # Q12: project creation on WON is opt-in (default false).
+    auto_create_project: bool = False
     client_type: ClientType = ClientType.COMPANY
     client_name: str | None = None
 

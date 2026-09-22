@@ -90,7 +90,9 @@ class RBACRepository(BaseRepository):
         return await self.scalar_one_or_none(stmt)
 
     async def get_role_by_name(self, name: str) -> Role | None:
-        stmt = select(Role).where(Role.name == name, Role.is_archived.is_(False))
+        # Q6: archived role names stay reserved (409 at service level) so the
+        # DB unique constraint never surfaces as an IntegrityError.
+        stmt = select(Role).where(Role.name == name)
         return await self.scalar_one_or_none(stmt)
 
     def _role_filter_stmt(

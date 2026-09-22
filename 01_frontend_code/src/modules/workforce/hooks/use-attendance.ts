@@ -7,10 +7,16 @@ import {
   getAttendanceDayDetail,
 } from '../api/attendance'
 
-export function useAttendanceDashboard() {
+export function useAttendanceDashboard(params?: {
+  employment_id?: number
+  from_date?: string
+  to_date?: string
+  year?: number
+  month?: number
+}) {
   return useQuery({
-    queryKey: queryKeys.workforce.attendance.dashboard(),
-    queryFn: getAttendanceDashboard,
+    queryKey: queryKeys.workforce.attendance.dashboard(params),
+    queryFn: () => getAttendanceDashboard(params),
   })
 }
 

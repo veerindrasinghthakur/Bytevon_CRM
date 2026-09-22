@@ -2,15 +2,17 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useNavigate, useParams } from '@tanstack/react-router'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
 import { DynamicRouteCrumbs } from '../../components/RouteCrumbs'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { getEmployeeDetail, updateEmployment } from '../../api/employment'
+import { getEmployeeDetail, rehireEmployment, updateEmployment } from '../../api/employment'
+import { invalidate } from '@/shared/lib/query-keys'
 import type { EmployeeDetailDto } from '@/shared/schema'
 import { Can } from '@/shared/rbac'
-import { Action, ResourceName } from '@/shared/schema'
+import { Action } from '@/shared/schema'
 import { workforceRoutes } from '../../routes'
 import {
   employeeDetailEditSchema,
@@ -41,6 +43,14 @@ export function EmployeeDetailPage() {
   const [tab, setTab] = useState<EmployeeDetailTab>('overview')
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
+  const qc = useQueryClient()
+  const rehireMut = useMutation({
+    mutationFn: () => rehireEmployment(id, { reason: 'Rehired' }),
+    onSuccess: () => {
+      invalidate.employees(qc)
+      return load()
+    },
+  })
 
   const form = useForm<EmployeeDetailEditInput>({
     resolver: zodResolver(employeeDetailEditSchema),
@@ -226,7 +236,7 @@ export function EmployeeDetailPage() {
             >
               Download
             </Button>
-            <Can action={Action.UPDATE} resource={ResourceName.EMPLOYMENT}>
+            <Can action={Action.UPDATE} resource={'employment'}>
               {editing ? (
                 <>
                   <Button variant="outline" size="sm" onClick={cancelEdit}>
@@ -276,6 +286,20 @@ export function EmployeeDetailPage() {
           Emp code: {data.employment?.employee_code}
         </span>
         {data.hasLogin && <span className={loginEnabledClass}>Login: {data.loginEmail}</span>}
+        {['RESIGNED', 'TERMINATED', 'ALUMNI'].includes(currentState) && (
+          <Button
+            variant="primary"
+            size="sm"
+            leftIcon={<Icon name="person_add" className="text-lg" />}
+            isLoading={rehireMut.isPending}
+            onClick={() => {
+              if (!window.confirm(`Rehire ${fullName}?`)) return
+              rehireMut.mutate()
+            }}
+          >
+            {rehireMut.isPending ? 'Rehiring…' : 'Rehire'}
+          </Button>
+        )}
       </div>
 
       {editing && <EmployeeEditForm form={form} />}

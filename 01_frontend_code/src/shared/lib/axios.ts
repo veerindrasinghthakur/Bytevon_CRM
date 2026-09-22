@@ -9,7 +9,8 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios'
 import { env } from '@/config/env'
-import { loadStoredSession, persistSession, refreshApi } from '@/modules/auth/api/auth'
+import { loadStoredSession, refreshApi } from '@/modules/auth/api/auth'
+import { notifySessionExpired } from '@/shared/lib/session-expiry'
 
 export const apiClient = axios.create({
   baseURL: env.apiBaseUrl,
@@ -62,25 +63,20 @@ apiClient.interceptors.response.use(
           return apiClient(original)
         }
       } catch (refreshErr) {
-        // Only clear the session when refresh definitively failed with 401.
+        // Refresh definitively failed (401) or signalled SESSION_EXPIRED:
+        // expire the session in-app so the user must log in again.
         // Network errors / backend-down must keep the user logged in.
         const status =
           typeof refreshErr === 'object' && refreshErr !== null && 'response' in refreshErr
             ? (refreshErr as { response?: { status?: number } }).response?.status
             : undefined
-        if (status === 401) {
-          persistSession(null)
-          if (
-            typeof window !== 'undefined' &&
-            !window.location.pathname.startsWith('/login')
-          ) {
-            const redirect = encodeURIComponent(
-              window.location.pathname + window.location.search,
-            )
-            window.location.assign(`/session-expired?redirect=${redirect}`)
-          }
+        const expiredSignal =
+          refreshErr instanceof Error && refreshErr.message === 'SESSION_EXPIRED'
+        if (status === 401 || expiredSignal) {
+          notifySessionExpired()
+        } else {
+          console.warn('Token refresh skipped/failed without expiry', refreshErr)
         }
-        console.warn('Token refresh skipped/failed without expiry', refreshErr)
       }
     }
     return Promise.reject(error)

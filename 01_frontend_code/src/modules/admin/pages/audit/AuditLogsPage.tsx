@@ -19,8 +19,9 @@ import {
 } from '@/shared/components/layout/QuickOverviewParts'
 import { useListSelection } from '@/shared/hooks/useListSelection'
 import { useListControls } from '@/shared/hooks/useListControls'
-import { ResourceName } from '@/shared/schema'
 import { queryKeys } from '@/shared/lib/query-keys'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { apiClient } from '@/shared/lib/axios'
 import { listAuditLogs } from '../../api/audit'
 import type { AuditFilters, AuditLog } from '../../types'
 import { auditActionBadge, auditActionDot, resolveAuditActionKey } from '../../schemas/enums'
@@ -153,27 +154,37 @@ export function AuditLogsPage() {
 
   if (logsQuery.isError) {
     return (
-      <ErrorState title="Could not load audit logs" onRetry={() => void logsQuery.refetch()} />
+      <ErrorState
+        title="Could not load audit logs"
+        description={getApiErrorMessage(logsQuery.error, 'We could not load the audit logs.')}
+        onRetry={() => void logsQuery.refetch()}
+      />
     )
   }
 
-  async function moveLogsToCloud(retentionDays: number = 10) {
+  type ArchiveResult = {
+    confirmed: boolean
+    exported_count?: number
+    deleted_count?: number
+    message?: string
+  }
+
+  async function moveLogsToCloud(retentionDays: number = 10): Promise<ArchiveResult> {
     try {
-      const result = await fetch("/api/v1/audit/archive", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ retention_days: retentionDays }),
-      })
-      const data = await result.json()
-      if (result.ok) {
-        return { confirmed: true, ...data }
+      // Canonical route: POST /admin/audit/archive?retention_days=N (auth via apiClient).
+      const { data } = await apiClient.post<{
+        exported_count?: number
+        deleted_count?: number
+        message?: string
+      }>('/admin/audit/archive', null, { params: { retention_days: retentionDays } })
+      return {
+        confirmed: true,
+        exported_count: data.exported_count,
+        deleted_count: data.deleted_count,
+        message: data.message,
       }
-      throw new Error(data.message || "Archive failed")
     } catch (error) {
-      console.error("Move logs to cloud failed:", error)
-      return { confirmed: false }
+      return { confirmed: false, message: getApiErrorMessage(error, 'Archive failed') }
     }
   }
 
@@ -186,7 +197,7 @@ export function AuditLogsPage() {
           Export audit logs older than {retentionDays} days to MinIO storage and delete from PG.
         </p>
         <DateRangeFilter
-          value={{ from: undefined, to: undefined }}
+          value={{ from: '', to: '' }}
           onChange={({ from }) => {
             // Calculate days from date
             if (from) {
@@ -199,28 +210,17 @@ export function AuditLogsPage() {
           label="Retention cutoff date"
           placeholder="Select date"
         />
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setRetentionDays(10)}
-          >
-            10 days
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setRetentionDays(30)}
-          >
-            30 days
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setRetentionDays(90)}
-          >
-            90 days
-          </Button>
+       <div className="flex gap-2">
+          {[10, 30, 90].map((days) => (
+            <Button
+              key={days}
+              variant="outline"
+              size="sm"
+              onClick={() => setRetentionDays(days)}
+            >
+              {days} days
+            </Button>
+          ))}
         </div>
         <Button
           variant="primary"
@@ -229,15 +229,26 @@ export function AuditLogsPage() {
             const result = await moveLogsToCloud(retentionDays)
             if (result.confirmed) {
               openPanel({
-                content: "hii",
+                content: (
+                  <p className="text-body-sm text-on-surface">
+                    {result.exported_count ?? 0} logs exported
+                    {result.deleted_count != null ? `, ${result.deleted_count} deleted` : ''}.
+                    {result.message ? ` ${result.message}` : ''}
+                  </p>
+                ),
                 title: "Archive completed",
-                subtitle: `${result.exported_count} logs exported, ${result.deleted_count} deleted`,
+                subtitle: `${result.exported_count ?? 0} logs exported, ${result.deleted_count ?? 0} deleted`,
                 icon: "check-circle",
                 status: "success",
               })
+              await logsQuery.refetch()
             } else {
               openPanel({
-                content: 'hii',
+                content: (
+                  <p className="text-body-sm text-on-surface">
+                    {result.message || "Unknown error"}
+                  </p>
+                ),
                 title: "Archive failed",
                 subtitle: result.message || "Unknown error",
                 icon: "error",
@@ -265,25 +276,21 @@ export function AuditLogsPage() {
             <Button
               variant="primary"
               size="sm"
-              onClick={async () => {
-                const result = await openPanel({
-                  title: "Move logs to cloud",
-                  subtitle: "Archive audit logs older than",
-                  icon: "cloud",
-                  status: "info",
-                  content: <MoveLogsToCloudPanel />,
-                  widthClass: 'max-w-[400px]',
-                })
-                if (result?.confirmed) {
-                  // Trigger archive via query
-                  await logsQuery.refetch()
-                }
-              }}
+            onClick={() => {
+              openPanel({
+                title: "Move logs to cloud",
+                subtitle: "Archive audit logs older than",
+                icon: "cloud",
+                status: "info",
+                content: <MoveLogsToCloudPanel />,
+                widthClass: 'max-w-[400px]',
+              })
+            }}
             >
               Move to cloud
             </Button>
             <ExportButton
-              resource={ResourceName.AUDIT}
+              resource={'audit'}
               query={controls.debouncedSearch || undefined}
               filters={{
                 action: controls.filters.action !== 'All Actions' ? controls.filters.action : undefined,
@@ -412,7 +419,7 @@ export function AuditLogsPage() {
           onCancel={selection.exitSelectionMode}
         >
           <ExportButton
-            resource={ResourceName.AUDIT}
+            resource={'audit'}
             selectedIds={Array.from(selection.selectedIds)}
             filenameStem="audit-selected"
             label="Export selected"

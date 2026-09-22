@@ -378,6 +378,10 @@ export async function createEmployment(input: CreateEmploymentSchemaInput) {
       shift_id: input.shiftId || null,
       work_mode: input.workMode || 'OFFICE',
       assignment_change_reason: 'Initial assignment',
+      create_login: input.create_login ?? false,
+      login_email: input.login_email || null,
+      login_temporary_password: input.login_temporary_password || null,
+      login_role_id: input.login_role_id ?? null,
     })
     return mapApiEmployeeDetail(data)
   }
@@ -472,6 +476,21 @@ export async function createEmployment(input: CreateEmploymentSchemaInput) {
       created_at: now,
       updated_at: now,
       changed_by: 1,
+    })
+  }
+
+  if (input.create_login && input.login_email) {
+    ensureLoginUsers().push({
+      id: nextId(ensureLoginUsers() as unknown as { id: number }[]),
+      employment_id: empId,
+      email: String(input.login_email),
+      temporary_password: (input.login_temporary_password as string | null) ?? null,
+      status: 'ACTIVE',
+      failed_attempt_count: 0,
+      locked_until: null,
+      last_login_at: null,
+      created_at: now,
+      updated_at: now,
     })
   }
 
@@ -689,4 +708,29 @@ export async function getEmploymentAssignmentHistory(
   return db.employment_assignments
     .filter((a) => a.employment_id === employmentId)
     .sort((a, b) => b.effective_from.localeCompare(a.effective_from))
+}
+
+export interface RehireEmploymentBody {
+  reason?: string
+  joining_date?: string | null
+}
+
+/** Rehire an archived employment — backend POST /workforce/employments/{id}/rehire. */
+export async function rehireEmployment(
+  employmentId: number,
+  body: RehireEmploymentBody = {},
+): Promise<void> {
+  if (!env.useMockApi) {
+    await apiClient.post(`/workforce/employments/${employmentId}/rehire`, {
+      reason: body.reason ?? 'Rehired',
+      joining_date: body.joining_date ?? new Date().toISOString().slice(0, 10),
+    })
+    return
+  }
+  await delay()
+  const db = getDb()
+  const emp = db.employments.find((e) => e.id === employmentId)
+  if (emp) {
+    emp.current_state = EmploymentState.ONBOARDING
+  }
 }

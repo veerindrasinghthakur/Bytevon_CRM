@@ -65,24 +65,31 @@ def test_my_work_leave(client, factory):
         "/api/v1/my-work/leave/calculate",
         json={
             "type": "CASUAL",
-            "from": "2030-07-06",
-            "to": "2030-07-07",
+            "from": "2030-07-08",
+            "to": "2030-07-09",
         },
         headers=ah,
     )
     assert calc.status_code == 200, calc.text
+    assert float(calc.json()["day_cost"]) == 2.0
 
     submitted = client.post(
         "/api/v1/my-work/leave",
         json={
             "type": "LOSS_OF_PAY",
-            "from_date": "2030-07-13",
-            "to_date": "2030-07-13",
+            # Monday: canonical working-day count rejects weekend-only ranges
+            "from_date": "2030-07-15",
+            "to_date": "2030-07-15",
             "reason": "family event",
         },
         headers=ah,
     )
     assert submitted.status_code in (200, 201), submitted.text
+    # Q14: my-work writes through to the real domain (no fake UUID).
+    assert submitted.json()["id"].isdigit()
+    relisted = client.get("/api/v1/my-work/leave", headers=ah)
+    assert relisted.status_code == 200, relisted.text
+    assert any(i["id"] == submitted.json()["id"] for i in relisted.json()["items"])
     record_coverage("test_my_work_leave", COVERED[:6])
 
 

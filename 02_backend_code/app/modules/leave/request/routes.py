@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, Query, status
 
 from app.core.authorization import AuthContext, enforce_owner_or_grant, require_permission
 from app.core.db.enums import LeaveRequestStatus
+from app.modules.approvals.request.schemas import ApprovalRequestResponse
 from app.modules.leave.dependencies import RequestServiceDep
 from app.modules.leave.request.schemas import LeaveRequestCreate, LeaveRequestResponse
 
@@ -66,3 +67,21 @@ async def cancel_request(
     req = await service.get_request(request_id)
     enforce_owner_or_grant(auth, "leave_request", "UPDATE", owner_employment_id=req.employment_id)
     return await service.cancel_request(request_id, actor_employment_id=auth.employment_id)
+
+
+@router.post(
+    "/requests/{request_id}/request-cancel",
+    response_model=ApprovalRequestResponse,
+)
+async def request_approved_cancel(
+    request_id: int,
+    service: RequestServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "UPDATE", "CUSTOM"))],
+) -> ApprovalRequestResponse:
+    """Q5: request cancellation of APPROVED future leave (needs approval)."""
+    req = await service.get_request(request_id)
+    enforce_owner_or_grant(auth, "leave_request", "UPDATE", owner_employment_id=req.employment_id)
+    result = await service.request_approved_cancel(
+        request_id, actor_employment_id=auth.employment_id
+    )
+    return ApprovalRequestResponse.model_validate(result)

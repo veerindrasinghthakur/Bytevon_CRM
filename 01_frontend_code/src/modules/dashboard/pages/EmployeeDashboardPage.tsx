@@ -1,13 +1,15 @@
 import { useNavigate } from '@tanstack/react-router'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { cn } from '@/shared/lib/cn'
 import { Can } from '@/shared/rbac'
-import { Action, ResourceName } from '@/shared/schema'
+import { Action } from '@/shared/schema'
 import { useEmployeeDashboard } from '../hooks/use-employee-dashboard'
 import { useWeekBars } from '../hooks/use-week-bars'
+import { WEEK_LABELS } from '../calendar'
 
 const card = 'bv-surface card-hover'
-const WEEK_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
 
 type BreakMarker = {
   id: string
@@ -38,9 +40,22 @@ type EmployeeMeta = {
 
 export function EmployeeDashboardPage() {
   const navigate = useNavigate()
-  const { kpis, tasks, leaveSummary, meta, quickActions, isLoading } = useEmployeeDashboard()
+  const { kpis, tasks, leaveSummary, meta, quickActions, isLoading, isError, error, refetch } =
+    useEmployeeDashboard()
   const typedMeta = meta as EmployeeMeta | undefined
   const { weekBarElements } = useWeekBars({ weekBars: typedMeta?.weekBars ?? [], todayIndex: 4 })
+
+  if (isError) {
+    return (
+      <div className="py-16">
+        <ErrorState
+          title="Could not load dashboard"
+          description={getApiErrorMessage(error, 'We could not load the dashboard data.')}
+          onRetry={() => void refetch()}
+        />
+      </div>
+    )
+  }
 
   if (isLoading || !meta || !typedMeta) {
     return (
@@ -118,7 +133,7 @@ export function EmployeeDashboardPage() {
         <div className={`${card} lg:col-span-2 p-6`}>
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-title-lg text-on-background">Attendance Overview</h3>
-            <Can action={Action.VIEW} resource={ResourceName.ATTENDANCE}>
+            <Can action={Action.VIEW} resource={'attendance'}>
               <button
                 type="button"
                 className="text-secondary text-label-md font-bold hover:underline"
@@ -181,7 +196,7 @@ export function EmployeeDashboardPage() {
       <section className={`${card} overflow-hidden`}>
         <div className="px-6 py-4 border-b border-outline-variant flex items-center justify-between">
           <h3 className="text-title-lg text-on-background">Assigned Tasks</h3>
-          <Can action={Action.CREATE} resource={ResourceName.TASK}>
+          <Can action={Action.CREATE} resource={'task'}>
             <button
               type="button"
               onClick={() => safeNavigate(navigate, { to: '/my-work/tasks/new' })}

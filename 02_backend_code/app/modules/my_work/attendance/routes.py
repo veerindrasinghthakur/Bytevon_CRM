@@ -28,6 +28,27 @@ from app.modules.workforce.attendance.schemas import (
 router = APIRouter(prefix="/my-work", tags=["My Work — Attendance"])
 
 
+@router.get("/attendance")
+async def my_attendance_list(
+    service: MyWorkAttendanceServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF"))],
+    page: int = Query(1, ge=1),
+    pageSize: int = Query(20, ge=1, le=100),
+    from_date: date | None = Query(None),
+    to_date: date | None = Query(None),
+) -> dict:
+    """Paginated alias over list_days for legacy frontend callers."""
+    rows = await service.list_days(auth.employment_id, from_date=from_date, to_date=to_date)
+    total = len(rows)
+    start = (max(1, page) - 1) * max(1, pageSize)
+    return {
+        "items": [r.model_dump(mode="json") for r in rows[start : start + pageSize]],
+        "total": total,
+        "page": page,
+        "pageSize": pageSize,
+    }
+
+
 @router.post(
     "/attendance/punch",
     response_model=PunchResponse,

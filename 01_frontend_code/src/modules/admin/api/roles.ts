@@ -282,7 +282,10 @@ export async function listAdminRoles(params?: {
   return { items, total }
 }
 
-export async function getAdminRole(roleId: string): Promise<AdminRole | null> {
+export async function getAdminRole(
+  roleId: string,
+  opts?: { includeArchived?: boolean },
+): Promise<AdminRole | null> {
   if (env.useMockApi) {
     await delay()
     const r = adminRoles.find((x) => x.id === roleId)
@@ -290,8 +293,21 @@ export async function getAdminRole(roleId: string): Promise<AdminRole | null> {
     const cov = computeCoverage(r.permissions ?? [])
     return { ...r, coveragePct: cov.pct, coverageLabel: cov.label }
   }
-  const { data } = await apiClient.get<Record<string, any>>(`/rbac/roles/${roleId}`)
-  return normalizeRole(data)
+  try {
+    const { data } = await apiClient.get<Record<string, any>>(`/rbac/roles/${roleId}`, {
+      params: opts?.includeArchived ? { include_archived: true } : undefined,
+    })
+    return normalizeRole(data)
+  } catch (err) {
+    // Archived rows 404 by default — retry with include_archived before giving up.
+    if (!opts?.includeArchived && isNotFound(err)) {
+      const { data } = await apiClient.get<Record<string, any>>(`/rbac/roles/${roleId}`, {
+        params: { include_archived: true },
+      })
+      return normalizeRole(data)
+    }
+    throw err
+  }
 }
 
 export async function createAdminRole(payload: {
@@ -372,6 +388,33 @@ export async function updateAdminRole(
   const detail = await getAdminRole(roleId)
   if (detail) return detail
   return normalizeRole({ id: roleId, ...payload })
+}
+
+/** Q16: restore an archived role (real backend only). */
+export async function restoreAdminRole(roleId: string): Promise<AdminRole> {
+  if (env.useMockApi) {
+    await delay(300)
+    const existing = adminRoles.find((r) => r.id === roleId)
+    if (!existing) throw new Error('Role not found')
+    existing.status = 'Active'
+    return { ...existing }
+  }
+  const { data } = await apiClient.post<Record<string, any>>(`/rbac/roles/${roleId}/restore`)
+  const detail = await getAdminRole(String(data.id ?? roleId), { includeArchived: true })
+  if (detail) return detail
+  return normalizeRole({ ...data, permission_keys: [] })
+}
+
+/** Alias kept for symmetry with the restore* naming used elsewhere. */
+export const restoreRole = restoreAdminRole
+
+function isNotFound(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'response' in err &&
+    (err as { response?: { status?: number } }).response?.status === 404
+  )
 }
 
 export async function deleteAdminRole(roleId: string): Promise<void> {

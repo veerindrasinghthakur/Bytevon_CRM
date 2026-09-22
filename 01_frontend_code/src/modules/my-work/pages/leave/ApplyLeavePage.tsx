@@ -136,8 +136,8 @@ export function ApplyLeavePage() {
                     setValue('type', v as LeaveFormValues['type'], { shouldValidate: true })
                   }
                   options={leaveTypeOptions.map((o) => ({
-                    value: String(o.name),
-                    label: String(o.name),
+                    value: String(o.value),
+                    label: String(o.label),
                   }))}
                   aria-label="Leave type"
                 />

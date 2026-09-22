@@ -26,7 +26,7 @@ async def run_preview(
     return await service.preview(year=year, month=month)
 
 
-@router.post("/run", status_code=status.HTTP_202_ACCEPTED)
+@router.post("/run", status_code=status.HTTP_200_OK)
 async def run_payroll(
     body: RunPayrollBody,
     service: PayrollRunServiceDep,

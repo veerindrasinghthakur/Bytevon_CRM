@@ -48,3 +48,8 @@ async def delete_location(location_id: int, service: ServiceDep, auth: Annotated
 @router.post("/{location_id}/archive", response_model=MessageResponse, include_in_schema=False)
 async def archive_location(location_id: int, service: ServiceDep, auth: Annotated[AuthContext, Depends(require_permission("location", "UPDATE", "ORGANIZATION"))]) -> MessageResponse:
     return await service.delete(location_id, actor_employment_id=auth.employment_id)
+
+@router.post("/{location_id}/restore", response_model=LocationResponse)
+async def restore_location(location_id: int, service: ServiceDep, auth: Annotated[AuthContext, Depends(require_permission("location", "UPDATE", "ORGANIZATION"))]) -> LocationResponse:
+    """Q16: restore an archived location."""
+    return await service.restore(location_id, actor_employment_id=auth.employment_id)

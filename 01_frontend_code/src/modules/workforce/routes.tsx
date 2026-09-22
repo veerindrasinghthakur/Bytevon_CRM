@@ -7,6 +7,15 @@ import { createRoute, redirect } from '@tanstack/react-router'
 import type { AnyRoute } from '@tanstack/react-router'
 import { lazyPage } from '@/shared/lib/lazyPage'
 import { safeRedirectOpts } from '@/shared/lib/safeNavigate'
+import { requirePermission, requireView } from '@/shared/rbac/require-permission'
+
+/** Variable grants: any VIEW opens a page; CREATE/UPDATE gates forms. Data is scope-filtered server-side. */
+const requireEmploymentView = () => requireView('employment')
+const requireDepartmentView = () => requireView('department')
+const requireAttendanceView = () => requireView('attendance')
+const requireEmploymentCreate = () => requirePermission({ action: 'CREATE', resource: 'employment' })
+const requireDepartmentCreate = () => requirePermission({ action: 'CREATE', resource: 'department' })
+const requireDepartmentUpdate = () => requirePermission({ action: 'UPDATE', resource: 'department' })
 
 const EmployeesListPage = lazyPage(() => import('./pages/employee/EmployeesListPage'), 'EmployeesListPage')
 const EmployeeCreatePage = lazyPage(() => import('./pages/employee/EmployeeCreatePage'), 'EmployeeCreatePage')
@@ -85,41 +94,50 @@ export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: 
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/employees',
+      beforeLoad: requireEmploymentView,
       component: EmployeesListPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/employees/new',
+      beforeLoad: requireEmploymentCreate,
       component: EmployeeCreatePage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/employees/$employeeId',
+      // Detail is CUSTOM owner-or-grant on the backend — action gate only here
+      beforeLoad: requireEmploymentView,
       component: EmployeeDetailPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/employees/$employeeId/assignment',
+      beforeLoad: requireEmploymentView,
       component: ChangeAssignmentPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/employees/$employeeId/bank-details',
+      beforeLoad: requireEmploymentView,
       component: EmployeeBankDetailsPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/departments',
+      beforeLoad: requireDepartmentView,
       component: DepartmentsListPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/departments/new',
+      beforeLoad: requireDepartmentCreate,
       component: DepartmentCreatePage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/departments/$departmentId',
+      beforeLoad: requireDepartmentView,
       component: DepartmentDetailPage,
     }),
     createRoute({
@@ -211,26 +229,31 @@ export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: 
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/departments/$departmentId/add-member',
+      beforeLoad: requireDepartmentUpdate,
       component: AddMemberPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/attendance',
+      beforeLoad: requireAttendanceView,
       component: AttendanceDashboardPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/attendance/employees',
+      beforeLoad: requireAttendanceView,
       component: AttendanceEmployeesPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/attendance/roster',
+      beforeLoad: requireAttendanceView,
       component: WorkforceRosterPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/attendance/day/$employmentId',
+      beforeLoad: requireAttendanceView,
       validateSearch: (search: Record<string, unknown>) => ({
         date: typeof search.date === 'string' ? search.date : undefined,
       }),
@@ -239,6 +262,7 @@ export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: 
     createRoute({
       getParentRoute: () => appLayoutRoute,
       path: '/workforce/attendance/$attendanceId',
+      beforeLoad: requireAttendanceView,
       component: WorkforceAttendanceDetailPage,
     }),
   ]

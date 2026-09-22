@@ -187,9 +187,16 @@ class RBACService(BasePublicService):
         await self._audit("role.created", role.id, actor_employment_id)
         return RoleResponse.model_validate(role)
 
-    async def get_role(self, role_id: int) -> RoleDetailResponse:
-        role = await self._repo.get_role_by_id(role_id, with_details=True)
+    async def get_role(
+        self, role_id: int, *, include_archived: bool = False
+    ) -> RoleDetailResponse:
+        """Q15: archived hidden by default; history views opt in."""
+        role = await self._repo.get_role_by_id(
+            role_id, with_details=True, include_archived=True
+        )
         if role is None:
+            raise NotFoundError("Role not found")
+        if bool(getattr(role, "is_archived", False)) and not include_archived:
             raise NotFoundError("Role not found")
         users_count = await self._repo.count_employments_with_role(role_id)
         return self._build_role_detail(role, users_count=users_count)
@@ -294,6 +301,29 @@ class RBACService(BasePublicService):
         await self._commit()
         await self._audit("role.deleted", role_id, actor_employment_id)
         return MessageResponse(message="Role deleted")
+
+    async def restore_role(
+        self, role_id: int, *, actor_employment_id: int | None = None
+    ) -> RoleResponse:
+        """Q16: restore an archived role (Q6: 409 when the name is taken)."""
+        role = await self._repo.get_role_by_id(role_id, include_archived=True)
+        if role is None:
+            raise NotFoundError("Role not found")
+        if not bool(getattr(role, "is_archived", False)):
+            raise DomainError("Role is not archived")
+        clash = await self._repo.get_role_by_name(role.name)
+        if clash is not None and clash.id != role_id:
+            raise ConflictError(
+                f"Cannot restore: role '{role.name}' already exists"
+            )
+        role.is_archived = False
+        role.archived_at = None
+        if hasattr(role, "archived_by"):
+            role.archived_by = None
+        role.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        await self._commit()
+        await self._audit("role.restored", role_id, actor_employment_id)
+        return RoleResponse.model_validate(role)
 
     async def grant_permission(
         self,

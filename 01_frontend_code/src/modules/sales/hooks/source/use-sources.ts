@@ -6,6 +6,7 @@ import {
   createSource,
   updateSource,
   deleteSource,
+  restoreSource,
   type LeadSource,
 } from '../../api/source'
 
@@ -45,6 +46,10 @@ export function useSources(opts?: { includeArchived?: boolean }) {
     mutationFn: (id: number) => deleteSource(id),
     onSuccess: () => invalidate(),
   })
+  const restoreMut = useMutation({
+    mutationFn: (id: number) => restoreSource(id),
+    onSuccess: () => invalidate(),
+  })
 
   return {
     items: query.data?.items ?? [],
@@ -58,10 +63,12 @@ export function useSources(opts?: { includeArchived?: boolean }) {
     createSource: createMut.mutateAsync,
     updateSource: updateMut.mutateAsync,
     deleteSource: deleteMut.mutateAsync,
-    isMutating: createMut.isPending || updateMut.isPending || deleteMut.isPending,
+    restoreSource: restoreMut.mutateAsync,
+    isMutating: createMut.isPending || updateMut.isPending || deleteMut.isPending || restoreMut.isPending,
     createError: createMut.error ? getApiErrorMessage(createMut.error, 'Could not create source') : null,
     updateError: updateMut.error ? getApiErrorMessage(updateMut.error, 'Could not update source') : null,
     deleteError: deleteMut.error ? getApiErrorMessage(deleteMut.error, 'Could not delete source') : null,
+    restoreError: restoreMut.error ? getApiErrorMessage(restoreMut.error, 'Could not restore source') : null,
   }
 }
 

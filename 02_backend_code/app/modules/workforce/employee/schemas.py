@@ -92,6 +92,12 @@ class EmploymentCreate(BaseModel):
     assignment_change_reason: str | None = Field(
         None, description="Required if any assignment fields are provided"
     )
+    # Q9: explicit opt-in login provisioning (default false; employment and
+    # login remain separate concepts).
+    create_login: bool = False
+    login_email: EmailStr | None = None
+    login_temporary_password: str | None = Field(None, min_length=8, max_length=128)
+    login_role_id: int | str | None = None
 
 
 class EmployeeCreate(BaseModel):
@@ -114,6 +120,11 @@ class EmployeeCreate(BaseModel):
     shift_id: int | None = None
     work_mode: WorkMode | None = None
     assignment_change_reason: str | None = None
+    # Q9: explicit opt-in login provisioning (default false).
+    create_login: bool = False
+    login_email: EmailStr | None = None
+    login_temporary_password: str | None = Field(None, min_length=8, max_length=128)
+    login_role_id: int | str | None = None
 
     @field_validator("personal_email", mode="before")
     @classmethod
@@ -133,6 +144,28 @@ class EmployeeCreate(BaseModel):
 class EmploymentUpdate(BaseModel):
     employment_type: EmploymentType | None = None
     employee_code: str | None = Field(None, min_length=1, max_length=50)
+
+
+class RehireRequest(BaseModel):
+    """Q7: rehire a separated employment (same Person, new Employment row)."""
+
+    employee_code: str = Field(..., min_length=1, max_length=50)
+    employment_type: EmploymentType
+    joining_date: date
+    initial_state: EmploymentState = EmploymentState.ONBOARDING
+    initial_state_reason: str | None = None
+    department_id: int | None = None
+    position_id: int | None = None
+    location_id: int | None = None
+    shift_id: int | None = None
+    work_mode: WorkMode | None = None
+    assignment_change_reason: str | None = None
+    # Q7: reactivate the person's existing login where appropriate.
+    reactivate_login: bool = True
+    create_login: bool = False
+    login_email: EmailStr | None = None
+    login_temporary_password: str | None = Field(None, min_length=8, max_length=128)
+    login_role_id: int | str | None = None
 
 
 class EmploymentResponse(BaseModel):

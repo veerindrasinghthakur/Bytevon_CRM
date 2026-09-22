@@ -17,6 +17,7 @@ import {
   listDepartments,
   listRoles,
   lockUser,
+  restoreUserCredentials,
   unlockUser,
   updateUserLogin,
 } from '../../api/users'
@@ -59,6 +60,8 @@ export function useUserDetail(userId?: string) {
   })
 
   const display = detailQuery.data?.display
+  const isArchived =
+    detailQuery.data?.isArchived === true || display?.isArchived === true
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
 
   const [status, setStatus] = useState<AdminUserStatus>('Active')
@@ -197,6 +200,19 @@ export function useUserDetail(userId?: string) {
   // Deprecated alias
   const hardArchiveMutation = deleteMutation
 
+  const restoreMutation = useMutation({
+    mutationFn: () => restoreUserCredentials(loginId),
+    onSuccess: async () => {
+      setActionError(null)
+      await qc.invalidateQueries({ queryKey: queryKeys.admin.users.all })
+      await qc.invalidateQueries({ queryKey: queryKeys.admin.users.withoutLogin() })
+      await detailQuery.refetch()
+    },
+    onError: (e: unknown) => {
+      setActionError(getApiErrorMessage(e, 'Could not restore user'))
+    },
+  })
+
   const resetMutation = useMutation({
     mutationFn: () =>
       updateUserLogin(loginId, {
@@ -262,6 +278,7 @@ export function useUserDetail(userId?: string) {
       : null,
     refetch: () => void detailQuery.refetch(),
     display,
+    isArchived,
     form,
     status,
     avatarUrl,
@@ -285,6 +302,7 @@ export function useUserDetail(userId?: string) {
     activateMutation,
     deleteMutation,
     hardArchiveMutation,
+    restoreMutation,
     resetMutation,
     onAvatarPick,
     actionError,

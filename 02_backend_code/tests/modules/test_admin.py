@@ -3,13 +3,12 @@ from __future__ import annotations
 
 from sqlalchemy import select
 
-from app.modules.workforce.department.models import Department
 from app.modules.admin.holiday_calendar.models import HolidayCalendar
 from app.modules.admin.location.models import Location
 from app.modules.admin.settings.models import OrganizationSettings
 from app.modules.admin.shift.models import Shift
 from app.modules.admin.working_week.models import WorkingWeek
-from tests.modules.helpers import db_scalar, record_coverage, table_count
+from tests.modules.helpers import db_scalar, record_coverage
 
 COVERED = [
     ("POST", "/api/v1/admin/locations"),

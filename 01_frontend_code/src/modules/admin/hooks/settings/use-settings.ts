@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import {
@@ -8,6 +8,7 @@ import {
   getOrganizationSettings,
   getPositions,
   getWorkingWeeks,
+  restoreCalendar,
   updateOrganizationSettings,
 } from '../../api/organization'
 import type { OrganizationSettings } from '@/shared/schema'
@@ -77,9 +78,19 @@ export function useHolidayCalendars() {
   return withErrorMessage(
     useQuery({
       queryKey: queryKeys.organization.holidays.list(),
-      queryFn: getHolidayCalendars,
+      queryFn: () => getHolidayCalendars(),
     }),
   )
+}
+
+export function useRestoreHolidayCalendar() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: number) => restoreCalendar(id),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: queryKeys.organization.holidays.all() })
+    },
+  })
 }
 
 export function useHolidays(calendarId?: number) {

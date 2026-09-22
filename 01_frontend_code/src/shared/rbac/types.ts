@@ -1,11 +1,13 @@
 /**
  * Effective authorization types — locked for frontend RBAC.
  *
- * Permission = WHAT (boolean tree keyed by ResourceName + action)
+ * Permission = WHAT (boolean tree keyed by backend resource name + action)
  * Scope      = WHERE (ScopeName value; max overall + optional per-resource)
+ *
+ * Resource names are dynamic strings from the backend `resources` table —
+ * never a frontend enum.
  */
 import type { Action, ResourceName, ScopeName } from '@/shared/schema'
-import { ResourceName as ResourceEnum } from '@/shared/schema'
 
 /** Action keys on the permissions tree (lowercase, matches DX: permissions.project.update) */
 export type PermissionActionKey =
@@ -38,12 +40,11 @@ export function keyToAction(key: PermissionActionKey): Action {
 /** Nested boolean map: permissions.project.view === true */
 export type ResourcePermissionFlags = Partial<Record<PermissionActionKey, boolean>>
 
-export type PermissionsMap = {
-  [K in ResourceName]?: ResourcePermissionFlags
-}
+/** Resource keys are dynamic backend names — no enumeration here. */
+export type PermissionsMap = Partial<Record<string, ResourcePermissionFlags>>
 
 /** Per-resource data boundary (max scope granted for that resource across actions). */
-export type ScopeByResource = Partial<Record<ResourceName, ScopeName>>
+export type ScopeByResource = Partial<Record<string, ScopeName>>
 
 /**
  * Effective authorization payload (React Query source of truth).
@@ -68,21 +69,14 @@ export interface EffectiveAuthorization {
   scopeByResource: ScopeByResource
 }
 
-/** Empty deny-all baseline */
+/** Empty deny-all baseline (no resource enumeration — grants add keys). */
 export function emptyPermissions(): PermissionsMap {
-  const map: PermissionsMap = {}
-  for (const r of Object.values(ResourceEnum)) {
-    map[r] = Object.fromEntries(PERMISSION_ACTION_KEYS.map((a) => [a, false])) as ResourcePermissionFlags
-  }
-  return map
+  return {}
 }
 
+/** Super-admin baseline — canWith() short-circuits on isSuperAdmin first. */
 export function fullPermissions(): PermissionsMap {
-  const map: PermissionsMap = {}
-  for (const r of Object.values(ResourceEnum)) {
-    map[r] = Object.fromEntries(PERMISSION_ACTION_KEYS.map((a) => [a, true])) as ResourcePermissionFlags
-  }
-  return map
+  return {}
 }
 
 export type { Action, ResourceName, ScopeName }

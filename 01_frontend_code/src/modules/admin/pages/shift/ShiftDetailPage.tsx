@@ -4,16 +4,18 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
 import { DeleteButton } from '@/shared/components/ui/DeleteButton'
+import { ArchivedBadge } from '@/shared/components/ui/ArchivedBadge'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { can } from '@/shared/rbac'
-import { Action, ResourceName, type ShiftRow } from '@/shared/schema'
+import { Action, type ShiftRow } from '@/shared/schema'
 import {
   useCreateShift,
   useDeleteShift,
+  useRestoreShift,
   useShiftDetail,
   useShiftStaff,
   useUpdateShift,
@@ -43,14 +45,15 @@ export function ShiftDetailPage() {
   const id = Number(shiftId)
   const [actionError, setActionError] = useState<string | null>(null)
 
-  const canCreate = can({ action: Action.CREATE, resource: ResourceName.SHIFT })
-  const canUpdate = can({ action: Action.UPDATE, resource: ResourceName.SHIFT })
+  const canCreate = can({ action: Action.CREATE, resource: 'shift' })
+  const canUpdate = can({ action: Action.UPDATE, resource: 'shift' })
 
   const detailQuery = useShiftDetail(id, !isNew)
   const staffQuery = useShiftStaff(id, !isNew)
   const createMut = useCreateShift()
   const updateMut = useUpdateShift(id)
   const deleteMut = useDeleteShift()
+  const restoreMut = useRestoreShift()
 
   const handleDelete = () => {
     setActionError(null)
@@ -61,6 +64,19 @@ export function ShiftDetailPage() {
       },
       onError: (e: unknown) => {
         setActionError(getApiErrorMessage(e, 'Could not delete shift'))
+      },
+    })
+  }
+
+  const handleRestore = () => {
+    setActionError(null)
+    restoreMut.mutate(id, {
+      onSuccess: () => {
+        setActionError(null)
+        void detailQuery.refetch()
+      },
+      onError: (e: unknown) => {
+        setActionError(getApiErrorMessage(e, 'Could not restore shift'))
       },
     })
   }
@@ -187,6 +203,11 @@ export function ShiftDetailPage() {
               {` · ${staff.length} employees`}
             </p>
           )}
+          {!isNew && shift?.is_archived && (
+            <div className="mt-1.5">
+              <ArchivedBadge />
+            </div>
+          )}
         </div>
         {isEditing ? (
           <div className="flex gap-2">
@@ -209,6 +230,20 @@ export function ShiftDetailPage() {
                 isLoading={deleteMut.isPending}
                 onConfirm={handleDelete}
               />
+            )}
+            {!isNew && shift?.is_archived && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-secondary text-secondary hover:bg-secondary/10"
+                leftIcon={
+                  <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
+                }
+                isLoading={restoreMut.isPending}
+                onClick={handleRestore}
+              >
+                Restore
+              </Button>
             )}
           </div>
         )}

@@ -119,6 +119,28 @@ class HolidayCalendarService(BasePublicService):
         await self._audit("holiday_calendar.deleted", calendar_id, actor_employment_id)
         return MessageResponse(message="Holiday calendar deleted")
 
+    async def restore(
+        self, calendar_id: int, *, actor_employment_id: int | None = None
+    ) -> HolidayCalendarResponse:
+        """Q16: restore an archived holiday calendar (409 on name clash)."""
+        row = await self._repo.get_by_id(calendar_id, include_archived=True)
+        if row is None:
+            raise NotFoundError("Holiday calendar not found")
+        if not bool(getattr(row, "is_archived", False)):
+            raise DomainError("Holiday calendar is not archived")
+        clash = await self._repo.get_by_name(row.name)
+        if clash is not None and clash.id != calendar_id:
+            raise ConflictError(
+                f"Cannot restore: holiday calendar '{row.name}' already exists"
+            )
+        row.is_archived = False
+        row.archived_at = None
+        row.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        await self._commit()
+        await self._audit("holiday_calendar.restored", calendar_id, actor_employment_id)
+        await self._refresh(row)
+        return HolidayCalendarResponse.model_validate(row)
+
     async def add_holiday(
         self,
         calendar_id: int,

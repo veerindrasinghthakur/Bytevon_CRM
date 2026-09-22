@@ -10,9 +10,10 @@ import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { RowActions } from '@/shared/components/ui/RowActions'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
-import { ResourceName } from '@/shared/schema'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { Can } from '@/shared/rbac'
 import { useClientsList } from '../../hooks/client/use-clients'
 import { ClientQuickContent } from '../../components/client/ClientQuickContent'
 import { ClientStatsCards } from '../../components/client/ClientStatsCards'
@@ -39,6 +40,7 @@ export function ClientsListPage() {
     filtered,
     isLoading,
     isError,
+    error,
     isFetching,
     refetch,
     search,
@@ -117,20 +119,22 @@ export function ClientsListPage() {
               Import
             </Button>
             <ExportButton
-              resource={ResourceName.CLIENT}
+              resource={'client'}
               query={search}
               filters={{ status: statusFilter, type: typeFilter }}
               selectedIds={selectionMode ? Array.from(selectedIds) : undefined}
               filenameStem="clients"
             />
-            <Button
-              variant="primary"
-              size="sm"
-              leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-              onClick={goNew}
-            >
-              New Client
-            </Button>
+            <Can action="CREATE" resource="client">
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+                onClick={goNew}
+              >
+                New Client
+              </Button>
+            </Can>
           </div>
         }
       />
@@ -174,7 +178,7 @@ export function ClientsListPage() {
           minWidthClass="min-w-[140px]"
         />
         <DateRangeFilter
-          value={{ from: dateFilter?.from, to: dateFilter?.to }}
+          value={{ from: dateFilter?.from ?? '', to: dateFilter?.to ?? '' }}
           onChange={setDateFilter}
           label="Date"
           placeholder="Date"
@@ -192,7 +196,7 @@ export function ClientsListPage() {
             Cancel
           </Button>
           <ExportButton
-            resource={ResourceName.CLIENT}
+            resource={'client'}
             selectedIds={Array.from(selectedIds)}
             filenameStem="clients-selected"
             label="Export selected"
@@ -206,7 +210,7 @@ export function ClientsListPage() {
       {isError && (
         <ErrorState
           title="Failed to load clients"
-          description="We could not load the clients list. Check your connection and try again."
+          description={getApiErrorMessage(error, 'We could not load the clients list. Check your connection and try again.')}
           onRetry={() => void refetch()}
           onBack={() => safeNavigate(navigate, { to: salesRoutes.clients })}
         />

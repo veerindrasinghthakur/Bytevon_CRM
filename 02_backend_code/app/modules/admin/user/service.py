@@ -44,8 +44,8 @@ class UserService(BasePublicService):
 
     async def _employment_enrichment(self, person_id: int) -> dict[str, Any]:
         """Employment + org enrichment for a person (batched per call)."""
-        from app.modules.workforce.department.models import Department
         from app.modules.auth.models import Person
+        from app.modules.workforce.department.models import Department
         from app.modules.workforce.models import (
             Employment,
             EmploymentAssignment,
@@ -176,11 +176,16 @@ class UserService(BasePublicService):
             roles=[],
         )
 
-    async def get_admin_user(self, login_id: int) -> AdminUserDetailResponse:
+    async def get_admin_user(
+        self, login_id: int, *, include_archived: bool = False
+    ) -> AdminUserDetailResponse:
+        """Q15: archived hidden by default; history views opt in."""
         from app.modules.auth.models import Login
 
         login = await self._session.get(Login, login_id)
-        if login is None or bool(getattr(login, "is_archived", False)):
+        if login is None:
+            raise NotFoundError("User not found")
+        if bool(getattr(login, "is_archived", False)) and not include_archived:
             raise NotFoundError("User not found")
         email = getattr(login, "email", "") or ""
         label = self._status_label(login)
@@ -401,6 +406,28 @@ class UserService(BasePublicService):
         await self._commit()
         await self._audit("login.deleted", login_id, actor_employment_id)
         return MessageResponse(message="User deleted")
+
+    async def restore_admin_user(
+        self, login_id: int, *, actor_employment_id: int | None = None
+    ) -> MessageResponse:
+        """Q16: restore an archived login (reactivate access)."""
+        from app.modules.auth.models import Login
+
+        login = await self._session.get(Login, login_id)
+        if login is None:
+            raise NotFoundError("User not found")
+        if not bool(getattr(login, "is_archived", False)):
+            raise DomainError("User is not archived")
+        login.is_archived = False
+        login.archived_at = None
+        if hasattr(login, "archived_by"):
+            login.archived_by = None
+        login.is_active = True
+        login.failed_attempt_count = 0
+        login.locked_until = None
+        await self._commit()
+        await self._audit("login.restored", login_id, actor_employment_id)
+        return MessageResponse(message="User restored")
 
     async def list_employments_without_login(self) -> list[EmploymentWithoutLogin]:
         from app.modules.auth.models import Login, Person

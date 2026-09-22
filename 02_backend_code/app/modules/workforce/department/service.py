@@ -57,9 +57,15 @@ class DepartmentService(BasePublicService):
         await self._refresh(dept)
         return DepartmentResponse.model_validate(dept)
 
-    async def get(self, department_id: int) -> DepartmentResponse:
+    async def get(
+        self, department_id: int, *, include_archived: bool = False
+    ) -> DepartmentResponse:
+        """Q15: archived rows are hidden by default; history views pass
+        include_archived=True and render the Archived badge from the flag."""
         dept = await self._repo.get_by_id(department_id, include_archived=True)
-        if dept is None or bool(getattr(dept, "is_archived", False)):
+        if dept is None:
+            raise NotFoundError("Department not found")
+        if bool(getattr(dept, "is_archived", False)) and not include_archived:
             raise NotFoundError("Department not found")
         return DepartmentResponse.model_validate(dept)
 
@@ -108,12 +114,37 @@ class DepartmentService(BasePublicService):
         await self._refresh(dept)
         return DepartmentResponse.model_validate(dept)
 
+    async def _count_active_assignments(self, department_id: int) -> int:
+        """Active (covering today) assignments referencing this department."""
+        from datetime import date as _date
+
+        from sqlalchemy import func, select
+
+        from app.modules.workforce.models import EmploymentAssignment
+
+        today = _date.today()
+        stmt = select(func.count(EmploymentAssignment.id)).where(
+            EmploymentAssignment.department_id == department_id,
+            EmploymentAssignment.effective_from <= today,
+            (EmploymentAssignment.effective_to.is_(None))
+            | (EmploymentAssignment.effective_to >= today),
+        )
+        res = await self._session.execute(stmt)
+        return int(res.scalar() or 0)
+
     async def delete(
         self, department_id: int, *, actor_employment_id: int | None = None
     ) -> MessageResponse:
         dept = await self._repo.get_by_id(department_id, include_archived=True)
         if dept is None or bool(getattr(dept, "is_archived", False)):
             raise NotFoundError("Department not found")
+        # Q3: cannot archive while actively referenced; reassign first.
+        active = await self._count_active_assignments(department_id)
+        if active > 0:
+            raise ConflictError(
+                f"Department is still referenced by {active} active assignment(s); "
+                "reassign those employments first"
+            )
         dept.is_archived = True
         if hasattr(dept, "archived_at"):
             dept.archived_at = datetime.now(UTC)
@@ -128,6 +159,33 @@ class DepartmentService(BasePublicService):
         self, department_id: int, *, actor_employment_id: int | None = None
     ) -> MessageResponse:
         return await self.delete(department_id, actor_employment_id=actor_employment_id)
+
+    async def restore(
+        self, department_id: int, *, actor_employment_id: int | None = None
+    ) -> DepartmentResponse:
+        """Q16: restore an archived department.
+
+        Fails with 409 when an active department already uses the name.
+        """
+        dept = await self._repo.get_by_id(department_id, include_archived=True)
+        if dept is None:
+            raise NotFoundError("Department not found")
+        if not bool(getattr(dept, "is_archived", False)):
+            raise DomainError("Department is not archived")
+        clash = await self._repo.get_by_name(dept.name)
+        if clash is not None and clash.id != department_id:
+            raise ConflictError(
+                f"Cannot restore: department '{dept.name}' already exists"
+            )
+        dept.is_archived = False
+        if hasattr(dept, "archived_at"):
+            dept.archived_at = None
+        if hasattr(dept, "archived_by"):
+            dept.archived_by = None
+        await self._commit()
+        await self._audit("department.restored", department_id, actor_employment_id)
+        await self._refresh(dept)
+        return DepartmentResponse.model_validate(dept)
 
     async def list_employees(
         self,

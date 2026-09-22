@@ -4,6 +4,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
+import { Can } from '@/shared/rbac'
 import { StatusDot } from '@/shared/components/ui/StatusDot'
 import { useClient, useSalesActivities } from '../../hooks/use-sales'
 import { salesRoutes } from '../../routes'
@@ -69,18 +70,20 @@ export function ClientDetailPage() {
                 Open chat
               </a>
             )}
-            <Button
-              variant="primary"
-              leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
-              onClick={() =>
-                safeNavigate(navigate, {
-                  to: salesRoutes.clientEdit(client.id),
-                  params: { clientId: client.id },
-                })
-              }
-            >
-              Edit client
-            </Button>
+            <Can action="UPDATE" resource="client">
+              <Button
+                variant="primary"
+                leftIcon={<span className="material-symbols-outlined text-lg">edit</span>}
+                onClick={() =>
+                  safeNavigate(navigate, {
+                    to: salesRoutes.clientEdit(client.id),
+                    params: { clientId: client.id },
+                  })
+                }
+              >
+                Edit client
+              </Button>
+            </Can>
           </div>
         }
       />

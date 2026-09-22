@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { loadStoredSession, persistSession, refreshApi } from '../api/auth'
 import { setCurrentEmploymentId } from '@/shared/rbac'
-import { env } from '@/config/env'
+import { notifySessionExpired } from '@/shared/lib/session-expiry'
 import { useEventListener } from '@/shared/hooks/useEventListener'
 import {UseAuthBootstrapResult} from '../types'
 import type { AuthSession } from '../schemas/auth'
@@ -36,7 +36,6 @@ export function useAuthBootstrap(): UseAuthBootstrapResult {
 
   const handleFocus = useCallback(() => {
     const currentSession = sessionRef.current
-    if (!env.useMockApi) return
     if (!currentSession) return
 
     let inFlight = false
@@ -48,8 +47,12 @@ export function useAuthBootstrap(): UseAuthBootstrapResult {
           setSessionState(next)
           applyEmploymentFromSession(next)
         })
-        .catch(() => {
-          // keep session — network blip or offline must not log out
+        .catch((err: unknown) => {
+          // Expired refresh token while tab was away → force relogin.
+          if (err instanceof Error && err.message === 'SESSION_EXPIRED') {
+            notifySessionExpired()
+          }
+          // Network blips / offline must not log out.
         })
         .finally(() => {
           inFlight = false

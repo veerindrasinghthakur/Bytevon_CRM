@@ -87,8 +87,8 @@ async def list_roles(
 
 
 @router.get("/roles/{role_id}", response_model=RoleDetailResponse, dependencies=[Depends(require_permission("role", "VIEW", "ORGANIZATION"))])
-async def get_role(role_id: int, service: RBACServiceDep) -> RoleDetailResponse:
-    return await service.get_role(role_id)
+async def get_role(role_id: int, service: RBACServiceDep, include_archived: bool = Query(False)) -> RoleDetailResponse:
+    return await service.get_role(role_id, include_archived=include_archived)
 
 
 @router.patch("/roles/{role_id}", response_model=RoleResponse)
@@ -108,6 +108,16 @@ async def delete_role(
     auth: Annotated[AuthContext, Depends(require_permission("role", "DELETE", "ORGANIZATION"))],
 ) -> MessageResponse:
     return await service.delete_role(role_id, actor_employment_id=auth.employment_id)
+
+
+@router.post("/roles/{role_id}/restore", response_model=RoleResponse)
+async def restore_role(
+    role_id: int,
+    service: RBACServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("role", "UPDATE", "ORGANIZATION"))],
+) -> RoleResponse:
+    """Q16: restore an archived role (409 when the name is taken)."""
+    return await service.restore_role(role_id, actor_employment_id=auth.employment_id)
 
 
 @router.post(

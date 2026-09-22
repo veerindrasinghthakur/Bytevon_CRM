@@ -297,7 +297,7 @@ export function AttendanceSettingsPage() {
             <div>
               <h3 className="text-title-lg font-semibold text-on-surface">Attendance policy</h3>
               <p className="text-body-sm text-on-surface-variant">
-                Saved via POST /attendance/policies (new effective version each save)
+                Saved via POST /workforce/attendance/policies (new effective version each save)
               </p>
             </div>
           </div>

@@ -62,9 +62,12 @@ class MonthlyPayrollService(BasePublicService):
             data.employment_id, data.year, data.month, with_items=True
         )
         if existing and existing.status == PayrollStatus.PAID:
-            raise DomainError("Payroll already PAID; cannot recalculate")
+            raise DomainError("Payroll already PAID; PAID is terminal and immutable")
         if existing and existing.status == PayrollStatus.APPROVED:
-            raise DomainError("Payroll is APPROVED; reject/reset before recalculating")
+            raise DomainError(
+                "Payroll is APPROVED; reject it (POST /payroll/{id}/reject) "
+                "before recalculating"
+            )
 
         last_day = monthrange(data.year, data.month)[1]
         as_of = date(data.year, data.month, last_day)
@@ -213,6 +216,38 @@ class MonthlyPayrollService(BasePublicService):
         await self._audit("payroll.approved", payroll.id, actor_employment_id)
         return _payroll_response(payroll)
 
+    async def reject_payroll(
+        self,
+        payroll_id: int,
+        *,
+        reason: str,
+        actor_employment_id: int | None = None,
+    ) -> MonthlyPayrollResponse:
+        """Q4: APPROVED → CALCULATED reject/reset with reason + audit.
+
+        PAID is terminal and can never transition back.
+        """
+        payroll = await self._repo.get_payroll_by_id(payroll_id, with_items=True)
+        if payroll is None:
+            raise NotFoundError("Payroll not found")
+        if payroll.status == PayrollStatus.PAID:
+            raise DomainError("PAID payroll is terminal and cannot be rejected")
+        if payroll.status != PayrollStatus.APPROVED:
+            raise DomainError("Only APPROVED payroll can be rejected")
+        if not (reason or "").strip():
+            raise DomainError("A rejection reason is required")
+        payroll.status = PayrollStatus.CALCULATED
+        payroll.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        await self._commit()
+        await self._session.refresh(payroll)
+        await self._audit(
+            "payroll.rejected",
+            payroll.id,
+            actor_employment_id,
+            description=f"Payroll rejected: {reason.strip()}",
+        )
+        return _payroll_response(payroll)
+
     async def mark_paid(
         self,
         payroll_id: int,
@@ -226,6 +261,32 @@ class MonthlyPayrollService(BasePublicService):
         if payroll.status != PayrollStatus.APPROVED:
             raise DomainError("Only APPROVED payroll can be marked PAID")
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        # Q8: PAID must guarantee the attendance month is locked. Lock first;
+        # if locking fails the payment fails (no swallowed exception).
+        from app.modules.workforce.attendance.service import AttendanceService
+
+        att = AttendanceService(self._session)
+        try:
+            await att.lock_monthly_summary(
+                payroll.employment_id,
+                payroll.year,
+                payroll.month,
+                actor_employment_id=actor,
+            )
+        except NotFoundError:
+            # No summary exists for this month (e.g. no attendance days):
+            # nothing to lock; payment may proceed.
+            pass
+        except DomainError:
+            raise
+        except Exception as exc:
+            logger.exception(
+                "Failed to lock attendance summary before payroll PAID id=%s",
+                payroll.id,
+            )
+            raise DomainError(
+                "Cannot mark payroll PAID: attendance month could not be locked"
+            ) from exc
         payroll.status = PayrollStatus.PAID
         payroll.payment_method = data.payment_method
         payroll.payment_reference = data.payment_reference
@@ -234,21 +295,14 @@ class MonthlyPayrollService(BasePublicService):
         await self._commit()
         await self._session.refresh(payroll)
         await self._audit("payroll.paid", payroll.id, actor)
-        try:
-            from app.modules.workforce.attendance.service import AttendanceService
-
-            att = AttendanceService(self._session)
-            await att.lock_monthly_summary(
-                payroll.employment_id,
-                payroll.year,
-                payroll.month,
-                actor_employment_id=actor,
-            )
-        except Exception:
-            logger.exception(
-                "Failed to lock attendance summary after payroll PAID id=%s",
-                payroll.id,
-            )
+        await self._notify(
+            employment_id=payroll.employment_id,
+            title="Payroll paid",
+            body=(
+                f"Payroll for {payroll.year}-{payroll.month:02d} has been marked "
+                f"PAID (net {payroll.net_salary})."
+            ),
+        )
         return _payroll_response(payroll)
 
     async def get_payroll(self, payroll_id: int) -> MonthlyPayrollResponse:

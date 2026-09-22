@@ -9,6 +9,8 @@ export const queryKeys = {
     all: ['rbac'] as const,
     effective: (employmentId?: number | null) =>
       ['rbac', 'effective', employmentId ?? null] as const,
+    /** Seeded backend resource catalog — single source of truth for resource names */
+    resources: () => ['rbac', 'resources'] as const,
   },
   admin: {
     users: {
@@ -100,7 +102,8 @@ export const queryKeys = {
     },
     attendance: {
       all: ['workforce', 'attendance'] as const,
-      dashboard: () => [...queryKeys.workforce.attendance.all, 'dashboard'] as const,
+      dashboard: (params?: unknown) =>
+        [...queryKeys.workforce.attendance.all, 'dashboard', params ?? {}] as const,
       today: (filters?: unknown) =>
         [...queryKeys.workforce.attendance.all, 'today', filters ?? {}] as const,
       detail: (id: string) => [...queryKeys.workforce.attendance.all, 'detail', id] as const,
@@ -221,6 +224,7 @@ export const queryKeys = {
     tasks: {
       all: ['my-work', 'tasks'] as const,
       list: (filters?: unknown) => [...queryKeys.myWork.tasks.all, 'list', filters ?? {}] as const,
+      detail: (id: string) => [...queryKeys.myWork.tasks.all, 'detail', id] as const,
     },
     corrections: {
       all: ['my-work', 'corrections'] as const,

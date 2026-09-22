@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.modules.my_work.attendance.service import MyWorkAttendanceService
+from app.modules.my_work.overview.service import MyWorkOverviewService
 from app.modules.my_work.profile.service import ProfileService
 
 
@@ -27,3 +28,14 @@ MyWorkAttendanceServiceDep = Annotated[
     MyWorkAttendanceService, Depends(get_my_work_attendance_service)
 ]
 ProfileServiceDep = Annotated[ProfileService, Depends(get_profile_service)]
+
+
+def get_my_work_overview_service(
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+) -> MyWorkOverviewService:
+    return MyWorkOverviewService(session)
+
+
+MyWorkOverviewServiceDep = Annotated[
+    MyWorkOverviewService, Depends(get_my_work_overview_service)
+]

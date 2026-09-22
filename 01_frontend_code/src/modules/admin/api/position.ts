@@ -21,14 +21,30 @@ export async function getPositions(params?: { includeArchived?: boolean }) {
   return asList(data)
 }
 
-export async function getPosition(id: number): Promise<PositionRow | null> {
+export async function getPosition(
+  id: number,
+  opts?: { includeArchived?: boolean },
+): Promise<PositionRow | null> {
   if (env.useMockApi) {
     await delay()
     const row = getDb().positions.find((p) => p.id === id)
     return row ? { ...row } : null
   }
-  const { data } = await apiClient.get<PositionRow>(`/workforce/positions/${id}`)
-  return data
+  try {
+    const { data } = await apiClient.get<PositionRow>(`/workforce/positions/${id}`, {
+      params: opts?.includeArchived ? { include_archived: true } : undefined,
+    })
+    return data
+  } catch (err) {
+    // Archived rows 404 by default — retry with include_archived before giving up.
+    if (!opts?.includeArchived && isNotFound(err)) {
+      const { data } = await apiClient.get<PositionRow>(`/workforce/positions/${id}`, {
+        params: { include_archived: true },
+      })
+      return data
+    }
+    throw err
+  }
 }
 
 export async function createPosition(input: { name: string }): Promise<PositionRow> {
@@ -71,6 +87,24 @@ export async function deletePosition(id: number): Promise<void> {
     return
   }
   return updatePosition(id, { is_archived: true }).then(() => undefined)
+}
+
+/** Q16: restore an archived position (real backend only). */
+export async function restorePosition(id: number): Promise<PositionRow> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<PositionRow>(`/workforce/positions/${id}/restore`)
+    return data
+  }
+  return updatePosition(id, { is_archived: false })
+}
+
+function isNotFound(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'response' in err &&
+    (err as { response?: { status?: number } }).response?.status === 404
+  )
 }
 
 /** @deprecated Use deletePosition. */

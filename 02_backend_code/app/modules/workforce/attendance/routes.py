@@ -15,6 +15,8 @@ from app.core.ip_utils import normalize_ip_address
 from app.modules.workforce.attendance.schemas import (
     AttendanceDayDetailResponse,
     AttendanceDayResponse,
+    AttendancePolicyCreate,
+    AttendancePolicyResponse,
     BreakEndRequest,
     BreakResponse,
     BreakStartRequest,
@@ -146,6 +148,23 @@ async def lock_monthly_summary(
 
 
 @router.post(
+    "/summaries/{employment_id}/{year}/{month}/unlock",
+    response_model=MonthlySummaryResponse,
+)
+async def unlock_monthly_summary(
+    employment_id: int,
+    year: int,
+    month: int,
+    service: AttendanceServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "UNLOCK", "ORGANIZATION"))],
+) -> MonthlySummaryResponse:
+    """Q8: designated-role reopen of a locked month (audited)."""
+    return await service.unlock_monthly_summary(
+        employment_id, year, month, actor_employment_id=auth.employment_id
+    )
+
+
+@router.post(
     "/breaks/start",
     response_model=BreakResponse,
     status_code=status.HTTP_201_CREATED,
@@ -170,3 +189,20 @@ async def end_break(
     owner_id = await service.get_break_owner_employment(break_id)
     enforce_owner_or_grant(auth, "attendance", "CREATE", owner_employment_id=owner_id)
     return await service.end_break(break_id, body, actor_employment_id=auth.employment_id)
+
+
+@router.get("/policy/current", response_model=AttendancePolicyResponse)
+async def get_current_attendance_policy(
+    service: AttendanceServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "CUSTOM"))],
+) -> AttendancePolicyResponse:
+    return await service.get_current_policy()
+
+
+@router.post("/policies", response_model=AttendancePolicyResponse, status_code=status.HTTP_201_CREATED)
+async def create_attendance_policy(
+    body: AttendancePolicyCreate,
+    service: AttendanceServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "CREATE", "ORGANIZATION"))],
+) -> AttendancePolicyResponse:
+    return await service.create_policy(body, actor_employment_id=auth.employment_id)

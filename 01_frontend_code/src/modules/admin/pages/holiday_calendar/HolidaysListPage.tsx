@@ -11,7 +11,9 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { useHolidays } from '../../hooks/settings/use-settings'
 import { createHoliday, getHolidayCalendar, getHolidays, deleteHoliday } from '../../api/organization'
+import { useRestoreHolidayCalendar } from '../../hooks/settings/use-settings'
 import { DeleteButton } from '@/shared/components/ui/DeleteButton'
+import { ArchivedBadge } from '@/shared/components/ui/ArchivedBadge'
 import type { HolidayRow } from '@/shared/schema'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { holidayTypes as TYPES } from '../../schemas/enums'
@@ -40,6 +42,8 @@ export function HolidaysListPage() {
   const [pickHolidayId, setPickHolidayId] = useState('')
   const [saveError, setSaveError] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [calError, setCalError] = useState<string | null>(null)
+  const restoreCalMut = useRestoreHolidayCalendar()
 
   const allHolidaysQuery = useQuery({
     queryKey: queryKeys.organization.holidays.all(),
@@ -111,6 +115,20 @@ export function HolidaysListPage() {
   }
 
   const calName = calQuery.data?.name ?? `Calendar #${id}`
+  const calArchived = calQuery.data?.is_archived === true
+
+  const handleRestoreCalendar = () => {
+    setCalError(null)
+    restoreCalMut.mutate(id, {
+      onSuccess: () => {
+        setCalError(null)
+        void calQuery.refetch()
+      },
+      onError: (e: unknown) => {
+        setCalError(getApiErrorMessage(e, 'Could not restore calendar'))
+      },
+    })
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -119,19 +137,46 @@ export function HolidaysListPage() {
         <div>
           <h2 className="text-title-lg font-semibold text-on-background">{calName}</h2>
           <p className="text-body-sm text-on-surface-variant mt-0.5">Holiday schedule · Calendar #{id}</p>
+          {calArchived && (
+            <div className="mt-1.5">
+              <ArchivedBadge />
+            </div>
+          )}
         </div>
-        <Button
-          variant="primary"
-          size="sm"
-          leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-          onClick={() => {
-            setAdding(true)
-            setSaveError(null)
-          }}
-        >
-          Add Holiday
-        </Button>
+        <div className="flex gap-2 flex-wrap">
+          {calArchived && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-secondary text-secondary hover:bg-secondary/10"
+              leftIcon={
+                <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
+              }
+              isLoading={restoreCalMut.isPending}
+              onClick={handleRestoreCalendar}
+            >
+              Restore
+            </Button>
+          )}
+          <Button
+            variant="primary"
+            size="sm"
+            leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
+            onClick={() => {
+              setAdding(true)
+              setSaveError(null)
+            }}
+          >
+            Add Holiday
+          </Button>
+        </div>
       </div>
+
+      {calError && (
+        <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error">
+          {calError}
+        </div>
+      )}
 
       {deleteError && (
         <div className="rounded-lg border border-error/30 bg-error/10 px-4 py-3 text-body-sm text-error">

@@ -1,14 +1,19 @@
 """PayrollRunService — run / checks / preview."""
 from __future__ import annotations
 
+import logging
 from datetime import date
 from typing import Any
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.db.enums import EmploymentState
 from app.modules.payroll.monthly_payroll.schemas import PayrollCalculateRequest
 from app.modules.payroll.monthly_payroll.service import MonthlyPayrollService
 from app.modules.payroll.payroll_run.schemas import MessageResponse, RunPayrollBody
+
+logger = logging.getLogger(__name__)
 
 
 def _money(r: Any, *names: str) -> float:
@@ -73,7 +78,53 @@ class PayrollRunService:
                 actor_employment_id=actor_employment_id,
             )
             return MessageResponse(message="Payroll calculated for employment")
-        return MessageResponse(
-            message=f"Payroll run accepted for {body.year}-{body.month:02d} "
-            "(pass employment_id to calculate a single employee)"
+        # Q11: real bulk calculation over all eligible (non-separated)
+        # employments with per-employee results + batch summary.
+        from app.modules.workforce.models import Employment
+
+        session = self._monthly._session
+        rows = list(
+            await session.scalars(
+                select(Employment).where(
+                    Employment.current_state.not_in(
+                        [
+                            EmploymentState.RESIGNED,
+                            EmploymentState.TERMINATED,
+                            EmploymentState.ALUMNI,
+                        ]
+                    )
+                )
+            )
         )
+        succeeded = 0
+        failed = 0
+        failures: list[dict[str, Any]] = []
+        for emp in rows:
+            try:
+                await self._monthly.calculate_payroll(
+                    PayrollCalculateRequest(
+                        employment_id=emp.id,
+                        year=body.year,
+                        month=body.month,
+                    ),
+                    actor_employment_id=actor_employment_id,
+                )
+                succeeded += 1
+            except Exception as exc:
+                failed += 1
+                logger.warning(
+                    "Bulk payroll failed employment_id=%s: %s", emp.id, exc
+                )
+                failures.append(
+                    {"employment_id": emp.id, "error": str(exc)[:300]}
+                )
+        summary = (
+            f"Payroll run for {body.year}-{body.month:02d}: "
+            f"{succeeded} succeeded, {failed} failed "
+            f"({len(rows)} eligible employments)"
+        )
+        if failures:
+            summary += "; failures: " + "; ".join(
+                f"#{f['employment_id']}: {f['error']}" for f in failures[:5]
+            )
+        return MessageResponse(message=summary)

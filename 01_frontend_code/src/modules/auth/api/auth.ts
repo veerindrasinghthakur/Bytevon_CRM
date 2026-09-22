@@ -171,9 +171,27 @@ export async function logoutApi(revokeAll = false): Promise<void> {
 export async function refreshApi(refreshToken: string): Promise<AuthSession> {
   if (!env.useMockApi) {
     try {
-      const { data } = await apiClient.post<AuthSession>('/auth/refresh', { refreshToken })
-      persistSession(data)
-      return data
+      // Backend returns a bare token pair (snake_case, no user object).
+      // Map it onto the stored AuthSession so user/rememberMe survive refresh —
+      // persisting the raw pair corrupts the session and logs the user out.
+      const { data } = await apiClient.post<{
+        access_token: string
+        refresh_token: string
+        token_type: string
+        expires_in: number
+      }>('/auth/refresh', { refresh_token: refreshToken })
+      const current = loadStoredSession()
+      if (!current) throw new Error('SESSION_EXPIRED')
+      const next: AuthSession = {
+        ...current,
+        tokens: {
+          accessToken: data.access_token,
+          refreshToken: data.refresh_token,
+          expiresIn: data.expires_in,
+        },
+      }
+      persistSession(next)
+      return next
     } catch (err) {
       // Only a definitive 401 means the refresh token is invalid.
       // Network errors / 5xx / backend-down must NOT wipe the local session,

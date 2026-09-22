@@ -39,6 +39,7 @@ export function SourcesListPage() {
     createSource,
     updateSource,
     deleteSource,
+    restoreSource,
     isMutating,
   } = useSources({ includeArchived })
 
@@ -119,6 +120,15 @@ export function SourcesListPage() {
     }
   }
 
+  const handleRestore = async (row: LeadSource) => {
+    try {
+      await restoreSource(row.id)
+      setActionError(null)
+    } catch (err) {
+      setActionError(getApiErrorMessage(err, 'Could not restore source'))
+    }
+  }
+
   const busy = isMutating
 
   return (
@@ -186,6 +196,7 @@ export function SourcesListPage() {
             setDeleteTarget(row)
             setActionError(null)
           }}
+          onRestore={(row) => void handleRestore(row)}
         />
       )}
 

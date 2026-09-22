@@ -8,7 +8,7 @@ import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Can } from '@/shared/rbac'
-import { Action, ResourceName } from '@/shared/schema'
+import { Action } from '@/shared/schema'
 import type { DepartmentEmployee } from '../api/departments'
 import { useDepartment } from '../hooks/department/use-departments'
 import { DynamicRouteCrumbs } from '../components/RouteCrumbs'
@@ -16,6 +16,7 @@ import { workforceRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { cn } from '@/shared/lib/cn'
 import { DeleteButton } from '@/shared/components/ui/DeleteButton'
+import { ArchivedBadge } from '@/shared/components/ui/ArchivedBadge'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -38,6 +39,7 @@ export function DepartmentDetailPage() {
     refetch,
     updateDepartment,
     deleteDepartment,
+    restoreDepartment,
     assignEmployee,
     removeEmployee,
     isMutating,
@@ -144,6 +146,16 @@ export function DepartmentDetailPage() {
     }
   }
 
+  const handleRestoreDepartment = async () => {
+    if (!d) return
+    try {
+      await restoreDepartment()
+      await refetch()
+    } catch {
+      /* error handling */
+    }
+  }
+
   if (isLoading) {
     return <PageLoadingSkeleton />
   }
@@ -210,6 +222,7 @@ export function DepartmentDetailPage() {
             >
               {d.status}
             </span>
+            {d.isArchived && <ArchivedBadge />}
           </div>
           <div className="flex gap-2 flex-wrap">
             {isEditing ? (
@@ -222,7 +235,7 @@ export function DepartmentDetailPage() {
                 </Button>
               </div>
             ) : (
-              // <Can action={Action.Update} resource={ResourceName.Department}>
+              // <Can action={Action.Update} resource={'department'}>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
@@ -231,13 +244,31 @@ export function DepartmentDetailPage() {
                   >
                     Edit
                   </Button>
-                  <DeleteButton
-                    iconOnly
-                    entityLabel={d?.name}
-                    onConfirm={handleDeleteDepartment}
-                    disabled={isMutating}
-                    isLoading={isMutating}
-                  />
+                  {!d.isArchived && (
+                    <DeleteButton
+                      iconOnly
+                      entityLabel={d?.name}
+                      onConfirm={handleDeleteDepartment}
+                      disabled={isMutating}
+                      isLoading={isMutating}
+                    />
+                  )}
+                  {d.isArchived && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-secondary text-secondary hover:bg-secondary/10"
+                      leftIcon={
+                        <span className="material-symbols-outlined text-[18px]">
+                          restore_from_trash
+                        </span>
+                      }
+                      isLoading={isMutating}
+                      onClick={() => void handleRestoreDepartment()}
+                    >
+                      Restore
+                    </Button>
+                  )}
                 </div>
               // </Can>
             )}
@@ -344,7 +375,7 @@ export function DepartmentDetailPage() {
             <Icon name="group_off" className="text-5xl" />
             <p>No employees assigned yet.</p>
             {!isEditing && (
-              <Can action={Action.UPDATE} resource={ResourceName.DEPARTMENT}>
+              <Can action={Action.UPDATE} resource={'department'}>
                 <Button variant="primary" size="sm" onClick={() => void openAdd()}>
                   Add Member
                 </Button>

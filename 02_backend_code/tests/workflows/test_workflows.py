@@ -85,8 +85,9 @@ def test_workflow_leave_approval_balance(client, factory):
         json={
             "employment_id": req["employment_id"],
             "leave_type": "CASUAL",
-            "start_date": "2030-08-04",
-            "end_date": "2030-08-05",
+            # Mon/Tue: canonical working-day count (2 days) matches the -2.0 below
+            "start_date": "2030-08-05",
+            "end_date": "2030-08-06",
             "reason": "trip",
         },
         headers=req["headers"],

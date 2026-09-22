@@ -8,8 +8,9 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { createPosition, getPosition, updatePosition, deletePosition } from '../../api/organization'
+import { createPosition, getPosition, updatePosition, deletePosition, restorePosition } from '../../api/organization'
 import { DeleteButton } from '@/shared/components/ui/DeleteButton'
+import { ArchivedBadge } from '@/shared/components/ui/ArchivedBadge'
 import { cn } from '@/shared/lib/cn'
 import { queryKeys } from '@/shared/lib/query-keys'
 
@@ -64,6 +65,14 @@ export function PositionDetailPage() {
     },
   })
 
+  const restoreMut = useMutation({
+    mutationFn: () => restorePosition(id),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: queryKeys.organization.positions(true) })
+      await detailQuery.refetch()
+    },
+  })
+
   if (!isNew && detailQuery.isLoading) return <PageLoadingSkeleton />
   if (!isNew && (detailQuery.isError || !detailQuery.data)) {
     return (
@@ -92,6 +101,11 @@ export function PositionDetailPage() {
                 {pos.is_archived ? 'Archived' : 'Active'}
               </span>
             </p>
+          )}
+          {!isNew && pos?.is_archived && (
+            <div className="mt-1.5">
+              <ArchivedBadge />
+            </div>
           )}
         </div>
         {isEditing ? (
@@ -127,6 +141,20 @@ export function PositionDetailPage() {
                 isLoading={deleteMut.isPending}
                 onConfirm={() => deleteMut.mutateAsync()}
               />
+            )}
+            {!isNew && pos?.is_archived && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-secondary text-secondary hover:bg-secondary/10"
+                leftIcon={
+                  <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
+                }
+                isLoading={restoreMut.isPending}
+                onClick={() => restoreMut.mutate()}
+              >
+                Restore
+              </Button>
             )}
           </div>
         )}

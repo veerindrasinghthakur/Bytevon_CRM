@@ -37,8 +37,8 @@ async def list_sources(
 
 
 @router.get("/sources/{source_id}", response_model=SourceResponse, dependencies=[Depends(require_permission("client", "VIEW", "ORGANIZATION"))])
-async def get_source(source_id: int, service: SourceServiceDep) -> SourceResponse:
-    return await service.get(source_id)
+async def get_source(source_id: int, service: SourceServiceDep, include_archived: bool = Query(False)) -> SourceResponse:
+    return await service.get(source_id, include_archived=include_archived)
 
 
 @router.patch("/sources/{source_id}", response_model=SourceResponse)
@@ -68,6 +68,16 @@ async def archive_source_alias(
     auth: Annotated[AuthContext, Depends(require_permission("client", "UPDATE", "ORGANIZATION"))],
 ) -> MessageResponse:
     return await service.delete(source_id, actor_employment_id=auth.employment_id)
+
+
+@router.post("/sources/{source_id}/restore", response_model=SourceResponse)
+async def restore_source(
+    source_id: int,
+    service: SourceServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("client", "UPDATE", "ORGANIZATION"))],
+) -> SourceResponse:
+    """Q16: restore an archived source (409 on name clash)."""
+    return await service.restore(source_id, actor_employment_id=auth.employment_id)
 
 
 # Legacy platform paths

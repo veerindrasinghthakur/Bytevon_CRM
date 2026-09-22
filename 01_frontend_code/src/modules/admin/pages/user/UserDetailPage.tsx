@@ -4,11 +4,12 @@ import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
 import { DeleteButton } from '@/shared/components/ui/DeleteButton'
+import { ArchivedBadge } from '@/shared/components/ui/ArchivedBadge'
 import { SearchableSelect } from '@/shared/components/ui/SearchableSelect'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Can } from '@/shared/rbac'
-import { Action, ResourceName } from '@/shared/schema'
+import { Action } from '@/shared/schema'
 import { myAdminRoutes } from '@/modules/admin/routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useUserDetail } from '../../hooks/user/use-user-detail'
@@ -66,7 +67,7 @@ export function UserDetailPage() {
             <p className="font-semibold text-on-background">Account locked</p>
             <p className="text-on-surface-variant">This user cannot sign in until the account is unlocked.</p>
           </div>
-          <Can action={Action.UNLOCK} resource={ResourceName.USER}>
+          <Can action={Action.UNLOCK} resource={'user'}>
             <Button variant="primary" size="sm" onClick={() => d.setLockOpen(true)}>
               Unlock
             </Button>
@@ -86,7 +87,7 @@ export function UserDetailPage() {
               Login is disabled. Activate to restore sign-in, or delete to remove credentials.
             </p>
           </div>
-          <Can action={Action.UPDATE} resource={ResourceName.USER}>
+          <Can action={Action.UPDATE} resource={'user'}>
             <Button
               variant="primary"
               size="sm"
@@ -131,7 +132,14 @@ export function UserDetailPage() {
               onChange={(e) => void d.onAvatarPick(e)}
             />
           </div>
-          <PageHeader title={name} description={email} />
+          <div>
+            <PageHeader title={name} description={email} />
+            {d.isArchived && (
+              <div className="mt-1.5">
+                <ArchivedBadge />
+              </div>
+            )}
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => d.setResetOpen(true)}>
@@ -178,12 +186,29 @@ export function UserDetailPage() {
             </Button>
           )}
 
-          <DeleteButton
-            iconOnly
-            entityLabel={name}
-            isLoading={d.deleteMutation.isPending}
-            onConfirm={() => d.deleteMutation.mutateAsync()}
-          />
+          {!d.isArchived && (
+            <DeleteButton
+              iconOnly
+              entityLabel={name}
+              isLoading={d.deleteMutation.isPending}
+              onConfirm={() => d.deleteMutation.mutateAsync()}
+            />
+          )}
+
+          {d.isArchived && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-secondary text-secondary hover:bg-secondary/10"
+              leftIcon={
+                <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
+              }
+              isLoading={d.restoreMutation.isPending}
+              onClick={() => d.restoreMutation.mutate()}
+            >
+              Restore
+            </Button>
+          )}
 
           {d.isEditing ? (
             <>

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
-import { getPositions, getPosition, createPosition, updatePosition, deletePosition } from '../../api/position'
+import { getPositions, getPosition, createPosition, updatePosition, deletePosition, restorePosition } from '../../api/position'
 import type { PositionRow } from '@/shared/schema'
 
 function withErrorMessage<T extends { isError: boolean; error: unknown }>(q: T) {
@@ -38,13 +38,18 @@ export function usePositions(includeArchived = true) {
     mutationFn: (id: number) => deletePosition(id),
     onSuccess: () => invalidate(),
   })
+  const restoreMut = useMutation({
+    mutationFn: (id: number) => restorePosition(id),
+    onSuccess: () => invalidate(),
+  })
 
   return {
     ...query,
     createPosition: createMut.mutateAsync,
     updatePosition: updateMut.mutateAsync,
     deletePosition: deleteMut.mutateAsync,
-    isMutating: createMut.isPending || updateMut.isPending || deleteMut.isPending,
+    restorePosition: restoreMut.mutateAsync,
+    isMutating: createMut.isPending || updateMut.isPending || deleteMut.isPending || restoreMut.isPending,
   }
 }
 
@@ -65,12 +70,20 @@ export function usePositionDetail(id: number | undefined) {
     },
   })
 
+  const restoreMut = useMutation({
+    mutationFn: () => restorePosition(id!),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: queryKeys.organization.positions(true) })
+    },
+  })
+
   return {
     ...query,
     deletePosition: deleteMut.mutateAsync,
     // Deprecated alias
     archivePosition: deleteMut.mutateAsync,
-    isMutating: deleteMut.isPending,
+    restorePosition: restoreMut.mutateAsync,
+    isMutating: deleteMut.isPending || restoreMut.isPending,
   }
 }
 

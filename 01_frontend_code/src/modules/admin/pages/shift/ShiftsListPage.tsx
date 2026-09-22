@@ -14,7 +14,7 @@ import {
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useShiftsList } from '../../hooks/shift/use-shifts'
 import { can } from '@/shared/rbac'
-import { Action, ResourceName } from '@/shared/schema'
+import { Action } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 import type { ShiftRow } from '@/shared/schema'
 
@@ -55,7 +55,7 @@ export function ShiftsListPage() {
   const { openPanel } = useQuickOverview()
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const isWorkforce = pathname.startsWith('/workforce')
-  const canCreate = can({ action: Action.CREATE, resource: ResourceName.SHIFT })
+  const canCreate = can({ action: Action.CREATE, resource: 'shift' })
 
   const { data, isLoading, isError, error, refetch } = useShiftsList(true)
   const items = data?.items ?? []

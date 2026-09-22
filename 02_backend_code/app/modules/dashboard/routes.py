@@ -1,22 +1,33 @@
-"""Executive dashboard stub — replace with real aggregations later."""
+"""Executive dashboard — real aggregations over domain tables."""
 from __future__ import annotations
 
-from typing import Any
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.authorization import require_permission
+from app.core.authorization import AuthContext, require_permission
+from app.core.database import get_db_session
+from app.modules.dashboard.attendance.routes import router as attendance_router
+from app.modules.dashboard.service import ExecutiveDashboardService
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
+router.include_router(attendance_router)
 
 
-@router.get("/executive", dependencies=[Depends(require_permission("employment", "VIEW", "ORGANIZATION"))])
-async def executive_dashboard() -> dict[str, Any]:
-    return {
-        "kpis": [],
-        "recentActivities": [],
-        "pipeline": [],
-        "attendance": None,
-        "approvalsPending": 0,
-        "message": "Dashboard aggregations not wired yet",
-    }
+def get_service(
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+) -> ExecutiveDashboardService:
+    return ExecutiveDashboardService(session)
+
+
+ServiceDep = Annotated[ExecutiveDashboardService, Depends(get_service)]
+
+
+@router.get("/executive")
+async def executive_dashboard(
+    service: ServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF"))],
+) -> dict[str, Any]:
+    """Scope-aware aggregations — data is filtered by the caller's grants."""
+    return await service.get_executive(auth=auth)

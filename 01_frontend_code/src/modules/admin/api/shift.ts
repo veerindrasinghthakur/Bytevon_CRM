@@ -21,14 +21,30 @@ export async function getShifts(params?: { includeArchived?: boolean }) {
   return asList(data)
 }
 
-export async function getShift(id: number): Promise<ShiftRow | null> {
+export async function getShift(
+  id: number,
+  opts?: { includeArchived?: boolean },
+): Promise<ShiftRow | null> {
   if (env.useMockApi) {
     await delay()
     const row = getDb().shifts.find((s) => s.id === id)
     return row ? { ...row } : null
   }
-  const { data } = await apiClient.get<ShiftRow>(`/admin/shifts/${id}`)
-  return data
+  try {
+    const { data } = await apiClient.get<ShiftRow>(`/admin/shifts/${id}`, {
+      params: opts?.includeArchived ? { include_archived: true } : undefined,
+    })
+    return data
+  } catch (err) {
+    // Archived rows 404 by default — retry with include_archived before giving up.
+    if (!opts?.includeArchived && isNotFound(err)) {
+      const { data } = await apiClient.get<ShiftRow>(`/admin/shifts/${id}`, {
+        params: { include_archived: true },
+      })
+      return data
+    }
+    throw err
+  }
 }
 
 export async function createShift(
@@ -73,6 +89,28 @@ export async function deleteShift(id: number): Promise<void> {
     return
   }
   await apiClient.delete(`/admin/shifts/${id}`)
+}
+
+/** Q16: restore an archived shift (real backend only). */
+export async function restoreShift(id: number): Promise<ShiftRow> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.post<ShiftRow>(`/admin/shifts/${id}/restore`)
+    return data
+  }
+  await delay(300)
+  const row = (getDb().shifts as ShiftRow[]).find((s) => s.id === id)
+  if (!row) throw new Error('Shift not found')
+  row.is_archived = false
+  return { ...row }
+}
+
+function isNotFound(err: unknown): boolean {
+  return (
+    typeof err === 'object' &&
+    err !== null &&
+    'response' in err &&
+    (err as { response?: { status?: number } }).response?.status === 404
+  )
 }
 
 /** @deprecated Use deleteShift (DELETE verb + soft-delete). */

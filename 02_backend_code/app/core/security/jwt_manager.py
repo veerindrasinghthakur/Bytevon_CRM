@@ -21,8 +21,8 @@ class JWTManager:
     def __init__(self) -> None:
         self._secret = settings.JWT_SECRET_KEY
         self._algorithm = settings.JWT_ALGORITHM
-        self._access_minutes = settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
-        self._refresh_days = settings.JWT_REFRESH_TOKEN_EXPIRE_DAYS
+        self._access_minutes = settings.JWT_ACCESS_TTL_MINUTES
+        self._refresh_days = settings.JWT_REFRESH_TTL_DAYS
 
     def _encode(self, claims: dict[str, Any], expires_delta: timedelta) -> str:
         now = datetime.now(UTC)

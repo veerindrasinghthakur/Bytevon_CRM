@@ -41,3 +41,14 @@ export async function payPayrollEmployee(id: string, ref?: string): Promise<void
   }
   await apiClient.post(`/payroll/employees/${encodeURIComponent(id)}/pay`, { reference: ref })
 }
+
+/** Monthly payroll reject — backend POST /payroll/{id}/reject {reason}. */
+export async function rejectPayroll(id: string, reason: string): Promise<void> {
+  if (env.useMockApi) {
+    await delay(300)
+    const row = payrollEmployees.find((e) => e.id === id)
+    if (row) row.status = 'Calculated'
+    return
+  }
+  await apiClient.post(`/payroll/${encodeURIComponent(id)}/reject`, { reason })
+}

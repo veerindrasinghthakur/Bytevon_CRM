@@ -40,9 +40,12 @@ class SourceService(BasePublicService):
         await self._session.refresh(row)
         return SourceResponse.model_validate(row)
 
-    async def get(self, source_id: int) -> SourceResponse:
+    async def get(self, source_id: int, *, include_archived: bool = False) -> SourceResponse:
+        """Q15: archived hidden by default; history views opt in."""
         row = await self._repo.get(source_id, include_archived=True)
-        if row is None or bool(getattr(row, "is_archived", False)):
+        if row is None:
+            raise NotFoundError("Source not found")
+        if bool(getattr(row, "is_archived", False)) and not include_archived:
             raise NotFoundError("Source not found")
         return SourceResponse.model_validate(row)
 
@@ -99,6 +102,25 @@ class SourceService(BasePublicService):
     # Deprecated alias
     async def archive(self, source_id: int, *, actor_employment_id: int | None = None) -> MessageResponse:
         return await self.delete(source_id, actor_employment_id=actor_employment_id)
+
+    async def restore(self, source_id: int, *, actor_employment_id: int | None = None) -> SourceResponse:
+        """Q16: restore an archived source (409 on active name clash)."""
+        row = await self._repo.get(source_id, include_archived=True)
+        if row is None:
+            raise NotFoundError("Source not found")
+        if not bool(getattr(row, "is_archived", False)):
+            raise DomainError("Source is not archived")
+        clash = await self._repo.get_by_name(row.name)
+        if clash is not None and clash.id != source_id:
+            raise ConflictError(f"Cannot restore: source '{row.name}' already exists")
+        row.is_archived = False
+        if hasattr(row, "archived_at"):
+            row.archived_at = None
+        row.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        await self._commit()
+        await self._audit("platform.restored", source_id, actor_employment_id)
+        await self._session.refresh(row)
+        return SourceResponse.model_validate(row)
 
 
 # Back-compat

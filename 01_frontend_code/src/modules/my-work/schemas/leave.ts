@@ -16,11 +16,9 @@ export const leaveBalanceSchema = z.object({
 export type LeaveBalance = z.infer<typeof leaveBalanceSchema>
 
 export const leaveTypeOptionSchema = z.object({
-  id: z.string(),
-  name: z.union([leaveTypeSchema, z.string()]),
-  code: z.string(),
-  annualEntitlement: z.number(),
-  description: z.string().optional(),
+  value: z.string(),
+  label: z.string(),
+  requires_approval: z.boolean().optional(),
 })
 export type LeaveTypeOption = z.infer<typeof leaveTypeOptionSchema>
 

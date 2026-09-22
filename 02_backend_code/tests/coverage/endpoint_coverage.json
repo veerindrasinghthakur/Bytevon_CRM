@@ -318,82 +318,108 @@
   "test_admin_location_shift_week_lifecycle"
  ],
  "POST /api/v1/admin/holiday-calendars": [
-  "test_admin_holiday_calendar_lifecycle"
+  "test_admin_holiday_calendar_lifecycle",
+  "test_admin_location_shift_week_lifecycle"
  ],
  "GET /api/v1/admin/holiday-calendars": [
-  "test_admin_holiday_calendar_lifecycle"
+  "test_admin_holiday_calendar_lifecycle",
+  "test_admin_location_shift_week_lifecycle"
  ],
  "GET /api/v1/admin/holiday-calendars/{calendar_id}": [
-  "test_admin_holiday_calendar_lifecycle"
+  "test_admin_holiday_calendar_lifecycle",
+  "test_admin_location_shift_week_lifecycle"
  ],
  "PATCH /api/v1/admin/holiday-calendars/{calendar_id}": [
-  "test_admin_holiday_calendar_lifecycle"
+  "test_admin_holiday_calendar_lifecycle",
+  "test_admin_location_shift_week_lifecycle"
  ],
  "POST /api/v1/admin/holiday-calendars/{calendar_id}/archive": [
-  "test_admin_holiday_calendar_lifecycle"
+  "test_admin_holiday_calendar_lifecycle",
+  "test_admin_location_shift_week_lifecycle"
  ],
  "POST /api/v1/admin/holiday-calendars/{calendar_id}/holidays": [
-  "test_admin_holiday_calendar_lifecycle"
+  "test_admin_holiday_calendar_lifecycle",
+  "test_admin_location_shift_week_lifecycle"
  ],
  "GET /api/v1/admin/holiday-calendars/{calendar_id}/holidays": [
-  "test_admin_holiday_calendar_lifecycle"
+  "test_admin_holiday_calendar_lifecycle",
+  "test_admin_location_shift_week_lifecycle"
  ],
  "PATCH /api/v1/admin/holiday-calendars/holidays/{holiday_id}": [
-  "test_admin_holiday_calendar_lifecycle"
+  "test_admin_holiday_calendar_lifecycle",
+  "test_admin_location_shift_week_lifecycle"
  ],
  "DELETE /api/v1/admin/holiday-calendars/holidays/{holiday_id}": [
-  "test_admin_holiday_calendar_lifecycle"
+  "test_admin_holiday_calendar_lifecycle",
+  "test_admin_location_shift_week_lifecycle"
  ],
  "POST /api/v1/admin/audit/logs": [
-  "test_audit_endpoints"
+  "test_audit_endpoints",
+  "test_admin_settings_and_users"
  ],
  "GET /api/v1/admin/audit/logs": [
-  "test_audit_endpoints"
+  "test_audit_endpoints",
+  "test_admin_settings_and_users"
  ],
  "GET /api/v1/admin/audit/logs/{log_id}": [
-  "test_audit_endpoints"
+  "test_audit_endpoints",
+  "test_admin_settings_and_users"
  ],
  "POST /api/v1/admin/audit/archive": [
-  "test_audit_endpoints"
+  "test_audit_endpoints",
+  "test_admin_settings_and_users"
  ],
  "POST /api/v1/audit/logs": [
-  "test_audit_endpoints"
+  "test_audit_endpoints",
+  "test_admin_settings_and_users"
  ],
  "GET /api/v1/audit/logs": [
-  "test_audit_endpoints"
+  "test_audit_endpoints",
+  "test_admin_settings_and_users"
  ],
  "GET /api/v1/audit/logs/{log_id}": [
-  "test_audit_endpoints"
+  "test_audit_endpoints",
+  "test_admin_settings_and_users"
  ],
  "POST /api/v1/audit/archive": [
-  "test_audit_endpoints"
+  "test_audit_endpoints",
+  "test_admin_settings_and_users"
  ],
  "GET /api/v1/admin/settings": [
-  "test_admin_settings_and_users"
+  "test_admin_settings_and_users",
+  "test_admin_holiday_calendar_lifecycle"
  ],
  "PUT /api/v1/admin/settings": [
-  "test_admin_settings_and_users"
+  "test_admin_settings_and_users",
+  "test_admin_holiday_calendar_lifecycle"
  ],
  "PATCH /api/v1/admin/settings": [
-  "test_admin_settings_and_users"
+  "test_admin_settings_and_users",
+  "test_admin_holiday_calendar_lifecycle"
  ],
  "GET /api/v1/admin/users": [
-  "test_admin_settings_and_users"
+  "test_admin_settings_and_users",
+  "test_admin_holiday_calendar_lifecycle"
  ],
  "GET /api/v1/admin/employments-without-login": [
-  "test_admin_settings_and_users"
+  "test_admin_settings_and_users",
+  "test_admin_holiday_calendar_lifecycle"
  ],
  "GET /api/v1/admin/users/{login_id}": [
-  "test_admin_settings_and_users"
+  "test_admin_settings_and_users",
+  "test_admin_holiday_calendar_lifecycle"
  ],
  "POST /api/v1/admin/users": [
-  "test_admin_settings_and_users"
+  "test_admin_settings_and_users",
+  "test_admin_holiday_calendar_lifecycle"
  ],
  "PATCH /api/v1/admin/users/{login_id}": [
-  "test_admin_settings_and_users"
+  "test_admin_settings_and_users",
+  "test_admin_holiday_calendar_lifecycle"
  ],
  "POST /api/v1/admin/users/{login_id}/deactivate": [
-  "test_admin_settings_and_users"
+  "test_admin_settings_and_users",
+  "test_admin_holiday_calendar_lifecycle"
  ],
  "POST /api/v1/admin/users/{login_id}/activate": [
   "test_admin_settings_and_users"

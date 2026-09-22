@@ -193,6 +193,7 @@ export interface CreateLeadInput {
   assignedEmploymentId?: number | null
   notes?: string
   chatLink?: string
+  auto_create_project?: boolean
 }
 
 export type UpdateLeadInput = Partial<CreateLeadInput>

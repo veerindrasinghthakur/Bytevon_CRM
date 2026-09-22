@@ -89,7 +89,7 @@ function mapApiLead(row: Record<string, unknown>): Lead {
     status,
     stage,
     budget,
-    createdAt: String(row.createdAt ?? row.created_at ?? '').slice(0, 10) || undefined,
+    createdAt: String(row.createdAt ?? row.created_at ?? '').slice(0, 10) || '',
     date: String(row.date ?? row.expected_close_date ?? row.created_at ?? '').slice(0, 10) || undefined,
     assignedTo: assigned != null ? String(assigned) : undefined,
     notes: (row.notes as string | undefined) ?? (row.description as string | undefined),
@@ -282,7 +282,7 @@ function toBackendLeadCreate(input: CreateLeadInput): Record<string, unknown> {
     company: input.company || null,
     status: mapStageToLeadStatus(input.stage, input.status),
     stage: input.stage,
-    auto_create_project: true,
+    auto_create_project: input.auto_create_project ?? false,
   }
 }
 
@@ -361,11 +361,20 @@ export async function updateLead(
   return list[idx]
 }
 
-export async function changeLeadStage(id: string, stage: PipelineStage): Promise<Lead | null> {
+export async function changeLeadStage(
+  id: string,
+  stage: PipelineStage,
+  opts?: { auto_create_project?: boolean },
+): Promise<Lead | null> {
   if (stage === 'Won') {
     if (!env.useMockApi) {
       const numeric = id.replace(/^LD-/i, '')
-      await apiClient.post(`/sales/leads/${numeric}/status`, { status: 'WON' })
+      await apiClient.post(`/sales/leads/${numeric}/status`, {
+        status: 'WON',
+        ...(opts?.auto_create_project != null
+          ? { auto_create_project: opts.auto_create_project }
+          : {}),
+      })
       return getLeadById(id)
     }
     await delay(350)

@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useListControls } from '@/shared/hooks/useListControls'
-import { listEmployments } from '../api/employment'
+import { listEmployments, rehireEmployment, type RehireEmploymentBody } from '../api/employment'
 import { listDepartments } from '../api/departments'
-import { queryKeys } from '@/shared/lib/query-keys'
+import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 import { computeEmploymentListMetrics } from '@/shared/compute/workforce-metrics'
 import { EMPLOYMENT_STATES, EMPLOYMENT_TYPES } from '../schemas/enums'
 
@@ -94,4 +94,13 @@ export function useEmployeesList() {
     reload: () => void employeesQuery.refetch(),
     refetch: employeesQuery.refetch,
   }
+}
+
+export function useRehireEmployment() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, body }: { id: number; body?: RehireEmploymentBody }) =>
+      rehireEmployment(id, body),
+    onSuccess: () => invalidate.employees(qc),
+  })
 }

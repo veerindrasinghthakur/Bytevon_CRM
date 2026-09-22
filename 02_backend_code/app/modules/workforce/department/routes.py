@@ -39,9 +39,9 @@ async def list_departments(
 
 @router.get("/{department_id}", response_model=DepartmentResponse, dependencies=[Depends(require_permission("department", "VIEW", "ORGANIZATION"))])
 async def get_department(
-    department_id: int, service: DepartmentServiceDep
+    department_id: int, service: DepartmentServiceDep, include_archived: bool = Query(False)
 ) -> DepartmentResponse:
-    return await service.get(department_id)
+    return await service.get(department_id, include_archived=include_archived)
 
 
 @router.patch("/{department_id}", response_model=DepartmentResponse)
@@ -67,6 +67,14 @@ async def archive_department_alias(
     department_id: int, service: DepartmentServiceDep, auth: Annotated[AuthContext, Depends(require_permission("department", "UPDATE", "ORGANIZATION"))]
 ) -> MessageResponse:
     return await service.delete(department_id, actor_employment_id=auth.employment_id)
+
+
+@router.post("/{department_id}/restore", response_model=DepartmentResponse)
+async def restore_department(
+    department_id: int, service: DepartmentServiceDep, auth: Annotated[AuthContext, Depends(require_permission("department", "UPDATE", "ORGANIZATION"))]
+) -> DepartmentResponse:
+    """Q16: restore an archived department (409 on name clash)."""
+    return await service.restore(department_id, actor_employment_id=auth.employment_id)
 
 
 @router.get("/{department_id}/employees", response_model=DepartmentEmployeeListResponse, dependencies=[Depends(require_permission("department", "VIEW", "DEPARTMENT"))])

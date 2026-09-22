@@ -11,10 +11,10 @@ from app.core.config import settings
 from app.core.db.enums import EmploymentState, WorkMode
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
-from app.modules.workforce.department.models import Department
 from app.modules.admin.location.models import Location
 from app.modules.admin.shift.models import Shift
 from app.modules.auth.models import Person
+from app.modules.workforce.department.models import Department
 from app.modules.workforce.employee.repository import EmployeeRepository
 from app.modules.workforce.employee.schemas import (
     EmployeeCreate,
@@ -88,7 +88,7 @@ class EmployeeService(BasePublicService):
 
         if department_id is not None:
             dept = await self._session.get(Department, department_id)
-            if dept is None:
+            if dept is None or bool(getattr(dept, "is_archived", False)):
                 raise NotFoundError(f"Department not found (id={department_id})")
         if position_id is not None:
             pos = await self._repo.get_position_by_id(position_id)
@@ -96,11 +96,11 @@ class EmployeeService(BasePublicService):
                 raise NotFoundError(f"Position not found (id={position_id})")
         if location_id is not None:
             loc = await self._session.get(Location, location_id)
-            if loc is None:
+            if loc is None or bool(getattr(loc, "is_archived", False)):
                 raise NotFoundError(f"Location not found (id={location_id})")
         if shift_id is not None:
             shift = await self._session.get(Shift, shift_id)
-            if shift is None:
+            if shift is None or bool(getattr(shift, "is_archived", False)):
                 raise NotFoundError(f"Shift not found (id={shift_id})")
         return department_id, position_id, location_id, shift_id
 
@@ -172,9 +172,16 @@ class EmployeeService(BasePublicService):
         await self._session.refresh(pos)
         return PositionResponse.model_validate(pos)
 
-    async def get_position(self, position_id: int) -> PositionResponse:
-        pos = await self._repo.get_position_by_id(position_id)
+    async def get_position(
+        self, position_id: int, *, include_archived: bool = False
+    ) -> PositionResponse:
+        """Q15: archived hidden by default; history views opt in."""
+        pos = await self._repo.get_position_by_id(
+            position_id, include_archived=True
+        )
         if pos is None:
+            raise NotFoundError("Position not found")
+        if bool(getattr(pos, "is_archived", False)) and not include_archived:
             raise NotFoundError("Position not found")
         return PositionResponse.model_validate(pos)
 
@@ -203,18 +210,65 @@ class EmployeeService(BasePublicService):
     ) -> MessageResponse:
         return await self.delete_position(position_id, actor_employment_id=actor_employment_id)
 
+    async def _count_active_assignments_for_position(self, position_id: int) -> int:
+        """Active (covering today) assignments referencing this position."""
+        from datetime import date as _date
+
+        from sqlalchemy import func, select
+
+        from app.modules.workforce.models import EmploymentAssignment
+
+        today = _date.today()
+        stmt = select(func.count(EmploymentAssignment.id)).where(
+            EmploymentAssignment.position_id == position_id,
+            EmploymentAssignment.effective_from <= today,
+            (EmploymentAssignment.effective_to.is_(None))
+            | (EmploymentAssignment.effective_to >= today),
+        )
+        res = await self._session.execute(stmt)
+        return int(res.scalar() or 0)
+
     async def delete_position(
         self, position_id: int, *, actor_employment_id: int | None = None
     ) -> MessageResponse:
         pos = await self._repo.get_position_by_id(position_id)
         if pos is None or bool(getattr(pos, "is_archived", False)):
             raise NotFoundError("Position not found")
+        # Q3: cannot archive while actively referenced; reassign first.
+        active = await self._count_active_assignments_for_position(position_id)
+        if active > 0:
+            raise ConflictError(
+                f"Position is still referenced by {active} active assignment(s); "
+                "reassign those employments first"
+            )
         pos.is_archived = True
         pos.archived_at = datetime.now(UTC)
         pos.archived_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
         await self._audit("position.deleted", pos.id, actor_employment_id)
         return MessageResponse(message="Position deleted")
+
+    async def restore_position(
+        self, position_id: int, *, actor_employment_id: int | None = None
+    ) -> PositionResponse:
+        """Q16: restore an archived position (409 on active name clash)."""
+        pos = await self._repo.get_position_by_id(position_id, include_archived=True)
+        if pos is None:
+            raise NotFoundError("Position not found")
+        if not bool(getattr(pos, "is_archived", False)):
+            raise DomainError("Position is not archived")
+        clash = await self._repo.get_position_by_name(pos.name)
+        if clash is not None and clash.id != position_id:
+            raise ConflictError(
+                f"Cannot restore: position '{pos.name}' already exists"
+            )
+        pos.is_archived = False
+        pos.archived_at = None
+        pos.archived_by = None
+        await self._commit()
+        await self._audit("position.restored", pos.id, actor_employment_id)
+        await self._session.refresh(pos)
+        return PositionResponse.model_validate(pos)
 
     # Employments
     async def create_employee(
@@ -259,10 +313,212 @@ class EmployeeService(BasePublicService):
                 shift_id=shift_id,
                 work_mode=work_mode,
                 assignment_change_reason=reason,
+                create_login=data.create_login,
+                login_email=data.login_email,
+                login_temporary_password=data.login_temporary_password,
+                login_role_id=data.login_role_id,
             ),
             actor_employment_id=actor_employment_id,
             person=person,
         )
+
+    async def rehire_employment(
+        self, employment_id: int, data, *, actor_employment_id: int | None = None
+    ) -> EmploymentDetailResponse:
+        """Q7: rehire = new Employment row for the SAME Person.
+
+        The old (separated) row is never revived or modified. The person's
+        existing login is reactivated when present.
+        """
+        old = await self._repo.get_employment_by_id(employment_id)
+        if old is None:
+            raise NotFoundError("Employment not found")
+        if old.current_state not in {
+            EmploymentState.RESIGNED,
+            EmploymentState.TERMINATED,
+            EmploymentState.ALUMNI,
+        }:
+            raise DomainError(
+                "Only a separated employment "
+                f"(RESIGNED/TERMINATED/ALUMNI) can be rehired; "
+                f"current state is {old.current_state.value}"
+            )
+        person = await self._require_person(old.person_id)
+        detail = await self.create_employment(
+            EmploymentCreate(
+                person_id=person.id,
+                employee_code=data.employee_code,
+                employment_type=data.employment_type,
+                joining_date=data.joining_date,
+                initial_state=data.initial_state,
+                initial_state_reason=data.initial_state_reason
+                or f"Rehire from employment {old.employee_code}",
+                department_id=data.department_id,
+                position_id=data.position_id,
+                location_id=data.location_id,
+                shift_id=data.shift_id,
+                work_mode=data.work_mode,
+                assignment_change_reason=data.assignment_change_reason
+                or "Rehire",
+                create_login=data.create_login,
+                login_email=data.login_email,
+                login_temporary_password=data.login_temporary_password,
+                login_role_id=data.login_role_id,
+            ),
+            actor_employment_id=actor_employment_id,
+            person=person,
+        )
+        if data.reactivate_login and not data.create_login:
+            await self._provision_login_for_employment(
+                employment_id=detail.id,
+                person_id=person.id,
+                email=None,
+                temporary_password=data.login_temporary_password,
+                role_id=data.login_role_id,
+                actor_employment_id=actor_employment_id,
+                reactivate_only=True,
+            )
+            await self._commit()
+        await self._audit("employment.rehired", detail.id, actor_employment_id)
+        await self._notify(
+            employment_id=detail.id,
+            title="Employment rehired",
+            body=(
+                f"New employment {detail.employee_code} created for rehired "
+                f"person (previous {old.employee_code})."
+            ),
+        )
+        return detail
+
+    async def _require_no_active_employment(self, person_id: int) -> None:
+        """Q7: a Person cannot accidentally hold multiple simultaneous active
+        employments. Active = any non-terminal state."""
+        terminal = {
+            EmploymentState.RESIGNED,
+            EmploymentState.TERMINATED,
+            EmploymentState.ALUMNI,
+        }
+        for emp in await self._repo.list_employments_by_person(person_id):
+            if emp.current_state not in terminal:
+                raise ConflictError(
+                    "Person already has an active employment "
+                    f"({emp.employee_code} in state {emp.current_state.value}); "
+                    "separate it before creating another"
+                )
+
+    async def _provision_login_for_employment(
+        self,
+        *,
+        employment_id: int,
+        person_id: int,
+        email: str | None,
+        temporary_password: str | None,
+        role_id: int | str | None,
+        actor_employment_id: int | None,
+        reactivate_only: bool = False,
+    ) -> None:
+        """Q9 explicit login provisioning / Q7 login reactivation.
+
+        One login per person: an existing login is reactivated (is_active=True,
+        lock cleared, archived flag lifted); otherwise a new login is created
+        when email + password are supplied. `reactivate_only` never creates.
+        """
+        from sqlalchemy import select
+
+        from app.core.security.password_manager import PasswordManager
+        from app.modules.auth.models import Login
+        from app.modules.rbac.models import EmployeeRole, Role
+
+        existing = (
+            await self._session.execute(
+                select(Login).where(Login.person_id == person_id)
+            )
+        ).scalar_one_or_none()
+        if existing is not None:
+            if bool(getattr(existing, "is_archived", False)):
+                existing.is_archived = False
+                existing.archived_at = None
+                existing.archived_by = None
+            existing.is_active = True
+            existing.failed_attempt_count = 0
+            existing.locked_until = None
+            if temporary_password:
+                existing.password_hash = PasswordManager().hash(temporary_password)
+            if role_id is not None:
+                role = None
+                if isinstance(role_id, int) or (
+                    isinstance(role_id, str) and role_id.isdigit()
+                ):
+                    role = await self._session.get(Role, int(role_id))
+                else:
+                    role = (
+                        await self._session.execute(
+                            select(Role).where(Role.name == role_id)
+                        )
+                    ).scalar_one_or_none()
+                if role is None:
+                    raise NotFoundError(f"Role '{role_id}' not found")
+                grant = (
+                    await self._session.execute(
+                        select(EmployeeRole).where(
+                            EmployeeRole.employment_id == employment_id,
+                            EmployeeRole.role_id == role.id,
+                        )
+                    )
+                ).scalar_one_or_none()
+                if grant is None:
+                    self._session.add(
+                        EmployeeRole(
+                            employment_id=employment_id,
+                            role_id=role.id,
+                            changed_by=actor_employment_id,
+                        )
+                    )
+            await self._flush()
+            await self._audit("login.reactivated", existing.id, actor_employment_id)
+            return
+        if reactivate_only:
+            return
+        if not email or not temporary_password:
+            raise DomainError(
+                "create_login requires login_email and login_temporary_password"
+            )
+        clash = (
+            await self._session.execute(select(Login).where(Login.email == email))
+        ).scalar_one_or_none()
+        if clash is not None:
+            raise ConflictError(f"Login email '{email}' already exists")
+        login = Login(
+            person_id=person_id,
+            email=email,
+            password_hash=PasswordManager().hash(temporary_password),
+            is_active=True,
+            failed_attempt_count=0,
+        )
+        self._session.add(login)
+        await self._flush()
+        if role_id is not None:
+            role = None
+            if isinstance(role_id, int) or (
+                isinstance(role_id, str) and role_id.isdigit()
+            ):
+                role = await self._session.get(Role, int(role_id))
+            else:
+                role = (
+                    await self._session.execute(
+                        select(Role).where(Role.name == role_id)
+                    )
+                ).scalar_one_or_none()
+            if role is None:
+                raise NotFoundError(f"Role '{role_id}' not found")
+            self._session.add(
+                EmployeeRole(
+                    employment_id=employment_id,
+                    role_id=role.id,
+                    changed_by=actor_employment_id,
+                )
+            )
+        await self._audit("login.created", login.id, actor_employment_id)
 
     async def create_employment(
         self,
@@ -274,6 +530,8 @@ class EmployeeService(BasePublicService):
         actor = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         if person is None:
             person = await self._require_person(data.person_id)
+        # Q7: guard against multiple simultaneous active employments.
+        await self._require_no_active_employment(person.id)
         if await self._repo.get_employment_by_code(data.employee_code):
             raise ConflictError(f"Employee code '{data.employee_code}' already exists")
         emp = Employment(
@@ -318,6 +576,16 @@ class EmployeeService(BasePublicService):
             )
             await self._repo.add(assignment)
             current_assignment = assignment
+        # Q9: explicit opt-in login provisioning (default off).
+        if data.create_login:
+            await self._provision_login_for_employment(
+                employment_id=emp.id,
+                person_id=person.id,
+                email=str(data.login_email) if data.login_email else None,
+                temporary_password=data.login_temporary_password,
+                role_id=data.login_role_id,
+                actor_employment_id=actor_employment_id,
+            )
         await self._commit()
         await self._audit("employment.created", emp.id, actor_employment_id)
         await self._session.refresh(emp)

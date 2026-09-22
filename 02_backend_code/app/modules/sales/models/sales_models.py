@@ -101,7 +101,7 @@ class Lead(Base, IdentityMixin, TimestampMixin, ChangedByMixin):
     client_id: Mapped[int | None] = mapped_column(
         Integer, ForeignKey("clients.id"), nullable=True, index=True
     )
-    # Controls auto project creation on WON
+    # Controls auto project creation on WON (Q12: opt-in, default false)
     auto_create_project: Mapped[bool] = mapped_column(
-        Boolean, nullable=False, default=True, server_default="true"
+        Boolean, nullable=False, default=False, server_default="false"
     )

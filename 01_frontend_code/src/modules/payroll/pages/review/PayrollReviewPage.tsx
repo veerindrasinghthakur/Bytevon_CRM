@@ -2,10 +2,10 @@ import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { ExportButton } from '@/shared/components/export/ExportButton'
-import { ResourceName } from '@/shared/schema'
 import { usePayrollReview } from '../../hooks/review/use-payroll-review'
 import { payrollRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { Can } from '@/shared/rbac'
 import { ReviewMetricCard } from '../../components/review/ReviewMetricCard'
 import { RecordPaymentModal } from '../../components/review/RecordPaymentModal'
 
@@ -32,6 +32,7 @@ export function PayrollReviewPage() {
     isError,
     approveMut,
     payMut,
+    rejectMut,
   } = usePayrollReview()
 
   if (isLoading) {
@@ -86,7 +87,7 @@ export function PayrollReviewPage() {
             Print
           </Button>
           <ExportButton
-            resource={ResourceName.PAYROLL}
+            resource={'payroll'}
             filenameStem={`payroll-review-${emp.code}`}
             label="Export"
           />
@@ -268,15 +269,35 @@ export function PayrollReviewPage() {
               </div>
             </div>
             <div className="p-6 bg-surface-bright border-t border-outline-variant flex flex-col gap-3">
-              <button
-                type="button"
-                className="w-full bg-primary text-on-primary font-medium py-3 px-4 rounded-lg hover:opacity-90 transition-colors flex items-center justify-center gap-2 executive-shadow disabled:opacity-50"
-                disabled={approveMut.isPending || emp.status === 'Approved' || emp.status === 'Paid'}
-                onClick={() => approveMut.mutate()}
-              >
-                <span className="material-symbols-outlined text-[20px]">check_circle</span>
-                {approveMut.isPending ? 'Approving…' : 'Approve Payroll'}
-              </button>
+              <Can action="APPROVE" resource="payroll">
+                <button
+                  type="button"
+                  className="w-full bg-primary text-on-primary font-medium py-3 px-4 rounded-lg hover:opacity-90 transition-colors flex items-center justify-center gap-2 executive-shadow disabled:opacity-50"
+                  disabled={approveMut.isPending || emp.status === 'Approved' || emp.status === 'Paid'}
+                  onClick={() => approveMut.mutate()}
+                >
+                  <span className="material-symbols-outlined text-[20px]">check_circle</span>
+                  {approveMut.isPending ? 'Approving…' : 'Approve Payroll'}
+                </button>
+              </Can>
+              {emp.status === 'Approved' && (
+                <Can action="APPROVE" resource="payroll">
+                  <button
+                    type="button"
+                    className="w-full bg-surface-container-lowest border border-error/40 text-error font-medium py-3 px-4 rounded-lg hover:bg-error/5 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                    disabled={rejectMut.isPending}
+                    onClick={() => {
+                      const reason = window.prompt('Reason for rejection?')
+                      if (reason == null) return
+                      if (!reason.trim()) return
+                      rejectMut.mutate(reason.trim())
+                    }}
+                  >
+                    <span className="material-symbols-outlined text-[20px]">cancel</span>
+                    {rejectMut.isPending ? 'Rejecting…' : 'Reject'}
+                  </button>
+                </Can>
+              )}
               <button
                 type="button"
                 className="w-full bg-surface-container-lowest border border-outline-variant text-on-surface font-medium py-3 px-4 rounded-lg hover:bg-surface-container-high transition-colors flex items-center justify-center gap-2"

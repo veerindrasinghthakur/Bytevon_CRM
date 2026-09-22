@@ -7,6 +7,7 @@ import { TeamTopView } from '../../components/team/TeamTopView'
 import { useTeamDetail } from '../../hooks/team/use-team-detail'
 import { projectRoutes } from '../../routes'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
+import { Can } from '@/shared/rbac'
 import { cn } from '@/shared/lib/cn'
 import { workforceRoutes } from '@/modules/workforce/routes'
 
@@ -63,19 +64,21 @@ export function TeamDetailPage() {
                 <Icon name="groups" className="text-secondary" /> Team Members
               </h2>
               <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  leftIcon={<Icon name="person_add" />}
-                  onClick={() =>
-                    safeNavigate(navigate, {
-                      to: projectRoutes.teamAddMemberPath,
-                      params: { teamId: tid },
-                    })
-                  }
-                >
-                  Add Member
-                </Button>
+                <Can action="UPDATE" resource="project">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    leftIcon={<Icon name="person_add" />}
+                    onClick={() =>
+                      safeNavigate(navigate, {
+                        to: projectRoutes.teamAddMemberPath,
+                        params: { teamId: tid },
+                      })
+                    }
+                  >
+                    Add Member
+                  </Button>
+                </Can>
                 <Button
                   variant="outline"
                   size="sm"

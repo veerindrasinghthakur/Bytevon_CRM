@@ -9,7 +9,11 @@ from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.exceptions.exception import DomainError, NotFoundError
+from app.core.exceptions.exception import (
+    ConflictError,
+    DomainError,
+    NotFoundError,
+)
 from app.core.services.base_public_service import BasePublicService
 from app.modules.admin.location.models import Location
 from app.modules.admin.location.repository import LocationRepository
@@ -119,6 +123,33 @@ class LocationService(BasePublicService):
         await self._refresh(loc)
         return LocationResponse.model_validate(loc)
 
+    async def _count_active_assignments(self, location_id: int) -> int:
+        """Active (covering today) assignments referencing this location."""
+        from datetime import date as _date
+
+        from sqlalchemy import func, select
+
+        from app.modules.workforce.models import EmploymentAssignment
+
+        today = _date.today()
+        stmt = select(func.count(EmploymentAssignment.id)).where(
+            EmploymentAssignment.location_id == location_id,
+            EmploymentAssignment.effective_from <= today,
+            (EmploymentAssignment.effective_to.is_(None))
+            | (EmploymentAssignment.effective_to >= today),
+        )
+        res = await self._session.execute(stmt)
+        return int(res.scalar() or 0)
+
+    async def _require_no_active_refs(self, location_id: int) -> None:
+        # Q3: cannot archive while actively referenced; reassign first.
+        active = await self._count_active_assignments(location_id)
+        if active > 0:
+            raise ConflictError(
+                f"Location is still referenced by {active} active assignment(s); "
+                "reassign those employments first"
+            )
+
     async def archive(
         self, location_id: int, *, actor_employment_id: int | None = None
     ) -> MessageResponse:
@@ -127,6 +158,7 @@ class LocationService(BasePublicService):
             raise NotFoundError("Location not found")
         if loc.is_archived:
             return MessageResponse(message="Location already archived")
+        await self._require_no_active_refs(location_id)
         loc.is_archived = True
         loc.archived_at = datetime.now(UTC)
         loc.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
@@ -140,12 +172,31 @@ class LocationService(BasePublicService):
         loc = await self._repo.get_by_id(location_id, include_archived=True)
         if loc is None or bool(getattr(loc, "is_archived", False)):
             raise NotFoundError("Location not found")
+        await self._require_no_active_refs(location_id)
         loc.is_archived = True
         loc.archived_at = datetime.now(UTC)
         loc.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
         await self._commit()
         await self._audit("location.deleted", location_id, actor_employment_id)
         return MessageResponse(message="Location deleted")
+
+    async def restore(
+        self, location_id: int, *, actor_employment_id: int | None = None
+    ) -> LocationResponse:
+        """Q16: restore an archived location."""
+        loc = await self._repo.get_by_id(location_id, include_archived=True)
+        if loc is None:
+            raise NotFoundError("Location not found")
+        if not bool(getattr(loc, "is_archived", False)):
+            raise DomainError("Location is not archived")
+        loc.is_archived = False
+        if hasattr(loc, "archived_at"):
+            loc.archived_at = None
+        loc.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        await self._commit()
+        await self._audit("location.restored", location_id, actor_employment_id)
+        await self._refresh(loc)
+        return LocationResponse.model_validate(loc)
 
 
 LocationPublicService = LocationService

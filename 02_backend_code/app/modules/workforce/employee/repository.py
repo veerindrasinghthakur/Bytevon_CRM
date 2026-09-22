@@ -120,6 +120,36 @@ class EmployeeRepository(BaseRepository):
         )
         await self.execute(stmt)
 
+    async def list_covering_assignments(
+        self, employment_id: int, effective_from: date
+    ) -> Sequence[EmploymentAssignment]:
+        """All rows covering effective_from (i.e. overlapping a new open-ended row).
+
+        Canonical temporal rule (Q1): a new assignment covers
+        [effective_from, +infinity). Any existing row with
+        effective_from <= new_from <= (effective_to or infinity) overlaps.
+        """
+        stmt = (
+            select(EmploymentAssignment)
+            .where(
+                EmploymentAssignment.employment_id == employment_id,
+                EmploymentAssignment.effective_from <= effective_from,
+                (EmploymentAssignment.effective_to.is_(None))
+                | (EmploymentAssignment.effective_to >= effective_from),
+            )
+            .order_by(EmploymentAssignment.effective_from.desc())
+        )
+        return await self.scalars(stmt)
+
+    async def has_future_assignments(
+        self, employment_id: int, *, as_of: date
+    ) -> bool:
+        stmt = select(EmploymentAssignment).where(
+            EmploymentAssignment.employment_id == employment_id,
+            EmploymentAssignment.effective_from > as_of,
+        )
+        return await self.scalar_one_or_none(stmt) is not None
+
 
 # Back-compat name
 EmploymentRepository = EmployeeRepository

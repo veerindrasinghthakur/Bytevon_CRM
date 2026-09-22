@@ -13,6 +13,7 @@ from app.core.db.enums import (
     ApprovalTarget,
     AttendanceCorrectionStatus,
     AttendanceStatus,
+    PayrollStatus,
     PunchType,
 )
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
@@ -138,7 +139,26 @@ class AttendanceService(BasePublicService):
         correction = AttendanceCorrection(attendance_day_id=day.id, requested_check_in=data.requested_check_in, requested_check_out=data.requested_check_out, reason=data.reason, status=AttendanceCorrectionStatus.PENDING)
         await self._repo.add(correction)
         await self._flush()
-        approval = await self._approvals.create_request(ApprovalRequestCreate(request_type=ATTENDANCE_CORRECTION_TYPE, reference_id=correction.id, requester_employment_id=actor_employment_id, target=ApprovalTarget.DEPARTMENT_HEAD, target_department_id=data.target_department_id), actor_employment_id=actor_employment_id, commit=False)
+        # Q10: resolve approver from the requester's manager hierarchy
+        # (current department head) unless explicitly supplied.
+        target_dept = data.target_department_id
+        if target_dept is None:
+            try:
+                from app.modules.workforce.employee.repository import (
+                    EmployeeRepository as _EmpRepo,
+                )
+
+                _asg = await _EmpRepo(self._session).get_current_assignment(
+                    actor_employment_id
+                )
+                if _asg is not None and _asg.department_id is not None:
+                    target_dept = int(_asg.department_id)
+            except Exception:
+                logger.exception(
+                    "Failed to resolve target department for correction %s",
+                    correction.id,
+                )
+        approval = await self._approvals.create_request(ApprovalRequestCreate(request_type=ATTENDANCE_CORRECTION_TYPE, reference_id=correction.id, requester_employment_id=actor_employment_id, target=ApprovalTarget.DEPARTMENT_HEAD, target_department_id=target_dept), actor_employment_id=actor_employment_id, commit=False)
         correction.approval_request_id = approval.id
         await self._commit()
         await self._session.refresh(correction)
@@ -150,6 +170,15 @@ class AttendanceService(BasePublicService):
         if c is None:
             raise NotFoundError("Attendance correction not found")
         return CorrectionResponse.model_validate(c)
+
+    async def list_corrections_by_employment(
+        self, employment_id: int, *, limit: int = 50
+    ) -> list[CorrectionResponse]:
+        """Q14: backing query for the my-work corrections list."""
+        rows = await self._repo.list_corrections_by_employment(
+            employment_id, limit=limit
+        )
+        return [CorrectionResponse.model_validate(r) for r in rows]
 
     async def handle_approval_decision(self, event: dict) -> None:
         if event.get("request_type") != ATTENDANCE_CORRECTION_TYPE:
@@ -270,6 +299,34 @@ class AttendanceService(BasePublicService):
         await self._commit()
         await self._session.refresh(row)
         await self._audit("attendance.monthly_summary_locked", row.id, actor_employment_id)
+        return MonthlySummaryResponse.model_validate(row)
+
+    async def unlock_monthly_summary(self, employment_id: int, year: int, month: int, *, actor_employment_id: int | None = None) -> MonthlySummaryResponse:
+        """Q8: designated-role reopen of a locked month. Audited.
+
+        PAID payroll months stay immutable through normal workflows: callers
+        must refuse unlock when a PAID payroll exists for the period.
+        """
+        from app.modules.payroll.monthly_payroll.repository import (
+            MonthlyPayrollRepository,
+        )
+
+        row = await self._repo.get_monthly_summary(employment_id, year, month)
+        if row is None:
+            raise NotFoundError("Monthly summary not found")
+        if not row.is_locked:
+            return MonthlySummaryResponse.model_validate(row)
+        payroll_repo = MonthlyPayrollRepository(self._session)
+        payroll = await payroll_repo.get_payroll(employment_id, year, month)
+        if payroll is not None and payroll.status == PayrollStatus.PAID:
+            raise DomainError(
+                "Cannot reopen: payroll for this month is PAID and immutable"
+            )
+        row.is_locked = False
+        row.changed_by = actor_employment_id or settings.SYSTEM_EMPLOYMENT_ID
+        await self._commit()
+        await self._session.refresh(row)
+        await self._audit("attendance.monthly_summary_unlocked", row.id, actor_employment_id)
         return MonthlySummaryResponse.model_validate(row)
 
     async def start_break(self, data: BreakStartRequest, *, actor_employment_id: int | None = None) -> BreakResponse:

@@ -6,11 +6,11 @@ import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { Select } from '@/shared/components/ui/Select'
-import { ResourceName } from '@/shared/schema'
 import { useMonthlyPayroll } from '../../hooks/monthly/use-monthly-payroll'
 import { payrollStatusStyles } from '../../schemas/enums'
 import { payrollRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { cn } from '@/shared/lib/cn'
 import type { PayrollRunView } from '../../types'
 import { DEMO_VIEW_OPTIONS, MONTH_OPTIONS, YEAR_OPTIONS, PAYROLL_STATUS_OPTIONS } from '../../schemas/enums'
@@ -28,6 +28,7 @@ export function MonthlyPayrollPage() {
     formatMoney,
     isLoading,
     isError,
+    error,
     refetch,
   } = useMonthlyPayroll()
   const [view, setView] = useState<PayrollRunView>('ready')
@@ -176,7 +177,7 @@ export function MonthlyPayrollPage() {
               </div>
             </div>
             <ExportButton
-              resource={ResourceName.PAYROLL}
+              resource={'payroll'}
               filenameStem="monthly-payroll"
               query={search}
               filters={{ status: statusFilter, month, year }}
@@ -185,7 +186,11 @@ export function MonthlyPayrollPage() {
           </div>
 
           {isLoading && <p className="text-body-sm text-on-surface-variant">Loading…</p>}
-          {isError && <p className="text-body-sm text-error">Failed to load payroll data.</p>}
+          {isError && (
+            <p className="text-body-sm text-error">
+              {getApiErrorMessage(error, 'Failed to load payroll data.')}
+            </p>
+          )}
 
           {summaryCards && (
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">

@@ -23,10 +23,40 @@ import type {
   TodayAttendanceRow,
 } from '../types'
 
-export async function getAttendanceDashboard(): Promise<AttendanceDashboardData> {
+export async function getAttendanceDashboard(params?: {
+  employment_id?: number
+  from_date?: string
+  to_date?: string
+  year?: number
+  month?: number
+}): Promise<AttendanceDashboardData> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<AttendanceDashboardData>('/attendance/dashboard')
-    return data
+    // Scope-based aggregate (SELF default, drill-down via employment_id).
+    const { data } = await apiClient.get<{
+      totals?: { present?: number; absent?: number; half?: number; onLeave?: number }
+      rates?: { attendancePct?: number }
+      hours?: { worked?: number }
+      week?: Array<{ date?: string; status?: string; minutes?: number }>
+      corrections?: { pending?: number; total?: number }
+    }>('/dashboard/attendance', { params })
+    const totals = data.totals ?? {}
+    const week = Array.isArray(data.week) ? data.week : []
+    return {
+      kpis: [
+        { key: 'present', label: 'Present', value: Number(totals.present ?? 0), hint: '', icon: 'check_circle' },
+        { key: 'absent', label: 'Absent', value: Number(totals.absent ?? 0), hint: '', icon: 'cancel' },
+        { key: 'attendancePct', label: 'Attendance %', value: Number(data.rates?.attendancePct ?? 0), hint: '', icon: 'percent' },
+        { key: 'worked', label: 'Hours worked', value: Number(data.hours?.worked ?? 0), hint: '', icon: 'schedule' },
+      ],
+      weekly: week.map((d) => ({
+        day: String(d.date ?? ''),
+        thisWeek: d.status === 'PRESENT' ? 1 : 0,
+        lastWeek: 0,
+      })),
+      recentCheckIns: [],
+      today: [],
+      corrections: [],
+    } as unknown as AttendanceDashboardData
   }
   await delay()
   return {

@@ -13,7 +13,7 @@ export function useMyWorkOverview() {
     user: query.data?.user,
     metrics: query.data?.metrics ?? [],
     todayAttendance: query.data?.todayAttendance,
-    weekHours: query.data?.weekHours ?? [],
+    weekHours: Array.isArray(query.data?.weekHours) ? (query.data?.weekHours ?? []) : [],
     leaveBalances: query.data?.leaveBalances ?? [],
     tasks: query.data?.tasks ?? [],
     notifications: query.data?.notifications ?? [],
@@ -21,6 +21,7 @@ export function useMyWorkOverview() {
     quickActions: query.data?.quickActions ?? [],
     isLoading: query.isLoading,
     isError: query.isError,
+    error: query.error,
     refetch: query.refetch,
   }
 }

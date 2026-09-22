@@ -21,6 +21,7 @@ from app.modules.workforce.employee.schemas import (
     PositionCreate,
     PositionResponse,
     PositionUpdate,
+    RehireRequest,
 )
 
 router = APIRouter(tags=["Workforce Employees"])
@@ -86,9 +87,10 @@ async def get_position(
     position_id: int,
     service: EmployeeServiceDep,
     auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "CUSTOM"))],
+    include_archived: bool = Query(False),
 ) -> PositionResponse:
     enforce_owner_or_grant(auth, "employment", "VIEW")
-    return await service.get_position(position_id)
+    return await service.get_position(position_id, include_archived=include_archived)
 
 
 @router.patch("/positions/{position_id}", response_model=PositionResponse)
@@ -119,6 +121,16 @@ async def archive_position(
     auth: Annotated[AuthContext, Depends(require_permission("employment", "UPDATE", "ORGANIZATION"))],
 ) -> MessageResponse:
     return await service.delete_position(position_id, actor_employment_id=auth.employment_id)
+
+
+@router.post("/positions/{position_id}/restore", response_model=PositionResponse)
+async def restore_position(
+    position_id: int,
+    service: EmployeeServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "UPDATE", "ORGANIZATION"))],
+) -> PositionResponse:
+    """Q16: restore an archived position (409 on name clash)."""
+    return await service.restore_position(position_id, actor_employment_id=auth.employment_id)
 
 
 @router.post(
@@ -176,6 +188,23 @@ async def get_employment(
 ) -> EmploymentDetailResponse:
     enforce_owner_or_grant(auth, "employment", "VIEW", owner_employment_id=employment_id)
     return await service.get_employment(employment_id)
+
+
+@router.post(
+    "/employments/{employment_id}/rehire",
+    response_model=EmploymentDetailResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Q7: rehire — new Employment row for the same Person",
+)
+async def rehire_employment(
+    employment_id: int,
+    body: RehireRequest,
+    service: EmployeeServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "CREATE", "ORGANIZATION"))],
+) -> EmploymentDetailResponse:
+    return await service.rehire_employment(
+        employment_id, body, actor_employment_id=auth.employment_id
+    )
 
 
 @router.patch("/employments/{employment_id}", response_model=EmploymentResponse)

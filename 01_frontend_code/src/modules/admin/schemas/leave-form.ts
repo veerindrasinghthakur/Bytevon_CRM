@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { LeaveType } from '@/shared/schema/enums'
 
 export const leaveTypeFormSchema = z.object({
   name: z.string().min(1, 'Leave type name is required'),
@@ -8,10 +9,10 @@ export const leaveTypeFormSchema = z.object({
 
 export type LeaveTypeForm = z.infer<typeof leaveTypeFormSchema>
 
-/** UI form state for leave policy create/edit. */
+/** UI form state for leave policy create/edit — leave_type bound to shared enum. */
 export const leavePolicyFormSchema = z.object({
   name: z.string().min(2, 'Name is required'),
-  leave_type: z.string().min(1, 'Leave type is required'),
+  leave_type: z.enum(LeaveType as unknown as [string, ...string[]]),
   annual_entitlement: z.coerce.number().min(0),
   carry_forward_limit: z.coerce.number().min(0),
   effective_from: z.string().min(1, 'Effective from is required'),

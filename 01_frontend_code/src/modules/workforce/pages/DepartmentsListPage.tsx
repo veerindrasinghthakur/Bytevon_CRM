@@ -18,7 +18,6 @@ import {
   QuickRelatedRow,
   QuickPersonRow,
 } from '@/shared/components/layout/QuickOverviewParts'
-import { ResourceName } from '@/shared/schema'
 import { useDepartments } from '../hooks/department/use-departments'
 import { workforceRoutes } from '../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
@@ -181,7 +180,7 @@ export function DepartmentsListPage() {
         actions={
           <div className="flex gap-2 flex-wrap">
             <ExportButton
-              resource={ResourceName.DEPARTMENT}
+              resource={'department'}
               query={search}
               filters={{ status }}
               selectedIds={selection.selectionMode ? Array.from(selection.selectedIds) : undefined}
@@ -208,7 +207,7 @@ export function DepartmentsListPage() {
           onCancel={selection.exitSelectionMode}
         >
           <ExportButton
-            resource={ResourceName.DEPARTMENT}
+            resource={'department'}
             selectedIds={Array.from(selection.selectedIds)}
             filenameStem="departments-selected"
             label="Export selected"

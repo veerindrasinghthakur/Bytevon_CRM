@@ -9,7 +9,6 @@ import { TableSkeleton } from '@/shared/components/feedback/Skeleton'
 import { RowActions } from '@/shared/components/ui/RowActions'
 import { useQuickOverview } from '@/shared/components/layout/QuickOverview'
 import { ApprovalQuickContent } from '../../components/approval_action/ApprovalQuickContent'
-import { ResourceName } from '@/shared/schema'
 import { usePendingApprovals } from '../../hooks/approval_action/use-pending-approvals'
 import { useApprovalCenter } from '../../hooks/request/use-approval-center'
 import type { ApprovalRow } from '../../types/request'
@@ -71,7 +70,7 @@ export function PendingApprovalsPage() {
         description="Review and act on items waiting for your decision."
         actions={
           <div className="flex gap-2">
-            <ExportButton resource={ResourceName.APPROVAL} query={search} filenameStem="pending-approvals" />
+            <ExportButton resource={'approval'} query={search} filenameStem="pending-approvals" />
           </div>
         }
       />

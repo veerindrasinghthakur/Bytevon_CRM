@@ -9,8 +9,9 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
-import { getAdminRole, deleteAdminRole, revokeRolePermission } from '../../api/roles'
+import { getAdminRole, deleteAdminRole, restoreAdminRole, revokeRolePermission } from '../../api/roles'
 import { DeleteButton } from '@/shared/components/ui/DeleteButton'
+import { ArchivedBadge } from '@/shared/components/ui/ArchivedBadge'
 import { listAdminUsers } from '../../api/users'
 import { cn } from '@/shared/lib/cn'
 import { queryKeys } from '@/shared/lib/query-keys'
@@ -31,6 +32,19 @@ export function RoleDetailPage() {
     },
     onError: (e: unknown) => {
       setActionError(getApiErrorMessage(e, 'Could not delete role'))
+    },
+  })
+
+  const restoreMutation = useMutation({
+    mutationFn: () => restoreAdminRole(roleId as string),
+    onSuccess: async () => {
+      setActionError(null)
+      await qc.invalidateQueries({ queryKey: queryKeys.admin.roles.all })
+      void qc.invalidateQueries({ queryKey: queryKeys.admin.users.all })
+      await roleQuery.refetch()
+    },
+    onError: (e: unknown) => {
+      setActionError(getApiErrorMessage(e, 'Could not restore role'))
     },
   })
 
@@ -133,6 +147,7 @@ export function RoleDetailPage() {
             >
               {role.status}
             </span>
+            {role.status === 'Archived' && <ArchivedBadge />}
           </div>
           <PageHeader title={role.name} description={role.description} />
         </div>
@@ -153,12 +168,28 @@ export function RoleDetailPage() {
           >
             Edit Role
           </Button>
-          <DeleteButton
-            iconOnly
-            entityLabel={role.name}
-            isLoading={deleteMutation.isPending}
-            onConfirm={() => deleteMutation.mutateAsync()}
-          />
+          {role.status !== 'Archived' && (
+            <DeleteButton
+              iconOnly
+              entityLabel={role.name}
+              isLoading={deleteMutation.isPending}
+              onConfirm={() => deleteMutation.mutateAsync()}
+            />
+          )}
+          {role.status === 'Archived' && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-secondary text-secondary hover:bg-secondary/10"
+              leftIcon={
+                <span className="material-symbols-outlined text-[18px]">restore_from_trash</span>
+              }
+              isLoading={restoreMutation.isPending}
+              onClick={() => restoreMutation.mutate()}
+            >
+              Restore
+            </Button>
+          )}
         </div>
       </div>
 

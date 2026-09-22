@@ -53,6 +53,11 @@ async def delete_holiday_calendar(calendar_id: int, service: ServiceDep, auth: A
 async def archive_holiday_calendar(calendar_id: int, service: ServiceDep, auth: Annotated[AuthContext, Depends(require_permission("holiday", "UPDATE", "ORGANIZATION"))]) -> MessageResponse:
     return await service.delete(calendar_id, actor_employment_id=auth.employment_id)
 
+@router.post("/{calendar_id}/restore", response_model=HolidayCalendarResponse)
+async def restore_holiday_calendar(calendar_id: int, service: ServiceDep, auth: Annotated[AuthContext, Depends(require_permission("holiday", "UPDATE", "ORGANIZATION"))]) -> HolidayCalendarResponse:
+    """Q16: restore an archived holiday calendar (409 on name clash)."""
+    return await service.restore(calendar_id, actor_employment_id=auth.employment_id)
+
 @router.post("/{calendar_id}/holidays", response_model=HolidayResponse, status_code=status.HTTP_201_CREATED)
 async def create_holiday(calendar_id: int, body: HolidayCreate, service: ServiceDep, auth: Annotated[AuthContext, Depends(require_permission("holiday", "CREATE", "ORGANIZATION"))]) -> HolidayResponse:
     return await service.add_holiday(calendar_id, body, actor_employment_id=auth.employment_id)

@@ -3,7 +3,6 @@ import { useNavigate } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { ExportButton } from '@/shared/components/export/ExportButton'
 import { Select } from '@/shared/components/ui/Select'
-import { ResourceName } from '@/shared/schema'
 import { useEmployeePayrollHistory } from '../../hooks/history/use-employee-payroll-history'
 import { payrollHistoryStatusStyles } from '../../schemas/enums'
 import { payrollRoutes } from '../../routes'
@@ -140,7 +139,7 @@ export function EmployeePayrollHistoryPage() {
             />
           </div>
           <ExportButton
-            resource={ResourceName.PAYROLL}
+            resource={'payroll'}
             filenameStem={`payroll-history-${emp.code}`}
             filters={{ employeeId: emp.id, year: yearFilter, status: statusFilter }}
             label="Export"

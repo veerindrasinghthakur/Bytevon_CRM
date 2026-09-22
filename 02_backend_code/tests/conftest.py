@@ -281,8 +281,9 @@ class ActorFactory:
         payload = {
             "employment_id": owner["employment_id"],
             "leave_type": "LOSS_OF_PAY",
-            "start_date": "2030-01-05",
-            "end_date": "2030-01-05",
+            # Monday: canonical working-day count requires a working day
+            "start_date": "2030-01-07",
+            "end_date": "2030-01-07",
             "reason": "probe leave",
         }
         payload.update(overrides)

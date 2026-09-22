@@ -140,29 +140,41 @@ export const NoteReferenceType = {
 } as const
 export type NoteReferenceType = (typeof NoteReferenceType)[keyof typeof NoteReferenceType]
 
-/** Seeded RBAC resource names used by can() */
-export const ResourceName = {
-  EMPLOYMENT: 'employment',
-  DEPARTMENT: 'department',
-  LOCATION: 'location',
-  ROLE: 'role',
-  USER: 'user',
-  LEAVE_REQUEST: 'leave_request',
-  LEAVE_POLICY: 'leave_policy',
-  ATTENDANCE: 'attendance',
-  PAYROLL: 'payroll',
-  SALARY: 'salary',
-  PROJECT: 'project',
-  TASK: 'task',
-  LEAD: 'lead',
-  CLIENT: 'client',
-  APPROVAL: 'approval',
-  AUDIT: 'audit',
-  NOTIFICATION: 'notification',
-  ORG_SETTINGS: 'org_settings',
-  SHIFT: 'shift',
-  HOLIDAY: 'holiday',
-  DOCUMENT: 'document',
-  NOTE: 'note',
-} as const
-export type ResourceName = (typeof ResourceName)[keyof typeof ResourceName]
+/**
+ * RBAC resource name — plain string, NOT an enum.
+ *
+ * Single source of truth is the backend `resources` table (seeded) served via
+ * `GET /rbac/resources` and embedded in effective-permissions grants. The
+ * frontend never enumerates resources; it passes the lowercase backend name
+ * (e.g. 'employment', 'leave_request') straight through to can()/Can/requireView.
+ */
+export type ResourceName = string
+
+// ---------------------------------------------------------------------------
+// LeaveType — single source of truth.
+// To add/change a leave type, edit the LeaveType const above only.
+// All dropdowns/mocks below derive from it via the helpers.
+// ---------------------------------------------------------------------------
+
+/** Display label for a canonical LeaveType code (single place to change). */
+export function leaveTypeLabel(code: string): string {
+  const key = (code ?? '').trim().toUpperCase().replace(/[\s-]+/g, '_')
+  const labels: Record<string, string> = {
+    CASUAL: 'Casual',
+    SICK: 'Sick',
+    EARNED: 'Earned',
+    MATERNITY: 'Maternity',
+    PATERNITY: 'Paternity',
+    LOSS_OF_PAY: 'Unpaid',
+    COMP_OFF: 'Comp Off',
+  }
+  return labels[key] ?? (code ?? '')
+}
+
+/** Canonical dropdown options derived from the LeaveType enum. */
+export function leaveTypeOptions(): Array<{ value: LeaveType; label: string }> {
+  return (Object.values(LeaveType) as LeaveType[]).map((value) => ({
+    value,
+    label: leaveTypeLabel(value),
+  }))
+}

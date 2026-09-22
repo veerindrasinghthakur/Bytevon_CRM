@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useRbac } from '@/shared/rbac'
-import { Action, ResourceName } from '@/shared/schema'
+import { Action } from '@/shared/schema'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { getEmployeeDashboard } from '../api/dashboard'
 
@@ -16,16 +16,16 @@ export function useEmployeeDashboard() {
     () =>
       (query.data?.quickActions ?? []).filter((action) => {
         if (action.to === '/my-work/leave/apply') {
-          return can(Action.CREATE, ResourceName.LEAVE_REQUEST)
+          return can(Action.CREATE, 'leave_request')
         }
         if (action.to === '/my-work/attendance/mark') {
-          return can(Action.CREATE, ResourceName.ATTENDANCE)
+          return can(Action.CREATE, 'attendance')
         }
         if (action.to === '/my-work/tasks') {
-          return can(Action.VIEW, ResourceName.TASK)
+          return can(Action.VIEW, 'task')
         }
         if (action.to === '/dashboard/employee') {
-          return can(Action.VIEW, ResourceName.PAYROLL)
+          return can(Action.VIEW, 'payroll')
         }
         return true
       }),
@@ -41,6 +41,8 @@ export function useEmployeeDashboard() {
     quickActions,
     isLoading: query.isLoading || rbacLoading,
     isError: query.isError,
+    error: query.error,
     refetch: query.refetch,
   }
 }
+

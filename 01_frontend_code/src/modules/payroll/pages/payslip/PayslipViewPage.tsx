@@ -1,7 +1,6 @@
 import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { ExportButton } from '@/shared/components/export/ExportButton'
-import { ResourceName } from '@/shared/schema'
 import { exportAndDownload } from '@/shared/api/export'
 import { usePayslip } from '../../hooks/payslip/use-payslip'
 import { payrollStatusStyles } from '../../schemas/enums'
@@ -26,7 +25,7 @@ export function PayslipViewPage() {
 
   const handleDownload = () => {
     void exportAndDownload({
-      resource: ResourceName.PAYROLL,
+      resource: 'payroll',
       format: 'pdf',
       filenameStem: `payslip-${emp.code}-${payslip.periodLabel.replace(/\s+/g, '-')}`,
       filters: { employeeId: emp.id },
@@ -74,7 +73,7 @@ export function PayslipViewPage() {
             Download
           </Button>
           <ExportButton
-            resource={ResourceName.PAYROLL}
+            resource={'payroll'}
             filters={{ employeeId: emp.id }}
             filenameStem={`payslip-${emp.code}`}
           />

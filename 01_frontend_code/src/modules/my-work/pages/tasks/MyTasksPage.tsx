@@ -18,8 +18,10 @@ import { ExportButton } from '@/shared/components/export/ExportButton'
 import { useMyTasks } from '../../hooks/use-my-tasks'
 import type { MyTask } from '../../types'
 import { cn } from '@/shared/lib/cn'
-import { priorityClass, statusDot } from '../../schemas/enums'
+import { priorityClass, statusDot, TASK_STATUS_OPTIONS } from '../../schemas/enums'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { Can } from '@/shared/rbac'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { myWorkRoutes } from '../../routes'
 import { useTasksPageFilter } from '../../hooks/use-tasks-page-filter'
 
@@ -62,6 +64,7 @@ export function MyTasksPage() {
     isLoading,
     isFetching,
     isError,
+    error,
     refetch,
     selectedIds,
   } = useMyTasks()
@@ -97,7 +100,7 @@ export function MyTasksPage() {
     return (
       <ErrorState
         title="Could not load tasks"
-        description="My tasks failed to load. Retry or go back."
+        description={getApiErrorMessage(error, 'My tasks failed to load. Retry or go back.')}
         onRetry={() => void refetch()}
       />
     )
@@ -109,13 +112,15 @@ export function MyTasksPage() {
         title="My Tasks"
         description="Tasks assigned to you — or create your own."
         actions={
-          <Button
-            variant="primary"
-            leftIcon={<span className="material-symbols-outlined text-lg">add_task</span>}
-            onClick={() => safeNavigate(navigate, { to: myWorkRoutes.tasksNew })}
-          >
-            Create task
-          </Button>
+          <Can action="CREATE" resource="task" minScope="SELF">
+            <Button
+              variant="primary"
+              leftIcon={<span className="material-symbols-outlined text-lg">add_task</span>}
+              onClick={() => safeNavigate(navigate, { to: myWorkRoutes.tasksNew })}
+            >
+              Create task
+            </Button>
+          </Can>
         }
       />
 
@@ -194,14 +199,7 @@ export function MyTasksPage() {
           value={statusFilter}
           onChange={setStatusFilter}
           placeholder="All status"
-          options={[
-            { value: 'All', label: 'All status' },
-            { value: 'In Progress', label: 'In Progress' },
-            { value: 'Pending', label: 'Pending' },
-            { value: 'Not Started', label: 'Not Started' },
-            { value: 'Completed', label: 'Completed' },
-            { value: 'Blocked', label: 'Blocked' },
-          ]}
+          options={TASK_STATUS_OPTIONS}
           minWidthClass="min-w-[140px]"
         />
       </ListToolbar>

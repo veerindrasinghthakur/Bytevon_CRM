@@ -3,6 +3,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { Can } from '@/shared/rbac'
 import { TaskStatusBadge, TaskPriorityLabel } from '../task/TaskStatusBadge'
 import { projectRoutes } from '../../routes'
 import type { Task } from '../../types'
@@ -53,14 +54,16 @@ export function ProjectDetailTasksTab({
           options={taskStatusOptions.map((o) => ({ value: o.value, label: o.label }))}
           minWidthClass="min-w-[160px]"
         />
-        <Button
-          variant="primary"
-          size="sm"
-          leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
-          onClick={onCreateTask}
-        >
-          New Task
-        </Button>
+        <Can action="CREATE" resource="task">
+          <Button
+            variant="primary"
+            size="sm"
+            leftIcon={<span className="material-symbols-outlined text-lg">add</span>}
+            onClick={onCreateTask}
+          >
+            New Task
+          </Button>
+        </Can>
       </div>
 
       {tasksLoading && <Skeleton className="h-40 w-full" />}

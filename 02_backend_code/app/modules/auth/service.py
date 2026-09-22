@@ -159,7 +159,7 @@ class AuthService(BasePublicService):
             tokens=TokenPairResponse(
                 access_token=access_token,
                 refresh_token=refresh_token,
-                expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+                expires_in=settings.JWT_ACCESS_TTL_MINUTES * 60,
             ),
             login_id=login.id,
             person_id=login.person_id,
@@ -213,7 +213,7 @@ class AuthService(BasePublicService):
         return TokenPairResponse(
             access_token=access_token,
             refresh_token=new_refresh,
-            expires_in=settings.JWT_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            expires_in=settings.JWT_ACCESS_TTL_MINUTES * 60,
         )
 
     async def logout(
@@ -300,10 +300,48 @@ class AuthService(BasePublicService):
             await self._repo.add(reset)
             await self._commit()
             logger.info("Password reset token generated for login_id=%s", login.id)
+            await self._send_password_reset_email(
+                to_email=login.email,
+                raw_token=raw_token,
+                expires_minutes=settings.PASSWORD_RESET_TOKEN_EXPIRE_MINUTES,
+            )
 
         return MessageResponse(
             message="If an account with that email exists, a reset link has been sent"
         )
+
+    async def _send_password_reset_email(
+        self, *, to_email: str, raw_token: str, expires_minutes: int
+    ) -> None:
+        """Send the reset link. Fail-soft: never raises, never leaks existence."""
+        from app.core.email import EmailClient
+
+        reset_link = (
+            f"{settings.FRONTEND_URL.rstrip('/')}/reset-password?token={raw_token}"
+        )
+        text_body = (
+            "You requested a password reset for your ByteVon CRM account.\n\n"
+            f"Reset your password here (valid for {expires_minutes} minutes):\n{reset_link}\n\n"
+            "If you did not request this, you can safely ignore this email."
+        )
+        html_body = (
+            "<p>You requested a password reset for your ByteVon CRM account.</p>"
+            f'<p><a href="{reset_link}">Reset your password</a> '
+            f"(valid for {expires_minutes} minutes).</p>"
+            "<p>If you did not request this, you can safely ignore this email.</p>"
+        )
+        result = await EmailClient().send_email(
+            to=to_email,
+            subject="Reset your ByteVon CRM password",
+            text_body=text_body,
+            html_body=html_body,
+        )
+        if result.status != "sent":
+            logger.info(
+                "Password reset email not sent (status=%s) for login email=%s",
+                result.status,
+                to_email,
+            )
 
     async def reset_password(self, data: ResetPasswordRequest) -> MessageResponse:
         now = datetime.now(UTC)
