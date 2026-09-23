@@ -18,7 +18,10 @@ class LeadRepository:
         return lead
 
     async def get(self, lead_id: int) -> Lead | None:
-        return await self._session.get(Lead, lead_id)
+        lead = await self._session.get(Lead, lead_id)
+        if lead is not None and bool(getattr(lead, "is_archived", False)):
+            return None
+        return lead
 
     async def list(
         self,
@@ -28,7 +31,7 @@ class LeadRepository:
         limit: int = 500,
         offset: int = 0,
     ) -> list[Lead]:
-        stmt = select(Lead)
+        stmt = select(Lead).where(Lead.is_archived.is_(False))
         if status is not None:
             stmt = stmt.where(Lead.status == status)
         if assigned_employment_id is not None:

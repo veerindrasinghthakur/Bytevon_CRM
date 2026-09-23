@@ -10,6 +10,7 @@ from app.modules.sales.dependencies import SourceServiceDep
 from app.modules.sales.source.schemas import (
     MessageResponse,
     SourceCreate,
+    SourceLeadRow,
     SourceListResponse,
     SourceResponse,
     SourceUpdate,
@@ -39,6 +40,13 @@ async def list_sources(
 @router.get("/sources/{source_id}", response_model=SourceResponse, dependencies=[Depends(require_permission("client", "VIEW", "ORGANIZATION"))])
 async def get_source(source_id: int, service: SourceServiceDep, include_archived: bool = Query(False)) -> SourceResponse:
     return await service.get(source_id, include_archived=include_archived)
+
+
+@router.get("/sources/{source_id}/leads", response_model=list[SourceLeadRow], dependencies=[Depends(require_permission("client", "VIEW", "ORGANIZATION"))])
+async def list_source_leads(
+    source_id: int, service: SourceServiceDep, limit: int = Query(8, ge=1, le=50)
+) -> list[SourceLeadRow]:
+    return await service.list_source_leads(source_id, limit=limit)
 
 
 @router.patch("/sources/{source_id}", response_model=SourceResponse)

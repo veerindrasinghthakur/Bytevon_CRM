@@ -15,7 +15,7 @@ export function TimelineStep({
         className={cn(
           'absolute -left-[37px] top-0 w-7 h-7 rounded-full flex items-center justify-center border-4 border-surface-container-lowest z-10 executive-shadow',
           done && 'bg-secondary text-white',
-          active && 'bg-secondary/80 text-white',
+          active && 'bg-secondary text-white',
           !done && !active && 'bg-outline-variant text-white'
         )}
       >

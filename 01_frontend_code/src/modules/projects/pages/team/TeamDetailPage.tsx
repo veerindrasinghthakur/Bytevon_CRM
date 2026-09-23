@@ -1,9 +1,12 @@
+import { useState } from 'react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { Select } from '@/shared/components/ui/Select'
 import { TeamTopView } from '../../components/team/TeamTopView'
+import { RemoveMemberButton } from '../../components/team/RemoveMemberButton'
 import { useTeamDetail } from '../../hooks/team/use-team-detail'
 import { projectRoutes } from '../../routes'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
@@ -23,7 +26,29 @@ function Icon({ name, className }: { name: string; className?: string }) {
 export function TeamDetailPage() {
   const { teamId } = useParams({ strict: false }) as { teamId: string }
   const navigate = useNavigate()
-  const { team, members, projects, isLoading, isError, detailError, refetch } = useTeamDetail(teamId)
+  const {
+    team,
+    members,
+    history,
+    projects,
+    isLoading,
+    isError,
+    detailError,
+    refetch,
+    removeMember,
+    isRemoving,
+    deleteTeam,
+    isDeleting,
+    changeHead,
+    isChangingHead,
+  } = useTeamDetail(teamId)
+  const [changingHead, setChangingHead] = useState(false)
+  const [headPick, setHeadPick] = useState('')
+
+  const handleDelete = () => {
+    deleteTeam()
+    window.setTimeout(() => safeNavigate(navigate, { to: projectRoutes.teams }), 600)
+  }
 
   useDeletedRedirect({ ready: !isLoading, data: team, error: detailError, listTo: projectRoutes.teams })
 
@@ -47,7 +72,13 @@ export function TeamDetailPage() {
     <div className="space-y-6 animate-fade-in">
       <div>
         <BackButton to={projectRoutes.teams} label="Back to Teams" />
-        <TeamTopView team={team} activeTab="overview" />
+        <Can
+          action="DELETE"
+          resource="project"
+          fallback={<TeamTopView team={team} activeTab="overview" />}
+        >
+          <TeamTopView team={team} activeTab="overview" onDelete={handleDelete} isDeleting={isDeleting} />
+        </Can>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -68,19 +99,49 @@ export function TeamDetailPage() {
               </h2>
               <div className="flex gap-2">
                 <Can action="UPDATE" resource="project">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    leftIcon={<Icon name="person_add" />}
-                    onClick={() =>
-                      safeNavigate(navigate, {
-                        to: projectRoutes.teamAddMemberPath,
-                        params: { teamId: tid },
-                      })
-                    }
-                  >
-                    Add Member
-                  </Button>
+                  {!changingHead ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      leftIcon={<Icon name="person" />}
+                      onClick={() => {
+                        setHeadPick('')
+                        setChangingHead(true)
+                      }}
+                    >
+                      Change Head
+                    </Button>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={headPick}
+                        onChange={setHeadPick}
+                        options={[
+                          { value: '', label: 'Select head…' },
+                          ...members.map((m) => ({
+                            value: String(m.employmentId ?? ''),
+                            label: `${m.name}${m.code ? ` (${m.code})` : ''}`,
+                          })),
+                        ]}
+                        minWidthClass="min-w-[200px]"
+                        aria-label="Select team head"
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={!headPick || isChangingHead}
+                        onClick={() => {
+                          changeHead(Number(headPick))
+                          setChangingHead(false)
+                        }}
+                      >
+                        {isChangingHead ? 'Saving…' : 'Apply'}
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => setChangingHead(false)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  )}
                 </Can>
                 <Button
                   variant="outline"
@@ -96,45 +157,89 @@ export function TeamDetailPage() {
                 </Button>
               </div>
             </div>
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-surface-container-low/50 border-b border-outline-variant">
-                  <th className="px-5 py-3 text-label-sm font-medium text-on-surface-variant uppercase">Member</th>
-                  <th className="px-5 py-3 text-label-sm font-medium text-on-surface-variant uppercase hidden sm:table-cell">Role</th>
-                  <th className="px-5 py-3 text-label-sm font-medium text-on-surface-variant uppercase">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-outline-variant/30">
-                {previewMembers.map((m) => (
-                  <tr key={m.id} className="zebra-row">
-                    <td className="px-5 py-3">
-                      <Link
-                        {...looseLinkProps({
-                          to: workforceRoutes.employeeDetailPath,
-                          params: { employeeId: String(m.employmentId ?? m.id) },
-                          className: 'flex items-center gap-3',
-                        })}
-                      >
-                        <div className="w-9 h-9 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold">
-                          {m.name.split(' ').map((p: string) => p[0]).join('').slice(0, 2)}
-                        </div>
-                        <div>
-                          <p className="font-semibold text-body-sm">{m.name}</p>
-                          <p className="text-caption text-on-surface-variant">{m.title}</p>
-                        </div>
-                      </Link>
-                    </td>
-                    <td className="px-5 py-3 text-body-sm hidden sm:table-cell">{m.role}</td>
-                    <td className="px-5 py-3">
-                      <span className={cn('px-2 py-0.5 rounded-full text-[10px] font-bold', m.status === 'Active' ? 'status-badge status-success' : 'status-badge status-warning')}>
-                        {m.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {previewMembers.map((m) => (
+                <div
+                  key={m.id}
+                  className="border border-outline-variant rounded-lg p-4 flex items-start gap-3"
+                >
+                  <div className="w-10 h-10 rounded-full bg-secondary/10 text-secondary flex items-center justify-center text-xs font-bold shrink-0">
+                    {m.name.split(' ').map((p: string) => p[0]).join('').slice(0, 2)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <Link
+                      {...looseLinkProps({
+                        to: workforceRoutes.employeeDetailPath,
+                        params: { employeeId: String(m.employmentId ?? m.id) },
+                        className: 'font-semibold text-body-sm hover:text-secondary',
+                      })}
+                    >
+                      {m.name}
+                    </Link>
+                    <p className="text-caption text-on-surface-variant">
+                      {[m.role, m.code ? `Emp #${m.code}` : m.employmentId ? `Emp #${m.employmentId}` : null]
+                        .filter(Boolean)
+                        .join(' · ')}
+                    </p>
+                    <p className="text-caption text-on-surface-variant">
+                      Joined {m.joined ?? '—'}
+                      {m.department ? ` · ${m.department}` : ''}
+                    </p>
+                  </div>
+                  <Can action="DELETE" resource="project">
+                    <RemoveMemberButton
+                      memberName={m.name}
+                      employmentId={m.employmentId}
+                      disabled={isRemoving}
+                      isRemoving={isRemoving}
+                      onRemove={(empId) => removeMember(empId)}
+                    />
+                  </Can>
+                </div>
+              ))}
+              {previewMembers.length === 0 && (
+                <p className="text-body-sm text-on-surface-variant col-span-full">
+                  No active members yet — add members to this team.
+                </p>
+              )}
+            </div>
           </div>
+
+          {history.length > 0 && (
+            <div className="bv-surface overflow-hidden">
+              <div className="p-5 border-b border-outline-variant">
+                <h2 className="text-headline-md font-semibold flex items-center gap-2">
+                  <Icon name="history" className="text-secondary" /> Member History
+                </h2>
+                <p className="text-body-sm text-on-surface-variant">
+                  Previous members are kept as a record. Re-adding creates a new entry.
+                </p>
+              </div>
+              <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {history.map((m) => (
+                  <div
+                    key={m.id}
+                    className="border border-outline-variant/60 rounded-lg p-4 flex items-start gap-3 opacity-80"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center text-xs font-bold shrink-0">
+                      {m.name.split(' ').map((p: string) => p[0]).join('').slice(0, 2)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-body-sm">{m.name}</p>
+                      <p className="text-caption text-on-surface-variant">
+                        {[m.role, m.code ? `Emp #${m.code}` : null]
+                          .filter(Boolean)
+                          .join(' · ')}
+                      </p>
+                      <p className="text-caption text-on-surface-variant">
+                        {m.joined ?? '—'} → {m.leftDate ?? '—'}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="bv-surface p-5">
             <div className="flex justify-between mb-4">

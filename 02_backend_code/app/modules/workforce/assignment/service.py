@@ -14,7 +14,7 @@ from app.core.exceptions.exception import (
 )
 from app.core.services.base_public_service import BasePublicService
 from app.modules.admin.location.models import Location
-from app.modules.admin.shift.models import Shift
+from app.modules.workforce.shift.models import Shift
 from app.modules.workforce.assignment.repository import AssignmentRepository
 from app.modules.workforce.assignment.schemas import (
     EmploymentAssignmentCreate,

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from './Button'
+import { Portal } from './Portal'
 import { cn } from '@/shared/lib/cn'
 
 
@@ -66,7 +67,7 @@ export function DeleteButton({
         </button>
 
         {open && (
-          <>
+          <Portal>
             <div className="fixed inset-0 bg-on-surface/20 backdrop-blur-sm z-40" onClick={() => !busy && setOpen(false)} />
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <div className="bv-surface executive-shadow w-full max-w-md">
@@ -105,7 +106,7 @@ export function DeleteButton({
                 </div>
               </div>
             </div>
-          </>
+          </Portal>
         )}
       </>
     )
@@ -129,7 +130,7 @@ export function DeleteButton({
       </Button>
 
       {open && (
-        <>
+        <Portal>
           <div className="fixed inset-0 bg-on-surface/20 backdrop-blur-sm z-40" onClick={() => !busy && setOpen(false)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="bv-surface executive-shadow w-full max-w-md">
@@ -168,7 +169,7 @@ export function DeleteButton({
               </div>
             </div>
           </div>
-        </>
+        </Portal>
       )}
     </>
   )

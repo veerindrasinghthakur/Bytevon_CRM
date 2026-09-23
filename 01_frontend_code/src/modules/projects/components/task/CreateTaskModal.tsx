@@ -64,6 +64,9 @@ export function CreateTaskModal({
       description: '',
       priority: 'MEDIUM',
       assigneeName: '',
+      startDate: '',
+      dueDate: '',
+      estimatedHours: undefined,
     },
   })
 
@@ -92,6 +95,9 @@ export function CreateTaskModal({
         projectName,
         assigneeName,
         assigneeEmploymentId: assignee ? Number(assignee.id) : null,
+        startDate: data.startDate || undefined,
+        dueDate: data.dueDate || undefined,
+        estimatedHours: data.estimatedHours ?? undefined,
       })
       reset()
       setAssignee(null)
@@ -161,6 +167,44 @@ export function CreateTaskModal({
               ]}
               minWidthClass="w-full"
             />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-label-sm block mb-1">Start date</label>
+                <input
+                  type="date"
+                  {...register('startDate')}
+                  className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-body-md focus:ring-2 focus:ring-secondary/30 outline-none"
+                />
+                {errors.startDate && (
+                  <p className="mt-1 text-body-sm text-error">{String(errors.startDate.message)}</p>
+                )}
+              </div>
+              <div>
+                <label className="text-label-sm block mb-1">Due date</label>
+                <input
+                  type="date"
+                  {...register('dueDate')}
+                  className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-body-md focus:ring-2 focus:ring-secondary/30 outline-none"
+                />
+                {errors.dueDate && (
+                  <p className="mt-1 text-body-sm text-error">{String(errors.dueDate.message)}</p>
+                )}
+              </div>
+            </div>
+            <div>
+              <label className="text-label-sm block mb-1">Estimated hours</label>
+              <input
+                type="number"
+                min={0}
+                step="0.5"
+                {...register('estimatedHours')}
+                className="w-full px-3 py-2 rounded-lg border border-outline-variant bg-surface text-body-md focus:ring-2 focus:ring-secondary/30 outline-none"
+                placeholder="e.g. 8"
+              />
+              {errors.estimatedHours && (
+                <p className="mt-1 text-body-sm text-error">{String(errors.estimatedHours.message)}</p>
+              )}
+            </div>
 
             {needsTeam ? (
               <div className="rounded-lg border border-outline-variant bg-surface-container-low p-4 space-y-3">
@@ -178,7 +222,7 @@ export function CreateTaskModal({
                       safeNavigate(navigate, {
                         to: projectRoutes.projectDetailPath,
                         params: { projectId: String(projectId) },
-                        search: { tab: 'team' },
+                        search: { tab: 'overview' },
                       })
                     }
                   }}

@@ -51,17 +51,6 @@ export const ScopeName = {
 } as const
 export type ScopeName = (typeof ScopeName)[keyof typeof ScopeName]
 
-export const LeaveType = {
-  CASUAL: 'CASUAL',
-  SICK: 'SICK',
-  EARNED: 'EARNED',
-  MATERNITY: 'MATERNITY',
-  PATERNITY: 'PATERNITY',
-  LOSS_OF_PAY: 'LOSS_OF_PAY',
-  COMP_OFF: 'COMP_OFF',
-} as const
-export type LeaveType = (typeof LeaveType)[keyof typeof LeaveType]
-
 export const LeaveRequestStatus = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
@@ -151,12 +140,13 @@ export type NoteReferenceType = (typeof NoteReferenceType)[keyof typeof NoteRefe
 export type ResourceName = string
 
 // ---------------------------------------------------------------------------
-// LeaveType — single source of truth.
-// To add/change a leave type, edit the LeaveType const above only.
-// All dropdowns/mocks below derive from it via the helpers.
+// Leave types — master data in backend `leave_types` (FK leave_type_id).
+// There is NO frontend enum: catalogs come from GET /leave/types (admin) and
+// GET /my-work/leave/types + /leave/apply-context (self-service).
+// leaveTypeLabel() below is a legacy-label fallback for cached/mock data only.
 // ---------------------------------------------------------------------------
 
-/** Display label for a canonical LeaveType code (single place to change). */
+/** Display label fallback for a legacy leave-type code (cached/mock data). */
 export function leaveTypeLabel(code: string): string {
   const key = (code ?? '').trim().toUpperCase().replace(/[\s-]+/g, '_')
   const labels: Record<string, string> = {
@@ -169,12 +159,4 @@ export function leaveTypeLabel(code: string): string {
     COMP_OFF: 'Comp Off',
   }
   return labels[key] ?? (code ?? '')
-}
-
-/** Canonical dropdown options derived from the LeaveType enum. */
-export function leaveTypeOptions(): Array<{ value: LeaveType; label: string }> {
-  return (Object.values(LeaveType) as LeaveType[]).map((value) => ({
-    value,
-    label: leaveTypeLabel(value),
-  }))
 }

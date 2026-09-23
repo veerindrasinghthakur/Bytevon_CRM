@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { DateRangeFilter } from '@/shared/components/forms/DateRangeFilter'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
@@ -16,6 +17,7 @@ import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { Can, useRbac } from '@/shared/rbac'
 import { useProjectsList } from '../../hooks/project/use-projects'
+import { useTeams } from '../../hooks/team/use-teams'
 import { projectRoutes } from '../../routes'
 import type { ProjectStatus } from '../../schemas/project/project'
 import { cn } from '@/shared/lib/cn'
@@ -66,6 +68,14 @@ export function ProjectsListPage() {
   }
 
   const goNew = () => safeNavigate(navigate, { to: projectRoutes.projectNew })
+
+  // Team id → name for the Team column (list endpoint carries ids only).
+  const { data: teamsData } = useTeams()
+  const teamNameById = useMemo(() => {
+    const map = new Map<number, string>()
+    for (const t of teamsData?.items ?? []) map.set(t.id, t.name)
+    return map
+  }, [teamsData])
 
   const openProjectOverview = (project: (typeof pageItems)[number]) => {
     const track = statusTrackLabel(project.status)
@@ -213,7 +223,7 @@ export function ProjectsListPage() {
             </div>
           )}
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[1000px]">
+            <table className="w-full text-left border-collapse min-w-[1120px]">
               <thead>
                 <tr className="border-b border-outline-variant/30 bg-surface/50">
                   <th className="py-4 px-6 w-12">
@@ -232,6 +242,7 @@ export function ProjectsListPage() {
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Proj ID</th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Project Name</th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Client</th>
+                  <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Team</th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Priority & Status</th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Progress</th>
                   {/* Actions column hidden — row click opens quick view → full record.
@@ -301,6 +312,14 @@ export function ProjectsListPage() {
                       </td>
                       <td className="py-2 px-4">
                         <p className="text-body-md font-semibold text-on-background">{project.clientName ?? '—'}</p>
+                      </td>
+                      <td className="py-2 px-4">
+                        <p className="text-body-md text-on-background">
+                          {project.teamName ??
+                            (project.teamId != null
+                              ? (teamNameById.get(project.teamId) ?? `Team #${project.teamId}`)
+                              : '—')}
+                        </p>
                       </td>
                       <td className="py-2 px-4">
                         <div className="flex flex-col gap-1 items-start">

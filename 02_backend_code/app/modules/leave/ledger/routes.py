@@ -6,7 +6,6 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, status
 
 from app.core.authorization import AuthContext, enforce_owner_or_grant, require_permission
-from app.core.db.enums import LeaveType
 from app.modules.leave.dependencies import LedgerServiceDep
 from app.modules.leave.ledger.schemas import (
     ApplyLeaveContextResponse,
@@ -41,7 +40,7 @@ async def list_ledger(
     employment_id: int,
     service: LedgerServiceDep,
     auth: Annotated[AuthContext, Depends(require_permission("leave_request", "VIEW", "CUSTOM"))],
-    leave_type: LeaveType | None = Query(None),
+    leave_type: str | None = Query(None),
     limit: int = Query(200, ge=1, le=1000),
 ) -> list[LeaveLedgerResponse]:
     enforce_owner_or_grant(auth, "leave_request", "VIEW", owner_employment_id=employment_id)

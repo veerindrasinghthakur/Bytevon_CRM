@@ -1,4 +1,3 @@
-import { LeaveType } from '@/shared/schema'
 import type {
   AdminRole,
   AuditLog,
@@ -281,7 +280,7 @@ export const leavePolicies: LeavePolicyRow[] = [
   {
     id: 1,
     name: 'Casual 2026',
-    leave_type: LeaveType.CASUAL,
+    leave_type: 'CASUAL',
     annual_entitlement: 12,
     carry_forward_limit: 3,
     effective_from: '2026-01-01',
@@ -290,7 +289,7 @@ export const leavePolicies: LeavePolicyRow[] = [
   {
     id: 2,
     name: 'Sick 2026',
-    leave_type: LeaveType.SICK,
+    leave_type: 'SICK',
     annual_entitlement: 10,
     carry_forward_limit: 0,
     effective_from: '2026-01-01',
@@ -299,7 +298,7 @@ export const leavePolicies: LeavePolicyRow[] = [
   {
     id: 3,
     name: 'Earned 2025',
-    leave_type: LeaveType.EARNED,
+    leave_type: 'EARNED',
     annual_entitlement: 15,
     carry_forward_limit: 5,
     effective_from: '2025-01-01',
@@ -310,7 +309,7 @@ export const leavePolicies: LeavePolicyRow[] = [
 export const leaveLedger: LeaveLedgerRow[] = [
   {
     id: 1,
-    leave_type: LeaveType.CASUAL,
+    leave_type: 'CASUAL',
     transaction_type: 'CREDIT',
     days: 12,
     reference_type: 'POLICY',
@@ -318,7 +317,7 @@ export const leaveLedger: LeaveLedgerRow[] = [
   },
   {
     id: 2,
-    leave_type: LeaveType.CASUAL,
+    leave_type: 'CASUAL',
     transaction_type: 'DEBIT',
     days: -2,
     reference_type: 'LEAVE_REQUEST',
@@ -326,7 +325,7 @@ export const leaveLedger: LeaveLedgerRow[] = [
   },
   {
     id: 3,
-    leave_type: LeaveType.SICK,
+    leave_type: 'SICK',
     transaction_type: 'CREDIT',
     days: 10,
     reference_type: 'POLICY',

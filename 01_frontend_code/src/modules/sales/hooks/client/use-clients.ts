@@ -8,7 +8,10 @@ import {
   getClientById,
   createClient,
   updateClient,
+  archiveClient,
   getClientFilterOptions,
+  listClientContacts,
+  type ClientContactInput,
 } from '../../api/client'
 import type { Client, ClientListParams } from '../../types'
 import {
@@ -89,6 +92,29 @@ export function useUpdateClient() {
     },
   })
 }
+
+export function useClientContacts(id: string | undefined) {
+  return useQuery({
+    queryKey: [...queryKeys.sales.clients.detail(id ?? ''), 'contacts'],
+    queryFn: () => listClientContacts(id!),
+    enabled: Boolean(id),
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  })
+}
+
+export function useArchiveClient() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => archiveClient(id),
+    onSuccess: (_v, id) => {
+      qc.removeQueries({ queryKey: queryKeys.sales.clients.detail(id) })
+      void qc.invalidateQueries({ queryKey: queryKeys.sales.clients.all })
+    },
+  })
+}
+
+export type { ClientContactInput }
 
 const FILTER_DEFAULTS = {
   status: 'All',

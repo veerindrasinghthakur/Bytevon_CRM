@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import { useNavigate, useRouterState } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
@@ -57,8 +58,21 @@ export function ShiftsListPage() {
   const isWorkforce = pathname.startsWith('/workforce')
   const canCreate = can({ action: Action.CREATE, resource: 'shift' })
 
-  const { data, isLoading, isError, error, refetch } = useShiftsList(true)
-  const items = data?.items ?? []
+  const [includeArchived, setIncludeArchived] = useState(false)
+
+  const { data, isLoading, isError, error, refetch } = useShiftsList(includeArchived)
+  const items: ShiftRow[] = data?.items ?? []
+
+  const metrics = useMemo(() => {
+    const total = items.length
+    const graceSum = items.reduce((s, r) => s + (Number(r.grace_late_minutes) || 0), 0)
+    return {
+      total,
+      avgGrace: total > 0 ? Math.round((graceSum / total) * 10) / 10 : 0,
+      overnight: items.filter((r) => r.is_overnight).length,
+      flexibleEnd: items.filter((r) => r.flexible_end).length,
+    }
+  }, [items])
 
   const openShiftOverview = (s: ShiftRow) => {
     openPanel({
@@ -102,6 +116,35 @@ export function ShiftsListPage() {
           </Button>
         )}
       </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bv-surface card-hover p-5">
+          <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-2">Total shifts</p>
+          <p className="text-headline-xl font-bold">{metrics.total}</p>
+        </div>
+        <div className="bv-surface card-hover p-5">
+          <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-2">Avg grace minutes</p>
+          <p className="text-headline-xl font-bold">{metrics.avgGrace}</p>
+        </div>
+        <div className="bv-surface card-hover p-5">
+          <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-2">Overnight</p>
+          <p className="text-headline-xl font-bold">{metrics.overnight}</p>
+        </div>
+        <div className="bv-surface card-hover p-5">
+          <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-2">Flexible end</p>
+          <p className="text-headline-xl font-bold">{metrics.flexibleEnd}</p>
+        </div>
+      </div>
+
+      <label className="inline-flex items-center gap-2 text-body-sm text-on-surface-variant cursor-pointer">
+        <input
+          type="checkbox"
+          checked={includeArchived}
+          onChange={(e) => setIncludeArchived(e.target.checked)}
+          className="w-4 h-4 rounded border-outline-variant text-secondary focus:ring-secondary"
+        />
+        Include archived
+      </label>
+
       {items.length === 0 ? (
         <EmptyState title="No shifts" description="Create a shift to assign employees.">
           {canCreate ? (

@@ -31,6 +31,7 @@ from app.core.models_registry import Base  # noqa: E402
 from app.core.security.password_manager import PasswordManager  # noqa: E402
 from app.main import app  # noqa: E402
 from app.modules.auth.models import Login, Person  # noqa: E402
+from app.modules.leave.models import LeaveType  # noqa: E402
 from app.modules.rbac.models import (  # noqa: E402
     EmployeeRole,
     Permission,
@@ -118,6 +119,29 @@ async def _reseed_base() -> None:
         session.add(role)
         await session.flush()
         session.add(EmployeeRole(employment_id=emp_id, role_id=role.id, changed_by=1))
+        # Leave type master catalog (mirrors m3n4o5p6q7r8 seed).
+        for order, (code, name, paid, doc, encash, days) in enumerate(
+            [
+                ("CASUAL", "Casual", True, False, False, "12"),
+                ("SICK", "Sick", True, True, False, "12"),
+                ("EARNED", "Earned", True, False, True, "15"),
+                ("MATERNITY", "Maternity", True, True, False, "182"),
+                ("PATERNITY", "Paternity", True, False, False, "15"),
+                ("LOSS_OF_PAY", "Unpaid", False, False, False, "0"),
+                ("COMP_OFF", "Comp Off", True, False, False, "0"),
+            ]
+        ):
+            session.add(
+                LeaveType(
+                    code=code,
+                    name=name,
+                    is_paid=paid,
+                    requires_document=doc,
+                    is_encashable=encash,
+                    default_annual_entitlement=days,
+                    sort_order=order,
+                )
+            )
         await session.commit()
 
 

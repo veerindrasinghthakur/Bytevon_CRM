@@ -28,8 +28,8 @@ const TeamEditPage = lazyPage(() => import('./pages/team/TeamEditPage'), 'TeamEd
 const TeamMembersPage = lazyPage(() => import('./pages/team/TeamMembersPage'), 'TeamMembersPage')
 const TeamProjectsPage = lazyPage(() => import('./pages/team/TeamProjectsPage'), 'TeamProjectsPage')
 const AssignProjectPage = lazyPage(() => import('./pages/team/AssignProjectPage'), 'AssignProjectPage')
-/** Add-member shared with workforce departments */
-const AddMemberPage = lazyPage(() => import('@/modules/workforce/pages/AddMemberPage'), 'AddMemberPage')
+/** Add-member flow owned by project teams (live employments + API). */
+const AddMemberPage = lazyPage(() => import('./pages/team/TeamAddMemberPage'), 'TeamAddMemberPage')
 
 /**
  * Canonical path helpers. Teams live under /projects/teams.

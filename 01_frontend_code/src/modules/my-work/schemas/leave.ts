@@ -37,7 +37,8 @@ export const leaveRequestSchema = z.object({
 export type LeaveRequest = z.infer<typeof leaveRequestSchema>
 
 export const createLeaveRequestSchema = z.object({
-  type: leaveTypeSchema,
+  // Code or label from the live catalog; backend normalizes + validates.
+  type: z.string().min(1),
   from: z.string().min(1),
   to: z.string().min(1),
   reason: z.string().min(10).max(500),
@@ -65,7 +66,7 @@ export const applyLeaveContextSchema = z.object({
 export type ApplyLeaveContext = z.infer<typeof applyLeaveContextSchema>
 
 export const leaveCalculateInputSchema = z.object({
-  type: leaveTypeSchema,
+  type: z.string().min(1),
   from: z.string().min(1),
   to: z.string().min(1),
   halfDay: z.boolean().optional(),

@@ -35,6 +35,7 @@ export const queryKeys = {
     },
     leave: {
       all: ['admin', 'leave'] as const,
+      types: (filters?: unknown) => [...queryKeys.admin.leave.all, 'types', filters ?? {}] as const,
       policies: () => [...queryKeys.admin.leave.all, 'policies'] as const,
       ledger: (filters?: unknown) => [...queryKeys.admin.leave.all, 'ledger', filters ?? {}] as const,
     },

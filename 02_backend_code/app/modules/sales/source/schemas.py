@@ -30,6 +30,16 @@ class SourceResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     changed_by: int | None
+    created_by_name: str | None = None
+    lead_count: int = 0
+
+
+class SourceLeadRow(BaseModel):
+    id: int
+    title: str
+    status: str
+    contact_name: str | None = None
+    created_at: datetime | None = None
 
 
 class SourceMetrics(BaseModel):

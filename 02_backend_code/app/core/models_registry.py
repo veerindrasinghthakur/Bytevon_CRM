@@ -25,6 +25,7 @@ from app.modules.leave.models import (  # noqa: F401
     LeaveLedger,
     LeavePolicy,
     LeaveRequest,
+    LeaveType,
 )
 from app.modules.notifications.models import (  # noqa: F401
     Notification,

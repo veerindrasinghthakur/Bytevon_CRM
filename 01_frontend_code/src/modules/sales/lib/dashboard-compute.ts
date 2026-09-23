@@ -18,7 +18,21 @@ export function stageCounts(leads: Lead[]) {
 }
 
 export function pipelineValue(leads: Lead[]): number {
-  return leads.reduce((total, lead) => total + (lead.budget ?? 0), 0)
+  return openLeads(leads).reduce((total, lead) => total + (lead.budget ?? 0), 0)
+}
+
+const CLOSED_STAGES: Lead['stage'][] = ['Won', 'Lost', 'Closed']
+
+/** Leads still in play — excludes Won / Lost / Closed and inactive records. */
+export function openLeads(leads: Lead[]): Lead[] {
+  return leads.filter((lead) => lead.status !== 'Inactive' && !CLOSED_STAGES.includes(lead.stage))
+}
+
+/** Closed-won revenue — sum of budgets on leads in the Won stage. */
+export function wonValue(leads: Lead[]): number {
+  return leads
+    .filter((lead) => lead.stage === 'Won')
+    .reduce((total, lead) => total + (lead.budget ?? 0), 0)
 }
 
 export function wonCount(leads: Lead[]): number {

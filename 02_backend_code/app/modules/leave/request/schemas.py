@@ -6,12 +6,10 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, model_validator
 
-from app.core.db.enums import LeaveRequestStatus, LeaveType
-
 
 class LeaveRequestCreate(BaseModel):
     employment_id: int
-    leave_type: LeaveType
+    leave_type: str
     start_date: date
     end_date: date
     reason: str | None = None
@@ -29,12 +27,13 @@ class LeaveRequestResponse(BaseModel):
 
     id: int
     employment_id: int
-    leave_type: LeaveType
+    leave_type_id: int
+    leave_type: str
     start_date: date
     end_date: date
     reason: str | None
     approval_request_id: int | None
-    status: LeaveRequestStatus
+    status: str
     days: Decimal | None
     created_at: datetime
     updated_at: datetime

@@ -58,6 +58,15 @@ async def update_lead(
     return await service.update(lead_id, body, actor_employment_id=auth.employment_id)
 
 
+@router.delete("/{lead_id}", response_model=dict)
+async def delete_lead(
+    lead_id: int,
+    service: LeadServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("lead", "DELETE", "ORGANIZATION"))],
+) -> dict:
+    return await service.delete_lead(lead_id, actor_employment_id=auth.employment_id)
+
+
 @router.post("/{lead_id}/status")
 async def change_lead_status(
     lead_id: int,

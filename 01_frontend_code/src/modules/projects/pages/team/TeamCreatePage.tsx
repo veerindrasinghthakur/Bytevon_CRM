@@ -55,7 +55,6 @@ export function TeamCreatePage() {
   })
 
   const head = watch('head')
-  const members = watch('members')
 
   const backTo =
     search.returnTo ||
@@ -76,16 +75,12 @@ export function TeamCreatePage() {
     }
 
     try {
-      await createMutation.mutateAsync({
+      const created = await createMutation.mutateAsync({
         name: data.name,
         description: data.description,
         teamHeadEmploymentId: headId,
         headName: data.head.label,
         headRole: data.head.sublabel?.split(' · ')[0],
-        memberEmploymentIds: (data.members ?? [])
-          .map((m) => Number(m.id))
-          .filter((id) => Number.isFinite(id) && id > 0),
-        memberNames: data.members?.map((m: EntityOption) => m.label) ?? [],
         projectId: projectId && Number.isFinite(projectId) ? projectId : undefined,
         projectName: project?.name,
       })
@@ -95,6 +90,12 @@ export function TeamCreatePage() {
         safeNavigate(navigate, {
           to: projectRoutes.projectDetailPath,
           params: { projectId: String(projectId) },
+        })
+      } else if (created?.id != null) {
+        // Head-only at creation — continue to the add-members flow.
+        safeNavigate(navigate, {
+          to: projectRoutes.teamAddMemberPath,
+          params: { teamId: String(created.id) },
         })
       } else {
         safeNavigate(navigate, { to: projectRoutes.teams })
@@ -106,10 +107,6 @@ export function TeamCreatePage() {
 
   const handleHeadChange = (value: EntityOption | null) => {
     setValue('head', value, { shouldValidate: true })
-  }
-
-  const handleMembersChange = (value: EntityOption[]) => {
-    setValue('members', value)
   }
 
   return (
@@ -125,7 +122,7 @@ export function TeamCreatePage() {
             <p className="text-body-md text-on-surface-variant mt-1">
               {project
                 ? `Will be assigned to project: ${project.name}`
-                : 'Define team identity and assign members.'}
+                : 'Define team identity and head. Members are added afterwards.'}
             </p>
           </div>
           <Link
@@ -205,24 +202,9 @@ export function TeamCreatePage() {
               </div>
             </section>
 
-            <section>
-              <h3 className="text-headline-md font-semibold text-on-surface mb-4 flex items-center gap-2">
-                <span className="material-symbols-outlined text-secondary">group_add</span>
-                Team Composition
-              </h3>
-              <div className="bg-surface-container-lowest p-5 rounded-lg border border-outline-variant">
-                <EntitySearch
-                  label="Add Members"
-                  placeholder="Search and add employees…"
-                  options={employeeOptions.filter((o) => String(o.id) !== String(head?.id ?? ''))}
-                  multi
-                  values={members}
-                  onChangeMulti={handleMembersChange}
-                  disabled={employeesQuery.isLoading}
-                  emptyMessage="No employees match your search"
-                />
-              </div>
-            </section>
+            <p className="text-body-sm text-on-surface-variant mt-1">
+              Members are added after creation, from the team&apos;s Add Members page.
+            </p>
 
             {(formError || createMutation.isError) && (
               <p className="text-body-sm text-error" role="alert">

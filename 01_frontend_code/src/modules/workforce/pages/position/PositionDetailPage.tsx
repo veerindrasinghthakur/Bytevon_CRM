@@ -9,13 +9,13 @@ import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
-import { createPosition, getPosition, updatePosition, deletePosition, restorePosition } from '../../api/organization'
+import { createPosition, getPosition, updatePosition, deletePosition, restorePosition } from '@/modules/admin/api/organization'
 import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 import { ArchivedBadge } from '@/shared/components/ui/ArchivedBadge'
 import { cn } from '@/shared/lib/cn'
 import { queryKeys } from '@/shared/lib/query-keys'
 
-export function PositionDetailPage() {
+export function PositionDetailPage({ basePath = '/workforce/positions' }: { basePath?: string }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
   const isNew = pathname.endsWith('/positions/new')
   const { positionId } = useParams({ strict: false }) as { positionId?: string }
@@ -33,7 +33,7 @@ export function PositionDetailPage() {
     ready: !isNew && !detailQuery.isLoading,
     data: isNew ? {} : (detailQuery.data ?? null),
     error: detailQuery.error,
-    listTo: '/admin/settings/positions',
+    listTo: basePath,
   })
 
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(isNew)
@@ -53,7 +53,7 @@ export function PositionDetailPage() {
       await qc.invalidateQueries({ queryKey: queryKeys.organization.positions(true) })
       if (isNew) {
         safeNavigate(navigate, {
-          to: '/admin/settings/positions/$positionId',
+          to: `${basePath}/$positionId`,
           params: { positionId: String(row.id) },
         })
       } else {
@@ -69,7 +69,7 @@ export function PositionDetailPage() {
     mutationFn: () => deletePosition(id),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: queryKeys.organization.positions(true) })
-      safeNavigate(navigate, { to: '/admin/settings/positions' })
+      safeNavigate(navigate, { to: basePath })
     },
   })
 
@@ -87,7 +87,7 @@ export function PositionDetailPage() {
       <ErrorState
         description={(detailQuery.error as Error)?.message ?? 'Position not found'}
         onRetry={() => void detailQuery.refetch()}
-        onBack={() => safeNavigate(navigate, { to: '/admin/settings/positions' })}
+        onBack={() => safeNavigate(navigate, { to: basePath })}
       />
     )
   }
@@ -96,7 +96,7 @@ export function PositionDetailPage() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <BackButton to="/admin/settings/positions" label="Back to positions" />
+      <BackButton to={basePath} label="Back to positions" />
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
         <div>
           <h2 className="text-title-lg font-semibold text-on-background">

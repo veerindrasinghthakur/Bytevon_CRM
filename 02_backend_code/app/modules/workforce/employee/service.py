@@ -12,7 +12,7 @@ from app.core.db.enums import EmploymentState, WorkMode
 from app.core.exceptions.exception import ConflictError, DomainError, NotFoundError
 from app.core.services.base_public_service import BasePublicService
 from app.modules.admin.location.models import Location
-from app.modules.admin.shift.models import Shift
+from app.modules.workforce.shift.models import Shift
 from app.modules.auth.models import Person
 from app.modules.workforce.department.models import Department
 from app.modules.workforce.employee.repository import EmployeeRepository

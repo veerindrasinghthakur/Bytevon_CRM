@@ -6,8 +6,6 @@ from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from app.core.db.enums import LeaveType
-
 
 class MessageResponse(BaseModel):
     message: str
@@ -15,7 +13,7 @@ class MessageResponse(BaseModel):
 
 class LeaveLedgerCreate(BaseModel):
     employment_id: int
-    leave_type: LeaveType
+    leave_type: str
     transaction_type: str = Field(..., min_length=1, max_length=50)
     days: Decimal
     reference_type: str | None = None
@@ -27,7 +25,8 @@ class LeaveLedgerResponse(BaseModel):
 
     id: int
     employment_id: int
-    leave_type: LeaveType
+    leave_type_id: int
+    leave_type: str
     transaction_type: str
     days: Decimal
     reference_type: str | None
@@ -37,7 +36,8 @@ class LeaveLedgerResponse(BaseModel):
 
 
 class LeaveBalanceItem(BaseModel):
-    leave_type: LeaveType
+    leave_type_id: int
+    leave_type: str
     balance_days: Decimal
 
 
@@ -53,14 +53,16 @@ class HolidayItem(BaseModel):
 
 
 class LeaveTypeOptionItem(BaseModel):
-    leave_type: LeaveType
+    leave_type_id: int
+    leave_type: str
     name: str
     annual_entitlement: Decimal
     description: str | None = None
 
 
 class ApplyLeaveBalanceItem(BaseModel):
-    leave_type: LeaveType
+    leave_type_id: int
+    leave_type: str
     used: Decimal
     total: Decimal
     remaining: Decimal
@@ -75,7 +77,7 @@ class ApplyLeaveContextResponse(BaseModel):
 
 class LeaveCalculateRequest(BaseModel):
     employment_id: int
-    leave_type: LeaveType
+    leave_type: str
     start_date: date
     end_date: date
     half_day: bool = False

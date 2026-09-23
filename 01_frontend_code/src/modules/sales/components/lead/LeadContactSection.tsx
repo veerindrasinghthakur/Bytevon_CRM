@@ -40,6 +40,11 @@ export function LeadContactSection({ lead }: Props) {
         <div>
           <dt className="text-[10px] font-bold uppercase text-on-surface-variant">Assigned</dt>
           <dd className="font-semibold text-on-surface mt-0.5">{lead.assignedTo ?? 'Unassigned'}</dd>
+          {lead.assignedEmploymentId != null && (
+            <dd className="text-xs text-on-surface-variant font-mono">
+              Emp #{lead.assignedEmploymentId}
+            </dd>
+          )}
         </div>
         <div>
           <dt className="text-[10px] font-bold uppercase text-on-surface-variant">Created</dt>

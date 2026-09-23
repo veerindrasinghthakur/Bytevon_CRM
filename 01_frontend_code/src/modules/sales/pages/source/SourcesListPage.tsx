@@ -1,10 +1,13 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { Modal } from '@/shared/components/ui/Modal'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { ListToolbar } from '@/shared/components/layout/ListToolbar'
 import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
+import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { useSources, type LeadSource } from '../../hooks/source/use-sources'
 import { salesRoutes } from '../../routes'
 import { SourceMetricsCards } from '../../components/source/SourceMetricsCards'
@@ -15,8 +18,10 @@ type ModalMode = 'create' | 'edit' | null
 type ConfirmKind = 'save' | 'cancel' | null
 
 export function SourcesListPage() {
+  const navigate = useNavigate()
   const [search, setSearch] = useState('')
-  const [includeArchived, setIncludeArchived] = useState(false)
+  // Deleted sources stay visible in real time; uncheck to hide them.
+  const [includeArchived, setIncludeArchived] = useState(true)
 
   const [modalMode, setModalMode] = useState<ModalMode>(null)
   const [editing, setEditing] = useState<LeadSource | null>(null)
@@ -191,6 +196,12 @@ export function SourcesListPage() {
           rows={filtered}
           isLoading={isLoading}
           isFetching={isFetching}
+          onOpen={(row) =>
+            safeNavigate(navigate, {
+              to: salesRoutes.sourceDetailPath,
+              params: { sourceId: String(row.id) },
+            })
+          }
           onEdit={openEdit}
           onDelete={(row) => {
             setDeleteTarget(row)
@@ -201,53 +212,49 @@ export function SourcesListPage() {
       )}
 
       {modalMode && (
-        <SourceFormModal
-          mode={modalMode}
-          name={name}
-          description={description}
-          formError={formError}
-          confirmKind={confirmKind}
-          busy={busy}
-          onNameChange={setName}
-          onDescriptionChange={setDescription}
-          onRequestSave={requestSave}
-          onRequestCancel={requestCancel}
-          onBackFromConfirm={() => setConfirmKind(null)}
-          onConfirmSave={() => void confirmSave()}
-          onConfirmDiscard={closeModal}
-        />
+        <Modal
+          title={modalMode === 'create' ? 'Add source' : 'Edit source'}
+          onClose={closeModal}
+        >
+          <SourceFormModal
+            mode={modalMode}
+            name={name}
+            description={description}
+            formError={formError}
+            confirmKind={confirmKind}
+            busy={busy}
+            onNameChange={setName}
+            onDescriptionChange={setDescription}
+            onRequestSave={requestSave}
+            onRequestCancel={requestCancel}
+            onBackFromConfirm={() => setConfirmKind(null)}
+            onConfirmSave={() => void confirmSave()}
+            onConfirmDiscard={closeModal}
+          />
+        </Modal>
       )}
 
       {deleteTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <button
-            type="button"
-            className="absolute inset-0 bg-on-surface/40 backdrop-blur-sm"
-            aria-label="Close"
-            onClick={() => setDeleteTarget(null)}
-          />
-          <div className="relative bv-surface executive-shadow w-full max-w-sm p-6 space-y-4 z-10 rounded-xl">
-            <h3 className="text-title-lg font-semibold">Delete “{deleteTarget.name}”?</h3>
-            <p className="text-body-sm text-on-surface-variant">
-              This source will be hidden from new lead pickers. Existing leads keep their link.
+        <Modal title={`Delete “${deleteTarget.name}”?`} danger onClose={() => setDeleteTarget(null)}>
+          <p className="text-body-sm text-on-surface-variant">
+            This source will be hidden from new lead pickers. Existing leads keep their link.
+          </p>
+          {actionError && (
+            <p className="text-body-sm text-error mt-2" role="alert">
+              {actionError}
             </p>
-            {actionError && (
-              <p className="text-body-sm text-error" role="alert">
-                {actionError}
-              </p>
-            )}
-            <div className="flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => setDeleteTarget(null)}>
-                Cancel
-              </Button>
-              <DeleteButton
-                entityLabel={deleteTarget.name}
-                isLoading={busy}
-                onConfirm={() => void confirmDelete()}
-              />
-            </div>
+          )}
+          <div className="flex justify-end gap-2 mt-4">
+            <Button variant="ghost" onClick={() => setDeleteTarget(null)}>
+              Cancel
+            </Button>
+            <DeleteButton
+              entityLabel={deleteTarget.name}
+              isLoading={busy}
+              onConfirm={() => void confirmDelete()}
+            />
           </div>
-        </div>
+        </Modal>
       )}
 
       <span className="sr-only">{salesRoutes.sources}</span>

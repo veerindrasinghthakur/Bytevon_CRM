@@ -27,6 +27,7 @@ export function SalesDashboardPage() {
     topPerformers,
     activityGroups,
     wonCount,
+    wonValue,
     avgDealSize,
   } = useSalesDashboard()
 
@@ -62,6 +63,7 @@ export function SalesDashboardPage() {
           pipelineValue={pipelineValue}
           avgDealSize={avgDealSize}
           wonCount={wonCount}
+          wonValue={wonValue}
         />
         <LeadGrowthChart monthlyGrowth={monthlyGrowth ?? []} maxGrowth={maxGrowth} />
       </div>

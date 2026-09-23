@@ -13,6 +13,7 @@ from app.modules.sales.source.repository import SourceRepository
 from app.modules.sales.source.schemas import (
     MessageResponse,
     SourceCreate,
+    SourceLeadRow,
     SourceListResponse,
     SourceMetrics,
     SourceResponse,
@@ -47,7 +48,59 @@ class SourceService(BasePublicService):
             raise NotFoundError("Source not found")
         if bool(getattr(row, "is_archived", False)) and not include_archived:
             raise NotFoundError("Source not found")
-        return SourceResponse.model_validate(row)
+        resp = SourceResponse.model_validate(row)
+        resp.created_by_name = await self._creator_name(row.changed_by)
+        resp.lead_count = (await self._lead_counts()).get(row.id, 0)
+        return resp
+
+    async def _creator_name(self, employment_id: int | None) -> str | None:
+        if not employment_id:
+            return None
+        from sqlalchemy import select
+
+        from app.modules.auth.models import Person
+        from app.modules.workforce.models import Employment
+
+        emp = await self._session.get(Employment, int(employment_id))
+        if emp is None:
+            return None
+        person = await self._session.get(Person, emp.person_id)
+        if person is None:
+            return emp.employee_code
+        return f"{person.first_name} {person.last_name}".strip() or emp.employee_code
+
+    async def list_source_leads(
+        self, source_id: int, *, limit: int = 8
+    ) -> list[SourceLeadRow]:
+        """Latest leads linked to this source (newest last in UI order)."""
+        from sqlalchemy import select
+
+        from app.modules.sales.models import Lead
+
+        row = await self._repo.get(source_id, include_archived=True)
+        if row is None:
+            raise NotFoundError("Source not found")
+        rows = (
+            await self._session.execute(
+                select(Lead)
+                .where(Lead.platform_id == source_id, Lead.is_archived.is_(False))
+                .order_by(Lead.id.desc())
+                .limit(max(limit, 1))
+            )
+        ).scalars()
+        out: list[SourceLeadRow] = []
+        for lead in rows:
+            st = lead.status.value if hasattr(lead.status, "value") else str(lead.status)
+            out.append(
+                SourceLeadRow(
+                    id=lead.id,
+                    title=lead.lead_title,
+                    status=st,
+                    contact_name=lead.contact_name,
+                    created_at=lead.created_at,
+                )
+            )
+        return out
 
     async def list(
         self, *, include_archived: bool = False, include_deleted: bool = False
@@ -55,11 +108,29 @@ class SourceService(BasePublicService):
         # include_deleted kept as compat alias
         show = bool(include_archived or include_deleted)
         rows = await self._repo.list_all(include_archived=show)
-        items = [SourceResponse.model_validate(r) for r in rows]
+        counts = await self._lead_counts()
+        items = []
+        for r in rows:
+            resp = SourceResponse.model_validate(r)
+            resp.lead_count = counts.get(r.id, 0)
+            items.append(resp)
         active = sum(1 for i in items if not i.is_archived)
         archived = sum(1 for i in items if i.is_archived)
         metrics = SourceMetrics(total=len(items), active=active, archived=archived)
         return SourceListResponse(items=items, total=len(items), metrics=metrics)
+
+    async def _lead_counts(self) -> dict[int, int]:
+        """Non-archived leads grouped by platform (single query)."""
+        from sqlalchemy import func, select
+
+        from app.modules.sales.models import Lead
+
+        res = await self._session.execute(
+            select(Lead.platform_id, func.count(Lead.id))
+            .where(Lead.platform_id.is_not(None), Lead.is_archived.is_(False))
+            .group_by(Lead.platform_id)
+        )
+        return {int(pid): int(n) for pid, n in res.all() if pid is not None}
 
     # Back-compat: old callers expect list[...]
     async def list_items(self, *, include_archived: bool = False) -> list[SourceResponse]:

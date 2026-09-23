@@ -84,6 +84,8 @@ class DocumentResponse(BaseModel):
 class DocumentDetailResponse(DocumentResponse):
     current_version: DocumentVersionResponse | None = None
     versions: list[DocumentVersionResponse] = Field(default_factory=list)
+    uploaded_by_name: str | None = None
+    uploaded_by_code: str | None = None
 
 
 class DocumentLinkCreate(BaseModel):

@@ -8,6 +8,7 @@ import {
   getLeadById,
   createLead,
   updateLead,
+  deleteLead,
   getLeadFilterOptions,
 } from '../../api/lead'
 import type { Lead, LeadListParams } from '../../types'
@@ -90,6 +91,17 @@ export function useUpdateLead() {
     },
     onSuccess: (row) => {
       upsertLeadInLists(qc, row)
+    },
+  })
+}
+
+export function useDeleteLead() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => deleteLead(id),
+    onSuccess: (_v, id) => {
+      qc.removeQueries({ queryKey: queryKeys.sales.leads.detail(id) })
+      void qc.invalidateQueries({ queryKey: queryKeys.sales.leads.all })
     },
   })
 }

@@ -1,9 +1,10 @@
 import { z } from 'zod'
-import { leaveTypeSchema } from './leave'
 
 export const leaveFormSchema = z
   .object({
-    type: leaveTypeSchema,
+    // Leave type code or label from the live catalog (leave_types master);
+    // the backend normalizes + validates against the master table.
+    type: z.string().min(1, 'Leave type required'),
     halfDay: z.boolean().optional(),
     from: z.string().min(1, 'Start date required'),
     to: z.string().min(1, 'End date required'),

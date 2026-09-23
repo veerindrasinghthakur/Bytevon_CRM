@@ -581,7 +581,8 @@
   "test_client_lifecycle_with_contacts"
  ],
  "POST /api/v1/sales/clients/{client_id}/contacts": [
-  "test_client_lifecycle_with_contacts"
+  "test_client_lifecycle_with_contacts",
+  "test_sources_platforms_analytics"
  ],
  "POST /api/v1/sales/sources": [
   "test_sources_platforms_analytics"
@@ -605,7 +606,8 @@
   "test_sources_platforms_analytics"
  ],
  "GET /api/v1/sales/activity": [
-  "test_sources_platforms_analytics"
+  "test_sources_platforms_analytics",
+  "test_client_lifecycle_with_contacts"
  ],
  "GET /api/v1/sales/case-studies": [
   "test_sources_platforms_analytics"
@@ -919,5 +921,29 @@
  "GET /api/v1/workforce/attendance/today": [
   "test_attendance_ops_flow",
   "test_attendance_today_and_manual_correction"
+ ],
+ "DELETE /api/v1/sales/leads/{lead_id}": [
+  "test_sources_platforms_analytics"
+ ],
+ "GET /api/v1/sales/sources/{source_id}/leads": [
+  "test_sources_platforms_analytics"
+ ],
+ "POST /api/v1/workforce/shifts/{shift_id}/archive": [
+  "test_admin_location_shift_week_lifecycle"
+ ],
+ "POST /api/v1/leave/types": [
+  "test_leave_type_lifecycle"
+ ],
+ "GET /api/v1/leave/types": [
+  "test_leave_type_lifecycle"
+ ],
+ "GET /api/v1/leave/types/{type_id}": [
+  "test_leave_type_lifecycle"
+ ],
+ "PATCH /api/v1/leave/types/{type_id}": [
+  "test_leave_type_lifecycle"
+ ],
+ "POST /api/v1/leave/types/{type_id}/soft-delete": [
+  "test_leave_type_lifecycle"
  ]
 }

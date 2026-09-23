@@ -35,19 +35,10 @@ export function SourceFormModal({
   onConfirmDiscard,
 }: Props) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-      <div
-        className="w-full max-w-md bv-surface p-6 shadow-xl space-y-4"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="source-modal-title"
-      >
-        <h2 id="source-modal-title" className="text-title-md font-semibold text-on-background">
-          {mode === 'create' ? 'Add source' : 'Edit source'}
-        </h2>
-        <p className="text-body-sm text-on-surface-variant">
-          Sources map to the platforms table and appear in the lead Source picker.
-        </p>
+    <div className="space-y-4" role="dialog" aria-modal="true" aria-labelledby="source-modal-title">
+      <p className="text-body-sm text-on-surface-variant">
+        Sources map to the platforms table and appear in the lead Source picker.
+      </p>
 
         {confirmKind === 'save' || confirmKind === 'cancel' ? (
           <div className="space-y-4">
@@ -114,7 +105,6 @@ export function SourceFormModal({
             </div>
           </>
         )}
-      </div>
     </div>
   )
 }

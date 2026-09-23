@@ -7,7 +7,7 @@ from collections.abc import Sequence
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db.enums import TaskStatus
+from app.core.db.enums import ProjectAssignmentType, TaskStatus
 from app.core.repositories.base_repository import BaseRepository
 from app.modules.project.project.models import Project
 from app.modules.project.task.models import Task
@@ -42,6 +42,29 @@ class ProjectRepository(BaseRepository):
                 .offset(offset)
             )
         return (await self._session.execute(stmt)).scalars().all()
+
+    async def list_projects_for_team(self, team_id: int) -> Sequence[Project]:
+        """Projects with assignment_type TEAM assigned to the given team."""
+        stmt = (
+            select(Project)
+            .where(
+                Project.assignment_type == ProjectAssignmentType.TEAM,
+                Project.assigned_to_id == team_id,
+            )
+            .order_by(Project.id.desc())
+        )
+        return (await self._session.execute(stmt)).scalars().all()
+
+    async def count_projects_for_team(self, team_id: int) -> int:
+        stmt = (
+            select(func.count())
+            .select_from(Project)
+            .where(
+                Project.assignment_type == ProjectAssignmentType.TEAM,
+                Project.assigned_to_id == team_id,
+            )
+        )
+        return int((await self._session.execute(stmt)).scalar_one() or 0)
 
     async def find_project_ids_by_name(self, name: str) -> Sequence[int]:
         q = f"%{name.strip()}%"

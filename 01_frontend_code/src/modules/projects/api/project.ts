@@ -68,6 +68,7 @@ function mapApiProject(row: Record<string, unknown>): ProjectDetail {
     name,
     code: (row.code as string) ?? `PRJ-${id}`,
     status: normalizeProjectStatus(row.status),
+    clientId: Number(row.client_id ?? row.clientId ?? 0) || null,
     clientName: resolveClientName(row),
     startDate:
       (row.planned_start_date as string) ?? (row.startDate as string) ?? null,

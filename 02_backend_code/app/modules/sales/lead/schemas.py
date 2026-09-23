@@ -84,6 +84,8 @@ class LeadResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     changed_by: int | None
+    platform_name: str | None = None
+    assignee_name: str | None = None
 
 
 class LeadDetailResponse(LeadResponse):

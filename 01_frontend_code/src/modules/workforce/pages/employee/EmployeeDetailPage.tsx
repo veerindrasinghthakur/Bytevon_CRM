@@ -6,15 +6,14 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
-import { Select } from '@/shared/components/ui/Select'
 import { DynamicRouteCrumbs } from '../../components/RouteCrumbs'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { getEmployeeDetail, rehireEmployment, updateEmployment, changeEmploymentState } from '../../api/employment'
 import { getDepartment } from '../../api/departments'
 import { invalidate } from '@/shared/lib/query-keys'
 import type { EmployeeDetailDto } from '@/shared/schema'
-import { Can } from '@/shared/rbac'
-import { Action, EmploymentState } from '@/shared/schema'
+import { Can, useRbac } from '@/shared/rbac'
+import { Action } from '@/shared/schema'
 import { workforceRoutes } from '../../routes'
 import {
   employeeDetailEditSchema,
@@ -34,6 +33,7 @@ import { EmployeeHistoryTab } from '../../components/employee/EmployeeHistoryTab
 import { EmployeeSalaryTab } from '../../components/employee/EmployeeSalaryTab'
 import { EmployeeDocumentsTab } from '../../components/employee/EmployeeDocumentsTab'
 import { EmployeeQuickLinks } from '../../components/employee/EmployeeQuickLinks'
+import { LinkDepartmentModal } from '../../components/employee/LinkDepartmentModal'
 
 export function EmployeeDetailPage() {
   const { employeeId } = useParams({ strict: false }) as { employeeId: string }
@@ -47,6 +47,8 @@ export function EmployeeDetailPage() {
   const [tab, setTab] = useState<EmployeeDetailTab>('overview')
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [linkDeptOpen, setLinkDeptOpen] = useState(false)
+  const { can } = useRbac()
   const qc = useQueryClient()
   const rehireMut = useMutation({
     mutationFn: () => rehireEmployment(id, { reason: 'Rehired' }),
@@ -328,32 +330,6 @@ export function EmployeeDetailPage() {
           Emp code: {data.employment?.employee_code}
         </span>
         {data.hasLogin && <span className={loginEnabledClass}>Login: {data.loginEmail}</span>}
-        {editing && (
-          <Can action={Action.UPDATE} resource={'employment'}>
-            <span className="inline-flex items-center gap-2 rounded-full border border-outline-variant px-3 py-1">
-              <Select
-                value={stateTarget}
-                onChange={setStateTarget}
-                options={Object.values(EmploymentState).map((s) => ({
-                  value: s,
-                  label: s.replace(/_/g, ' '),
-                }))}
-                placeholder="Change state…"
-                minWidthClass="min-w-[10rem]"
-                aria-label="Change employment state"
-              />
-              <Button
-                variant="primary"
-                size="sm"
-                disabled={!stateTarget || stateTarget === currentState || saving}
-                isLoading={saving}
-                onClick={() => void changeState()}
-              >
-                Apply
-              </Button>
-            </span>
-          </Can>
-        )}
         {['RESIGNED', 'TERMINATED', 'ALUMNI'].includes(currentState) && (
           <Button
             variant="primary"
@@ -373,13 +349,29 @@ export function EmployeeDetailPage() {
       {editing && <EmployeeEditForm form={form} />}
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-        <EmployeeProfileSidebar data={data} fullName={fullName} initials={initials} manager={manager} />
+        <EmployeeProfileSidebar
+          data={data}
+          fullName={fullName}
+          initials={initials}
+          manager={manager}
+          onLinkDepartment={() => setLinkDeptOpen(true)}
+        />
 
         <div className="xl:col-span-6">
           <EmployeeDetailTabNav tab={tab} onTabChange={setTab} />
           <div className="bv-surface rounded-t-none border-t-0 p-6 space-y-6">
             {tab === 'overview' && <EmployeeOverviewTab data={data} stateLabel={stateLabel} />}
-            {tab === 'history' && <EmployeeHistoryTab data={data} />}
+            {tab === 'history' && (
+              <EmployeeHistoryTab
+                data={data}
+                currentState={currentState}
+                stateTarget={stateTarget}
+                setStateTarget={setStateTarget}
+                saving={saving}
+                onApplyState={() => void changeState()}
+                canChangeState={can(Action.UPDATE, 'employment')}
+              />
+            )}
             {tab === 'salary' && <EmployeeSalaryTab data={data} employmentId={id} />}
             {tab === 'documents' && <EmployeeDocumentsTab employmentId={id} />}
           </div>
@@ -387,6 +379,13 @@ export function EmployeeDetailPage() {
 
         <EmployeeQuickLinks employmentId={id} />
       </div>
+
+      <LinkDepartmentModal
+        open={linkDeptOpen}
+        employmentId={id}
+        onClose={() => setLinkDeptOpen(false)}
+        onLinked={() => void load()}
+      />
     </div>
   )
 }

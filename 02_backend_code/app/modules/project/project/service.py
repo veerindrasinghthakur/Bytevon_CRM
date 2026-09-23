@@ -99,8 +99,10 @@ class ProjectService(BasePublicService):
 
         client_name = await self._client_name(project.client_id)
 
+        base_data = base.model_dump()
+        base_data.pop('client_name', None)
         return ProjectDetailResponse(
-            **base.model_dump(),
+            **base_data,
             client_name=client_name,
             open_tasks=open_tasks,
             task_count=task_count,
@@ -201,7 +203,34 @@ class ProjectService(BasePublicService):
         rows = await self._repo.list_projects(
             client_id=client_id, limit=limit, offset=offset
         )
-        return [ProjectResponse.model_validate(r) for r in rows]
+        # Batch client names so list rows carry the real client name.
+        names: dict[int, str] = {}
+        ids = {r.client_id for r in rows if r.client_id}
+        if ids:
+            try:
+                from sqlalchemy import select as _select
+
+                from app.modules.sales.models import Client
+
+                clients = (
+                    await self._session.execute(
+                        _select(Client).where(Client.id.in_(ids))
+                    )
+                ).scalars()
+                for c in clients:
+                    for attr in ("company_name", "name", "client_name"):
+                        val = getattr(c, attr, None)
+                        if val:
+                            names[c.id] = str(val)
+                            break
+            except Exception:
+                names = {}
+        out: list[ProjectResponse] = []
+        for r in rows:
+            resp = ProjectResponse.model_validate(r)
+            resp.client_name = names.get(r.client_id)
+            out.append(resp)
+        return out
 
     async def update_project(
         self,

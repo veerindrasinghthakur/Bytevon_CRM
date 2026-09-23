@@ -99,6 +99,22 @@ class CorrectionResponse(BaseModel):
     updated_at: datetime
 
 
+class PendingCorrectionRow(BaseModel):
+    """Org-wide pending correction with owner context for the dashboard."""
+
+    id: int
+    attendance_day_id: int
+    employment_id: int | None = None
+    employment_name: str | None = None
+    attendance_date: date | None = None
+    requested_check_in: datetime | None = None
+    requested_check_out: datetime | None = None
+    reason: str
+    approval_request_id: int | None = None
+    status: AttendanceCorrectionStatus
+    created_at: datetime
+
+
 class AttendancePolicyCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
     correction_window_days: int = Field(..., ge=0)

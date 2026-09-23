@@ -45,6 +45,10 @@ class Client(Base, IdentityMixin, ArchiveMixin, TimestampMixin, ChangedByMixin):
     state: Mapped[str | None] = mapped_column(String(100), nullable=True)
     city: Mapped[str | None] = mapped_column(String(100), nullable=True)
     address: Mapped[str | None] = mapped_column(Text, nullable=True)
+    legal_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    tax_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    founded: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    chat_link: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     contacts: Mapped[list[ClientContact]] = relationship(
         "ClientContact",
@@ -74,7 +78,7 @@ class Platform(Base, IdentityMixin, ArchiveMixin, TimestampMixin, ChangedByMixin
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
-class Lead(Base, IdentityMixin, TimestampMixin, ChangedByMixin):
+class Lead(Base, IdentityMixin, TimestampMixin, ChangedByMixin, ArchiveMixin):
     __tablename__ = "leads"
 
     lead_title: Mapped[str] = mapped_column(String(255), nullable=False)

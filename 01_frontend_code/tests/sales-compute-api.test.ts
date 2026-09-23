@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
+  openLeads,
   pipelineValue,
   recentLeads,
   stageCounts,
   topActiveClients,
   wonCount,
+  wonValue,
 } from '@/modules/sales/lib/dashboard-compute'
 import { getDashboardMetrics } from '@/modules/sales/api/dashboard'
 import { listLeads as listLeadsApi } from '@/modules/sales/api/lead'
@@ -26,10 +28,13 @@ describe('sales dashboard-compute', () => {
     expect(counts.reduce((s, c) => s + c.count, 0)).toBe(3)
     expect(counts.find((c) => c.stage === 'Won')?.count).toBe(2)
   })
-  it('pipelineValue sums budgets and wonCount counts wins', () => {
-    expect(pipelineValue(leads)).toBe(600)
+  it('pipelineValue sums open-lead budgets only; wonValue sums wins', () => {
+    expect(pipelineValue(leads)).toBe(100)
     expect(wonCount(leads)).toBe(2)
+    expect(wonValue(leads)).toBe(500)
+    expect(openLeads(leads)).toHaveLength(1)
     expect(pipelineValue([])).toBe(0)
+    expect(wonValue([])).toBe(0)
   })
   it('topActiveClients filters Active only', () => {
     const clients = [

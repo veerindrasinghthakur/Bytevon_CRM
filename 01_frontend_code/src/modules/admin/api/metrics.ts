@@ -145,11 +145,22 @@ export async function getLeaveAdminMetrics(): Promise<LeaveAdminMetrics> {
       avgBalanceDays: 12,
     }
   }
-  return {
-    leaveTypes: 0,
-    pendingRequests: 0,
-    approvedThisMonth: 0,
-    avgBalanceDays: 0,
+  try {
+    const { listLeaveTypes } = await import('./leave')
+    const types = await listLeaveTypes(false)
+    return {
+      leaveTypes: types.length,
+      pendingRequests: 0,
+      approvedThisMonth: 0,
+      avgBalanceDays: 0,
+    }
+  } catch {
+    return {
+      leaveTypes: 0,
+      pendingRequests: 0,
+      approvedThisMonth: 0,
+      avgBalanceDays: 0,
+    }
   }
 }
 

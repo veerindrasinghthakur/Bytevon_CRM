@@ -4,12 +4,12 @@ import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { usePositions } from '../../hooks/position/use-positions'
+import { usePositions } from '@/modules/admin/hooks/position/use-positions'
 import type { PositionRow } from '@/shared/schema'
 import { cn } from '@/shared/lib/cn'
 import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 
-export function PositionsListPage() {
+export function PositionsListPage({ basePath = '/workforce/positions' }: { basePath?: string }) {
   const navigate = useNavigate()
   const { data, isLoading, isError, error, refetch, deletePosition, isMutating } = usePositions(true)
   const items: PositionRow[] = data?.items ?? []
@@ -29,7 +29,7 @@ export function PositionsListPage() {
             variant="primary"
             size="sm"
             leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-            onClick={() => safeNavigate(navigate, { to: '/admin/settings/positions/new' })}
+            onClick={() => safeNavigate(navigate, { to: `${basePath}/new` })}
           >
             Create Position
           </Button>
@@ -53,7 +53,7 @@ export function PositionsListPage() {
                 className="border-b border-outline-variant last:border-0 bv-row-hover cursor-pointer"
                 onClick={() =>
                   safeNavigate(navigate, {
-                    to: '/admin/settings/positions/$positionId',
+                    to: `${basePath}/$positionId`,
                     params: { positionId: String(p.id) },
                   })
                 }

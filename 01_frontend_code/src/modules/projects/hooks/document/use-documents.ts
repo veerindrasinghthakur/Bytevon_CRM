@@ -1,5 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { listDocuments, uploadDocument, formatFileSize } from '../../api/document'
+import {
+  archiveDocument,
+  listAllProjectDocuments,
+  listDocuments,
+  uploadDocument,
+  formatFileSize,
+} from '../../api/document'
 import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 
 export function useDocuments(filters?: {
@@ -17,8 +23,7 @@ export function useDocuments(filters?: {
 export function useUploadDocument(context?: {
   referenceType?: string
   referenceId?: number
-}) {
-  const qc = useQueryClient()
+}) {  const qc = useQueryClient()
   return useMutation({
     mutationFn: async (files: File[]) => {
       const results = []
@@ -37,6 +42,24 @@ export function useUploadDocument(context?: {
       }
       return results
     },
+    onSettled: () => {
+      invalidate.documents(qc)
+    },
+  })
+}
+
+/** Global documents view — aggregated across all projects (backend CRUDs). */
+export function useAllProjectDocuments(search?: string) {
+  return useQuery({
+    queryKey: queryKeys.documents.list({ scope: 'all-projects', search: search ?? '' }),
+    queryFn: () => listAllProjectDocuments({ search }),
+  })
+}
+
+export function useArchiveDocument() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => archiveDocument(id),
     onSettled: () => {
       invalidate.documents(qc)
     },

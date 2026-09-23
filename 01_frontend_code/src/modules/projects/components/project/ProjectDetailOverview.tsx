@@ -58,7 +58,13 @@ export function ProjectDetailOverview({
           <MetricCard label="Open Tasks" value={String(openTasks)} icon="format_list_bulleted" />
           <MetricCard
             label="Days to Deadline"
-            value={daysToDeadline != null ? String(daysToDeadline) : '—'}
+            value={
+              daysToDeadline == null
+                ? '—'
+                : daysToDeadline < 0
+                  ? `${Math.abs(daysToDeadline)}d overdue`
+                  : String(daysToDeadline)
+            }
             icon="calendar_today"
           />
           <MetricCard label="Progress" value={`${progress}%`} icon="speed" />

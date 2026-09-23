@@ -1,5 +1,4 @@
 /** Central enum-style maps for my-work — semantic tokens only (no raw palette utilities). */
-import { leaveTypeOptions } from '@/shared/schema/enums'
 import { taskStatusSchema } from './task'
 
 export const priorityClass: Record<string, string> = {
@@ -63,10 +62,17 @@ export const LEAVE_STATUS_OPTIONS = [
   { value: 'Cancelled', label: 'Cancelled' },
 ]
 
-/** Leave type filter options — derived from shared LeaveType enum (single source). */
+/** Leave type filter options — labels match the self-service mapping; the live
+ * catalog comes from GET /my-work/leave/types (leave_types master). */
 export const LEAVE_TYPE_OPTIONS = [
   { value: 'All', label: 'All Types' },
-  ...leaveTypeOptions(),
+  { value: 'Casual', label: 'Casual' },
+  { value: 'Sick', label: 'Sick' },
+  { value: 'Earned', label: 'Earned' },
+  { value: 'Maternity', label: 'Maternity' },
+  { value: 'Paternity', label: 'Paternity' },
+  { value: 'Unpaid', label: 'Unpaid' },
+  { value: 'Comp Off', label: 'Comp Off' },
 ]
 
 /** Attendance correction status filter options (AttendanceCorrectionsPage). */

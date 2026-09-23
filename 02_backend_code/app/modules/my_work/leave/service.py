@@ -11,11 +11,12 @@ from decimal import Decimal
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db.enums import LeaveRequestStatus, LeaveType, leave_type_label
+from app.core.db.enums import LeaveRequestStatus
 from app.core.exceptions.exception import DomainError
 from app.core.services.base_public_service import BasePublicService
 from app.modules.leave.ledger.schemas import LeaveCalculateRequest
 from app.modules.leave.ledger.service import LedgerService
+from app.modules.leave.leave_type.repository import LeaveTypeRepository
 from app.modules.leave.request.schemas import LeaveRequestCreate
 from app.modules.leave.request.service import RequestService
 from app.modules.my_work.leave.schemas import (
@@ -30,29 +31,21 @@ from app.modules.my_work.leave.schemas import (
 )
 
 _TYPE_ALIASES = {
-    "ANNUAL": LeaveType.EARNED,
-    "ANNUAL_LEAVE": LeaveType.EARNED,
-    "CASUAL": LeaveType.CASUAL,
-    "SICK": LeaveType.SICK,
-    "EARNED": LeaveType.EARNED,
-    "MATERNITY": LeaveType.MATERNITY,
-    "PATERNITY": LeaveType.PATERNITY,
-    "LOSS_OF_PAY": LeaveType.LOSS_OF_PAY,
-    "LOP": LeaveType.LOSS_OF_PAY,
-    "COMP_OFF": LeaveType.COMP_OFF,
-    "COMP-OFF": LeaveType.COMP_OFF,
+    "ANNUAL": "EARNED",
+    "ANNUAL_LEAVE": "EARNED",
+    "LOP": "LOSS_OF_PAY",
+    "UNPAID": "LOSS_OF_PAY",
+    "COMP-OFF": "COMP_OFF",
 }
 
 
-def _to_leave_type(value: str) -> LeaveType:
+def _to_leave_type(value: str) -> str:
+    """Normalize caller input to a leave_types code; existence is enforced
+    by the domain services against the master table."""
     key = (value or "").strip().upper().replace(" ", "_").replace("-", "_")
-    mapped = _TYPE_ALIASES.get(key)
-    if mapped is None:
-        try:
-            mapped = LeaveType(key)
-        except ValueError:
-            raise DomainError(f"Unknown leave type '{value}'") from None
-    return mapped
+    if not key:
+        raise DomainError("Leave type is required")
+    return _TYPE_ALIASES.get(key, key)
 
 
 class MyWorkLeaveService(BasePublicService):
@@ -60,6 +53,7 @@ class MyWorkLeaveService(BasePublicService):
         super().__init__(session)
         self._requests = RequestService(session)
         self._ledger = LedgerService(session)
+        self._types = LeaveTypeRepository(session)
 
     async def list_requests(
         self,
@@ -84,7 +78,7 @@ class MyWorkLeaveService(BasePublicService):
         items: list[LeaveRequest] = []
         for r in rows:
             st = r.status.value if hasattr(r.status, "value") else str(r.status)
-            lt = r.leave_type.value if hasattr(r.leave_type, "value") else str(r.leave_type)
+            lt = str(r.leave_type)
             if search and search.strip().lower() not in f"{lt} {r.reason or ''}".lower():
                 continue
             items.append(
@@ -115,7 +109,7 @@ class MyWorkLeaveService(BasePublicService):
         ctx = await self._ledger.get_apply_context(employment_id)
         return [
             LeaveBalance(
-                type=b.leave_type.value if hasattr(b.leave_type, "value") else str(b.leave_type),
+                type=str(b.leave_type),
                 total=b.total,
                 used=b.used,
                 remaining=b.remaining,
@@ -124,16 +118,16 @@ class MyWorkLeaveService(BasePublicService):
         ]
 
     async def get_types(self) -> list[LeaveTypeOption]:
-        # Canonical leave-type catalog comes from the domain enum so the
+        # Catalog comes from the leave_types master table so the
         # self-service list can never drift from the enforced types.
-        # Labels live in app.core.db.enums.leave_type_label — edit there only.
+        rows = await self._types.list_types(include_archived=False)
         return [
             LeaveTypeOption(
-                value=lt.value,
-                label=leave_type_label(lt),
-                requires_approval=True,
+                value=t.code,
+                label=t.name,
+                requires_approval=bool(t.requires_approval),
             )
-            for lt in LeaveType
+            for t in rows
         ]
 
     async def get_apply_context(
@@ -153,9 +147,7 @@ class MyWorkLeaveService(BasePublicService):
             ],
             leaveTypes=[
                 LeaveTypeOption(
-                    value=t.leave_type.value
-                    if hasattr(t.leave_type, "value")
-                    else str(t.leave_type),
+                    value=str(t.leave_type),
                     label=t.name,
                     requires_approval=True,
                 )
@@ -163,9 +155,7 @@ class MyWorkLeaveService(BasePublicService):
             ],
             balances=[
                 LeaveBalance(
-                    type=b.leave_type.value
-                    if hasattr(b.leave_type, "value")
-                    else str(b.leave_type),
+                    type=str(b.leave_type),
                     total=b.total,
                     used=b.used,
                     remaining=b.remaining,
@@ -225,7 +215,7 @@ class MyWorkLeaveService(BasePublicService):
             ),
             actor_employment_id=employment_id,
         )
-        lt = created.leave_type.value if hasattr(created.leave_type, "value") else str(created.leave_type)
+        lt = str(created.leave_type)
         st = created.status.value if hasattr(created.status, "value") else str(created.status)
         return LeaveRequest(
             id=str(created.id),

@@ -6,7 +6,7 @@ from sqlalchemy import select
 from app.modules.admin.holiday_calendar.models import HolidayCalendar
 from app.modules.admin.location.models import Location
 from app.modules.admin.settings.models import OrganizationSettings
-from app.modules.admin.shift.models import Shift
+from app.modules.workforce.shift.models import Shift
 from app.modules.admin.working_week.models import WorkingWeek
 from tests.modules.helpers import db_scalar, record_coverage
 
@@ -16,11 +16,11 @@ COVERED = [
     ("GET", "/api/v1/admin/locations/{location_id}"),
     ("PATCH", "/api/v1/admin/locations/{location_id}"),
     ("POST", "/api/v1/admin/locations/{location_id}/archive"),
-    ("POST", "/api/v1/admin/shifts"),
-    ("GET", "/api/v1/admin/shifts"),
-    ("GET", "/api/v1/admin/shifts/{shift_id}"),
-    ("PATCH", "/api/v1/admin/shifts/{shift_id}"),
-    ("POST", "/api/v1/admin/shifts/{shift_id}/archive"),
+    ("POST", "/api/v1/workforce/shifts"),
+    ("GET", "/api/v1/workforce/shifts"),
+    ("GET", "/api/v1/workforce/shifts/{shift_id}"),
+    ("PATCH", "/api/v1/workforce/shifts/{shift_id}"),
+    ("POST", "/api/v1/workforce/shifts/{shift_id}/archive"),
     ("POST", "/api/v1/admin/working-weeks"),
     ("GET", "/api/v1/admin/working-weeks"),
     ("GET", "/api/v1/admin/working-weeks/current"),
@@ -108,17 +108,17 @@ def test_admin_location_shift_week_lifecycle(client, factory):
     )
 
     shift = client.post(
-        "/api/v1/admin/shifts",
+        "/api/v1/workforce/shifts",
         json={"name": "Evening", "start_time": "14:00:00", "end_time": "22:00:00"},
         headers=h,
     )
     assert shift.status_code == 201, shift.text
     shift_id = shift.json()["id"]
-    assert client.get("/api/v1/admin/shifts", headers=h).status_code == 200
-    assert client.get(f"/api/v1/admin/shifts/{shift_id}", headers=h).status_code == 200
+    assert client.get("/api/v1/workforce/shifts", headers=h).status_code == 200
+    assert client.get(f"/api/v1/workforce/shifts/{shift_id}", headers=h).status_code == 200
     assert (
         client.patch(
-            f"/api/v1/admin/shifts/{shift_id}", json={"grace_late_minutes": 10}, headers=h
+            f"/api/v1/workforce/shifts/{shift_id}", json={"grace_late_minutes": 10}, headers=h
         ).status_code
         == 200
     )
@@ -127,7 +127,7 @@ def test_admin_location_shift_week_lifecycle(client, factory):
         == 10
     )
     assert (
-        client.post(f"/api/v1/admin/shifts/{shift_id}/archive", headers=h).status_code
+        client.post(f"/api/v1/workforce/shifts/{shift_id}/archive", headers=h).status_code
         == 200
     )
 
@@ -372,3 +372,4 @@ def test_audit_endpoints(client, factory):
         archived = client.post(f"{prefix}/archive", headers=h)
         assert archived.status_code == 200, (prefix, archived.text)
     record_coverage("test_audit_endpoints", COVERED[52:])
+

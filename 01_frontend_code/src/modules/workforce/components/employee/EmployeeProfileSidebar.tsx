@@ -1,3 +1,4 @@
+import { Button } from '@/shared/components/ui/Button'
 import type { EmployeeDetailDto } from '@/shared/schema'
 import { Icon } from './employee-detail-utils'
 
@@ -6,9 +7,10 @@ type Props = {
   fullName: string
   initials: string
   manager?: { name: string; code: string; employmentId: number } | null
+  onLinkDepartment?: () => void
 }
 
-export function EmployeeProfileSidebar({ data, fullName, initials, manager }: Props) {
+export function EmployeeProfileSidebar({ data, fullName, initials, manager, onLinkDepartment }: Props) {
   return (
     <div className="xl:col-span-3 space-y-4">
       <div className="bv-surface card-hover p-6 text-center">
@@ -98,11 +100,22 @@ export function EmployeeProfileSidebar({ data, fullName, initials, manager }: Pr
             <div className="w-11 h-11 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center">
               <Icon name="supervisor_account" />
             </div>
-            <div>
+            <div className="flex-1">
               <p className="font-semibold text-sm text-on-background">Not linked</p>
               <p className="text-xs text-on-surface-variant">No department head assigned</p>
             </div>
           </div>
+        )}
+        {!manager && onLinkDepartment && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            leftIcon={<Icon name="link" />}
+            onClick={onLinkDepartment}
+          >
+            Link department
+          </Button>
         )}
       </div>
     </div>

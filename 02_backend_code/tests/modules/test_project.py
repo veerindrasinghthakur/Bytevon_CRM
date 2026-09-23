@@ -93,6 +93,8 @@ def test_teams_and_project(client, factory):
 
     got = client.get(f"/api/v1/projects/teams/{team_id}", headers=h)
     assert got.status_code == 200
+    assert got.json()["head_name"], got.json()
+    assert got.json()["member_count"] is not None
 
     updated = client.patch(
         f"/api/v1/projects/teams/{team_id}", json={"description": "A-team"}, headers=h
@@ -109,12 +111,42 @@ def test_teams_and_project(client, factory):
     members = client.get(f"/api/v1/projects/teams/{team_id}/members", headers=h)
     assert members.status_code == 200
     assert len(members.json()) >= 1
+    assert members.json()[0]["person_name"], members.json()[0]
 
     removed = client.delete(
         f"/api/v1/projects/teams/{team_id}/members/{member['employment_id']}",
         headers=h,
     )
     assert removed.status_code == 200, removed.text
+
+    # Soft-removed: gone from active list, kept in history with a record.
+    active = client.get(f"/api/v1/projects/teams/{team_id}/members", headers=h)
+    assert all(m["employment_id"] != member["employment_id"] for m in active.json())
+    history = client.get(
+        f"/api/v1/projects/teams/{team_id}/members/history", headers=h
+    )
+    assert history.status_code == 200, history.text
+    past = [m for m in history.json() if m["employment_id"] == member["employment_id"]]
+    assert past and past[0]["is_member"] is False
+
+    # Re-add inserts a NEW row; the previous entry stays untouched.
+    readded = client.post(
+        f"/api/v1/projects/teams/{team_id}/members",
+        json={"employment_id": member["employment_id"], "team_role": "Lead Dev"},
+        headers=h,
+    )
+    assert readded.status_code in (200, 201), readded.text
+    assert readded.json()["id"] != added.json()["id"]
+    history2 = client.get(
+        f"/api/v1/projects/teams/{team_id}/members/history", headers=h
+    )
+    past2 = [m for m in history2.json() if m["employment_id"] == member["employment_id"]]
+    assert len(past2) == 1 and past2[0]["id"] == past[0]["id"]
+
+    deleted = client.delete(f"/api/v1/projects/teams/{team_id}", headers=h)
+    assert deleted.status_code == 200, deleted.text
+    assert client.get(f"/api/v1/projects/teams/{team_id}", headers=h).status_code == 404
+    assert all(t["id"] != team_id for t in client.get("/api/v1/projects/teams", headers=h).json())
 
     projects = client.get("/api/v1/projects/", headers=h)
     assert projects.status_code == 200

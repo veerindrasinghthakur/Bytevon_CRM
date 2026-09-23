@@ -14,9 +14,9 @@ from app.core.exceptions.exception import (
     NotFoundError,
 )
 from app.core.services.base_public_service import BasePublicService
-from app.modules.admin.shift.models import Shift
-from app.modules.admin.shift.repository import ShiftRepository
-from app.modules.admin.shift.schemas import (
+from app.modules.workforce.shift.models import Shift
+from app.modules.workforce.shift.repository import ShiftRepository
+from app.modules.workforce.shift.schemas import (
     MessageResponse,
     ShiftCreate,
     ShiftResponse,

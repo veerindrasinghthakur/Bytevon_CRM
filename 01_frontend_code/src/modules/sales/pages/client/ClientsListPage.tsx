@@ -87,7 +87,7 @@ export function ClientsListPage() {
 
   const openClientOverview = (client: Client) => {
     openPanel({
-      title: client.name,
+      title: client.legalName || client.name,
       subtitle: [client.industry, client.country].filter(Boolean).join(' · '),
       icon: 'apartment',
       status: client.status,
@@ -312,7 +312,7 @@ export function ClientsListPage() {
                           </div>
                           <div>
                             <p className="font-semibold text-on-surface group-hover:text-secondary transition-colors">
-                              {client.name}
+                              {client.legalName || client.name}
                             </p>
                             <p className="text-xs text-on-surface-variant">{client.country}</p>
                           </div>

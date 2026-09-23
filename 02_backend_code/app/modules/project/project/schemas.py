@@ -61,6 +61,7 @@ class ProjectResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     changed_by: int | None
+    client_name: str | None = None
 
 
 class ProjectDetailResponse(ProjectResponse):

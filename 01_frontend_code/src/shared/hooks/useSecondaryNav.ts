@@ -20,15 +20,14 @@ export function getActiveModule(pathname: string): string {
 }
 
 export function isSecondaryItemActive(pathname: string, to: string): boolean {
-  if (to === '/sales') {
+  if (to === '/sales/leads') {
     return (
-      pathname === '/sales' ||
       pathname === '/sales/leads' ||
       pathname.startsWith('/sales/leads/')
     )
   }
-  if (to === '/sales/dashboard') {
-    return pathname === '/sales/dashboard' || pathname === '/sales/activity'
+  if (to === '/sales') {
+    return pathname === '/sales' || pathname === '/sales/activity'
   }
   if (to === '/projects') return pathname === '/projects'
   if (to === '/projects/teams') {
@@ -60,6 +59,9 @@ export function isSecondaryItemActive(pathname: string, to: string): boolean {
   }
   if (to === '/workforce/shifts') {
     return pathname.startsWith('/workforce/shifts') || pathname.startsWith('/admin/settings/shifts')
+  }
+  if (to === '/workforce/positions') {
+    return pathname.startsWith('/workforce/positions') || pathname.startsWith('/admin/settings/positions')
   }
   if (to === '/my-work/attendance') {
     return (

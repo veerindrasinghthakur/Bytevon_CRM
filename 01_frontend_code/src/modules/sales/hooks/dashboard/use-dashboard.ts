@@ -9,12 +9,14 @@ import { typeIcon } from '../../schemas/enums'
 import {
   activityGroups,
   monthlyLeadGrowth,
+  openLeads,
   pipelineValue,
   recentLeads,
   stageCounts,
   topActiveClients,
   topPerformers,
   wonCount,
+  wonValue,
 } from '../../lib/dashboard-compute'
 
 export function useSalesDashboardMetrics() {
@@ -41,7 +43,11 @@ export function useSalesDashboard() {
   const maxFunnel = Math.max(1, ...stageCountsData.map((entry) => entry.count))
   const pipeline = useMemo(() => pipelineValue(leads), [leads])
   const won = useMemo(() => wonCount(leads), [leads])
-  const avgDealSize = won > 0 ? pipeline / won : 0
+  const wonRevenue = useMemo(() => wonValue(leads), [leads])
+  // Avg won deal when there are wins; otherwise avg open pipeline deal; else 0.
+  const openCount = useMemo(() => openLeads(leads).length, [leads])
+  const avgDealSize =
+    won > 0 ? wonRevenue / won : openCount > 0 ? pipeline / openCount : 0
 
   const growth = useMemo(() => monthlyLeadGrowth(leads), [leads])
   const performers = useMemo(() => topPerformers(leads), [leads])
@@ -59,6 +65,7 @@ export function useSalesDashboard() {
     topPerformers: performers,
     activityGroups: groups,
     wonCount: won,
+    wonValue: wonRevenue,
     avgDealSize,
     typeIcon,
   }

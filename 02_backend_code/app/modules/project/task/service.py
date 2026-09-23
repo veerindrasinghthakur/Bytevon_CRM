@@ -41,9 +41,34 @@ class TaskService(BasePublicService):
                 project_name = proj.project_name
         except Exception:
             pass
+        assignee_name = None
+        if task.assignee_employment_id is not None:
+            try:
+                from sqlalchemy import select as _select
+
+                from app.modules.auth.models import Person
+                from app.modules.workforce.models import Employment
+
+                emp = await self._session.get(
+                    Employment, int(task.assignee_employment_id)
+                )
+                if emp is not None:
+                    person = await self._session.get(Person, emp.person_id)
+                    if person is not None:
+                        assignee_name = (
+                            f"{person.first_name} {person.last_name}".strip()
+                        )
+                    if not assignee_name:
+                        assignee_name = emp.employee_code
+            except Exception:
+                pass
         base = TaskResponse.model_validate(task)
         return base.model_copy(
-            update={"actual_minutes": minutes, "project_name": project_name}
+            update={
+                "actual_minutes": minutes,
+                "project_name": project_name,
+                "assignee_name": assignee_name,
+            }
         )
 
     async def create_task(

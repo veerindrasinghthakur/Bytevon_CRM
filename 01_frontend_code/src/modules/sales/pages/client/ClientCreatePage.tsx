@@ -5,7 +5,9 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
-import { useClient, useCreateClient, useUpdateClient } from '../../hooks/use-sales'
+import { useClient, useCreateClient, useUpdateClient, useClientContacts } from '../../hooks/use-sales'
+import { addClientContact, listClientContacts } from '../../api/client'
+import { env } from '@/config/env'
 import { salesRoutes } from '../../routes'
 import {
   clientFormSchema,
@@ -27,6 +29,7 @@ export function ClientCreatePage() {
   const createMut = useCreateClient()
   const updateMut = useUpdateClient()
   const existing = existingQuery.data
+  const existingContactsQuery = useClientContacts(isEdit ? params.clientId : undefined)
 
   const form = useForm<ClientFormSchemaInput>({
     resolver: zodResolver(clientFormSchema),
@@ -58,6 +61,7 @@ export function ClientCreatePage() {
 
   useEffect(() => {
     if (!existing) return
+    const saved = existingContactsQuery.data
     form.reset({
       name: existing.name ?? '',
       legalName: existing.legalName ?? '',
@@ -66,23 +70,32 @@ export function ClientCreatePage() {
       industry: existing.industry ?? '',
       website: existing.website ?? '',
       country: existing.country ?? '',
-      state: '',
-      city: '',
+      state: existing.state ?? '',
+      city: existing.city ?? '',
       address: existing.address ?? '',
       taxId: existing.taxId ?? '',
       founded: existing.founded ?? '',
       chatLink: existing.chatLink ?? '',
-      contacts: [
-        {
-          id: 'primary',
-          name: existing.primaryContact ?? '',
-          designation: '',
-          email: existing.email ?? '',
-          phone: existing.phone ?? '',
-        },
-      ],
+      contacts:
+        saved && saved.length > 0
+          ? saved.map((c, i) => ({
+              id: `saved-${i}`,
+              name: c.name,
+              designation: c.designation ?? '',
+              email: c.email ?? '',
+              phone: c.phone ?? '',
+            }))
+          : [
+              {
+                id: 'primary',
+                name: existing.primaryContact ?? '',
+                designation: '',
+                email: existing.email ?? '',
+                phone: existing.phone ?? '',
+              },
+            ],
     })
-  }, [existing, form])
+  }, [existing, existingContactsQuery.data, form])
 
   const saving = createMut.isPending || updateMut.isPending
 
@@ -96,6 +109,8 @@ export function ClientCreatePage() {
       industry: data.industry?.trim() || undefined,
       website: data.website?.trim() || undefined,
       country: data.country?.trim() || undefined,
+      state: data.state?.trim() || undefined,
+      city: data.city?.trim() || undefined,
       address: data.address?.trim() || undefined,
       taxId: data.taxId?.trim() || undefined,
       founded: data.founded || undefined,
@@ -105,6 +120,7 @@ export function ClientCreatePage() {
       phone: primary?.phone || undefined,
     }
     try {
+      let savedId = params.clientId
       if (isEdit && params.clientId) {
         await updateMut.mutateAsync({
           id: params.clientId,
@@ -115,7 +131,30 @@ export function ClientCreatePage() {
           },
         })
       } else {
-        await createMut.mutateAsync(payload)
+        const created = await createMut.mutateAsync(payload)
+        savedId = created.id
+      }
+      // Persist contact persons (backend stores them separately).
+      if (savedId && !env.useMockApi) {
+        const existingContacts = isEdit
+          ? await listClientContacts(savedId).catch(() => [])
+          : []
+        const seen = new Set(
+          existingContacts.map((c) => `${c.name}::${c.email ?? ''}`.toLowerCase()),
+        )
+        for (const c of data.contacts) {
+          const name = c.name?.trim()
+          if (!name) continue
+          const key = `${name}::${c.email?.trim() ?? ''}`.toLowerCase()
+          if (seen.has(key)) continue
+          seen.add(key)
+          await addClientContact(savedId, {
+            name,
+            designation: c.designation?.trim() || undefined,
+            email: c.email?.trim() || undefined,
+            phone: c.phone?.trim() || undefined,
+          })
+        }
       }
       safeNavigate(navigate, { to: salesRoutes.clients })
     } catch (err) {

@@ -50,6 +50,31 @@ class AttendanceRepository(BaseRepository):
         )
         return await self.scalars(stmt)
 
+    async def list_days_in_range(
+        self, from_date: date, to_date: date
+    ) -> Sequence[AttendanceDay]:
+        """Org-wide day rows in [from_date, to_date] (dashboard graphs)."""
+        stmt = (
+            select(AttendanceDay)
+            .where(
+                AttendanceDay.attendance_date >= from_date,
+                AttendanceDay.attendance_date <= to_date,
+            )
+            .order_by(AttendanceDay.attendance_date, AttendanceDay.id)
+        )
+        return await self.scalars(stmt)
+
+    async def list_pending_corrections(
+        self, *, limit: int = 50
+    ) -> Sequence[AttendanceCorrection]:
+        stmt = (
+            select(AttendanceCorrection)
+            .where(AttendanceCorrection.status == AttendanceCorrectionStatus.PENDING)
+            .order_by(AttendanceCorrection.id.desc())
+            .limit(limit)
+        )
+        return await self.scalars(stmt)
+
     async def list_days(
         self,
         employment_id: int,

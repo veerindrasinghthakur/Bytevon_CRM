@@ -35,18 +35,39 @@ const AttendanceSettingsPage = lazyPage(
   'AttendanceSettingsPage',
 )
 const LeaveSettingsPage = lazyPage(() => import('./pages/settings/LeaveSettingsPage'), 'LeaveSettingsPage')
+const LeaveTypeFormPage = lazyPage(() => import('./pages/settings/LeaveTypeFormPage'), 'LeaveTypeFormPage')
 const SecurityCenterPage = lazyPage(() => import('./pages/security/SecurityCenterPage'), 'SecurityCenterPage')
 const LeavePoliciesPage = lazyPage(() => import('./pages/settings/LeavePoliciesPage'), 'LeavePoliciesPage')
 const LeaveLedgerPage = lazyPage(() => import('./pages/settings/LeaveLedgerPage'), 'LeaveLedgerPage')
 const LocationsListPage = lazyPage(() => import('./pages/location/LocationsListPage'), 'LocationsListPage')
 const LocationDetailPage = lazyPage(() => import('./pages/location/LocationDetailPage'), 'LocationDetailPage')
-const ShiftsListPage = lazyPage(() => import('./pages/shift/ShiftsListPage'), 'ShiftsListPage')
-const ShiftDetailPage = lazyPage(() => import('./pages/shift/ShiftDetailPage'), 'ShiftDetailPage')
+const ShiftsListPage = lazyPage(
+  () => import('../workforce/pages/shift/ShiftsListPage'),
+  'ShiftsListPage',
+)
+const ShiftDetailPage = lazyPage(
+  () => import('../workforce/pages/shift/ShiftDetailPage'),
+  'ShiftDetailPage',
+)
 const WorkingWeeksPage = lazyPage(() => import('./pages/working_week/WorkingWeeksPage'), 'WorkingWeeksPage')
 const HolidayCalendarsPage = lazyPage(() => import('./pages/holiday_calendar/HolidayCalendarsPage'), 'HolidayCalendarsPage')
 const HolidaysListPage = lazyPage(() => import('./pages/holiday_calendar/HolidaysListPage'), 'HolidaysListPage')
-const PositionsListPage = lazyPage(() => import('./pages/position/PositionsListPage'), 'PositionsListPage')
-const PositionDetailPage = lazyPage(() => import('./pages/position/PositionDetailPage'), 'PositionDetailPage')
+const PositionsListPage = lazyPage(
+  () => import('../workforce/pages/position/PositionsListPage'),
+  'PositionsListPage',
+)
+const PositionDetailPage = lazyPage(
+  () => import('../workforce/pages/position/PositionDetailPage'),
+  'PositionDetailPage',
+)
+
+const ADMIN_POSITIONS_BASE = '/admin/settings/positions'
+function AdminPositionsListPage() {
+  return <PositionsListPage basePath={ADMIN_POSITIONS_BASE} />
+}
+function AdminPositionDetailPage() {
+  return <PositionDetailPage basePath={ADMIN_POSITIONS_BASE} />
+}
 
 export function createAdminSettingsLayoutRoute<TParent extends AnyRoute>(appLayoutRoute: TParent) {
   return createRoute({
@@ -69,33 +90,16 @@ export function createAdminOrganizationSettingsRoutes<TParent extends AnyRoute>(
     createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/working-weeks', component: WorkingWeeksPage }),
     createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/holidays', component: HolidayCalendarsPage }),
     createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/holidays/$calendarId', component: HolidaysListPage }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/positions', component: PositionsListPage }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/positions/new', component: PositionDetailPage }),
-    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/positions/$positionId', component: PositionDetailPage }),
+    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/positions', component: AdminPositionsListPage }),
+    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/positions/new', component: AdminPositionDetailPage }),
+    createRoute({ getParentRoute: () => settingsLayoutRoute, path: '/positions/$positionId', component: AdminPositionDetailPage }),
   ]
 }
 
-export function createWorkforceShiftRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
-  return [
-    createRoute({
-      getParentRoute: () => appLayoutRoute,
-      path: '/workforce/shifts',
-      beforeLoad: requireView('shift'),
-      component: ShiftsListPage,
-    }),
-    createRoute({
-      getParentRoute: () => appLayoutRoute,
-      path: '/workforce/shifts/new',
-      beforeLoad: requireView('shift'),
-      component: ShiftDetailPage,
-    }),
-    createRoute({
-      getParentRoute: () => appLayoutRoute,
-      path: '/workforce/shifts/$shiftId',
-      beforeLoad: requireView('shift'),
-      component: ShiftDetailPage,
-    }),
-  ]
+export function createWorkforceShiftRoutes<TParent extends AnyRoute>(_appLayoutRoute: TParent) {
+  // Shifts moved to workforce/routes (canonical /workforce/shifts*).
+  // Kept as a no-op so existing router spreads keep compiling.
+  return []
 }
 
 export function createAdminSettingsCoreRoutes<TParent extends AnyRoute>(
@@ -152,6 +156,8 @@ export const myAdminRoutes = {
   security: '/admin/security',
   attendanceSettings: '/admin/attendance-settings',
   leaveSettings: '/admin/leave-settings',
+  leaveTypesNew: '/admin/leave-settings/types/new',
+  leaveTypeDetail: (typeId: string) => `/admin/leave-settings/types/${typeId}`,
   shiftsList: '/admin/settings/shifts',
   shiftsNew: '/admin/settings/shifts/new',
   shiftsDetail: (shiftId: string) => `/admin/settings/shifts/${shiftId}`,
@@ -244,6 +250,17 @@ export function createAdminRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
         getParentRoute: () => leaveLayout,
         path: '/',
         component: LeaveSettingsPage,
+      }),
+      createRoute({
+        getParentRoute: () => leaveLayout,
+        path: '/types/new',
+        beforeLoad: () => requirePermission({ action: 'CREATE', resource: 'leave_policy' }),
+        component: LeaveTypeFormPage,
+      }),
+      createRoute({
+        getParentRoute: () => leaveLayout,
+        path: '/types/$typeId',
+        component: LeaveTypeFormPage,
       }),
       createRoute({
         getParentRoute: () => leaveLayout,

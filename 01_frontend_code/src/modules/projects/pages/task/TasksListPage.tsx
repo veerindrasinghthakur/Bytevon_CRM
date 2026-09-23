@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Button } from '@/shared/components/ui/Button'
 import { Select } from '@/shared/components/ui/Select'
@@ -18,7 +18,6 @@ import { Can, useRbac } from '@/shared/rbac'
 import { useTasksList } from '../../hooks/task/use-tasks'
 import { projectRoutes } from '../../routes'
 import { TaskStatusBadge, TaskPriorityLabel } from '../../components/task/TaskStatusBadge'
-import { CreateTaskModal } from '../../components/task/CreateTaskModal'
 import { TaskQuickContent } from '../../components/task/TaskQuickContent'
 import type { Task } from '../../types'
 import { cn } from '@/shared/lib/cn'
@@ -30,7 +29,6 @@ export function TasksListPage() {
   const { openPanel } = useQuickOverview()
   const { can } = useRbac()
   const canCreateTask = can('CREATE', 'task')
-  const [createOpen, setCreateOpen] = useState(false)
 
   const {
     filtered,
@@ -100,7 +98,7 @@ export function TasksListPage() {
               variant="primary"
               size="sm"
               leftIcon={<span className="material-symbols-outlined text-[18px]">add</span>}
-              onClick={() => setCreateOpen(true)}
+              onClick={() => safeNavigate(navigate, { to: projectRoutes.taskNew })}
             >
               New Task
             </Button>
@@ -174,7 +172,9 @@ export function TasksListPage() {
           title="No tasks found"
           description="Adjust filters or create a task."
           actionLabel={canCreateTask ? 'New Task' : undefined}
-          onAction={canCreateTask ? () => setCreateOpen(true) : undefined}
+          onAction={
+            canCreateTask ? () => safeNavigate(navigate, { to: projectRoutes.taskNew }) : undefined
+          }
         />
       )}
 
@@ -301,8 +301,6 @@ export function TasksListPage() {
           )}
         </section>
       )}
-
-      <CreateTaskModal open={createOpen} onClose={() => setCreateOpen(false)} onCreated={() => void refetch()} />
     </div>
   )
 }

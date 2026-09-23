@@ -6,6 +6,7 @@ import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
 import { delay } from '@/shared/mock/db'
 import { paginateItems } from '@/shared/lib/list-params'
+import { leadStageLabel, stageLabelToCode } from '../schemas/enums'
 import { leads as seedLeads, salesMetrics } from '../data/mock'
 import type {
   Lead,
@@ -41,29 +42,32 @@ function mapApiLead(row: Record<string, unknown>): Lead {
     row.contactName ?? row.contact_name ?? row.title ?? row.lead_title ?? '—',
   )
   const stageRaw = String(row.stage ?? row.status ?? 'New')
-  const stageMap: Record<string, Lead['stage']> = {
-    NEW: 'New',
-    CHAT_OPEN: 'Contacted',
-    CONTACTED: 'Contacted',
-    MEETING: 'Qualified',
-    QUALIFIED: 'Qualified',
-    PROPOSAL_SENT: 'Proposal',
-    PROPOSAL: 'Proposal',
-    PAYMENT_DISCUSSION: 'Negotiation',
-    NEGOTIATION: 'Negotiation',
-    WON: 'Won',
-    LOST: 'Lost',
-    FOLLOW_UP: 'Contacted',
-    CLOSED: 'Lost',
-  }
-  const stage =
-    (stageMap[stageRaw.toUpperCase().replace(/\s+/g, '_')] as Lead['stage'] | undefined) ??
-    (['New', 'Contacted', 'Qualified', 'Proposal', 'Negotiation', 'Won', 'Lost'].includes(stageRaw)
+  const stageKey = stageRaw.toUpperCase().replace(/\s+/g, '_')
+  // Canonical backend-driven mapping (mirrors backend lead_ui._STATUS_TO_STAGE).
+  const knownStages: Lead['stage'][] = [
+    'New',
+    'Contacted',
+    'Qualified',
+    'Proposal',
+    'Negotiation',
+    'Won',
+    'Lost',
+    'Follow Up',
+    'Closed',
+  ]
+  const mappedLabel = leadStageLabel(stageKey)
+  const stage: Lead['stage'] = (knownStages as string[]).includes(mappedLabel)
+    ? (mappedLabel as Lead['stage'])
+    : (knownStages as string[]).includes(stageRaw)
       ? (stageRaw as Lead['stage'])
-      : 'New')
+      : 'New'
   const statusRaw = String(row.recordStatus ?? row.record_status ?? row.status ?? 'Active')
   const status: Lead['status'] =
-    statusRaw.toUpperCase() === 'INACTIVE' || statusRaw === 'Inactive' || stage === 'Won' || stage === 'Lost'
+    statusRaw.toUpperCase() === 'INACTIVE' ||
+    statusRaw === 'Inactive' ||
+    stage === 'Won' ||
+    stage === 'Lost' ||
+    stage === 'Closed'
       ? 'Inactive'
       : 'Active'
   const priorityRaw = String(row.priority ?? 'Medium')
@@ -71,10 +75,18 @@ function mapApiLead(row: Record<string, unknown>): Lead {
     ? priorityRaw
     : 'Medium') as Lead['priority']
   const budget = Number(row.budget ?? row.quotation ?? 0) || 0
+  const rawAssigneeId = row.assigned_employment_id ?? row.assignedEmploymentId
+  const assigneeId =
+    rawAssigneeId != null && Number.isFinite(Number(rawAssigneeId))
+      ? Number(rawAssigneeId)
+      : null
   const assigned =
+    (row.assignee_name as string | undefined) ??
     row.assignedTo ??
     row.assigned_to ??
-    (row.assigned_employment_id != null ? `Employee #${row.assigned_employment_id}` : undefined)
+    (assigneeId != null ? `Employee #${assigneeId}` : undefined)
+  const assigneeIdRaw = row.assigned_employment_id ?? row.assignedEmploymentId
+  const platformIdRaw = row.platform_id ?? row.platformId
   return {
     id: id.startsWith('LD-') ? id : `LD-${id}`,
     title: String(row.title ?? row.lead_title ?? contactName),
@@ -84,7 +96,9 @@ function mapApiLead(row: Record<string, unknown>): Lead {
     industry: (row.industry as string | undefined) ?? undefined,
     email: (row.email as string | undefined) ?? undefined,
     phone: (row.phone as string | undefined) ?? undefined,
-    source: String(row.source ?? row.platform_name ?? 'Manual'),
+    source: String(
+      row.platform_name ?? row.platformName ?? row.source ?? 'Manual',
+    ),
     priority,
     status,
     stage,
@@ -92,8 +106,17 @@ function mapApiLead(row: Record<string, unknown>): Lead {
     createdAt: String(row.createdAt ?? row.created_at ?? '').slice(0, 10) || '',
     date: String(row.date ?? row.expected_close_date ?? row.created_at ?? '').slice(0, 10) || undefined,
     assignedTo: assigned != null ? String(assigned) : undefined,
+    assignedEmploymentId:
+      assigneeIdRaw != null && Number.isFinite(Number(assigneeIdRaw))
+        ? Number(assigneeIdRaw)
+        : null,
+    platformId:
+      platformIdRaw != null && Number.isFinite(Number(platformIdRaw))
+        ? Number(platformIdRaw)
+        : null,
     notes: (row.notes as string | undefined) ?? (row.description as string | undefined),
     chatLink: (row.chatLink as string | undefined) ?? (row.chat_link as string | undefined),
+    autoCreateProject: Boolean(row.autoCreateProject ?? row.auto_create_project ?? false),
   }
 }
 
@@ -139,11 +162,22 @@ export async function getLeadFilterOptions(): Promise<LeadFilterOptions> {
   }
   try {
     const { data } = await apiClient.get<LeadFilterOptions>('/sales/meta/lead-filter-options')
-    return data
+    return normalizeFilterOptions(data)
   } catch {
     const { data } = await apiClient.get<LeadFilterOptions>('/sales/leads/filter-options')
-    return data
+    return normalizeFilterOptions(data)
   }
+}
+
+/**
+ * Backend returns canonical stage CODES; UI works in labels.
+ * Normalize to labels + dedupe so no semantic duplicates render.
+ */
+function normalizeFilterOptions(data: LeadFilterOptions): LeadFilterOptions {
+  const stages = Array.from(
+    new Set((data.stages ?? []).map((s) => leadStageLabel(s))),
+  )
+  return { ...data, stages }
 }
 
 export async function listSalesRepresentatives(): Promise<SalesRepOption[]> {
@@ -173,11 +207,31 @@ export async function listLeads(params?: {
   pageSize?: number
 }): Promise<{ items: Lead[]; total: number; metrics: SalesMetric[] }> {
   if (!env.useMockApi) {
+    // Backend has no `stage` query param — translate the UI label to a
+    // LeadStatus code and filter server-side via `status`. RecordStatus
+    // Active/Inactive maps to no-filter / CLOSED (mirrors backend
+    // lead_ui.parse_stage_or_status).
+    const stageCode =
+      params?.stage && params.stage !== 'All' ? stageLabelToCode(params.stage) : undefined
+    const recordStatus = params?.status && params.status !== 'All' ? params.status : undefined
+    const statusParam =
+      recordStatus === 'Inactive' ? 'CLOSED' : (stageCode ?? undefined)
     const { data } = await apiClient.get<
       | Lead[]
       | Array<Record<string, unknown>>
       | { items: Array<Record<string, unknown>>; total: number; metrics?: SalesMetric[] }
-    >('/sales/leads', { params })
+    >('/sales/leads', {
+      params: {
+        search: params?.search,
+        status: statusParam,
+        priority: params?.priority && params.priority !== 'All' ? params.priority : undefined,
+        limit: params?.pageSize ?? 200,
+        offset:
+          params?.page != null && params?.pageSize != null
+            ? (Math.max(params.page, 1) - 1) * params.pageSize
+            : 0,
+      },
+    })
     const raw = Array.isArray(data) ? data : (data.items ?? [])
     const items = raw.map((r) => mapApiLead(r as Record<string, unknown>))
     const total = Array.isArray(data) ? items.length : Number(data.total ?? items.length)
@@ -235,6 +289,7 @@ function mapStageToLeadStatus(stage?: string, recordStatus?: string): string {
     WON: 'WON',
     LOST: 'LOST',
     FOLLOW_UP: 'FOLLOW_UP',
+    FOLLOWUP: 'FOLLOW_UP',
     CLOSED: 'CLOSED',
     ACTIVE: 'NEW',
   }
@@ -361,8 +416,20 @@ export async function updateLead(
   return list[idx]
 }
 
-export async function changeLeadStage(
-  id: string,
+/** Soft-delete a lead (backend archives + syncs status to CLOSED). */
+export async function deleteLead(id: string): Promise<void> {
+  if (!env.useMockApi) {
+    const numeric = id.replace(/^LD-/i, '')
+    await apiClient.delete(`/sales/leads/${numeric}`)
+    return
+  }
+  await delay(300)
+  const list = leads()
+  const idx = list.findIndex((l) => l.id === id)
+  if (idx >= 0) list.splice(idx, 1)
+}
+
+export async function changeLeadStage(  id: string,
   stage: PipelineStage,
   opts?: { auto_create_project?: boolean },
 ): Promise<Lead | null> {

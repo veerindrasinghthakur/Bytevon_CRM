@@ -17,6 +17,7 @@ COVERED = [
     ("GET", "/api/v1/sales/leads/{lead_id}"),
     ("PATCH", "/api/v1/sales/leads/{lead_id}"),
     ("POST", "/api/v1/sales/leads/{lead_id}/status"),
+    ("GET", "/api/v1/sales/activity"),
     ("POST", "/api/v1/sales/clients"),
     ("GET", "/api/v1/sales/clients"),
     ("GET", "/api/v1/sales/clients/{client_id}"),
@@ -37,6 +38,8 @@ COVERED = [
     ("GET", "/api/v1/sales/dashboard"),
     ("GET", "/api/v1/sales/analytics"),
     ("GET", "/api/v1/sales/metrics/dashboard"),
+    ("DELETE", "/api/v1/sales/leads/{lead_id}"),
+    ("GET", "/api/v1/sales/sources/{source_id}/leads"),
 ]
 
 
@@ -98,6 +101,22 @@ def test_lead_lifecycle(client, factory):
         headers=h,
     )
     assert status.status_code == 200, status.text
+
+    # Per-lead activity reflects create + status change with readable text.
+    feed = client.get(f"/api/v1/sales/activity?lead_id={lead_id}", headers=h)
+    assert feed.status_code == 200, feed.text
+    kinds = {a["kind"] for a in feed.json()}
+    assert "lead_created" in kinds and "status_changed" in kinds
+    assert all(a["actor"] for a in feed.json())
+
+    # Soft delete archives + syncs status to CLOSED; hidden from reads.
+    deleted = client.delete(f"/api/v1/sales/leads/{lead_id}", headers=h)
+    assert deleted.status_code == 200, deleted.text
+    assert client.get(f"/api/v1/sales/leads/{lead_id}", headers=h).status_code == 404
+    assert all(r["id"] != lead_id for r in client.get("/api/v1/sales/leads", headers=h).json())
+    assert (
+        db_scalar(client, select(Lead.status).where(Lead.id == lead_id)) == "CLOSED"
+    )
     record_coverage("test_lead_lifecycle", COVERED[5:10])
 
 
@@ -127,6 +146,26 @@ def test_client_lifecycle_with_contacts(client, factory):
     assert (
         db_scalar(client, select(Client.city).where(Client.id == client_id)) == "Boston"
     )
+
+    # Extra profile columns round-trip through create + update.
+    profiled = client.patch(
+        f"/api/v1/sales/clients/{client_id}",
+        json={
+            "client_name": "Globex Inc",
+            "legal_name": "Globex Corporation",
+            "tax_id": "US-123",
+            "founded": "1998",
+            "chat_link": "https://chat.example/c/globex",
+        },
+        headers=h,
+    )
+    assert profiled.status_code == 200, profiled.text
+    body = profiled.json()
+    assert body["client_name"] == "Globex Inc"
+    assert body["legal_name"] == "Globex Corporation"
+    assert body["tax_id"] == "US-123"
+    assert body["founded"] == "1998"
+    assert body["chat_link"] == "https://chat.example/c/globex"
 
     contact = client.post(
         f"/api/v1/sales/clients/{client_id}/contacts",
@@ -171,6 +210,15 @@ def test_sources_platforms_analytics(client, factory):
     assert plat.status_code == 201, plat.text
     assert client.get("/api/v1/sales/platforms", headers=h).status_code == 200
 
+    # Lead filter sources come from the live sources table.
+    created_src = client.post(
+        "/api/v1/sales/sources", json={"name": "LiveSourceZ"}, headers=h
+    )
+    assert created_src.status_code == 201, created_src.text
+    opts = client.get("/api/v1/sales/meta/lead-filter-options", headers=h)
+    assert opts.status_code == 200, opts.text
+    assert "LiveSourceZ" in opts.json()["sources"]
+
     assert client.get("/api/v1/sales/activity", headers=h).status_code == 200
     cases = client.get("/api/v1/sales/case-studies", headers=h)
     assert cases.status_code == 200, cases.text
@@ -181,4 +229,11 @@ def test_sources_platforms_analytics(client, factory):
     assert client.get("/api/v1/sales/dashboard", headers=h).status_code == 200
     assert client.get("/api/v1/sales/analytics", headers=h).status_code == 200
     assert client.get("/api/v1/sales/metrics/dashboard", headers=h).status_code == 200
-    record_coverage("test_sources_platforms_analytics", COVERED[17:])
+    # Latest leads for a source (popup list).
+    src_leads = client.get(f"/api/v1/sales/sources/{src_id}/leads?limit=8", headers=h)
+    assert src_leads.status_code == 200, src_leads.text
+    assert isinstance(src_leads.json(), list)
+    record_coverage(
+        "test_sources_platforms_analytics",
+        COVERED[17:] + [COVERED[-2], COVERED[-1]],
+    )

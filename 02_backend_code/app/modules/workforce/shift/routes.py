@@ -1,4 +1,4 @@
-"""Shift routes."""
+"""Shift routes — workforce shift templates (CRUD + staff)."""
 from __future__ import annotations
 
 from typing import Annotated
@@ -8,10 +8,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.authorization import AuthContext, require_permission
 from app.core.database import get_db_session
-from app.modules.admin.shift.schemas import MessageResponse, ShiftCreate, ShiftResponse, ShiftUpdate
-from app.modules.admin.shift.service import ShiftService
+from app.modules.workforce.shift.schemas import MessageResponse, ShiftCreate, ShiftResponse, ShiftUpdate
+from app.modules.workforce.shift.service import ShiftService
 
-router = APIRouter(prefix="/shifts", tags=["Admin / Shifts"])
+router = APIRouter(prefix="/shifts", tags=["Workforce / Shifts"])
 
 def get_service(session: Annotated[AsyncSession, Depends(get_db_session)]) -> ShiftService:
     return ShiftService(session)

@@ -439,7 +439,7 @@ export async function listEmploymentOptionsForPicker() {
 export async function listEmployeesOnShift(shiftId: number) {
   if (!env.useMockApi) {
     try {
-      const { data } = await apiClient.get(`/admin/shifts/${shiftId}/employees`)
+      const { data } = await apiClient.get(`/workforce/shifts/${shiftId}/employees`)
       if (Array.isArray(data)) {
         return data as {
           employmentId: number

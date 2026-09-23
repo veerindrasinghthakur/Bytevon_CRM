@@ -16,8 +16,8 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     moduleId: 'sales',
     title: 'Sales',
     items: [
-      { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', to: '/sales/dashboard' },
-      { id: 'leads', label: 'Leads', icon: 'person_search', to: '/sales' },
+      { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', to: '/sales' },
+      { id: 'leads', label: 'Leads', icon: 'person_search', to: '/sales/leads' },
       { id: 'clients', label: 'Clients', icon: 'handshake', to: '/sales/clients' },
       { id: 'sources', label: 'Manage sources', icon: 'hub', to: '/sales/sources' },
       { id: 'case-studies', label: 'Case Studies', icon: 'library_books', to: '/sales/case-studies' },
@@ -39,6 +39,7 @@ export const SECONDARY_NAV: Record<string, SecondaryNavGroup> = {
     items: [
       { id: 'employees', label: 'Employees', icon: 'badge', to: '/workforce/employees' },
       { id: 'departments', label: 'Departments', icon: 'domain', to: '/workforce/departments' },
+      { id: 'positions', label: 'Positions', icon: 'work', to: '/workforce/positions' },
       { id: 'shifts', label: 'Shifts', icon: 'schedule', to: '/workforce/shifts' },
       { id: 'attendance', label: 'Attendance roster', icon: 'calendar_today', to: '/workforce/attendance' },
     ],

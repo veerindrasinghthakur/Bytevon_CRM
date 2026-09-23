@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, status
 
 from app.core.authorization import AuthContext, require_permission
 from app.modules.project.dependencies import TeamServiceDep
+from app.modules.project.project.schemas import ProjectResponse
 from app.modules.project.team.schemas import (
     MessageResponse,
     TeamCreate,
@@ -76,6 +77,29 @@ async def remove_team_member(
     )
 
 
+@router.delete(
+    "/teams/{team_id}",
+    response_model=MessageResponse,
+)
+async def delete_team(
+    team_id: int,
+    service: TeamServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("project", "DELETE", "ORGANIZATION"))],
+) -> MessageResponse:
+    return await service.delete_team(team_id, actor_employment_id=auth.employment_id)
+
+
+@router.get(
+    "/teams/{team_id}/projects",
+    response_model=list[ProjectResponse],
+    dependencies=[Depends(require_permission("project", "VIEW", "ORGANIZATION"))],
+)
+async def list_projects_for_team(
+    team_id: int, service: TeamServiceDep
+) -> list[ProjectResponse]:
+    return await service.list_projects_for_team(team_id)
+
+
 @router.get(
     "/teams/{team_id}/members",
     response_model=list[TeamMemberResponse],
@@ -85,3 +109,14 @@ async def list_team_members(
     team_id: int, service: TeamServiceDep
 ) -> list[TeamMemberResponse]:
     return await service.list_team_members(team_id)
+
+
+@router.get(
+    "/teams/{team_id}/members/history",
+    response_model=list[TeamMemberResponse],
+    dependencies=[Depends(require_permission("project", "VIEW", "ORGANIZATION"))],
+)
+async def list_member_history(
+    team_id: int, service: TeamServiceDep
+) -> list[TeamMemberResponse]:
+    return await service.list_member_history(team_id)

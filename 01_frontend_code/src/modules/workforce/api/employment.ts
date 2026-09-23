@@ -647,7 +647,7 @@ export async function getOrgMastersForEmployeeForm() {
         Array<{ id: number; name: string; department_id?: number | null }>
       >('/workforce/positions'),
       apiClient.get<Array<{ id: number; name: string }>>('/admin/locations'),
-      apiClient.get<Array<{ id: number; name: string }>>('/admin/shifts'),
+      apiClient.get<Array<{ id: number; name: string }>>('/workforce/shifts'),
     ])
     const asArray = (
       data: Array<{ id: number; name: string }> | { items?: Array<{ id: number; name: string }> },

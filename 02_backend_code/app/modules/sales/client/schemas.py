@@ -21,9 +21,14 @@ class ClientCreate(BaseModel):
     state: str | None = None
     city: str | None = None
     address: str | None = None
+    legal_name: str | None = Field(None, max_length=255)
+    tax_id: str | None = Field(None, max_length=100)
+    founded: str | None = Field(None, max_length=100)
+    chat_link: str | None = Field(None, max_length=500)
 
 
 class ClientUpdate(BaseModel):
+    client_type: ClientType | None = None
     client_name: str | None = Field(None, min_length=1, max_length=255)
     website: str | None = None
     industry: str | None = None
@@ -31,6 +36,10 @@ class ClientUpdate(BaseModel):
     state: str | None = None
     city: str | None = None
     address: str | None = None
+    legal_name: str | None = Field(None, max_length=255)
+    tax_id: str | None = Field(None, max_length=100)
+    founded: str | None = Field(None, max_length=100)
+    chat_link: str | None = Field(None, max_length=500)
 
 
 class ClientResponse(BaseModel):
@@ -45,6 +54,10 @@ class ClientResponse(BaseModel):
     state: str | None
     city: str | None
     address: str | None
+    legal_name: str | None
+    tax_id: str | None
+    founded: str | None
+    chat_link: str | None
     is_archived: bool
     created_at: datetime
     updated_at: datetime

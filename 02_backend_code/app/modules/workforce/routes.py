@@ -18,6 +18,7 @@ from app.modules.workforce.assignment.routes import router as assignment_router
 from app.modules.workforce.attendance.routes import router as attendance_router
 from app.modules.workforce.department.routes import router as department_router
 from app.modules.workforce.employee.routes import router as employee_router
+from app.modules.workforce.shift.routes import router as shift_router
 
 router = APIRouter(prefix="/workforce", tags=["Workforce"])
 
@@ -25,3 +26,4 @@ router.include_router(employee_router)
 router.include_router(assignment_router)
 router.include_router(department_router)
 router.include_router(attendance_router)
+router.include_router(shift_router)

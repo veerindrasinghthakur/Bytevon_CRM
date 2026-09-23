@@ -14,12 +14,23 @@ describe('formatFileSize', () => {
 })
 
 describe('projects mock API', () => {
-  it('lists empty notes (backend not ready) and rejects createNote', async () => {
-    const notes = await listNotes()
-    expect(notes).toMatchObject({ items: [], total: 0 })
-    await expect(
-      createNote({ body: 't-note', referenceType: 'PROJECT', referenceId: 1 }),
-    ).rejects.toThrow(/not implemented/i)
+  it('lists seed notes filtered by reference and creates a note', async () => {
+    const notes = await listNotes({ referenceType: 'TASK', referenceId: 1042 })
+    expect(notes.total).toBe(3)
+    const all = await listNotes()
+    expect(all.total).toBeGreaterThanOrEqual(3)
+    const created = await createNote({
+      title: 't-title',
+      body: 't-note',
+      referenceType: 'TASK',
+      referenceId: 1042,
+    })
+    expect(created).toMatchObject({
+      title: 't-title',
+      body: 't-note',
+      referenceType: 'TASK',
+      referenceId: 1042,
+    })
   })
   it('lists documents, projects and tasks', async () => {
     const docs = await listDocuments()

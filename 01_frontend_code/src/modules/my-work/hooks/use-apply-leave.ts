@@ -16,6 +16,8 @@ import {
 } from '../api/my-work'
 import { myWorkRoutes } from '../routes'
 import { emptyLeaveForm, leaveFormSchema, type LeaveFormValues } from '../types'
+import { toast } from '@/shared/hooks/use-toast'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 
 function toISO(y: number, m: number, d: number) {
   return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
@@ -113,7 +115,11 @@ export function useApplyLeave() {
     mutationFn: submitLeaveRequest,
     onSuccess: () => {
       void invalidate.myWorkLeave(qc)
+      toast.success('Leave request submitted')
       safeNavigate(navigate, { to: myWorkRoutes.leave })
+    },
+    onError: (err) => {
+      toast.error(getApiErrorMessage(err, 'Could not submit the leave request'))
     },
   })
 

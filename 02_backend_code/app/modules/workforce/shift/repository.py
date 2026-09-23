@@ -7,7 +7,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.repositories.base_repository import BaseRepository
-from app.modules.admin.shift.models import Shift
+from app.modules.workforce.shift.models import Shift
 
 
 class ShiftRepository(BaseRepository):

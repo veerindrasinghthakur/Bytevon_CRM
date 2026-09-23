@@ -24,6 +24,8 @@ const EmployeeBankDetailsPage = lazyPage(() => import('./pages/EmployeeBankDetai
 const DepartmentsListPage = lazyPage(() => import('./pages/DepartmentsListPage'), 'DepartmentsListPage')
 const DepartmentCreatePage = lazyPage(() => import('./pages/DepartmentCreatePage'), 'DepartmentCreatePage')
 const DepartmentDetailPage = lazyPage(() => import('./pages/DepartmentDetailPage'), 'DepartmentDetailPage')
+const PositionsListPage = lazyPage(() => import('./pages/position/PositionsListPage'), 'PositionsListPage')
+const PositionDetailPage = lazyPage(() => import('./pages/position/PositionDetailPage'), 'PositionDetailPage')
 const AttendanceDashboardPage = lazyPage(
   () => import('./pages/AttendanceDashboardPage'),
   'AttendanceDashboardPage',
@@ -43,6 +45,8 @@ const AttendanceDayDetailPage = lazyPage(
 )
 const ChangeAssignmentPage = lazyPage(() => import('./pages/ChangeAssignmentPage'), 'ChangeAssignmentPage')
 const AddMemberPage = lazyPage(() => import('./pages/AddMemberPage'), 'AddMemberPage')
+const ShiftsListPage = lazyPage(() => import('./pages/shift/ShiftsListPage'), 'ShiftsListPage')
+const ShiftDetailPage = lazyPage(() => import('./pages/shift/ShiftDetailPage'), 'ShiftDetailPage')
 
 /** Canonical path helpers — prefer these over hard-coded strings in pages. */
 export const workforceRoutes = {
@@ -59,6 +63,10 @@ export const workforceRoutes = {
   departmentNew: '/workforce/departments/new',
   departmentDetail: (id: string | number) => `/workforce/departments/${id}`,
   departmentDetailPath: '/workforce/departments/$departmentId',
+  positions: '/workforce/positions',
+  positionNew: '/workforce/positions/new',
+  positionDetail: (id: string | number) => `/workforce/positions/${id}`,
+  positionDetailPath: '/workforce/positions/$positionId',
   teams: '/projects/teams',
   teamNew: '/projects/teams/new',
   teamDetail: (id: string | number) => `/projects/teams/${id}`,
@@ -80,6 +88,10 @@ export const workforceRoutes = {
   attendanceRecordPath: '/workforce/attendance/$attendanceId',
   attendanceDay: (employmentId: string | number) => `/workforce/attendance/day/${employmentId}`,
   attendanceDayPath: '/workforce/attendance/day/$employmentId',
+  shifts: '/workforce/shifts',
+  shiftNew: '/workforce/shifts/new',
+  shiftDetail: (id: string | number) => `/workforce/shifts/${id}`,
+  shiftDetailPath: '/workforce/shifts/$shiftId',
 } as const
 
 export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
@@ -139,6 +151,42 @@ export function createWorkforceRoutes<TParent extends AnyRoute>(appLayoutRoute: 
       path: '/workforce/departments/$departmentId',
       beforeLoad: requireDepartmentView,
       component: DepartmentDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/positions',
+      beforeLoad: requireEmploymentView,
+      component: PositionsListPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/positions/new',
+      beforeLoad: requireEmploymentCreate,
+      component: PositionDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/positions/$positionId',
+      beforeLoad: requireEmploymentView,
+      component: PositionDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/shifts',
+      beforeLoad: requireView('shift'),
+      component: ShiftsListPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/shifts/new',
+      beforeLoad: requireView('shift'),
+      component: ShiftDetailPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/workforce/shifts/$shiftId',
+      beforeLoad: requireView('shift'),
+      component: ShiftDetailPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,

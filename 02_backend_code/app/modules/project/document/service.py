@@ -36,6 +36,32 @@ class DocumentService(BasePublicService):
         super().__init__(session)
         self._repo = DocumentRepository(session)
 
+    async def _uploader_info(
+        self, employment_id: int | None
+    ) -> tuple[str | None, str | None]:
+        """changed_by employment id → (display name, employee code)."""
+        if not employment_id:
+            return None, None
+        try:
+            from app.modules.auth.models import Person
+            from app.modules.workforce.models import Employment
+            from sqlalchemy import select as _select
+
+            emp = await self._session.get(Employment, int(employment_id))
+            if emp is None:
+                return None, None
+            code = getattr(emp, "employee_code", None)
+            person = await self._session.get(Person, emp.person_id)
+            if person is not None:
+                name = f"{person.first_name} {person.last_name}".strip()
+                if name:
+                    return name, str(code) if code else None
+            return (str(code) if code else f"Emp #{employment_id}"), (
+                str(code) if code else None
+            )
+        except Exception:
+            return None, None
+
     async def create_type(
         self,
         data: DocumentTypeCreate,
@@ -134,10 +160,13 @@ class DocumentService(BasePublicService):
         await self._commit()
         await self._session.refresh(doc)
         await self._audit("document.created", doc.id, actor_employment_id)
+        uploader_name, uploader_code = await self._uploader_info(doc.changed_by)
         return DocumentDetailResponse(
             **DocumentResponse.model_validate(doc).model_dump(),
             current_version=DocumentVersionResponse.model_validate(version),
             versions=[DocumentVersionResponse.model_validate(version)],
+            uploaded_by_name=uploader_name,
+            uploaded_by_code=uploader_code,
         )
 
     async def add_version(
@@ -182,12 +211,15 @@ class DocumentService(BasePublicService):
             current = next(
                 (v for v in versions if v.id == doc.current_version_id), None
             )
+        uploader_name, uploader_code = await self._uploader_info(doc.changed_by)
         return DocumentDetailResponse(
             **DocumentResponse.model_validate(doc).model_dump(),
             current_version=(
                 DocumentVersionResponse.model_validate(current) if current else None
             ),
             versions=[DocumentVersionResponse.model_validate(v) for v in versions],
+            uploaded_by_name=uploader_name,
+            uploaded_by_code=uploader_code,
         )
 
     async def archive(

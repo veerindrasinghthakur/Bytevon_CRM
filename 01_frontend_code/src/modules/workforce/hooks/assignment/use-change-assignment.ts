@@ -3,7 +3,7 @@ import { queryKeys } from '@/shared/lib/query-keys'
 import { listDepartments } from '../../api/departments'
 import { getPositions } from '@/modules/admin/api/position'
 import { getLocations } from '@/modules/admin/api/location'
-import { getShifts } from '@/modules/admin/api/shift'
+import { getShifts } from '../../api/shift'
 import { createEmploymentAssignment } from '../../api/employment'
 import type { IdName } from '../../types'
 

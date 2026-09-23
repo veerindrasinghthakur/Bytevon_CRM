@@ -7,7 +7,6 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Query, status
 
 from app.core.authorization import AuthContext, require_permission
-from app.core.db.enums import LeaveType
 from app.modules.leave.dependencies import PolicyServiceDep
 from app.modules.leave.policy.schemas import LeavePolicyCreate, LeavePolicyResponse
 
@@ -30,14 +29,14 @@ async def create_policy(
 @router.get("/policies", response_model=list[LeavePolicyResponse], dependencies=[Depends(require_permission("leave_policy", "VIEW", "ORGANIZATION"))])
 async def list_policies(
     service: PolicyServiceDep,
-    leave_type: LeaveType | None = Query(None),
+    leave_type: str | None = Query(None),
 ) -> list[LeavePolicyResponse]:
     return await service.list_policies(leave_type=leave_type)
 
 
 @router.get("/policies/current/{leave_type}", response_model=LeavePolicyResponse, dependencies=[Depends(require_permission("leave_policy", "VIEW", "ORGANIZATION"))])
 async def get_current_policy(
-    leave_type: LeaveType,
+    leave_type: str,
     service: PolicyServiceDep,
     as_of: date | None = Query(None),
 ) -> LeavePolicyResponse:

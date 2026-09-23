@@ -7,7 +7,6 @@ from datetime import date
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db.enums import LeaveType
 from app.core.repositories.base_repository import BaseRepository
 from app.modules.leave.models import LeavePolicy
 
@@ -21,13 +20,13 @@ class PolicyRepository(BaseRepository):
         return await self.scalar_one_or_none(stmt)
 
     async def get_current_policy(
-        self, leave_type: LeaveType, *, as_of: date | None = None
+        self, leave_type_id: int, *, as_of: date | None = None
     ) -> LeavePolicy | None:
         as_of = as_of or date.today()
         stmt = (
             select(LeavePolicy)
             .where(
-                LeavePolicy.leave_type == leave_type,
+                LeavePolicy.leave_type_id == leave_type_id,
                 LeavePolicy.effective_from <= as_of,
                 (LeavePolicy.effective_to.is_(None))
                 | (LeavePolicy.effective_to >= as_of),
@@ -38,13 +37,13 @@ class PolicyRepository(BaseRepository):
         return await self.scalar_one_or_none(stmt)
 
     async def list_policies(
-        self, *, leave_type: LeaveType | None = None
+        self, *, leave_type_id: int | None = None
     ) -> Sequence[LeavePolicy]:
         stmt = select(LeavePolicy).order_by(
-            LeavePolicy.leave_type, LeavePolicy.effective_from.desc()
+            LeavePolicy.leave_type_id, LeavePolicy.effective_from.desc()
         )
-        if leave_type is not None:
-            stmt = stmt.where(LeavePolicy.leave_type == leave_type)
+        if leave_type_id is not None:
+            stmt = stmt.where(LeavePolicy.leave_type_id == leave_type_id)
         return await self.scalars(stmt)
 
     async def close_policy(self, policy_id: int, effective_to: date) -> None:

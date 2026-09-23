@@ -1,7 +1,7 @@
 /**
  * Admin org masters barrel — re-exports domain APIs + settings.
  * Prefer importing from domain files (location, shift, …) in new code.
- * All real API paths are under /admin/*.
+ * Shift masters moved to workforce (paths under /workforce/shifts).
  */
 export { asList } from './_org-helpers'
 export {
@@ -22,7 +22,7 @@ export {
   deleteShift,
   restoreShift,
   archiveShift,
-} from './shift'
+} from '@/modules/workforce/api/shift'
 export {
   getWorkingWeeks,
   createWorkingWeek,

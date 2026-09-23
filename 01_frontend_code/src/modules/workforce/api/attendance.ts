@@ -143,4 +143,113 @@ export async function listAttendanceCorrections(): Promise<CorrectionRow[]> {
   return seedCorrections.map((c) => ({ ...c }))
 }
 
+export interface AttendanceDayRow {
+  id: number
+  employment_id: number
+  shift_id: number | null
+  attendance_date: string
+  status: string
+  working_hours: number | null
+}
+
+/** Org-wide day rows in [from_date, to_date] (backend range endpoint). */
+export async function listDaysInRange(
+  fromDate: string,
+  toDate: string,
+): Promise<AttendanceDayRow[]> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<Array<Record<string, unknown>>>(
+      '/workforce/attendance/days/by-date-range',
+      { params: { from_date: fromDate, to_date: toDate } },
+    )
+    return (Array.isArray(data) ? data : []).map((r) => ({
+      id: Number(r.id),
+      employment_id: Number(r.employment_id),
+      shift_id: r.shift_id != null ? Number(r.shift_id) : null,
+      attendance_date: String(r.attendance_date ?? '').slice(0, 10),
+      status: String(r.status ?? ''),
+      working_hours: r.working_hours != null ? Number(r.working_hours) : null,
+    }))
+  }
+  await delay()
+  // Mock: project today's seed rows onto the requested dates.
+  const days: string[] = []
+  for (let d = new Date(`${fromDate}T00:00:00`); d <= new Date(`${toDate}T00:00:00`); d.setDate(d.getDate() + 1)) {
+    days.push(d.toISOString().slice(0, 10))
+  }
+  return days.flatMap((day, di) =>
+    seedToday.map((r, i) => ({
+      id: di * 100 + i + 1,
+      employment_id: i + 1,
+      shift_id: null,
+      attendance_date: day,
+      status: r.status,
+      working_hours: r.hours && r.hours !== '—' ? Number.parseFloat(r.hours) || null : null,
+    })),
+  )
+}
+
+export interface PendingCorrection {
+  id: number
+  attendance_day_id: number
+  employment_id: number | null
+  employment_name: string | null
+  attendance_date: string | null
+  requested_check_in: string | null
+  requested_check_out: string | null
+  reason: string
+  approval_request_id: number | null
+  status: string
+  created_at: string
+}
+
+/** Org-wide pending corrections (backend pending endpoint). */
+export async function listPendingCorrections(): Promise<PendingCorrection[]> {
+  if (!env.useMockApi) {
+    const { data } = await apiClient.get<Array<Record<string, unknown>>>(
+      '/workforce/attendance/corrections/pending',
+    )
+    return (Array.isArray(data) ? data : []).map((r) => ({
+      id: Number(r.id),
+      attendance_day_id: Number(r.attendance_day_id),
+      employment_id: r.employment_id != null ? Number(r.employment_id) : null,
+      employment_name: (r.employment_name as string | undefined) ?? null,
+      attendance_date: r.attendance_date ? String(r.attendance_date).slice(0, 10) : null,
+      requested_check_in: (r.requested_check_in as string | undefined) ?? null,
+      requested_check_out: (r.requested_check_out as string | undefined) ?? null,
+      reason: String(r.reason ?? ''),
+      approval_request_id:
+        r.approval_request_id != null ? Number(r.approval_request_id) : null,
+      status: String(r.status ?? ''),
+      created_at: String(r.created_at ?? ''),
+    }))
+  }
+  await delay()
+  return seedCorrections.map((c, i) => ({
+    id: Number(c.id.replace(/\D/g, '')) || i + 1,
+    attendance_day_id: i + 1,
+    employment_id: i + 1,
+    employment_name: c.name,
+    attendance_date: null,
+    requested_check_in: null,
+    requested_check_out: null,
+    reason: c.note,
+    approval_request_id: null,
+    status: 'PENDING',
+    created_at: new Date().toISOString(),
+  }))
+}
+
+/** Approve / reject a correction via its linked approval request. */
+export async function decideCorrection(
+  approvalRequestId: number,
+  decision: 'approve' | 'reject',
+): Promise<void> {
+  if (!env.useMockApi) {
+    await apiClient.post(`/approvals/${approvalRequestId}/${decision}`, {})
+    return
+  }
+  await delay(300)
+}
+
 

@@ -4,7 +4,6 @@
  */
 import { env } from '@/config/env'
 import { apiClient } from '@/shared/lib/axios'
-import { LeaveType, leaveTypeLabel } from '@/shared/schema/enums'
 import { delay } from '@/shared/mock/db'
 import {
   approverDirectory,
@@ -55,6 +54,43 @@ export interface MyWorkListParams {
   sortOrder?: 'asc' | 'desc'
   dateFrom?: string
   dateTo?: string
+}
+
+/**
+ * Backend leave codes → UI labels (legacy cached values).
+ * Live endpoints return {value: code, label: name}; map at the boundary so
+ * self-service keeps working if the master catalog gains new types.
+ */
+const BACKEND_LEAVE_TYPE_TO_UI: Record<string, string> = {
+  CASUAL: 'Casual',
+  SICK: 'Sick',
+  EARNED: 'Earned',
+  LOSS_OF_PAY: 'Unpaid',
+  LOP: 'Unpaid',
+  UNPAID: 'Unpaid',
+  COMP_OFF: 'Comp Off',
+  MATERNITY: 'Maternity',
+  PATERNITY: 'Paternity',
+}
+
+function mapLeaveTypeToUI(value: unknown): string {
+  const key = String(value ?? '').toUpperCase()
+  return BACKEND_LEAVE_TYPE_TO_UI[key] ?? String(value ?? '')
+}
+
+function mapApiLeaveRequest(r: Record<string, unknown>): LeaveRequest {
+  return {
+    id: String(r.id ?? ''),
+    type: mapLeaveTypeToUI(r.type) as LeaveRequest['type'],
+    from: String(r.from ?? r.from_date ?? ''),
+    to: String(r.to ?? r.to_date ?? ''),
+    days: Number(r.days ?? 0),
+    reason: String(r.reason ?? ''),
+    status: String(r.status ?? 'Pending') as LeaveRequest['status'],
+    appliedOn: String(r.appliedOn ?? r.applied_on ?? ''),
+    approver: r.approver == null ? undefined : String(r.approver),
+    halfDay: (r.halfDay ?? r.half_day ?? null) as LeaveRequest['halfDay'],
+  }
 }
 
 function toISO(y: number, m: number, d: number) {
@@ -195,8 +231,17 @@ export async function listMyLeaveRequests(
   const pageSize = params.pageSize ?? DEFAULT_LIST_PAGE_SIZE
 
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<LeaveListResponse>('/my-work/leave', { params })
-    return data
+    const { data } = await apiClient.get<{
+      items?: Array<Record<string, unknown>>
+      total?: number
+    }>('/my-work/leave', { params })
+    const items = Array.isArray(data) ? data : (data.items ?? [])
+    return {
+      items: (Array.isArray(items) ? items : []).map(mapApiLeaveRequest),
+      total: Array.isArray(data) ? items.length : (data.total ?? items.length),
+      page,
+      pageSize,
+    }
   }
 
   await delay()
@@ -232,25 +277,45 @@ export async function listMyLeaveRequests(
 
 export async function listMyLeaveBalances(): Promise<LeaveBalance[]> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<LeaveBalance[]>('/my-work/leave/balances')
-    return data
+    const { data } = await apiClient.get<Array<Record<string, unknown>>>(
+      '/my-work/leave/balances',
+    )
+    return (Array.isArray(data) ? data : []).map((b) => ({
+      type: mapLeaveTypeToUI(b.type) as LeaveBalance['type'],
+      used: Number(b.used ?? 0),
+      total: Number(b.total ?? 0),
+      remaining: Number(b.remaining ?? 0),
+    }))
   }
   await delay()
   return leaveBalances.map((b) => ({ ...b }))
 }
 
+/** Mock-only catalog fallback (mirrors seeded leave_types master). */
+const FALLBACK_LEAVE_TYPE_OPTIONS: LeaveTypeOption[] = [
+  { value: 'Casual', label: 'Casual', requires_approval: true },
+  { value: 'Sick', label: 'Sick', requires_approval: true },
+  { value: 'Earned', label: 'Earned', requires_approval: true },
+  { value: 'Maternity', label: 'Maternity', requires_approval: true },
+  { value: 'Paternity', label: 'Paternity', requires_approval: true },
+  { value: 'Unpaid', label: 'Unpaid', requires_approval: true },
+  { value: 'Comp Off', label: 'Comp Off', requires_approval: true },
+]
+
 export async function listLeaveTypeOptions(): Promise<LeaveTypeOption[]> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<LeaveTypeOption[]>('/my-work/leave/types')
-    return data
+    const { data } = await apiClient.get<Array<Record<string, unknown>>>(
+      '/my-work/leave/types',
+    )
+    return (Array.isArray(data) ? data : []).map((o) => ({
+      value: mapLeaveTypeToUI(o.value),
+      label: String(o.label ?? mapLeaveTypeToUI(o.value)),
+      requires_approval:
+        typeof o.requires_approval === 'boolean' ? o.requires_approval : true,
+    }))
   }
   await delay()
-  // Mock fallback derived from shared LeaveType enum (single source of truth).
-  return (Object.values(LeaveType) as string[]).map((value) => ({
-    value,
-    label: leaveTypeLabel(value),
-    requires_approval: true,
-  }))
+  return FALLBACK_LEAVE_TYPE_OPTIONS.map((o) => ({ ...o }))
 }
 
 export async function getApplyLeaveContext(): Promise<ApplyLeaveContext> {
@@ -258,24 +323,73 @@ export async function getApplyLeaveContext(): Promise<ApplyLeaveContext> {
     await delay()
     return {
       holidays: [],
-      leaveTypes: (Object.values(LeaveType) as string[]).map((value) => ({
-        value,
-        label: leaveTypeLabel(value),
-        requires_approval: true,
-      })),
+    leaveTypes: FALLBACK_LEAVE_TYPE_OPTIONS.map((o) => ({ ...o })),
       balances: leaveBalances.map((b) => ({ ...b })),
     }
   }
-  const { data } = await apiClient.get<ApplyLeaveContext>('/my-work/leave/apply-context')
-  return data
+  const { data } = await apiClient.get<{
+    holidays?: Array<Record<string, unknown>>
+    leaveTypes?: Array<Record<string, unknown>>
+    balances?: Array<Record<string, unknown>>
+  }>('/my-work/leave/apply-context')
+  const raw = (data ?? {}) as {
+    holidays?: Array<Record<string, unknown>>
+    leaveTypes?: Array<Record<string, unknown>>
+    balances?: Array<Record<string, unknown>>
+  }
+  return {
+    holidays: (raw.holidays ?? []).map((h) => ({
+      date: String(h.date ?? ''),
+      name: String(h.name ?? ''),
+      holidayType: h.holidayType == null ? undefined : String(h.holidayType),
+    })),
+    leaveTypes: (raw.leaveTypes ?? []).map((o) => ({
+      value: mapLeaveTypeToUI(o.value),
+      label: String(o.label ?? mapLeaveTypeToUI(o.value)),
+      requires_approval:
+        typeof o.requires_approval === 'boolean' ? o.requires_approval : true,
+    })),
+    balances: (raw.balances ?? []).map((b) => ({
+      type: mapLeaveTypeToUI(b.type) as LeaveBalance['type'],
+      used: Number(b.used ?? 0),
+      total: Number(b.total ?? 0),
+      remaining: Number(b.remaining ?? 0),
+    })),
+  }
 }
 
 export async function calculateLeaveDays(
   input: LeaveCalculateInput,
 ): Promise<LeaveCalculateResult> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<LeaveCalculateResult>('/my-work/leave/calculate', input)
-    return data
+    const { data } = await apiClient.post<Record<string, unknown>>(
+      '/my-work/leave/calculate',
+      {
+        type: input.type,
+        from: input.from,
+        to: input.to,
+        half_day: Boolean(input.halfDay),
+      },
+    )
+    const balanceRemainingRaw = data.balance_remaining ?? data.balanceRemaining
+    const estimatedAfterRaw =
+      data.estimated_balance_after ?? data.estimatedBalanceAfter
+    return {
+      dayCost: Number(data.day_cost ?? data.dayCost ?? 0),
+      balanceRemaining:
+        balanceRemainingRaw == null ? null : Number(balanceRemainingRaw),
+      estimatedBalanceAfter:
+        estimatedAfterRaw == null ? null : Number(estimatedAfterRaw),
+      holidaysInRange: (
+        (Array.isArray(data.holidays_in_range)
+          ? data.holidays_in_range
+          : (data.holidaysInRange as Array<Record<string, unknown>> | undefined)) ?? []
+      ).map((h) => ({
+        date: String(h.date ?? ''),
+        name: String(h.name ?? ''),
+        holidayType: h.holidayType == null ? undefined : String(h.holidayType),
+      })),
+    }
   }
   await delay(80)
   const holidayDates = new Set(holidaysSeed.map((h) => h.date))
@@ -629,8 +743,14 @@ export async function submitLeaveRequest(input: CreateLeaveRequestInput): Promis
       halfDay: input.halfDay ? 'start' : null,
     }
   }
-  const { data } = await apiClient.post<LeaveRequest>('/my-work/leave', input)
-  return data
+  const { data } = await apiClient.post<Record<string, unknown>>('/my-work/leave', {
+    type: input.type,
+    from_date: input.from,
+    to_date: input.to,
+    reason: input.reason,
+    half_day: input.halfDay ? 'start' : null,
+  })
+  return mapApiLeaveRequest(data)
 }
 
 export async function listApproverDirectory(): Promise<ApproverOption[]> {

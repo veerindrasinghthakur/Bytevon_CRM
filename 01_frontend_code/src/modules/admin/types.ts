@@ -93,6 +93,26 @@ export interface LeaveTypeSettingRow {
   eligibilityStyle: string
 }
 
+/** Leave type master row — GET /leave/types (FK target for policies/requests). */
+export interface LeaveTypeRow {
+  id: number
+  code: string
+  name: string
+  description: string | null
+  is_paid: boolean
+  requires_approval: boolean
+  requires_document: boolean
+  allow_half_day: boolean
+  allow_hourly: boolean
+  is_encashable: boolean
+  default_annual_entitlement: number
+  is_active: boolean
+  sort_order: number
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+}
+
 export interface LeavePolicyRow {
   id: number
   name: string

@@ -50,6 +50,8 @@ function mapApiClient(row: Record<string, unknown>): Client {
     industry: String(row.industry ?? '—'),
     website: (row.website as string | undefined) ?? undefined,
     country: String(row.country ?? '—'),
+    state: (row.state as string | undefined) ?? undefined,
+    city: (row.city as string | undefined) ?? undefined,
     address: (row.address as string | undefined) ?? undefined,
     taxId: (row.taxId as string | undefined) ?? (row.tax_id as string | undefined),
     founded: (row.founded as string | undefined) ?? undefined,
@@ -145,7 +147,18 @@ export async function getClientById(id: string): Promise<Client | null> {
 
 export async function createClient(input: CreateClientInput): Promise<Client> {
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<Record<string, unknown>>('/sales/clients', input)
+    const { data } = await apiClient.post<Record<string, unknown>>(
+      '/sales/clients',
+      toBackendClient(input),
+    )
+    const numeric = String((data as { id?: unknown }).id ?? '')
+    if (input.status === 'Inactive' && numeric) {
+      try {
+        await apiClient.post(`/sales/clients/${numeric}/archive`)
+      } catch {
+        // Status is display-only; the client itself was created.
+      }
+    }
     return mapApiClient(data)
   }
   await delay(400)
@@ -175,10 +188,48 @@ export async function createClient(input: CreateClientInput): Promise<Client> {
   return row
 }
 
+/**
+ * UI Client → backend ClientCreate/ClientUpdate (snake_case, backend enum).
+ * UI-only fields (status display, primaryContact/email/phone, counters) are
+ * dropped here; contacts are posted separately via addClientContact.
+ */
+function toBackendClient(patch: Partial<Client>): Record<string, unknown> {
+  const body: Record<string, unknown> = {}
+  if (patch.name != null) body.client_name = patch.name
+  if (patch.type != null) {
+    body.client_type = patch.type === 'Individual' ? 'INDIVIDUAL' : 'COMPANY'
+  }
+  for (const key of [
+    'website',
+    'industry',
+    'country',
+    'state',
+    'city',
+    'address',
+  ] as const) {
+    if (patch[key] != null) body[key] = patch[key]
+  }
+  if (patch.legalName !== undefined) body.legal_name = patch.legalName || null
+  if (patch.taxId !== undefined) body.tax_id = patch.taxId || null
+  if (patch.founded !== undefined) body.founded = patch.founded || null
+  if (patch.chatLink !== undefined) body.chat_link = patch.chatLink || null
+  return body
+}
+
 export async function updateClient(id: string, patch: Partial<Client>): Promise<Client> {
   if (!env.useMockApi) {
     const numeric = id.replace(/^c/i, '')
-    const { data } = await apiClient.patch<Record<string, unknown>>(`/sales/clients/${numeric}`, patch)
+    const { data } = await apiClient.patch<Record<string, unknown>>(
+      `/sales/clients/${numeric}`,
+      toBackendClient(patch),
+    )
+    if (patch.status === 'Inactive') {
+      try {
+        await apiClient.post(`/sales/clients/${numeric}/archive`)
+      } catch {
+        // Status is display-only; scalar fields were saved.
+      }
+    }
     return mapApiClient(data)
   }
   await delay(350)
@@ -187,4 +238,52 @@ export async function updateClient(id: string, patch: Partial<Client>): Promise<
   if (idx < 0) throw new Error('Client not found')
   list[idx] = { ...list[idx], ...patch, id }
   return list[idx]
+}
+
+export interface ClientContactInput {
+  name: string
+  designation?: string
+  email?: string
+  phone?: string
+}
+
+export async function archiveClient(clientId: string): Promise<void> {
+  if (env.useMockApi) {
+    await delay(300)
+    const list = clients()
+    const idx = list.findIndex((c) => c.id === clientId)
+    if (idx >= 0) list[idx] = { ...list[idx], status: 'Inactive' }
+    return
+  }
+  const numeric = clientId.replace(/^c/i, '')
+  await apiClient.post(`/sales/clients/${numeric}/archive`)
+}
+
+export async function listClientContacts(clientId: string): Promise<ClientContactInput[]> {
+  if (env.useMockApi) return []
+  const numeric = clientId.replace(/^c/i, '')
+  const { data } = await apiClient.get<Array<Record<string, unknown>>>(
+    `/sales/clients/${numeric}/contacts`,
+  )
+  return (Array.isArray(data) ? data : []).map((c) => ({
+    name: String(c.name ?? ''),
+    designation: (c.designation as string | undefined) ?? undefined,
+    email: (c.email as string | undefined) ?? undefined,
+    phone: (c.phone as string | undefined) ?? undefined,
+  }))
+}
+
+export async function addClientContact(
+  clientId: string,
+  contact: ClientContactInput,
+): Promise<void> {
+  if (env.useMockApi) return
+  const numeric = clientId.replace(/^c/i, '')
+  await apiClient.post(`/sales/clients/${numeric}/contacts`, {
+    client_id: Number(numeric),
+    name: contact.name,
+    designation: contact.designation || null,
+    email: contact.email || null,
+    phone: contact.phone || null,
+  })
 }

@@ -7,7 +7,16 @@ import { stageStyles, PipelineStageValues, type PipelineStage } from '../../sche
 import type { UseMutationResult } from '@tanstack/react-query'
 import type { Lead } from '../../types'
 
-const FORWARD_STAGES = PipelineStageValues.filter((s) => s !== 'Lost') as PipelineStage[]
+/** Forward pipeline order (backend-driven). Closed/Lost are terminal side states. */
+const FORWARD_STAGES = [
+  'New',
+  'Contacted',
+  'Qualified',
+  'Proposal',
+  'Negotiation',
+  'Follow Up',
+  'Won',
+] as PipelineStage[]
 
 function nextPipelineStage(current: string): PipelineStage | null {
   const idx = FORWARD_STAGES.indexOf(current as PipelineStage)
@@ -38,7 +47,7 @@ export function LeadPipelineBar({ leadId, stage, updateLead, onRefetch }: Props)
 
   const currentIdx = PipelineStageValues.indexOf(stage as PipelineStage)
   const nextStage = nextPipelineStage(stage)
-  const isTerminal = stage === 'Won' || stage === 'Lost'
+  const isTerminal = stage === 'Won' || stage === 'Lost' || stage === 'Closed'
 
   const handleAdvanceStage = async () => {
     if (!nextStage) return

@@ -290,6 +290,71 @@ class AttendanceService(BasePublicService):
         )
         return [CorrectionResponse.model_validate(r) for r in rows]
 
+    async def list_days_in_range(
+        self, from_date: date, to_date: date
+    ) -> list[AttendanceDayResponse]:
+        from app.modules.workforce.attendance.schemas import AttendanceDayResponse
+
+        rows = await self._repo.list_days_in_range(from_date, to_date)
+        return [AttendanceDayResponse.model_validate(r) for r in rows]
+
+    async def list_pending_corrections(
+        self, *, limit: int = 50
+    ) -> list[PendingCorrectionRow]:
+        """Org-wide pending corrections with owner name/date for the dashboard."""
+        from sqlalchemy import select
+
+        from app.modules.auth.models import Person
+        from app.modules.workforce.attendance.schemas import PendingCorrectionRow
+        from app.modules.workforce.models import Employment
+
+        corrections = list(await self._repo.list_pending_corrections(limit=limit))
+        day_ids = {c.attendance_day_id for c in corrections}
+        days = (
+            await self._session.execute(
+                select(AttendanceDay).where(AttendanceDay.id.in_(day_ids))
+            )
+        ).scalars()
+        day_by_id = {d.id: d for d in days}
+        emp_ids = {d.employment_id for d in day_by_id.values()}
+        emps = (
+            await self._session.execute(
+                select(Employment).where(Employment.id.in_(emp_ids))
+            )
+        ).scalars()
+        emp_by_id = {e.id: e for e in emps}
+        persons = (
+            await self._session.execute(
+                select(Person).where(Person.id.in_({e.person_id for e in emp_by_id.values()}))
+            )
+        ).scalars()
+        names = {p.id: f"{p.first_name} {p.last_name}".strip() for p in persons}
+
+        out: list[PendingCorrectionRow] = []
+        for c in corrections:
+            day = day_by_id.get(c.attendance_day_id)
+            emp = emp_by_id.get(day.employment_id) if day else None
+            out.append(
+                PendingCorrectionRow(
+                    id=c.id,
+                    attendance_day_id=c.attendance_day_id,
+                    employment_id=day.employment_id if day else None,
+                    employment_name=(
+                        names.get(emp.person_id)
+                        or (emp.employee_code if emp else None)
+                        or (f"Emp #{day.employment_id}" if day else None)
+                    ),
+                    attendance_date=day.attendance_date if day else None,
+                    requested_check_in=c.requested_check_in,
+                    requested_check_out=c.requested_check_out,
+                    reason=c.reason,
+                    approval_request_id=c.approval_request_id,
+                    status=c.status,
+                    created_at=c.created_at,
+                )
+            )
+        return out
+
     async def handle_approval_decision(self, event: dict) -> None:
         if event.get("request_type") != ATTENDANCE_CORRECTION_TYPE:
             return

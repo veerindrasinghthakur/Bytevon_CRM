@@ -23,7 +23,7 @@ from app.modules.sales.source.routes import router as source_router
 router = APIRouter(prefix="/sales", tags=["Sales"])
 
 
-def _filter_lead_options(rows: list) -> dict[str, list[str]]:
+def _filter_lead_options(rows: list, *, sources: list[str] | None = None) -> dict[str, list[str]]:
     statuses = sorted(
         {(r.status.value if hasattr(r.status, "value") else str(r.status)) for r in rows}
     )
@@ -31,7 +31,8 @@ def _filter_lead_options(rows: list) -> dict[str, list[str]]:
         "statuses": ["Active", "Inactive"] + (statuses or list(LeadStatus.values())),
         "stages": statuses or list(LeadStatus.values()),
         "priorities": ["Critical", "High", "Medium", "Low"],
-        "sources": [
+        "sources": sources
+        or [
             "LinkedIn",
             "Website",
             "Referral",
@@ -47,7 +48,13 @@ def _filter_lead_options(rows: list) -> dict[str, list[str]]:
 @router.get("/leads/filter-options", dependencies=[Depends(require_permission("lead", "VIEW", "ORGANIZATION"))])
 async def lead_filter_options(service: SalesServiceDep) -> dict[str, list[str]]:
     rows = await service.list_leads(limit=500)
-    return _filter_lead_options(rows)
+    try:
+        listed = await service.list_sources(include_archived=False)
+        items = listed.items if hasattr(listed, "items") else (listed or [])
+        live_sources = [s.name for s in items if getattr(s, "name", None)]
+    except Exception:
+        live_sources = []
+    return _filter_lead_options(rows, sources=live_sources or None)
 
 
 @router.get("/meta/client-filter-options", dependencies=[Depends(require_permission("lead", "VIEW", "ORGANIZATION"))])

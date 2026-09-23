@@ -54,6 +54,7 @@ class TaskResponse(BaseModel):
     changed_by: int | None
     actual_minutes: int | None = None
     project_name: str | None = None
+    assignee_name: str | None = None
 
 
 class TimeEntryCreate(BaseModel):

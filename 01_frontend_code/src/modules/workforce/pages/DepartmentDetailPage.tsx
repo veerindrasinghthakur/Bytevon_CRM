@@ -60,6 +60,9 @@ export function DepartmentDetailPage() {
   const [draftHeadId, setDraftHeadId] = useState<string>('')
   const [headPickerOpen, setHeadPickerOpen] = useState(false)
   const [headOptions, setHeadOptions] = useState<{ value: string; label: string }[]>([])
+  const [assignHeadOpen, setAssignHeadOpen] = useState(false)
+  const [assignHeadId, setAssignHeadId] = useState('')
+  const [assignHeadOptions, setAssignHeadOptions] = useState<{ value: string; label: string }[]>([])
   const [removeTarget, setRemoveTarget] = useState<DepartmentEmployee | null>(null)
   const [actionError, setActionError] = useState('')
 
@@ -109,6 +112,30 @@ export function DepartmentDetailPage() {
       setHeadPickerOpen(false)
     } catch (e) {
       setActionError(getApiErrorMessage(e, 'Failed to save department'))
+    }
+  }
+
+  const openAssignHead = async () => {
+    setActionError('')
+    setAssignHeadId('')
+    setAssignHeadOpen(true)
+    try {
+      const all = await listHeadOptions()
+      setAssignHeadOptions(all.map((o) => ({ value: o.value, label: o.label })))
+    } catch {
+      setAssignHeadOptions([])
+    }
+  }
+
+  const saveAssignHead = async () => {
+    if (!d || !assignHeadId) return
+    setActionError('')
+    try {
+      await updateDepartment({ headEmploymentId: Number(assignHeadId) })
+      setAssignHeadOpen(false)
+      setAssignHeadId('')
+    } catch (e) {
+      setActionError(getApiErrorMessage(e, 'Failed to assign head'))
     }
   }
 
@@ -205,6 +232,7 @@ export function DepartmentDetailPage() {
     null
 
   const displayName = isEditing ? draftName : d.name
+  const hasHead = d.headEmploymentId != null || !!d.headName
   const displayHeadName = isEditing
     ? headOptions.find((o) => o.value === draftHeadId)?.label?.replace(/\s*\(.*\)$/, '') ??
       (draftHeadId ? d.headName : 'Unassigned')
@@ -302,7 +330,7 @@ export function DepartmentDetailPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bv-surface card-hover p-6 transition-all hover:-translate-y-0.5">
           <p className="text-on-surface-variant text-label-md mb-2">Total Staff</p>
-          <p className="text-display-lg font-bold">{d.staffCount}</p>
+          <p className="text-display-lg font-bold">{staff.length}</p>
         </div>
         <div className="bv-surface card-hover p-6 transition-all hover:-translate-y-0.5">
           <p className="text-on-surface-variant text-label-md mb-2">Active assignments</p>
@@ -327,7 +355,7 @@ export function DepartmentDetailPage() {
           <h3 className="text-title-md font-semibold flex items-center gap-2">
             <Icon name="star" className="text-amber-500" /> Department Head
           </h3>
-          {isEditing && (
+          {isEditing ? (
             <Button
               variant="outline"
               size="sm"
@@ -336,8 +364,46 @@ export function DepartmentDetailPage() {
             >
               {headPickerOpen ? 'Hide picker' : 'Change head'}
             </Button>
+          ) : (
+            !hasHead && (
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<Icon name="person_add" />}
+                onClick={() => void openAssignHead()}
+              >
+                Assign head
+              </Button>
+            )
           )}
         </div>
+
+        {!isEditing && assignHeadOpen && (
+          <div className="mb-4 p-4 rounded-xl border border-outline-variant bg-surface-container-low space-y-3">
+            <Select
+              label="Select department head"
+              value={assignHeadId}
+              onChange={setAssignHeadId}
+              options={assignHeadOptions}
+              placeholder="Choose employee…"
+              minWidthClass="min-w-full"
+            />
+            <div className="flex justify-end gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setAssignHeadOpen(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={!assignHeadId || isMutating}
+                isLoading={isMutating}
+                onClick={() => void saveAssignHead()}
+              >
+                Assign
+              </Button>
+            </div>
+          </div>
+        )}
 
         {isEditing && headPickerOpen && (
           <div className="mb-4 p-4 rounded-xl border border-outline-variant bg-surface-container-low space-y-3">

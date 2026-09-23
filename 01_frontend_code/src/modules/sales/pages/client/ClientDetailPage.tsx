@@ -1,13 +1,16 @@
+import { useState } from 'react'
 import { Link, useNavigate, useParams } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { Can } from '@/shared/rbac'
 import { StatusDot } from '@/shared/components/ui/StatusDot'
-import { useClient, useSalesActivities } from '../../hooks/use-sales'
+import { useClient, useClientContacts, useArchiveClient, useSalesActivities } from '../../hooks/use-sales'
 import { salesRoutes } from '../../routes'
 import { cn } from '@/shared/lib/cn'
 import { typeStyles } from '../../schemas/enums'
@@ -20,7 +23,10 @@ export function ClientDetailPage() {
   const navigate = useNavigate()
   const { clientId } = useParams({ strict: false }) as { clientId: string }
   const clientQuery = useClient(clientId)
+  const contactsQuery = useClientContacts(clientId)
   const activitiesQuery = useSalesActivities()
+  const archiveMut = useArchiveClient()
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const client = clientQuery.data ?? null
   const timeline = (activitiesQuery.data ?? []).slice(0, 4)
 
@@ -87,9 +93,27 @@ export function ClientDetailPage() {
                 Edit client
               </Button>
             </Can>
+            <Can action="DELETE" resource="client">
+              <DeleteButton
+                entityLabel={client.name}
+                isLoading={archiveMut.isPending}
+                onConfirm={() =>
+                  archiveMut.mutate(client.id, {
+                    onSuccess: () => safeNavigate(navigate, { to: salesRoutes.clients }),
+                    onError: (err) =>
+                      setDeleteError(getApiErrorMessage(err, 'Could not delete client')),
+                  })
+                }
+              />
+            </Can>
           </div>
         }
       />
+      {deleteError && (
+        <p className="text-body-sm text-error" role="alert">
+          {deleteError}
+        </p>
+      )}
 
       <div className="flex flex-wrap items-center gap-3">
         <span className={cn('px-2.5 py-1 rounded-full text-[11px] font-bold uppercase', typeStyles[client.type])}>
@@ -102,7 +126,11 @@ export function ClientDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           <ClientOverviewSection client={client} />
-          <ClientContactSection client={client} />
+          <ClientContactSection
+            client={client}
+            contacts={contactsQuery.data ?? []}
+            isLoading={contactsQuery.isLoading}
+          />
           <ClientActivitySection timeline={timeline} />
 
           {client.chatLink && (

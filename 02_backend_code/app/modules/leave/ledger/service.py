@@ -7,7 +7,6 @@ from decimal import Decimal
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.db.enums import LeaveType, leave_type_label
 from app.core.exceptions.exception import NotFoundError
 from app.core.services.base_public_service import BasePublicService
 from app.modules.leave.ledger.repository import LedgerRepository
@@ -23,6 +22,8 @@ from app.modules.leave.ledger.schemas import (
     LeaveLedgerResponse,
     LeaveTypeOptionItem,
 )
+from app.modules.leave.leave_type.repository import LeaveTypeRepository
+from app.modules.leave.leave_type.service import LeaveTypeService
 from app.modules.leave.models import LeaveLedger
 from app.modules.leave.policy.service import PolicyService
 
@@ -44,7 +45,24 @@ class LedgerService(BasePublicService):
     def __init__(self, session: AsyncSession) -> None:
         super().__init__(session)
         self._repo = LedgerRepository(session)
+        self._types = LeaveTypeRepository(session)
         self._policy = PolicyService(session)
+
+    def _to_ledger_response(
+        self, entry: LeaveLedger, code: str
+    ) -> LeaveLedgerResponse:
+        return LeaveLedgerResponse(
+            id=entry.id,
+            employment_id=entry.employment_id,
+            leave_type_id=entry.leave_type_id,
+            leave_type=code,
+            transaction_type=entry.transaction_type,
+            days=entry.days,
+            reference_type=entry.reference_type,
+            reference_id=entry.reference_id,
+            created_at=entry.created_at,
+            changed_by=entry.changed_by,
+        )
 
     async def post_ledger_entry(
         self,
@@ -52,9 +70,12 @@ class LedgerService(BasePublicService):
         *,
         actor_employment_id: int | None = None,
     ) -> LeaveLedgerResponse:
+        type_row = await LeaveTypeService(self._session).resolve_active_code(
+            data.leave_type
+        )
         entry = LeaveLedger(
             employment_id=data.employment_id,
-            leave_type=data.leave_type,
+            leave_type_id=type_row.id,
             transaction_type=data.transaction_type,
             days=data.days,
             reference_type=data.reference_type,
@@ -64,31 +85,59 @@ class LedgerService(BasePublicService):
         await self._repo.add(entry)
         await self._commit()
         await self._audit("leave_ledger.posted", entry.id, actor_employment_id)
-        return LeaveLedgerResponse.model_validate(entry)
+        return self._to_ledger_response(entry, type_row.code)
 
     async def list_ledger(
         self,
         employment_id: int,
         *,
-        leave_type: LeaveType | None = None,
+        leave_type: str | None = None,
         limit: int = 200,
     ) -> list[LeaveLedgerResponse]:
+        type_id: int | None = None
+        if leave_type is not None:
+            type_row = await LeaveTypeService(self._session).resolve_active_code(
+                leave_type
+            )
+            type_id = type_row.id
         rows = await self._repo.list_ledger(
-            employment_id, leave_type=leave_type, limit=limit
+            employment_id, leave_type_id=type_id, limit=limit
         )
-        return [LeaveLedgerResponse.model_validate(r) for r in rows]
+        codes = await self._types.code_map_for({r.leave_type_id for r in rows})
+        return [
+            self._to_ledger_response(r, codes.get(r.leave_type_id, "?"))
+            for r in rows
+        ]
 
     async def get_balances(self, employment_id: int) -> LeaveBalanceResponse:
         rows = await self._repo.sum_balances_by_type(employment_id)
+        totals: dict[int, Decimal] = {
+            type_id: Decimal(str(total)) for type_id, total in rows
+        }
+        catalog = await self._types.list_types(include_archived=False)
+        codes: dict[int, str] = {t.id: t.code for t in catalog}
+        missing = set(totals) - set(codes)
+        if missing:
+            codes.update(await self._types.code_map_for(missing))
         balances = [
-            LeaveBalanceItem(leave_type=lt, balance_days=Decimal(str(total)))
-            for lt, total in rows
+            LeaveBalanceItem(
+                leave_type_id=type_id,
+                leave_type=codes.get(type_id, "?"),
+                balance_days=total,
+            )
+            for type_id, total in totals.items()
         ]
-        present = {b.leave_type for b in balances}
-        for lt in LeaveType:
-            if lt not in present:
-                balances.append(LeaveBalanceItem(leave_type=lt, balance_days=Decimal("0")))
-        balances.sort(key=lambda b: b.leave_type.value)
+        present = set(totals)
+        for t in catalog:
+            if t.id not in present:
+                balances.append(
+                    LeaveBalanceItem(
+                        leave_type_id=t.id,
+                        leave_type=t.code,
+                        balance_days=Decimal("0"),
+                    )
+                )
+        balances.sort(key=lambda b: b.leave_type)
         return LeaveBalanceResponse(employment_id=employment_id, balances=balances)
 
     async def _load_holidays(
@@ -148,25 +197,28 @@ class LedgerService(BasePublicService):
         y = year or as_of.year
         holidays = await self._load_holidays(calendar_id=holiday_calendar_id, year=y)
 
+        catalog = await self._types.list_types(include_archived=False)
         leave_types: list[LeaveTypeOptionItem] = []
-        for lt in LeaveType:
+        for t in catalog:
             try:
-                policy = await self._policy.get_current_policy(lt, as_of=as_of)
+                policy = await self._policy.get_current_policy(t.code, as_of=as_of)
                 leave_types.append(
                     LeaveTypeOptionItem(
-                        leave_type=lt,
+                        leave_type_id=t.id,
+                        leave_type=t.code,
                         name=policy.name,
                         annual_entitlement=policy.annual_entitlement,
-                        description=None,
+                        description=t.description,
                     )
                 )
             except NotFoundError:
                 leave_types.append(
                     LeaveTypeOptionItem(
-                        leave_type=lt,
-                        name=leave_type_label(lt),
-                        annual_entitlement=Decimal("0"),
-                        description=None,
+                        leave_type_id=t.id,
+                        leave_type=t.code,
+                        name=t.name,
+                        annual_entitlement=t.default_annual_entitlement,
+                        description=t.description,
                     )
                 )
 
@@ -179,6 +231,7 @@ class LedgerService(BasePublicService):
             used = max(Decimal("0"), total - remaining) if total > 0 else Decimal("0")
             balances.append(
                 ApplyLeaveBalanceItem(
+                    leave_type_id=b.leave_type_id,
                     leave_type=b.leave_type,
                     used=used,
                     total=total,
@@ -208,9 +261,12 @@ class LedgerService(BasePublicService):
 
         balance_remaining: Decimal | None = None
         estimated_after: Decimal | None = None
-        if data.leave_type != LeaveType.LOSS_OF_PAY:
+        type_row = await LeaveTypeService(self._session).resolve_active_code(
+            data.leave_type
+        )
+        if type_row.is_paid:
             balance_remaining = await self._repo.sum_balance(
-                data.employment_id, data.leave_type
+                data.employment_id, type_row.id
             )
             estimated_after = max(Decimal("0"), balance_remaining - day_cost)
 

@@ -23,6 +23,7 @@ from app.modules.workforce.attendance.schemas import (
     CorrectionCreate,
     CorrectionResponse,
     MonthlySummaryResponse,
+    PendingCorrectionRow,
     PunchRequest,
     PunchResponse,
     TodayAttendanceListResponse,
@@ -59,6 +60,16 @@ async def today_list(
     status: str | None = Query(None),
 ) -> TodayAttendanceListResponse:
     return await service.today_list(search=search, status=status)
+
+
+@router.get("/days/by-date-range", response_model=list[AttendanceDayResponse])
+async def list_days_in_range(
+    service: AttendanceServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "ORGANIZATION"))],
+    from_date: date = Query(...),
+    to_date: date = Query(...),
+) -> list[AttendanceDayResponse]:
+    return await service.list_days_in_range(from_date, to_date)
 
 
 @router.get("/days/{day_id}", response_model=AttendanceDayDetailResponse)
@@ -103,6 +114,18 @@ async def submit_correction(
         day = await service.get_day(body.attendance_day_id)
         enforce_owner_or_grant(auth, "attendance", "CREATE", owner_employment_id=day.employment_id)
     return await service.submit_correction(body, actor_employment_id=auth.employment_id)
+
+
+@router.get(
+    "/corrections/pending",
+    response_model=list[PendingCorrectionRow],
+    dependencies=[Depends(require_permission("attendance", "VIEW", "ORGANIZATION"))],
+)
+async def list_pending_corrections(
+    service: AttendanceServiceDep,
+    limit: int = Query(50, ge=1, le=200),
+) -> list[PendingCorrectionRow]:
+    return await service.list_pending_corrections(limit=limit)
 
 
 @router.get("/corrections/{correction_id}", response_model=CorrectionResponse)

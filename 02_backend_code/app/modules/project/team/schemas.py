@@ -33,6 +33,11 @@ class TeamResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     changed_by: int | None
+    is_archived: bool = False
+    head_name: str | None = None
+    department_name: str | None = None
+    member_count: int | None = None
+    project_count: int | None = None
 
 
 class TeamMemberAdd(BaseModel):
@@ -49,3 +54,7 @@ class TeamMemberResponse(BaseModel):
     team_role: str
     joined_at: datetime
     left_at: datetime | None
+    is_member: bool = True
+    person_name: str | None = None
+    employee_code: str | None = None
+    department_name: str | None = None

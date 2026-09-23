@@ -7,6 +7,7 @@ import {
   updateSource,
   deleteSource,
   restoreSource,
+  getSourceLeads,
   type LeadSource,
 } from '../../api/source'
 
@@ -73,3 +74,13 @@ export function useSources(opts?: { includeArchived?: boolean }) {
 }
 
 export type { LeadSource }
+
+export function useSourceLeads(sourceId: number | undefined, limit = 8) {
+  return useQuery({
+    queryKey: [...SOURCES_KEY, 'leads', sourceId, limit],
+    queryFn: () => getSourceLeads(sourceId!, limit),
+    enabled: sourceId != null && Number.isFinite(sourceId),
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  })
+}

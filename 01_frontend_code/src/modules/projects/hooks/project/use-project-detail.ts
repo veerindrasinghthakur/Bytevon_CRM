@@ -11,6 +11,7 @@ import { useProject, useUpdateProject } from './use-projects'
 import { useTasks } from '../task/use-tasks'
 import { useDocuments, useUploadDocument } from '../document/use-documents'
 import { getTeams } from '../../api/team'
+import { getClientById } from '@/modules/sales/api/client'
 import type { ProjectDetailTab } from '../../types'
 import { TaskStatusFilterOptions } from '../../enums'
 import { projectDetailFormSchema, type ProjectDetailFormInput } from '../../schemas/project/project-detail-form'
@@ -24,6 +25,22 @@ export function useProjectDetail(
   const { isEditing, startEditing: setEditingTrue, cancelEditing, finishEditing } = useEditMode()
 
   const project = query.data ?? null
+
+  // Client name straight from the project payload; when the backend could
+  // not resolve it, fall back to the live sales client record by client_id.
+  const clientQuery = useQuery({
+    queryKey: ['projects', 'client-name', project?.clientId],
+    queryFn: () => getClientById(String(project?.clientId)),
+    enabled: project != null && !project.clientName && project.clientId != null,
+    staleTime: 60_000,
+  })
+  const enrichedProject = useMemo(
+    () =>
+      project
+        ? { ...project, clientName: project.clientName ?? clientQuery.data?.name ?? null }
+        : null,
+    [project, clientQuery.data?.name],
+  )
 
   const [tab, setTab] = useState<ProjectDetailTab>(
     initialTab,
@@ -224,13 +241,26 @@ export function useProjectDetail(
       : `https://github.com/${project.repositoryUrl}`
     : null
 
-  const openTasks = project?.openTasks ?? 0
-  const progress = project?.progress ?? 0
-  const daysToDeadline = project?.daysToDeadline ?? null
-  const hasTeam = Boolean(project?.teamName || project?.teamId)
+  const openTasks = enrichedProject?.openTasks ?? 0
+  const progress = enrichedProject?.progress ?? 0
+  const hasTeam = Boolean(enrichedProject?.teamName || enrichedProject?.teamId)
+
+  // Days to deadline straight from the backend; when it is missing but the
+  // project has a target end date, compute it locally with date-only math
+  // (same rule as the backend: whole days from today to planned_end_date).
+  const daysToDeadline = useMemo(() => {
+    if (enrichedProject?.daysToDeadline != null) return enrichedProject.daysToDeadline
+    const raw = (enrichedProject?.endDate ?? '').slice(0, 10)
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw)
+    if (!m) return null
+    const end = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return Math.round((end.getTime() - today.getTime()) / 86_400_000)
+  }, [enrichedProject?.daysToDeadline, enrichedProject?.endDate])
 
   return {
-    project,
+    project: enrichedProject,
     isLoading: query.isLoading,
     isError: query.isError,
     detailError: query.error ?? null,

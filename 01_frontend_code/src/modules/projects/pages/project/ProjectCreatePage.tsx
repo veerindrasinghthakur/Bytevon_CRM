@@ -255,6 +255,34 @@ export function ProjectCreatePage() {
                       aria-label="Project priority"
                       minWidthClass="min-w-full"
                     />
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-on-background" htmlFor="startDate">
+                        Start date
+                      </label>
+                      <input
+                        id="startDate"
+                        type="date"
+                        {...register('startDate')}
+                        className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none bg-surface-container-lowest text-on-background"
+                      />
+                      {errors.startDate && (
+                        <p className="text-body-sm text-error">{errors.startDate.message}</p>
+                      )}
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-on-background" htmlFor="endDate">
+                        Target end date
+                      </label>
+                      <input
+                        id="endDate"
+                        type="date"
+                        {...register('endDate')}
+                        className="w-full px-4 py-2.5 border border-outline-variant rounded-lg focus:ring-2 focus:ring-secondary/30 focus:border-secondary outline-none bg-surface-container-lowest text-on-background"
+                      />
+                      {errors.endDate && (
+                        <p className="text-body-sm text-error">{errors.endDate.message}</p>
+                      )}
+                    </div>
                   </div>
                 </section>
                 <section>

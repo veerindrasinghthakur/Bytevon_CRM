@@ -10,9 +10,10 @@ type Props = {
   onEdit: (row: LeadSource) => void
   onDelete: (row: LeadSource) => void
   onRestore: (row: LeadSource) => void
+  onOpen?: (row: LeadSource) => void
 }
 
-export function SourcesTable({ rows, isLoading, isFetching, onEdit, onDelete, onRestore }: Props) {
+export function SourcesTable({ rows, isLoading, isFetching, onEdit, onDelete, onRestore, onOpen }: Props) {
   return (
     <div className="bv-surface overflow-hidden relative">
       {(isLoading || isFetching) && (
@@ -45,9 +46,15 @@ export function SourcesTable({ rows, isLoading, isFetching, onEdit, onDelete, on
           </thead>
           <tbody className="divide-y divide-outline-variant">
             {rows.map((row) => (
-              <tr key={row.id} className="zebra-row group">
+              <tr
+                key={row.id}
+                className={onOpen ? 'zebra-row group cursor-pointer' : 'zebra-row group'}
+                onClick={onOpen ? () => onOpen(row) : undefined}
+              >
                 <td className="px-4 py-4">
-                  <p className="font-semibold text-on-surface">{row.name}</p>
+                  <p className="font-semibold text-on-surface hover:text-secondary">
+                    {row.name}
+                  </p>
                   <p className="text-xs text-on-surface-variant font-mono">#{row.id}</p>
                 </td>
                 <td className="px-4 py-4 text-body-sm text-on-surface-variant max-w-md">

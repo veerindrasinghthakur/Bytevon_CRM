@@ -36,6 +36,8 @@ export function EmployeesListPage() {
     pageItems,
     metrics,
     departments,
+    departmentCount,
+    positionCount,
     states,
     types,
     loading,
@@ -130,6 +132,8 @@ export function EmployeesListPage() {
         total={metrics.total}
         active={metrics.active}
         archived={metrics.archived}
+        departments={departmentCount}
+        positions={positionCount}
       />
 
       {selection.selectionMode && (

@@ -6,6 +6,7 @@ import { safeNavigate } from '@/shared/lib/safeNavigate'
 import { Can } from '@/shared/rbac'
 import { TaskStatusBadge, TaskPriorityLabel } from '../task/TaskStatusBadge'
 import { projectRoutes } from '../../routes'
+import { formatProjectDate } from './project-detail-helpers'
 import type { Task } from '../../types'
 
 type StatusOption = { value: string; label: string }
@@ -72,14 +73,17 @@ export function ProjectDetailTasksTab({
       )}
       {!tasksLoading && filteredTasks.length > 0 && (
         <div className="bv-surface overflow-hidden">
-          <table className="w-full text-left">
+          <div className="overflow-x-auto">
+          <table className="w-full text-left min-w-[720px]">
             <thead>
               <tr className="border-b border-outline-variant bg-surface-container-low/50">
                 <th className="px-4 py-3 text-[11px] font-bold uppercase text-on-surface-variant">Task</th>
                 <th className="px-4 py-3 text-[11px] font-bold uppercase text-on-surface-variant">Priority</th>
                 <th className="px-4 py-3 text-[11px] font-bold uppercase text-on-surface-variant">Status</th>
                 <th className="px-4 py-3 text-[11px] font-bold uppercase text-on-surface-variant">Assignee</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase text-on-surface-variant">Start</th>
                 <th className="px-4 py-3 text-[11px] font-bold uppercase text-on-surface-variant">Due</th>
+                <th className="px-4 py-3 text-[11px] font-bold uppercase text-on-surface-variant">Est. hrs</th>
               </tr>
             </thead>
             <tbody>
@@ -102,11 +106,14 @@ export function ProjectDetailTasksTab({
                     <TaskStatusBadge status={task.status} />
                   </td>
                   <td className="px-4 py-3 text-sm">{task.assigneeName ?? '—'}</td>
-                  <td className="px-4 py-3 text-sm">{task.dueDate ?? '—'}</td>
+                  <td className="px-4 py-3 text-sm whitespace-nowrap">{formatProjectDate(task.startDate)}</td>
+                  <td className="px-4 py-3 text-sm whitespace-nowrap">{formatProjectDate(task.dueDate)}</td>
+                  <td className="px-4 py-3 text-sm">{task.estimatedHours ?? '—'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

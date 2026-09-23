@@ -8,7 +8,6 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.db.enums import LeaveType
 from app.core.repositories.base_repository import BaseRepository
 from app.modules.leave.models import LeaveLedger
 
@@ -21,7 +20,7 @@ class LedgerRepository(BaseRepository):
         self,
         employment_id: int,
         *,
-        leave_type: LeaveType | None = None,
+        leave_type_id: int | None = None,
         limit: int = 200,
     ) -> Sequence[LeaveLedger]:
         stmt = (
@@ -30,16 +29,16 @@ class LedgerRepository(BaseRepository):
             .order_by(LeaveLedger.created_at.desc())
             .limit(limit)
         )
-        if leave_type is not None:
-            stmt = stmt.where(LeaveLedger.leave_type == leave_type)
+        if leave_type_id is not None:
+            stmt = stmt.where(LeaveLedger.leave_type_id == leave_type_id)
         return await self.scalars(stmt)
 
     async def sum_balance(
-        self, employment_id: int, leave_type: LeaveType
+        self, employment_id: int, leave_type_id: int
     ) -> Decimal:
         stmt = select(func.coalesce(func.sum(LeaveLedger.days), 0)).where(
             LeaveLedger.employment_id == employment_id,
-            LeaveLedger.leave_type == leave_type,
+            LeaveLedger.leave_type_id == leave_type_id,
         )
         result = await self.execute(stmt)
         value = result.scalar()
@@ -49,9 +48,9 @@ class LedgerRepository(BaseRepository):
         self, employment_id: int
     ) -> Sequence[Any]:
         stmt = (
-            select(LeaveLedger.leave_type, func.coalesce(func.sum(LeaveLedger.days), 0))
+            select(LeaveLedger.leave_type_id, func.coalesce(func.sum(LeaveLedger.days), 0))
             .where(LeaveLedger.employment_id == employment_id)
-            .group_by(LeaveLedger.leave_type)
+            .group_by(LeaveLedger.leave_type_id)
         )
         result = await self.execute(stmt)
         return result.all()

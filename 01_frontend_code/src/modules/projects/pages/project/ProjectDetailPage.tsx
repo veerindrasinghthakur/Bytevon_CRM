@@ -5,10 +5,8 @@ import { Button } from '@/shared/components/ui/Button'
 import { EditButton } from '@/shared/components/ui/EditButton'
 import { RefreshButton } from '@/shared/components/ui/RefreshButton'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
-import { NotesPanel } from '@/shared/components/notes/NotesPanel'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
 import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
-import { NoteReferenceType } from '@/shared/schema'
 import { useProjectDetail } from '../../hooks/project/use-project-detail'
 import type { ProjectDetailTab } from '../../types'
 import { ProjectStatusBadge } from '../../components/project/ProjectStatusBadge'
@@ -18,6 +16,7 @@ import { ProjectDetailOverview } from '../../components/project/ProjectDetailOve
 import { ProjectDetailTabNav } from '../../components/project/ProjectDetailTabNav'
 import { ProjectDetailTasksTab } from '../../components/project/ProjectDetailTasksTab'
 import { ProjectDetailDocumentsTab } from '../../components/project/ProjectDetailDocumentsTab'
+import { ProjectNotesTab } from '../../components/project/ProjectNotesTab'
 import { projectRoutes } from '../../routes'
 
 export function ProjectDetailPage() {
@@ -215,14 +214,7 @@ export function ProjectDetailPage() {
         />
       )}
 
-      {tab === 'notes' && (
-        <NotesPanel
-          className="max-w-3xl"
-          referenceType={NoteReferenceType.CLIENT}
-          referenceId={project.id}
-          title="Project notes"
-        />
-      )}
+      {tab === 'notes' && <ProjectNotesTab projectId={project.id} />}
 
       <CreateTaskModal
         open={createTaskOpen}

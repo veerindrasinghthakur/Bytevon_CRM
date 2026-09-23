@@ -30,6 +30,7 @@ _REF_MAP = {
     "employee_role": "ROLE",
     "approval_request": "APPROVAL_REQUEST",
     "leave_policy": "LEAVE_REQUEST",
+    "leave_type": "LEAVE_REQUEST",
     "leave_request": "LEAVE_REQUEST",
     "leave_ledger": "LEAVE_REQUEST",
     "attendance": "ATTENDANCE",

@@ -15,6 +15,7 @@ export type LeadSource = {
   status: string
   createdAt?: string | null
   updatedAt?: string | null
+  createdByName?: string | null
 }
 
 export type SourceMetric = {
@@ -47,6 +48,7 @@ function mapRow(r: Record<string, unknown>): LeadSource {
     status: String(r.status ?? (isArchived ? 'Archived' : 'Active')),
     createdAt: (r.created_at as string) ?? null,
     updatedAt: (r.updated_at as string) ?? null,
+    createdByName: (r.created_by_name as string | undefined) ?? null,
   }
 }
 
@@ -219,6 +221,36 @@ export async function getSource(
     }
     throw err
   }
+}
+
+export type SourceLead = {
+  id: number
+  title: string
+  status: string
+  contactName?: string
+  createdAt?: string | null
+}
+
+export async function getSourceLeads(id: number, limit = 8): Promise<SourceLead[]> {
+  if (env.useMockApi) {
+    await delay()
+    return []
+  }
+  const { data } = await apiClient.get<Array<Record<string, unknown>>>(
+    `/sales/sources/${id}/leads`,
+    { params: { limit } },
+  )
+  const rows = Array.isArray(data) ? data : []
+  // Newest last in display order (latest lead at the bottom).
+  return rows
+    .map((r) => ({
+      id: Number(r.id),
+      title: String(r.title ?? ''),
+      status: String(r.status ?? ''),
+      contactName: (r.contact_name as string | undefined) ?? undefined,
+      createdAt: (r.created_at as string | undefined) ?? null,
+    }))
+    .reverse()
 }
 
 export async function deleteSource(id: number): Promise<void> {

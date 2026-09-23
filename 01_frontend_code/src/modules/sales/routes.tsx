@@ -27,12 +27,13 @@ const SalesActivityTimelinePage = lazyPage(
 )
 const CaseStudiesListPage = lazyPage(() => import('./pages/case-study/CaseStudiesListPage'), 'CaseStudiesListPage')
 const SourcesListPage = lazyPage(() => import('./pages/source/SourcesListPage'), 'SourcesListPage')
+const SourceDetailPage = lazyPage(() => import('./pages/source/SourceDetailPage'), 'SourceDetailPage')
 
 /** Canonical path helpers — prefer these over hard-coded strings in pages. */
 export const salesRoutes = {
   root: '/sales',
-  dashboard: '/sales/dashboard',
-  leads: '/sales',
+  dashboard: '/sales',
+  leads: '/sales/leads',
   leadNew: '/sales/leads/new',
   leadDetail: (id: string) => `/sales/leads/${id}`,
   leadDetailPath: '/sales/leads/$leadId',
@@ -48,6 +49,8 @@ export const salesRoutes = {
   activity: '/sales/activity',
   caseStudies: '/sales/case-studies',
   sources: '/sales/sources',
+  sourceDetail: (id: string | number) => `/sales/sources/${id}`,
+  sourceDetailPath: '/sales/sources/$sourceId',
 } as const
 
 export function createSalesRoutes<TParent extends AnyRoute>(appLayoutRoute: TParent) {
@@ -56,20 +59,20 @@ export function createSalesRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
       getParentRoute: () => appLayoutRoute,
       path: '/sales',
       beforeLoad: requireLeadView,
-      component: LeadsListPage,
-    }),
-    createRoute({
-      getParentRoute: () => appLayoutRoute,
-      path: '/sales/dashboard',
-      beforeLoad: requireLeadView,
       component: SalesDashboardPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
-      path: '/sales/leads',
+      path: '/sales/dashboard',
       beforeLoad: () => {
-        throw redirect(safeRedirectOpts({ to: salesRoutes.leads }))
+        throw redirect(safeRedirectOpts({ to: salesRoutes.dashboard }))
       },
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/sales/leads',
+      beforeLoad: requireLeadView,
+      component: LeadsListPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,
@@ -136,6 +139,12 @@ export function createSalesRoutes<TParent extends AnyRoute>(appLayoutRoute: TPar
       path: '/sales/sources',
       beforeLoad: requireLeadView,
       component: SourcesListPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/sales/sources/$sourceId',
+      beforeLoad: requireLeadView,
+      component: SourceDetailPage,
     }),
   ]
 }
