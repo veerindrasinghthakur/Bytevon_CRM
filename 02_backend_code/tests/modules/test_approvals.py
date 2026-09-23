@@ -141,3 +141,39 @@ def test_approval_decisions_and_cancel_comment(client, factory):
     assert cancelled.status_code == 200, cancelled.text
     assert cancelled.json()["status"] == "CANCELLED"
     record_coverage("test_approval_decisions_and_cancel_comment", COVERED[9:])
+
+
+def test_approval_self_service_scoping(client, factory):
+    """SELF grants: my-requests shows only own rows; create files as self."""
+    sa = _sa(factory)
+    h = sa["headers"]
+    req = factory.actor("aprs")
+    other = factory.actor("apro")
+    grant(client, h, req["employment_id"], "approval", "VIEW", "SELF", "ApprSelf")
+    grant(client, h, req["employment_id"], "approval", "CREATE", "SELF", "ApprSelf")
+    factory.leave_for(other, start_date="2030-08-05", end_date="2030-08-05")
+
+    my = client.get("/api/v1/approvals/my-requests", headers=req["headers"])
+    assert my.status_code == 200, my.text
+    assert all(
+        x["requester_employment_id"] == req["employment_id"] for x in my.json()
+    )
+
+    spoofed = client.post(
+        "/api/v1/approvals/requests",
+        json={
+            "request_type": "LEAVE_REQUEST",
+            "reference_id": 99002,
+            "requester_employment_id": other["employment_id"],
+            "target": "DEPARTMENT_HEAD",
+        },
+        headers=req["headers"],
+    )
+    assert spoofed.status_code == 201, spoofed.text
+    assert spoofed.json()["requester_employment_id"] == req["employment_id"]
+
+    stranger = factory.actor("aprn")
+    assert (
+        client.get("/api/v1/approvals/my-requests", headers=stranger["headers"]).status_code
+        == 404
+    )

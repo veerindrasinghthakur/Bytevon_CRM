@@ -49,53 +49,71 @@
   "test_employment_lifecycle"
  ],
  "POST /api/v1/workforce/departments": [
-  "test_department_lifecycle"
+  "test_department_lifecycle",
+  "test_department_member_names_and_head"
  ],
  "GET /api/v1/workforce/departments": [
-  "test_department_lifecycle"
+  "test_department_lifecycle",
+  "test_department_member_names_and_head"
  ],
  "GET /api/v1/workforce/departments/{department_id}": [
-  "test_department_lifecycle"
+  "test_department_lifecycle",
+  "test_department_member_names_and_head"
  ],
  "PATCH /api/v1/workforce/departments/{department_id}": [
-  "test_department_lifecycle"
+  "test_department_lifecycle",
+  "test_department_member_names_and_head"
  ],
  "POST /api/v1/workforce/departments/{department_id}/archive": [
   "test_department_lifecycle"
  ],
  "GET /api/v1/workforce/departments/{department_id}/employees": [
-  "test_department_lifecycle"
+  "test_department_lifecycle",
+  "test_department_member_names_and_head"
  ],
  "GET /api/v1/workforce/departments/{department_id}/employees-available": [
-  "test_department_lifecycle"
+  "test_department_lifecycle",
+  "test_department_member_names_and_head"
  ],
  "POST /api/v1/workforce/departments/{department_id}/assign": [
-  "test_department_lifecycle"
+  "test_department_lifecycle",
+  "test_department_member_names_and_head"
  ],
  "POST /api/v1/workforce/departments/{department_id}/remove": [
-  "test_department_lifecycle"
+  "test_department_lifecycle",
+  "test_department_member_names_and_head"
  ],
  "POST /api/v1/workforce/employments/{employment_id}/state": [
   "test_assignment_and_state_flow",
   "test_position_lifecycle",
-  "test_q2_separation_cascade"
+  "test_q2_separation_cascade",
+  "test_position_department_link",
+  "test_employment_detail_and_list_enriched"
  ],
  "GET /api/v1/workforce/employments/{employment_id}/state-history": [
   "test_assignment_and_state_flow",
-  "test_position_lifecycle"
+  "test_position_lifecycle",
+  "test_position_department_link",
+  "test_employment_detail_and_list_enriched"
  ],
  "POST /api/v1/workforce/employments/{employment_id}/assignments": [
   "test_assignment_and_state_flow",
   "test_q1_overlapping_assignment_rejected",
-  "test_position_lifecycle"
+  "test_position_lifecycle",
+  "test_position_department_link",
+  "test_employment_detail_and_list_enriched"
  ],
  "GET /api/v1/workforce/employments/{employment_id}/assignments/current": [
   "test_assignment_and_state_flow",
-  "test_position_lifecycle"
+  "test_position_lifecycle",
+  "test_position_department_link",
+  "test_employment_detail_and_list_enriched"
  ],
  "GET /api/v1/workforce/employments/{employment_id}/assignments": [
   "test_assignment_and_state_flow",
-  "test_position_lifecycle"
+  "test_position_lifecycle",
+  "test_position_department_link",
+  "test_employment_detail_and_list_enriched"
  ],
  "POST /api/v1/workforce/attendance/punch": [
   "test_attendance_ops_flow"
@@ -107,7 +125,8 @@
   "test_attendance_ops_flow"
  ],
  "POST /api/v1/workforce/attendance/corrections": [
-  "test_attendance_ops_flow"
+  "test_attendance_ops_flow",
+  "test_attendance_today_and_manual_correction"
  ],
  "GET /api/v1/workforce/attendance/corrections/{correction_id}": [
   "test_attendance_ops_flow"
@@ -894,6 +913,11 @@
   "test_q7_rehire_and_single_active_guard"
  ],
  "DELETE /api/v1/workforce/departments/{department_id}": [
-  "test_department_lifecycle"
+  "test_department_lifecycle",
+  "test_department_member_names_and_head"
+ ],
+ "GET /api/v1/workforce/attendance/today": [
+  "test_attendance_ops_flow",
+  "test_attendance_today_and_manual_correction"
  ]
 }

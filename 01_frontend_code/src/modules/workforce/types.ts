@@ -111,12 +111,29 @@ export type RosterRow = {
 export type EmployeeCreateStep = 'profile' | 'auth' | 'done'
 export type EmployeeCreateMasters = {
   departments: { id: number; name: string }[]
-  positions: { id: number; name: string }[]
+  positions: { id: number; name: string; departmentId: number | null }[]
   locations: { id: number; name: string }[]
   shifts: { id: number; name: string }[]
 }
 export type ManagerOption = { id: number; name: string }
 export type IdName = { id: number; name: string }
+
+export type PositionMaster = { id: number; name: string; departmentId: number | null }
+
+/**
+ * Department-scoped positions for the employee form: a department's own
+ * rows plus unassigned (departmentId null) legacy rows. Empty department
+ * selection returns everything.
+ */
+export function filterPositionsByDepartment(
+  positions: PositionMaster[],
+  departmentId: string | number | null | undefined,
+): PositionMaster[] {
+  if (departmentId == null || String(departmentId) === '') return positions
+  return positions.filter(
+    (p) => p.departmentId == null || String(p.departmentId) === String(departmentId),
+  )
+}
 
 export {
   workforceAttendanceStatusStyles,

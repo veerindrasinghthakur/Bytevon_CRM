@@ -10,6 +10,7 @@ import {
 import { archiveNotification } from '../../api/center'
 import { invalidate } from '@/shared/lib/query-keys'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { notificationRoutes } from '../../routes'
 import { cn } from '@/shared/lib/cn'
 
@@ -20,8 +21,10 @@ export function NotificationDetailPage() {
     notificationId: string
   }
 
-  const { data: n, isLoading, isError, refetch } = useNotificationDetail(notificationId)
+  const { data: n, isLoading, isError, error, refetch } = useNotificationDetail(notificationId)
   const markRead = useMarkNotificationRead()
+
+  useDeletedRedirect({ ready: !isLoading, data: n ?? null, error, listTo: notificationRoutes.center })
 
   const archiveMut = useMutation({
     mutationFn: archiveNotification,

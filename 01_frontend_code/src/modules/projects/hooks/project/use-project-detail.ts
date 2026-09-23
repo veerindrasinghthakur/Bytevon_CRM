@@ -233,6 +233,7 @@ export function useProjectDetail(
     project,
     isLoading: query.isLoading,
     isError: query.isError,
+    detailError: query.error ?? null,
     refetch: () => {
       void query.refetch()
       if (tab === 'tasks') void tasksQuery.refetch()

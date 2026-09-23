@@ -39,6 +39,11 @@ class Position(Base, IdentityMixin, ArchiveMixin, TimestampMixin):
     __tablename__ = "positions"
 
     name: Mapped[str] = mapped_column(String(150), nullable=False)
+    # Owning department — every position comes under a department.
+    # NULL = unassigned legacy row, shown for all departments.
+    department_id: Mapped[int | None] = mapped_column(
+        ForeignKey("departments.id"), nullable=True
+    )
 
 
 # ---------------------------------------------------------------------------

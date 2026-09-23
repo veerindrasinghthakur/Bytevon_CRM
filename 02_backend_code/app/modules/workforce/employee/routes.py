@@ -77,9 +77,11 @@ async def create_position(
 
 @router.get("/positions", response_model=list[PositionResponse], dependencies=[Depends(require_permission("employment", "VIEW", "ORGANIZATION"))])
 async def list_positions(
-    service: EmployeeServiceDep, include_archived: bool = Query(False)
+    service: EmployeeServiceDep,
+    include_archived: bool = Query(False),
+    department_id: int | None = Query(None, description="Scope to a department (plus unassigned)"),
 ) -> list[PositionResponse]:
-    return await service.list_positions(include_archived=include_archived)
+    return await service.list_positions(include_archived=include_archived, department_id=department_id)
 
 
 @router.get("/positions/{position_id}", response_model=PositionResponse)

@@ -5,9 +5,10 @@ type Props = {
   data: EmployeeDetailDto
   fullName: string
   initials: string
+  manager?: { name: string; code: string; employmentId: number } | null
 }
 
-export function EmployeeProfileSidebar({ data, fullName, initials }: Props) {
+export function EmployeeProfileSidebar({ data, fullName, initials, manager }: Props) {
   return (
     <div className="xl:col-span-3 space-y-4">
       <div className="bv-surface card-hover p-6 text-center">
@@ -77,15 +78,32 @@ export function EmployeeProfileSidebar({ data, fullName, initials }: Props) {
         <p className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant mb-3">
           Reporting manager
         </p>
-        <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center">
-            <Icon name="supervisor_account" />
+        {manager ? (
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-full bg-secondary/15 text-secondary flex items-center justify-center font-bold">
+              {manager.name
+                .split(' ')
+                .map((p) => p[0])
+                .join('')
+                .slice(0, 2)
+                .toUpperCase()}
+            </div>
+            <div>
+              <p className="font-semibold text-sm text-on-background">{manager.name}</p>
+              <p className="text-xs text-on-surface-variant">{manager.code}</p>
+            </div>
           </div>
-          <div>
-            <p className="font-semibold text-sm text-on-background">Not linked</p>
-            <p className="text-xs text-on-surface-variant">Wire manager when assignment supports it</p>
+        ) : (
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center">
+              <Icon name="supervisor_account" />
+            </div>
+            <div>
+              <p className="font-semibold text-sm text-on-background">Not linked</p>
+              <p className="text-xs text-on-surface-variant">No department head assigned</p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )

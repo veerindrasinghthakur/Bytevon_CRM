@@ -219,9 +219,11 @@ export async function listDepartments(): Promise<DepartmentOption[]> {
 export async function listRoles(): Promise<AdminRoleOption[]> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<
-      Array<{ id: string | number; name: string; description?: string | null }>
+      | Array<{ id: string | number; name: string; description?: string | null }>
+      | { items?: Array<{ id: string | number; name: string; description?: string | null }> }
     >('/rbac/roles')
-    return (Array.isArray(data) ? data : []).map((r) => ({
+    const rows = Array.isArray(data) ? data : (data.items ?? [])
+    return rows.map((r) => ({
       id: String(r.id),
       name: r.name,
       description: r.description ?? null,

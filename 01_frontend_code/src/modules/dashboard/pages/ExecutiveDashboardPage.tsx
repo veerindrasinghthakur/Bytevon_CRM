@@ -115,8 +115,8 @@ export function ExecutiveDashboardPage() {
             kpis.length === 2 && 'md:grid-cols-2',
           )}
         >
-          {kpis.map((k) => (
-            <div key={k.label} className={`${card} p-5`}>
+          {kpis.map((k, i) => (
+            <div key={`${k.label}-${i}`} className={`${card} p-5`}>
               <div className="flex justify-between items-start mb-2">
                 <span className="text-label-sm text-on-surface-variant uppercase tracking-wider">
                   {k.label}
@@ -197,8 +197,8 @@ export function ExecutiveDashboardPage() {
                 ))}
               </div>
               <div className="flex justify-between px-4 border-t border-outline-variant pt-3 mt-2 text-label-sm text-on-surface-variant">
-                {meta.months.map((m) => (
-                  <span key={m}>{m}</span>
+                {meta.months.map((m, i) => (
+                  <span key={`${m}-${i}`}>{m}</span>
                 ))}
               </div>
             </div>
@@ -230,9 +230,9 @@ export function ExecutiveDashboardPage() {
                 </span>
               </div>
               <div className="space-y-3">
-                {pending.map((p) => (
+                {pending.map((p, i) => (
                   <div
-                    key={p.name}
+                    key={`${p.name}-${i}`}
                     className="flex items-center gap-3 p-3 rounded-lg border-l-4 border-secondary bv-row-hover cursor-pointer"
                   >
                     <div className="w-10 h-10 rounded-full bg-secondary/15 text-secondary flex items-center justify-center text-label-sm font-bold">
@@ -317,8 +317,8 @@ export function ExecutiveDashboardPage() {
                 </button>
               </div>
               <div className="grid grid-cols-7 gap-2 text-center text-label-sm text-on-surface-variant mb-2">
-                {CALENDAR_DAY_LABELS.map((d) => (
-                  <span key={d}>{d}</span>
+                {CALENDAR_DAY_LABELS.map((d, i) => (
+                  <span key={`${d}-${i}`}>{d}</span>
                 ))}
               </div>
               <div className="grid grid-cols-7 gap-2 text-center text-label-md mb-6">

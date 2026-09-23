@@ -6,13 +6,15 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { Button } from '@/shared/components/ui/Button'
+import { Select } from '@/shared/components/ui/Select'
 import { DynamicRouteCrumbs } from '../../components/RouteCrumbs'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
-import { getEmployeeDetail, rehireEmployment, updateEmployment } from '../../api/employment'
+import { getEmployeeDetail, rehireEmployment, updateEmployment, changeEmploymentState } from '../../api/employment'
+import { getDepartment } from '../../api/departments'
 import { invalidate } from '@/shared/lib/query-keys'
 import type { EmployeeDetailDto } from '@/shared/schema'
 import { Can } from '@/shared/rbac'
-import { Action } from '@/shared/schema'
+import { Action, EmploymentState } from '@/shared/schema'
 import { workforceRoutes } from '../../routes'
 import {
   employeeDetailEditSchema,
@@ -40,6 +42,8 @@ export function EmployeeDetailPage() {
   const [data, setData] = useState<EmployeeDetailDto | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [manager, setManager] = useState<{ name: string; code: string; employmentId: number } | null>(null)
+  const [stateTarget, setStateTarget] = useState('')
   const [tab, setTab] = useState<EmployeeDetailTab>('overview')
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -70,10 +74,12 @@ export function EmployeeDetailPage() {
     try {
       const dto = await getEmployeeDetail(id)
       if (!dto) {
-        setError('Employee not found')
+        // Deleted elsewhere (API returns null) → back to the list.
+        safeNavigate(navigate, { to: workforceRoutes.employees, replace: true })
         setData(null)
       } else {
         setData(dto)
+        void loadManager(dto)
         form.reset({
           firstName: dto.person?.first_name ?? '',
           lastName: dto.person?.last_name ?? '',
@@ -94,6 +100,42 @@ export function EmployeeDetailPage() {
     void load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
+
+  /** Reporting manager = head of the employee's current department. */
+  const loadManager = async (dto: EmployeeDetailDto) => {
+    setManager(null)
+    const deptId = dto.currentAssignment?.department_id
+    if (!deptId) return
+    try {
+      const dept = await getDepartment(deptId)
+      if (dept?.headEmploymentId && dept.headName && dept.headName !== '—') {
+        const headId = dept.headEmploymentId
+        const headDetail = await getEmployeeDetail(headId).catch(() => null)
+        setManager({
+          name: dept.headName,
+          code: headDetail?.employment?.employee_code ?? `EMP-${headId}`,
+          employmentId: headId,
+        })
+      }
+    } catch {
+      setManager(null)
+    }
+  }
+
+  const changeState = async () => {
+    if (!stateTarget || stateTarget === resolveEmploymentState(data?.employment)) return
+    if (!window.confirm(`Change employment state to ${stateTarget.replace(/_/g, ' ')}?`)) return
+    setSaving(true)
+    try {
+      await changeEmploymentState(id, stateTarget as never, 'State changed from employee profile')
+      setStateTarget('')
+      await load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'State change failed')
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const startEdit = () => {
     if (!data) return
@@ -254,13 +296,6 @@ export function EmployeeDetailPage() {
               ) : (
                 <>
                   <Button
-                    variant="primary"
-                    leftIcon={<Icon name="edit" className="text-lg" />}
-                    onClick={startEdit}
-                  >
-                    Edit Employee
-                  </Button>
-                  <Button
                     variant="outline"
                     size="sm"
                     className="text-error border-error/30 hover:bg-error/5"
@@ -269,6 +304,13 @@ export function EmployeeDetailPage() {
                     isLoading={saving}
                   >
                     Deactivate
+                  </Button>
+                  <Button
+                    variant="primary"
+                    leftIcon={<Icon name="edit" className="text-lg" />}
+                    onClick={startEdit}
+                  >
+                    Edit Employee
                   </Button>
                 </>
               )}
@@ -286,6 +328,32 @@ export function EmployeeDetailPage() {
           Emp code: {data.employment?.employee_code}
         </span>
         {data.hasLogin && <span className={loginEnabledClass}>Login: {data.loginEmail}</span>}
+        {editing && (
+          <Can action={Action.UPDATE} resource={'employment'}>
+            <span className="inline-flex items-center gap-2 rounded-full border border-outline-variant px-3 py-1">
+              <Select
+                value={stateTarget}
+                onChange={setStateTarget}
+                options={Object.values(EmploymentState).map((s) => ({
+                  value: s,
+                  label: s.replace(/_/g, ' '),
+                }))}
+                placeholder="Change state…"
+                minWidthClass="min-w-[10rem]"
+                aria-label="Change employment state"
+              />
+              <Button
+                variant="primary"
+                size="sm"
+                disabled={!stateTarget || stateTarget === currentState || saving}
+                isLoading={saving}
+                onClick={() => void changeState()}
+              >
+                Apply
+              </Button>
+            </span>
+          </Can>
+        )}
         {['RESIGNED', 'TERMINATED', 'ALUMNI'].includes(currentState) && (
           <Button
             variant="primary"
@@ -305,7 +373,7 @@ export function EmployeeDetailPage() {
       {editing && <EmployeeEditForm form={form} />}
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-        <EmployeeProfileSidebar data={data} fullName={fullName} initials={initials} />
+        <EmployeeProfileSidebar data={data} fullName={fullName} initials={initials} manager={manager} />
 
         <div className="xl:col-span-6">
           <EmployeeDetailTabNav tab={tab} onTabChange={setTab} />
@@ -313,7 +381,7 @@ export function EmployeeDetailPage() {
             {tab === 'overview' && <EmployeeOverviewTab data={data} stateLabel={stateLabel} />}
             {tab === 'history' && <EmployeeHistoryTab data={data} />}
             {tab === 'salary' && <EmployeeSalaryTab data={data} employmentId={id} />}
-            {tab === 'documents' && <EmployeeDocumentsTab />}
+            {tab === 'documents' && <EmployeeDocumentsTab employmentId={id} />}
           </div>
         </div>
 

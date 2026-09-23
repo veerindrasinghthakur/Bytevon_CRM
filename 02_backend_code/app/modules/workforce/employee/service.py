@@ -63,6 +63,80 @@ class EmployeeService(BasePublicService):
         await self._session.refresh(person)
         return PersonResponse.model_validate(person)
 
+    async def _assignment_display(
+        self, employment_ids: list[int]
+    ) -> dict[int, dict[str, object]]:
+        """employment_id → current-assignment display names. Batched, no N+1."""
+        from datetime import date as _date
+
+        if not employment_ids:
+            return {}
+        today = _date.today()
+        asgs = list(
+            (
+                await self._session.execute(
+                    select(EmploymentAssignment).where(
+                        EmploymentAssignment.employment_id.in_(employment_ids),
+                        EmploymentAssignment.effective_from <= today,
+                        (EmploymentAssignment.effective_to.is_(None))
+                        | (EmploymentAssignment.effective_to >= today),
+                    )
+                )
+            ).scalars()
+        )
+        # Latest effective row wins per employment.
+        by_emp: dict[int, EmploymentAssignment] = {}
+        for a in sorted(asgs, key=lambda r: r.effective_from):
+            by_emp[a.employment_id] = a
+        dept_ids = {a.department_id for a in by_emp.values() if a.department_id}
+        pos_ids = {a.position_id for a in by_emp.values() if a.position_id}
+        loc_ids = {a.location_id for a in by_emp.values() if a.location_id}
+        shift_ids = {a.shift_id for a in by_emp.values() if a.shift_id}
+
+        async def _names(model: object, ids: set[int]) -> dict[int, str]:
+            if not ids:
+                return {}
+            rows = (
+                await self._session.execute(select(model).where(model.id.in_(ids)))  # type: ignore[attr-defined]
+            ).scalars()
+            return {r.id: r.name for r in rows}
+
+        dept_names = await _names(Department, dept_ids)
+        pos_names = await _names(Position, pos_ids)
+        loc_names = await _names(Location, loc_ids)
+        shift_names = await _names(Shift, shift_ids)
+        out: dict[int, dict[str, object]] = {}
+        for emp_id, a in by_emp.items():
+            out[emp_id] = {
+                "department_id": a.department_id,
+                "department_name": dept_names.get(a.department_id) if a.department_id else None,  # type: ignore[arg-type]
+                "position_id": a.position_id,
+                "position_name": pos_names.get(a.position_id) if a.position_id else None,  # type: ignore[arg-type]
+                "location_id": a.location_id,
+                "location_name": loc_names.get(a.location_id) if a.location_id else None,  # type: ignore[arg-type]
+                "shift_id": a.shift_id,
+                "shift_name": shift_names.get(a.shift_id) if a.shift_id else None,  # type: ignore[arg-type]
+            }
+        return out
+
+    async def _person_names(self, person_ids: set[int]) -> dict[int, str]:
+        if not person_ids:
+            return {}
+        rows = (
+            await self._session.execute(select(Person).where(Person.id.in_(person_ids)))
+        ).scalars()
+        return {p.id: f"{p.first_name} {p.last_name}".strip() for p in rows}
+
+    def _apply_display(
+        self, resp: EmploymentResponse, person_name: str | None, display: dict[str, object] | None
+    ) -> EmploymentResponse:
+        if person_name:
+            resp.person_name = person_name
+        if display:
+            for key, value in display.items():
+                setattr(resp, key, value)
+        return resp
+
     async def _next_employee_code(self) -> str:
         count = await self._session.scalar(select(func.count()).select_from(Employment))
         n = int(count or 0) + 1
@@ -165,7 +239,10 @@ class EmployeeService(BasePublicService):
     ) -> PositionResponse:
         if await self._repo.get_position_by_name(data.name):
             raise ConflictError(f"Position '{data.name}' already exists")
-        pos = Position(name=data.name)
+        dept_id = _optional_id(data.department_id)
+        if dept_id is not None and await self._session.get(Department, dept_id) is None:
+            raise NotFoundError(f"Department not found (id={dept_id})")
+        pos = Position(name=data.name, department_id=dept_id)
         await self._repo.add(pos)
         await self._commit()
         await self._audit("position.created", pos.id, actor_employment_id)
@@ -185,8 +262,12 @@ class EmployeeService(BasePublicService):
             raise NotFoundError("Position not found")
         return PositionResponse.model_validate(pos)
 
-    async def list_positions(self, *, include_archived: bool = False) -> list[PositionResponse]:
-        rows = await self._repo.list_positions(include_archived=include_archived)
+    async def list_positions(
+        self, *, include_archived: bool = False, department_id: int | None = None
+    ) -> list[PositionResponse]:
+        rows = await self._repo.list_positions(
+            include_archived=include_archived, department_id=department_id
+        )
         return [PositionResponse.model_validate(r) for r in rows]
 
     async def update_position(
@@ -200,6 +281,11 @@ class EmployeeService(BasePublicService):
             if clash and clash.id != position_id:
                 raise ConflictError(f"Position '{data.name}' already exists")
             pos.name = data.name
+        if "department_id" in data.model_fields_set:
+            dept_id = _optional_id(data.department_id)
+            if dept_id is not None and await self._session.get(Department, dept_id) is None:
+                raise NotFoundError(f"Department not found (id={dept_id})")
+            pos.department_id = dept_id
         await self._commit()
         await self._audit("position.updated", pos.id, actor_employment_id)
         await self._session.refresh(pos)
@@ -611,7 +697,7 @@ class EmployeeService(BasePublicService):
         current_asg = await self._repo.get_current_assignment(employment_id)
         history = await self._repo.list_state_history(employment_id, limit=10)
         person = await self._session.get(Person, emp.person_id)
-        return EmploymentDetailResponse(
+        detail = EmploymentDetailResponse(
             **EmploymentResponse.model_validate(emp).model_dump(),
             current_assignment=(
                 EmploymentAssignmentResponse.model_validate(current_asg) if current_asg else None
@@ -621,6 +707,12 @@ class EmployeeService(BasePublicService):
             ],
             person=PersonResponse.model_validate(person) if person else None,
         )
+        if person:
+            detail.person_name = f"{person.first_name} {person.last_name}".strip() or None
+        if current_asg:
+            display = await self._assignment_display([employment_id])
+            self._apply_display(detail, None, display.get(employment_id))
+        return detail
 
     async def list_employments(
         self, *, state: EmploymentState | None = None, limit: int = 100, offset: int = 0
@@ -628,7 +720,12 @@ class EmployeeService(BasePublicService):
         rows = await self._repo.list_employments(
             state=state.value if state else None, limit=limit, offset=offset
         )
-        return [EmploymentResponse.model_validate(r) for r in rows]
+        resps = [EmploymentResponse.model_validate(r) for r in rows]
+        names = await self._person_names({r.person_id for r in rows})
+        displays = await self._assignment_display([r.id for r in rows])
+        for resp, row in zip(resps, rows):
+            self._apply_display(resp, names.get(row.person_id), displays.get(row.id))
+        return resps
 
     async def list_employments_by_person(self, person_id: int) -> list[EmploymentResponse]:
         rows = await self._repo.list_employments_by_person(person_id)

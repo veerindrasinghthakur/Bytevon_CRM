@@ -220,7 +220,11 @@ export function MonthlyPayrollPage() {
                     <th className="p-4 text-label-bold text-on-surface-variant text-right">Net Salary</th>
                     <th className="p-4 text-label-bold text-on-surface-variant">Status</th>
                     <th className="p-4 text-label-bold text-on-surface-variant">Payment Ref</th>
+                    {/* Actions column hidden (View/Payslip/Review/Approve/Pay) — restore
+                        the block below. NOTE: this removes the approve/pay entry points
+                        until a quick-view flow exists for payroll rows.
                     <th className="p-4 text-label-bold text-on-surface-variant text-right">Actions</th>
+                    */}
                   </tr>
                 </thead>
                 <tbody className="text-body-md">
@@ -254,6 +258,7 @@ export function MonthlyPayrollPage() {
                         </span>
                       </td>
                       <td className="p-4 text-on-surface-variant text-caption">{r.paymentRef ?? '—'}</td>
+                      {/* Row actions hidden (View/Payslip/Review/Approve/Pay) — see <th> note.
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           {effectiveView === 'locked' || r.status === 'Paid' ? (
@@ -341,6 +346,7 @@ export function MonthlyPayrollPage() {
                           )}
                         </div>
                       </td>
+                      */}
                     </tr>
                   ))}
                 </tbody>

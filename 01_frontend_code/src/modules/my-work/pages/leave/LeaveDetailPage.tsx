@@ -8,6 +8,7 @@ import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 import { listMyLeaveRequests, listMyLeaveBalances, getMyWorkOverview, requestLeaveCancel } from '../../api/my-work'
 import { statusStyles } from '../../schemas/enums'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { myWorkRoutes } from '../../routes'
 import { cn } from '@/shared/lib/cn'
 
@@ -35,12 +36,20 @@ export function LeaveDetailPage() {
     queryFn: getMyWorkOverview,
   })
 
+  useDeletedRedirect({
+    ready: !listQuery.isLoading,
+    data: listQuery.data?.items.find((r) => r.id === leaveId) ?? null,
+    error: listQuery.error,
+    listTo: myWorkRoutes.leave,
+  })
+
   if (listQuery.isLoading || balancesQuery.isLoading) {
     return <PageLoadingSkeleton />
   }
 
   const req =
     listQuery.data?.items.find((r) => r.id === leaveId) ?? listQuery.data?.items[0]
+  const leaveBalances = balancesQuery.data ?? []
   const leaveBalances = balancesQuery.data ?? []
   const currentUser = overviewQuery.data?.user
 

@@ -42,6 +42,8 @@ from app.modules.workforce.attendance.schemas import (
     MonthlySummaryResponse,
     PunchRequest,
     PunchResponse,
+    TodayAttendanceListResponse,
+    TodayAttendanceRow,
 )
 
 logger = logging.getLogger(__name__)
@@ -120,9 +122,31 @@ class AttendanceService(BasePublicService):
         return [AttendanceDayResponse.model_validate(r) for r in rows]
 
     async def submit_correction(self, data: CorrectionCreate, *, actor_employment_id: int) -> CorrectionResponse:
-        day = await self._repo.get_day_by_id(data.attendance_day_id)
-        if day is None:
-            raise NotFoundError("Attendance day not found")
+        if data.attendance_day_id is None:
+            # Self-service manual entry: no day record yet → create one for the
+            # caller (same auto-create policy as punch) and correct against it.
+            if data.attendance_date is None:
+                raise DomainError("attendance_day_id or attendance_date is required")
+            policy = await self._repo.get_current_policy(as_of=data.attendance_date)
+            if policy and not policy.auto_create_attendance_day:
+                raise DomainError("No attendance day exists and auto-create is disabled")
+            existing = await self._repo.get_day_by_employment_date(
+                actor_employment_id, data.attendance_date
+            )
+            if existing is None:
+                day = AttendanceDay(
+                    employment_id=actor_employment_id,
+                    attendance_date=data.attendance_date,
+                    status=AttendanceStatus.PRESENT,
+                )
+                await self._repo.add(day)
+                await self._flush()
+            else:
+                day = existing
+        else:
+            day = await self._repo.get_day_by_id(data.attendance_day_id)
+            if day is None:
+                raise NotFoundError("Attendance day not found")
         policy = await self._repo.get_current_policy(as_of=day.attendance_date)
         if policy:
             if (date.today() - day.attendance_date).days > policy.correction_window_days:
@@ -164,6 +188,92 @@ class AttendanceService(BasePublicService):
         await self._session.refresh(correction)
         await self._audit("attendance_correction.submitted", correction.id, actor_employment_id)
         return CorrectionResponse.model_validate(correction)
+
+    async def today_list(
+        self, *, search: str | None = None, status: str | None = None
+    ) -> TodayAttendanceListResponse:
+        """Org today-list for the workforce All-employees view (names included)."""
+        from sqlalchemy import select
+
+        from app.modules.auth.models import Person
+        from app.modules.workforce.department.models import Department
+        from app.modules.workforce.models import Employment, EmploymentAssignment
+
+        today = date.today()
+        days = list(await self._repo.list_days_by_date(today))
+        emp_ids = {d.employment_id for d in days}
+        emps = (
+            await self._session.execute(select(Employment).where(Employment.id.in_(emp_ids)))
+            if emp_ids
+            else None
+        )
+        emp_list = list(emps.scalars()) if emps is not None else []
+        persons = (
+            await self._session.execute(
+                select(Person).where(Person.id.in_({e.person_id for e in emp_list}))
+            )
+        ).scalars()
+        names = {p.id: f"{p.first_name} {p.last_name}".strip() for p in persons}
+        emp_by_id = {e.id: e for e in emp_list}
+        rows_asg = (
+            await self._session.execute(
+                select(EmploymentAssignment).where(
+                    EmploymentAssignment.employment_id.in_(emp_ids),
+                    EmploymentAssignment.effective_from <= today,
+                    (EmploymentAssignment.effective_to.is_(None))
+                    | (EmploymentAssignment.effective_to >= today),
+                )
+            )
+            if emp_ids
+            else None
+        )
+        dept_by_emp: dict[int, int] = {}
+        dept_ids: set[int] = set()
+        for a in rows_asg.scalars() if rows_asg is not None else []:
+            if a.department_id is not None and a.employment_id not in dept_by_emp:
+                dept_by_emp[a.employment_id] = int(a.department_id)
+                dept_ids.add(int(a.department_id))
+        dept_names: dict[int, str] = {}
+        if dept_ids:
+            depts = (
+                await self._session.execute(select(Department).where(Department.id.in_(dept_ids)))
+            ).scalars()
+            dept_names = {d.id: d.name for d in depts}
+
+        def _fmt_time(dt: datetime | None) -> str:
+            return dt.strftime("%I:%M %p").lstrip("0") if dt else "—"
+
+        items: list[TodayAttendanceRow] = []
+        for d in days:
+            emp = emp_by_id.get(d.employment_id)
+            name = (names.get(emp.person_id) if emp else None) or (emp.employee_code if emp else f"Emp #{d.employment_id}")
+            parts = name.split()
+            avatar = ("".join(p[0] for p in parts[:2]) or "E").upper()
+            check_ins = sorted(
+                (p.punch_time for p in d.punches if p.punch_type == PunchType.CHECK_IN and p.is_valid_punch)
+            )
+            check_outs = sorted(
+                (p.punch_time for p in d.punches if p.punch_type == PunchType.CHECK_OUT and p.is_valid_punch)
+            )
+            items.append(
+                TodayAttendanceRow(
+                    id=str(d.id),
+                    name=name,
+                    avatar=avatar,
+                    department=dept_names.get(dept_by_emp.get(d.employment_id, 0), "—"),
+                    checkIn=_fmt_time(check_ins[0] if check_ins else None),
+                    checkOut=_fmt_time(check_outs[-1] if check_outs else None),
+                    status=d.status.value if hasattr(d.status, "value") else str(d.status),
+                    hours=f"{float(d.working_hours):.1f}h" if d.working_hours is not None else "—",
+                )
+            )
+        if status and status not in ("All", "ALL", ""):
+            st = status.upper()
+            items = [r for r in items if r.status.upper() == st]
+        if search:
+            q = search.lower()
+            items = [r for r in items if q in r.name.lower() or q in r.department.lower()]
+        return TodayAttendanceListResponse(items=items, total=len(items))
 
     async def get_correction(self, correction_id: int) -> CorrectionResponse:
         c = await self._repo.get_correction_by_id(correction_id)

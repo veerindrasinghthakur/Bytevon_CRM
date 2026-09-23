@@ -41,6 +41,15 @@ class AttendanceRepository(BaseRepository):
         )
         return await self.scalar_one_or_none(stmt)
 
+    async def list_days_by_date(self, attendance_date: date) -> Sequence[AttendanceDay]:
+        stmt = (
+            select(AttendanceDay)
+            .where(AttendanceDay.attendance_date == attendance_date)
+            .options(selectinload(AttendanceDay.punches))
+            .order_by(AttendanceDay.id)
+        )
+        return await self.scalars(stmt)
+
     async def list_days(
         self,
         employment_id: int,

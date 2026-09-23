@@ -273,6 +273,7 @@ export function useUserDetail(userId?: string) {
   return {
     isLoading: detailQuery.isLoading,
     isError: detailQuery.isError,
+    detailError: detailQuery.error ?? null,
     loadError: detailQuery.isError
       ? getApiErrorMessage(detailQuery.error, 'Could not load user')
       : null,

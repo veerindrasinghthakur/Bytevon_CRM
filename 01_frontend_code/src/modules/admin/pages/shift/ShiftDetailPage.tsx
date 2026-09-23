@@ -9,6 +9,7 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { can } from '@/shared/rbac'
 import { Action, type ShiftRow } from '@/shared/schema'
@@ -50,6 +51,13 @@ export function ShiftDetailPage() {
 
   const detailQuery = useShiftDetail(id, !isNew)
   const staffQuery = useShiftStaff(id, !isNew)
+
+  useDeletedRedirect({
+    ready: !isNew && !detailQuery.isLoading,
+    data: isNew ? {} : (detailQuery.data ?? null),
+    error: detailQuery.error,
+    listTo,
+  })
   const createMut = useCreateShift()
   const updateMut = useUpdateShift(id)
   const deleteMut = useDeleteShift()
@@ -335,12 +343,12 @@ export function ShiftDetailPage() {
                       }
                     >
                       <td className="px-6 py-4">
-                        <p className="font-semibold">{e.name}</p>
-                        <p className="text-label-sm text-on-surface-variant">{e.employeeCode}</p>
+                        <p className="font-semibold">{e.name ?? e.employeeCode ?? `#${e.employmentId}`}</p>
+                        <p className="text-label-sm text-on-surface-variant">{e.employeeCode ?? ''}</p>
                       </td>
-                      <td className="px-6 py-4 text-body-sm">{e.departmentName}</td>
-                      <td className="px-6 py-4 text-body-sm">{e.positionName}</td>
-                      <td className="px-6 py-4 text-body-sm">{e.state.replace(/_/g, ' ')}</td>
+                      <td className="px-6 py-4 text-body-sm">{e.departmentName ?? '—'}</td>
+                      <td className="px-6 py-4 text-body-sm">{e.positionName ?? '—'}</td>
+                      <td className="px-6 py-4 text-body-sm">{(e.state ?? '').replace(/_/g, ' ') || '—'}</td>
                     </tr>
                   ))}
                 </tbody>

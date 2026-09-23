@@ -7,6 +7,7 @@ import { TeamTopView } from '../../components/team/TeamTopView'
 import { useTeamDetail } from '../../hooks/team/use-team-detail'
 import { projectRoutes } from '../../routes'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { Can } from '@/shared/rbac'
 import { cn } from '@/shared/lib/cn'
 import { workforceRoutes } from '@/modules/workforce/routes'
@@ -22,7 +23,9 @@ function Icon({ name, className }: { name: string; className?: string }) {
 export function TeamDetailPage() {
   const { teamId } = useParams({ strict: false }) as { teamId: string }
   const navigate = useNavigate()
-  const { team, members, projects, isLoading, isError, refetch } = useTeamDetail(teamId)
+  const { team, members, projects, isLoading, isError, detailError, refetch } = useTeamDetail(teamId)
+
+  useDeletedRedirect({ ready: !isLoading, data: team, error: detailError, listTo: projectRoutes.teams })
 
   if (isLoading) return <PageLoadingSkeleton />
   if (isError || !team) {

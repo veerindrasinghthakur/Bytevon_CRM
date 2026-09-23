@@ -8,6 +8,7 @@ import { getMyTask } from '../../api/my-work'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { priorityClass, statusDot } from '../../schemas/enums'
 import { myWorkRoutes } from '../../routes'
 
@@ -25,6 +26,8 @@ export function MyTaskDetailPage() {
     queryFn: () => getMyTask(taskId),
     enabled: Boolean(taskId),
   })
+
+  useDeletedRedirect({ ready: !isLoading, data: task ?? null, error, listTo: myWorkRoutes.tasks })
 
   if (isLoading) {
     return (

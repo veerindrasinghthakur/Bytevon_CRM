@@ -163,14 +163,16 @@ export function LocationsListPage() {
           <table className="w-full text-left">
             <thead>
               <tr className="bg-surface-container-low border-b border-outline-variant">
-                {['Name', 'City', 'Timezone', 'Currency', 'Status', ''].map((h) => (
+                {['Name', 'City', 'Timezone', 'Currency', 'Status'].map((h) => (
                   <th
-                    key={h || 'actions'}
+                    key={h}
                     className="px-5 py-3 text-label-sm uppercase tracking-wider text-on-surface-variant"
                   >
                     {h}
                   </th>
                 ))}
+                {/* Actions column hidden — row click opens quick view → detail.
+                    Restore the '' entry above + block below when row actions return. */}
               </tr>
             </thead>
             <tbody>
@@ -196,6 +198,8 @@ export function LocationsListPage() {
                       {loc.is_archived ? 'ARCHIVED' : 'ACTIVE'}
                     </span>
                   </td>
+                  {/* Row actions hidden (edit/delete) — quick view → detail page keeps them.
+                      Restore when row actions return.
                   <td className="px-5 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex gap-1">
                         <Button
@@ -214,6 +218,7 @@ export function LocationsListPage() {
                         />
                     </div>
                   </td>
+                  */}
                 </tr>
               ))}
             </tbody>

@@ -565,6 +565,47 @@ export async function submitAttendanceCorrection(
   }
 }
 
+/**
+ * Manual attendance entry (Mark Attendance → Request Approval).
+ * Resolves the caller's day for the date; when none exists the backend
+ * auto-creates it (attendance_date fallback) and files the correction,
+ * which raises an approval request to the department head.
+ */
+export async function submitManualAttendance(input: {
+  date: string
+  timeIn?: string
+  timeOut?: string
+  reason: string
+  employmentId: number
+}): Promise<{ id: number | null }> {
+  const requestedIn = combineDateTime(input.date, String(input.timeIn ?? ''))
+  const requestedOut = combineDateTime(input.date, String(input.timeOut ?? ''))
+  if (!requestedIn && !requestedOut) {
+    throw new Error('Enter at least a time-in or time-out for the manual entry')
+  }
+  let dayId: number | null = null
+  try {
+    const { data } = await apiClient.get<Array<{ id?: number }>>(
+      `/workforce/attendance/days/by-employment/${input.employmentId}`,
+      { params: { from_date: input.date, to_date: input.date } },
+    )
+    const hit = Array.isArray(data) ? data[0] : undefined
+    if (hit && typeof hit.id === 'number') dayId = hit.id
+  } catch {
+    dayId = null
+  }
+  const { data } = await apiClient.post<{ id?: number }>(
+    '/workforce/attendance/corrections',
+    {
+      ...(dayId != null ? { attendance_day_id: dayId } : { attendance_date: input.date }),
+      requested_check_in: requestedIn,
+      requested_check_out: requestedOut,
+      reason: input.reason,
+    },
+  )
+  return { id: typeof data.id === 'number' ? data.id : null }
+}
+
 export async function submitLeaveRequest(input: CreateLeaveRequestInput): Promise<LeaveRequest> {
   if (env.useMockApi) {
     await delay(400)

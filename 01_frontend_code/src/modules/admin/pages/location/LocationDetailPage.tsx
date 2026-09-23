@@ -6,6 +6,9 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { myAdminRoutes } from '@/modules/admin/routes'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { useDeleteLocation, useLocationDetail, useRestoreLocation, useUpdateLocation } from '../../hooks/location/use-locations'
 import type { LocationRow } from '@/shared/schema'
@@ -17,6 +20,13 @@ export function LocationDetailPage() {
   const navigate = useNavigate()
   const id = Number(locationId)
   const { data: loc, isLoading, isError, error, refetch } = useLocationDetail(id)
+
+  useDeletedRedirect({
+    ready: !isLoading,
+    data: loc ?? null,
+    error,
+    listTo: myAdminRoutes.locationsList,
+  })
   const updateMut = useUpdateLocation(id)
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(false)
   const [actionError, setActionError] = useState<string | null>(null)

@@ -74,7 +74,7 @@ export async function listTodayAttendance(params?: {
 }): Promise<{ items: TodayAttendanceRow[]; total: number }> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<{ items: TodayAttendanceRow[]; total: number }>(
-      '/attendance/today',
+      '/workforce/attendance/today',
       { params },
     )
     return data
@@ -98,7 +98,7 @@ export async function getAttendanceById(attendanceId: string): Promise<Attendanc
   if (!env.useMockApi) {
     try {
       const { data } = await apiClient.get<AttendanceDetailData>(
-        `/attendance/days/${attendanceId}`,
+        `/workforce/attendance/days/${attendanceId}`,
       )
       return data
     } catch {
@@ -117,7 +117,7 @@ export async function getAttendanceDayDetail(
 ): Promise<AttendanceDayDetailData> {
   if (!env.useMockApi) {
     const { data } = await apiClient.get<AttendanceDayDetailData>(
-      `/attendance/days/by-employment/${employmentId}`,
+      `/workforce/attendance/days/by-employment/${employmentId}`,
       { params: { date } },
     )
     return data

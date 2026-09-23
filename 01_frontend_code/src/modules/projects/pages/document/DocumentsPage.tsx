@@ -150,7 +150,9 @@ export function DocumentsPage() {
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase">Size</th>
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase">Uploaded by</th>
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase">Date</th>
+                {/* Actions column hidden (preview/download) — restore the block below.
                 <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase text-right">Actions</th>
+                */}
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
@@ -170,6 +172,8 @@ export function DocumentsPage() {
                   <td className="px-4 py-3 text-body-sm">{d.sizeLabel}</td>
                   <td className="px-4 py-3 text-body-sm">{d.uploadedBy}</td>
                   <td className="px-4 py-3 text-body-sm">{d.uploadedAt}</td>
+                  {/* Preview/download hidden with the Actions column — row click still
+                      opens the overview. Restore with the Actions <th> above.
                   <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end gap-1">
                       <button
@@ -200,6 +204,7 @@ export function DocumentsPage() {
                       </button>
                     </div>
                   </td>
+                  */}
                 </tr>
               ))}
             </tbody>

@@ -21,9 +21,11 @@ import {
   getTodayBreaks,
   subscribeBreakChange,
 } from '../lib/break-session'
-import { getMyWorkTodayInfo } from '../api/my-work'
+import { getMyWorkTodayInfo, submitManualAttendance } from '../api/my-work'
 import type { WorkLogRow } from '../lib/working-hours-log'
 import { myWorkRoutes } from '../routes'
+import { useAuth } from '@/modules/auth/context/AuthContext'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 
 export type WorkStatus = 'Present' | 'WFH' | 'Leave'
 
@@ -49,6 +51,7 @@ function dayPct(iso: string, now = Date.now()): number {
 
 export function useMarkAttendance() {
   const navigate = useNavigate()
+  const { employmentId } = useAuth()
   const [now, setNow] = useState(() => new Date())
   const [status, setStatus] = useState<WorkStatus>('Present')
 
@@ -161,18 +164,39 @@ export function useMarkAttendance() {
     setManualNote('')
   }, [])
 
-  const submitManual = useCallback(() => {
+  const submitManual = useCallback(async () => {
+    if (submitting) return
     if (!manualDate || !manualNote.trim()) {
       setManualToast('Date and justification note are required.')
       window.setTimeout(() => setManualToast(null), 2500)
       return
     }
-    setManualToast('Manual entry submitted for HR approval.')
-    window.setTimeout(() => {
-      setManualToast(null)
-      safeNavigate(navigate, { to: myWorkRoutes.attendanceCorrections })
-    }, 900)
-  }, [manualDate, manualNote, navigate])
+    if (!employmentId) {
+      setManualToast('Could not determine your employment — please log in again.')
+      window.setTimeout(() => setManualToast(null), 2500)
+      return
+    }
+    setSubmitting(true)
+    try {
+      await submitManualAttendance({
+        date: manualDate,
+        timeIn: manualIn,
+        timeOut: manualOut,
+        reason: `[${manualReason}] ${manualNote.trim()}`,
+        employmentId,
+      })
+      setManualToast('Manual entry submitted for HR approval.')
+      window.setTimeout(() => {
+        setManualToast(null)
+        safeNavigate(navigate, { to: myWorkRoutes.attendanceCorrections })
+      }, 900)
+    } catch (err) {
+      setManualToast(getApiErrorMessage(err, 'Could not submit the manual entry'))
+      window.setTimeout(() => setManualToast(null), 4000)
+    } finally {
+      setSubmitting(false)
+    }
+  }, [submitting, manualDate, manualNote, manualReason, manualIn, manualOut, employmentId, navigate])
 
   const goCorrections = useCallback(() => {
     safeNavigate(navigate, { to: myWorkRoutes.attendanceCorrections })

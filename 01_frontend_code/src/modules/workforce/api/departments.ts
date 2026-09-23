@@ -64,12 +64,12 @@ function mapApiDepartment(row: Record<string, unknown>): DepartmentListItem {
     id,
     name: String(row.name ?? 'Unnamed department'),
     code: String(row.code ?? `DEPT-${String(id).padStart(3, '0')}`),
-    headName: String(row.headName ?? '—'),
+    headName: String(row.headName ?? row.head_name ?? '—'),
     headEmploymentId:
       row.department_head_employment_id == null && row.departmentHeadEmploymentId == null
         ? null
         : Number(row.department_head_employment_id ?? row.departmentHeadEmploymentId),
-    staffCount: Number(row.staffCount ?? 0),
+    staffCount: Number(row.staffCount ?? row.staff_count ?? 0),
     isArchived,
     status: isArchived ? 'Inactive' : 'Active',
     createdAt: String(row.created_at ?? row.createdAt ?? ''),

@@ -269,7 +269,10 @@ export function DepartmentsListPage() {
                   <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest">Department Head</th>
                   <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest text-center">Staff</th>
                   <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest">Status</th>
+                  {/* Actions column hidden — quick view → full record is the interaction path.
+                      Restore the block below when row actions return.
                   <th className="px-6 py-4 text-label-sm font-semibold text-on-surface-variant uppercase tracking-widest text-right">Actions</th>
+                  */}
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
@@ -328,7 +331,12 @@ export function DepartmentsListPage() {
                       </td>
                       <td className="px-6 py-5 text-on-surface-variant">{d.code}</td>
                       <td className="px-6 py-5">
-                        <span className="text-label-md">{d.headName}</span>
+                        <p className="text-label-md">{d.headName}</p>
+                        {d.headEmploymentId != null && (
+                          <p className="text-label-sm text-on-surface-variant">
+                            Head #{d.headEmploymentId}
+                          </p>
+                        )}
                       </td>
                       <td className="px-6 py-5 text-center">{d.staffCount}</td>
                       <td className="px-6 py-5">
@@ -343,6 +351,8 @@ export function DepartmentsListPage() {
                           {d.status}
                         </span>
                       </td>
+                      {/* Row actions hidden — row click opens quick view → full record.
+                          Restore with the Actions <th> above when row actions return.
                       <td
                         className="px-6 py-5 text-right"
                         onMouseDown={(e) => e.stopPropagation()}
@@ -366,6 +376,7 @@ export function DepartmentsListPage() {
                           />
                         </div>
                       </td>
+                      */}
                     </tr>
                   )
                 })}

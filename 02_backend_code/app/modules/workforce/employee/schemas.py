@@ -61,10 +61,12 @@ class PersonResponse(BaseModel):
 
 class PositionCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150)
+    department_id: int | None = Field(None, description="Owning department; null = unassigned")
 
 
 class PositionUpdate(BaseModel):
     name: str | None = Field(None, min_length=1, max_length=150)
+    department_id: int | None = Field(None, description="Owning department; null clears")
 
 
 class PositionResponse(BaseModel):
@@ -72,6 +74,7 @@ class PositionResponse(BaseModel):
 
     id: int
     name: str
+    department_id: int | None = None
     is_archived: bool
     created_at: datetime
     updated_at: datetime
@@ -180,6 +183,16 @@ class EmploymentResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
     changed_by: int | None = None
+    # Current-assignment display fields (joined; optional for back-compat).
+    person_name: str | None = None
+    department_id: int | None = None
+    department_name: str | None = None
+    position_id: int | None = None
+    position_name: str | None = None
+    location_id: int | None = None
+    location_name: str | None = None
+    shift_id: int | None = None
+    shift_name: str | None = None
 
 
 class EmploymentAssignmentResponse(BaseModel):

@@ -57,6 +57,56 @@ class DepartmentService(BasePublicService):
         await self._refresh(dept)
         return DepartmentResponse.model_validate(dept)
 
+    async def _staff_counts(self, department_ids: set[int]) -> dict[int, int]:
+        """Distinct active employments per department (single grouped query)."""
+        from datetime import date as _date
+
+        from sqlalchemy import func, select
+
+        from app.modules.workforce.models import EmploymentAssignment
+
+        if not department_ids:
+            return {}
+        today = _date.today()
+        res = await self._session.execute(
+            select(
+                EmploymentAssignment.department_id,
+                func.count(func.distinct(EmploymentAssignment.employment_id)),
+            ).where(
+                EmploymentAssignment.department_id.in_(department_ids),
+                EmploymentAssignment.effective_from <= today,
+                (EmploymentAssignment.effective_to.is_(None))
+                | (EmploymentAssignment.effective_to >= today),
+            ).group_by(EmploymentAssignment.department_id)
+        )
+        return {int(dept_id): int(count) for dept_id, count in res.all()}
+
+    async def _head_names(self, head_employment_ids: set[int]) -> dict[int, str]:
+        """Batched head employment id → person display name (no N+1)."""
+        from sqlalchemy import select
+
+        from app.modules.auth.models import Person
+        from app.modules.workforce.models import Employment
+
+        ids = {i for i in head_employment_ids if i}
+        if not ids:
+            return {}
+        emps = (
+            await self._session.execute(select(Employment).where(Employment.id.in_(ids)))
+        ).scalars()
+        emp_list = list(emps)
+        persons = (
+            await self._session.execute(
+                select(Person).where(Person.id.in_({e.person_id for e in emp_list}))
+            )
+        ).scalars()
+        names = {p.id: f"{p.first_name} {p.last_name}".strip() for p in persons}
+        out: dict[int, str] = {}
+        for e in emp_list:
+            label = names.get(e.person_id, e.employee_code)
+            out[e.id] = label or e.employee_code
+        return out
+
     async def get(
         self, department_id: int, *, include_archived: bool = False
     ) -> DepartmentResponse:
@@ -67,7 +117,11 @@ class DepartmentService(BasePublicService):
             raise NotFoundError("Department not found")
         if bool(getattr(dept, "is_archived", False)) and not include_archived:
             raise NotFoundError("Department not found")
-        return DepartmentResponse.model_validate(dept)
+        resp = DepartmentResponse.model_validate(dept)
+        if dept.department_head_employment_id:
+            heads = await self._head_names({dept.department_head_employment_id})
+            resp.headName = heads.get(dept.department_head_employment_id)
+        return resp
 
     async def list(
         self, *, include_archived: bool = False, include_deleted: bool = False
@@ -76,9 +130,23 @@ class DepartmentService(BasePublicService):
         show = bool(include_archived or include_deleted)
         rows = await self._repo.list(include_archived=show)
         items = [DepartmentResponse.model_validate(r) for r in rows]
+        heads = await self._head_names(
+            {r.department_head_employment_id for r in rows if r.department_head_employment_id}
+        )
+        for item, row in zip(items, rows):
+            if row.department_head_employment_id:
+                item.headName = heads.get(row.department_head_employment_id)
+        staffing = await self._staff_counts({r.id for r in rows})
+        for item, row in zip(items, rows):
+            item.staffCount = staffing.get(row.id, 0)
         active = sum(1 for i in items if not i.is_archived)
         archived = sum(1 for i in items if i.is_archived)
-        metrics = DepartmentMetrics(total=len(items), active=active, archived=archived, staffing=0)
+        metrics = DepartmentMetrics(
+            total=len(items),
+            active=active,
+            archived=archived,
+            staffing=sum(staffing.values()),
+        )
         return DepartmentListResponse(items=items, total=len(items), metrics=metrics)
 
     # Back-compat: old callers expect list[...] — expose list_items
@@ -112,7 +180,11 @@ class DepartmentService(BasePublicService):
         await self._commit()
         await self._audit("department.updated", department_id, actor_employment_id)
         await self._refresh(dept)
-        return DepartmentResponse.model_validate(dept)
+        resp = DepartmentResponse.model_validate(dept)
+        if dept.department_head_employment_id:
+            heads = await self._head_names({dept.department_head_employment_id})
+            resp.headName = heads.get(dept.department_head_employment_id)
+        return resp
 
     async def _count_active_assignments(self, department_id: int) -> int:
         """Active (covering today) assignments referencing this department."""

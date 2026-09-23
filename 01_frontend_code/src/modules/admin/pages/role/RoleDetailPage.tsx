@@ -8,6 +8,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { getApiErrorMessage } from '@/shared/lib/api-error'
 import { getAdminRole, deleteAdminRole, restoreAdminRole, revokeRolePermission } from '../../api/roles'
 import { DeleteButton } from '@/shared/components/ui/DeleteButton'
@@ -69,6 +70,13 @@ export function RoleDetailPage() {
   const usersQuery = useQuery({
     queryKey: queryKeys.admin.users.list(),
     queryFn: () => listAdminUsers(),
+  })
+
+  useDeletedRedirect({
+    ready: !roleQuery.isLoading,
+    data: roleQuery.data ?? null,
+    error: roleQuery.error,
+    listTo: myAdminRoutes.rolesList,
   })
 
   if (roleQuery.isLoading) return <PageLoadingSkeleton />

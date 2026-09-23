@@ -3,6 +3,7 @@
  * Resource names always come from the backend `resources` table (seeded).
  */
 import { apiClient } from '@/shared/lib/axios'
+import axios from 'axios'
 import { env } from '@/config/env'
 import { buildEffectiveAuthorization } from './build-effective'
 import type { EffectiveAuthorization } from './types'
@@ -47,5 +48,23 @@ export async function fetchEffectiveAuthorization(
   if (env.useMockApi) {
     return buildEffectiveAuthorization(id)
   }
-  return fetchEffectiveFromApi(id)
+  try {
+    return await fetchEffectiveFromApi(id)
+  } catch (err) {
+    // Backend hides grant denials as 404/insufficient_permission by design.
+    // Fail closed with a deny-all baseline instead of throwing into every
+    // consumer — route guards redirect on can() === false.
+    if (axios.isAxiosError(err) && err.response?.status === 404) {
+      const { emptyPermissions } = await import('./types')
+      const { ScopeName } = await import('@/shared/schema')
+      return {
+        employmentId: id,
+        isSuperAdmin: false,
+        permissions: emptyPermissions(),
+        scope: ScopeName.SELF,
+        scopeByResource: {},
+      }
+    }
+    throw err
+  }
 }

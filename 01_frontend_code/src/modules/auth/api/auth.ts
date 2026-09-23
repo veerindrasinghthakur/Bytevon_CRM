@@ -17,6 +17,7 @@ import type {
 } from '../schemas/auth'
 import { MOCK_LOGIN_EMAIL, MOCK_LOGIN_PASSWORD } from '../schemas/auth'
 import { setCurrentEmploymentId } from '@/shared/rbac'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 import type {AxiosErrorResponse} from "../types.ts"
 
 import { delay} from '@/shared/mock/db'
@@ -34,6 +35,7 @@ interface BackendLoginResponse {
   }
   login_id: number
   person_id: number
+  employment_id?: number | null
   email: string
 }
 
@@ -46,6 +48,7 @@ const ADMIN_USER: AuthUser = {
   department: 'Operations',
   employmentId: 1,
   personId: 1,
+  loginId: 1,
 }
 
 
@@ -103,11 +106,18 @@ export function persistSession(session: AuthSession | null) {
 export async function loginApi(input: LoginInput): Promise<AuthSession> {
   const rememberMe = input.rememberMe ?? false
   if (!env.useMockApi) {
-    const { data } = await apiClient.post<BackendLoginResponse>('/auth/login', {
-      email: input.email.trim(),
-      password: input.password,
-      rememberMe,
-    })
+    let data: BackendLoginResponse
+    try {
+      ;({ data } = await apiClient.post<BackendLoginResponse>('/auth/login', {
+        email: input.email.trim(),
+        password: input.password,
+        rememberMe,
+      }))
+    } catch (err) {
+      // Surface the backend message ("Invalid username or password",
+      // "Account is locked …") instead of the raw axios status text.
+      throw new Error(getApiErrorMessage(err, 'Login failed. Please try again.'))
+    }
     const session: AuthSession = {
       user: {
         id: data.person_id,
@@ -116,8 +126,9 @@ export async function loginApi(input: LoginInput): Promise<AuthSession> {
         name: 'System Admin',
         role: 'Administrator',
         department: 'Administration',
-        employmentId: 1,
+        employmentId: data.employment_id ?? 1,
         personId: data.person_id,
+        loginId: data.login_id,
       },
       tokens: {
         accessToken: data.tokens.access_token,

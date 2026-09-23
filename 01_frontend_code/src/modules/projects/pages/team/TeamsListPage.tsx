@@ -201,7 +201,10 @@ export function TeamsListPage() {
                   <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase">Head</th>
                   <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase">Members</th>
                   <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase">Projects</th>
+                  {/* Actions column hidden — row click opens quick view → full record.
+                      Restore the block below when row actions return.
                   <th className="px-6 py-4 text-label-sm font-medium text-on-surface-variant uppercase text-right">Actions</th>
+                  */}
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/20">
@@ -228,6 +231,7 @@ export function TeamsListPage() {
                     </td>
                     <td className="px-6 py-4">{t.memberCount}</td>
                     <td className="px-6 py-4">{t.projectCount}</td>
+                    {/* Quick-view button hidden with the Actions column — row click still opens it.
                     <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                       <button
                         type="button"
@@ -238,6 +242,7 @@ export function TeamsListPage() {
                         <Icon name="visibility" className="text-lg" />
                       </button>
                     </td>
+                    */}
                   </tr>
                 ))}
               </tbody>

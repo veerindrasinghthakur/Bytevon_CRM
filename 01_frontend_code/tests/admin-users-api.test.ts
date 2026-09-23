@@ -8,7 +8,7 @@ import {
   getUserLogin,
   listAdminUsers,
   listEmploymentsWithoutLogin,
-} from './users'
+} from '@/modules/admin/api/users'
 
 /**
  * Mock-mode tests: env.useMockApi defaults to true (no VITE_USE_MOCK_API in

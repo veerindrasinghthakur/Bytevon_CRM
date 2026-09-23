@@ -1,5 +1,5 @@
-﻿import { describe, expect, it } from 'vitest'
-import { emptyMatrix, matrixToPermissions, seedMatrix } from './role-matrix'
+import { describe, expect, it } from 'vitest'
+import { emptyMatrix, matrixToPermissions, seedMatrix } from '@/modules/admin/lib/role-matrix'
 
 const MODULES = ['Users', 'Roles', 'Sales']
 const ACTIONS = ['VIEW', 'CREATE', 'UPDATE', 'DELETE']
@@ -44,10 +44,10 @@ describe('matrixToPermissions', () => {
 })
 
 describe('seedMatrix', () => {
-  it('grants VIEW/CREATE/UPDATE on modules matched by prefix-dot pattern', () => {
-    // "users.view" and "users.create" both start with "users." → match module Users
+  it('enables exactly the stored module.action cells (exact match)', () => {
+    // "users.view" and "users.create" enable exactly those two cells.
     const m = seedMatrix(['users.view', 'users.create'], MODULES, ACTIONS)
-    expect(m['Users']).toEqual({ VIEW: true, CREATE: true, UPDATE: true, DELETE: false })
+    expect(m['Users']).toEqual({ VIEW: true, CREATE: true, UPDATE: false, DELETE: false })
     // "Sales" has no matching permissions → all false
     expect(m['Roles']).toEqual({ VIEW: false, CREATE: false, UPDATE: false, DELETE: false })
   })
@@ -66,10 +66,10 @@ describe('seedMatrix', () => {
     expect(m['Users'].VIEW).toBe(false)
   })
 
-  it('module "Sales" matched when permission starts with "sales."', () => {
-    // "sales.create" starts with "sales." → grant VIEW/CREATE/UPDATE on Sales only
+  it('module "Sales" matched only for the exact stored cell', () => {
+    // "sales.create" enables exactly Sales.CREATE — nothing else.
     const m = seedMatrix(['sales.create'], MODULES, ACTIONS)
-    expect(m['Sales']).toEqual({ VIEW: true, CREATE: true, UPDATE: true, DELETE: false })
+    expect(m['Sales']).toEqual({ VIEW: false, CREATE: true, UPDATE: false, DELETE: false })
     expect(m['Users']).toEqual({ VIEW: false, CREATE: false, UPDATE: false, DELETE: false })
     expect(m['Roles']).toEqual({ VIEW: false, CREATE: false, UPDATE: false, DELETE: false })
   })

@@ -26,6 +26,8 @@ class DepartmentResponse(BaseModel):
     id: int
     name: str
     department_head_employment_id: int | None = None
+    headName: str | None = Field(None, description="Resolved head display name")
+    staffCount: int = Field(0, description="Active employments currently assigned")
     is_archived: bool = False
     created_at: datetime
     created_by: int | None = None

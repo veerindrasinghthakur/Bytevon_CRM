@@ -110,7 +110,7 @@ async def list_pending(
 @router.get("/my-requests")
 async def list_my_requests(
     service: RequestServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("approval", "VIEW", "ORGANIZATION"))],
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "VIEW", "SELF"))],
     search: str | None = Query(None),
     status_filter: str | None = Query(None, alias="status"),
     limit: int = Query(100, ge=1, le=500),
@@ -155,8 +155,10 @@ async def list_approvers() -> list[dict[str, str]]:
 async def create_request(
     body: ApprovalRequestCreate,
     service: RequestServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("approval", "CREATE", "ORGANIZATION"))],
+    auth: Annotated[AuthContext, Depends(require_permission("approval", "CREATE", "SELF"))],
 ) -> ApprovalRequestResponse:
+    # SELF-service: a request is always filed as yourself (no spoofing).
+    body = body.model_copy(update={"requester_employment_id": auth.employment_id})
     return await service.create_request(body, actor_employment_id=auth.employment_id)
 
 

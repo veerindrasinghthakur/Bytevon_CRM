@@ -4,6 +4,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { Can } from '@/shared/rbac'
 import { StatusDot } from '@/shared/components/ui/StatusDot'
 import { useClient, useSalesActivities } from '../../hooks/use-sales'
@@ -22,6 +23,8 @@ export function ClientDetailPage() {
   const activitiesQuery = useSalesActivities()
   const client = clientQuery.data ?? null
   const timeline = (activitiesQuery.data ?? []).slice(0, 4)
+
+  useDeletedRedirect({ ready: !clientQuery.isLoading, data: client, error: clientQuery.error, listTo: salesRoutes.clients })
 
   if (clientQuery.isLoading) return <PageLoadingSkeleton />
 

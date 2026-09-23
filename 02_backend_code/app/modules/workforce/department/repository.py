@@ -13,9 +13,25 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.repositories.base_repository import BaseRepository
+from app.modules.auth.models import Person
 from app.modules.workforce.department.models import Department
 from app.modules.workforce.department.schemas import DepartmentEmployee, DepartmentEmployeeOption
-from app.modules.workforce.models import Employment, EmploymentAssignment
+from app.modules.workforce.models import Employment, EmploymentAssignment, Position
+
+
+async def _person_info(
+    session: AsyncSession, person_ids: set[int]
+) -> dict[int, tuple[str, str]]:
+    """Batched person id → (display name, email). Single query, no N+1."""
+    if not person_ids:
+        return {}
+    rows = (
+        await session.execute(select(Person).where(Person.id.in_(person_ids)))
+    ).scalars()
+    return {
+        p.id: (f"{p.first_name} {p.last_name}".strip(), p.personal_email or "")
+        for p in rows
+    }
 
 
 class DepartmentRepository(BaseRepository):
@@ -76,17 +92,44 @@ class DepartmentRepository(BaseRepository):
             .order_by(Employment.employee_code)
         )
         rows = list(await self.scalars(stmt))
-        items = [
-            DepartmentEmployee(
-                employmentId=e.id,
-                employeeCode=e.employee_code,
-                name=e.employee_code,
-                state=e.current_state.value
-                if hasattr(e.current_state, "value")
-                else str(e.current_state),
+        info = await _person_info(self._session, {e.person_id for e in rows})
+        # Current assignments for position names (one query for all rows).
+        asgs = list(
+            await self.scalars(
+                select(EmploymentAssignment).where(
+                    EmploymentAssignment.employment_id.in_([e.id for e in rows]),
+                    EmploymentAssignment.effective_from <= today,
+                    (EmploymentAssignment.effective_to.is_(None))
+                    | (EmploymentAssignment.effective_to >= today),
+                )
             )
-            for e in rows
-        ]
+        ) if rows else []
+        asg_by_emp = {a.employment_id: a for a in asgs}
+        pos_ids = {a.position_id for a in asgs if a.position_id}
+        pos_rows = (
+            list(await self.scalars(select(Position).where(Position.id.in_(pos_ids))))
+            if pos_ids
+            else []
+        )
+        pos_names = {p.id: p.name for p in pos_rows}
+        items = []
+        for e in rows:
+            name, email = info.get(e.person_id, (e.employee_code, ""))
+            asg = asg_by_emp.get(e.id)
+            items.append(
+                DepartmentEmployee(
+                    employmentId=e.id,
+                    employeeCode=e.employee_code,
+                    name=name or e.employee_code,
+                    positionName=(
+                        pos_names.get(asg.position_id, "—") if asg and asg.position_id else "—"
+                    ),
+                    email=email,
+                    state=e.current_state.value
+                    if hasattr(e.current_state, "value")
+                    else str(e.current_state),
+                )
+            )
         if search:
             q = search.strip().lower()
             items = [
@@ -115,10 +158,11 @@ class DepartmentRepository(BaseRepository):
             .limit(200)
         )
         rows = await self.scalars(stmt)
+        info = await _person_info(self._session, {e.person_id for e in rows})
         return [
             DepartmentEmployeeOption(
                 value=str(e.id),
-                label=e.employee_code,
+                label=f"{info.get(e.person_id, (e.employee_code, ''))[0] or e.employee_code} ({e.employee_code})",
                 meta=e.current_state.value
                 if hasattr(e.current_state, "value")
                 else str(e.current_state),

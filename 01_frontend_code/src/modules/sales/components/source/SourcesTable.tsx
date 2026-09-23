@@ -33,12 +33,14 @@ export function SourcesTable({ rows, isLoading, isFetching, onEdit, onDelete, on
               <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
                 Leads
               </th>
-              <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
-                Status
-              </th>
-              <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">
-                Actions
-              </th>
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
+                  Status
+                </th>
+                {/* Actions column hidden — restore the block below when row actions return.
+                <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">
+                  Actions
+                </th>
+                */}
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant">
@@ -64,6 +66,9 @@ export function SourcesTable({ rows, isLoading, isFetching, onEdit, onDelete, on
                     {row.status}
                   </span>
                 </td>
+                {/* Row actions hidden — restore with the Actions <th> above.
+                    NOTE: this removes the only edit/delete/restore entry points
+                    for sources until a detail/quick-view flow exists.
                 <td className="px-4 py-4 text-center">
                   <div className="flex justify-center">
                     <RowActions
@@ -97,6 +102,7 @@ export function SourcesTable({ rows, isLoading, isFetching, onEdit, onDelete, on
                     />
                   </div>
                 </td>
+                */}
               </tr>
             ))}
             {rows.length === 0 && !isLoading && (

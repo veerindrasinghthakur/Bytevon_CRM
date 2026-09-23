@@ -41,7 +41,9 @@ export function PositionsListPage() {
             <tr className="bg-surface-container-low border-b border-outline-variant">
               <th className="px-5 py-3 text-label-sm uppercase text-on-surface-variant">Name</th>
               <th className="px-5 py-3 text-label-sm uppercase text-on-surface-variant">Status</th>
+              {/* Actions column hidden — row click opens detail. Restore when needed.
               <th className="px-5 py-3 text-label-sm uppercase text-on-surface-variant text-right">Actions</th>
+              */}
             </tr>
           </thead>
           <tbody>
@@ -69,6 +71,7 @@ export function PositionsListPage() {
                     {p.is_archived ? 'ARCHIVED' : 'ACTIVE'}
                   </span>
                 </td>
+                {/* Row delete hidden with the Actions column — detail page keeps it.
                 <td
                   className="px-5 py-3 text-right"
                   onClick={(e) => e.stopPropagation()}
@@ -82,6 +85,7 @@ export function PositionsListPage() {
                     />
                   )}
                 </td>
+                */}
               </tr>
             ))}
           </tbody>

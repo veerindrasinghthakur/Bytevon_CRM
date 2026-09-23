@@ -161,6 +161,7 @@ export function useDepartment(id: number) {
     staff: staffQuery.data ?? [],
     isLoading: deptQuery.isLoading || staffQuery.isLoading,
     isError: deptQuery.isError || staffQuery.isError,
+    detailError: deptQuery.error ?? null,
     refetch: async () => {
       await Promise.all([deptQuery.refetch(), staffQuery.refetch()])
     },

@@ -63,22 +63,85 @@ class ShiftService(BasePublicService):
         return ShiftResponse.model_validate(row)
 
     async def list_employees(self, shift_id: int) -> list[dict]:
+        from datetime import date as _date
+
         from sqlalchemy import select
 
-        from app.modules.workforce.models import EmploymentAssignment
+        from app.modules.auth.models import Person
+        from app.modules.workforce.department.models import Department
+        from app.modules.workforce.models import Employment, EmploymentAssignment, Position
 
         row = await self._repo.get_by_id(shift_id, include_archived=True)
         if row is None:
             raise NotFoundError("Shift not found")
+        today = _date.today()
         stmt = select(EmploymentAssignment).where(
             EmploymentAssignment.shift_id == shift_id,
-            EmploymentAssignment.effective_to.is_(None),
+            EmploymentAssignment.effective_from <= today,
+            (EmploymentAssignment.effective_to.is_(None))
+            | (EmploymentAssignment.effective_to >= today),
         )
         res = await self._session.execute(stmt)
-        return [
-            {"employmentId": r.employment_id, "shiftId": r.shift_id}
-            for r in res.scalars().all()
-        ]
+        asgs = list(res.scalars().all())
+        if not asgs:
+            return []
+        emp_ids = [a.employment_id for a in asgs]
+        emps = list(
+            (
+                await self._session.execute(select(Employment).where(Employment.id.in_(emp_ids)))
+            ).scalars()
+        )
+        persons = list(
+            (
+                await self._session.execute(
+                    select(Person).where(Person.id.in_({e.person_id for e in emps}))
+                )
+            ).scalars()
+        )
+        names = {p.id: f"{p.first_name} {p.last_name}".strip() for p in persons}
+        dept_ids = {a.department_id for a in asgs if a.department_id}
+        pos_ids = {a.position_id for a in asgs if a.position_id}
+        depts = (
+            list(
+                (
+                    await self._session.execute(
+                        select(Department).where(Department.id.in_(dept_ids))
+                    )
+                ).scalars()
+            )
+            if dept_ids
+            else []
+        )
+        poss = (
+            list(
+                (
+                    await self._session.execute(select(Position).where(Position.id.in_(pos_ids)))
+                ).scalars()
+            )
+            if pos_ids
+            else []
+        )
+        dept_names = {d.id: d.name for d in depts}
+        pos_names = {p.id: p.name for p in poss}
+        emp_by_id = {e.id: e for e in emps}
+        out = []
+        for a in asgs:
+            emp = emp_by_id.get(a.employment_id)
+            if emp is None:
+                continue
+            name = names.get(emp.person_id, emp.employee_code) or emp.employee_code
+            state = emp.current_state.value if hasattr(emp.current_state, "value") else str(emp.current_state)
+            out.append(
+                {
+                    "employmentId": emp.id,
+                    "employeeCode": emp.employee_code,
+                    "name": name,
+                    "departmentName": dept_names.get(a.department_id, "—") if a.department_id else "—",
+                    "positionName": pos_names.get(a.position_id, "—") if a.position_id else "—",
+                    "state": state,
+                }
+            )
+        return out
 
     async def list(self, *, include_archived: bool = False) -> list[ShiftResponse]:
         rows = await self._repo.list_all(include_archived=include_archived)

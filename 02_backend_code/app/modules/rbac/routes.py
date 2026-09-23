@@ -6,7 +6,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, status
 
-from app.core.authorization import AuthContext, require_permission
+from app.core.authorization import AuthContext, enforce_owner_or_grant, require_permission
 from app.modules.rbac.dependencies import RBACServiceDep
 from app.modules.rbac.schemas import (
     AssignRoleRequest,
@@ -196,12 +196,15 @@ async def list_roles_for_employment(
 @router.get(
     "/employments/{employment_id}/effective-permissions",
     response_model=EffectivePermissionsResponse,
-    dependencies=[Depends(require_permission("role", "VIEW", "ORGANIZATION"))],
 )
 async def get_effective_permissions(
     employment_id: int,
     service: RBACServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("role", "VIEW", "CUSTOM"))],
 ) -> EffectivePermissionsResponse:
+    # Everyone may always read their OWN permission set; other employments
+    # still need a role grant (404 hides existence by design).
+    enforce_owner_or_grant(auth, "role", "VIEW", owner_employment_id=employment_id)
     return await service.get_effective_permissions(employment_id)
 
 

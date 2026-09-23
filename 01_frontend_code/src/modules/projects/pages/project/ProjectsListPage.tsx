@@ -234,7 +234,10 @@ export function ProjectsListPage() {
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Client</th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Priority & Status</th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Progress</th>
+                  {/* Actions column hidden — row click opens quick view → full record.
+                      Restore the block below when row actions return.
                   <th className="py-4 px-6 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider text-right">Action</th>
+                  */}
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/20">
@@ -319,6 +322,8 @@ export function ProjectsListPage() {
                           <span className="text-body-sm text-on-surface-variant">{project.progress ?? 0}%</span>
                         </div>
                       </td>
+                      {/* Row actions hidden — quick view (row click) → full record.
+                          Restore with the Action <th> above when row actions return.
                       <td
                         className="py-2 px-6 text-right"
                         onMouseDown={(e) => e.stopPropagation()}
@@ -350,6 +355,7 @@ export function ProjectsListPage() {
                           />
                         </div>
                       </td>
+                      */}
                     </tr>
                   )
                 })}

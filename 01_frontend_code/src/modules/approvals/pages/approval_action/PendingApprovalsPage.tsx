@@ -142,7 +142,10 @@ export function PendingApprovalsPage() {
                 <th className="px-6 py-4 text-label-md text-on-surface-variant">Date</th>
                 <th className="px-6 py-4 text-label-md text-on-surface-variant">Priority</th>
                 <th className="px-6 py-4 text-label-md text-on-surface-variant">Status</th>
+                {/* Actions column hidden — row click opens quick view → full record.
+                    Restore the block below when row actions return.
                 <th className="px-6 py-4 text-label-md text-on-surface-variant text-right">Actions</th>
+                */}
               </tr>
             </thead>
             <tbody className="divide-y divide-outline-variant">
@@ -178,6 +181,8 @@ export function PendingApprovalsPage() {
                   <td className="px-6 py-4">
                     <span className="status-badge status-info">{row.status}</span>
                   </td>
+                  {/* Row actions hidden — quick view (row click) → full record.
+                      Restore with the Actions <th> above when row actions return.
                   <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex justify-end">
                       <RowActions
@@ -199,6 +204,7 @@ export function PendingApprovalsPage() {
                       />
                     </div>
                   </td>
+                  */}
                 </tr>
               ))}
             </tbody>

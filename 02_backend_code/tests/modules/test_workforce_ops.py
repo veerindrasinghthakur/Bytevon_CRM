@@ -27,6 +27,7 @@ COVERED = [
     ("PATCH", "/api/v1/workforce/positions/{position_id}"),
     ("DELETE", "/api/v1/workforce/positions/{position_id}"),
     ("POST", "/api/v1/workforce/attendance/punch"),
+    ("GET", "/api/v1/workforce/attendance/today"),
     ("GET", "/api/v1/workforce/attendance/days/{day_id}"),
     ("GET", "/api/v1/workforce/attendance/days/by-employment/{employment_id}"),
     ("POST", "/api/v1/workforce/attendance/corrections"),
@@ -156,6 +157,154 @@ def test_position_lifecycle(client, factory):
     record_coverage("test_position_lifecycle", COVERED[9:14])
 
 
+def test_position_department_link(client, factory):
+    """Positions belong to a department; listings scope by department_id."""
+    h = _sa(factory)["headers"]
+    hr = client.post("/api/v1/workforce/departments", json={"name": "HR Link"}, headers=h)
+    assert hr.status_code == 201, hr.text
+    hr_id = hr.json()["id"]
+    eng = client.post("/api/v1/workforce/departments", json={"name": "Eng Link"}, headers=h)
+    assert eng.status_code == 201, eng.text
+    eng_id = eng.json()["id"]
+
+    scoped = client.post(
+        "/api/v1/workforce/positions",
+        json={"name": "HR Partner", "department_id": hr_id},
+        headers=h,
+    )
+    assert scoped.status_code == 201, scoped.text
+    assert scoped.json()["department_id"] == hr_id
+
+    free = client.post(
+        "/api/v1/workforce/positions", json={"name": "Floater"}, headers=h
+    )
+    assert free.status_code == 201, free.text
+    assert free.json()["department_id"] is None
+
+    bad = client.post(
+        "/api/v1/workforce/positions",
+        json={"name": "Ghost", "department_id": 999999},
+        headers=h,
+    )
+    assert bad.status_code == 404, bad.text
+
+    def ids(params=None):
+        res = client.get("/api/v1/workforce/positions", params=params or {}, headers=h)
+        assert res.status_code == 200, res.text
+        data = res.json()
+        rows = data if isinstance(data, list) else data.get("items", [])
+        return {r["id"] for r in rows}
+
+    hr_rows = ids({"department_id": hr_id})
+    assert scoped.json()["id"] in hr_rows  # own dept row
+    assert free.json()["id"] in hr_rows  # unassigned legacy rows shown for all
+    assert ids({"department_id": eng_id }) == {free.json()["id"]}
+
+    moved = client.patch(
+        f"/api/v1/workforce/positions/{scoped.json()['id']}",
+        json={"department_id": eng_id},
+        headers=h,
+    )
+    assert moved.status_code == 200, moved.text
+    assert moved.json()["department_id"] == eng_id
+    assert scoped.json()["id"] not in ids({"department_id": hr_id})
+    assert scoped.json()["id"] in ids({"department_id": eng_id})
+
+    cleared = client.patch(
+        f"/api/v1/workforce/positions/{scoped.json()['id']}",
+        json={"department_id": None},
+        headers=h,
+    )
+    assert cleared.status_code == 200, cleared.text
+    assert cleared.json()["department_id"] is None
+    record_coverage("test_position_department_link", COVERED[9:14])
+
+
+def test_department_member_names_and_head(client, factory):
+    """Member rows carry person names (not codes); head name resolves."""
+    h = _sa(factory)["headers"]
+    dept = client.post("/api/v1/workforce/departments", json={"name": "Named Dept"}, headers=h)
+    assert dept.status_code == 201, dept.text
+    dept_id = dept.json()["id"]
+
+    member = factory.actor("named")
+    assigned = client.post(
+        f"/api/v1/workforce/departments/{dept_id}/assign",
+        json={"employmentId": member["employment_id"]},
+        headers=h,
+    )
+    assert assigned.status_code == 200, assigned.text
+
+    staff = client.get(f"/api/v1/workforce/departments/{dept_id}/employees", headers=h)
+    assert staff.status_code == 200, staff.text
+    rows = staff.json()["items"] if isinstance(staff.json(), dict) else staff.json()
+    mine = next(r for r in rows if r["employmentId"] == member["employment_id"])
+    assert mine["employeeCode"] == member["code"]
+    assert mine["name"] != member["code"], mine
+    assert "@" not in mine["name"] and " " in mine["name"], mine
+
+    avail = client.get(
+        f"/api/v1/workforce/departments/{dept_id}/employees-available", headers=h
+    )
+    assert avail.status_code == 200, avail.text
+    labels = [o["label"] for o in avail.json()]
+    assert labels, "expected candidates outside the department"
+    assert all("(" in label and ")" in label for label in labels), labels
+
+    patched = client.patch(
+        f"/api/v1/workforce/departments/{dept_id}",
+        json={"department_head_employment_id": member["employment_id"]},
+        headers=h,
+    )
+    assert patched.status_code == 200, patched.text
+    assert patched.json()["headName"] not in (None, "", "—"), patched.json()
+
+    got = client.get(f"/api/v1/workforce/departments/{dept_id}", headers=h)
+    assert got.status_code == 200, got.text
+    assert got.json()["headName"] == patched.json()["headName"]
+    record_coverage("test_department_member_names_and_head", COVERED[:9])
+
+
+def test_employment_detail_and_list_enriched(client, factory):
+    """Employment detail + list carry person/assignment display names."""
+    h = _sa(factory)["headers"]
+    dept = client.post("/api/v1/workforce/departments", json={"name": "Enriched Dept"}, headers=h)
+    assert dept.status_code == 201, dept.text
+    dept_id = dept.json()["id"]
+
+    member = factory.actor("enr")
+    assert (
+        client.post(
+            f"/api/v1/workforce/departments/{dept_id}/assign",
+            json={"employmentId": member["employment_id"]},
+            headers=h,
+        ).status_code
+        == 200
+    )
+
+    detail = client.get(
+        f"/api/v1/workforce/employments/{member['employment_id']}", headers=h
+    )
+    assert detail.status_code == 200, detail.text
+    body = detail.json()
+    assert body["person_name"] not in (None, ""), body
+    assert " " in body["person_name"], body
+    assert body["department_id"] == dept_id, body
+    assert body["department_name"] == "Enriched Dept", body
+
+    listed = client.get("/api/v1/workforce/employments", headers=h)
+    assert listed.status_code == 200, listed.text
+    rows = listed.json() if isinstance(listed.json(), list) else listed.json().get("items", [])
+    mine = next(r for r in rows if r["id"] == member["employment_id"])
+    assert mine["person_name"] == body["person_name"], mine
+    assert mine["department_name"] == "Enriched Dept", mine
+
+    depts = client.get("/api/v1/workforce/departments", headers=h)
+    assert depts.status_code == 200, depts.text
+    assert depts.json()["metrics"]["staffing"] >= 1, depts.json()["metrics"]
+    record_coverage("test_employment_detail_and_list_enriched", COVERED[9:14])
+
+
 def test_assignment_and_state_flow(client, factory):
     sa = _sa(factory)
     h = sa["headers"]
@@ -276,3 +425,58 @@ def test_attendance_ops_flow(client, factory):
     )
     assert locked.status_code == 200, locked.text
     record_coverage("test_attendance_ops_flow", COVERED[14:])
+
+
+def test_attendance_today_and_manual_correction(client, factory):
+    """Org today-list is name-enriched; manual entry auto-creates the own day."""
+    import datetime as _dt
+
+    sa = _sa(factory)
+    h = sa["headers"]
+    actor = factory.actor("att2")
+    emp_id = actor["employment_id"]
+    grant(client, h, emp_id, "attendance", "CREATE", "SELF", "Att Self Create")
+    grant(client, h, emp_id, "attendance", "VIEW", "ORGANIZATION", "Att Org View")
+    b_headers = actor["headers"]
+
+    punch = client.post(
+        "/api/v1/workforce/attendance/punch",
+        json={"employment_id": emp_id, "punch_type": "CHECK_IN"},
+        headers=b_headers,
+    )
+    assert punch.status_code == 201, punch.text
+
+    today = client.get("/api/v1/workforce/attendance/today", headers=b_headers)
+    assert today.status_code == 200, today.text
+    payload = today.json()
+    assert payload["total"] >= 1
+    mine = [r for r in payload["items"] if r["id"] == str(punch.json()["attendance_day_id"])]
+    assert mine, payload["items"]
+    assert mine[0]["name"] and mine[0]["name"] != f"Emp #{emp_id}"
+    assert mine[0]["status"] == "PRESENT"
+
+    manual = factory.actor("att3")
+    grant(client, h, manual["employment_id"], "attendance", "CREATE", "SELF", "Att Self Create")
+    created = client.post(
+        "/api/v1/workforce/attendance/corrections",
+        json={
+            "attendance_date": _dt.date.today().isoformat(),
+            "requested_check_in": f"{_dt.date.today().isoformat()}T09:00:00+00:00",
+            "requested_check_out": f"{_dt.date.today().isoformat()}T18:00:00+00:00",
+            "reason": "[Client Meeting] off-site, no connectivity",
+        },
+        headers=manual["headers"],
+    )
+    assert created.status_code == 201, created.text
+    assert created.json()["approval_request_id"] is not None
+
+    invalid = client.post(
+        "/api/v1/workforce/attendance/corrections",
+        json={"reason": "missing day reference"},
+        headers=manual["headers"],
+    )
+    assert invalid.status_code == 422, invalid.text
+    record_coverage(
+        "test_attendance_today_and_manual_correction",
+        [("GET", "/api/v1/workforce/attendance/today"), ("POST", "/api/v1/workforce/attendance/corrections")],
+    )

@@ -35,10 +35,18 @@ class EmployeeRepository(BaseRepository):
         )
         return await self.scalar_one_or_none(stmt)
 
-    async def list_positions(self, *, include_archived: bool = False) -> Sequence[Position]:
+    async def list_positions(
+        self, *, include_archived: bool = False, department_id: int | None = None
+    ) -> Sequence[Position]:
         stmt = select(Position).order_by(Position.name)
         if not include_archived:
             stmt = stmt.where(Position.is_archived.is_(False))
+        if department_id is not None:
+            # Scoped view: department's own rows plus unassigned legacy rows.
+            stmt = stmt.where(
+                (Position.department_id == department_id)
+                | (Position.department_id.is_(None))
+            )
         return await self.scalars(stmt)
 
     async def get_employment_by_id(

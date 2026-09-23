@@ -4,6 +4,7 @@ import { Button } from '@/shared/components/ui/Button'
 import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSkeleton'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { Can } from '@/shared/rbac'
 import { StatusDot } from '@/shared/components/ui/StatusDot'
 import { useLead, useSalesActivities, useUpdateLead } from '../../hooks/use-sales'
@@ -23,6 +24,8 @@ export function LeadDetailPage() {
   const updateLead = useUpdateLead()
   const lead = leadQuery.data ?? null
   const timeline = (activitiesQuery.data ?? []).slice(0, 4)
+
+  useDeletedRedirect({ ready: !leadQuery.isLoading, data: lead, error: leadQuery.error, listTo: salesRoutes.leads })
 
   if (leadQuery.isLoading) return <PageLoadingSkeleton />
 

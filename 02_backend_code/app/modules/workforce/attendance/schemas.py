@@ -66,11 +66,18 @@ class AttendanceDayDetailResponse(AttendanceDayResponse):
 
 
 class CorrectionCreate(BaseModel):
-    attendance_day_id: int
+    attendance_day_id: int | None = None
+    attendance_date: date | None = None
     requested_check_in: datetime | None = None
     requested_check_out: datetime | None = None
     reason: str = Field(..., min_length=1)
     target_department_id: int | None = None
+
+    @model_validator(mode="after")
+    def day_or_date(self) -> CorrectionCreate:
+        if self.attendance_day_id is None and self.attendance_date is None:
+            raise ValueError("Either attendance_day_id or attendance_date is required")
+        return self
 
     @model_validator(mode="after")
     def at_least_one_time(self) -> CorrectionCreate:
@@ -166,3 +173,21 @@ class BreakResponse(BaseModel):
     break_end: datetime | None = None
     duration_minutes: int | None = None
     created_at: datetime
+
+
+class TodayAttendanceRow(BaseModel):
+    """Org today-list row for the workforce All-employees view (names included)."""
+
+    id: str
+    name: str
+    avatar: str
+    department: str
+    checkIn: str
+    checkOut: str
+    status: str
+    hours: str
+
+
+class TodayAttendanceListResponse(BaseModel):
+    items: list[TodayAttendanceRow]
+    total: int

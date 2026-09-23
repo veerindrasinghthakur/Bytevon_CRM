@@ -12,6 +12,7 @@ import { Can } from '@/shared/rbac'
 import { Action } from '@/shared/schema'
 import { myAdminRoutes } from '@/modules/admin/routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { useUserDetail } from '../../hooks/user/use-user-detail'
 import { cn } from '@/shared/lib/cn'
 import { Modal } from '@/shared/components/ui/Modal'
@@ -21,6 +22,8 @@ export function UserDetailPage() {
   const { userId } = useParams({ strict: false }) as { userId?: string }
   const navigate = useNavigate()
   const d = useUserDetail(userId)
+
+  useDeletedRedirect({ ready: !d.isLoading, data: d.display, error: d.detailError, listTo: myAdminRoutes.usersList })
 
   if (d.isLoading) return <PageLoadingSkeleton />
   if (d.isError || !d.display) {

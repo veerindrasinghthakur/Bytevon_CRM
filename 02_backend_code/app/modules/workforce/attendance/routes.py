@@ -25,6 +25,7 @@ from app.modules.workforce.attendance.schemas import (
     MonthlySummaryResponse,
     PunchRequest,
     PunchResponse,
+    TodayAttendanceListResponse,
 )
 from app.modules.workforce.dependencies import AttendanceServiceDep
 
@@ -45,6 +46,19 @@ async def punch(
     client_ip = normalize_ip_address(raw_ip) or "0.0.0.0"
     body = body.model_copy(update={"employment_id": auth.employment_id})
     return await service.punch(body, client_ip=client_ip, actor_employment_id=auth.employment_id)
+
+
+@router.get(
+    "/today",
+    response_model=TodayAttendanceListResponse,
+    dependencies=[Depends(require_permission("attendance", "VIEW", "ORGANIZATION"))],
+)
+async def today_list(
+    service: AttendanceServiceDep,
+    search: str | None = Query(None),
+    status: str | None = Query(None),
+) -> TodayAttendanceListResponse:
+    return await service.today_list(search=search, status=status)
 
 
 @router.get("/days/{day_id}", response_model=AttendanceDayDetailResponse)
@@ -83,8 +97,11 @@ async def submit_correction(
     service: AttendanceServiceDep,
     auth: Annotated[AuthContext, Depends(require_permission("attendance", "CREATE", "SELF"))],
 ) -> CorrectionResponse:
-    day = await service.get_day(body.attendance_day_id)
-    enforce_owner_or_grant(auth, "attendance", "CREATE", owner_employment_id=day.employment_id)
+    # Self-service manual entry may reference a date with no day record yet;
+    # the service auto-creates the caller's own day in that case.
+    if body.attendance_day_id is not None:
+        day = await service.get_day(body.attendance_day_id)
+        enforce_owner_or_grant(auth, "attendance", "CREATE", owner_employment_id=day.employment_id)
     return await service.submit_correction(body, actor_employment_id=auth.employment_id)
 
 

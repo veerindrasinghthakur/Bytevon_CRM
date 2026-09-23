@@ -91,6 +91,7 @@ export function useTeamDetail(teamIdParam: string | undefined) {
     projects,
     isLoading: teamQuery.isLoading,
     isError: teamQuery.isError || (!teamQuery.isLoading && team == null && enabled),
+    detailError: teamQuery.error ?? null,
     isMembersLoading: membersQuery.isLoading,
     isProjectsLoading: projectsQuery.isLoading,
     refetch: () => {

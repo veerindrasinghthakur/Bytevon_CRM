@@ -7,6 +7,7 @@ import { RefreshButton } from '@/shared/components/ui/RefreshButton'
 import { Skeleton } from '@/shared/components/feedback/Skeleton'
 import { NotesPanel } from '@/shared/components/notes/NotesPanel'
 import { looseLinkProps, safeNavigate } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { NoteReferenceType } from '@/shared/schema'
 import { useProjectDetail } from '../../hooks/project/use-project-detail'
 import type { ProjectDetailTab } from '../../types'
@@ -33,6 +34,7 @@ export function ProjectDetailPage() {
     project,
     isLoading,
     isError,
+    detailError,
     refetch,
     tab,
     setTab,
@@ -71,6 +73,8 @@ export function ProjectDetailPage() {
     uploadDoc,
     refetchDocs,
   } = detail
+
+  useDeletedRedirect({ ready: !isLoading, data: project, error: detailError, listTo: projectRoutes.list })
 
   useEffect(() => {
     if (search.edit === '1' && project && !isEditing) startEditing()

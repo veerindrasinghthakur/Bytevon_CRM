@@ -1,8 +1,8 @@
-﻿import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import type { ReactNode } from 'react'
-import { useUsersList } from './use-users'
+import { useUsersList } from '@/modules/admin/hooks/user/use-users'
 
 function createWrapper() {
   const client = new QueryClient({
@@ -54,4 +54,3 @@ describe('useUsersList', () => {
     )
   })
 })
-

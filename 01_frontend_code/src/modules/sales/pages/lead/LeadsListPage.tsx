@@ -311,9 +311,12 @@ export function LeadsListPage() {
                   <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider">
                     Date
                   </th>
+                  {/* Actions column hidden — row press opens quick view → full record.
+                      Restore the block below when row actions return.
                   <th className="px-4 py-3 text-label-sm font-semibold text-on-surface-variant uppercase tracking-wider text-center">
                     Actions
                   </th>
+                  */}
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant">
@@ -428,6 +431,8 @@ export function LeadsListPage() {
                           <span className="text-on-surface-variant">—</span>
                         )}
                       </td>
+                      {/* Row actions hidden — quick view (row press) → full record.
+                          Restore with the Actions <th> above when row actions return.
                       <td
                         className="px-4 py-4 text-center"
                         onMouseDown={(e) => e.stopPropagation()}
@@ -459,6 +464,7 @@ export function LeadsListPage() {
                           />
                         </div>
                       </td>
+                      */}
                     </tr>
                   )
                 })}

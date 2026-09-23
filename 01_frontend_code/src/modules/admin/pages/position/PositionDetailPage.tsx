@@ -8,6 +8,7 @@ import { PageLoadingSkeleton } from '@/shared/components/feedback/PageLoadingSke
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { useEditMode } from '@/shared/hooks/useEditMode'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 import { createPosition, getPosition, updatePosition, deletePosition, restorePosition } from '../../api/organization'
 import { DeleteButton } from '@/shared/components/ui/DeleteButton'
 import { ArchivedBadge } from '@/shared/components/ui/ArchivedBadge'
@@ -26,6 +27,13 @@ export function PositionDetailPage() {
     queryKey: queryKeys.organization.positions(true),
     queryFn: () => getPosition(id),
     enabled: !isNew && Number.isFinite(id),
+  })
+
+  useDeletedRedirect({
+    ready: !isNew && !detailQuery.isLoading,
+    data: isNew ? {} : (detailQuery.data ?? null),
+    error: detailQuery.error,
+    listTo: '/admin/settings/positions',
   })
 
   const { isEditing, startEditing, cancelEditing, finishEditing } = useEditMode(isNew)

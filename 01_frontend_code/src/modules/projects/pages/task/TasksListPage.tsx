@@ -204,7 +204,10 @@ export function TasksListPage() {
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Priority</th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Status</th>
                   <th className="py-4 px-4 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Due Date</th>
+                  {/* Actions column hidden — row click opens quick view → full record.
+                      Restore the block below when row actions return.
                   <th className="py-4 px-6 text-[10px] font-bold text-on-surface-variant uppercase tracking-wider text-right">Action</th>
+                  */}
                 </tr>
               </thead>
               <tbody className="divide-y divide-outline-variant/20">
@@ -262,6 +265,8 @@ export function TasksListPage() {
                         <TaskStatusBadge status={task.status} />
                       </td>
                       <td className="py-2 px-4 text-body-md text-on-background">{task.dueDate ?? '—'}</td>
+                      {/* Row actions hidden — quick view (row click) → full record.
+                          Restore with the Action <th> above when row actions return.
                       <td
                         className="py-2 px-6 text-right"
                         onMouseDown={(e) => e.stopPropagation()}
@@ -278,6 +283,7 @@ export function TasksListPage() {
                           />
                         </div>
                       </td>
+                      */}
                     </tr>
                   )
                 })}

@@ -11,6 +11,7 @@ import {
   listEmployments,
 } from '../../api/employment'
 import { createUserLogin, listRoles } from '@/modules/admin/api/users'
+import { getDepartment } from '../../api/departments'
 import {
   emptyEmploymentForm,
   employmentFormSchema,
@@ -25,6 +26,7 @@ import type { AdminRoleOption } from '@/modules/admin/types'
 import { cn } from '@/shared/lib/cn'
 import { GENDER_OPTIONS } from '../../schemas/enums'
 import type { EmployeeCreateMasters, EmployeeCreateStep, ManagerOption } from '../../types'
+import { filterPositionsByDepartment } from '../../types'
 
 function Icon({ name, className }: { name: string; className?: string }) {
   return (
@@ -98,6 +100,7 @@ export function EmployeeCreatePage() {
   const [workEmail, setWorkEmail] = useState('')
   const [tempPassword, setTempPassword] = useState('')
   const [roleId, setRoleId] = useState('')
+  const [deptHeadName, setDeptHeadName] = useState<string | null>(null)
 
   const previewEmpCode = 'EMP-AUTO'
 
@@ -105,10 +108,31 @@ export function EmployeeCreatePage() {
     () => (masters?.departments ?? []).map((d) => ({ value: String(d.id), label: d.name })),
     [masters],
   )
-  const positionOptions = useMemo(
-    () => (masters?.positions ?? []).map((p) => ({ value: String(p.id), label: p.name })),
-    [masters],
-  )
+  const selectedDepartmentId = form.watch('departmentId')
+
+  // Reporting manager is derived: head of the selected department.
+  useEffect(() => {
+    if (!selectedDepartmentId) {
+      setDeptHeadName(null)
+      return
+    }
+    let live = true
+    getDepartment(Number(selectedDepartmentId))
+      .then((d) => {
+        if (live) setDeptHeadName(d?.headName && d.headName !== '—' ? d.headName : null)
+      })
+      .catch(() => {
+        if (live) setDeptHeadName(null)
+      })
+    return () => {
+      live = false
+    }
+  }, [selectedDepartmentId])
+  const positionOptions = useMemo(() => {
+    // Department-scoped: own rows plus unassigned (departmentId null) legacy rows.
+    const scoped = filterPositionsByDepartment(masters?.positions ?? [], selectedDepartmentId)
+    return scoped.map((p) => ({ value: String(p.id), label: p.name }))
+  }, [masters, selectedDepartmentId])
   const locationOptions = useMemo(
     () => (masters?.locations ?? []).map((l) => ({ value: String(l.id), label: l.name })),
     [masters],
@@ -136,6 +160,16 @@ export function EmployeeCreatePage() {
     () => roles.map((r) => ({ value: String(r.id), label: r.name })),
     [roles],
   )
+
+  useEffect(() => {
+    // Changing department invalidates the selected position when it is
+    // scoped to another department — clear it so the form can't submit a
+    // position that doesn't belong to the chosen department.
+    const current = form.getValues('positionId')
+    if (!current) return
+    const stillValid = positionOptions.some((o) => o.value === current)
+    if (!stillValid) form.setValue('positionId', '', { shouldValidate: true })
+  }, [selectedDepartmentId, positionOptions, form])
 
   useEffect(() => {
     ;(async () => {
@@ -418,6 +452,9 @@ export function EmployeeCreatePage() {
                   />
                 )}
               />
+              <p className="text-xs text-on-surface-variant/70">
+                Reporting manager (auto): {deptHeadName ?? 'head of the selected department'}
+              </p>
             </Field>
             <Field label="Position" required error={errors.positionId?.message}>
               <Controller
