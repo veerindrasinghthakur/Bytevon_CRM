@@ -18,6 +18,7 @@ from app.modules.approvals.approval_action.schemas import (
     CommentRequest,
 )
 from app.modules.approvals.models import ApprovalAction
+from app.modules.rbac.scoping.relationships import enforce_relationship
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,7 @@ class ApprovalActionService(BasePublicService):
         data: ApprovalActionRequest,
         *,
         actor_employment_id: int,
+        is_super_admin: bool = False,
     ) -> ApprovalRequestDetailResponse:
         return await self._decide(
             request_id,
@@ -61,6 +63,7 @@ class ApprovalActionService(BasePublicService):
             new_status=ApprovalStatus.APPROVED,
             remarks=data.remarks,
             actor_employment_id=actor_employment_id,
+            is_super_admin=is_super_admin,
         )
 
     async def reject(
@@ -69,6 +72,7 @@ class ApprovalActionService(BasePublicService):
         data: ApprovalActionRequest,
         *,
         actor_employment_id: int,
+        is_super_admin: bool = False,
     ) -> ApprovalRequestDetailResponse:
         return await self._decide(
             request_id,
@@ -76,6 +80,7 @@ class ApprovalActionService(BasePublicService):
             new_status=ApprovalStatus.REJECTED,
             remarks=data.remarks,
             actor_employment_id=actor_employment_id,
+            is_super_admin=is_super_admin,
         )
 
     async def cancel(
@@ -92,6 +97,7 @@ class ApprovalActionService(BasePublicService):
             remarks=data.remarks or "Cancelled",
             actor_employment_id=actor_employment_id,
             allow_requester=True,
+            skip_relationship=True,
         )
 
     async def comment(
@@ -127,6 +133,8 @@ class ApprovalActionService(BasePublicService):
         remarks: str | None,
         actor_employment_id: int,
         allow_requester: bool = False,
+        is_super_admin: bool = False,
+        skip_relationship: bool = False,
     ) -> ApprovalRequestDetailResponse:
         req = await self._repo.get_request_by_id(request_id, with_actions=True)
         if req is None:
@@ -141,6 +149,22 @@ class ApprovalActionService(BasePublicService):
         ):
             raise DomainError("Requester cannot approve or reject their own request")
 
+        # Leave APPROVE relationship: department head + PENDING.
+        # Non-leave request types are not gated by this first consumer.
+        if (
+            not skip_relationship
+            and action in (ApprovalActionType.APPROVED, ApprovalActionType.REJECTED)
+            and (req.request_type or "").upper().startswith("LEAVE")
+        ):
+            await enforce_relationship(
+                self._session,
+                actor_employment_id=actor_employment_id,
+                resource="leave_request",
+                action="APPROVE",
+                target=req,
+                is_super_admin=is_super_admin,
+            )
+
         action_row = ApprovalAction(
             approval_request_id=req.id,
             employment_id=actor_employment_id,
@@ -151,8 +175,6 @@ class ApprovalActionService(BasePublicService):
         req.status = new_status
 
         await self._commit()
-        # Status mutation issues an UPDATE on commit, postfetch-expiring
-        # server-computed columns; refresh before sync validation.
         await self._refresh(req)
         await self._audit(
             f"approval_request.{new_status.value.lower()}",
