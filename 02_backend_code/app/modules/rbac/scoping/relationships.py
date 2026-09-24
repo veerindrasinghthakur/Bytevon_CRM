@@ -11,12 +11,12 @@ from __future__ import annotations
 
 from typing import Any, Optional, Protocol, runtime_checkable
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db.enums import ApprovalStatus, ApprovalTarget
 from app.core.exceptions.exception import ForbiddenError
 from app.modules.approvals.models import ApprovalRequest
+from app.modules.rbac.authz_decision import log_authz_decision
 from app.modules.workforce.department.models import Department
 
 
@@ -43,16 +43,10 @@ class LeaveApproveRelationshipPolicy:
     """
     Approve/reject leave-backed approval requests.
 
-    Valid approver today (codified from engine + leave submit):
-    - Approval request status is PENDING (approvable state).
-    - Actor is not the requester (self-approve forbidden).
-    - target == DEPARTMENT_HEAD → actor must be departments.department_head_employment_id
-      for approval_requests.target_department_id.
-    - target == DEPARTMENT → same head check when target_department_id is set;
-      if target_department_id is null, deny (cannot resolve approver).
-
-    Scope (can see the leave/approval) is enforced upstream; this policy only
-    checks relationship + state.
+    Valid approver:
+    - status PENDING
+    - actor is not requester
+    - DEPARTMENT_HEAD / DEPARTMENT → actor is department_head_employment_id
     """
 
     resource = "leave_request"
@@ -71,7 +65,6 @@ class LeaveApproveRelationshipPolicy:
         if not isinstance(req, ApprovalRequest):
             return False
 
-        # Only leave-family request types (leave submit uses LEAVE_REQUEST / LEAVE_CANCEL)
         rt = (req.request_type or "").upper()
         if not rt.startswith("LEAVE"):
             return False
@@ -106,7 +99,6 @@ class LeaveApproveRelationshipPolicy:
         return False
 
 
-# (resource, action) → policy — extend for attendance, expense, etc.
 RELATIONSHIP_POLICIES: dict[tuple[str, str], RelationshipPolicy] = {
     (LeaveApproveRelationshipPolicy.resource, LeaveApproveRelationshipPolicy.action): (
         LeaveApproveRelationshipPolicy()
@@ -132,11 +124,18 @@ async def enforce_relationship(
     """
     Run registered relationship policy if present.
 
-    Super Admin bypasses relationship checks (same as scope).
-    Missing policy → no-op (resource/action has no relationship rule).
-    Failed check → ForbiddenError 403.
+    Super Admin bypasses. Failed check → ForbiddenError 403 + DENY log.
     """
+    target_id = getattr(target, "id", None)
     if is_super_admin:
+        log_authz_decision(
+            actor_employment_id=actor_employment_id,
+            resource=resource,
+            action=action,
+            result="ALLOW",
+            reason="super_admin_relationship_bypass",
+            target_id=target_id,
+        )
         return
     policy = get_relationship_policy(resource, action)
     if policy is None:
@@ -149,7 +148,23 @@ async def enforce_relationship(
         target=target,
     )
     if not ok:
+        log_authz_decision(
+            actor_employment_id=actor_employment_id,
+            resource=resource,
+            action=action,
+            result="DENY",
+            reason="relationship_denied",
+            target_id=target_id,
+        )
         raise ForbiddenError(
             "You are not allowed to perform this action on this record",
             code="relationship_denied",
         )
+    log_authz_decision(
+        actor_employment_id=actor_employment_id,
+        resource=resource,
+        action=action,
+        result="ALLOW",
+        reason="relationship_ok",
+        target_id=target_id,
+    )
