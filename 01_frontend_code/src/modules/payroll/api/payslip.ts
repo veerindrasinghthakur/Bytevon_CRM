@@ -4,15 +4,14 @@ import { delay } from '@/shared/mock/db'
 import { computePayslip } from '@/shared/mock/data/payroll'
 import type { PayslipDetail } from '../types'
 
-export async function getPayslip(employeeId: string): Promise<PayslipDetail | null> {
+/** `id` is MonthlyPayroll.id (payroll_id). */
+export async function getPayslip(id: string): Promise<PayslipDetail | null> {
   if (env.useMockApi) {
     await delay(200)
-    return computePayslip(employeeId)
+    return computePayslip(id)
   }
   try {
-    const { data } = await apiClient.get<PayslipDetail>(
-      `/payroll/employees/${encodeURIComponent(employeeId)}/payslip`,
-    )
+    const { data } = await apiClient.get<PayslipDetail>(`/payroll/${encodeURIComponent(id)}`)
     return data
   } catch {
     return null
