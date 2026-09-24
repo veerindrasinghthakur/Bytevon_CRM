@@ -22,7 +22,7 @@ async def payroll_kpis(
 
 @router.get("/period", dependencies=[Depends(require_permission("payroll", "VIEW", "ORGANIZATION"))])
 async def payroll_period(service: DashboardServiceDep) -> dict[str, Any]:
-    return service.period()
+    return await service.period()
 
 
 @router.get("/activity", dependencies=[Depends(require_permission("payroll", "VIEW", "ORGANIZATION"))])
