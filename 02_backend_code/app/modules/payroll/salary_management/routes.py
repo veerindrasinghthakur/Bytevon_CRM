@@ -50,7 +50,8 @@ async def get_current_salary(
     employment_id: int,
     service: SalaryManagementServiceDep,
     session: Annotated[AsyncSession, Depends(get_db_session)],
-    auth: Annotated[AuthContext, Depends(require_permission("salary", "VIEW", "CUSTOM"))],
+    # TODO(ScopeResolver): was CUSTOM; scope-union via enforce_owner_or_grant
+    auth: Annotated[AuthContext, Depends(require_permission("salary", "VIEW", "SELF"))],
     as_of: date | None = Query(None),
 ) -> dict:
     enforce_owner_or_grant(auth, "salary", "VIEW", owner_employment_id=employment_id)
@@ -63,7 +64,7 @@ async def list_salaries(
     employment_id: int,
     service: SalaryManagementServiceDep,
     session: Annotated[AsyncSession, Depends(get_db_session)],
-    auth: Annotated[AuthContext, Depends(require_permission("salary", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("salary", "VIEW", "SELF"))],
 ) -> list[dict]:
     enforce_owner_or_grant(auth, "salary", "VIEW", owner_employment_id=employment_id)
     rows = await service.list_salaries(employment_id)
