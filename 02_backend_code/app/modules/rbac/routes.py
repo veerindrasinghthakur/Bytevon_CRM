@@ -116,7 +116,6 @@ async def restore_role(
     service: RBACServiceDep,
     auth: Annotated[AuthContext, Depends(require_permission("role", "UPDATE", "ORGANIZATION"))],
 ) -> RoleResponse:
-    """Q16: restore an archived role (409 when the name is taken)."""
     return await service.restore_role(role_id, actor_employment_id=auth.employment_id)
 
 
@@ -200,10 +199,9 @@ async def list_roles_for_employment(
 async def get_effective_permissions(
     employment_id: int,
     service: RBACServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("role", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("role", "VIEW", "SELF"))],
 ) -> EffectivePermissionsResponse:
-    # Everyone may always read their OWN permission set; other employments
-    # still need a role grant (404 hides existence by design).
+    # Own permission set always readable; others need ≥ DEPARTMENT grant.
     enforce_owner_or_grant(auth, "role", "VIEW", owner_employment_id=employment_id)
     return await service.get_effective_permissions(employment_id)
 
