@@ -48,13 +48,26 @@ class DashboardService:
             "period": f"{y}-{m:02d}",
         }
 
-    def period(self) -> dict[str, Any]:
+    async def period(self) -> dict[str, Any]:
+        """Current calendar month; status derived from payroll rows (not hard-coded OPEN)."""
         today = date.today()
+        y, m = today.year, today.month
+        rows = await self._monthly.list_payrolls(year=y, month=m, limit=500)
+        statuses = {_status_str(r).upper() for r in rows}
+        if not rows:
+            status = "OPEN"
+        elif statuses and statuses <= {"PAID"}:
+            status = "CLOSED"
+        elif "APPROVED" in statuses or "CALCULATED" in statuses:
+            status = "IN_PROGRESS"
+        else:
+            status = "OPEN"
         return {
-            "year": today.year,
-            "month": today.month,
+            "year": y,
+            "month": m,
             "label": today.strftime("%B %Y"),
-            "status": "OPEN",
+            "status": status,
+            "rowCount": len(rows),
         }
 
     async def activity(self, *, limit: int = 20) -> list[dict[str, Any]]:
@@ -71,6 +84,7 @@ class DashboardService:
             out.append(
                 {
                     "id": str(getattr(r, "id", "")),
+                    "payrollId": getattr(r, "id", None),
                     "title": title,
                     "status": _status_str(r),
                     "time": str(getattr(r, "updated_at", getattr(r, "created_at", ""))),
@@ -92,4 +106,13 @@ class DashboardService:
             "totalGross": sum(_money(r, "gross_salary", "gross_pay") for r in rows),
             "totalNet": sum(_money(r, "net_salary", "net_pay") for r in rows),
             "totalDeductions": sum(_money(r, "total_deductions") for r in rows),
+            "items": [
+                {
+                    "payrollId": getattr(r, "id", None),
+                    "payroll_id": getattr(r, "id", None),
+                    "employmentId": getattr(r, "employment_id", None),
+                    "status": _status_str(r),
+                }
+                for r in rows
+            ],
         }
