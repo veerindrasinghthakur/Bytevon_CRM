@@ -1,6 +1,7 @@
 """Scope-aware employment operations (ScopeResolver + adapters).
 
 Keeps large EmployeeService intact; routes call these helpers.
+All employment API responses go through rbac.serialization.filter_response.
 """
 from __future__ import annotations
 
@@ -8,8 +9,10 @@ from typing import Optional
 
 from app.core.db.enums import EmploymentState
 from app.core.exceptions.exception import ForbiddenError, NotFoundError
+from app.modules.auth.models import Person
 from app.modules.rbac.scoping.resolver import ScopeResolver
 from app.modules.rbac.scoping.validate_create import validate_create_payload
+from app.modules.rbac.serialization import filter_response
 from app.modules.workforce.employee.schemas import (
     EmployeeCreate,
     EmploymentAssignmentResponse,
@@ -21,7 +24,18 @@ from app.modules.workforce.employee.schemas import (
     PersonResponse,
 )
 from app.modules.workforce.employee.service import EmployeeService, _optional_id
-from app.modules.auth.models import Person
+
+RESOURCE = "employment"
+
+
+async def _redact(service: EmployeeService, actor_id: int, payload, *, is_super_admin: bool):
+    return await filter_response(
+        service._session,
+        actor_employment_id=actor_id,
+        resource=RESOURCE,
+        payload=payload,
+        is_super_admin=is_super_admin,
+    )
 
 
 async def list_employments_scoped(
@@ -36,7 +50,7 @@ async def list_employments_scoped(
     constraint = None
     if not is_super_admin:
         constraint = await ScopeResolver(service._session).resolve(
-            actor_employment_id, "employment", "VIEW"
+            actor_employment_id, RESOURCE, "VIEW"
         )
         if constraint is None:
             raise ForbiddenError(
@@ -54,7 +68,9 @@ async def list_employments_scoped(
     displays = await service._assignment_display([r.id for r in rows])
     for resp, row in zip(resps, rows):
         service._apply_display(resp, names.get(row.person_id), displays.get(row.id))
-    return resps
+    return await _redact(
+        service, actor_employment_id, resps, is_super_admin=is_super_admin
+    )
 
 
 async def get_employment_scoped(
@@ -67,7 +83,7 @@ async def get_employment_scoped(
     constraint = None
     if not is_super_admin:
         constraint = await ScopeResolver(service._session).resolve(
-            actor_employment_id, "employment", "VIEW"
+            actor_employment_id, RESOURCE, "VIEW"
         )
         if constraint is None:
             raise ForbiddenError(
@@ -82,7 +98,7 @@ async def get_employment_scoped(
     current_asg = await service._repo.get_current_assignment(employment_id)
     history = await service._repo.list_state_history(employment_id, limit=10)
     person = await service._session.get(Person, emp.person_id)
-    return EmploymentDetailResponse(
+    detail = EmploymentDetailResponse(
         **EmploymentResponse.model_validate(emp).model_dump(),
         current_assignment=(
             EmploymentAssignmentResponse.model_validate(current_asg) if current_asg else None
@@ -91,6 +107,9 @@ async def get_employment_scoped(
             EmploymentStateHistoryResponse.model_validate(h) for h in history
         ],
         person=PersonResponse.model_validate(person) if person else None,
+    )
+    return await _redact(
+        service, actor_employment_id, detail, is_super_admin=is_super_admin
     )
 
 
@@ -105,7 +124,7 @@ async def update_employment_scoped(
     constraint = None
     if not is_super_admin:
         constraint = await ScopeResolver(service._session).resolve(
-            actor_employment_id, "employment", "UPDATE"
+            actor_employment_id, RESOURCE, "UPDATE"
         )
         if constraint is None:
             raise ForbiddenError(
@@ -117,8 +136,11 @@ async def update_employment_scoped(
     )
     if emp is None:
         raise NotFoundError("Employment not found")
-    return await service.update_employment(
+    resp = await service.update_employment(
         employment_id, data, actor_employment_id=actor_employment_id
+    )
+    return await _redact(
+        service, actor_employment_id, resp, is_super_admin=is_super_admin
     )
 
 
@@ -131,14 +153,17 @@ async def create_employee_scoped(
 ) -> EmploymentDetailResponse:
     if not is_super_admin:
         allowed = await ScopeResolver(service._session).scope_for_create(
-            actor_employment_id, "employment"
+            actor_employment_id, RESOURCE
         )
         validate_create_payload(
             allowed,
             department_id=_optional_id(data.department_id),
             location_id=_optional_id(data.location_id),
         )
-    return await service.create_employee(data, actor_employment_id=actor_employment_id)
+    detail = await service.create_employee(data, actor_employment_id=actor_employment_id)
+    return await _redact(
+        service, actor_employment_id, detail, is_super_admin=is_super_admin
+    )
 
 
 async def create_employment_scoped(
@@ -150,11 +175,14 @@ async def create_employment_scoped(
 ) -> EmploymentDetailResponse:
     if not is_super_admin:
         allowed = await ScopeResolver(service._session).scope_for_create(
-            actor_employment_id, "employment"
+            actor_employment_id, RESOURCE
         )
         validate_create_payload(
             allowed,
             department_id=_optional_id(data.department_id),
             location_id=_optional_id(data.location_id),
         )
-    return await service.create_employment(data, actor_employment_id=actor_employment_id)
+    detail = await service.create_employment(data, actor_employment_id=actor_employment_id)
+    return await _redact(
+        service, actor_employment_id, detail, is_super_admin=is_super_admin
+    )
