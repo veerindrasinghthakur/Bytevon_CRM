@@ -5,10 +5,11 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query, status
 
-from app.core.authorization import AuthContext, enforce_owner_or_grant, require_permission
+from app.core.authorization import AuthContext, require_permission
 from app.core.db.enums import LeaveRequestStatus
 from app.modules.approvals.request.schemas import ApprovalRequestResponse
 from app.modules.leave.dependencies import RequestServiceDep
+from app.modules.leave.request import scoped_ops
 from app.modules.leave.request.schemas import LeaveRequestCreate, LeaveRequestResponse
 
 router = APIRouter(tags=["Leave"])
@@ -22,21 +23,29 @@ router = APIRouter(tags=["Leave"])
 async def submit_request(
     body: LeaveRequestCreate,
     service: RequestServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "CREATE", "SELF"))],
+    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "CREATE", "ANY"))],
 ) -> LeaveRequestResponse:
-    enforce_owner_or_grant(auth, "leave_request", "CREATE", owner_employment_id=body.employment_id)
-    return await service.submit_request(body, actor_employment_id=auth.employment_id)
+    return await scoped_ops.submit_request_scoped(
+        service,
+        body,
+        actor_employment_id=auth.employment_id,
+        is_super_admin=auth.is_super_admin,
+    )
 
 
-@router.get("/requests", response_model=list[LeaveRequestResponse], dependencies=[Depends(require_permission("leave_request", "VIEW", "ORGANIZATION"))])
+@router.get("/requests", response_model=list[LeaveRequestResponse])
 async def list_requests(
     service: RequestServiceDep,
+    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "VIEW", "ANY"))],
     employment_id: int | None = Query(None),
     status_filter: LeaveRequestStatus | None = Query(None, alias="status"),
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
 ) -> list[LeaveRequestResponse]:
-    return await service.list_requests(
+    return await scoped_ops.list_requests_scoped(
+        service,
+        actor_employment_id=auth.employment_id,
+        is_super_admin=auth.is_super_admin,
         employment_id=employment_id,
         status=status_filter,
         limit=limit,
@@ -50,9 +59,12 @@ async def get_request(
     service: RequestServiceDep,
     auth: Annotated[AuthContext, Depends(require_permission("leave_request", "VIEW", "SELF", union=True))],
 ) -> LeaveRequestResponse:
-    req = await service.get_request(request_id)
-    enforce_owner_or_grant(auth, "leave_request", "VIEW", owner_employment_id=req.employment_id)
-    return req
+    return await scoped_ops.get_request_scoped(
+        service,
+        request_id,
+        actor_employment_id=auth.employment_id,
+        is_super_admin=auth.is_super_admin,
+    )
 
 
 @router.post(
@@ -64,9 +76,12 @@ async def cancel_request(
     service: RequestServiceDep,
     auth: Annotated[AuthContext, Depends(require_permission("leave_request", "UPDATE", "SELF", union=True))],
 ) -> LeaveRequestResponse:
-    req = await service.get_request(request_id)
-    enforce_owner_or_grant(auth, "leave_request", "UPDATE", owner_employment_id=req.employment_id)
-    return await service.cancel_request(request_id, actor_employment_id=auth.employment_id)
+    return await scoped_ops.cancel_request_scoped(
+        service,
+        request_id,
+        actor_employment_id=auth.employment_id,
+        is_super_admin=auth.is_super_admin,
+    )
 
 
 @router.post(
@@ -79,8 +94,13 @@ async def request_approved_cancel(
     auth: Annotated[AuthContext, Depends(require_permission("leave_request", "UPDATE", "SELF", union=True))],
 ) -> ApprovalRequestResponse:
     """Q5: request cancellation of APPROVED future leave (needs approval)."""
-    req = await service.get_request(request_id)
-    enforce_owner_or_grant(auth, "leave_request", "UPDATE", owner_employment_id=req.employment_id)
+    # Scope check via get first (404 if out of scope)
+    await scoped_ops.get_request_scoped(
+        service,
+        request_id,
+        actor_employment_id=auth.employment_id,
+        is_super_admin=auth.is_super_admin,
+    )
     result = await service.request_approved_cancel(
         request_id, actor_employment_id=auth.employment_id
     )

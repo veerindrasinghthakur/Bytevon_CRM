@@ -18,9 +18,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db_session
 from app.core.dependencies import get_current_login, get_token_payload
-from app.core.exceptions.exception import NotFoundError
+from app.core.exceptions.exception import ForbiddenError, NotFoundError
 from app.core.security.token_payload import TokenPayload
 from app.modules.auth.models import Login
+from app.modules.rbac.authz_decision import log_authz_decision
 
 SCOPE_RANK: dict[str, int] = {
     "SELF": 1,
@@ -137,6 +138,14 @@ def require_permission(
             scopes=dict(effective.scope_by_resource or {}),
         )
         if ctx.is_super_admin:
+            log_authz_decision(
+                actor_employment_id=employment_id,
+                resource=resource,
+                action=action,
+                result="ALLOW",
+                reason="super_admin",
+                resolved_scope="ORGANIZATION",
+            )
             return ctx
         if union:
             # Owner-or-grant route: authentication enforced above; the handler
@@ -153,11 +162,54 @@ def require_permission(
             )
         permissions = effective.permissions or {}
         resource_perms = permissions.get(resource)
-        if resource_perms is not None and not resource_perms.get(action.lower(), False):
-            raise NotFoundError(
+        has_action = bool(resource_perms and resource_perms.get(action.lower(), False))
+        grant_scope = (ctx.scopes.get(resource) or "").upper() or None
+        if not has_action:
+            log_authz_decision(
+                actor_employment_id=employment_id,
+                resource=resource,
+                action=action,
+                result="DENY",
+                reason="no_grant",
+                resolved_scope=grant_scope,
+            )
+            raise ForbiddenError(
                 "You don't have permission to perform this action",
                 code="insufficient_permission",
             )
+
+        if scope_name == "ANY":
+            log_authz_decision(
+                actor_employment_id=employment_id,
+                resource=resource,
+                action=action,
+                result="ALLOW",
+                reason="grant_any_scope",
+                resolved_scope=grant_scope,
+            )
+            return ctx
+
+        if SCOPE_RANK.get(grant_scope or "", 0) < required_rank:
+            log_authz_decision(
+                actor_employment_id=employment_id,
+                resource=resource,
+                action=action,
+                result="DENY",
+                reason=f"scope_rank_insufficient grant={grant_scope} required={scope_name}",
+                resolved_scope=grant_scope,
+            )
+            raise ForbiddenError(
+                "You don't have permission to access this resource",
+                code="insufficient_permission",
+            )
+        log_authz_decision(
+            actor_employment_id=employment_id,
+            resource=resource,
+            action=action,
+            result="ALLOW",
+            reason=f"grant_scope={grant_scope}",
+            resolved_scope=grant_scope,
+        )
         return ctx
 
     guard.__name__ = f"require_{resource}_{action.lower()}_{scope_name.lower()}"
@@ -191,7 +243,16 @@ def enforce_owner_or_grant(
     grant_scope = (ctx.scopes.get(resource) or "").upper()
     if SCOPE_RANK.get(grant_scope, 0) >= OWNER_OR_GRANT_MIN_RANK:
         return
+    log_authz_decision(
+        actor_employment_id=ctx.employment_id,
+        resource=resource,
+        action=action,
+        result="DENY",
+        reason="owner_or_grant_failed",
+        target_id=owner_employment_id or owner_person_id or owner_login_id,
+        resolved_scope=grant_scope or None,
+    )
     raise NotFoundError(
-        "You don't have permission to access this resource",
-        code="insufficient_permission",
+        "Resource not found",
+        code="not_found",
     )

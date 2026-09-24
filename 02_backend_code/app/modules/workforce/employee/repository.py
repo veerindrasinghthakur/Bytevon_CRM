@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from datetime import date
+from typing import TYPE_CHECKING, Optional
 
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,6 +16,9 @@ from app.modules.workforce.models import (
     EmploymentStateHistory,
     Position,
 )
+
+if TYPE_CHECKING:
+    from app.modules.rbac.scoping.constraint import ScopeConstraint
 
 
 class EmployeeRepository(BaseRepository):
@@ -42,7 +46,6 @@ class EmployeeRepository(BaseRepository):
         if not include_archived:
             stmt = stmt.where(Position.is_archived.is_(False))
         if department_id is not None:
-            # Scoped view: department's own rows plus unassigned legacy rows.
             stmt = stmt.where(
                 (Position.department_id == department_id)
                 | (Position.department_id.is_(None))
@@ -50,9 +53,18 @@ class EmployeeRepository(BaseRepository):
         return await self.scalars(stmt)
 
     async def get_employment_by_id(
-        self, employment_id: int, *, with_relations: bool = False
+        self,
+        employment_id: int,
+        *,
+        with_relations: bool = False,
+        constraint: Optional["ScopeConstraint"] = None,
     ) -> Employment | None:
+        """Fetch by id AND optional scope filter (never fetch-then-check)."""
+        from app.modules.rbac.scoping.adapters import apply_scope
+
         stmt = select(Employment).where(Employment.id == employment_id)
+        if constraint is not None:
+            stmt = apply_scope(stmt, constraint)
         if with_relations:
             stmt = stmt.options(
                 selectinload(Employment.state_history),
@@ -73,11 +85,21 @@ class EmployeeRepository(BaseRepository):
         return await self.scalars(stmt)
 
     async def list_employments(
-        self, *, state: str | None = None, limit: int = 100, offset: int = 0
+        self,
+        *,
+        state: str | None = None,
+        limit: int = 100,
+        offset: int = 0,
+        constraint: Optional["ScopeConstraint"] = None,
     ) -> Sequence[Employment]:
+        """List with optional ScopeConstraint applied BEFORE limit/offset."""
+        from app.modules.rbac.scoping.adapters import apply_scope
+
         stmt = select(Employment).order_by(Employment.employee_code)
         if state is not None:
             stmt = stmt.where(Employment.current_state == state)
+        if constraint is not None:
+            stmt = apply_scope(stmt, constraint)
         stmt = stmt.limit(limit).offset(offset)
         return await self.scalars(stmt)
 
@@ -131,12 +153,6 @@ class EmployeeRepository(BaseRepository):
     async def list_covering_assignments(
         self, employment_id: int, effective_from: date
     ) -> Sequence[EmploymentAssignment]:
-        """All rows covering effective_from (i.e. overlapping a new open-ended row).
-
-        Canonical temporal rule (Q1): a new assignment covers
-        [effective_from, +infinity). Any existing row with
-        effective_from <= new_from <= (effective_to or infinity) overlaps.
-        """
         stmt = (
             select(EmploymentAssignment)
             .where(
@@ -159,5 +175,4 @@ class EmployeeRepository(BaseRepository):
         return await self.scalar_one_or_none(stmt) is not None
 
 
-# Back-compat name
 EmploymentRepository = EmployeeRepository

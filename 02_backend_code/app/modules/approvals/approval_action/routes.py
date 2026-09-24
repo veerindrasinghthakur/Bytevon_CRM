@@ -65,7 +65,12 @@ async def approve_ui(
     body: ApprovalActionRequest | None = None,
 ) -> dict[str, Any]:
     data = body or ApprovalActionRequest()
-    detail = await service.approve(request_id, data, actor_employment_id=auth.employment_id)
+    detail = await service.approve(
+        request_id,
+        data,
+        actor_employment_id=auth.employment_id,
+        is_super_admin=auth.is_super_admin,
+    )
     return _ui_row(detail)
 
 
@@ -77,7 +82,12 @@ async def reject_ui(
     body: ApprovalActionRequest | None = None,
 ) -> dict[str, Any]:
     data = body or ApprovalActionRequest()
-    detail = await service.reject(request_id, data, actor_employment_id=auth.employment_id)
+    detail = await service.reject(
+        request_id,
+        data,
+        actor_employment_id=auth.employment_id,
+        is_super_admin=auth.is_super_admin,
+    )
     return _ui_row(detail)
 
 
@@ -91,7 +101,12 @@ async def approve(
     service: ApprovalActionServiceDep,
     auth: Annotated[AuthContext, Depends(require_permission("approval", "APPROVE", "DEPARTMENT"))],
 ) -> ApprovalRequestDetailResponse:
-    return await service.approve(request_id, body, actor_employment_id=auth.employment_id)
+    return await service.approve(
+        request_id,
+        body,
+        actor_employment_id=auth.employment_id,
+        is_super_admin=auth.is_super_admin,
+    )
 
 
 @router.post(
@@ -104,7 +119,12 @@ async def reject(
     service: ApprovalActionServiceDep,
     auth: Annotated[AuthContext, Depends(require_permission("approval", "APPROVE", "DEPARTMENT"))],
 ) -> ApprovalRequestDetailResponse:
-    return await service.reject(request_id, body, actor_employment_id=auth.employment_id)
+    return await service.reject(
+        request_id,
+        body,
+        actor_employment_id=auth.employment_id,
+        is_super_admin=auth.is_super_admin,
+    )
 
 
 @router.post(
