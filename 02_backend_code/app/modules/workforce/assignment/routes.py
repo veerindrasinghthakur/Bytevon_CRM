@@ -39,7 +39,7 @@ async def change_state(
 async def list_state_history(
     employment_id: int,
     service: AssignmentServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF"))],
     limit: int = Query(50, ge=1, le=200),
 ) -> list[EmploymentStateHistoryResponse]:
     enforce_owner_or_grant(auth, "employment", "VIEW", owner_employment_id=employment_id)
@@ -67,7 +67,7 @@ async def create_assignment(
 async def get_current_assignment(
     employment_id: int,
     service: AssignmentServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF"))],
     as_of: date | None = Query(None),
 ) -> EmploymentAssignmentResponse:
     enforce_owner_or_grant(auth, "employment", "VIEW", owner_employment_id=employment_id)
@@ -81,7 +81,7 @@ async def get_current_assignment(
 async def list_assignments(
     employment_id: int,
     service: AssignmentServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("employment", "VIEW", "SELF"))],
 ) -> list[EmploymentAssignmentResponse]:
     enforce_owner_or_grant(auth, "employment", "VIEW", owner_employment_id=employment_id)
     return await service.list_assignments(employment_id)
