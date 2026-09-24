@@ -48,7 +48,7 @@ async def list_requests(
 async def get_request(
     request_id: int,
     service: RequestServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "VIEW", "SELF"))],
 ) -> LeaveRequestResponse:
     req = await service.get_request(request_id)
     enforce_owner_or_grant(auth, "leave_request", "VIEW", owner_employment_id=req.employment_id)
@@ -62,7 +62,7 @@ async def get_request(
 async def cancel_request(
     request_id: int,
     service: RequestServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "UPDATE", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "UPDATE", "SELF"))],
 ) -> LeaveRequestResponse:
     req = await service.get_request(request_id)
     enforce_owner_or_grant(auth, "leave_request", "UPDATE", owner_employment_id=req.employment_id)
@@ -76,7 +76,7 @@ async def cancel_request(
 async def request_approved_cancel(
     request_id: int,
     service: RequestServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "UPDATE", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "UPDATE", "SELF"))],
 ) -> ApprovalRequestResponse:
     """Q5: request cancellation of APPROVED future leave (needs approval)."""
     req = await service.get_request(request_id)
