@@ -4,11 +4,13 @@ from __future__ import annotations
 from datetime import date
 from typing import Any
 
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.exceptions.exception import NotFoundError
 from app.core.services.base_public_service import BasePublicService
+from app.modules.auth.models import Person
 from app.modules.payroll.employee_payroll.repository import EmployeePayrollRepository
 from app.modules.payroll.employee_payroll.schemas import (
     BankAccountCreate,
@@ -16,6 +18,7 @@ from app.modules.payroll.employee_payroll.schemas import (
 )
 from app.modules.payroll.models import EmployeeBankAccount
 from app.modules.payroll.monthly_payroll.service import MonthlyPayrollService
+from app.modules.workforce.models import Employment
 
 
 def _money(r: Any, *names: str) -> float:
@@ -40,6 +43,22 @@ class EmployeePayrollService(BasePublicService):
         self._repo = EmployeePayrollRepository(session)
         self._monthly = MonthlyPayrollService(session)
 
+    async def _employment_display(self, employment_ids: set[int]) -> dict[int, dict[str, str]]:
+        if not employment_ids:
+            return {}
+        rows = (
+            await self._session.execute(
+                select(Employment.id, Employment.employee_code, Person.first_name, Person.last_name)
+                .join(Person, Person.id == Employment.person_id)
+                .where(Employment.id.in_(list(employment_ids)))
+            )
+        ).all()
+        out: dict[int, dict[str, str]] = {}
+        for eid, code, first, last in rows:
+            name = f"{(first or '').strip()} {(last or '').strip()}".strip() or f"Employee #{eid}"
+            out[int(eid)] = {"name": name, "code": code or f"EMP-{eid}"}
+        return out
+
     async def list_employees(
         self,
         *,
@@ -48,23 +67,35 @@ class EmployeePayrollService(BasePublicService):
         page: int = 1,
         page_size: int = 20,
         search: str | None = None,
+        status: str | None = None,
     ) -> dict[str, Any]:
         today = date.today()
         y = year or today.year
         m = month or today.month
         rows = await self._monthly.list_payrolls(year=y, month=m, limit=500)
+        emp_ids = {int(getattr(r, "employment_id")) for r in rows if getattr(r, "employment_id", None)}
+        display = await self._employment_display(emp_ids)
+
         items: list[dict[str, Any]] = []
         for r in rows:
             emp_id = getattr(r, "employment_id", None)
+            pid = getattr(r, "id", None)
+            st = _status_str(r)
+            if status and st.upper() != status.upper():
+                continue
+            info = display.get(int(emp_id), {}) if emp_id is not None else {}
             gross = _money(r, "gross_salary", "gross_pay")
             items.append(
                 {
-                    "id": str(getattr(r, "id", emp_id)),
+                    "id": str(pid),
+                    "payrollId": pid,
+                    "payroll_id": pid,
                     "employmentId": emp_id,
-                    "name": f"Employee #{emp_id}",
-                    "code": f"EMP-{emp_id}",
+                    "employment_id": emp_id,
+                    "name": info.get("name") or f"Employee #{emp_id}",
+                    "code": info.get("code") or f"EMP-{emp_id}",
                     "department": "—",
-                    "status": _status_str(r),
+                    "status": st,
                     "gross": gross,
                     "earnings": _money(r, "total_earnings", "gross_salary"),
                     "deductions": _money(r, "total_deductions"),
@@ -80,6 +111,7 @@ class EmployeePayrollService(BasePublicService):
                 if q in e["name"].lower()
                 or q in e["code"].lower()
                 or q in str(e["id"])
+                or q in str(e.get("employmentId") or "")
             ]
         total = len(items)
         start = (page - 1) * page_size
