@@ -4,14 +4,15 @@ import { delay } from '@/shared/mock/db'
 import { computeReview, payrollEmployees } from '@/shared/mock/data/payroll'
 import type { PayrollReviewDetail } from '../types'
 
-export async function getPayrollReview(employeeId: string): Promise<PayrollReviewDetail | null> {
+/** `id` is MonthlyPayroll.id (payroll_id), not employment_id. */
+export async function getPayrollReview(id: string): Promise<PayrollReviewDetail | null> {
   if (env.useMockApi) {
     await delay(200)
-    return computeReview(employeeId)
+    return computeReview(id)
   }
   try {
     const { data } = await apiClient.get<PayrollReviewDetail>(
-      `/payroll/employees/${encodeURIComponent(employeeId)}/review`,
+      `/payroll/${encodeURIComponent(id)}`,
     )
     return data
   } catch {
@@ -26,7 +27,7 @@ export async function approvePayrollEmployee(id: string): Promise<void> {
     if (row) row.status = 'Approved'
     return
   }
-  await apiClient.post(`/payroll/employees/${encodeURIComponent(id)}/approve`)
+  await apiClient.post(`/payroll/${encodeURIComponent(id)}/approve`)
 }
 
 export async function payPayrollEmployee(id: string, ref?: string): Promise<void> {
@@ -39,10 +40,13 @@ export async function payPayrollEmployee(id: string, ref?: string): Promise<void
     }
     return
   }
-  await apiClient.post(`/payroll/employees/${encodeURIComponent(id)}/pay`, { reference: ref })
+  await apiClient.post(`/payroll/${encodeURIComponent(id)}/pay`, {
+    payment_reference: ref,
+    reference: ref,
+  })
 }
 
-/** Monthly payroll reject — backend POST /payroll/{id}/reject {reason}. */
+/** Monthly payroll reject — POST /payroll/{payroll_id}/reject */
 export async function rejectPayroll(id: string, reason: string): Promise<void> {
   if (env.useMockApi) {
     await delay(300)
