@@ -8,26 +8,20 @@ from typing import Optional
 
 from app.core.db.enums import EmploymentState
 from app.core.exceptions.exception import ForbiddenError, NotFoundError
-from app.modules.rbac.scoping.constraint import ScopeConstraint
 from app.modules.rbac.scoping.resolver import ScopeResolver
 from app.modules.rbac.scoping.validate_create import validate_create_payload
 from app.modules.workforce.employee.schemas import (
     EmployeeCreate,
+    EmploymentAssignmentResponse,
     EmploymentCreate,
     EmploymentDetailResponse,
     EmploymentResponse,
+    EmploymentStateHistoryResponse,
     EmploymentUpdate,
+    PersonResponse,
 )
 from app.modules.workforce.employee.service import EmployeeService, _optional_id
-
-
-async def resolve_view_constraint(
-    service: EmployeeService, employment_id: int
-) -> Optional[ScopeConstraint]:
-    """None only when Super Admin path skips filtering; Forbidden if no grants."""
-    resolver = ScopeResolver(service._session)
-    constraint = await resolver.resolve(employment_id, "employment", "VIEW")
-    return constraint
+from app.modules.auth.models import Person
 
 
 async def list_employments_scoped(
@@ -85,7 +79,19 @@ async def get_employment_scoped(
     )
     if emp is None:
         raise NotFoundError("Employment not found")
-    return await service.get_employment(employment_id)
+    current_asg = await service._repo.get_current_assignment(employment_id)
+    history = await service._repo.list_state_history(employment_id, limit=10)
+    person = await service._session.get(Person, emp.person_id)
+    return EmploymentDetailResponse(
+        **EmploymentResponse.model_validate(emp).model_dump(),
+        current_assignment=(
+            EmploymentAssignmentResponse.model_validate(current_asg) if current_asg else None
+        ),
+        recent_state_history=[
+            EmploymentStateHistoryResponse.model_validate(h) for h in history
+        ],
+        person=PersonResponse.model_validate(person) if person else None,
+    )
 
 
 async def update_employment_scoped(
@@ -127,18 +133,6 @@ async def create_employee_scoped(
         allowed = await ScopeResolver(service._session).scope_for_create(
             actor_employment_id, "employment"
         )
-        if not allowed.get("organization_wide") and not allowed.get("unrestricted"):
-            # No CREATE grant at all → empty lists and not org-wide
-            if not any(
-                [
-                    allowed.get("department_ids"),
-                    allowed.get("location_ids"),
-                    allowed.get("team_ids"),
-                    allowed.get("employment_ids"),
-                ]
-            ):
-                # still allow if only optional FKs are unset and they had CREATE via dependency
-                pass
         validate_create_payload(
             allowed,
             department_id=_optional_id(data.department_id),
