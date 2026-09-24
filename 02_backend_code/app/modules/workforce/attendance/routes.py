@@ -76,7 +76,7 @@ async def list_days_in_range(
 async def get_day(
     day_id: int,
     service: AttendanceServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF"))],
 ) -> AttendanceDayDetailResponse:
     day = await service.get_day(day_id)
     enforce_owner_or_grant(auth, "attendance", "VIEW", owner_employment_id=day.employment_id)
@@ -90,7 +90,7 @@ async def get_day(
 async def list_days(
     employment_id: int,
     service: AttendanceServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF"))],
     from_date: date | None = Query(None),
     to_date: date | None = Query(None),
 ) -> list[AttendanceDayResponse]:
@@ -108,8 +108,6 @@ async def submit_correction(
     service: AttendanceServiceDep,
     auth: Annotated[AuthContext, Depends(require_permission("attendance", "CREATE", "SELF"))],
 ) -> CorrectionResponse:
-    # Self-service manual entry may reference a date with no day record yet;
-    # the service auto-creates the caller's own day in that case.
     if body.attendance_day_id is not None:
         day = await service.get_day(body.attendance_day_id)
         enforce_owner_or_grant(auth, "attendance", "CREATE", owner_employment_id=day.employment_id)
@@ -132,7 +130,7 @@ async def list_pending_corrections(
 async def get_correction(
     correction_id: int,
     service: AttendanceServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF"))],
 ) -> CorrectionResponse:
     correction = await service.get_correction(correction_id)
     day = await service.get_day(correction.attendance_day_id)
@@ -149,7 +147,7 @@ async def get_monthly_summary(
     year: int,
     month: int,
     service: AttendanceServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "SELF"))],
 ) -> MonthlySummaryResponse:
     enforce_owner_or_grant(auth, "attendance", "VIEW", owner_employment_id=employment_id)
     return await service.get_monthly_summary(employment_id, year, month)
@@ -198,7 +196,6 @@ async def unlock_monthly_summary(
     service: AttendanceServiceDep,
     auth: Annotated[AuthContext, Depends(require_permission("attendance", "UNLOCK", "ORGANIZATION"))],
 ) -> MonthlySummaryResponse:
-    """Q8: designated-role reopen of a locked month (audited)."""
     return await service.unlock_monthly_summary(
         employment_id, year, month, actor_employment_id=auth.employment_id
     )
@@ -234,8 +231,9 @@ async def end_break(
 @router.get("/policy/current", response_model=AttendancePolicyResponse)
 async def get_current_attendance_policy(
     service: AttendanceServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("attendance", "VIEW", "ORGANIZATION"))],
 ) -> AttendancePolicyResponse:
+    """Org-wide policy; was CUSTOM with no second check (any authed user)."""
     return await service.get_current_policy()
 
 
