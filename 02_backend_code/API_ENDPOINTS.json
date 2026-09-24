@@ -1695,6 +1695,19 @@
       "module": "payroll",
       "tag": "Payroll",
       "method": "GET",
+      "path": "/payroll/salaries/unconfigured",
+      "operation": "list_unconfigured_salaries",
+      "response_model": "list[int]",
+      "status": "OK",
+      "headers": {
+        "Authorization": "Bearer <access_token> (recommended for protected routes)",
+        "X-Employment-Id": "optional actor employment id (dev / multi-emp)"
+      }
+    },
+    {
+      "module": "payroll",
+      "tag": "Payroll",
+      "method": "GET",
       "path": "/payroll/salaries/current/{employment_id}",
       "operation": "get_current_salary",
       "response_model": "EmployeeSalaryResponse",

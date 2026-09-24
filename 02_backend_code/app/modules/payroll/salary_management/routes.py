@@ -45,6 +45,31 @@ async def create_salary(
     return await service.create_salary(body, actor_employment_id=auth.employment_id)
 
 
+@router.get("/salaries/open")
+async def list_open_salaries(
+    service: SalaryManagementServiceDep,
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+    auth: Annotated[AuthContext, Depends(require_permission("salary", "VIEW", "ORGANIZATION"))],
+    search: str | None = None,
+) -> list[dict]:
+    """All open salary versions with employment display (salary page source)."""
+    rows = await service.list_open_salaries(session, search=search)
+    return [
+        await filter_sensitive_fields(r, resource="salary", auth=auth, session=session)
+        for r in rows
+    ]
+
+
+@router.get("/salaries/unconfigured")
+async def list_unconfigured_salaries(
+    service: SalaryManagementServiceDep,
+    session: Annotated[AsyncSession, Depends(get_db_session)],
+    auth: Annotated[AuthContext, Depends(require_permission("salary", "VIEW", "ORGANIZATION"))],
+) -> list[int]:
+    """Active employment ids with no open salary version (Add Payroll picker)."""
+    return await service.list_unconfigured_employment_ids(session)
+
+
 @router.get("/salaries/current/{employment_id}")
 async def get_current_salary(
     employment_id: int,

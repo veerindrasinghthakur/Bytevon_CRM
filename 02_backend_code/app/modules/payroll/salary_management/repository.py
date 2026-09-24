@@ -58,3 +58,9 @@ class SalaryRepository(BaseRepository):
             .values(effective_to=effective_to)
         )
         await self.execute(stmt)
+
+    async def employment_ids_with_open_salary(self) -> set[int]:
+        stmt = select(EmployeeSalary.employment_id).where(
+            EmployeeSalary.effective_to.is_(None)
+        )
+        return {int(eid) for eid in await self.scalars(stmt)}

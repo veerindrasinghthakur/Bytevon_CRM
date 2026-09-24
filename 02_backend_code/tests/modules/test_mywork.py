@@ -102,7 +102,11 @@ def test_my_work_tasks_requests_approvals(client, factory):
 
     assert client.get("/api/v1/my-work/tasks", headers=ah).status_code == 200
     assert client.get("/api/v1/my-work/requests", headers=ah).status_code == 200
-    assert client.get("/api/v1/my-work/approvals", headers=ah).status_code == 200
+    appr = client.get("/api/v1/my-work/approvals", headers=ah)
+    assert appr.status_code == 200
+    for item in appr.json()["items"]:
+        assert item["title"], item
+        assert item["requester"] and not str(item["requester"]).startswith("Emp #"), item
     overview = client.get("/api/v1/my-work/overview", headers=ah)
     assert overview.status_code == 200, overview.text
     body = overview.json()
@@ -139,6 +143,9 @@ def test_my_work_attendance(client, factory):
         == 200
     )
     assert client.get("/api/v1/my-work/approvers", headers=ah).status_code == 200
+    directory = client.get("/api/v1/my-work/approvers", headers=ah).json()
+    assert len(directory) > 0, "approver directory must not be empty"
+    assert all(a["name"] and not str(a["name"]).startswith("Emp #") for a in directory), directory
 
     brk = client.post(
         "/api/v1/my-work/attendance/breaks/start",

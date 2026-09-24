@@ -264,29 +264,128 @@ class MyWorkAttendanceService:
         self, employment_id: int | None
     ) -> list[ApproverOption]:
         # Q10: approver resolved from the manager hierarchy (department head
-        # of the requester's current department).
+        # of the requester's current department). Falls back to administrators
+        # / approval-grant holders so the directory is never empty when no
+        # department head is assigned.
+        import logging
+
+        logger = logging.getLogger(__name__)
         if employment_id is None:
             return []
         try:
+            from sqlalchemy import select
+
+            from app.modules.auth.models import Person
+            from app.modules.rbac.models.rbac_models import (
+                EmployeeRole,
+                Permission,
+                Resource,
+                Role,
+                RolePermission,
+            )
             from app.modules.workforce.department.models import Department
             from app.modules.workforce.employee.repository import EmployeeRepository
+            from app.modules.workforce.models import Employment
 
-            asg = await EmployeeRepository(self._session).get_current_assignment(
-                employment_id
-            )
-            if asg is None or asg.department_id is None:
-                return []
-            dept = await self._session.get(Department, asg.department_id)
-            head_id = getattr(dept, "department_head_employment_id", None)
-            if not head_id:
-                return []
-            return [
-                ApproverOption(
-                    employmentId=int(head_id),
-                    name=f"Emp #{int(head_id)}",
-                    role="Department Head",
+            out: list[ApproverOption] = []
+            seen: set[int] = set()
+
+            async def _display_name(emp_id: int) -> str:
+                try:
+                    emp = await self._session.get(Employment, int(emp_id))
+                    person = (
+                        await self._session.get(Person, emp.person_id)
+                        if emp is not None and getattr(emp, "person_id", None)
+                        else None
+                    )
+                    if person is not None:
+                        full = (
+                            f"{getattr(person, 'first_name', '') or ''} "
+                            f"{getattr(person, 'last_name', '') or ''}"
+                        ).strip()
+                        if full:
+                            return full
+                except Exception:
+                    logger.exception("Approver name lookup failed for %s", emp_id)
+                return f"Emp #{int(emp_id)}"
+
+            async def _department_of(emp_id: int) -> int | None:
+                try:
+                    asg = await EmployeeRepository(self._session).get_current_assignment(
+                        int(emp_id)
+                    )
+                    if asg is not None and asg.department_id is not None:
+                        return int(asg.department_id)
+                except Exception:
+                    logger.exception("Approver department lookup failed for %s", emp_id)
+                return None
+
+            async def _push(emp_id: int, role_label: str) -> None:
+                # The directory lists eligible approvers; the approvals engine
+                # (not the directory) enforces who may act, so the requester
+                # is listed too rather than leaving the select empty.
+                eid = int(emp_id)
+                if eid in seen:
+                    return
+                seen.add(eid)
+                out.append(
+                    ApproverOption(
+                        employmentId=eid,
+                        name=await _display_name(eid),
+                        role=role_label,
+                        departmentId=await _department_of(eid),
+                    )
                 )
-            ]
+
+            try:
+                asg = await EmployeeRepository(self._session).get_current_assignment(
+                    employment_id
+                )
+                if asg is not None and asg.department_id is not None:
+                    dept = await self._session.get(Department, asg.department_id)
+                    head_id = getattr(dept, "department_head_employment_id", None)
+                    if head_id:
+                        await _push(int(head_id), "Department Head")
+            except Exception:
+                logger.exception("Department-head approver lookup failed")
+
+            if not out:
+                try:
+                    role_rows = (
+                        await self._session.execute(
+                            select(EmployeeRole.employment_id, Role.name).join(
+                                Role, Role.id == EmployeeRole.role_id
+                            )
+                        )
+                    ).all()
+                    for eid, role_name in role_rows:
+                        if role_name in ("Super Admin", "SuperAdmin"):
+                            await _push(int(eid), "Administrator")
+                    if not out:
+                        approve_rows = (
+                            await self._session.execute(
+                                select(EmployeeRole.employment_id)
+                                .join(Role, Role.id == EmployeeRole.role_id)
+                                .join(
+                                    RolePermission,
+                                    RolePermission.role_id == Role.id,
+                                )
+                                .join(
+                                    Permission,
+                                    Permission.id == RolePermission.permission_id,
+                                )
+                                .join(Resource, Resource.id == Permission.resource_id)
+                                .where(
+                                    Resource.name == "approval",
+                                    Permission.action == "APPROVE",
+                                )
+                            )
+                        ).scalars().all()
+                        for eid in approve_rows:
+                            await _push(int(eid), "Approver")
+                except Exception:
+                    logger.exception("Fallback approver lookup failed")
+            return out[:20]
         except Exception:
             return []
 

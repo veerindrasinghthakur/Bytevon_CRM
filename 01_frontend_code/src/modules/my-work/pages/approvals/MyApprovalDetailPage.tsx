@@ -75,7 +75,7 @@ export function MyApprovalDetailPage() {
               <li className="flex gap-3 text-body-md">
                 <span className="material-symbols-outlined text-secondary text-xl">send</span>
                 <div>
-                  <p className="font-medium text-on-background">Submitted by {user?.name ?? '—'}</p>
+                  <p className="font-medium text-on-background">Submitted by {item.requester ?? user?.name ?? '—'}</p>
                   <p className="text-label-sm text-on-surface-variant">{item.submittedOn}</p>
                 </div>
               </li>
@@ -108,6 +108,15 @@ export function MyApprovalDetailPage() {
                   </div>
                 </li>
               )}
+              {item.status === 'Cancelled' && (
+                <li className="flex gap-3 text-body-md">
+                  <span className="material-symbols-outlined text-on-surface-variant text-xl">cancel</span>
+                  <div>
+                    <p className="font-medium text-on-background">Withdrawn</p>
+                    <p className="text-label-sm text-on-surface-variant">Request cancelled by the requester</p>
+                  </div>
+                </li>
+              )}
             </ul>
           </section>
         </div>
@@ -136,7 +145,7 @@ export function MyApprovalDetailPage() {
             </div>
             <div>
               <p className="text-label-sm text-on-surface-variant">Requester</p>
-              <p className="text-body-md text-on-surface mt-0.5">{user?.name ?? '—'}</p>
+              <p className="text-body-md text-on-surface mt-0.5">{item.requester ?? user?.name ?? '—'}</p>
             </div>
             <div>
               <p className="text-label-sm text-on-surface-variant">Summary</p>

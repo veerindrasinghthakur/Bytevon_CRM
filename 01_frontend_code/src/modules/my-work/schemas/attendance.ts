@@ -36,6 +36,7 @@ export const attendanceCorrectionSchema = z.object({
   submittedOn: z.string(),
   approver: z.string(),
   approverId: z.string().optional(),
+  targetDepartmentId: z.number().optional(),
 })
 export type AttendanceCorrectionRequest = z.infer<typeof attendanceCorrectionSchema>
 

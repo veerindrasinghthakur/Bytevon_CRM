@@ -13,6 +13,8 @@ class ApprovalRequest(BaseModel):
     status: str
     submitted_on: date | None = None
     requester: str | None = None
+    title: str = ""
+    summary: str = ""
 
 
 class ApprovalListResponse(BaseModel):

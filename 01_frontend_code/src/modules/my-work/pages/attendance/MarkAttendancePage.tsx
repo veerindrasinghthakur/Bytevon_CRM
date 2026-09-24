@@ -194,6 +194,9 @@ export function MarkAttendancePage() {
           setManualOut={m.setManualOut}
           manualNote={m.manualNote}
           setManualNote={m.setManualNote}
+          manualApproverId={m.manualApproverId}
+          setManualApproverId={m.setManualApproverId}
+          approvers={m.approvers}
           onReset={m.resetManual}
           onSubmit={m.submitManual}
         />

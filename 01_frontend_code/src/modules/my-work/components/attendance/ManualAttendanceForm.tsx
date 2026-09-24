@@ -16,6 +16,9 @@ export function ManualAttendanceForm({
   setManualOut,
   manualNote,
   setManualNote,
+  manualApproverId,
+  setManualApproverId,
+  approvers,
   onReset,
   onSubmit,
 }: {
@@ -29,6 +32,9 @@ export function ManualAttendanceForm({
   setManualOut: (v: string) => void
   manualNote: string
   setManualNote: (v: string) => void
+  manualApproverId: string
+  setManualApproverId: (v: string) => void
+  approvers: Array<{ id: string; name: string; title: string }>
   onReset: () => void
   onSubmit: () => void
 }) {
@@ -101,6 +107,19 @@ export function ManualAttendanceForm({
             placeholder="Briefly describe the reason for manual entry…"
             className="w-full bg-surface border border-outline-variant rounded-lg px-4 py-2 focus:ring-2 focus:ring-secondary outline-none resize-none transition-colors"
           />
+        </div>
+        <div className="md:col-span-2 space-y-1">
+          <label className="block text-label-md font-medium text-on-surface-variant">Approver</label>
+          <Select
+            value={manualApproverId}
+            onChange={setManualApproverId}
+            options={approvers.map((a) => ({ value: a.id, label: `${a.name} (${a.title})` }))}
+            placeholder={approvers.length === 0 ? 'No approvers available' : 'Select approver'}
+            minWidthClass="w-full max-w-none"
+          />
+          <p className="text-label-sm text-on-surface-variant">
+            Defaults to your department head; the request is routed for approval.
+          </p>
         </div>
         <div className="md:col-span-2 flex justify-end gap-3 mt-2">
           <Button

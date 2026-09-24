@@ -9,7 +9,8 @@ import { useDeletedRedirect } from '@/shared/hooks/useDeletedRedirect'
 /** Single employee gross-salary view. Revise + history links. */
 export function EmployeeSalaryDetailPage() {
   const navigate = useNavigate()
-  const { emp, structure, gross, formatMoney, isLoading, detailError } = useSalaryDetail()
+  const { employeeId, emp, structure, versions, gross, formatMoney, isLoading, detailError } =
+    useSalaryDetail()
 
   useDeletedRedirect({ ready: !isLoading, data: emp, error: detailError, listTo: payrollRoutes.salary })
 
@@ -99,7 +100,7 @@ export function EmployeeSalaryDetailPage() {
             onClick={() =>
               safeNavigate(navigate, {
                 to: payrollRoutes.historyEmployeePath,
-                params: { employeeId: emp.id },
+                params: { employeeId },
               })
             }
           >
@@ -116,7 +117,7 @@ export function EmployeeSalaryDetailPage() {
             onClick={() =>
               safeNavigate(navigate, {
                 to: payrollRoutes.salaryRevisePath,
-                params: { employeeId: emp.id },
+                params: { employeeId },
               })
             }
           >
@@ -177,6 +178,49 @@ export function EmployeeSalaryDetailPage() {
             <p className="text-headline-md font-bold text-on-background">{structure?.payFrequency ?? 'Monthly'}</p>
           </div>
         </div>
+      </section>
+
+      <section className="bv-surface p-6">
+        <h3 className="text-title-lg font-semibold text-on-background mb-1">Version history</h3>
+        <p className="text-body-md text-on-surface-variant mb-6">
+          Every change creates a new version — versions are never edited. The open version applies
+          until the next revision.
+        </p>
+        {versions.length === 0 ? (
+          <p className="text-body-sm text-on-surface-variant">No versions on file.</p>
+        ) : (
+          <ul className="divide-y divide-outline-variant">
+            {versions.map((v, idx) => {
+              const vGross = v.items
+                .filter((i) => i.type === 'EARNING')
+                .reduce((s, i) => s + (Number(i.amount) || 0), 0)
+              const open = !v.effectiveTo
+              return (
+                <li key={`${v.effectiveFrom}-${idx}`} className="py-3 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="material-symbols-outlined text-secondary">history</span>
+                    <div>
+                      <p className="text-body-md font-medium text-on-background">
+                        {v.effectiveFrom || '—'} → {v.effectiveTo ?? 'Open'}
+                      </p>
+                      <p className="text-body-sm text-on-surface-variant">
+                        {v.items.length} items · {v.currency}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="text-body-md font-semibold text-on-background">
+                      {formatMoney(vGross)}
+                    </span>
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold status-badge status-success">
+                      {open ? 'CURRENT' : 'CLOSED'}
+                    </span>
+                  </div>
+                </li>
+              )
+            })}
+          </ul>
+        )}
       </section>
     </div>
   )

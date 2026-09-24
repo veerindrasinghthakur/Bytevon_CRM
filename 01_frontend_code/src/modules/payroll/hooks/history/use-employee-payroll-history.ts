@@ -2,7 +2,9 @@ import { useParams } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/shared/lib/query-keys'
 import { formatMoney, structureGross } from '@/shared/mock/data/payroll'
+import { getEmployeeDetail } from '@/modules/workforce/api/employment'
 import { getPayrollEmployee } from '../../api/monthly'
+import { fallbackEmployeeRow } from '../../api/_helpers'
 import { getSalaryStructure } from '../../api/salary'
 import { listEmployeePayrollHistory } from '../../api/history'
 
@@ -24,6 +26,11 @@ export function useEmployeePayrollHistory() {
     queryKey: queryKeys.payroll.salary(id),
     queryFn: () => getSalaryStructure(id),
     enabled: Boolean(id),
+  })
+  const detailQuery = useQuery({
+    queryKey: ['workforce', 'employment', 'detail', id],
+    queryFn: () => getEmployeeDetail(Number(id)),
+    enabled: Boolean(id) && Number.isFinite(Number(id)) && empQuery.data === null,
   })
 
   const historyRows = historyQuery.data ?? []
@@ -61,12 +68,13 @@ export function useEmployeePayrollHistory() {
   ]
 
   return {
-    emp: empQuery.data ?? null,
+    employeeId: id,
+    emp: empQuery.data ?? fallbackEmployeeRow(detailQuery.data, id),
     historyRows,
     summaryCards,
     totalResults: historyRows.length,
     pageSize: historyRows.length,
     formatMoney,
-    isLoading: empQuery.isLoading || historyQuery.isLoading,
+    isLoading: empQuery.isLoading || historyQuery.isLoading || detailQuery.isLoading,
   }
 }

@@ -827,8 +827,18 @@ export async function listMyApprovals(
   const pageSize = params.pageSize ?? DEFAULT_LIST_PAGE_SIZE
 
   if (!env.useMockApi) {
-    const { data } = await apiClient.get<ApprovalListResponse>('/my-work/approvals', { params })
-    return data
+    const { data } = await apiClient.get<{
+      items?: Array<Record<string, unknown>>
+      total?: number
+    }>('/my-work/approvals', { params })
+    const raw = Array.isArray(data) ? data : (data.items ?? [])
+    const items = (Array.isArray(raw) ? raw : []).map(mapApiMyApproval)
+    return {
+      items,
+      total: Array.isArray(data) ? items.length : Number((data as { total?: number }).total ?? items.length),
+      page,
+      pageSize,
+    }
   }
 
   await delay()
@@ -839,6 +849,36 @@ export async function listMyApprovals(
   }
   const sliced = paginateItems(items, page, pageSize)
   return { ...sliced, page, pageSize }
+}
+
+/** Backend my-work approval row → UI ApprovalRequest. */
+const APPROVAL_TYPE_TO_UI: Record<string, 'Leave' | 'Attendance Correction' | 'Expense' | 'Other'> = {
+  LEAVE_REQUEST: 'Leave',
+  ATTENDANCE_CORRECTION: 'Attendance Correction',
+  EXPENSE: 'Expense',
+  NEW_HIRE: 'Other',
+}
+
+function mapApiMyApproval(r: Record<string, unknown>): ApprovalRequest {
+  const rawStatus = String(r.status ?? 'Pending')
+  const status = (['Pending', 'Approved', 'Rejected', 'Cancelled'] as const).includes(
+    rawStatus as 'Pending' | 'Approved' | 'Rejected' | 'Cancelled',
+  )
+    ? (rawStatus as ApprovalRequest['status'])
+    : 'Pending'
+  const title = String(r.title ?? r.request_reason ?? '').trim()
+  const summaryRaw = String(r.summary ?? r.request_reason ?? '').trim()
+  const typeKey = String(r.request_type ?? '').toUpperCase()
+  const requesterRaw = String(r.requester ?? '').trim()
+  return {
+    id: String(r.id ?? ''),
+    type: APPROVAL_TYPE_TO_UI[typeKey] ?? 'Other',
+    title: title || `${typeKey} #${String(r.reference_id ?? r.id ?? '')}`,
+    submittedOn: String(r.submitted_on ?? r.submittedOn ?? ''),
+    status,
+    summary: summaryRaw || undefined,
+    requester: requesterRaw && !/^emp #/i.test(requesterRaw) ? requesterRaw : undefined,
+  }
 }
 
 export async function listMySubmittedRequests(
@@ -926,6 +966,9 @@ export async function submitAttendanceCorrection(
   const dayId = Number((body as { attendanceDayId?: unknown }).attendanceDayId)
   if (!Number.isFinite(dayId)) throw new Error('Select an attendance day for the correction')
   const date = typeof body.date === 'string' ? body.date : ''
+  const targetDepartmentId = Number(
+    (body as { targetDepartmentId?: unknown }).targetDepartmentId,
+  )
   const { data } = await apiClient.post<{ id?: number; status?: string }>(
     '/workforce/attendance/corrections',
     {
@@ -933,6 +976,7 @@ export async function submitAttendanceCorrection(
       requested_check_in: combineDateTime(date, String(body.requestedCheckIn ?? '')),
       requested_check_out: combineDateTime(date, String(body.requestedCheckOut ?? '')),
       reason: body.reason,
+      ...(Number.isFinite(targetDepartmentId) ? { target_department_id: targetDepartmentId } : {}),
     },
   )
   const status = String(data.status ?? 'PENDING').toUpperCase()
@@ -956,6 +1000,7 @@ export async function submitManualAttendance(input: {
   timeOut?: string
   reason: string
   employmentId: number
+  targetDepartmentId?: number
 }): Promise<{ id: number | null }> {
   const requestedIn = combineDateTime(input.date, String(input.timeIn ?? ''))
   const requestedOut = combineDateTime(input.date, String(input.timeOut ?? ''))
@@ -980,6 +1025,9 @@ export async function submitManualAttendance(input: {
       requested_check_in: requestedIn,
       requested_check_out: requestedOut,
       reason: input.reason,
+      ...(input.targetDepartmentId != null
+        ? { target_department_id: input.targetDepartmentId }
+        : {}),
     },
   )
   return { id: typeof data.id === 'number' ? data.id : null }
@@ -1023,8 +1071,23 @@ export async function listApproverDirectory(): Promise<ApproverOption[]> {
     await delay()
     return approverDirectory.map((a) => ({ ...a }))
   }
-  const { data } = await apiClient.get<ApproverOption[]>('/my-work/approvers')
-  return data
+  const { data } = await apiClient.get<
+    Array<Record<string, unknown>>
+  >('/my-work/approvers')
+  // Backend shape: { employmentId, name, role, departmentId? } → UI shape.
+  return (Array.isArray(data) ? data : []).map((r) => {
+    const employmentId = Number(r.employmentId ?? r.employment_id)
+    return {
+      id: Number.isFinite(employmentId) ? `emp-${employmentId}` : String(r.id ?? r.name ?? ''),
+      name: String(r.name ?? ''),
+      title: String(r.role ?? r.title ?? 'Approver'),
+      departmentId:
+        r.departmentId != null || r.department_id != null
+          ? Number(r.departmentId ?? r.department_id)
+          : undefined,
+      employmentId: Number.isFinite(employmentId) ? employmentId : undefined,
+    }
+  })
 }
 
 export const fetchHolidays = async (): Promise<Record<string, string>> => {

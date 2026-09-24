@@ -11,7 +11,7 @@ import { cn } from '@/shared/lib/cn'
 
 export function EmployeePayrollHistoryPage() {
   const navigate = useNavigate()
-  const { emp, historyRows, summaryCards, totalResults, formatMoney, isLoading } =
+  const { emp, historyRows, summaryCards, totalResults, formatMoney, isLoading, employeeId } =
     useEmployeePayrollHistory()
   const [yearFilter, setYearFilter] = useState('2026')
   const [statusFilter, setStatusFilter] = useState('All')
@@ -52,7 +52,7 @@ export function EmployeePayrollHistoryPage() {
             onClick={() =>
               safeNavigate(navigate, {
                 to: payrollRoutes.salaryDetailPath,
-                params: { employeeId: emp.id },
+                params: { employeeId },
               })
             }
           >
@@ -64,7 +64,7 @@ export function EmployeePayrollHistoryPage() {
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div className="flex items-start gap-3">
-            <BackButton to={payrollRoutes.salaryDetail(emp.id)} label="" className="!px-1 mt-1" />
+            <BackButton to={payrollRoutes.salaryDetail(employeeId)} label="" className="!px-1 mt-1" />
             <div>
               <h1 className="text-headline-lg font-semibold text-on-background">Payroll History</h1>
               <p className="text-body-md text-on-surface-variant mt-1">
@@ -141,7 +141,7 @@ export function EmployeePayrollHistoryPage() {
           <ExportButton
             resource={'payroll'}
             filenameStem={`payroll-history-${emp.code}`}
-            filters={{ employeeId: emp.id, year: yearFilter, status: statusFilter }}
+            filters={{ employeeId, year: yearFilter, status: statusFilter }}
             label="Export"
           />
         </div>

@@ -1,6 +1,8 @@
 import { useNavigate } from '@tanstack/react-router'
 import { PageHeader } from '@/shared/components/layout/PageHeader'
 import { ExportButton } from '@/shared/components/export/ExportButton'
+import { Button } from '@/shared/components/ui/Button'
+import { EmptyState } from '@/shared/components/feedback/EmptyState'
 import { ErrorState } from '@/shared/components/feedback/ErrorState'
 import { Pagination } from '@/shared/components/ui/Pagination'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
@@ -20,6 +22,10 @@ export function SalaryManagementPage() {
     setPage,
     pageSize,
     formatMoney,
+    avgGross,
+    withCount,
+    withoutCount,
+    totalEmployees,
     isLoading,
     isError,
     error,
@@ -43,12 +49,22 @@ export function SalaryManagementPage() {
         title="Salary Management"
         description="View and manage employee gross salary configurations."
         actions={
-          <ExportButton
-            resource={'salary'}
-            filenameStem="salary-management"
-            query={search}
-            label="Export"
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            <ExportButton
+              resource={'salary'}
+              filenameStem="salary-management"
+              query={search}
+              label="Export"
+            />
+            <Button
+              variant="primary"
+              size="sm"
+              leftIcon={<span className="material-symbols-outlined text-[18px]">person_add</span>}
+              onClick={() => safeNavigate(navigate, { to: payrollRoutes.salaryNew })}
+            >
+              Add Payroll
+            </Button>
+          </div>
         }
       />
 
@@ -70,6 +86,37 @@ export function SalaryManagementPage() {
         </p>
       </div>
 
+      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bv-surface p-5">
+          <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Avg Salary</p>
+          <p className="text-headline-md font-bold text-on-background">
+            {isLoading ? '…' : formatMoney(avgGross)}
+            <span className="text-caption text-on-surface-variant font-normal">/mo</span>
+          </p>
+        </div>
+        <div className="bv-surface p-5">
+          <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">With Salary</p>
+          <p className="text-headline-md font-bold text-secondary">{isLoading ? '…' : withCount}</p>
+        </div>
+        <div className="bv-surface p-5">
+          <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Without Salary</p>
+          <p className="text-headline-md font-bold text-error">{isLoading ? '…' : withoutCount}</p>
+        </div>
+        <div className="bv-surface p-5">
+          <p className="text-label-sm text-on-surface-variant uppercase tracking-wider mb-1">Total Employees</p>
+          <p className="text-headline-md font-bold text-on-background">{isLoading ? '…' : totalEmployees}</p>
+        </div>
+      </section>
+
+      {!isLoading && total === 0 ? (
+        <EmptyState
+          icon="payments"
+          title="No payroll configured yet"
+          description="Create the first salary version for an employee to start the payroll flow: salary → calculate → approve → pay."
+          actionLabel="Add Payroll"
+          onAction={() => safeNavigate(navigate, { to: payrollRoutes.salaryNew })}
+        />
+      ) : (
       <section className="bv-surface overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -93,7 +140,7 @@ export function SalaryManagementPage() {
                   onClick={() =>
                     safeNavigate(navigate, {
                       to: payrollRoutes.salaryDetailPath,
-                      params: { employeeId: r.id },
+                      params: { employeeId: r.employmentId ?? r.id },
                     })
                   }
                 >
@@ -126,7 +173,7 @@ export function SalaryManagementPage() {
                         e.stopPropagation()
                         safeNavigate(navigate, {
                           to: payrollRoutes.salaryDetailPath,
-                          params: { employeeId: r.id },
+                          params: { employeeId: r.employmentId ?? r.id },
                         })
                       }}
                     >
@@ -144,6 +191,7 @@ export function SalaryManagementPage() {
           </div>
         )}
       </section>
+      )}
     </div>
   )
 }

@@ -21,7 +21,12 @@ export {
   rejectPayroll,
 } from './review'
 export { getPayslip } from './payslip'
-export { getSalaryStructure, saveSalaryStructure } from './salary'
+export {
+  getSalaryStructure,
+  saveSalaryStructure,
+  listUnconfiguredEmploymentIds,
+  listSalaryVersions,
+} from './salary'
 export {
   listEmployeePayrollHistory,
   listOrgPayrollHistory,

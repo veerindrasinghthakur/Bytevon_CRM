@@ -1,6 +1,7 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { cn } from '@/shared/lib/cn'
 import { SelectOption, SelectProps } from '@/shared/types'
+import { Portal } from './Portal'
 
 /**
  * Custom select — options panel matches Bytevon Component Reference design.
@@ -29,18 +30,43 @@ export function Select({
   const [open, setOpen] = useState(false)
   const [highlight, setHighlight] = useState(-1)
   const [dropUp, setDropUp] = useState(false)
+  const [anchor, setAnchor] = useState<{ top: number; bottom: number; left: number; width: number } | null>(null)
   const rootRef = useRef<HTMLDivElement>(null)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const panelRef = useRef<HTMLDivElement>(null)
 
   const selected = options.find((o) => o.value === value && !o.disabled)
   const enabledOptions = options.filter((o) => !o.disabled)
 
+  const updateAnchor = useCallback(() => {
+    const rect = buttonRef.current?.getBoundingClientRect()
+    if (!rect) return
+    setAnchor({ top: rect.top, bottom: rect.bottom, left: rect.left, width: rect.width })
+  }, [])
+
   useEffect(() => {
     const onDoc = (e: MouseEvent) => {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false)
+      const t = e.target as Node
+      if (!rootRef.current?.contains(t) && !panelRef.current?.contains(t)) setOpen(false)
     }
     document.addEventListener('mousedown', onDoc)
     return () => document.removeEventListener('mousedown', onDoc)
   }, [])
+
+  // Keep the portalled panel glued to the button across scroll/resize.
+  useEffect(() => {
+    if (!open) {
+      setAnchor(null)
+      return
+    }
+    updateAnchor()
+    window.addEventListener('scroll', updateAnchor, true)
+    window.addEventListener('resize', updateAnchor)
+    return () => {
+      window.removeEventListener('scroll', updateAnchor, true)
+      window.removeEventListener('resize', updateAnchor)
+    }
+  }, [open, updateAnchor])
 
   useEffect(() => {
     if (!open) {
@@ -55,7 +81,7 @@ export function Select({
     } else if (dropDirection === 'down') {
       setDropUp(false)
     } else {
-      const rect = rootRef.current?.getBoundingClientRect()
+      const rect = buttonRef.current?.getBoundingClientRect()
       if (rect && typeof window !== 'undefined') {
         const rows = Math.max(enabledOptions.length, 1)
         const needed = Math.min(rows * 44 + 16, 256)
@@ -124,6 +150,7 @@ export function Select({
 
       <button
         type="button"
+        ref={buttonRef}
         id={selectId}
         aria-label={ariaLabel ?? placeholder ?? label}
         aria-haspopup="listbox"
@@ -157,18 +184,41 @@ export function Select({
         </span>
       </button>
 
-      {open && !disabled ? (
-        <div
-          data-testid="select-panel"
-          data-drop={dropUp ? 'up' : 'down'}
-          className={cn(
-            'absolute z-50 w-full min-w-[10rem]',
-            dropUp ? 'bottom-full mb-2' : 'mt-2',
-            'bg-surface-container-lowest rounded-xl border border-outline-variant/50',
-            'executive-shadow overflow-hidden',
-          )}
-          role="presentation"
-        >
+      {/* Portalled so the panel escapes overflow-hidden / scroll containers
+          (dialogs, card bodies) instead of rendering hidden underneath them. */}
+      {open && !disabled && anchor ? (
+        <Portal>
+          <div
+            ref={panelRef}
+            data-testid="select-panel"
+            data-drop={dropUp ? 'up' : 'down'}
+            className={cn(
+              'fixed z-[70] min-w-[10rem]',
+              'bg-surface-container-lowest rounded-xl border border-outline-variant/50',
+              'executive-shadow overflow-hidden',
+            )}
+            style={
+              dropUp
+                ? {
+                    left:
+                      typeof window !== 'undefined'
+                        ? Math.max(8, Math.min(anchor.left, window.innerWidth - Math.max(anchor.width, 160) - 8))
+                        : anchor.left,
+                    width: Math.max(anchor.width, 160),
+                    bottom: typeof window !== 'undefined' ? window.innerHeight - anchor.top + 8 : undefined,
+                    maxHeight: Math.max(120, anchor.top - 16),
+                  }
+                : {
+                    left:
+                      typeof window !== 'undefined'
+                        ? Math.max(8, Math.min(anchor.left, window.innerWidth - Math.max(anchor.width, 160) - 8))
+                        : anchor.left,
+                    width: Math.max(anchor.width, 160),
+                    top: anchor.bottom + 8,
+                  }
+            }
+            role="presentation"
+          >
           <ul
             role="listbox"
             aria-labelledby={selectId}
@@ -232,7 +282,8 @@ export function Select({
               )
             })}
           </ul>
-        </div>
+          </div>
+        </Portal>
       ) : null}
 
       {error ? (

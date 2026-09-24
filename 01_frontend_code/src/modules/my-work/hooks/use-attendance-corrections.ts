@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useListControls } from '@/shared/hooks/useListControls'
 import { queryKeys, invalidate } from '@/shared/lib/query-keys'
@@ -64,6 +64,16 @@ export function useAttendanceCorrections() {
     queryFn: listApproverDirectory,
   })
 
+  // Default to the first approver (department head) once the directory loads,
+  // so the submit button is never stuck disabled on an empty selection.
+  useEffect(() => {
+    if (approvers.length > 0) {
+      setApproverId((prev) =>
+        prev && approvers.some((a) => a.id === prev) ? prev : (approvers[0]?.id ?? ''),
+      )
+    }
+  }, [approvers])
+
   const requests = listData?.items ?? []
   const allRequests = useMemo(() => [...localExtra, ...requests], [localExtra, requests])
 
@@ -125,7 +135,18 @@ export function useAttendanceCorrections() {
   const submit = useCallback(() => {
     const row = candidates.find((c) => c.id === selectedDateId)
     const approver = approvers.find((a) => a.id === approverId)
-    if (!row || !reason.trim() || !approver) return
+    if (!row) {
+      toast.error('Select an attendance day for the correction')
+      return
+    }
+    if (!reason.trim()) {
+      toast.error('A reason is required to submit the correction')
+      return
+    }
+    if (!approver) {
+      toast.error('Select an approver for the correction')
+      return
+    }
     mutation.mutate({
       attendanceDayId: row.id,
       date: row.date,
@@ -135,6 +156,7 @@ export function useAttendanceCorrections() {
       reason: reason.trim(),
       approver: approver.name,
       approverId: approver.id,
+      targetDepartmentId: approver.departmentId,
     })
   }, [candidates, selectedDateId, reason, approverId, checkIn, checkOut, mutation, approvers])
 

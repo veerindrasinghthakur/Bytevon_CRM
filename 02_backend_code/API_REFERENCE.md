@@ -268,6 +268,7 @@ Interactive docs: `{API_HOST}/docs` (Swagger) / `{API_HOST}/redoc`
 |--------|------|-----------|----------|
 | `POST` | `/api/v1/payroll/salaries` | `create_salary` | `EmployeeSalaryResponse` |
 | `GET` | `/api/v1/payroll/salaries/current/{employment_id}` | `get_current_salary` | `EmployeeSalaryResponse` |
+| `GET` | `/api/v1/payroll/salaries/unconfigured` | `list_unconfigured_salaries` | `list[int]` |
 | `GET` | `/api/v1/payroll/salaries/{employment_id}` | `list_salaries` | `list[EmployeeSalaryResponse]` |
 | `POST` | `/api/v1/payroll/calculate` | `calculate_payroll` | `MonthlyPayrollResponse` |
 | `POST` | `/api/v1/payroll/{payroll_id}/approve` | `approve_payroll` | `MonthlyPayrollResponse` |

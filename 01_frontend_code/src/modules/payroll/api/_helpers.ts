@@ -138,6 +138,16 @@ export function normalizeEmployee(raw: Record<string, unknown>): PayrollEmployee
     net: num(raw.net),
     status: mapStatus(raw.status),
     paymentRef: raw.paymentRef != null ? String(raw.paymentRef) : undefined,
+    effectiveFrom:
+      raw.effectiveFrom != null
+        ? String(raw.effectiveFrom)
+        : raw.effective_from != null
+          ? String(raw.effective_from)
+          : undefined,
+    salaryStatus:
+      raw.salaryStatus != null
+        ? (String(raw.salaryStatus) as PayrollEmployeeRow['salaryStatus'])
+        : undefined,
   }
 }
 
@@ -223,8 +233,7 @@ export function filterEmployees(params: PayrollEmployeeListParams = {}): Payroll
   return items
 }
 
-export function buildOrgPaidHistory(): OrgPayrollHistoryRecord[] {
-  const fromHistory: OrgPayrollHistoryRecord[] = []
+export function buildOrgPaidHistory(): OrgPayrollHistoryRecord[] {  const fromHistory: OrgPayrollHistoryRecord[] = []
   for (const [employeeId, rows] of Object.entries(historyByEmployee)) {
     for (const r of rows) {
       if (r.status !== 'PAID') continue
@@ -262,3 +271,44 @@ export function buildOrgPaidHistory(): OrgPayrollHistoryRecord[] {
 }
 
 export { paginateItems, DEFAULT_LIST_PAGE, DEFAULT_LIST_PAGE_SIZE, computeMonthlySummary }
+
+/**
+ * Header fallback for salary/history pages when the employment has no
+ * calculated monthly rows yet (fresh or future-dated first version).
+ * Maps a workforce employee detail DTO (any shape) to a display row.
+ */
+export function fallbackEmployeeRow(detail: unknown, id: string): PayrollEmployeeRow | null {
+  if (!detail || typeof detail !== 'object') return null
+  const d = detail as Record<string, unknown>
+  const employment = (d.employment ?? {}) as Record<string, unknown>
+  const person = (d.person ?? {}) as Record<string, unknown>
+  const code = String(employment.employee_code ?? employment.employeeCode ?? `EMP-${id}`)
+  const first = String(person.first_name ?? person.firstName ?? '')
+  const last = String(person.last_name ?? person.lastName ?? '')
+  const name =
+    `${first} ${last}`.trim() ||
+    String(d.fullName ?? person.full_name ?? '') ||
+    code
+  const initials =
+    name
+      .split(/\s+/)
+      .map((p) => p[0] ?? '')
+      .join('')
+      .slice(0, 2)
+      .toUpperCase() || 'E'
+  return {
+    id: String(employment.id ?? d.id ?? id),
+    payrollId: undefined,
+    employmentId: id,
+    name,
+    code,
+    role: '—',
+    department: '—',
+    initials,
+    gross: 0,
+    earnings: 0,
+    deductions: 0,
+    net: 0,
+    status: 'Calculated',
+  }
+}

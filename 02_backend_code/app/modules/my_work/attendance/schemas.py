@@ -57,3 +57,4 @@ class ApproverOption(BaseModel):
     employmentId: int
     name: str
     role: str = ""
+    departmentId: int | None = None

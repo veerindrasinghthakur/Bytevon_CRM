@@ -8,6 +8,7 @@ const requirePayrollView = () => requireView('payroll')
 const requireSalaryView = () => requireView('salary')
 const requirePayrollCreate = () => requirePermission({ action: 'CREATE', resource: 'payroll' })
 const requireSalaryUpdate = () => requirePermission({ action: 'UPDATE', resource: 'salary' })
+const requireSalaryCreate = () => requirePermission({ action: 'CREATE', resource: 'salary' })
 
 const PayrollDashboardPage = lazyPage(
   () => import('./pages/dashboard/PayrollDashboardPage'),
@@ -35,6 +36,10 @@ const EmployeeSalaryDetailPage = lazyPage(
   () => import('./pages/salary/EmployeeSalaryDetailPage'),
   'EmployeeSalaryDetailPage',
 )
+const AddSalaryPage = lazyPage(
+  () => import('./pages/salary/AddSalaryPage'),
+  'AddSalaryPage',
+)
 const ReviseSalaryPage = lazyPage(
   () => import('./pages/salary/ReviseSalaryPage'),
   'ReviseSalaryPage',
@@ -59,6 +64,8 @@ export const payrollRoutes = {
   payslip: (payrollId: string) => `/payroll/payslip/${payrollId}`,
   payslipPath: '/payroll/payslip/$payrollId',
   salary: '/payroll/salary',
+  salaryNew: '/payroll/salary/new',
+  salaryNewPath: '/payroll/salary/new',
   salaryDetail: (employeeId: string) => `/payroll/salary/${employeeId}`,
   salaryDetailPath: '/payroll/salary/$employeeId',
   salaryRevise: (employeeId: string) => `/payroll/salary/${employeeId}/revise`,
@@ -112,6 +119,12 @@ export function createPayrollRoutes<TParent extends AnyRoute>(appLayoutRoute: TP
       path: '/payroll/salary',
       beforeLoad: requireSalaryView,
       component: SalaryManagementPage,
+    }),
+    createRoute({
+      getParentRoute: () => appLayoutRoute,
+      path: '/payroll/salary/new',
+      beforeLoad: requireSalaryCreate,
+      component: AddSalaryPage,
     }),
     createRoute({
       getParentRoute: () => appLayoutRoute,

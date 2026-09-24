@@ -21,7 +21,7 @@ import {
   getTodayBreaks,
   subscribeBreakChange,
 } from '../lib/break-session'
-import { getMyWorkTodayInfo, punchAttendance, submitManualAttendance } from '../api/my-work'
+import { getMyWorkTodayInfo, listApproverDirectory, punchAttendance, submitManualAttendance } from '../api/my-work'
 import type { WorkLogRow } from '../lib/working-hours-log'
 import { myWorkRoutes } from '../routes'
 import { useAuth } from '@/modules/auth/context/AuthContext'
@@ -72,6 +72,21 @@ export function useMarkAttendance() {
   const [manualIn, setManualIn] = useState('09:00')
   const [manualOut, setManualOut] = useState('18:00')
   const [manualNote, setManualNote] = useState('')
+  const [manualApproverId, setManualApproverId] = useState('')
+
+  const approversQuery = useQuery({
+    queryKey: queryKeys.myWork.approvers(),
+    queryFn: listApproverDirectory,
+  })
+  const approvers = approversQuery.data ?? []
+
+  useEffect(() => {
+    if (approvers.length > 0) {
+      setManualApproverId((prev) =>
+        prev && approvers.some((a) => a.id === prev) ? prev : (approvers[0]?.id ?? ''),
+      )
+    }
+  }, [approvers])
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000)
@@ -198,6 +213,7 @@ export function useMarkAttendance() {
       window.setTimeout(() => setManualToast(null), 2500)
       return
     }
+    const approver = approvers.find((a) => a.id === manualApproverId) ?? approvers[0]
     setSubmitting(true)
     try {
       await submitManualAttendance({
@@ -206,8 +222,11 @@ export function useMarkAttendance() {
         timeOut: manualOut,
         reason: `[${manualReason}] ${manualNote.trim()}`,
         employmentId,
+        targetDepartmentId: approver?.departmentId,
       })
-      setManualToast('Manual entry submitted for HR approval.')
+      setManualToast(
+        `Manual entry submitted for approval${approver ? ` (${approver.name})` : ''}.`,
+      )
       window.setTimeout(() => {
         setManualToast(null)
         safeNavigate(navigate, { to: myWorkRoutes.attendanceCorrections })
@@ -218,7 +237,7 @@ export function useMarkAttendance() {
     } finally {
       setSubmitting(false)
     }
-  }, [submitting, manualDate, manualNote, manualReason, manualIn, manualOut, employmentId, navigate])
+  }, [submitting, manualDate, manualNote, manualReason, manualIn, manualOut, employmentId, approvers, manualApproverId, navigate])
 
   const goCorrections = useCallback(() => {
     safeNavigate(navigate, { to: myWorkRoutes.attendanceCorrections })
@@ -240,6 +259,9 @@ export function useMarkAttendance() {
     setManualOut,
     manualNote,
     setManualNote,
+    manualApproverId,
+    setManualApproverId,
+    approvers,
     session,
     summary,
     breaks,

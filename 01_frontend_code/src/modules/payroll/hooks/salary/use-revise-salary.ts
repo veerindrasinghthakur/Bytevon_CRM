@@ -2,8 +2,10 @@ import { useParams } from '@tanstack/react-router'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { queryKeys, invalidate } from '@/shared/lib/query-keys'
 import { formatMoney } from '@/shared/mock/data/payroll'
+import { getEmployeeDetail } from '@/modules/workforce/api/employment'
 import type { SaveSalaryStructureInput } from '../../types'
 import { getPayrollEmployee } from '../../api/monthly'
+import { fallbackEmployeeRow } from '../../api/_helpers'
 import { getSalaryStructure, saveSalaryStructure } from '../../api/salary'
 
 export function useReviseSalary() {
@@ -21,6 +23,11 @@ export function useReviseSalary() {
     queryFn: () => getSalaryStructure(id),
     enabled: Boolean(id),
   })
+  const detailQuery = useQuery({
+    queryKey: ['workforce', 'employment', 'detail', id],
+    queryFn: () => getEmployeeDetail(Number(id)),
+    enabled: Boolean(id) && Number.isFinite(Number(id)) && empQuery.data === null,
+  })
 
   const saveMut = useMutation({
     mutationFn: (input: SaveSalaryStructureInput) => saveSalaryStructure(id, input),
@@ -31,10 +38,11 @@ export function useReviseSalary() {
   })
 
   return {
-    emp: empQuery.data ?? null,
+    employeeId: id,
+    emp: empQuery.data ?? fallbackEmployeeRow(detailQuery.data, id),
     structure: structureQuery.data ?? null,
     formatMoney,
     saveMut,
-    isLoading: empQuery.isLoading || structureQuery.isLoading,
+    isLoading: empQuery.isLoading || structureQuery.isLoading || detailQuery.isLoading,
   }
 }

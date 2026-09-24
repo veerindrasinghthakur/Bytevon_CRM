@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-export const approvalStatusSchema = z.enum(['Pending', 'Approved', 'Rejected'])
+export const approvalStatusSchema = z.enum(['Pending', 'Approved', 'Rejected', 'Cancelled'])
 export type ApprovalStatus = z.infer<typeof approvalStatusSchema>
 
 export const approvalTypeSchema = z.enum(['Leave', 'Attendance Correction', 'Expense', 'Other'])
@@ -13,6 +13,7 @@ export const approvalRequestSchema = z.object({
   submittedOn: z.string(),
   status: approvalStatusSchema,
   summary: z.string().optional(),
+  requester: z.string().optional(),
 })
 export type ApprovalRequest = z.infer<typeof approvalRequestSchema>
 
@@ -21,5 +22,7 @@ export const approverOptionSchema = z.object({
   name: z.string(),
   title: z.string(),
   department: z.string().optional(),
+  departmentId: z.number().optional(),
+  employmentId: z.number().optional(),
 })
 export type ApproverOption = z.infer<typeof approverOptionSchema>

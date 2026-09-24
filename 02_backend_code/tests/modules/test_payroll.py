@@ -140,3 +140,69 @@ def test_payroll_calculate_approve_pay(client, factory):
     current = client.get(f"/api/v1/payroll/salaries/current/{emp_id}", headers=h)
     assert current.status_code == 200, current.text
     record_coverage("test_payroll_calculate_approve_pay", COVERED[9:])
+
+
+def _salary_payload(emp_id, effective_from="2026-01-01", gross="80000.00", items=None):
+    return {
+        "employment_id": emp_id,
+        "effective_from": effective_from,
+        "gross_salary": gross,
+        "items": items
+        if items is not None
+        else [{"name": "Basic", "type": "EARNING", "amount": gross}],
+    }
+
+
+def test_salary_versioning_guards(client, factory):
+    h = _sa(factory)["headers"]
+    emp_id = factory.actor("ver1")["employment_id"]
+    base = "/api/v1/payroll/salaries"
+
+    first = client.post(base, json=_salary_payload(emp_id), headers=h)
+    assert first.status_code == 201, first.text
+
+    # Backdated / same-day start is rejected, not silently skipped.
+    backdated = client.post(
+        base, json=_salary_payload(emp_id, effective_from="2025-06-01"), headers=h
+    )
+    assert backdated.status_code == 400, backdated.text
+    same_day = client.post(base, json=_salary_payload(emp_id), headers=h)
+    assert same_day.status_code == 400, same_day.text
+
+    # Gross must reconcile with EARNING items.
+    mismatch = client.post(
+        base,
+        json=_salary_payload(
+            emp_id,
+            effective_from="2026-06-01",
+            gross="90000.00",
+            items=[{"name": "Basic", "type": "EARNING", "amount": "80000.00"}],
+        ),
+        headers=h,
+    )
+    assert mismatch.status_code == 400, mismatch.text
+
+    # Strictly-later version closes the previous one.
+    second = client.post(
+        base, json=_salary_payload(emp_id, effective_from="2026-06-01"), headers=h
+    )
+    assert second.status_code == 201, second.text
+    versions = client.get(f"{base}/{emp_id}", headers=h)
+    assert versions.status_code == 200, versions.text
+    rows = versions.json()
+    assert len(rows) == 2
+    assert rows[0]["effective_from"] >= rows[1]["effective_from"]
+    assert rows[1]["effective_to"] == "2026-05-31"
+
+
+def test_salaries_unconfigured_picker(client, factory):
+    h = _sa(factory)["headers"]
+    fresh = factory.actor("unconf")["employment_id"]
+    configured = factory.actor("conf")["employment_id"]
+    _salary_for(client, h, configured)
+
+    resp = client.get("/api/v1/payroll/salaries/unconfigured", headers=h)
+    assert resp.status_code == 200, resp.text
+    ids = resp.json()
+    assert fresh in ids
+    assert configured not in ids

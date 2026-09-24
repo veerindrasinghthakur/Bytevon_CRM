@@ -7,6 +7,7 @@ export { PayslipViewPage } from './pages/payslip/PayslipViewPage'
 export { SalaryManagementPage } from './pages/salary/SalaryManagementPage'
 export { EmployeeSalaryDetailPage } from './pages/salary/EmployeeSalaryDetailPage'
 export { ReviseSalaryPage } from './pages/salary/ReviseSalaryPage'
+export { AddSalaryPage } from './pages/salary/AddSalaryPage'
 export { EmployeePayrollHistoryPage } from './pages/history/EmployeePayrollHistoryPage'
 export { PayrollHistoryPage } from './pages/history/PayrollHistoryPage'
 
@@ -21,6 +22,8 @@ export {
   getPayslip,
   getSalaryStructure,
   saveSalaryStructure,
+  listUnconfiguredEmploymentIds,
+  listSalaryVersions,
 } from './api/payroll'
 
 export {
@@ -31,6 +34,7 @@ export {
   useSalaryList,
   useSalaryDetail,
   useReviseSalary,
+  useAddSalary,
   useEmployeePayrollHistory,
   useRunPayroll,
 } from './hooks'

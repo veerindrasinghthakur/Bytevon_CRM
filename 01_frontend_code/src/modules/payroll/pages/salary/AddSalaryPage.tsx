@@ -1,25 +1,35 @@
-import { useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { useForm, useFieldArray } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/shared/components/ui/Button'
 import { BackButton } from '@/shared/components/layout/BackButton'
 import { Select } from '@/shared/components/ui/Select'
-import { useReviseSalary } from '../../hooks/salary/use-revise-salary'
+import { useAddSalary } from '../../hooks/salary/use-add-salary'
 import { SALARY_ITEM_TYPE_OPTIONS } from '../../schemas/enums'
 import {
   salaryFormSchema,
   type SalaryFormInput,
   emptySalaryItemForm,
-  salaryItemsToForm,
   toSaveSalaryInput,
 } from '../../schemas/salary-form'
 import { payrollRoutes } from '../../routes'
 import { safeNavigate } from '@/shared/lib/safeNavigate'
+import { toast } from '@/shared/hooks/use-toast'
+import { getApiErrorMessage } from '@/shared/lib/api-error'
 
-export function ReviseSalaryPage() {
+/** First salary version for an employment (versioned create, never an update). */
+export function AddSalaryPage() {
   const navigate = useNavigate()
-  const { employeeId, emp, structure, formatMoney, saveMut, isLoading } = useReviseSalary()
+  const {
+    employmentId,
+    setEmploymentId,
+    candidates,
+    selected,
+    formatMoney,
+    saveMut,
+    isLoading,
+    isError,
+  } = useAddSalary()
 
   const form = useForm<SalaryFormInput>({
     resolver: zodResolver(salaryFormSchema),
@@ -34,14 +44,6 @@ export function ReviseSalaryPage() {
     name: 'items',
   })
 
-  useEffect(() => {
-    if (!structure) return
-    form.reset({
-      effectiveFrom: structure.effectiveFrom,
-      items: salaryItemsToForm(structure.items),
-    })
-  }, [structure, form])
-
   const watched = form.watch()
   const totalEarnings = (watched.items ?? [])
     .filter((r) => r.type === 'EARNING')
@@ -51,30 +53,39 @@ export function ReviseSalaryPage() {
     .reduce((s, r) => s + (Number(r.amount) || 0), 0)
   const net = totalEarnings - totalDeductions
 
+  const backToList = () => safeNavigate(navigate, { to: payrollRoutes.salary })
+
+  const onSubmit = form.handleSubmit((data) => {
+    if (!employmentId) {
+      toast.error('Select an employee first')
+      return
+    }
+    const payload = toSaveSalaryInput(data)
+    saveMut.mutate(payload, {
+      onSuccess: () => {
+        toast.success('First salary version created')
+        safeNavigate(navigate, {
+          to: payrollRoutes.salaryDetailPath,
+          params: { employeeId: employmentId },
+        })
+      },
+      onError: (err) => {
+        toast.error(getApiErrorMessage(err, 'Could not create the salary version'))
+      },
+    })
+  })
+
   if (isLoading) {
-    return <div className="p-8 text-body-md text-on-surface-variant">Loading salary structure…</div>
+    return <div className="p-8 text-body-md text-on-surface-variant">Loading employees…</div>
   }
-  if (!emp) {
+  if (isError) {
     return (
       <div className="p-8 space-y-4">
-        <p className="text-body-md text-error">Employee not found.</p>
+        <p className="text-body-md text-error">Could not load eligible employees.</p>
         <BackButton to={payrollRoutes.salary} />
       </div>
     )
   }
-
-  const backToDetail = () =>
-    safeNavigate(navigate, {
-      to: payrollRoutes.salaryDetailPath,
-      params: { employeeId },
-    })
-
-  const onSubmit = form.handleSubmit((data) => {
-    const payload = toSaveSalaryInput(data)
-    saveMut.mutate(payload, {
-      onSuccess: () => backToDetail(),
-    })
-  })
 
   return (
     <div className="space-y-8 animate-fade-in">
@@ -91,36 +102,33 @@ export function ReviseSalaryPage() {
           <button
             type="button"
             className="hover:text-secondary transition-colors"
-            onClick={() => safeNavigate(navigate, { to: payrollRoutes.salary })}
+            onClick={backToList}
           >
             Salary Management
           </button>
           <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-          <button type="button" className="hover:text-secondary transition-colors" onClick={backToDetail}>
-            {emp.name}
-          </button>
-          <span className="material-symbols-outlined text-[16px]">chevron_right</span>
-          <span className="text-on-background font-medium">Revise Salary</span>
+          <span className="text-on-background font-medium">Add Payroll</span>
         </div>
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
-            <BackButton to={payrollRoutes.salaryDetail(employeeId)} label="" className="!px-1" />
+            <BackButton to={payrollRoutes.salary} label="" className="!px-1" />
             <div>
               <h1 className="text-headline-lg font-semibold text-on-background flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">payments</span>
-                Revise Salary
+                <span className="material-symbols-outlined text-primary">person_add</span>
+                Add Payroll
               </h1>
               <p className="text-body-md text-on-surface-variant mt-1">
-                Create a new salary version for {emp.name}. Previous versions are kept, never edited.
+                Create the first salary version for an employee without one. Later changes are new
+                versions — nothing is ever overwritten.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" size="sm" onClick={backToDetail} disabled={saveMut.isPending}>
+            <Button variant="outline" size="sm" onClick={backToList} disabled={saveMut.isPending}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm" onClick={() => void onSubmit()} disabled={saveMut.isPending}>
-              {saveMut.isPending ? 'Saving…' : 'Save New Version'}
+            <Button variant="primary" size="sm" onClick={() => void onSubmit()} disabled={saveMut.isPending || !employmentId}>
+              {saveMut.isPending ? 'Creating…' : 'Create Salary'}
             </Button>
           </div>
         </div>
@@ -128,26 +136,42 @@ export function ReviseSalaryPage() {
 
       <form onSubmit={onSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-8 flex flex-col gap-8">
-          <section className="bv-surface p-6 flex items-start gap-6">
-            <div className="w-20 h-20 rounded-full bg-secondary-container flex items-center justify-center text-primary font-bold text-xl border border-outline-variant">
-              {emp.initials}
-            </div>
-            <div className="flex-1">
-              <h2 className="text-title-lg font-semibold text-on-background">{emp.name}</h2>
-              <p className="text-body-sm text-on-surface-variant flex items-center gap-2 mt-1">
-                <span className="text-label-md text-primary bg-primary-fixed px-2 py-0.5 rounded">{emp.code}</span>
+          <section className="bv-surface p-6">
+            <h3 className="text-title-lg font-semibold text-on-background flex items-center gap-2 mb-1">
+              <span className="material-symbols-outlined text-secondary">badge</span>
+              Employee
+            </h3>
+            <p className="text-body-sm text-on-surface-variant mb-4">
+              Only employments without an open salary version are listed.
+            </p>
+            {candidates.length === 0 ? (
+              <p className="text-body-md text-on-surface-variant">
+                Every active employment already has a salary version. Nothing to add.
               </p>
-              <div className="grid grid-cols-2 gap-4 mt-4 pt-2 border-t border-outline-variant">
+            ) : (
+              <Select
+                value={employmentId}
+                onChange={(v) => setEmploymentId(v)}
+                options={candidates.map((c) => ({
+                  value: c.id,
+                  label: `${c.name} · ${c.code}`,
+                }))}
+                minWidthClass="min-w-0"
+                className="w-full"
+              />
+            )}
+            {selected && (
+              <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-outline-variant">
                 <div>
                   <p className="text-label-sm text-on-surface-variant uppercase tracking-wide">Department</p>
-                  <p className="text-body-md text-on-background font-medium mt-1">{emp.department}</p>
+                  <p className="text-body-md text-on-background font-medium mt-1">{selected.department}</p>
                 </div>
                 <div>
                   <p className="text-label-sm text-on-surface-variant uppercase tracking-wide">Position</p>
-                  <p className="text-body-md text-on-background font-medium mt-1">{emp.role}</p>
+                  <p className="text-body-md text-on-background font-medium mt-1">{selected.position}</p>
                 </div>
               </div>
-            </div>
+            )}
           </section>
 
           <section className="bv-surface overflow-hidden">
@@ -266,7 +290,7 @@ export function ReviseSalaryPage() {
                   title="Effective To is system-managed and cannot be edited"
                 />
                 <p className="text-body-sm text-on-surface-variant mt-1 text-[11px]">
-                  Locked — continuous until the next revision. Not editable.
+                  Locked — first version stays open until the next revision. Not editable.
                 </p>
               </div>
             </div>
@@ -293,9 +317,9 @@ export function ReviseSalaryPage() {
               </div>
               <div className="pt-2">
                 <span className="text-label-sm text-inverse-primary uppercase tracking-widest block mb-1">
-                  Net Gross Salary
+                  Gross Salary (sent as version gross)
                 </span>
-                <div className="text-headline-lg font-bold text-on-primary tracking-tight">{formatMoney(net)}</div>
+                <div className="text-headline-lg font-bold text-on-primary tracking-tight">{formatMoney(totalEarnings)}</div>
               </div>
             </div>
           </section>

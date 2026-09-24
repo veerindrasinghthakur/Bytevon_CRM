@@ -87,6 +87,7 @@ export function MyApprovalsPage() {
             { value: 'Pending', label: 'Pending' },
             { value: 'Approved', label: 'Approved' },
             { value: 'Rejected', label: 'Rejected' },
+            { value: 'Cancelled', label: 'Cancelled' },
           ]}
           minWidthClass="min-w-[140px]"
         />
