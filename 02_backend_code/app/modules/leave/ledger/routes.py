@@ -39,7 +39,7 @@ async def post_ledger_entry(
 async def list_ledger(
     employment_id: int,
     service: LedgerServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "VIEW", "SELF"))],
     leave_type: str | None = Query(None),
     limit: int = Query(200, ge=1, le=1000),
 ) -> list[LeaveLedgerResponse]:
@@ -56,7 +56,7 @@ async def list_ledger(
 async def get_balances(
     employment_id: int,
     service: LedgerServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "VIEW", "SELF"))],
 ) -> LeaveBalanceResponse:
     enforce_owner_or_grant(auth, "leave_request", "VIEW", owner_employment_id=employment_id)
     return await service.get_balances(employment_id)
@@ -69,7 +69,7 @@ async def get_balances(
 async def get_apply_context(
     employment_id: int,
     service: LedgerServiceDep,
-    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "VIEW", "CUSTOM"))],
+    auth: Annotated[AuthContext, Depends(require_permission("leave_request", "VIEW", "SELF"))],
     holiday_calendar_id: int | None = Query(None),
     year: int | None = Query(None),
 ) -> ApplyLeaveContextResponse:
